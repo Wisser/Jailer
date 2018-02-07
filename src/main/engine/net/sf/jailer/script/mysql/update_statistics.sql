@@ -1,0 +1,5 @@
+-- keeps DB-statistic up-to-date for the following tables:
+-- JAILER_ENTITY
+-- JAILER_GRAPH
+-- JAILER_DEPENDENCY
+-- JAILER_SET

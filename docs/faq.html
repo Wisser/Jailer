@@ -1,0 +1,328 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><title>Jailer - FAQ</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="keywords" content="Data Export Tool">
+<meta name="description" content="data export referential integrity java jdbc dbms">
+<link rel="stylesheet" type="text/css" href="installation-2-Dateien/styles.css">
+<link rel="shortcut icon" href="favicon.ico"></head>
+<body left-margin="0" top-margin="0">
+<div align="left">
+<table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
+<tbody>
+<tr>
+<td colspan="2" class="bannerbackground" height="33" width="100%">
+<table border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td><img src="installation-2-Dateien/logo.png" hspace="10"></td>
+<td class="slogan" width="100%">Database&nbsp;Subsetting&nbsp;Tool</td>
+<td style="text-align: right; width: 100%;">
+<table border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td><a href="http://sourceforge.net/projects/jailer/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1" alt="SourceForge.net Logo" style="border: 0px solid ;"></a></td>
+</tr>
+<tr>
+<td><a href="http://www.java.net"><img src="javanet_button_90.gif" alt="java.net Member Button: 90px wide" border="0" height="25" width="90"></a></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr>
+<td colspan="2" class="nav1background" height="33" width="100%">&nbsp; <b><font color="#ffffff"><a href="home.htm" target="_self" class="tlink">Home</a> &nbsp;&nbsp;&nbsp;
+<a href="quicktour.htm" target="_self" class="tlink">Quick Tour</a>
+&nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tlink">Tutorial</a>
+&nbsp;&nbsp;&nbsp;<a href="data-browsing.html" target="_self" class="tlink">Data Browser</a> &nbsp;&nbsp;&nbsp;<a href="faq.html" target="_self" class="tlinkA">FAQ</a> &nbsp;&nbsp;&nbsp;<a href="api.html" target="_self" class="tlink">API</a>
+&nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class="tlink">Documentation</a>
+&nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>&nbsp;&nbsp;&nbsp;
+<a href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self" class="tlink">Download</a>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</font></b></td>
+</tr>
+<tr>
+<td colspan="2" class="spacer" width="100%">
+</td>
+</tr>
+<tr>
+<td class="lmenucontainer" height="100%" valign="top" width="14%">
+<div align="center">
+<center>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody>
+<tr>
+<td width="100%"><br>
+</td>
+</tr>
+</tbody>
+</table>
+</center>
+</div>
+<ul>
+<li><a href="faq.html" target="_self" class="llinkA">FAQ</a></li>
+</ul>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+<tbody>
+<tr>
+<td class="content2background"><img style="width: 160px; height: 1px;" alt="" src="architecture-Dateien/vgradp.gif"></td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+</td>
+<td class="contentbackground" height="418" valign="top" width="86%">
+<div align="right">
+<table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+<tbody>
+<tr>
+<td class="contentbackground" height="21" width="100%"><br>
+</td>
+</tr>
+<tr>
+<td class="content" height="520" valign="top" width="100%">
+<small><small>&nbsp; </small></small><br>
+<big><span style="font-weight: bold;">Frequently
+Asked Questions<br>
+<br>
+</span></big>
+<table style="text-align: left;" border="0" cellpadding="3" cellspacing="0">
+<tbody>
+<tr>
+<td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+<td style="font-weight: bold; background-color: rgb(242, 242, 242);">Why
+am I getting so much data back?&nbsp; &nbsp; &nbsp;
+&nbsp;
+&nbsp; &nbsp; &nbsp;</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">A</td>
+<td>Each association will be traversed in both
+directions, unless there is a restriction defined. For example, if the
+subject table is <span style="font-style: italic;">employee</span>,
+and the association from&nbsp;<span style="font-style: italic;">department</span>
+table to&nbsp;<span style="font-style: italic;">employee</span>
+table is enabled, you will not only get all departments associated with
+any subject employee, but also&nbsp;all employees associated with
+any of that departments.<br>
+<br>
+If you get rows which you don't intend to get, then a restriction is
+missing. You can use the&nbsp;<span style="font-style: italic;">explain</span>
+feature in such a case. The explain log shows the chain of associations
+for each exported row back to a subject row, where the exportation
+starts. I recommend to read the <a href="exporting-data.htm">tutorial</a>,
+which explains the matters. <br>
+<br>
+Instead of adding all restrictions you need, starting from the
+unrestricted model, you can also go the opposit way: at first disable
+all associations (except dependencies) using <span style="font-style: italic;">"Edit-&gt;Disable all
+associations</span>" menu item. Then remove restrictions until
+you get all the rows you are looking for. <br>
+&nbsp;<br>
+It's easier that way to get a working extraction model, but it's harder
+to ensure that the model isn't too restrictive, i.e. that you will
+get&nbsp;<span style="font-weight: bold;">all</span>
+rows you intend to get. <br>
+&nbsp;<br>
+From my experience the best way to define an extraction model is to use
+the "<span style="font-weight: bold;">Closure Browser</span>"
+(use "<span style="font-style: italic;">Closure...</span>"
+button). <br>
+&nbsp;<br>
+The closure browser lists all tables which are directly or indirectly
+associated with the subject table (where extraction starts) according
+to the restrictions, ordered by distance. <br>
+&nbsp;<br>
+Check each table of this list from top to bottom. If you don't want to
+have rows from the table to be exported, select the table and disable
+the association which gets automatically selected then (table's context
+menu is also available here). The table disapears from the list as soon
+as it is no longer associated with subject.&nbsp; <br>
+<br>
+This way you easily get an extraction model which extracts rows only
+from tables you want to extract data from.&nbsp; <br>
+<br>
+Finally check all associations between the remaining tables. <br>
+&nbsp;<br>
+</td>
+</tr>
+<tr>
+<td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+<td style="font-weight: bold; background-color: rgb(242, 242, 242);">What
+does $DISTANCE and $IS_SUBJECT mean?</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">A</td>
+<td>$DISTANCE and $IS_SUBJECT are special
+expressions&nbsp;used in
+restriction conditions in order to define restriction models based on
+topological properties of rows.<br>
+<br>
+<table style="text-align: left; width: 100%;" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td style="font-weight: bold;">Expression</td>
+<td style="font-weight: bold;">Type</td>
+<td></td>
+</tr>
+<tr>
+<td style="vertical-align: top;">$DISTANCE</td>
+<td style="vertical-align: top;">INTEGER
+&nbsp; </td>
+<td>Minimum length of all paths from the
+row back to any subject row. <br>
+The distance of subject rows is 0.</td>
+</tr>
+<tr>
+<td>$BIRTHDAY</td>
+<td>INTEGER</td>
+<td>Synonym for $DISTANCE.</td>
+</tr>
+<tr>
+<td>$IS_SUBJECT</td>
+<td>BOOLEAN</td>
+<td>Synonym for $DISTANCE=0.</td>
+</tr>
+</tbody>
+</table>
+<br>
+&nbsp;<br>
+</td>
+</tr>
+<tr>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">How
+do I anonymize the extracted data?</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">A</td>
+<td>It's possible to anonymize the extracted
+data by <a href="filters.html" target="_self">defining filters</a> (via "<span style="font-style: italic;">Edit</span>"
+menu "<span style="font-style: italic;">Filter editor...</span>",
+or table's context menu)<br>
+<br>
+A filter is an assignment of a SQL expression to a table column. The
+column values will be replaced by the result of the expression when the
+export file is written.<br>
+&nbsp;<br>
+For example: <br>
+&nbsp;<br>
+In order to substitute the values of the column PERSON.SSN with the
+constant value '123', define the filter: <span style="font-style: italic;"><br>
+PERSON.SSN := '123' </span><br>
+&nbsp;<br>
+The filter <br>
+<span style="font-style: italic;">PERSON.SSN
+:= substr(${old-value}, 1, length(${old-value}) - 3) || '***' </span><br>
+replaces the last 3 characters of the SSN with '***' <br>
+${old-value} is a synonym for the filtered column.<br>
+&nbsp;<br>
+The filter: <br>
+<span style="font-style: italic;">PERSON.SSN
+:= (SELECT SSN FROM TEST_SSN ORDER BY RAND() </span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp;FETCH FIRST 1 ROWS ONLY) </span><br style="font-style: italic;">
+would replace the SSN with a randomly chosen SSN from a table holding
+test SSNs (IBM DB2) <br>
+&nbsp;<br>
+</td>
+</tr>
+<tr>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Why
+doesn't Jailer detect&nbsp;associations in MySQL databases?</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">A </td>
+<td>If you use MyISAM database engine, no
+association will be detected. MyISAM doesn't know the concept of
+foreign key relationships, even if they're defined in the DDL. <br>
+&nbsp;<br>
+The typical alternative engine that supports foreign key relationships
+is InnoDB. <br>
+&nbsp;</td>
+</tr>
+<tr>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Is
+it possible to avoid the creation of JAILER_* tables in the
+database?
+</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">A</td>
+<td>Set the working-table scope to "local database" ("Data Export"
+dialog) to avoid the creation of
+that tables in your database. The tables will then be created in a local database (H2).
+<br>
+For DB2, Oracle and PostgreSQL, it is also possible to create the tables as
+temporary tables.<br>
+&nbsp;</td>
+</tr>
+<tr>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">I'm
+getting the message "Table has no primary key". What's wrong?</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">A</td>
+<td>Jailer cannot handle tables without primary
+keys. Exporting data is not possible, if a table without a primary key
+is associated with the subject table. In this case, you should define
+a&nbsp;key of the table in the tool's data model&nbsp;(not in
+the database!) manually, using the data model editor. Note that a key
+must be unique and known (i.e. not NULL).<br><br>
+(On Oracle, however, <i>rowid</i>-pseudo columns can be used instead of primary keys)
+<br>&nbsp;
+</td>
+</tr>
+<tr>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">The
+GUI is slow, what can I do?<br>
+</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">A</td>
+<td>Due to the dynamic nature of the layouting
+algorithm, the
+table-association graph is permanently redrawn. It seems that this
+consumes too much cpu time on some systems. However, there is a
+parameter called "<span style="font-style: italic;">animation
+step time</span>" which determines the minimum
+time (in ms) for one animation step. Increasing that parameter
+(<span style="font-style: italic;">View-&gt;Animation
+step time</span>) will
+reduce the cpu utilization.<br>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><br>
+</p>
+<p><br>
+</p>
+<p><br>
+&nbsp; </p>
+</td>
+</tr>
+<tr>
+<td height="12" valign="top" width="14%"><br>
+</td>
+<td><br>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</body></html>

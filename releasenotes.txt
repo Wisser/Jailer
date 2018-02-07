@@ -1,0 +1,866 @@
+7.6.2
+  - Added "Columns" and "Text" views to SQLConsole.
+  - Added "Copy toClipboard" context menu item.
+  - New feature "Explain Plan" in SQLConsole.
+
+7.6.1
+  - JDBC driver updates.
+  - Minor GUI Improvements and bug fixes.
+
+7.6.0
+  - Constraint checking tool.
+  - Fix for "#23 Bugs when exporting timestamps and JSON ", https://sourceforge.net/p/jailer/bugs/23/
+  - Minor GUI Improvements and bug fixes.
+
+7.5.10
+  - SQLConsole: added outline-view for SQL statements.
+
+7.5.8
+  - SQLConsole: added ability to execute SQL fragments.
+  - DDL view for tables.
+
+7.5.7
+  - Minor GUI improvements.
+
+7.5.5
+  - data browser improvements
+	  - In-place editing of query results.
+	  - Column filtering in data browser.
+	  - Improved table search feature.
+
+7.5.3
+  - Performance and GUI improvements.
+
+7.5.2
+  - https://github.com/Wisser/Jailer/pull/5 "Include the column names in the first statement to avoid ORA-00918: column ambiguously defined"
+  - Table search feature.
+  - Minor GUI improvements.
+
+7.5
+  - Full featured SQL Console with code completion, syntax highlighting
+    and database schema visualization.
+
+7.4.2
+  - Improved data model merging.
+  - Added ability to change the data model base folder.
+  - Metadata views in data browser.
+
+7.4.1
+  - Minor GUI Improvements.
+
+7.4
+  - Integrated ClosureView into DataBrowser.
+  - Double To String conversion without exponential scientific notation.
+
+7.3.1
+  - Bugfix: NPE happened when using import-filters.
+  - Minor GUI Improvements.
+
+7.3
+  - Added ability to open more than one model editor at a time.
+  - Issue #4 "NPE when using Weblogic Datasource" (https://github.com/Wisser/Jailer/issues/4 )
+
+7.2.2
+  - Performance optimization.
+  - new filter type allows to exclude columns from export.
+
+7.2.1
+  - Fix for "#20 OutOfMemoryError: Java heap space - Reply" (https://sourceforge.net/p/jailer/bugs/20/ )
+
+7.2
+  - Introduction of the "expansion limit" feature for improved navigation.  
+  - Searchable combo boxes.
+  - Extensions of extraction model files have been changes from "csv" to "jm".
+
+7.1
+  - Small fixes for Java 9 compatibility.
+  - Feature Requests #41 "Don't return exit code 0 on error in jailer.sh" (https://sourceforge.net/p/jailer/feature-requests/41/ )
+
+7.0.7
+  - Minor bug fixes.
+
+7.0.6
+  - Data Browser will automatically reconnect if the connection is lost.
+  - Minor bug fixes.
+  
+7.0.5
+  - Fixed a bug concerning temporary-table support.
+  - Fixed connection leak in data browser.
+
+7.0.4
+  - Preventing NPE when trying to do an export via shell.
+
+7.0.3
+  - Minor bug fixes.
+
+7.0.2
+  - Fixed an NPE in MetaDataCache.
+  - User's home directory is used for setup, configuration and log files.
+  - Prevent exception if oracle.xdb.XMLTypeFactory is missing.
+
+7.0.1
+  - MS SQL Server datetime issue has been fixed. (https://sourceforge.net/p/jailer/discussion/700499/thread/5773eb1c/ )
+  - SQLite fk detection bug has been fixed.
+
+7.0
+  - New API provides programmatic access to the data export and import functionality.
+    http://jailer.sourceforge.net/api.html
+
+6.7.6
+  - Fixed an issue with Microsoft JDBC Driver 6.0 for SQL Server.
+
+6.7.5
+  - Fixed an incompatibility with jre 7.
+
+6.7.4
+  - CLI usage didn't print options.
+
+6.7.3
+  - Improved performance of database meta-data access. 
+  - Minor bug fixes (Filter templates).
+
+6.7.2
+  - Added support for NCLOB data type.
+  - Improved graph layout optimization in progress panel.
+
+6.7
+  - Visualization of progress of delete-reduction.
+  - Improved File Dialog.
+
+6.6.3
+  - Added popup menu for changing the "exclude from deletion" attribute of a table.
+
+6.6.2
+  - Minor bug fixes.
+
+6.6.1
+  - Added option for analyzing data model via CLI.
+  - Minor bug fixes.
+
+6.6.0
+  - Improved filter management. Support for import-filters and literal-filters.
+    http://jailer.sourceforge.net/filters.html
+
+6.5.2
+  - Fix for "DML->Update script template is broken for tables with timestamp columns"
+    https://sourceforge.net/p/dbeauty/tickets/8/
+
+6.5.1
+  - Added support for User-Defined Types.
+  - Minor bug fixes.
+
+6.5
+  - Referential cycles can now be exported by deferring the insert of nullable foreign keys.
+
+6.4.1
+  - Added support for Views and Synonyms. (https://sourceforge.net/p/jailer/feature-requests/36/)
+
+6.4
+  - Performance improvement.
+  - Added inline view style for DB2 z/OS.
+  - Added support for DB2 z/OS.
+
+6.3.4
+  - Added inline view style for Informix.
+
+6.3.3
+  - Get IdentifierQuoteString from config if target DBMS differs from source DBMS.
+
+6.3.2
+  - Data Browser has been improved.
+  - Bug fix for "Column name not exported with double quotes" https://sourceforge.net/p/jailer/discussion/700499/thread/a3635560/
+
+6.3.1
+  - Fixed an incompatibility with Java 9.
+
+6.3
+  - Data browser tables are now sortable.
+  - Multithreaded import.
+  - GUI improvements.
+
+6.2
+  - Added possibility to specify the target DBMS for a generated SQL script.
+    This allows to export data and import it into a different DBMS.
+  - Support for virtual columns.
+  - Fixed a bug concerning NVARCHAR literals on MS SQL Server.
+
+6.1.3
+  - fixed an incompatibility with PostgreSQL JDBC Driver 9.1. 
+
+6.1.2
+  - Improved performance of the Data Browser.
+
+6.1.1
+  - Fixed an issue with creating a new model after deleting a model with the same name (thanks to Dave).
+  - Fixed a performance issue within the Data Browser.
+
+6.1
+  - The new feature "Filter Templates" allows you to define rules for assigning filters to columns.
+    (Edit -> Filter editor... -> Templates)
+  - Filters on primary key columns will automatically be applied to the corresponding foreign key columns.
+
+6.0.3
+  - Fixed an error extracting from a postgresql table with a date primary key and a local database (thanks to olivier45).
+    See https://sourceforge.net/p/jailer/discussion/700499/thread/6ffaf110/
+
+6.0.2
+  - Fixed an incompatibility with Java 9.
+
+6.0.1
+  - Bug fixes for "Error exporting from postgresql with global tables with a working table schema"
+    and "Error exporting from postgresql with temporary tables"
+    See https://sourceforge.net/p/jailer/discussion/700499/thread/a7f0af2c/
+
+6.0
+  - New "Export To" mode allows to export rows directly into a different schema in the same database. 
+
+5.6.1
+  - Minor bug fixes.
+
+5.6.0
+  - Improved error handling.
+  - Improved performance.
+
+5.5.7
+  - Fixed an issue with exporting XML data from MySQL databases (thanks to qasbah raja)
+
+5.5.6
+  - Minor bug fixes.
+  
+5.5.4
+  - Minor bug fixes.
+
+5.5.3
+  - Minor bug fixes.
+
+5.5.2
+  - Added ability to specify the schema for the working tables.
+
+5.5.1
+  - Fixed NPE in data browser.
+
+5.5
+  - Support for ROWID pseudo-column in Oracle.
+
+5.4.2
+  - bug fix for [ jailer-Bugs-3294893 ] Outer Join for selecting dependant entries and Oracle 10
+    mixing left joins and theta-style joins caused problems on oracle DBMS
+  - new pseudo-column: "$IN_DELETE_MODE"
+
+5.4.1
+  - add ability to just generate the delete script, skip export (thanks to Jason Pell)
+  - improved responsiveness when SQL exception occurs.
+
+5.4
+  - Fixed an issue with exporting dependencies of Initial Tables. (thanks to Teddy Widom, https://sourceforge.net/p/jailer/discussion/700499/thread/60e83aef/)
+  - -scope "LOCAL_DATABASE" now supports the pseudo-columns $DISTANCE and $IS_SUBJECT.
+  - Support for multiple subject-tables has been added. 
+
+5.3.2
+  - Files with ".sql.zip" suffix are no longer created GZIP files but ZIP files.
+
+5.3.1
+  - "Data Export" dialog now have a "Cancel" button.
+  - An NPE occurred if the data model is empty.
+  - Statistics were collected for the remote database instead for the local when using "-scope LOCAL_DATABASE".
+
+5.3
+  - The Data Browser now offers a "Data Export" feature.
+
+5.2.1
+  - minor improvements.
+
+5.2
+  - Added "Closure View" and "Closure Border View" tools.
+
+5.1
+  - Better UI and improved navigation.
+
+5.0.2
+  - Viewing contents of CLOB and XML column types 
+
+5.0.1
+  - Unicode support.
+
+5.0
+  - Ability to collect rows in a separate embedded database.
+    This allows it to export data from read-only databases.
+
+4.4
+  - internal refactorings.
+
+4.3.9
+  - don't write empty lob files for liquibase export. (thanks to Jason Pell)
+
+4.3.8
+  - fix for for liquibase BLOB export. (thanks to Jason Pell)
+
+4.3.7
+  - refinements to timestamp, date, time format mask config for liquibase export. (thanks to Jason Pell)
+
+4.3.6
+  - fixed a bug concerning CLOB export in Liquibase format. (thanks to Jason Pell)
+
+4.3.5
+  - added support for ARRAY type.
+
+4.3.4
+  - Workaround for http://bugs.mysql.com/bug.php?id=47108
+
+4.3.3
+  - Fix for http://sourceforge.net/p/dbeauty/tickets/4/
+
+4.3.2
+  - Fix for http://sourceforge.net/p/dbeauty/tickets/3/
+
+4.3.1
+  - Minor bug fixes. 
+
+4.3
+  - Data Browser has been improved.
+  - Fixed a performance issue related to ResultSet#getMetaData and Postgresql 9.1 JDBC driver. 
+
+4.2.4
+  - added support for postgresql UUID type.
+
+4.2.3
+  - fixed an incompatibility with Java 8.
+
+4.2.2
+  - fixed a bug concerning MySQL's unsigned integer types. 
+
+4.2.1
+  - fixed a bug concerning the determination of the universal-primary-key.
+  - fixed a bug in file chooser window (thanks to oliver45)
+
+4.2
+  - added support for Liquibase file format (thanks to achimgrie) 
+
+4.1
+  - added support for Postgres HStore data type.
+  - internal refactorings.
+
+4.0.18
+  - changed order of which the prolog/epilog files are included into the export script.
+
+4.0.17
+  - Workaround for ORA-01424.
+
+4.0.16
+  - Added support for Informix's "datetime year to day/month/minute" column type.
+
+4.0.15
+  - Added support for high-resolution mouse-wheels.
+  - Added support for Informix nonlogging raw tables (thanks to Cesar Martins)
+
+4.0.14
+  - Fixed a bug concerning BLOB/CLOB support for MS SQL
+
+4.0.13
+  - Workaround for ORA-08176.
+
+4.0.12
+  - Fixed a bug where FlatXMLTransformer would produce invalid XML when table names were quoted.
+
+4.0.11
+  - Fix for bug 3536695: "Upserts don't work for certain postgres types (e.g time)"
+
+4.0.10
+  - fixed a bug concerning pre-populated alias fields for tables with quoted names in the QueryBuilder-UI.
+  - minor GUI improvements
+
+4.0.9
+  - improved display-name-concept. Quoted table names will now be displayed unquoted.
+
+4.0.8
+  - Java 6 compatibility
+
+4.0.7
+  - Fixed a bug concerning multi-line VARCHARs in Oracle.
+
+4.0.6
+  - Fixed a bug concerning multi-line VARCHARs in DB2.
+
+4.0.4
+  - Support for DB2's FIELD PROCS
+  - Fixed a bug concerning NPE on HTML-rendering without a database connection.
+
+4.0.3
+  - Added missing ';' at end of lines in generated delete script on DB2 on Z/OS
+
+4.0.2
+  - Fixed a bug concerning TIMESTAMP pattern in Oracle.
+
+4.0.1
+  - Configurable VARCHAR-length limit. Workaround for Informix JDBC-driver bug.
+
+4.0
+  - Multi data model support.
+  - "Subset by Example" feature.
+  - Added a second demo-model.
+  - Bug fixes.
+
+3.7.10
+  - Fixed a bug concerning appending of layouts in the data browser.
+  - Better integration of the closure-border-browser.
+
+3.7.9
+  - Added ability to hide table-browser windows from views.
+  - Added ability to append a stored layout.
+  - Added context menu for thumbnailed browser windows.
+  - Added "Show in New Window" feature.
+  - Filter-condition historization.
+
+3.7.8
+  - Fixed a performance issue within the Data Browser.
+  - Improved rendering of null values.
+
+3.7.7
+  - Added desktop context menu.
+  - Minor GUI improvements.
+
+3.7.6
+  - Border-Browser Feature introduced in data browser.
+  - Fixed a bug concerning multi-line VARCHAR content. (Jailer Bug ID: 3432301)
+
+3.7.5
+  - Fixed a bug concerning DATE literals in Oracle, the data browser now uses the "TO_DATE" function to specify the date pattern.
+  - Minor GUI improvements.
+
+3.7.4
+  - moves new table browser to center of the desktop.
+  - "Reconnect" and "New Window" menu items added.
+  
+3.7.3
+  - Java 7 compatibility fix.
+  - Desktop dragging.
+
+3.7.2
+  - Data Browser improvements:
+    - Tree navigator.
+    - Automatic Layouting.
+    - Desktop scaling.
+
+3.7.1
+ - Query Builder generated incorrect queries when applied on a restored session. This bug has been fixed.
+ - Added Demo Database.
+
+3.7
+ - Implemented the "Subset by Example" feature: Use the Data Browser to collect all the rows to be extracted and let Jailer create a model for that subset.
+ - Store/Restore of browser layouts (Feature Request ID: 3176291)
+
+3.6.12
+ - Extended row limits in Data Browser.
+ - Reduced memory footprint.
+
+3.6.11
+ - Improved Query Builder.
+
+3.6.10
+ - If a table has no primary key, an unique index on non-nullable columns is used as a key instead.
+
+3.6.9
+ - Minor GUI improvements.
+
+3.6.8
+ - Added ability to edit and execute arbitrary SQL statements in Data Browser.
+
+3.6.7
+ - Added ability to edit data by automatically creating SQL/DML statements based on rows (Feature Request [3176294])
+ - Improved syntax highlighting. 
+ - Integrated Schema Mapping Dialog into Data Browser.
+
+3.6.6
+ - Improved schema analyzer.
+ - Improved progress view.
+ - Added status bar to Data Browser.
+
+3.6.5
+ - Fix for bug [ jailer-Bugs-3394456 ] "IOException: 36 char of CLOB data cannot be read"
+
+3.6.4
+ - Added start scripts for the Data Browser.
+
+3.6.3
+ - Fixed a bug concerning data model changes not affecting table browsers.
+
+3.6.2
+ - Further Data Browser GUI improvements.
+ - Minor bug fixes.
+
+3.6.1
+ - Fix for bug [3308328] "Filter definition updates not correctly detected and saved"
+ - Further Data Browser GUI improvements.
+
+3.6
+ - Integrated Query Builder into Data Browser.
+ - Avoid using "TODAY" alias in SQL queries as it is a reserved keyword in H2 DBMS.
+
+3.5.9
+ - minor GUI improvements.
+
+3.5.8
+ - bug fix for [ jailer-Bugs-3294893 ] Outer Join for selecting dependant entries and Oracle 10
+  mixing left joins and theta-style joins caused problems on oracle DBMS      	
+
+3.5.7
+ - Further Data Browser GUI improvements.
+
+3.5.6
+ - Data Browser GUI improvements.
+
+3.5.5
+ - Minor bug fix.
+
+3.5.4
+ - Minor bug fixes and improvements.
+
+3.5.3
+ - Data Browser has been improved.
+
+3.5.2
+ - minor GUI enhancements.
+
+3.5.1
+ - Bug fix: changing the subject table was not possible in version 3.5.
+
+3.5
+ - A Data Browser has been introduced.
+ - GUI enhancements.
+
+3.4.10
+ - Enhanced readability of generated SQL scripts.
+ - Fix for rendering bug in closure view.
+
+3.4.9
+ - SQL generator no longer uses the "from DUAL" idiom 
+   for single-row inserts on Oracle DBMS
+
+3.4.8
+ - Bugfix: connections were not always closed properly.
+
+3.4.7
+ - Fixed a bug concerning import of LOB data [3033441].
+
+3.4.6
+ - Added associations list view in closure-browser.
+
+3.4.5
+ - Added dependency cycle analysis feature. 
+ - Added support for data type 'YEAR' on MySQL.
+ - minor bug fixes.
+
+3.4.4
+ - Command line rendering in "Data Export" dialog eases the handling of the command line interface.
+ - Added support for HSQL DBMS.
+ - Improved error handling.
+ - JDBC driver's jar files can now be specified via command line arguments.
+ - new XML-attributes "j:if-not-null" and "j:if-null" can now be used in XML templates for case differentiation.
+ 
+3.4.3
+ - Added support for SQLite DBMS.
+ - Added support for user-defined distinct types.
+
+3.4.2
+ - Fixed a bug concerning numeric columns with unlimited precision in postgreSQL.
+ - Amended configuration for Firebird DBMS.
+
+3.4.1
+ - Improvements of graphical progress indicator.
+ - Support for MySQL string literal escape sequences.
+ - Fixed a bug concerning the command line option "working-folder".
+
+3.4
+ - Added graphical progress indicator.
+ - Added command line option to set working folder.
+ - Added reachability-analysis feature.
+ - Internal refactorings.
+
+3.3
+ - Added ability to change the export mode (Insert/Upsert) for each table (via table's context menu)
+ - Added support for data type 'GRAPHIC' on DB2 for z/OS.
+ - Added ability to define display names for tables. [2946481]
+ - Fixed binary format error on MS Sql Server. [2946477]
+ - Added support for data type 'TIMESTAMP' on MS Sql Server. [2946477]
+ - Added ability to define a placeholder for NULL columns in a DBUnit data set. [2953453]
+
+3.2.1
+ - Added ability to change XML root tag name. 
+
+3.2
+ - Support for XML column type.
+
+3.1.9
+ - Set maximum table name length to 120 characters.
+
+3.1.8
+ - Fix for bug 2871798 concerning importation of multi line CLOBs.
+
+3.1.7
+ - Fix for bug 2849047 concerning the recognition of identity columns in MS SQL-Server and Sybase.
+
+3.1.6
+ - Prevention of deadlocks during cancellation.
+
+3.1.5
+ - clean-up of working tables on error or shutdown.
+
+3.1.4
+ - Added ability to cancel long running actions by closing the console window.
+
+3.1.3
+ - New context menu item "Show associated table".
+ - Minor GUI improvements and bug fixes.
+
+3.1.2
+ - Progress indicator for SQL import tool.
+ - Minor GUI improvements.
+
+3.1.1
+ - Support for multi-row inserts in oracle.
+
+3.1
+ - A new feature for parametrizing filters, XML-templates, restriction conditions and subject conditions has been introduced.
+ - GUI support for multi-line conditions and filters.
+ - The "Query Builder" allows the user to build SQL queries based on the data model.
+ - A bug concerning XML export on windows platform has been fixed.
+ - Minor bug fixes.
+
+3.0
+ - extensive internal refactorings
+ - GUI improvements
+ - Fix: $IS_SUBJECT/$DISTANCE expressions were not always evaluated correctly
+ - minor bug fixes
+
+2.9.10
+ - Redesigning of the "connection" dialog [2806688]
+ - fixed a bug concerning multi-line CLOB content.
+
+2.9.9
+ - added support for MSSQL's identity column type and BIT type.
+ - limited the length of lines in SQL export files to 2400 bytes,
+   so that oracle's utility SQLPLUS can be used to import the data.
+ - minor bug fixes
+
+2.9.8
+ - Graph layout is persistent [2787683]
+ - introduced pseudo-columns for each table: $DISTANCE and $IS_SUBJECT (a synonym for $DISTANCE=0),
+   which can be used in restriction conditions
+
+2.9.7
+ - new source-schema-mapping allows the user to specify the schema
+   to export data from
+ - added column replacements for PostgreSQL
+ - internal refactorings
+
+2.9.6
+ - preserve manually defined keys after re-analyzing the database
+ - improvements of data model editor
+ - export of BLOB/CLOB data into XML files
+
+2.9.5
+ - allows exportation of the graph as image (File->Export graph as image)
+ - allows enlargement of extraction model pane [2738574]
+ - added context menu for associations
+ - new UI layout (vertical+horizontal)
+ - tables without primary keys will no longer be rejected
+
+2.9.4
+ - enhancement of the sorting algorithm, single-row cycles detection
+ - fixed compatibility issue with DB2 for z/OS
+
+2.9.3
+ - implemented column type replacement for DDL generation
+ - ordering of rows in DbUnit datasets by primary keys
+ - Test Suite added
+ - new CLI option '-datamodel' allows to work with multiple data models
+ - minor bug fixes
+
+2.9.2
+ - fixed issue with loading config file on some Windows XP systems
+
+2.9.1
+ - fixed compatibility issue with Informix 10
+ - fixed issue with '#' character in driver's file name
+
+2.9.0
+ - added data filtering feature for data anonymization and test data aging [2530625]
+ - added setting for Sybase jConnect 6.0
+
+2.8.2
+ - Support for qualified tables in DbUnit datasets.
+
+2.8.1
+ - Support for MySQL's SET and ENUM column type
+
+2.8.0
+ - animation step time is configurable
+ - support for temporary working tables
+ - elimination of DDL statements during export
+ - internal refactorings
+
+2.7.1
+ - Sybase compatibility fixes
+ - Support for MS SQL's uniqueidentifier type
+
+2.7.0
+ - support for DbUnit flat dataset format
+
+2.6.1
+ - support for PostgreSQL types BOOL, BIT, BIT(n), BIT VARYING and unbounded VARCHAR
+
+2.6.0
+ - tables not associated with subject table are rendered italic
+ - support for BINARY/RAW column type
+ - internal refactorings
+
+2.5.9
+ - workaround for swing bug 4618607, see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4618607
+ - minor GUI improvements
+
+2.5.8
+ - rendering of associations' cardinality
+ - support for oracle DATE type which contains also time
+
+2.5.7
+ - the primary key of the table JAILER_ENTITY can be generated in a more compact way in order to reduce the risc to exceed the maximum number
+   of parts per key allowed by the DBMS. To enable this feature, set the parameter 'minimize-UPK' to true in 'config/config.xml'
+
+2.5.6
+ - additional type arguments will now be removed from the result of DatabaseMetaData#getColumns (for better compatibility with MS SQL Server)
+
+2.5.5
+ - the table name in insert statements for BLOB/CLOBs in generated SQL scripts is now qualified with target schema name
+ - fixed a bug concering the importation of BLOB/CLOBs into non-nullable columns
+
+2.5.4
+ - explicit pattern for timestamp values in generated SQL scripts for oracle DBMS (using the to_timestamp function)
+ - additional type options will now be removed from the result of DatabaseMetaData#getColumns 
+
+2.5.3
+ - bug fix: search timestamp pattern even if dummy values are already persisted 
+
+2.5.2
+ - "show table details" is now initially switched off
+ - the focused table is now initially collapsed if it is associated with more than 10 other tables
+
+2.5.1
+ - fixed a bug concerning the analysis of tables which have columns of type NVARCHAR2 or NCHAR.
+
+2.5.0
+ - new dialog "Closure Browser" added which allows the user to browse through the closure of a table
+ - Visualization of reversal association's type in tree view
+ - "Shortest path" analysis and rendering
+ - the 'UPDATE' part of 'UPSERT'-statements in generated SQL-scripts no longer updates primary key columns
+ - added context menu item for HTML rendering of tables
+
+2.4.4
+ - improved interaction between the graphical and hierarchical view
+ - added predefined setting for Microsoft SQL Server 2005
+ - minor bug fixes
+
+2.4.3
+ - added menu items for disabling/removing restrictions to context menu
+
+2.4.2
+ - SQL identifier quotation
+ - schema mapping
+
+2.4.1
+ - multi-schema support
+ - new feature "Expand all visible tables"
+ - disabled associations are no longer hidden in tree view
+ - minor bug fixes
+
+2.4.1.beta
+ - basic multi-schema support
+ - new feature "Expand all visible tables" 
+ - disabled associations are no longer hidden in tree view
+ - minor bug fixes
+
+2.4.0
+ - template based SQL-to-XML mapping
+ - rendering of table details
+ - improved tutorials
+
+2.3.0
+ - exports data to hierarchically structured XML
+
+2.2.3
+ - improved documentation
+ - minor bug fixes
+
+2.2.2
+ - improved logging
+
+2.2.1
+ - fixed a bug that occurred when more than one connection to dbms is used
+   simultaniously during exportation due to lack of thread safeness of java.text.DateFormat
+
+2.2.0
+ - Graph-based extraction model editor
+ - Improved documentation
+
+2.1.8
+ - fixed a bug concerning primary key columns of type DATE
+
+2.1.7
+ - fixed a bug concerning incompatibilities with Oracle 10g
+
+2.1.6
+ - fixed a bug concerning incompatibilities with MySQL
+
+2.1.5
+ - minor bug-fixes
+
+2.1.4
+ - included documentation
+
+2.1.3
+ - GUI improvements
+ - automatic update recognition
+
+2.1.2
+ - fixed a bug concerning entities of different type having the same primary-key
+
+2.1.1
+ - minor bug-fixes
+
+2.1
+ - Support for CLOB/BLOB
+
+2.0
+ - New full-featured Graphical User Interface
+   - Extraction Model Editor
+   - Data Model Editor
+   - DB Analyzer
+
+1.0.1
+ - Fixed a bug in file-selector on windows platform
+
+1.0
+ - Graphical User Interface
+ - bugfixes
+
+0.9.5
+- made Jailer compatible with Firebird DBMS.
+- better logging and error handling.
+- improved HTML rendering.
+
+0.9.4
+- Means for modeling domains and composites.
+
+0.9.3
+- HTML rendering of data model.
+
+0.9.2
+- minor bugfixes.
+- improved documentation.
+- changed model file-format slightly, 
+  CSV files don't have a title-line anymore.
+- removed the 'scott'-model from jailer.zip,
+  so that the tutorial can be done without resetting the model first.
+
+0.9.1
+- initial release.
+

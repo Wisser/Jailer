@@ -1,0 +1,199 @@
+<project name="jailer" default="package" basedir=".">
+	<target name="help">
+		<echo>
+available targets:
+
+     - help                     (this page)
+     - compile                  (compiles sources)
+     - package                  (generates jailer.jar)
+		</echo>
+	</target>
+
+	<property name="BUILD_DIR" location="out" />
+	<property name="COMPILE_DIR" location="${BUILD_DIR}/classes" />
+	<property name="TEST_DIR" location="${BUILD_DIR}/test/classes" />
+	<property name="SRC_DIR" location="src" />
+	<property name="JAR" location="jailer.jar" />
+	<property name="JAR-ENGINE" location="jailer-engine.jar" />
+	<property name="JAR-ENGINE-SRC" location="jailer-engine-src.zip" />
+	<property name="JAR-ENGINE-DOC" location="jailer-engine-javadoc.zip" />
+	<property name="TEST_BASE_DIR" location="src/test" />
+	<property file="src/test/test.properties" />
+
+	<path id="default.classpath">
+		<fileset dir="lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<path id="test.classpath">
+		<pathelement location="jailer.jar" />
+		<pathelement location="${TEST_DIR}" />
+		<path refid="default.classpath" />
+	</path>
+
+	<target name="clean" description="Cleans up the whole build area.">
+		<delete dir="${BUILD_DIR}" />
+	</target>
+
+	<target name="compile-engine" depends="clean">
+		<delete file="${JAR-ENGINE}" />
+		<mkdir dir="${COMPILE_DIR}" />
+		<javac destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/engine" debug="on" deprecation="off" encoding="ISO-8859-1">
+			<classpath>
+				<path refid="default.classpath" />
+			</classpath>
+			<include name="**/*.java" />
+		</javac>
+		<copy todir="${COMPILE_DIR}/net/sf/jailer/configuration">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/configuration">
+				<include name="**/*.xml" />
+			</fileset>
+		</copy>
+		<copy todir="${COMPILE_DIR}/net/sf/jailer/script">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/script">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<copy todir="${COMPILE_DIR}/net/sf/jailer/api_example">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/api_example">
+				<include name="**/*.csv" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="compile-gui" depends="compile-engine">
+		<delete file="${JAR}" />
+		<mkdir dir="${COMPILE_DIR}" />
+		<javac destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/gui" debug="on" deprecation="off" encoding="ISO-8859-1">
+			<classpath>
+				<path refid="default.classpath" />
+			</classpath>
+			<include name="**/*.java" />
+		</javac>
+		<copy todir="${COMPILE_DIR}/net/sf/jailer/ui/resource">
+			<fileset dir="${SRC_DIR}/main/gui/net/sf/jailer/ui/resource">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="package-engine" depends="compile-engine">
+		<jar destfile="${JAR-ENGINE}" basedir="${COMPILE_DIR}">
+			<manifest>
+				<attribute name="Main-Class" value="net.sf.jailer.Jailer" />
+				<attribute name="Class-Path" value="lib/activation-1.0.2.jar lib/jaxb-core-2.3.0-b170127.1453.jar lib/jaxb-impl-2.3.0-b170127.1453.jar lib/jaxb-api-2.3.0-b170201.1204.jar lib/log4j.jar lib/args4j.jar config/" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="package" depends="package-engine,compile-gui,javadoc">
+		<jar destfile="${JAR}" basedir="${COMPILE_DIR}">
+			<manifest>
+				<attribute name="Main-Class" value="net.sf.jailer.ui.ExtractionModelFrame" />
+				<attribute name="Class-Path" value="lib/activation-1.0.2.jar lib/jaxb-core-2.3.0-b170127.1453.jar lib/jaxb-impl-2.3.0-b170127.1453.jar lib/jaxb-api-2.3.0-b170201.1204.jar lib/prefuse.jar config/ lib/log4j.jar lib/args4j.jar lib/sdoc-0.5.0-beta.jar lib/jsqlparser-1.1.jar lib/tablefilter-swing-5.3.1.jar" />
+			</manifest>
+		</jar>
+		<copy todir=".">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/configuration">
+				<include name="**/*.xml" />
+			</fileset>
+		</copy>
+		<copy todir="script">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/script">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<java
+		    fork="true"
+		    failonerror="true"
+			classname="net.sf.jailer.JailerVersion"
+			outputproperty="VERSION">
+			<classpath>
+			           <pathelement location="${JAR-ENGINE}"/>
+			</classpath>
+		</java>
+		<rename src="${JAR-ENGINE}" dest="jailer-engine-${VERSION}.jar"/>
+		<rename src="${JAR-ENGINE-SRC}" dest="jailer-engine-${VERSION}-src.zip"/>
+		<rename src="${JAR-ENGINE-DOC}" dest="jailer-engine-${VERSION}-javadoc.zip"/>
+	</target>
+
+	<target name="compile-test" depends="compile-engine">
+		<mkdir dir="${TEST_DIR}" />
+		<javac destdir="${TEST_DIR}" srcdir="${SRC_DIR}/test" debug="on" deprecation="off" encoding="ISO-8859-1">
+			<classpath>
+				<path refid="test.classpath" />
+			</classpath>
+			<include name="**/*.java" />
+		</javac>
+	</target>
+
+	<target name="db2-test" depends="package, compile-test">
+		<junit fork="no">
+			<sysproperty key="DB_URL" value="${DB2_DB_URL}" />
+			<sysproperty key="DRIVER_CLASS" value="${DB2_DRIVER_CLASS}" />
+			<sysproperty key="DB_USER" value="${DB2_DB_USER}" />
+			<sysproperty key="DB_PASSWORD" value="${DB2_DB_PASSWORD}" />
+			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes" />
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/single-row-cycle:${TEST_BASE_DIR}/general:${TEST_BASE_DIR}/pseudocolumns:${TEST_BASE_DIR}/pseudocolumns2" />
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false" />
+			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
+		</junit>
+	</target>
+
+	<target name="oracle-test" depends="package, compile-test">
+		<junit fork="no">
+			<sysproperty key="DB_URL" value="${ORACLE_DB_URL}" />
+			<sysproperty key="DRIVER_CLASS" value="${ORACLE_DRIVER_CLASS}" />
+			<sysproperty key="DB_USER" value="${ORACLE_DB_USER}" />
+			<sysproperty key="DB_PASSWORD" value="${ORACLE_DB_PASSWORD}" />
+			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes" />
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/single-row-cycle:${TEST_BASE_DIR}/general:${TEST_BASE_DIR}/pseudocolumns:${TEST_BASE_DIR}/pseudocolumns2" />
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false" />
+			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
+		</junit>
+	</target>
+
+	<target name="mysql-test" depends="package, compile-test">
+		<junit fork="no">
+			<sysproperty key="DB_URL" value="${MYSQL_DB_URL}" />
+			<sysproperty key="DRIVER_CLASS" value="${MYSQL_DRIVER_CLASS}" />
+			<sysproperty key="DB_USER" value="${MYSQL_DB_USER}" />
+			<sysproperty key="DB_PASSWORD" value="${MYSQL_DB_PASSWORD}" />
+			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="no" />
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/single-row-cycle:${TEST_BASE_DIR}/general:${TEST_BASE_DIR}/pseudocolumns:${TEST_BASE_DIR}/pseudocolumns2" />
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false" />
+			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
+		</junit>
+	</target>
+
+	<target name="postgre-test" depends="package, compile-test">
+		<junit fork="no">
+			<sysproperty key="DB_URL" value="${POSTGRE_DB_URL}" />
+			<sysproperty key="DRIVER_CLASS" value="${POSTGRE_DRIVER_CLASS}" />
+			<sysproperty key="DB_USER" value="${POSTGRE_DB_USER}" />
+			<sysproperty key="DB_PASSWORD" value="${POSTGRE_DB_PASSWORD}" />
+			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes" />
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/single-row-cycle:${TEST_BASE_DIR}/general:${TEST_BASE_DIR}/pseudocolumns:${TEST_BASE_DIR}/pseudocolumns2" />
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false" />
+			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
+		</junit>
+	</target>
+
+	<target name="javadoc">
+		<zip destfile="${JAR-ENGINE-SRC}" basedir="${SRC_DIR}/main/engine">
+		</zip>
+		<javadoc packagenames="net.sf.jailer.*" sourcepath="src/main/engine" defaultexcludes="yes" destdir="docs/api" author="true" version="true" use="true" windowtitle="Jailer Subsetter API">
+			<doctitle><![CDATA[<h1>Jailer Subsetter API</h1>]]></doctitle>
+			<tag name="todo" scope="all" description="To do:" />
+			<link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="C:\tmp" />
+			<link href="http://docs.oracle.com/javase/7/docs/api/" />
+		</javadoc>
+		<zip destfile="${JAR-ENGINE-DOC}" basedir="docs/api">
+		</zip>
+	</target>
+</project>
