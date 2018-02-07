@@ -141,7 +141,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 							setIconURL("/net/sf/jailer/ui/resource/procedures.png");
 							DatabaseObjectRenderingDescription itemDescr = new DatabaseObjectRenderingDescription();
 							itemDescr.setIconURL("/net/sf/jailer/ui/resource/procedure.png");
-							itemDescr.setTextQuery(mdSchema.getMetaDataSource().getSession().dbms.getFunctionSourceQuery());
+							itemDescr.setTextQuery(mdSchema.getMetaDataSource().getSession().dbms.getProcedureSourceQuery());
 							setItemDescription(itemDescr);
 						}
 					}) {
