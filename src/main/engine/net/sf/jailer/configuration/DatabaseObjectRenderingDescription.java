@@ -15,20 +15,11 @@
  */
 package net.sf.jailer.configuration;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
-
-import net.sf.jailer.database.Session;
-import net.sf.jailer.modelbuilder.MetaDataCache;
-import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
-import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 
 /**
  * Describes how generic database objects are rendered (Functions, Procedures etc).
@@ -41,8 +32,21 @@ public class DatabaseObjectRenderingDescription {
 	 * Query for a list of all objects.
 	 */
 	private String listQuery;
+	
+	/**
+	 * Query for a textual representation of all objects.
+	 */
+	private String textQuery;
+	
+	/**
+	 * Icon.
+	 */
 	private String iconURL;
-	private String detailsIconURL;
+	
+	/**
+	 * Description of a list item.
+	 */
+	private DatabaseObjectRenderingDescription itemDescription;
 
 	/**
 	 * Gets query for a list of all objects.
@@ -63,29 +67,39 @@ public class DatabaseObjectRenderingDescription {
 	}
 	
 	/**
-	 * Retrieves list of all objects.
+	 * Gets description of a list item.
 	 * 
-	 * @return list of all objects 
+	 * @return description of a list item
 	 */
-	public CachedResultSet retrieveList(Session session, String schema) throws SQLException {
-		Statement cStmt = null;
-        try {
-            Connection connection = session.getConnection();
-            cStmt = connection.createStatement();
-            ResultSet rs = cStmt.executeQuery(String.format(listQuery, schema));
-            CachedResultSet result = new MetaDataCache.CachedResultSet(rs, null, session, schema);
-            rs.close();
-            return result;
-        } catch (Exception e) {
-            return null;
-        } finally {
-            if (cStmt != null) {
-                try {
-                    cStmt.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
+	public DatabaseObjectRenderingDescription getItemDescription() {
+		return itemDescription;
+	}
+
+	/**
+	 * Sets description of a list item.
+	 * 
+	 * @param itemDescription description of a list item
+	 */
+	public void setItemDescription(DatabaseObjectRenderingDescription itemDescription) {
+		this.itemDescription = itemDescription;
+	}
+
+	/**
+	 * Gets query for a textual representation of all objects.
+	 * 
+	 * @return query for a textual representation of all objects
+	 */
+	public String getTextQuery() {
+		return textQuery;
+	}
+
+	/**
+	 * Sets query for a textual representation of all objects.
+	 * 
+	 * @param textQuery query for a textual representation of all objects
+	 */
+	public void setTextQuery(String textQuery) {
+		this.textQuery = textQuery;
 	}
 
 	public String getIconURL() {
@@ -94,14 +108,6 @@ public class DatabaseObjectRenderingDescription {
 
 	public void setIconURL(String iconURL) {
 		this.iconURL = iconURL;
-	}
-
-	public String getDetailsIconURL() {
-		return detailsIconURL;
-	}
-
-	public void setDetailsIconURL(String detailsIconURL) {
-		this.detailsIconURL = detailsIconURL;
 	}
 
 	private static Map<String, ImageIcon> icons = Collections.synchronizedMap(new HashMap<String, ImageIcon>());

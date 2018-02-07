@@ -157,7 +157,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		while (i < columns.size()) {
 			Column c = columns.get(columnIndex.get(i));
 			JLabel l = new JLabel();
-			l.setText(" " + c.name + "  ");
+			l.setText(" " + c.name + "    ");
 			l.setFont(nonbold);
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;

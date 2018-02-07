@@ -562,6 +562,17 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 
 	/**
+	 * Calls {@link DatabaseMetaData#getProcedures(String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
+	 * @param withCaching 
+	 */
+	public static ResultSet getProcedures(Session session, DatabaseMetaData metaData, String schemaPattern, String functionPattern) throws SQLException {
+		if (DBMS.MySQL.equals(session.dbms)) {
+			return metaData.getFunctions(schemaPattern, null, functionPattern);
+		}
+		return metaData.getProcedures(null, schemaPattern, functionPattern);
+	}
+
+	/**
 	 * Checks syntactical correctness of names.
 	 * 
 	 * @param name a table or column name

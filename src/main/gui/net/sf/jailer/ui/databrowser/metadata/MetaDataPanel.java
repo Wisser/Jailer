@@ -113,23 +113,45 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private final Object CATEGORY_TABLES = new String("Tables");
     private final Object CATEGORY_SYNONYMS = new String("Synonyms");
 
-	private List<MDDescriptionBasedGeneric> getGenericDatabaseObjects(MDSchema mdSchema) {
+	private List<MDDescriptionBasedGeneric> getGenericDatabaseObjects(final MDSchema mdSchema) {
 		List<MDDescriptionBasedGeneric> genericDatabaseObjects = new ArrayList<MDDescriptionBasedGeneric>();
-		genericDatabaseObjects.add(new MDDescriptionBasedGeneric("Functions", metaDataSource, mdSchema, dataModel, 
+		genericDatabaseObjects.add(
+			new MDDescriptionBasedGeneric("Functions", metaDataSource, mdSchema, dataModel, 
 				new DatabaseObjectRenderingDescription() {
 					{
 						setIconURL("/net/sf/jailer/ui/resource/functions.png");
-						setDetailsIconURL("/net/sf/jailer/ui/resource/function.png");
+						DatabaseObjectRenderingDescription itemDescr = new DatabaseObjectRenderingDescription();
+						itemDescr.setIconURL("/net/sf/jailer/ui/resource/function.png");
+						itemDescr.setTextQuery(mdSchema.getMetaDataSource().getSession().dbms.getFunctionSourceQuery());
+						setItemDescription(itemDescr);
 					}
-
-					@Override
-					public CachedResultSet retrieveList(Session session, String schema) throws SQLException {
-						return new MetaDataCache.CachedResultSet(
-								JDBCMetaDataBasedModelElementFinder.getFunctions(session, session.getMetaData(), schema, "%"),
-								null, session, schema, new int[] { 3, 4, 1 }, new String[] { "Name", "Remarks", "Category" });
-					}
+				}) {
+			@Override
+			public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
+				return new MetaDataCache.CachedResultSet(
+						JDBCMetaDataBasedModelElementFinder.getFunctions(session, session.getMetaData(), schema, "%"),
+						null, session, schema, new int[] { 3, 4, 1 }, new String[] { "Name", "Remarks", "Category" });
+			}
 			
-		}));
+		});
+		genericDatabaseObjects.add(
+				new MDDescriptionBasedGeneric("Procedures", metaDataSource, mdSchema, dataModel, 
+					new DatabaseObjectRenderingDescription() {
+						{
+							setIconURL("/net/sf/jailer/ui/resource/procedures.png");
+							DatabaseObjectRenderingDescription itemDescr = new DatabaseObjectRenderingDescription();
+							itemDescr.setIconURL("/net/sf/jailer/ui/resource/procedure.png");
+							itemDescr.setTextQuery(mdSchema.getMetaDataSource().getSession().dbms.getFunctionSourceQuery());
+							setItemDescription(itemDescr);
+						}
+					}) {
+				@Override
+				public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
+					return new MetaDataCache.CachedResultSet(
+							JDBCMetaDataBasedModelElementFinder.getProcedures(session, session.getMetaData(), schema, "%"),
+							null, session, schema, new int[] { 3, 4, 1 }, new String[] { "Name", "Remarks", "Category" });
+				}
+			});
 		return genericDatabaseObjects;
 	}
 
@@ -552,15 +574,38 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                if (metaDataTree.getSelectionPath() != null && metaDataTree.getSelectionPath().getLastPathComponent() == last) {
-                                    if (uo instanceof MDSchema) {
-                                        onSchemaSelect((MDSchema) uo);
-                                    } else if (uo instanceof MDTable) {
-                                        onTableSelect((MDTable) uo);
-                                    } else if (uo instanceof MDGeneric) {
-                                        onMDOtherSelect((MDGeneric) uo, MetaDataPanel.this.executionContext);
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                            	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                                        	    try {
+					                                if (metaDataTree.getSelectionPath() != null && metaDataTree.getSelectionPath().getLastPathComponent() == last) {
+					                                    if (uo instanceof MDSchema) {
+					                                        onSchemaSelect((MDSchema) uo);
+					                                    } else if (uo instanceof MDTable) {
+					                                        onTableSelect((MDTable) uo);
+					                                    } else if (uo instanceof MDGeneric) {
+					                                        onMDOtherSelect((MDGeneric) uo, MetaDataPanel.this.executionContext);
+					                                    } else {
+					                                        onMDOtherSelect(new MDGeneric("", MetaDataPanel.this.metaDataSource) {
+																@Override
+																public JComponent createRender(Session session,
+																		ExecutionContext executionContext) throws Exception {
+																	return new JLabel("");
+																}
+					                                        }, MetaDataPanel.this.executionContext);
+					                                    }
+					                                }
+                                        	    } finally {
+                                        	    	setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                                        	    }
+                                            }
+                                        });
                                     }
-                                }
+                                });
                             }
                         });
                     }
@@ -821,12 +866,17 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		        SwingUtilities.invokeLater(new Runnable() {
 		            @Override
 		            public void run() {
-		                try {
-		                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		                    expandImmediatelly();
-		                } finally {
-		                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-		                }
+				        SwingUtilities.invokeLater(new Runnable() {
+				            @Override
+				            public void run() {
+				                try {
+				                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				                    expandImmediatelly();
+				                } finally {
+				                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				                }
+				            }
+				        });
 		            }
 		        });
 		    }
