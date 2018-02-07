@@ -115,6 +115,7 @@ public class DBMS {
 		this.nullableContraint = other.nullableContraint;
 		this.ddlQuery = other.ddlQuery;
 		this.ddlCall = other.ddlCall;
+		this.functionSourceQuery = other.functionSourceQuery;
 	}
 
 	/**
@@ -292,7 +293,9 @@ public class DBMS {
 	private String explainQuery = null;
 	private String explainCleanup = null;
 	
-	/**
+	private String functionSourceQuery;
+
+/**
 	 * @return the virtualColumnsQuery
 	 */
 	public String getVirtualColumnsQuery() {
@@ -917,6 +920,14 @@ public class DBMS {
 
 	public void setExplainCleanup(String explainCleanup) {
 		this.explainCleanup = explainCleanup;
+	}
+
+	public String getFunctionSourceQuery() {
+		return functionSourceQuery;
+	}
+
+	public void setFunctionSourceQuery(String functionSourceQuery) {
+		this.functionSourceQuery = functionSourceQuery;
 	}
 
 	/* (non-Javadoc)

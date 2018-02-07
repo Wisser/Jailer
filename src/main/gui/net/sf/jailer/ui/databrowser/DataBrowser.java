@@ -69,6 +69,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
+import javax.swing.JTree;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -306,7 +307,34 @@ public class DataBrowser extends javax.swing.JFrame {
 //            private static final long serialVersionUID = -947582621664272477L;
 //        }, gridBagConstraints);
 
-        DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+        DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
+			@Override
+			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
+					boolean leaf, int row, boolean hasFocus) {
+				Component render = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+				if (render instanceof JLabel) {
+					ImageIcon icon = null;
+					if (value instanceof DefaultMutableTreeNode && ((DefaultMutableTreeNode) value).getUserObject() instanceof TreeNodeForRowBrowser) {
+						TreeNodeForRowBrowser node = (TreeNodeForRowBrowser) ((DefaultMutableTreeNode) value).getUserObject();
+						if (node.rowBrowser.association != null) {
+							if (node.rowBrowser.association.isInsertDestinationBeforeSource()) {
+								icon = redIcon;
+							} else if (node.rowBrowser.association.isInsertSourceBeforeDestination()) {
+								icon = greenIcon;
+							} else {
+								icon = blueIcon;
+							}
+						} else {
+							icon = tableIcon;
+						}
+					} else {
+						icon = databaseIcon;
+					}
+					((JLabel) render).setIcon(icon);
+				}
+				return render;
+			}
+        };
         renderer.setOpenIcon(null);
         renderer.setLeafIcon(null);
         renderer.setClosedIcon(null);
@@ -2532,7 +2560,7 @@ public class DataBrowser extends javax.swing.JFrame {
         }
 
         ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode(connection != null ? " " + connection.alias : " ");
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(connection != null ? connection.alias : " ");
 
         treeNodeByIFrame.clear();
 
@@ -2980,4 +3008,24 @@ public class DataBrowser extends javax.swing.JFrame {
 		return getMetaDataSource(session);
 	}
 	
+	private ImageIcon tableIcon;
+	private ImageIcon databaseIcon;
+	private ImageIcon redIcon;
+	private ImageIcon blueIcon;
+	private ImageIcon greenIcon;
+	{
+        String dir = "/net/sf/jailer/ui/resource";
+        
+        // load images
+        try {
+            tableIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/table.png"));
+            databaseIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/database.png"));
+            redIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/reddot.gif")));
+            blueIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/bluedot.gif")));
+            greenIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/greendot.gif")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

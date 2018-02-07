@@ -117,6 +117,7 @@
         <explainPrepare>explain plan set statement_id = '%2$s' for %1$s</explainPrepare>
         <explainQuery>select * from table(dbms_xplan.display(NULL, '%2$s'))</explainQuery>
         <explainCleanup></explainCleanup>
+        <functionSourceQuery>SELECT 'Source', text FROM all_source WHERE name = '%2$s' AND owner = '%1$s' ORDER BY line</functionSourceQuery>
     </dbms>
 
     <!-- for MS SQL Server -->

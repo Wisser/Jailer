@@ -452,7 +452,7 @@ public class MetaDataCache {
 			while (resultSet.next()) {
 				Object[] row = new Object[numCol];
 				for (int i = 1; i <= numCol; ++i) {
-					row[i - 1] = cellContentConverter.getObject(resultSet, projection == null? i - 1 : projection[i - 1]);
+					row[i - 1] = cellContentConverter.getObject(resultSet, projection == null? i : projection[i - 1]);
 				}
 				rowList.add(row);
 				if (limit != null && rowList.size() > limit) {
@@ -466,8 +466,8 @@ public class MetaDataCache {
 			final String[] names = new String[numCol];
 			final int[] types = new int[numCol];
 			for (int i = 1; i <= numCol; ++i) {
-				names[i - 1] = columnNames == null? rmd.getColumnName(projection == null? i - 1 : projection[i - 1]) : columnNames[i - 1];
-				types[i - 1] = rmd.getColumnType(projection == null? i - 1 : projection[i - 1]);
+				names[i - 1] = columnNames == null? rmd.getColumnName(projection == null? i : projection[i - 1]) : columnNames[i - 1];
+				types[i - 1] = rmd.getColumnType(projection == null? i : projection[i - 1]);
 			}
 			resultSetMetaData = new MDCResultSetMetaData(numCol, names, types);
 		}
