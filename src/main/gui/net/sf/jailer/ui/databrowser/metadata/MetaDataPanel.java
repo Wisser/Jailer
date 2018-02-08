@@ -35,7 +35,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.ComboBoxModel;
@@ -80,7 +84,10 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.configuration.DatabaseObjectRenderingDescription;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
@@ -101,6 +108,11 @@ import net.sf.jailer.ui.StringSearchPanel;
 @SuppressWarnings("serial")
 public abstract class MetaDataPanel extends javax.swing.JPanel {
 
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MetaDataPanel.class);
+
     private final MetaDataSource metaDataSource;
     private final JComboBox<String> tablesComboBox;
     private final DataModel dataModel;
@@ -113,49 +125,144 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private final Object CATEGORY_TABLES = new String("Tables");
     private final Object CATEGORY_SYNONYMS = new String("Synonyms");
 
+    /**
+	 * Packages list view.
+	 */
+    private class MDPackages extends MDDescriptionBasedGeneric {
+
+		private MDPackages(String name, MetaDataSource metaDataSource, final MDSchema schema, DataModel dataModel) {
+			super(name, metaDataSource, schema, dataModel, new DatabaseObjectRenderingDescription() {
+				{
+					setIconURL("/net/sf/jailer/ui/resource/packages.png");
+					DatabaseObjectRenderingDescription itemDescr = new DatabaseObjectRenderingDescription();
+					itemDescr.setIconURL("/net/sf/jailer/ui/resource/package.png");
+					itemDescr.setTextQuery(schema.getMetaDataSource().getSession().dbms.getProcedureSourceQuery());
+					setItemDescription(itemDescr);
+				}
+			});
+		}
+
+		@Override
+		public List<MDDescriptionBasedGeneric> getDetails() {
+			ArrayList<MDDescriptionBasedGeneric> result = new ArrayList<MDDescriptionBasedGeneric>();
+			try {
+				CachedResultSet theList = retrieveList(getMetaDataSource().getSession());
+				for (final Object[] row: theList.getRowList()) {
+					MDProcedures procs = new MDProcedures(String.valueOf(row[0]), metaDataSource, schema, dataModel) {
+						@Override
+						protected boolean select(Object[] proc) {
+							return proc[2] != null && proc[2].equals(row[0]);
+						}
+					};
+					procs.databaseObjectRenderingDescription.setIconURL("/net/sf/jailer/ui/resource/package.png");
+					procs.databaseObjectRenderingDescription.setTextQuery(schema.getMetaDataSource().getSession().dbms.getPackageSourceQuery());
+					result.add(procs);
+				}
+			} catch (Throwable t) {
+				logger.info("error", t);
+			}
+			return result;
+		}
+
+		@Override
+		public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
+			Set<String> cats = new TreeSet<String>();
+			ResultSet rs = getProcedures(session, session.getMetaData(), schema, "%");
+			while (rs.next()) {
+				String cat = rs.getString(1);
+				if (cat != null) {
+					cats.add(cat);
+				}
+			}
+			rs.close();
+			List<Object[]> catList = new ArrayList<Object[]>();
+			for (String cat: cats) {
+				catList.add(new Object[] { cat });
+			}
+			CachedResultSet result = new CachedResultSet(catList, 1, new String[] { "Package", }, new int[] { Types.VARCHAR });
+			return result;
+		}
+	}
+
+	/**
+	 * Procedures list view.
+	 */
+    private abstract class MDProcedures extends MDDescriptionBasedGeneric {
+		private final MDSchema mdSchema;
+
+		public MDProcedures(String name, MetaDataSource metaDataSource, final MDSchema schema, DataModel dataModel) {
+			super(name, metaDataSource, schema, dataModel, new DatabaseObjectRenderingDescription() {
+				{
+					setIconURL("/net/sf/jailer/ui/resource/procedures.png");
+					DatabaseObjectRenderingDescription itemDescr = new DatabaseObjectRenderingDescription();
+					itemDescr.setIconURL("/net/sf/jailer/ui/resource/procedure.png");
+					itemDescr.setTextQuery(schema.getMetaDataSource().getSession().dbms.getProcedureSourceQuery());
+					setItemDescription(itemDescr);
+				}
+			});
+			this.mdSchema = schema;
+		}
+
+		@Override
+		public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
+			if (query != null) {
+				return super.retrieveList(session, query, schema, parentName);
+			}
+			CachedResultSet procs = new MetaDataCache.CachedResultSet(getProcedures(session, session.getMetaData(), schema, "%"),
+					null, session, schema, new int[] { 3, 4, 1, 8 }, new String[] { "Name", "Remarks", "Category", "Type" });
+			List<Object[]> catList = new ArrayList<Object[]>();
+			for (Object[] cat: procs.getRowList()) {
+				if (select(cat)) {
+					catList.add(cat);
+				}
+			}
+			procs.close();
+			return new CachedResultSet(catList, procs.getMetaData());
+		}
+
+		protected abstract boolean select(Object[] proc);
+
+		@Override
+		protected DatabaseObjectRenderingDescription itemDescription(CachedResultSet item) {
+			DatabaseObjectRenderingDescription desc = new DatabaseObjectRenderingDescription(databaseObjectRenderingDescription.getItemDescription());
+			if (!item.getRowList().isEmpty() && String.valueOf(DatabaseMetaData.procedureReturnsResult).equals(String.valueOf(item.getRowList().get(0)[3]))) {
+				desc.setIconURL("/net/sf/jailer/ui/resource/function.png");
+				desc.setTextQuery(mdSchema.getMetaDataSource().getSession().dbms.getFunctionSourceQuery());
+			}
+			return desc;
+		}
+	}
+
 	private List<MDDescriptionBasedGeneric> getGenericDatabaseObjects(final MDSchema mdSchema) {
 		List<MDDescriptionBasedGeneric> genericDatabaseObjects = new ArrayList<MDDescriptionBasedGeneric>();
 		genericDatabaseObjects.add(
-			new MDDescriptionBasedGeneric("Functions", metaDataSource, mdSchema, dataModel, 
-				new DatabaseObjectRenderingDescription() {
-					{
-						setIconURL("/net/sf/jailer/ui/resource/functions.png");
-						DatabaseObjectRenderingDescription itemDescr = new DatabaseObjectRenderingDescription();
-						itemDescr.setIconURL("/net/sf/jailer/ui/resource/function.png");
-						itemDescr.setTextQuery(mdSchema.getMetaDataSource().getSession().dbms.getFunctionSourceQuery());
-						setItemDescription(itemDescr);
-					}
-				}) {
-			@Override
-			public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
-				return new MetaDataCache.CachedResultSet(
-						JDBCMetaDataBasedModelElementFinder.getFunctions(session, session.getMetaData(), schema, "%"),
-						null, session, schema, new int[] { 3, 4, 1 }, new String[] { "Name", "Remarks", "Category" });
-			}
-			
-		});
-		genericDatabaseObjects.add(
-				new MDDescriptionBasedGeneric("Procedures", metaDataSource, mdSchema, dataModel, 
-					new DatabaseObjectRenderingDescription() {
-						{
-							setIconURL("/net/sf/jailer/ui/resource/procedures.png");
-							DatabaseObjectRenderingDescription itemDescr = new DatabaseObjectRenderingDescription();
-							itemDescr.setIconURL("/net/sf/jailer/ui/resource/procedure.png");
-							itemDescr.setTextQuery(mdSchema.getMetaDataSource().getSession().dbms.getProcedureSourceQuery());
-							setItemDescription(itemDescr);
-						}
-					}) {
+			new MDProcedures("Procedures", metaDataSource, mdSchema, dataModel) {
 				@Override
-				public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
-					return new MetaDataCache.CachedResultSet(
-							JDBCMetaDataBasedModelElementFinder.getProcedures(session, session.getMetaData(), schema, "%"),
-							null, session, schema, new int[] { 3, 4, 1 }, new String[] { "Name", "Remarks", "Category" });
+				protected boolean select(Object[] proc) {
+					// TODO filter
+					return proc[2] == null || !DBMS.ORACLE.equals(mdSchema.getMetaDataSource().getSession().dbms);
 				}
-			});
+			}
+		);
+		if (DBMS.ORACLE.equals(mdSchema.getMetaDataSource().getSession().dbms)) {
+			genericDatabaseObjects.add(new MDPackages("Packages", metaDataSource, mdSchema, dataModel));
+		}
 		return genericDatabaseObjects;
 	}
 
-    private abstract class ExpandingMutableTreeNode extends DefaultMutableTreeNode {
+	private Map<String, CachedResultSet> proceduresPerSchema = new HashMap<String, CachedResultSet>();
+
+	public synchronized ResultSet getProcedures(Session session, DatabaseMetaData metaData, String schema, String context) throws SQLException {
+		CachedResultSet rs = proceduresPerSchema.get(schema);
+		if (rs == null) {
+			rs = new CachedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, metaData, schema, context), null, session, "");
+			proceduresPerSchema.put(schema, rs);
+		}
+		rs.reset();
+		return rs;
+	}
+
+	private abstract class ExpandingMutableTreeNode extends DefaultMutableTreeNode {
         
         public ExpandingMutableTreeNode() {
             super("loading...");
@@ -164,7 +271,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         protected abstract void expandImmediatelly();
         protected abstract void expand();
     }
-    
+
     /**
      * Creates new form MetaDataPanel
      * 
@@ -666,7 +773,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             }
         });
         ComboBoxModel model = new DefaultComboBoxModel(new Vector(tables));
-            
         tablesComboBox.setModel(model);
     }
 
@@ -682,6 +788,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     public void reset() {
         refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         setOutline(new ArrayList<OutlineInfo>(), -1);
+        proceduresPerSchema.clear();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -854,6 +961,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            for (Object leaf: leafs) {
 		                DefaultMutableTreeNode tableChild = new DefaultMutableTreeNode(leaf);
 		                schemaViewsChild.add(tableChild);
+		                if (leaf instanceof MDDescriptionBasedGeneric) {
+		                	MDDescriptionBasedGeneric md = (MDDescriptionBasedGeneric) leaf;
+		                	for (MDDescriptionBasedGeneric detail: md.getDetails()) {
+		                		tableChild.add(new DefaultMutableTreeNode(detail));
+		                	}
+		                }
 		            }
 		            schemaViewsChild.remove(this);
 		            TreeModel model = metaDataTree.getModel();
@@ -1275,6 +1388,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 try {
                     return new ImageIcon(scaledIcon.getImage().getScaledInstance((int)(scaledIcon.getIconWidth() * s), (int)(scaledIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
                 } catch (Exception e) {
+                	logger.info("error", e);
                     return null;
                 }
             }
@@ -1296,6 +1410,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             databaseIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/database.png"));
             schemaIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/schema.png"));
         } catch (Exception e) {
+        	logger.info("error", e);
             e.printStackTrace();
         }
     }

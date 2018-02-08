@@ -551,23 +551,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 
 	/**
-	 * Calls {@link DatabaseMetaData#getFunctions(String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
-	 * @param withCaching 
-	 */
-	public static ResultSet getFunctions(Session session, DatabaseMetaData metaData, String schemaPattern, String functionPattern) throws SQLException {
-		if (DBMS.MySQL.equals(session.dbms)) {
-			return metaData.getFunctions(schemaPattern, null, functionPattern);
-		}
-		return metaData.getFunctions(null, schemaPattern, functionPattern);
-	}
-
-	/**
 	 * Calls {@link DatabaseMetaData#getProcedures(String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
 	 * @param withCaching 
 	 */
 	public static ResultSet getProcedures(Session session, DatabaseMetaData metaData, String schemaPattern, String functionPattern) throws SQLException {
 		if (DBMS.MySQL.equals(session.dbms)) {
-			return metaData.getFunctions(schemaPattern, null, functionPattern);
+			return metaData.getProcedures(schemaPattern, null, functionPattern);
 		}
 		return metaData.getProcedures(null, schemaPattern, functionPattern);
 	}

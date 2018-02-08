@@ -36,6 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JComponent;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
@@ -51,7 +53,12 @@ import net.sf.jailer.util.SqlUtil;
  */
 public class MDTable extends MDObject {
 
-    private final MDSchema schema;
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MDObject.class);
+
+	private final MDSchema schema;
     private List<String> primaryKey;
     private List<String> columns;
     private List<Column> columnTypes;
@@ -114,6 +121,7 @@ public class MDTable extends MDObject {
                     try {
                         getColumns();
                     } catch (SQLException e) {
+                    	logger.info("error", e);
                     }
                     loading.set(false);
                 }
@@ -258,6 +266,7 @@ public class MDTable extends MDObject {
                     try {
                         queue.take().run();
                     } catch (Throwable t) {
+                    	logger.info("error", t);
                     }
                 }
             }
@@ -287,7 +296,7 @@ public class MDTable extends MDObject {
                     cStmt.execute();
                     ddl = cStmt.getString(1).trim();
                 } catch (Exception e) {
-                    // ignore
+                	logger.info("error", e);
                 } finally {
                     if (cStmt != null) {
                         try {
@@ -323,7 +332,7 @@ public class MDTable extends MDObject {
                 try {
                 	ddl = createDDL();
 	            } catch (Exception e) {
-	                // ignore
+                	logger.info("error", e);
 	            }
             }
         }

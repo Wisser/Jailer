@@ -296,6 +296,8 @@ public class DBMS {
 	
 	private String functionSourceQuery;
 	private String procedureSourceQuery;
+	private String packageSourceQuery;
+
 	
 	/**
 	 * @return the virtualColumnsQuery
@@ -938,6 +940,14 @@ public class DBMS {
 
 	public void setProcedureSourceQuery(String procedureSourceQuery) {
 		this.procedureSourceQuery = procedureSourceQuery;
+	}
+
+	public String getPackageSourceQuery() {
+		return packageSourceQuery;
+	}
+
+	public void setPackageSourceQuery(String packageSourceQuery) {
+		this.packageSourceQuery = packageSourceQuery;
 	}
 
 	/* (non-Javadoc)

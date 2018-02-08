@@ -25,11 +25,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
@@ -139,6 +142,11 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
  */
 public class QueryTypeAnalyser {
 
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
+
 	@SuppressWarnings("serial")
 	private static class QueryTooComplexException extends RuntimeException {
 	};
@@ -197,6 +205,7 @@ public class QueryTypeAnalyser {
 											try {
 												col = findColumn(alias, column[0].getColumnName(), fromClause);
 											} catch (SQLException e) {
+												logger.info("error", e);
 												throw new QueryTooComplexException();
 											}
 											selectClause.add(col);
@@ -221,6 +230,7 @@ public class QueryTypeAnalyser {
 												selectClause.add(new Pair<String, String>(tableAlias, col));
 											}
 										} catch (SQLException e) {
+											logger.info("error", e);
 											throw new QueryTooComplexException();
 										}
 									}
@@ -238,6 +248,7 @@ public class QueryTypeAnalyser {
 													selectClause.add(new Pair<String, String>(e.getKey(), col));
 												}
 											} catch (SQLException e2) {
+												logger.info("error", e2);
 												throw new QueryTooComplexException();
 											}
 										}
@@ -272,6 +283,7 @@ public class QueryTypeAnalyser {
 			}
 			return result;
 		} catch (Exception e) {
+			logger.info("error", e);
 		}
 		return null;
 	}

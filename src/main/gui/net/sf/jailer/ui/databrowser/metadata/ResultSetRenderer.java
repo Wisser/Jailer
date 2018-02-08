@@ -18,6 +18,7 @@ package net.sf.jailer.ui.databrowser.metadata;
 import java.awt.Frame;
 import java.awt.Window;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,14 +55,16 @@ public class ResultSetRenderer extends javax.swing.JPanel {
 
     /**
      * Creates new form ResultSetRenderer
-     * @param executionContext 
+     * @param executionContext
      */
-    public ResultSetRenderer(ResultSet resultSet, String titel, DataModel datamodel, Session session, ExecutionContext executionContext) {
+    public ResultSetRenderer(ResultSet resultSet, String titel, DataModel datamodel, Session session, ExecutionContext executionContext) throws SQLException {
         initComponents();
         titelLabel.setText(titel);
         
 		final BrowserContentPane rb = new ResultContentPane(datamodel, null, "", session, null, null,
-                null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), Integer.MAX_VALUE, false, false, executionContext);
+                null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), Integer.MAX_VALUE, false, false,
+                resultSet.getMetaData().getColumnCount() > 1? 180 : 400,
+                executionContext);
 		rb.setTableFilterEnabled(false);
         LoadJob loadJob = rb.newLoadJob(resultSet, Integer.MAX_VALUE);
         loadJob.run();
@@ -123,11 +126,11 @@ public class ResultSetRenderer extends javax.swing.JPanel {
                 List<Row> parentRows, Association association, Frame parentFrame,
                 Set<Pair<BrowserContentPane, Row>> currentClosure,
                 Set<Pair<BrowserContentPane, String>> currentClosureRowIDs, Integer limit, Boolean selectDistinct,
-                boolean reload, ExecutionContext executionContext) {
+                boolean reload, int maxColumnWidth, ExecutionContext executionContext) {
             super(dataModel, table, condition, session, parentRow, parentRows, association, parentFrame, currentClosure,
                     currentClosureRowIDs, limit, selectDistinct, reload, executionContext);
             singleRowDetailsViewTitel = "Details";
-            maxColumnWidth = 180;
+            this.maxColumnWidth = maxColumnWidth;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
             rowsCount.setVisible(false);
         }
