@@ -23,6 +23,8 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
@@ -34,6 +36,11 @@ import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
  * @author Ralf Wisser
  */
 public class MDDatabase extends MDGeneric {
+
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MDDatabase.class);
 
 	private final DataModel dataModel;
 
@@ -191,7 +198,7 @@ public class MDDatabase extends MDGeneric {
         		Method m = md.getClass().getMethod(name);
         		rowList.add(new Object[] { name.startsWith("get")? name.substring(3) : name, m.invoke(md) });
         	} catch (Throwable t) {
-        		// ignore
+        		logger.info("error", t);
         	}
         }
 

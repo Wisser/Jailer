@@ -71,6 +71,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
+import org.apache.log4j.Logger;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import net.sf.jailer.ExecutionContext;
@@ -95,6 +96,7 @@ import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
@@ -114,6 +116,11 @@ import net.sf.jailer.util.Pair;
  */
 @SuppressWarnings("serial")
 public abstract class SQLConsole extends javax.swing.JPanel {
+
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
 
     private static final int MAX_TAB_COUNT = 8;
     private static final int MAX_HISTORY_SIZE = 100;
@@ -189,7 +196,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 try {
                     doc.getText(start, len, seg);
                 } catch (BadLocationException ble) {
-                    ble.printStackTrace();
+                    logger.info("error", ble);
                     return null;
                 }
 
@@ -294,7 +301,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     try {
                         queue.take().run();
                     } catch (Throwable t) {
-                        t.printStackTrace();
+                        logger.info("error", t);
                     }
                 }
             }
@@ -332,7 +339,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             try {
                 updateOutline(sql, editorPane.getLineStartOffset(loc.a));
             } catch (Exception e1) {
-                e1.printStackTrace();
+                logger.info("error", e1);
                 return;
             }
             
@@ -452,6 +459,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                                 try {
                                                     status.errorPosition += locFragmentOffset.a - editorPane.getLineStartOffset(editorPane.getLineOfOffset(locFragmentOffset.a));
                                                 } catch (BadLocationException e) {
+                                                    logger.info("error", e);
                                                 }
                                             }
                                         }
@@ -736,7 +744,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						statement.execute(String.format(session.dbms.getExplainCleanup(), sqlStatement, stmtId));
 	                	statement.close();
 					} catch (SQLException e) {
-						// ignore
+	                    logger.info("error", e);
 					}
             	}
             }
@@ -1417,7 +1425,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         try {
             closeIcon = new ImageIcon(getClass().getResource(dir + "/Close-16-1.png"));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info("error", e);
         }
     }
 
@@ -1552,7 +1560,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 in.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info("error", e);
         }
         SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -1571,7 +1579,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
             out.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info("error", e);
         }
         SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -1632,6 +1640,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
                 return cStmt.getInt(2);
             } catch (Exception e) {
+                logger.info("error", e);
             } finally {
                 if (cStmt != null) {
                     try {
@@ -1667,7 +1676,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             cancelIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/Cancel.png"));
             explainIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/explain.png"));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info("error", e);
         }
     }
 }

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
@@ -36,6 +38,11 @@ import net.sf.jailer.util.Quoting;
  * @author Ralf Wisser
  */
 public class MetaDataSource {
+
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
 
 	/**
 	 * The database session.
@@ -101,6 +108,7 @@ public class MetaDataSource {
 		try {
 			md = session.getMetaData();
 		} catch (SQLException e) {
+			logger.info("error", e);
 		}
 		synchronized (md) {
 			List<String> sList = new ArrayList<String>();
@@ -122,6 +130,7 @@ public class MetaDataSource {
 		try {
 			return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW", "SYNONYM", "ALIAS" });
 		} catch (Exception e) {
+			logger.info("error", e);
 			return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW" });
 		}
 	}

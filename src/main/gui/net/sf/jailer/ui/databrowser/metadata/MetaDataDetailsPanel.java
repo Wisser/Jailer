@@ -43,6 +43,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
+import org.apache.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
@@ -70,6 +71,11 @@ import net.sf.jailer.util.Pair;
  * @author Ralf Wisser
  */
 public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
+
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
 
 	private final Reference<DataModel> datamodel;
 	private final Session session;
@@ -114,6 +120,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						try {
 							queue.take().run();
 						} catch (Throwable t) {
+							logger.info("error", t);
 						}
 					}
 				}
@@ -338,6 +345,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						try {
 							pkNames.addAll(mdTable.getPrimaryKeyColumns());
 						} catch (SQLException e1) {
+							logger.info("error", e1);
 						}
 				    	try {
 				    		synchronized (session.getMetaData()) {
@@ -346,7 +354,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					    		rs.close();
 				    		}
 						} catch (SQLException e) {
-							// ignore
+							logger.info("error", e);
 						}
 			    		SwingUtilities.invokeLater(new Runnable() {
 							@Override

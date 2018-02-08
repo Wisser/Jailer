@@ -49,6 +49,7 @@ public abstract class MDGeneric extends MDObject {
 			try {
 				render = createRender(session, executionContext);
 			} catch (Throwable t) {
+				t.printStackTrace();
 				render = new JLabel("Error: " + t.getMessage());
 			}
 		}

@@ -430,6 +430,10 @@ public class MetaDataCache {
 			this.resultSetMetaData = resultSetMetaData;
 		}
 
+		public void reset() {
+			index = -1;
+		}
+		
 		public int getSize() {
 			return rowList.size();
 		}
