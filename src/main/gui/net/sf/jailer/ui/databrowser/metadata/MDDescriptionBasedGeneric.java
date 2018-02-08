@@ -31,6 +31,7 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
+import org.apache.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
@@ -48,9 +49,14 @@ import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
  */
 public class MDDescriptionBasedGeneric extends MDGeneric {
 
-	private final DatabaseObjectRenderingDescription databaseObjectRenderingDescription;
-	private final MDSchema schema;
-	private final DataModel dataModel;
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
+
+	protected final DatabaseObjectRenderingDescription databaseObjectRenderingDescription;
+	protected final MDSchema schema;
+	protected final DataModel dataModel;
 
 	/**
 	 * Constructor.
@@ -70,23 +76,34 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	 * @return list of descriptions of the details
 	 */
 	public List<MDDescriptionBasedGeneric> getDetails() {
-		DatabaseObjectRenderingDescription detailDesc = databaseObjectRenderingDescription.getItemDescription();
+		ArrayList<MDDescriptionBasedGeneric> result = new ArrayList<MDDescriptionBasedGeneric>();
 		try {
 			CachedResultSet theList = retrieveList(getMetaDataSource().getSession());
-			ArrayList<MDDescriptionBasedGeneric> result = new ArrayList<MDDescriptionBasedGeneric>();
-			if (detailDesc != null) {
-				for (final Object[] row: theList.getRowList()) {
+			for (final Object[] row: theList.getRowList()) {
+				CachedResultSet detailRS = new CachedResultSet(Collections.singletonList(row), theList.getMetaData());
+				DatabaseObjectRenderingDescription detailDesc = itemDescription(detailRS);
+				if (detailDesc != null) {
 					MDDescriptionBasedGeneric mdDetails = new MDDescriptionBasedGeneric(String.valueOf(row[0]), getMetaDataSource(), schema, dataModel, detailDesc);
 					if (detailDesc.getListQuery() == null) {
-						mdDetails.list = new CachedResultSet(Collections.singletonList(row), theList.getMetaData());
+						mdDetails.list = detailRS;
 					}
 					result.add(mdDetails);
 				}
 			}
-			return result;
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
+		} catch (Throwable t) {
+			logger.info("error", t);
 		}
+		return result;
+	}
+
+	/**
+	 * Gets description of an item.
+	 * @param itemContent content of the item
+	 * 
+	 * @return description of an item
+	 */
+	protected DatabaseObjectRenderingDescription itemDescription(CachedResultSet itemContent) {
+		return databaseObjectRenderingDescription.getItemDescription();
 	}
 
 	/**
@@ -143,7 +160,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 
 	private CachedResultSet list;
 	
-	private CachedResultSet retrieveList(Session session) throws SQLException {
+	protected CachedResultSet retrieveList(Session session) throws SQLException {
 		if (list == null) {
 			list = retrieveList(session, databaseObjectRenderingDescription.getListQuery(), schema.getName(), null);
 		}
@@ -165,6 +182,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
             rs.close();
             return result;
         } catch (Exception e) {
+        	logger.info("error", e);
             return null;
         } finally {
             if (cStmt != null) {

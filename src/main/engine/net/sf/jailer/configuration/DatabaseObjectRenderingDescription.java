@@ -49,6 +49,22 @@ public class DatabaseObjectRenderingDescription {
 	private DatabaseObjectRenderingDescription itemDescription;
 
 	/**
+	 * Constructor.
+	 */
+	public DatabaseObjectRenderingDescription() {
+	}
+
+	/**
+	 * Copy constructor.
+	 */
+	public DatabaseObjectRenderingDescription(DatabaseObjectRenderingDescription other) {
+		iconURL = other.iconURL;
+		itemDescription = other.itemDescription;
+		listQuery = other.listQuery;
+		textQuery = other.textQuery;
+	}
+
+	/**
 	 * Gets query for a list of all objects.
 	 * 
 	 * @return query for a list of all objects

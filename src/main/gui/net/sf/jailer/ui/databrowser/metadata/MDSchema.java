@@ -29,6 +29,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -37,6 +39,11 @@ import net.sf.jailer.util.Quoting;
  * @author Ralf Wisser
  */
 public class MDSchema extends MDObject {
+
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MDObject.class);
 
 	public final boolean isDefaultSchema;
 	private List<MDTable> tables;
@@ -65,6 +72,7 @@ public class MDSchema extends MDObject {
 					try {
 						loadTableColumnsQueue.take().run();
 					} catch (Throwable t) {
+						logger.info("error", t);
 					}
 				}
 			}
@@ -79,6 +87,7 @@ public class MDSchema extends MDObject {
 					try {
 						loadTablesQueue.take().run();
 					} catch (Throwable t) {
+						logger.info("error", t);
 					}
 				}
 			}
@@ -121,6 +130,7 @@ public class MDSchema extends MDObject {
 										try {
 											table.getColumns();
 										} catch (SQLException e) {
+											logger.info("error", e);
 										}
 									}
 								}
@@ -139,7 +149,7 @@ public class MDSchema extends MDObject {
 					}
 				});
 			} catch (SQLException e) {
-				e.printStackTrace();
+				logger.info("error", e);
 			} finally {
 				loaded.set(true);
 			}

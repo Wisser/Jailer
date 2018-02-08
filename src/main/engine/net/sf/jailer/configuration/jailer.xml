@@ -119,6 +119,13 @@
         <explainCleanup></explainCleanup>
         <functionSourceQuery>SELECT 'Source', text FROM all_source WHERE type = 'FUNCTION' and name = '%2$s' AND owner = '%1$s' ORDER BY line</functionSourceQuery>
         <procedureSourceQuery>SELECT 'Source', text FROM all_source WHERE type = 'PROCEDURE' and name = '%2$s' AND owner = '%1$s' ORDER BY line</procedureSourceQuery>
+        <packageSourceQuery>
+SELECT titel, text from (
+SELECT 'Specification' as titel, line, text FROM all_source where owner='%1$s' and type='PACKAGE' and name='%2$s'
+union all
+SELECT 'Body' as titel, line, text FROM all_source where owner='%1$s' and type='PACKAGE BODY' and name='%2$s'
+) order by titel desc, line
+        </packageSourceQuery>
     </dbms>
 
     <!-- for MS SQL Server -->
