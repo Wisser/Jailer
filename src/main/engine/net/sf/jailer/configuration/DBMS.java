@@ -117,6 +117,7 @@ public class DBMS {
 		this.ddlCall = other.ddlCall;
 		this.functionSourceQuery = other.functionSourceQuery;
 		this.procedureSourceQuery = other.procedureSourceQuery;
+		this.packageNamesQuery = other.packageNamesQuery;
 	}
 
 	/**
@@ -297,8 +298,8 @@ public class DBMS {
 	private String functionSourceQuery;
 	private String procedureSourceQuery;
 	private String packageSourceQuery;
+	private String packageNamesQuery;
 
-	
 	/**
 	 * @return the virtualColumnsQuery
 	 */
@@ -948,6 +949,14 @@ public class DBMS {
 
 	public void setPackageSourceQuery(String packageSourceQuery) {
 		this.packageSourceQuery = packageSourceQuery;
+	}
+
+	public String getPackageNamesQuery() {
+		return packageNamesQuery;
+	}
+
+	public void setPackageNamesQuery(String packageNamesQuery) {
+		this.packageNamesQuery = packageNamesQuery;
 	}
 
 	/* (non-Javadoc)
