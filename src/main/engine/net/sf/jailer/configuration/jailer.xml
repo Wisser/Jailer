@@ -119,6 +119,7 @@
         <explainCleanup></explainCleanup>
         <functionSourceQuery>SELECT 'Source', text FROM all_source WHERE type = 'FUNCTION' and name = '%2$s' AND owner = '%1$s' ORDER BY line</functionSourceQuery>
         <procedureSourceQuery>SELECT 'Source', text FROM all_source WHERE type = 'PROCEDURE' and name = '%2$s' AND owner = '%1$s' ORDER BY line</procedureSourceQuery>
+        <packageNamesQuery>SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OBJECT_TYPE = 'PACKAGE' AND OWNER = '%1$s'</packageNamesQuery>
         <packageSourceQuery>
 SELECT titel, text from (
 SELECT 'Specification' as titel, line, text FROM all_source where owner='%1$s' and type='PACKAGE' and name='%2$s'
