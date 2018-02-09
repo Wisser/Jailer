@@ -41,6 +41,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.MetaDataCache;
 import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Generic database object description based on DatabaseObjectRenderingDescription.
@@ -177,6 +178,12 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
         try {
             Connection connection = session.getConnection();
             cStmt = connection.createStatement();
+            if (schema != null) {
+            	schema = Quoting.staticUnquote(schema);
+            }
+            if (parentName != null) {
+            	parentName = Quoting.staticUnquote(parentName);
+            }
             ResultSet rs = cStmt.executeQuery(String.format(query, schema, parentName));
             CachedResultSet result = new MetaDataCache.CachedResultSet(rs, null, session, schema);
             rs.close();

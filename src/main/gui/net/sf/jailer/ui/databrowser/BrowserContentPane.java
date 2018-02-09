@@ -4501,10 +4501,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				selectedColumns[i] = i;
 			}
 		}
+		RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
+		TableColumnModel columnModel = rowsTable.getColumnModel();
 		for (int row: rowsTable.getSelectedRows()) {
 			boolean f = true;
 			for (int col: selectedColumns) {
-				Object value = rowsTable.getModel().getValueAt(row, col);
+				Object value = rowsTable.getModel().getValueAt(
+						rowSorter.convertRowIndexToModel(row),
+						columnModel.getColumn(col).getModelIndex());
 				if (value instanceof Row) {
 					Object[] values = ((Row) value).values;
 					for (Object v: values) {
