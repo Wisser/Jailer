@@ -99,6 +99,7 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.StringSearchPanel;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Meta Data UI.
@@ -239,7 +240,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			new MDProcedures("Procedures", metaDataSource, mdSchema, dataModel) {
 				@Override
 				protected boolean select(Object[] proc) {
-					// TODO filter
 					return proc[2] == null || !DBMS.ORACLE.equals(mdSchema.getMetaDataSource().getSession().dbms);
 				}
 			}
@@ -255,6 +255,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	public synchronized ResultSet getProcedures(Session session, DatabaseMetaData metaData, String schema, String context) throws SQLException {
 		CachedResultSet rs = proceduresPerSchema.get(schema);
 		if (rs == null) {
+			if (schema != null) {
+            	schema = Quoting.staticUnquote(schema);
+            }
 			rs = new CachedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, metaData, schema, context), null, session, "");
 			proceduresPerSchema.put(schema, rs);
 		}
