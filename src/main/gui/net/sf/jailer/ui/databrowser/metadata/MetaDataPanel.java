@@ -35,9 +35,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -167,15 +169,45 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
 		@Override
 		public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
-			Set<String> cats = new TreeSet<String>();
-			ResultSet rs = getProcedures(session, session.getMetaData(), schema, "%");
-			while (rs.next()) {
-				String cat = rs.getString(1);
-				if (cat != null) {
-					cats.add(cat);
-				}
+			Set<String> cats = null;
+			if (session.dbms.getPackageNamesQuery() != null) {
+				Statement cStmt = null;
+		        try {
+		            Connection connection = session.getConnection();
+		            cStmt = connection.createStatement();
+		            if (schema != null) {
+		            	schema = Quoting.staticUnquote(schema);
+		            }
+		            ResultSet rs = cStmt.executeQuery(String.format(session.dbms.getPackageNamesQuery(), schema));
+		            CachedResultSet result = new MetaDataCache.CachedResultSet(rs, null, session, schema);
+		            result.close();
+		            rs.close();
+		            cats = new TreeSet<String>();
+		            for (Object[] cat: result.getRowList()) {
+		            	cats.add((String) cat[0]);
+		            }
+		        } catch (Exception e) {
+		        	logger.info("error", e);
+		        } finally {
+		            if (cStmt != null) {
+		                try {
+		                    cStmt.close();
+		                } catch (SQLException e) {
+		                }
+		            }
+		        }
 			}
-			rs.close();
+			if (cats == null) {
+				cats = new TreeSet<String>();
+				ResultSet rs = getProcedures(session, session.getMetaData(), schema, "%");
+				while (rs.next()) {
+					String cat = rs.getString(1);
+					if (cat != null) {
+						cats.add(cat);
+					}
+				}
+				rs.close();
+			}
 			List<Object[]> catList = new ArrayList<Object[]>();
 			for (String cat: cats) {
 				catList.add(new Object[] { cat });
