@@ -836,7 +836,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         boolean wasSubselect = false;
         int level = 0;
         boolean isNewScope = true;
-        Map<String, Integer> levelPerAlias = new HashMap<String, Integer>();
+        Map<String, Integer> levelPerAlias = new LinkedHashMap<String, Integer>();
         Stack<String> tokenStack = new Stack<String>();
         Stack<Integer> tokenPosStack = new Stack<Integer>();
 		Stack<Boolean> inWithStack = new Stack<Boolean>();

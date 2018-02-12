@@ -26,6 +26,8 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -58,8 +60,12 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JTable;
+import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
@@ -70,6 +76,8 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.progress.ProgressListener;
+import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CancellationException;
@@ -860,5 +868,63 @@ public class UIUtil {
         }
     	return null;
     }
+
+    /**
+     * Represents "null"-value in rows tables.
+     */
+	public static final String NULL = "null";
+
+	/**
+	 * Copies selected cells of a rows table into the clipboard.
+	 * 
+	 * @param table the table
+	 */
+	public static void copyToClipboard(JTable table) {
+		String nl = System.getProperty("line.separator", "\n");
+		StringBuilder sb = new StringBuilder();
+		int[] selectedColumns = table.getSelectedColumns();
+		if (table.getSelectedColumnCount() == 1 && table.getSelectedRowCount() == 1) {
+			selectedColumns = new int[table.getColumnCount()];
+			for (int i = 0; i < selectedColumns.length; ++i) {
+				selectedColumns[i] = i;
+			}
+		}
+		RowSorter<? extends TableModel> rowSorter = table.getRowSorter();
+		TableColumnModel columnModel = table.getColumnModel();
+		for (int row: table.getSelectedRows()) {
+			boolean f = true;
+			for (int col: selectedColumns) {
+				Object value = table.getModel().getValueAt(
+						rowSorter == null? row : rowSorter.convertRowIndexToModel(row),
+						columnModel.getColumn(col).getModelIndex());
+				if (value instanceof Row) {
+					Object[] values = ((Row) value).values;
+					for (Object v: values) {
+						if (v instanceof TableModelItem) {
+							v = ((TableModelItem) v).value;
+						}
+						if (!f) {
+							sb.append("\t");
+						}
+						f = false;
+						sb.append(v == NULL || v == null? "" : v);
+					}
+				} else {
+					if (value instanceof TableModelItem) {
+						value = ((TableModelItem) value).value;
+					}
+					if (!f) {
+						sb.append("\t");
+					}
+					f = false;
+					sb.append(value == NULL || value == null? "" : value);
+				}
+			}
+			sb.append(nl);
+		}
+		StringSelection selection = new StringSelection(sb.toString());
+	    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+	    clipboard.setContents(selection, selection);
+	}
 
 }

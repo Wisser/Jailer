@@ -192,7 +192,7 @@ public class QueryTypeAnalyser {
 										
 										selectExpressionItem.getExpression().accept(createExpressionVisitor(noSubexpression, column));
 
-										if (noSubexpression[0] && column[0] != null) {
+										if (column[0] != null) {
 											String alias = null;
 											if (column[0].getTable() != null) {
 												if (column[0].getTable().getAlias() != null) {
@@ -201,14 +201,18 @@ public class QueryTypeAnalyser {
 													alias = column[0].getTable().getName();
 												}
 											}
-											Pair<String, String> col;
-											try {
-												col = findColumn(alias, column[0].getColumnName(), fromClause);
-											} catch (SQLException e) {
-												logger.info("error", e);
-												throw new QueryTooComplexException();
+											if (noSubexpression[0]) {
+												Pair<String, String> col;
+												try {
+													col = findColumn(alias, column[0].getColumnName(), fromClause);
+												} catch (SQLException e) {
+													logger.info("error", e);
+													throw new QueryTooComplexException();
+												}
+												selectClause.add(col);
+											} else {
+												selectClause.add(new Pair<String, String>(null, alias));
 											}
-											selectClause.add(col);
 										} else {
 											selectClause.add(null);
 										}
@@ -269,7 +273,7 @@ public class QueryTypeAnalyser {
 				if (theTable != null) {
 					List<String> columnNames = new ArrayList<String>();
 					for (Pair<String, String> e: selectClause) {
-						if (e.a.equals(tableAlias)) {
+						if (e != null && e.a.equals(tableAlias)) {
 							columnNames.add(e.b);
 						} else {
 							columnNames.add(null);
