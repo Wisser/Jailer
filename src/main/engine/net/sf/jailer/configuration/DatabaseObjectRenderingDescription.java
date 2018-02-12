@@ -42,7 +42,12 @@ public class DatabaseObjectRenderingDescription {
 	 * Icon.
 	 */
 	private String iconURL;
-	
+
+	/**
+	 * Name.
+	 */
+	private String name;
+
 	/**
 	 * Description of a list item.
 	 */
@@ -116,6 +121,24 @@ public class DatabaseObjectRenderingDescription {
 	 */
 	public void setTextQuery(String textQuery) {
 		this.textQuery = textQuery;
+	}
+
+	/**
+	 * Gets the name.
+	 * 
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Sets the name.
+	 * 
+	 * @param name the name
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getIconURL() {
