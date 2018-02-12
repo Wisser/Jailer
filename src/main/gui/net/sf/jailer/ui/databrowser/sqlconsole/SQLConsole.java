@@ -35,6 +35,7 @@ import java.io.StringWriter;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
@@ -100,6 +101,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.databrowser.metadata.ResultSetRenderer;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
@@ -568,14 +570,26 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
             if (hasResultSet) {
                 resultSet = statement.getResultSet();
-                final Integer limit = (Integer) limitComboBox.getSelectedItem();
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                final String columnLabels[] = new String[metaData.getColumnCount()];
+                for (int i = 0; i < metaData.getColumnCount(); ++i) {
+                	columnLabels[i] = metaData.getColumnLabel(i + 1);
+                }
+                ResultSetRenderer theMetaDataRenderer = null;
+                try {
+                	theMetaDataRenderer = new ResultSetRenderer(TabContentPanel.toMetaDataResultSet(metaData, session, executionContext), null, datamodel.get(), session, executionContext);
+				} catch (Throwable e1) {
+					logger.info("error", e1);
+				}
+                final ResultSetRenderer metaDataRenderer = theMetaDataRenderer;
+				final Integer limit = (Integer) limitComboBox.getSelectedItem();
                 final List<Table> resultTypes = explain? null : QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
                 Table resultType = null;
                 if (resultTypes != null && !resultTypes.isEmpty()) {
                     if (resultTypes.size() == 1) {
                         resultType = resultTypes.get(0);
                     }
-                    int columnCount = resultSet.getMetaData().getColumnCount();
+					int columnCount = metaData.getColumnCount();
                     for (Table table: resultTypes) {
                         while (table.getColumns().size() < columnCount) {
                             table.getColumns().add(new net.sf.jailer.datamodel.Column(null, "", 0, -1));
@@ -607,12 +621,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         if (resultTypes != null && resultTypes.size() > 1) {
                             rb.setResultSetType(resultTypes);
                         }
+                        rb.setAlternativeColumnLabels(columnLabels);
                         rb.setTableFilterEnabled(metaDataDetails.getSize() > 10);
                         rb.setStatementForReloading(finalSqlStatement);
+                        metaDataDetails.reset();
                         LoadJob loadJob = rb.newLoadJob(metaDataDetails, limit);
                         loadJob.run();
                         JComponent rTabContainer = rb.getRowsTableContainer();
-                        final TabContentPanel tabContentPanel = new TabContentPanel(rb.rowsCount, explain);
+                        metaDataDetails.reset();
+						final TabContentPanel tabContentPanel = 
+                        		new TabContentPanel(rb.rowsCount, 
+                        				metaDataRenderer, 
+                        				explain);
                         tabContentPanel.contentPanel.add(rTabContainer);
                         rb.sortColumnsCheckBox.setVisible(true);
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
@@ -751,7 +771,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     }
 
-    public void setCaretPosition(int position) {
+	public void setCaretPosition(int position) {
     	if (editorPane.getDocument().getLength() >= position) {
     		editorPane.setCaretPosition(position);
     		grabFocus();
