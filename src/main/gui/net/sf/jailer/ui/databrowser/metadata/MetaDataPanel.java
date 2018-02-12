@@ -279,6 +279,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		if (DBMS.ORACLE.equals(mdSchema.getMetaDataSource().getSession().dbms)) {
 			genericDatabaseObjects.add(new MDPackages("Packages", metaDataSource, mdSchema, dataModel));
 		}
+		for (DatabaseObjectRenderingDescription desc: mdSchema.getMetaDataSource().getSession().dbms.getObjectRenderers()) {
+			MDDescriptionBasedGeneric mdObjectRenderer
+				= new MDDescriptionBasedGeneric(
+						desc.getName(), metaDataSource, mdSchema, dataModel, desc);
+			genericDatabaseObjects.add(mdObjectRenderer);
+		}
 		return genericDatabaseObjects;
 	}
 
