@@ -16,12 +16,14 @@
 package net.sf.jailer.configuration;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import net.sf.jailer.database.DefaultTemporaryTableManager;
@@ -118,6 +120,7 @@ public class DBMS {
 		this.functionSourceQuery = other.functionSourceQuery;
 		this.procedureSourceQuery = other.procedureSourceQuery;
 		this.packageNamesQuery = other.packageNamesQuery;
+		this.objectRenderers = other.objectRenderers;
 	}
 
 	/**
@@ -299,6 +302,7 @@ public class DBMS {
 	private String procedureSourceQuery;
 	private String packageSourceQuery;
 	private String packageNamesQuery;
+	private List<DatabaseObjectRenderingDescription> objectRenderers = new ArrayList<DatabaseObjectRenderingDescription>();
 
 	/**
 	 * @return the virtualColumnsQuery
@@ -957,6 +961,15 @@ public class DBMS {
 
 	public void setPackageNamesQuery(String packageNamesQuery) {
 		this.packageNamesQuery = packageNamesQuery;
+	}
+
+	@XmlElement(name = "objectRenderers")
+	public List<DatabaseObjectRenderingDescription> getObjectRenderers() {
+		return objectRenderers;
+	}
+
+	public void setObjectRenderers(List<DatabaseObjectRenderingDescription> objectRenderers) {
+		this.objectRenderers = objectRenderers;
 	}
 
 	/* (non-Javadoc)
