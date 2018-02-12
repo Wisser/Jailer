@@ -17,6 +17,7 @@ package net.sf.jailer.modelbuilder;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -821,7 +822,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * Converts result from {@link DatabaseMetaData#getColumns(String, String, String, String)}
 	 * into the type name.
 	 */
-	private String toSqlType(String sqlType, DBMS dbms) {
+	private static String toSqlType(String sqlType, DBMS dbms) {
 		if (sqlType == null) {
 			return null;
 		}
@@ -845,6 +846,56 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 		}
 		return sqlType;
+	}
+
+	public static Column toColumn(ResultSetMetaData metaData, int i, Session session) throws SQLException {
+		Quoting quoting = new Quoting(session);
+		String colName = quoting.quote(metaData.getColumnName(i));
+		int type = metaData.getColumnType(i);
+		int length = 0;
+		int precision = -1;
+		if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+			length = metaData.getPrecision(i);
+		}
+		if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+			precision = metaData.getScale(i);
+			if (precision == 0) {
+				precision = -1;
+			}
+		}
+		String sqlType = toSqlType(metaData.getColumnTypeName(i), session.dbms);
+		if (sqlType == null || sqlType.trim().length() == 0) {
+			sqlType = SqlUtil.SQL_TYPE.get(type);
+			if (sqlType == null) {
+				sqlType = "(?unknown type)";
+			}
+		}
+		if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
+			length = metaData.getPrecision(i);
+			if (type == Types.VARCHAR) {
+				if (session.dbms.getVarcharLengthLimit() != null) {
+					length = Math.min(length, session.dbms.getVarcharLengthLimit());
+				}
+			}
+		}
+		if (sqlType != null && sqlType.equalsIgnoreCase("uniqueidentifier")) {
+			length = 0;
+		}
+		if (DBMS.MSSQL.equals(session.dbms) && sqlType != null && sqlType.equalsIgnoreCase("timestamp")) {
+			length = 0;
+		}
+		if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+			precision = metaData.getScale(i);
+			if (precision == 0) {
+				precision = -1;
+			}
+		}
+		if (type == Types.DISTINCT) {
+			length = 0;
+			precision = -1;
+		}
+		Column column = new Column(colName, sqlType, filterLength(length, metaData.getColumnTypeName(6), type, session.dbms, metaData.getPrecision(i)), precision);
+		return column;
 	}
 
 	/**

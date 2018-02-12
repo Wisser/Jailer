@@ -442,7 +442,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	private static final String ROWNUMBERALIAS = "RN";
 
-	public static final String NULL = "null";
 	protected static final String UNKNOWN = "- unknown column -";
 		
 	protected static final int MAXLOBLENGTH = 2000;
@@ -668,7 +667,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Action a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				copyToClipboard();
+				UIUtil.copyToClipboard(rowsTable);
 			}
 		};
 		am.put(key, a);
@@ -753,13 +752,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				boolean cellSelected = isSelected; 
 				
 				if (table.getSelectedColumnCount() <= 1 && table.getSelectedRowCount() <= 1) {
-					cellSelected = false;
+					 cellSelected = false;
 				}
 				
 				isSelected = currentRowSelection == row || currentRowSelection == -2;
 
 				if (table != rowsTable) {
 					isSelected = false;
+					for (int sr: table.getSelectedRows()) {
+						if (sr == column) {
+							isSelected = true;
+							break;
+						}
+					}
 				}
 				
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(rowsTable, value, isSelected, false, row, column);
@@ -784,7 +789,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					((JLabel) render).setBorder(cellSelected? BorderFactory.createEtchedBorder() : null);
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
-					if (!isSelected) {
+					if (!isSelected && (table == rowsTable || !cellSelected)) {
 						if (BrowserContentPane.this.getQueryBuilderDialog() != null && // SQL Console
 							BrowserContentPane.this.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
 							((JLabel) render).setBackground(BG3);
@@ -805,7 +810,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								fkColumns.contains(convertedColumnIndex) ? FG2 : 
 										Color.BLACK);
 					boolean isNull = false;
-					if (((JLabel) render).getText() == NULL || ((JLabel) render).getText() == UNKNOWN) {
+					if (((JLabel) render).getText() == UIUtil.NULL || ((JLabel) render).getText() == UNKNOWN) {
 						((JLabel) render).setForeground(Color.gray);
 						((JLabel) render).setFont(italic);
 						isNull = true;
@@ -1221,7 +1226,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		copyTCB.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				copyToClipboard();
+				UIUtil.copyToClipboard(rowsTable);
 			}
 		});
 		
@@ -3070,6 +3075,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (pkColumnNames.contains(columnNames[i])) {
 				pkColumns.add(i);
 			}
+			if (columnNames[i] == null) {
+				if (alternativeColumnLabels != null && i < alternativeColumnLabels.length) {
+					columnNames[i] = alternativeColumnLabels[i];
+				}
+			}
 		}
 		
 		fkColumns.clear();
@@ -3214,7 +3224,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						rowData[i] = ((PObjectWrapper) rowData[i]).getValue();
 					}
 					if (rowData[i] == null) {
-						rowData[i] = NULL;
+						rowData[i] = UIUtil.NULL;
 					} else if (rowData[i] instanceof UnknownValue) {
 						rowData[i] = UNKNOWN;
 					}
@@ -4026,8 +4036,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void openQueryBuilder(boolean openSQLConsole) {
 		QueryBuilderDialog.Relationship root = createQBRelations(true);
-		root.selectColumns = true;
-		getQueryBuilderDialog().buildQuery(table, root, dataModel, session, getMetaDataSource(), openSQLConsole);
+		if (root != null) {
+			root.selectColumns = true;
+			getQueryBuilderDialog().buildQuery(table, root, dataModel, session, getMetaDataSource(), openSQLConsole);
+		}
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -4484,62 +4496,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				return false;
 			}
 			Object content = r.values[i];
-			if (content == null || content instanceof TableModelItem && (((TableModelItem) content).value == NULL || ((TableModelItem) content).value == null)) {
+			if (content == null || content instanceof TableModelItem && (((TableModelItem) content).value == UIUtil.NULL || ((TableModelItem) content).value == null)) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	public void copyToClipboard() {
-		String nl = System.getProperty("line.separator", "\n");
-		StringBuilder sb = new StringBuilder();
-		int[] selectedColumns = rowsTable.getSelectedColumns();
-		if (rowsTable.getSelectedColumnCount() == 1 && rowsTable.getSelectedRowCount() == 1) {
-			selectedColumns = new int[rowsTable.getColumnCount()];
-			for (int i = 0; i < selectedColumns.length; ++i) {
-				selectedColumns[i] = i;
-			}
-		}
-		RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
-		TableColumnModel columnModel = rowsTable.getColumnModel();
-		for (int row: rowsTable.getSelectedRows()) {
-			boolean f = true;
-			for (int col: selectedColumns) {
-				Object value = rowsTable.getModel().getValueAt(
-						rowSorter.convertRowIndexToModel(row),
-						columnModel.getColumn(col).getModelIndex());
-				if (value instanceof Row) {
-					Object[] values = ((Row) value).values;
-					for (Object v: values) {
-						if (v instanceof TableModelItem) {
-							v = ((TableModelItem) v).value;
-						}
-						if (!f) {
-							sb.append("\t");
-						}
-						f = false;
-						sb.append(v == NULL || v == null? "" : v);
-					}
-				} else {
-					if (value instanceof TableModelItem) {
-						value = ((TableModelItem) value).value;
-					}
-					if (!f) {
-						sb.append("\t");
-					}
-					f = false;
-					sb.append(value == NULL || value == null? "" : value);
-				}
-			}
-			sb.append(nl);
-		}
-		StringSelection selection = new StringSelection(sb.toString());
-	    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-	    clipboard.setContents(selection, selection);
-	}
-
 	private Map<Integer, Table> typePerColumn = new HashMap<Integer, Table>();
 	private Map<Table, int[]> pkColumnIndexes = new HashMap<Table, int[]>();
+
+	private String[] alternativeColumnLabels;
+	
+	public void setAlternativeColumnLabels(String[] columnLabels) {
+		this.alternativeColumnLabels = columnLabels;
+	}
 	
 }

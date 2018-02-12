@@ -23,9 +23,16 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.lang.reflect.Method;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -35,18 +42,30 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-import net.sf.jailer.ui.databrowser.BrowserContentPane;
+import org.apache.log4j.Logger;
+
+import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.database.Session;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 
 public class TabContentPanel extends javax.swing.JPanel {
 
 	private final String SEPARATOR_TAB = "Tab Character";
 	private final String SEPARATOR_SPACE = "Space";
+
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
 	
     /**
      * Creates new form TabContentPanel
      */
-    public TabContentPanel(JLabel rowsCount, boolean explain) {
+    public TabContentPanel(JLabel rowsCount, JComponent metaDataDetails, boolean explain) {
         initComponents();
         statementLabel = new JLabel() {
         	@Override
@@ -106,13 +125,121 @@ public class TabContentPanel extends javax.swing.JPanel {
 		if (explain) {
 			tabbedPane.remove(contentPanel);
 			tabbedPane.remove(columnsPanel);
+			tabbedPane.remove(metaTabPanel);
 			jLabel1.setVisible(false);
 			headerCheckBox.setVisible(false);
 			copyCBButton.setVisible(false);
 			columnSeparatorComboBox.setVisible(false);
 			controlsPanel1.setVisible(false);
 			rowsCount.setVisible(false);
+		} else {
+			if (metaDataDetails != null) {
+				metaPanel.add(metaDataDetails);
+			}
 		}
+    }
+
+    public static ResultSet toMetaDataResultSet(ResultSetMetaData metaData, Session session, ExecutionContext executionContext) throws Exception {
+        List<Object[]> rowList = new ArrayList<Object[]>();
+        
+        StringBuilder columnTypes = new StringBuilder();
+        for (int i = 0; i < metaData.getColumnCount(); ++i) {
+        	if (i > 0) {
+        		columnTypes.append(", ");
+        	}
+        	columnTypes.append(JDBCMetaDataBasedModelElementFinder.toColumn(metaData, i + 1, session));
+        }
+        // TODO
+        System.out.println(columnTypes);
+        
+        String[] names = new String[] {
+        		"getColumnName",
+        		"getColumnTypeName",
+        		"getPrecision",
+        		"getScale",
+        		"getColumnType",
+        		"isAutoIncrement",
+        		"isCaseSensitive",
+        		"isNullable",
+        		"isReadOnly",
+        		"isSigned"
+	    };
+
+        String[] titel = new String[names.length];
+        int[] types = new int[names.length];
+    	int i = 0;
+        for (String name: names) {
+    		titel[i] = name.startsWith("get")? name.substring(3) : name;
+    		types[i] = Types.VARCHAR;
+    		++i;
+        }
+        for (int col = 1; col < metaData.getColumnCount(); ++col) {
+        	Object[] row = new Object[names.length];
+        	i = 0;
+        	try {
+        		row[i] = metaData.getColumnName(col + 1);
+        	} catch (Throwable t) {
+        		logger.info("error", t);
+        	}
+        	++i;
+        	try {
+        		row[i] = metaData.getColumnTypeName(col + 1);
+        	} catch (Throwable t) {
+        		logger.info("error", t);
+        	}
+        	++i;
+        	try {
+        		row[i] = metaData.getPrecision(col + 1);
+        	} catch (Throwable t) {
+        		logger.info("error", t);
+        	}
+        	++i;
+        	try {
+        		row[i] = metaData.getScale(col + 1);
+        	} catch (Throwable t) {
+        		logger.info("error", t);
+        	}
+        	++i;
+        	try {
+        		row[i] = metaData.getColumnType(col + 1);
+        	} catch (Throwable t) {
+        		logger.info("error", t);
+        	}
+        	++i;
+        	try {
+        		row[i] = metaData.isAutoIncrement(col + 1);
+        	} catch (Throwable t) {
+        		logger.info("error", t);
+        	}
+        	++i;
+        	try {
+        		row[i] = metaData.isCaseSensitive(col + 1);
+        	} catch (Throwable t) {
+        		logger.info("error", t);
+        	}
+        	++i;
+        	try {
+        		row[i] = metaData.isNullable(col + 1);
+        	} catch (Throwable t) {
+        		logger.info("error", t);
+        	}
+        	++i;
+        	try {
+        		row[i] = metaData.isReadOnly(col + 1);
+        	} catch (Throwable t) {
+        		logger.info("error", t);
+        	}
+        	++i;
+        	try {
+        		row[i] = metaData.isSigned(col + 1);
+        	} catch (Throwable t) {
+        		logger.info("error", t);
+        	}
+        	++i;
+	        rowList.add(row);
+        }
+
+        return new CachedResultSet(rowList, names.length, titel, types);
     }
 
     private JTable theRowsTable = null;
@@ -145,7 +272,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 				if (value instanceof TableModelItem) {
 					value = ((TableModelItem) value).value;
 				}
-				String cellContent = value == BrowserContentPane.NULL || value == null? "" : value.toString();
+				String cellContent = value == UIUtil.NULL || value == null? "" : value.toString();
 				if (sep != null) {
 					if (cellContent.contains(sep.toString()) || cellContent.indexOf("\n") >= 0 || cellContent.indexOf("\r") >= 0 || cellContent.indexOf("\"") >= 0) {
 						cellContent = "\"" + (cellContent.replaceAll("\"", "\"\"")) + "\"";
@@ -242,6 +369,9 @@ public class TabContentPanel extends javax.swing.JPanel {
         copyCBButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         headerCheckBox = new javax.swing.JCheckBox();
+        metaTabPanel = new javax.swing.JPanel();
+        metaPanel = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -335,6 +465,27 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         tabbedPane.addTab("Text", textTabPanel);
 
+        metaTabPanel.setLayout(new java.awt.GridBagLayout());
+
+        metaPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        metaTabPanel.add(metaPanel, gridBagConstraints);
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Names and types"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        metaTabPanel.add(jPanel2, gridBagConstraints);
+
+        tabbedPane.addTab("Meta", metaTabPanel);
+
         jPanel1.add(tabbedPane, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -369,8 +520,11 @@ public class TabContentPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox headerCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea;
+    private javax.swing.JPanel metaPanel;
+    private javax.swing.JPanel metaTabPanel;
     public javax.swing.JPanel panel;
     public javax.swing.JTabbedPane tabbedPane;
     public javax.swing.JPanel textTabPanel;
