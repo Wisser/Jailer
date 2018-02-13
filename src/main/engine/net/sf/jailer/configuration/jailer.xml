@@ -129,9 +129,9 @@ SELECT 'Body' as titel, line, text FROM all_source where owner='%1$s' and type='
         </packageSourceQuery>
         <objectRenderers>
        		<name>Triggers</name>
-        	<iconURL></iconURL>
+        	<iconURL>/net/sf/jailer/ui/resource/triggers.png</iconURL>
 			<itemDescription>
-	        	<iconURL></iconURL>
+	        	<iconURL>/net/sf/jailer/ui/resource/trigger.png</iconURL>
 				<textQuery>select 'Body', TRIGGER_BODY from ALL_TRIGGERS where table_owner = '%1$s'</textQuery>
 			</itemDescription>
 			<listQuery>select TRIGGER_NAME, TRIGGER_TYPE, TRIGGERING_EVENT, TABLE_NAME, COLUMN_NAME, REFERENCING_NAMES, WHEN_CLAUSE, STATUS, DESCRIPTION, ACTION_TYPE, CROSSEDITION, BEFORE_STATEMENT, BEFORE_ROW, AFTER_ROW, AFTER_STATEMENT, INSTEAD_OF_ROW, FIRE_ONCE, APPLY_SERVER_ONLY from ALL_TRIGGERS where table_owner = '%1$s'</listQuery>

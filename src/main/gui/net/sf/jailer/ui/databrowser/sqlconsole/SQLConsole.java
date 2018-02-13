@@ -576,12 +576,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 	columnLabels[i] = metaData.getColumnLabel(i + 1);
                 }
                 ResultSetRenderer theMetaDataRenderer = null;
+                String resultSetType = null;
                 try {
+                    resultSetType = TabContentPanel.toType(metaData, session, executionContext);
                 	theMetaDataRenderer = new ResultSetRenderer(TabContentPanel.toMetaDataResultSet(metaData, session, executionContext), null, datamodel.get(), session, executionContext);
 				} catch (Throwable e1) {
 					logger.info("error", e1);
 				}
                 final ResultSetRenderer metaDataRenderer = theMetaDataRenderer;
+                final String finalResultSetType = resultSetType;
 				final Integer limit = (Integer) limitComboBox.getSelectedItem();
                 final List<Table> resultTypes = explain? null : QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
                 Table resultType = null;
@@ -631,7 +634,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         metaDataDetails.reset();
 						final TabContentPanel tabContentPanel = 
                         		new TabContentPanel(rb.rowsCount, 
-                        				metaDataRenderer, 
+                        				metaDataRenderer,
+                        				finalResultSetType,
                         				explain);
                         tabContentPanel.contentPanel.add(rTabContainer);
                         rb.sortColumnsCheckBox.setVisible(true);
