@@ -253,6 +253,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			return new CachedResultSet(catList, procs.getMetaData());
 		}
 
+		protected int getDetailIDIndex() {
+			if (mdSchema.getMetaDataSource().getSession().dbms.isProcedureDetailNeedsSpecificName()) {
+				return 4;
+			}
+			return 0;
+		}
+
 		protected abstract boolean select(Object[] proc);
 
 		@Override
