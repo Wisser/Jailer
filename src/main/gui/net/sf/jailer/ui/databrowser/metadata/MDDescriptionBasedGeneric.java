@@ -22,9 +22,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -36,6 +38,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.configuration.DatabaseObjectRenderingDescription;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
@@ -113,8 +116,12 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	 * @return render of the database object
 	 */
 	public JComponent createRender(Session session, ExecutionContext executionContext) throws Exception {
-		ResultSetRenderer details = new ResultSetRenderer(retrieveList(session), getName(), dataModel, session, executionContext);
+		ResultSetRenderer details = new ResultSetRenderer(distinct(retrieveList(session)), getName(), dataModel, session, executionContext);
 		if (databaseObjectRenderingDescription.getTextQuery() != null) {
+			int textIndex = 1;
+			if (DBMS.MySQL.equals(session.dbms) && databaseObjectRenderingDescription.getTextQuery().matches("\\s*SHOW\\s+CREATE\\b.*")) {
+				textIndex = 2;
+			}
 			CachedResultSet text = retrieveList(session, databaseObjectRenderingDescription.getTextQuery(), schema.getName(), getName());
 			LinkedHashMap<String, StringBuilder> rows = new LinkedHashMap<String, StringBuilder>();
 			String nl = System.getProperty("line.separator", "\n");
@@ -124,7 +131,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 					sb = new StringBuilder();
 					rows.put((String) row[0], sb);
 				}
-				String line = (String) row[1];
+				String line = (String) row[textIndex];
 				sb.append(line);
 				if (!line.endsWith("\n")) {
 					sb.append(nl);
@@ -159,11 +166,23 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 		return details;
 	}
 
+	private CachedResultSet distinct(CachedResultSet list) throws SQLException {
+		List<Object[]> rowList = new ArrayList<Object[]>();
+		Set<Object> seen = new HashSet<Object>();
+		for (Object[] row: list.getRowList()) {
+			if (row[0] == null || !seen.contains(row[0])) {
+				rowList.add(row);
+				seen.add(row[0]);
+			}
+		}
+		return new CachedResultSet(rowList, list.getMetaData());
+	}
+
 	private CachedResultSet list;
 	
 	protected CachedResultSet retrieveList(Session session) throws SQLException {
 		if (list == null) {
-			list = retrieveList(session, databaseObjectRenderingDescription.getListQuery(), schema.getName(), null);
+			list = distinct(retrieveList(session, databaseObjectRenderingDescription.getListQuery(), schema.getName(), null));
 		}
 		return list;
 	}
