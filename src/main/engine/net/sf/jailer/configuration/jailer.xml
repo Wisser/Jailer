@@ -336,6 +336,8 @@ SELECT 'Body' as titel, line, text FROM all_source where owner='%1$s' and type='
         <explainPrepare></explainPrepare>
         <explainQuery>explain %1$s</explainQuery>
         <explainCleanup></explainCleanup>
+        <functionSourceQuery>SHOW CREATE FUNCTION %1$s.%2$s</functionSourceQuery>
+        <procedureSourceQuery>SHOW CREATE PROCEDURE %1$s.%2$s</procedureSourceQuery>
     </dbms>
 
     <!-- for DB2 LUW -->
@@ -594,6 +596,12 @@ SELECT 'Body' as titel, line, text FROM all_source where owner='%1$s' and type='
         <explainPrepare></explainPrepare>
         <explainQuery>explain %1$s</explainQuery>
         <explainCleanup></explainCleanup>
+        <functionSourceQuery>
+SELECT 'Function', p.proname || '(' || pg_catalog.pg_get_function_arguments(p.oid) || ') RETURNS ' ||  pg_catalog.pg_get_function_result(p.oid)
+FROM pg_catalog.pg_proc p
+     LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+WHERE p.proname = '%2$s' AND n.nspname = '%1$s'
+        </functionSourceQuery>
     </dbms>
     
     <!-- for Cloudscape -->
