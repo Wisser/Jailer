@@ -242,7 +242,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				return super.retrieveList(session, query, schema, parentName);
 			}
 			CachedResultSet procs = new MetaDataCache.CachedResultSet(getProcedures(session, session.getMetaData(), schema, "%"),
-					null, session, schema, new int[] { 3, 4, 1, 8 }, new String[] { "Name", "Remarks", "Category", "Type" });
+					null, session, schema, new int[] { 3, 4, 1, 8, 9 }, new String[] { "Name", "Remarks", "Category", "Type", "SpecificName" });
 			List<Object[]> catList = new ArrayList<Object[]>();
 			for (Object[] cat: procs.getRowList()) {
 				if (select(cat)) {
@@ -266,18 +266,81 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		}
 	}
 
-	private List<MDDescriptionBasedGeneric> getGenericDatabaseObjects(final MDSchema mdSchema) {
+// TODO
+//	/**
+//	 * Indexes list view.
+//	 */
+//    private class MDIndexes extends MDDescriptionBasedGeneric {
+//		private final MDSchema mdSchema;
+//
+//		public MDIndexes(String name, MetaDataSource metaDataSource, final MDSchema schema, DataModel dataModel) {
+//			super(name, metaDataSource, schema, dataModel, new DatabaseObjectRenderingDescription() {
+//				{
+//					setIconURL("/net/sf/jailer/ui/resource/indexes.png");
+//					DatabaseObjectRenderingDescription itemDescr = new DatabaseObjectRenderingDescription();
+//					itemDescr.setIconURL("/net/sf/jailer/ui/resource/index.png");
+//					itemDescr.setTextQuery(schema.getMetaDataSource().getSession().dbms.getProcedureSourceQuery());
+//					setItemDescription(itemDescr);
+//				}
+//			});
+//			this.mdSchema = schema;
+//		}
+//
+//		@Override
+//		public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
+//			if (query != null) {
+//				return super.retrieveList(session, query, schema, parentName);
+//			}
+//			CachedResultSet procs = new MetaDataCache.CachedResultSet(getIndexes(session, session.getMetaData(), schema, "%"),
+//					null, session, schema, new int[] { 1 }, new String[] { "Index" });
+//			List<Object[]> catList = new ArrayList<Object[]>();
+//			for (Object[] cat: procs.getRowList()) {
+//				catList.add(cat);
+//			}
+//			procs.close();
+//			return new CachedResultSet(catList, procs.getMetaData());
+//		}
+//
+//		@Override
+//		protected DatabaseObjectRenderingDescription itemDescription(CachedResultSet item) {
+//			DatabaseObjectRenderingDescription desc = new DatabaseObjectRenderingDescription(databaseObjectRenderingDescription.getItemDescription());
+//			if (!item.getRowList().isEmpty() && String.valueOf(DatabaseMetaData.procedureReturnsResult).equals(String.valueOf(item.getRowList().get(0)[3]))) {
+//				desc.setIconURL("/net/sf/jailer/ui/resource/function.png");
+//				desc.setTextQuery(mdSchema.getMetaDataSource().getSession().dbms.getFunctionSourceQuery());
+//			}
+//			return desc;
+//		}
+//
+//		private ResultSet getIndexes(Session session, DatabaseMetaData metaData, String schema, String context) throws SQLException {
+//			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getIndexes(session, metaData, Quoting.staticUnquote(schema), "%");
+////				1.TABLE_CAT String => table catalog (may be null) 
+////				2.TABLE_SCHEM String => table schema (may be null) 
+////				3.TABLE_NAME String => table name 
+////				4.NON_UNIQUE boolean => Can index values be non-unique. false when TYPE is tableIndexStatistic 
+////				5.INDEX_QUALIFIER String => index catalog (may be null); null when TYPE is tableIndexStatistic 
+////				6.INDEX_NAME String => index name; null when TYPE is tableIndexStatistic 
+//			List<Object[]> rowList = new ArrayList<Object[]>();
+//			while (rs.next()) {
+//				rowList.add(new Object[] { rs.getString(3) });
+//			}
+//			rs.close();
+//			return new CachedResultSet(rowList, 1, new String[] { "Index" }, new int[] { Types.VARCHAR });
+//		}
+//	}
+
+    private List<MDDescriptionBasedGeneric> getGenericDatabaseObjects(final MDSchema mdSchema) {
 		List<MDDescriptionBasedGeneric> genericDatabaseObjects = new ArrayList<MDDescriptionBasedGeneric>();
 		genericDatabaseObjects.add(
-			new MDProcedures("Procedures", metaDataSource, mdSchema, dataModel) {
-				@Override
-				protected boolean select(Object[] proc) {
-					return proc[2] == null || !DBMS.ORACLE.equals(mdSchema.getMetaDataSource().getSession().dbms);
+				new MDProcedures("Procedures", metaDataSource, mdSchema, dataModel) {
+					@Override
+					protected boolean select(Object[] proc) {
+						return proc[2] == null || !DBMS.ORACLE.equals(mdSchema.getMetaDataSource().getSession().dbms);
+					}
 				}
-			}
-		);
+			);
+		// genericDatabaseObjects.add(	new MDIndexes("Indexes", metaDataSource, mdSchema, dataModel));
 		if (DBMS.ORACLE.equals(mdSchema.getMetaDataSource().getSession().dbms)) {
-			genericDatabaseObjects.add(new MDPackages("Packages", metaDataSource, mdSchema, dataModel));
+		genericDatabaseObjects.add(new MDPackages("Packages", metaDataSource, mdSchema, dataModel));
 		}
 		for (DatabaseObjectRenderingDescription desc: mdSchema.getMetaDataSource().getSession().dbms.getObjectRenderers()) {
 			MDDescriptionBasedGeneric mdObjectRenderer
