@@ -197,7 +197,7 @@ public class MDTable extends MDObject {
                     }
                     resultSet.close();
                     
-                    resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), getSchema().getName(), getName(), false);
+                    resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), false);
                     Map<Integer, String> pk = new TreeMap<Integer, String>();
                     int nextKeySeq = 0;
                     while (resultSet.next()) {

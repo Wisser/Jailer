@@ -62,7 +62,7 @@ public class MetaDataCache {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(JDBCMetaDataBasedModelElementFinder.class);
+	private static final Logger _log = Logger.getLogger(MetaDataCache.class);
 
 	/**
 	 * The cached rows.
