@@ -67,6 +67,7 @@ public class DatabaseObjectRenderingDescription {
 		itemDescription = other.itemDescription;
 		listQuery = other.listQuery;
 		textQuery = other.textQuery;
+		name = other.name;
 	}
 
 	/**

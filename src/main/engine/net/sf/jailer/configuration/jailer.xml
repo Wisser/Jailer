@@ -404,6 +404,9 @@ SELECT 'Body' as titel, line, text FROM all_source where owner='%1$s' and type='
         <importedKeysQuery> SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME,        null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ,        null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}'   ORDER BY FKCOL.COLSEQ</importedKeysQuery>
         <primaryKeysQuery>   SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
         <identifierQuoteString>"</identifierQuoteString>
+        <procedureDetailNeedsSpecificName>true</procedureDetailNeedsSpecificName>
+        <functionSourceQuery>SELECT 'Source', cast(ROUTINE_DEFINITION as varchar) FROM SYSIBM.ROUTINES where ROUTINE_SCHEMA = '%1$s' and SPECIFIC_NAME = '%2$s' and ROUTINE_DEFINITION is not null</functionSourceQuery>
+        <procedureSourceQuery>SELECT 'Source', cast(ROUTINE_DEFINITION as varchar) FROM SYSIBM.ROUTINES where ROUTINE_SCHEMA = '%1$s' and SPECIFIC_NAME = '%2$s' and ROUTINE_DEFINITION is not null</procedureSourceQuery>
     </dbms>
     
     <!-- for DB2 z/OS -->
