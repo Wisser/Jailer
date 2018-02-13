@@ -29,9 +29,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -667,7 +664,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Action a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UIUtil.copyToClipboard(rowsTable);
+				UIUtil.copyToClipboard(rowsTable, true);
 			}
 		};
 		am.put(key, a);
@@ -759,10 +756,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 				if (table != rowsTable) {
 					isSelected = false;
-					for (int sr: table.getSelectedRows()) {
-						if (sr == column) {
-							isSelected = true;
-							break;
+					if (table.getSelectedRows().length <= 1 && table.getSelectedColumns().length <= 1) {
+						for (int sr: table.getSelectedRows()) {
+							if (sr == column) {
+								isSelected = true;
+								break;
+							}
 						}
 					}
 				}
@@ -1226,7 +1225,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		copyTCB.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UIUtil.copyToClipboard(rowsTable);
+				UIUtil.copyToClipboard(rowsTable, true);
 			}
 		});
 		

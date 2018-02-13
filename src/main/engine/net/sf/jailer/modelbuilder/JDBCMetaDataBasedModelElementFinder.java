@@ -850,7 +850,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 	public static Column toColumn(ResultSetMetaData metaData, int i, Session session) throws SQLException {
 		Quoting quoting = new Quoting(session);
-		String colName = quoting.quote(metaData.getColumnName(i));
+		String colName = quoting.quote(metaData.getColumnLabel(i));
 		int type = metaData.getColumnType(i);
 		int length = 0;
 		int precision = -1;
@@ -894,7 +894,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			length = 0;
 			precision = -1;
 		}
-		Column column = new Column(colName, sqlType, filterLength(length, metaData.getColumnTypeName(6), type, session.dbms, metaData.getPrecision(i)), precision);
+		Column column = new Column(colName, sqlType, filterLength(length, metaData.getColumnTypeName(i), type, session.dbms, metaData.getPrecision(i)), precision);
+		column.isNullable = metaData.isNullable(i) != ResultSetMetaData.columnNoNulls;
 		return column;
 	}
 

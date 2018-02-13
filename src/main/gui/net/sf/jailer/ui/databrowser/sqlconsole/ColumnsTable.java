@@ -100,7 +100,7 @@ public class ColumnsTable extends JTable {
 		Action a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UIUtil.copyToClipboard(ColumnsTable.this);
+				UIUtil.copyToClipboard(ColumnsTable.this, false);
 			}
 		};
 		am.put(key, a);
@@ -177,7 +177,7 @@ public class ColumnsTable extends JTable {
 		copyTCB.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UIUtil.copyToClipboard(ColumnsTable.this);
+				UIUtil.copyToClipboard(ColumnsTable.this, false);
 			}
 		});
 				

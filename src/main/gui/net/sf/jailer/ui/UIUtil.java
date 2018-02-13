@@ -874,16 +874,18 @@ public class UIUtil {
      */
 	public static final String NULL = "null";
 
+	public static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
+
 	/**
 	 * Copies selected cells of a rows table into the clipboard.
 	 * 
 	 * @param table the table
 	 */
-	public static void copyToClipboard(JTable table) {
+	public static void copyToClipboard(JTable table, boolean lineOnSingeCell) {
 		String nl = System.getProperty("line.separator", "\n");
 		StringBuilder sb = new StringBuilder();
 		int[] selectedColumns = table.getSelectedColumns();
-		if (table.getSelectedColumnCount() == 1 && table.getSelectedRowCount() == 1) {
+		if (table.getSelectedColumnCount() == 1 && table.getSelectedRowCount() == 1 && lineOnSingeCell) {
 			selectedColumns = new int[table.getColumnCount()];
 			for (int i = 0; i < selectedColumns.length; ++i) {
 				selectedColumns[i] = i;

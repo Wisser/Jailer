@@ -296,7 +296,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			if (schema != null) {
             	schema = Quoting.staticUnquote(schema);
             }
-			rs = new CachedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, metaData, schema, context), null, session, "");
+			rs = new CachedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, metaData, Quoting.staticUnquote(schema), context), null, session, "");
 			proceduresPerSchema.put(schema, rs);
 		}
 		rs.reset();

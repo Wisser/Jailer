@@ -23,7 +23,6 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
@@ -34,6 +33,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowSorter;
@@ -43,9 +43,12 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
 import net.sf.jailer.ui.UIUtil;
@@ -65,7 +68,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     /**
      * Creates new form TabContentPanel
      */
-    public TabContentPanel(JLabel rowsCount, JComponent metaDataDetails, boolean explain) {
+    public TabContentPanel(JLabel rowsCount, JComponent metaDataDetails, String type, boolean explain) {
         initComponents();
         statementLabel = new JLabel() {
         	@Override
@@ -122,6 +125,16 @@ public class TabContentPanel extends javax.swing.JPanel {
 			});
 		}
 		
+		JScrollPane scrollPane = new JScrollPane();
+		RSyntaxTextArea area = new RSyntaxTextArea();
+		
+		area.setEditable(false);
+		scrollPane.setViewportView(area);
+		area.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+		area.setText(type);
+		area.setCaretPosition(0);
+		typePanel.add(scrollPane); 
+		
 		if (explain) {
 			tabbedPane.remove(contentPanel);
 			tabbedPane.remove(columnsPanel);
@@ -139,21 +152,31 @@ public class TabContentPanel extends javax.swing.JPanel {
 		}
     }
 
+    public static String toType(ResultSetMetaData metaData, Session session, ExecutionContext executionContext) throws Exception {
+        StringBuilder columnTypes = new StringBuilder("(" + UIUtil.LINE_SEPARATOR);
+    	String nullableContraint = session.dbms.getNullableContraint();
+        for (int i = 0; i < metaData.getColumnCount(); ++i) {
+        	if (i > 0) {
+        		columnTypes.append(","+ UIUtil.LINE_SEPARATOR);
+        	}
+        	Column column = JDBCMetaDataBasedModelElementFinder.toColumn(metaData, i + 1, session);
+        	String constraint;
+        	if (nullableContraint != null) {
+        		constraint = column.isNullable? " " + nullableContraint :  " NOT NULL";
+            } else {
+            	constraint = column.isNullable? "" : " NOT NULL";
+            }
+        	columnTypes.append("     " + column + constraint);
+        }
+        columnTypes.append(UIUtil.LINE_SEPARATOR + ")");
+        return columnTypes.toString();
+    }
+
     public static ResultSet toMetaDataResultSet(ResultSetMetaData metaData, Session session, ExecutionContext executionContext) throws Exception {
         List<Object[]> rowList = new ArrayList<Object[]>();
         
-        StringBuilder columnTypes = new StringBuilder();
-        for (int i = 0; i < metaData.getColumnCount(); ++i) {
-        	if (i > 0) {
-        		columnTypes.append(", ");
-        	}
-        	columnTypes.append(JDBCMetaDataBasedModelElementFinder.toColumn(metaData, i + 1, session));
-        }
-        // TODO
-        System.out.println(columnTypes);
-        
         String[] names = new String[] {
-        		"getColumnName",
+        		"getColumnLabel",
         		"getColumnTypeName",
         		"getPrecision",
         		"getScale",
@@ -173,11 +196,11 @@ public class TabContentPanel extends javax.swing.JPanel {
     		types[i] = Types.VARCHAR;
     		++i;
         }
-        for (int col = 1; col < metaData.getColumnCount(); ++col) {
+        for (int col = 0; col < metaData.getColumnCount(); ++col) {
         	Object[] row = new Object[names.length];
         	i = 0;
         	try {
-        		row[i] = metaData.getColumnName(col + 1);
+        		row[i] = metaData.getColumnLabel(col + 1);
         	} catch (Throwable t) {
         		logger.info("error", t);
         	}
@@ -283,7 +306,6 @@ public class TabContentPanel extends javax.swing.JPanel {
 			}
 		}
 		boolean incHeader = headerCheckBox.isSelected();
-		String nl = System.getProperty("line.separator", "\n");
 		StringBuilder sb = new StringBuilder();
 		for (int y = 0; y < cell.length; ++y) {
 			if (y == 0 && !incHeader) {
@@ -302,14 +324,14 @@ public class TabContentPanel extends javax.swing.JPanel {
 					}
 				}
 			}
-			sb.append(nl);
+			sb.append(UIUtil.LINE_SEPARATOR);
 			if (y == 0 && sep == null && incHeader) {
 				for (int x = 0; x < cell[y].length; ++x) {
 					for (int i = (x > 0? 3 : 0) + maxLength[x]; i > 0; --i) {
 						sb.append("-");
 					}
 				}
-				sb.append(nl);
+				sb.append(UIUtil.LINE_SEPARATOR);
 			}
 		}
 
@@ -371,7 +393,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         headerCheckBox = new javax.swing.JCheckBox();
         metaTabPanel = new javax.swing.JPanel();
         metaPanel = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
+        typePanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -476,13 +498,14 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         metaTabPanel.add(metaPanel, gridBagConstraints);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Names and types"));
+        typePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Type"));
+        typePanel.setLayout(new javax.swing.BoxLayout(typePanel, javax.swing.BoxLayout.LINE_AXIS));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        metaTabPanel.add(jPanel2, gridBagConstraints);
+        metaTabPanel.add(typePanel, gridBagConstraints);
 
         tabbedPane.addTab("Meta", metaTabPanel);
 
@@ -520,7 +543,6 @@ public class TabContentPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox headerCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea;
     private javax.swing.JPanel metaPanel;
@@ -528,6 +550,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     public javax.swing.JPanel panel;
     public javax.swing.JTabbedPane tabbedPane;
     public javax.swing.JPanel textTabPanel;
+    private javax.swing.JPanel typePanel;
     // End of variables declaration//GEN-END:variables
     public javax.swing.JLabel statementLabel;
 }
