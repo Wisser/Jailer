@@ -61,6 +61,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	protected final DatabaseObjectRenderingDescription databaseObjectRenderingDescription;
 	protected final MDSchema schema;
 	protected final DataModel dataModel;
+	protected String detailName;
 
 	/**
 	 * Constructor.
@@ -72,6 +73,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 		this.databaseObjectRenderingDescription = databaseObjectRenderingDescription;
 		this.schema = schema;
 		this.dataModel = dataModel;
+		this.detailName = name;
 	}
 
 	/**
@@ -88,6 +90,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 				DatabaseObjectRenderingDescription detailDesc = itemDescription(detailRS);
 				if (detailDesc != null) {
 					MDDescriptionBasedGeneric mdDetails = new MDDescriptionBasedGeneric(String.valueOf(row[0]), getMetaDataSource(), schema, dataModel, detailDesc);
+					mdDetails.detailName = String.valueOf(row[getDetailIDIndex()]);
 					if (detailDesc.getListQuery() == null) {
 						mdDetails.list = detailRS;
 					}
@@ -98,6 +101,10 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 			logger.info("error", t);
 		}
 		return result;
+	}
+
+	protected int getDetailIDIndex() {
+		return 0;
 	}
 
 	/**
@@ -122,7 +129,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 			if (DBMS.MySQL.equals(session.dbms) && databaseObjectRenderingDescription.getTextQuery().matches("\\s*SHOW\\s+CREATE\\b.*")) {
 				textIndex = 2;
 			}
-			CachedResultSet text = retrieveList(session, databaseObjectRenderingDescription.getTextQuery(), schema.getName(), getName());
+			CachedResultSet text = retrieveList(session, databaseObjectRenderingDescription.getTextQuery(), Quoting.staticUnquote(schema.getName()), Quoting.staticUnquote(detailName));
 			LinkedHashMap<String, StringBuilder> rows = new LinkedHashMap<String, StringBuilder>();
 			String nl = System.getProperty("line.separator", "\n");
 			for (Object[] row: text.getRowList()) {
@@ -132,9 +139,11 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 					rows.put((String) row[0], sb);
 				}
 				String line = (String) row[textIndex];
-				sb.append(line);
-				if (!line.endsWith("\n")) {
-					sb.append(nl);
+				if (line != null) {
+					sb.append(line);
+					if (!line.endsWith("\n")) {
+						sb.append(nl);
+					}
 				}
 			}
 			if (!rows.isEmpty()) {
@@ -172,7 +181,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 		for (Object[] row: list.getRowList()) {
 			if (row[0] == null || !seen.contains(row[0])) {
 				rowList.add(row);
-				seen.add(row[0]);
+				seen.add(row[getDetailIDIndex()]);
 			}
 		}
 		return new CachedResultSet(rowList, list.getMetaData());

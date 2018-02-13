@@ -749,7 +749,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				boolean cellSelected = isSelected; 
 				
 				if (table.getSelectedColumnCount() <= 1 && table.getSelectedRowCount() <= 1) {
-					 cellSelected = false;
+					if (table == rowsTable) {
+						cellSelected = false;
+					}
 				}
 				
 				isSelected = currentRowSelection == row || currentRowSelection == -2;

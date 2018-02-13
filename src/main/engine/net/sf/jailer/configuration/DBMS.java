@@ -121,6 +121,7 @@ public class DBMS {
 		this.procedureSourceQuery = other.procedureSourceQuery;
 		this.packageNamesQuery = other.packageNamesQuery;
 		this.objectRenderers = other.objectRenderers;
+		this.procedureDetailNeedsSpecificName = other.procedureDetailNeedsSpecificName;
 	}
 
 	/**
@@ -303,7 +304,8 @@ public class DBMS {
 	private String packageSourceQuery;
 	private String packageNamesQuery;
 	private List<DatabaseObjectRenderingDescription> objectRenderers = new ArrayList<DatabaseObjectRenderingDescription>();
-
+	private boolean procedureDetailNeedsSpecificName = false;
+	
 	/**
 	 * @return the virtualColumnsQuery
 	 */
@@ -970,6 +972,14 @@ public class DBMS {
 
 	public void setObjectRenderers(List<DatabaseObjectRenderingDescription> objectRenderers) {
 		this.objectRenderers = objectRenderers;
+	}
+
+	public boolean isProcedureDetailNeedsSpecificName() {
+		return procedureDetailNeedsSpecificName;
+	}
+
+	public void setProcedureDetailNeedsSpecificName(boolean procedureDetailNeedsSpecificName) {
+		this.procedureDetailNeedsSpecificName = procedureDetailNeedsSpecificName;
 	}
 
 	/* (non-Javadoc)
