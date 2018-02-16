@@ -86,9 +86,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	private Set<String> getUserDefinedTypes(Session session) {
 		if (userDefinedTypes == null) {
 			userDefinedTypes = new HashSet<String>();
-			String query = session.dbms.getUserDefinedColumnsQuery();
-			if (query != null) {
+			if (session.dbms.getUserDefinedColumnsQuery() != null) {
 				try {
+					String query = String.format(session.dbms.getUserDefinedColumnsQuery(), Quoting.staticUnquote(session.getSchema()));
 					session.executeQuery(query, new ResultSetReader() {
 						
 						@Override

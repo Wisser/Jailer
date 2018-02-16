@@ -599,7 +599,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         }
                     }
                 }
-                final CachedResultSet metaDataDetails = new CachedResultSet(resultSet, limit, session, SQLConsole.this);
+                final CachedResultSet metaDataDetails = new CachedResultSet(resultSet, limit, session, SQLConsole.this) {
+            		@Override
+                	protected Object convertCellContent(Object object) {
+            			Object lobRender = BrowserContentPane.toLobRender(object);
+                		if (lobRender != null) {
+                			return lobRender;
+                		}
+                		return object;
+            		}
+                };
                 resultSet.close();
                 long now = System.currentTimeMillis();
                 status.hasSelected = true;
