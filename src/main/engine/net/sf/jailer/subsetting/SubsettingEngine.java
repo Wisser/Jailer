@@ -1353,11 +1353,9 @@ public class SubsettingEngine {
 				}
 			}
 		}
-		if (session.dbms.getRowidName() == null || executionContext.getNoRowid() || !insertOnly || deleteScriptFileName != null) {
-			toCheck.add(extractionModel.subject);
-			extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null);
-		}
-
+		toCheck.add(extractionModel.subject);
+		extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null, !(session.dbms.getRowidName() == null || executionContext.getNoRowid() || !insertOnly || deleteScriptFileName != null));
+		
 		subjectCondition = ParameterHandler.assignParameterValues(subjectCondition, executionContext.getParameters());
 		
 		if (!executionContext.getParameters().isEmpty()) {

@@ -1094,7 +1094,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						Session session = SessionForUI.createSession(dataSource, dataSource.dbms, this);
 
 						if (session != null) {
-							if (extractionModelEditor.dataModel != null && session.dbms.getRowidName() == null) {
+							if (extractionModelEditor.dataModel != null) {
 								Set<Table> toCheck = new HashSet<Table>();
 								if (extractionModelEditor.extractionModel != null) {
 									if (extractionModelEditor.extractionModel.additionalSubjects != null) {
@@ -1104,7 +1104,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									}
 								}
 								toCheck.add(extractionModelEditor.subject);
-								extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, false);
+								extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, false, session.dbms.getRowidName() != null);
 							}
 	
 							ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, executionContext);
