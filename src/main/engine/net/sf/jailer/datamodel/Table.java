@@ -59,7 +59,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	/**
 	 * List of table columns.
 	 */
-	private List<Column> columns;
+	private List<Column> columns = new ArrayList<Column>();
 	
 	/**
 	 * Associations to other tables.
