@@ -1,5 +1,6 @@
 7.6.2
   - Added "Columns", "Text" and "Meta" views to SQLConsole.
+  - Added "Functions", "Packages" and "Triggers" views to Data Browser.
   - Added "Copy toClipboard" context menu item.
   - New feature "Explain Plan" in SQLConsole.
 
