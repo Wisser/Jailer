@@ -810,19 +810,23 @@ public class DataModel {
 	public static class NoPrimaryKeyException extends RuntimeException {
 		private static final long serialVersionUID = 4523935351640139649L;
 		public final Table table;
-		public NoPrimaryKeyException(Table table) {
-			super("Table '" + table.getName() + "' has no primary key");
+		public NoPrimaryKeyException(Table table, String message) {
+			super("Table '" + table.getName() + "' " + message);
 			this.table = table;
+		}
+		public NoPrimaryKeyException(Table table) {
+			this(table, "has no primary key");
 		}
 	}
 
 	/**
 	 * Checks whether all tables in the closure of a given subject have primary keys.
+	 * @param hasRowID 
 	 * 
 	 * @param subject the subject
 	 * @throws NoPrimaryKeyException if a table has no primary key
 	 */
-	public void checkForPrimaryKey(Set<Table> subjects, boolean forDeletion) throws NoPrimaryKeyException {
+	public void checkForPrimaryKey(Set<Table> subjects, boolean forDeletion, boolean hasRowID) throws NoPrimaryKeyException {
 		Set<Table> checked = new HashSet<Table>();
 		for (Table subject: subjects) {
 			Set<Table> toCheck = new HashSet<Table>(subject.closure(checked, true));
@@ -838,8 +842,13 @@ public class DataModel {
 				toCheck.addAll(border);
 			}
 			for (Table table: toCheck) {
-				if (table.primaryKey.getColumns().isEmpty()) {
-					throw new NoPrimaryKeyException(table);
+				if (!hasRowID) {
+					if (table.primaryKey.getColumns().isEmpty()) {
+						throw new NoPrimaryKeyException(table);
+					}
+				}
+				if (table.getColumns().isEmpty()) {
+					throw new NoPrimaryKeyException(table, "has no column");
 				}
 			}
 			checked.addAll(toCheck);
