@@ -2850,32 +2850,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					cRows.add(new Row(rowId, primaryKey, v));
 				}
 
-				private String readClob(Clob clob) throws SQLException, IOException {
-					return readCharacterStream(clob.getCharacterStream());
-				}
-
-				private String readSQLXML(SQLXML xml) throws SQLException, IOException {
-					return readCharacterStream(xml.getCharacterStream());
-				}
-
-				private String readCharacterStream(final Reader reader)
-						throws IOException {
-					final StringBuilder sb = new StringBuilder();
-					final BufferedReader br = new BufferedReader(reader);
-
-					int b;
-					while(-1 != (b = br.read()))
-					{
-						sb.append((char)b);
-						if (sb.length() > MAXLOBLENGTH) {
-							sb.append("...");
-							break;
-						}
-					}
-					br.close();
-					return sb.toString();
-				}
-
 				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column, Map<String, String> pkColumn, Map<String, String> pkColumnValue, Set<Integer> unknownColumnIndexes)
 						throws SQLException {
 					Object value = "";
@@ -2898,54 +2872,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							Object object = resultSet.getObject(i);
 							if (object == null || resultSet.wasNull()) {
 								value = null;
-							}
-							if (object instanceof Blob) {
-								try {
-									final long length = ((Blob) object).length();
-									value = new LobValue() {
-										public String toString() {
-											return "<Blob> " + length + " bytes";
-										}
-									};
-								} catch (Exception e) {
-									value = new LobValue() {
-										public String toString() {
-											return "<Blob>";
-										}
-									};
-								}
-							}
-							if (object instanceof Clob) {
-								try {
-									final String content = readClob((Clob) object);
-									value = new LobValue() {
-										public String toString() {
-											return content;
-										}
-									};
-								} catch (Exception e) {
-									value = new LobValue() {
-										public String toString() {
-											return "<Clob>";
-										}
-									};e.printStackTrace();
-								}
-							}
-							if (object instanceof SQLXML) {
-								try {
-									final String content = readSQLXML((SQLXML) object);
-									value = new LobValue() {
-										public String toString() {
-											return content;
-										}
-									};
-								} catch (Exception e) {
-									value = new LobValue() {
-										public String toString() {
-											return "<XML>";
-										}
-									};
-									e.printStackTrace();
+							} else {
+								Object lobValue = toLobRender(object);
+								if (lobValue != null) {
+									value = lobValue;
 								}
 							}
 						} else {
@@ -2953,6 +2883,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							Object o;
 							try {
 								o = cellContentConverter.getObject(resultSet, i);
+								if (o instanceof byte[]) {
+									final long length = ((byte[]) o).length;
+									o = new LobValue() {
+										public String toString() {
+											return "<Blob> " + length + " bytes";
+										}
+									};
+								}
 							} catch (Throwable e) {
 								o = "ERROR: " + e.getClass().getName() + ": " + e.getMessage();
 							}
@@ -4511,6 +4449,86 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	public void setAlternativeColumnLabels(String[] columnLabels) {
 		this.alternativeColumnLabels = columnLabels;
+	}
+
+	private static String readCharacterStream(final Reader reader)
+			throws IOException {
+		final StringBuilder sb = new StringBuilder();
+		final BufferedReader br = new BufferedReader(reader);
+
+		int b;
+		while(-1 != (b = br.read()))
+		{
+			sb.append((char)b);
+			if (sb.length() > MAXLOBLENGTH) {
+				sb.append("...");
+				break;
+			}
+		}
+		br.close();
+		return sb.toString();
+	}
+
+	private static String readClob(Clob clob) throws SQLException, IOException {
+		return readCharacterStream(clob.getCharacterStream());
+	}
+
+	private static String readSQLXML(SQLXML xml) throws SQLException, IOException {
+		return readCharacterStream(xml.getCharacterStream());
+	}
+
+	public static Object toLobRender(Object object) {
+		Object value = null;
+		if (object instanceof Blob) {
+			try {
+				final long length = ((Blob) object).length();
+				value = new LobValue() {
+					public String toString() {
+						return "<Blob> " + length + " bytes";
+					}
+				};
+			} catch (Exception e) {
+				value = new LobValue() {
+					public String toString() {
+						return "<Blob>";
+					}
+				};
+			}
+		}
+		if (object instanceof Clob) {
+			try {
+				final String content = readClob((Clob) object);
+				value = new LobValue() {
+					public String toString() {
+						return content;
+					}
+				};
+			} catch (Exception e) {
+				value = new LobValue() {
+					public String toString() {
+						return "<Clob>";
+					}
+				};e.printStackTrace();
+			}
+		}
+		if (object instanceof SQLXML) {
+			try {
+				final String content = readSQLXML((SQLXML) object);
+				value = new LobValue() {
+					public String toString() {
+						return content;
+					}
+				};
+			} catch (Exception e) {
+				value = new LobValue() {
+					public String toString() {
+						return "<XML>";
+					}
+				};
+				e.printStackTrace();
+			}
+		}
+		return value;
 	}
 	
 }

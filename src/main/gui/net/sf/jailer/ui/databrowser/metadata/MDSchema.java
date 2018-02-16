@@ -72,7 +72,7 @@ public class MDSchema extends MDObject {
 					try {
 						loadTableColumnsQueue.take().run();
 					} catch (Throwable t) {
-						logger.info("error", t);
+						// ignore
 					}
 				}
 			}

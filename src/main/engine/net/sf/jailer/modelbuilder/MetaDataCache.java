@@ -49,6 +49,7 @@ import org.apache.log4j.Logger;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 
@@ -456,7 +457,7 @@ public class MetaDataCache {
 			while (resultSet.next()) {
 				Object[] row = new Object[numCol];
 				for (int i = 1; i <= numCol; ++i) {
-					row[i - 1] = cellContentConverter.getObject(resultSet, projection == null? i : projection[i - 1]);
+					row[i - 1] = convertCellContent(cellContentConverter.getObject(resultSet, projection == null? i : projection[i - 1]));
 				}
 				rowList.add(row);
 				if (limit != null && rowList.size() > limit) {
@@ -474,6 +475,10 @@ public class MetaDataCache {
 				types[i - 1] = rmd.getColumnType(projection == null? i : projection[i - 1]);
 			}
 			resultSetMetaData = new MDCResultSetMetaData(numCol, names, types);
+		}
+
+		protected Object convertCellContent(Object object) {
+			return object;
 		}
 
 		@Override
