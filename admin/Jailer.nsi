@@ -41,7 +41,7 @@ Section "Jailer"
   
   ; Put file there
 
-  File /r "C:\tmp\nsis\jailer\*.*"
+  File /r "C:\tmp\jailer\*.*"
   
   FileOpen $4 ".singleuser" w
   FileWrite $4 "1"
