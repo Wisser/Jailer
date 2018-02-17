@@ -44,6 +44,6 @@ rm -rf admin
 
 cd ..
 rm $1.zip
-zip -r $1.zip jailer 
-zip -r $1.zip dbeauty 
-
+zip -r jailer_$1.zip jailer
+cp -r jailer dbeauty
+zip -r dbeauty_$1.zip dbeauty 
