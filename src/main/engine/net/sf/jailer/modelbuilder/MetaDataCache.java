@@ -49,7 +49,6 @@ import org.apache.log4j.Logger;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
-import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 
