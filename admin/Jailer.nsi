@@ -1,4 +1,4 @@
-!define Version "7.6.2"
+!define Version "%VERSION%"
 
 ; The name of the installer
 Name "Jailer ${Version}"
@@ -41,7 +41,7 @@ Section "Jailer"
   
   ; Put file there
 
-  File /r "C:\tmp\jailer\*.*"
+  File /r "C:\tmp\nsis\jailer\*.*"
   
   FileOpen $4 ".singleuser" w
   FileWrite $4 "1"
