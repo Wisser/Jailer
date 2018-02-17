@@ -1,4 +1,4 @@
-!define Version "7.6.2"
+!define Version "%VERSION%"
 
 ; The name of the installer
 Name "DBeauty ${Version}"
