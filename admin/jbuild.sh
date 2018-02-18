@@ -12,7 +12,7 @@ fi
 cd
 cd workspace/jailer/jailer-code/
 svn up
-sh admin/release.sh jailer_$1
+sh admin/release.sh $1
 cd
 cd tmp
 rm -r _$1
