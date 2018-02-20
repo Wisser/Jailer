@@ -66,7 +66,7 @@ Section "Start Menu Shortcuts"
   Delete "$SMPROGRAMS\Jailer\*.*"
   CreateShortcut "$SMPROGRAMS\Jailer\Jailer ${Version}  .lnk" "$INSTDIR\Jailer.exe" 
   CreateShortcut "$SMPROGRAMS\Jailer\Jailer ${Version} Data Browser.lnk" "$INSTDIR\JailerDataBrowser.exe" 
-  CreateShortcut "$SMPROGRAMS\Jailer\Uninstall.lnk" "$INSTDIR\uninstall.exe" 
+;  CreateShortcut "$SMPROGRAMS\Jailer\Uninstall.lnk" "$INSTDIR\uninstall.exe" 
   
 SectionEnd
 
@@ -100,6 +100,6 @@ Section "Uninstall"
 
   ; Remove directories used
   RMDir "$SMPROGRAMS\Jailer"
-  RMDir "$INSTDIR"
+  RMDir /r "$INSTDIR"
 
 SectionEnd
