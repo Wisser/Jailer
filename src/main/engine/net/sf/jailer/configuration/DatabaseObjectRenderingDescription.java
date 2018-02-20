@@ -48,6 +48,8 @@ public class DatabaseObjectRenderingDescription {
 	 */
 	private String name;
 
+	private boolean expensive = false;
+	
 	/**
 	 * Description of a list item.
 	 */
@@ -165,6 +167,14 @@ public class DatabaseObjectRenderingDescription {
 			return icon;
 		}
 		return null;
+	}
+
+	public boolean isCheap() {
+		return !expensive;
+	}
+
+	public void setCheap(boolean cheap) {
+		expensive = !cheap;
 	}
 
 }

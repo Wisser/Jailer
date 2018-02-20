@@ -49,6 +49,7 @@ public class MDSchema extends MDObject {
 	private List<MDTable> tables;
 	private static final BlockingQueue<Runnable> loadTableColumnsQueue = new LinkedBlockingQueue<Runnable>();
 	private static final BlockingQueue<Runnable> loadTablesQueue = new LinkedBlockingQueue<Runnable>();
+	private static final BlockingQueue<Runnable> loadMetaDataQueues[] = new LinkedBlockingQueue[2];
 	private boolean valid = true;
 	private AtomicBoolean loaded = new AtomicBoolean(false);
 	
@@ -94,6 +95,25 @@ public class MDSchema extends MDObject {
 		});
         thread.setDaemon(true);
         thread.start();
+
+        for (int i = 0; i < loadMetaDataQueues.length; ++i) {
+        	final LinkedBlockingQueue<Runnable> loadMetaDataQueue = new LinkedBlockingQueue<Runnable>();
+        	loadMetaDataQueues[i] = loadMetaDataQueue;
+        	thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					for (;;) {
+						try {
+							loadMetaDataQueue.take().run();
+						} catch (Throwable t) {
+							logger.info("error", t);
+						}
+					}
+				}
+			});
+	        thread.setDaemon(true);
+	        thread.start();
+        }
 	}
 	
 	/**
@@ -195,6 +215,16 @@ public class MDSchema extends MDObject {
 
 	public synchronized void setValid(boolean valid) {
 		this.valid = valid;
+	}
+
+	/**
+	 * Asynchronously load some meta data.
+	 * 
+	 * @param metaDataLoad loads the meta data
+	 * @param queueID queue-ID. 0 for cheap loads, 1 for heavy loads
+	 */
+	public static void loadMetaData(Runnable metaDataLoad, int queueID) {
+		loadMetaDataQueues[queueID].add(metaDataLoad);
 	}
 
 }

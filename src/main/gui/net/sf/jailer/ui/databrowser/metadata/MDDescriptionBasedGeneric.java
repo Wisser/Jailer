@@ -27,11 +27,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -122,57 +127,103 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	 * 
 	 * @return render of the database object
 	 */
-	public JComponent createRender(Session session, ExecutionContext executionContext) throws Exception {
-		ResultSetRenderer details = new ResultSetRenderer(distinct(retrieveList(session)), getName(), dataModel, session, executionContext);
+	public JComponent createRender(final Session session, final ExecutionContext executionContext) throws Exception {
+		final AtomicReference<CachedResultSet> resultSet = new AtomicReference<CachedResultSet>();
+		final AtomicReference<CachedResultSet> text = new AtomicReference<CachedResultSet>();
+		int textIndexNF = 1;
 		if (databaseObjectRenderingDescription.getTextQuery() != null) {
-			int textIndex = 1;
 			if (DBMS.MySQL.equals(session.dbms) && databaseObjectRenderingDescription.getTextQuery().matches("\\s*SHOW\\s+CREATE\\b.*")) {
-				textIndex = 2;
-			}
-			CachedResultSet text = retrieveList(session, databaseObjectRenderingDescription.getTextQuery(), Quoting.staticUnquote(schema.getName()), Quoting.staticUnquote(detailName));
-			LinkedHashMap<String, StringBuilder> rows = new LinkedHashMap<String, StringBuilder>();
-			String nl = System.getProperty("line.separator", "\n");
-			for (Object[] row: text.getRowList()) {
-				StringBuilder sb = rows.get(row[0]);
-				if (sb == null) {
-					sb = new StringBuilder();
-					rows.put((String) row[0], sb);
-				}
-				String line = (String) row[textIndex];
-				if (line != null) {
-					sb.append(line);
-					if (!line.endsWith("\n")) {
-						sb.append(nl);
-					}
-				}
-			}
-			if (!rows.isEmpty()) {
-				JTabbedPane tabbedPane = new JTabbedPane();
-				for (Entry<String, StringBuilder> e: rows.entrySet()) {
-					RSyntaxTextArea textPane = new RSyntaxTextArea(e.getValue().toString());
-					textPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
-					textPane.setEditable(false);
-					textPane.setCaretPosition(0);
-					
-					JScrollPane jScrollPane = new JScrollPane();
-					jScrollPane.setViewportView(textPane);
-					GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-					gridBagConstraints.gridx = 1;
-					gridBagConstraints.gridy = 20;
-					gridBagConstraints.gridwidth = 2;
-					gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-					gridBagConstraints.weightx = 1.0;
-					gridBagConstraints.weighty = 1.0;
-					gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
-					jScrollPane.setViewportView(textPane);
-					
-					tabbedPane.addTab(e.getKey(), jScrollPane);
-				}
-				tabbedPane.addTab("Details", details);
-				return tabbedPane;
+				textIndexNF = 2;
 			}
 		}
-		return details;
+		final int textIndex = textIndexNF;
+		final JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, javax.swing.BoxLayout.LINE_AXIS));
+		panel.add(new JLabel("  loading..."));
+		synchronized (this) {
+			MDSchema.loadMetaData(new Runnable() {
+				public void run() {
+					try {
+						resultSet.set(distinct(retrieveList(session)));
+						if (databaseObjectRenderingDescription.getTextQuery() != null) {
+							text.set(retrieveList(session, databaseObjectRenderingDescription.getTextQuery(), Quoting.staticUnquote(schema.getName()), Quoting.staticUnquote(detailName)));
+						}
+					} catch (SQLException e) {
+						final String message = e.getMessage();
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								panel.add(new JLabel("Error: " + message));
+								panel.repaint();
+							}
+						});
+						return;
+					}
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							ResultSetRenderer details;
+							try {
+								details = new ResultSetRenderer(resultSet.get(), getName(), dataModel, session, executionContext);
+							} catch (SQLException e) {
+								return;
+							}
+							if (text.get() != null) {
+								LinkedHashMap<String, StringBuilder> rows = new LinkedHashMap<String, StringBuilder>();
+								String nl = System.getProperty("line.separator", "\n");
+								List<Object[]> rowList = text.get().getRowList();
+								for (Object[] row: rowList) {
+									StringBuilder sb = rows.get(row[0]);
+									if (sb == null) {
+										sb = new StringBuilder();
+										rows.put((String) row[0], sb);
+									}
+									String line = (String) row[textIndex];
+									if (line != null) {
+										sb.append(line);
+										if (!line.endsWith("\n")) {
+											sb.append(nl);
+										}
+									}
+								}
+								if (!rows.isEmpty()) {
+									JTabbedPane tabbedPane = new JTabbedPane();
+									for (Entry<String, StringBuilder> e: rows.entrySet()) {
+										RSyntaxTextArea textPane = new RSyntaxTextArea(e.getValue().toString());
+										textPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+										textPane.setEditable(false);
+										textPane.setCaretPosition(0);
+										
+										JScrollPane jScrollPane = new JScrollPane();
+										jScrollPane.setViewportView(textPane);
+										GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+										gridBagConstraints.gridx = 1;
+										gridBagConstraints.gridy = 20;
+										gridBagConstraints.gridwidth = 2;
+										gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+										gridBagConstraints.weightx = 1.0;
+										gridBagConstraints.weighty = 1.0;
+										gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+										jScrollPane.setViewportView(textPane);
+										
+										tabbedPane.addTab(e.getKey(), jScrollPane);
+									}
+									tabbedPane.addTab("Details", details);
+									panel.removeAll();
+									panel.add(tabbedPane);
+									panel.repaint();
+									return;
+								}
+							}
+							panel.removeAll();
+							panel.add(details);
+							panel.repaint();
+						}
+					});
+				}
+			}, isCheap()? 0 : 1);
+		}
+		return panel;
 	}
 
 	private CachedResultSet distinct(CachedResultSet list) throws SQLException {
@@ -189,7 +240,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 
 	private CachedResultSet list;
 	
-	protected CachedResultSet retrieveList(Session session) throws SQLException {
+	protected synchronized CachedResultSet retrieveList(Session session) throws SQLException {
 		if (list == null) {
 			list = distinct(retrieveList(session, databaseObjectRenderingDescription.getListQuery(), schema.getName(), null));
 		}
@@ -231,6 +282,10 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 
 	public ImageIcon getIcon() {
 		return databaseObjectRenderingDescription.getIcon();
+	}
+
+	public boolean isCheap() {
+		return databaseObjectRenderingDescription.isCheap();
 	}
 
 }
