@@ -1011,7 +1011,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     		        	return details.iterator();
     				}
     			};
-                createCategoryNode(schemaChild, leafs, desc);
+                createCategoryNode(schemaChild, leafs, desc, desc.isCheap()? 0 : 1);
             }
             Iterable<Object> leafs = new Iterable<Object>() {
 				@Override
@@ -1025,7 +1025,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            return leafs.iterator();
 				}
 			};
-            createCategoryNode(schemaChild, leafs, CATEGORY_VIEWS);
+            createCategoryNode(schemaChild, leafs, CATEGORY_VIEWS, 0);
             leafs = new Iterable<Object>() {
 				@Override
 				public Iterator<Object> iterator() {
@@ -1038,7 +1038,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            return leafs.iterator();
 				}
 			};
-            createCategoryNode(schemaChild, leafs, CATEGORY_SYNONYMS);
+            createCategoryNode(schemaChild, leafs, CATEGORY_SYNONYMS, 0);
             leafs = new Iterable<Object>() {
 				@Override
 				public Iterator<Object> iterator() {
@@ -1051,7 +1051,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            return leafs.iterator();
 				}
 			};
-            DefaultMutableTreeNode schemaTablesChild = createCategoryNode(schemaChild, leafs, CATEGORY_TABLES);
+            DefaultMutableTreeNode schemaTablesChild = createCategoryNode(schemaChild, leafs, CATEGORY_TABLES, 0);
             treeNodePerSchema.put(schema, schemaTablesChild);
         }
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
@@ -1059,52 +1059,73 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         selectSchema(metaDataSource.getDefaultSchema());
     }
 
-	public DefaultMutableTreeNode createCategoryNode(final DefaultMutableTreeNode schemaChild, final Iterable<Object> leafs,
-			Object category) {
+	public DefaultMutableTreeNode createCategoryNode(final DefaultMutableTreeNode schemaChild, final Iterable<Object> finalLeafs,
+			Object category, final int queueId) {
 		final DefaultMutableTreeNode schemaViewsChild = new DefaultMutableTreeNode(category);
 		schemaChild.add(schemaViewsChild);
 		root.add(schemaChild);
-		MutableTreeNode expandSchema = new ExpandingMutableTreeNode() {
-		    private boolean expanded = false;
-		    @Override
-		    protected void expandImmediatelly() {
-		        if (!expanded) {
-		            for (Object leaf: leafs) {
-		                DefaultMutableTreeNode tableChild = new DefaultMutableTreeNode(leaf);
-		                schemaViewsChild.add(tableChild);
-		                if (leaf instanceof MDDescriptionBasedGeneric) {
-		                	MDDescriptionBasedGeneric md = (MDDescriptionBasedGeneric) leaf;
-		                	for (MDDescriptionBasedGeneric detail: md.getDetails()) {
-		                		tableChild.add(new DefaultMutableTreeNode(detail));
-		                	}
-		                }
-		            }
-		            schemaViewsChild.remove(this);
-		            TreeModel model = metaDataTree.getModel();
-		            ((DefaultTreeModel) model).nodeStructureChanged(schemaViewsChild);
-		        }
-		        expanded = true;
-		    }
-		    @Override
-		    protected void expand() {
-		        SwingUtilities.invokeLater(new Runnable() {
-		            @Override
-		            public void run() {
-				        SwingUtilities.invokeLater(new Runnable() {
-				            @Override
-				            public void run() {
-				                try {
-				                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				                    expandImmediatelly();
-				                } finally {
-				                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				                }
-				            }
-				        });
-		            }
-		        });
-		    }
-		};
+		MutableTreeNode expandSchema;
+		synchronized (schemaChild) {
+			expandSchema = new ExpandingMutableTreeNode() {
+				private Iterable<Object> leafs = finalLeafs;
+				private boolean expanded = false;
+			    @Override
+			    protected void expandImmediatelly() {
+			        if (!expanded) {
+			            for (Object leaf: leafs) {
+			                DefaultMutableTreeNode tableChild = new DefaultMutableTreeNode(leaf);
+			                schemaViewsChild.add(tableChild);
+			                if (leaf instanceof MDDescriptionBasedGeneric) {
+			                	MDDescriptionBasedGeneric md = (MDDescriptionBasedGeneric) leaf;
+			                	for (MDDescriptionBasedGeneric detail: md.getDetails()) {
+			                		tableChild.add(new DefaultMutableTreeNode(detail));
+			                	}
+			                }
+			            }
+			            schemaViewsChild.remove(this);
+			            TreeModel model = metaDataTree.getModel();
+			            ((DefaultTreeModel) model).nodeStructureChanged(schemaViewsChild);
+			        }
+			        expanded = true;
+			    }
+			    @Override
+			    protected void expand() {
+			    	MDSchema.loadMetaData(new Runnable() {
+						@Override
+						public void run() {
+							synchronized (schemaChild) {
+								ArrayList<Object> leafList = new ArrayList<Object>();
+								for (Object leaf: leafs) {
+									leafList.add(leaf);
+									 if (leaf instanceof MDDescriptionBasedGeneric) {
+										 MDDescriptionBasedGeneric md = (MDDescriptionBasedGeneric) leaf;
+										 md.getDetails();
+									 }
+								}
+								leafs = leafList;
+							}
+					        SwingUtilities.invokeLater(new Runnable() {
+					            @Override
+					            public void run() {
+							        SwingUtilities.invokeLater(new Runnable() {
+							            @Override
+							            public void run() {
+							                try {
+							                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+							                    expandImmediatelly();
+							                } finally {
+							                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+							                }
+							            }
+							        });
+					            }
+					        });
+							
+						}
+					}, queueId);
+			    }
+			};
+		}
 		schemaViewsChild.add(expandSchema);
 		return schemaViewsChild;
 	}

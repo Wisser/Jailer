@@ -143,7 +143,9 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		setVisible(true);
         ((CardLayout) getLayout()).show(this, "other");
     	otherPanel.removeAll();
-    	otherPanel.add(mdOther.getRender(session, executionContext));
+    	JComponent render = mdOther.getRender(session, executionContext);
+		otherPanel.add(render);
+		render.revalidate();
     	otherPanel.repaint();
 	}
 
