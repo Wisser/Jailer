@@ -65,7 +65,7 @@ Section "Start Menu Shortcuts"
   CreateDirectory "$SMPROGRAMS\DBeauty"
   Delete "$SMPROGRAMS\DBeauty\*.*"
   CreateShortcut "$SMPROGRAMS\DBeauty\DBeauty ${Version}  .lnk" "$INSTDIR\dbeauty.exe" 
-  CreateShortcut "$SMPROGRAMS\DBeauty\Uninstall.lnk" "$INSTDIR\uninstall.exe" 
+;  CreateShortcut "$SMPROGRAMS\DBeauty\Uninstall.lnk" "$INSTDIR\uninstall.exe" 
   
 SectionEnd
 
@@ -97,6 +97,6 @@ Section "Uninstall"
 
   ; Remove directories used
   RMDir "$SMPROGRAMS\DBeauty"
-  RMDir "$INSTDIR"
+  RMDir /r "$INSTDIR"
 
 SectionEnd
