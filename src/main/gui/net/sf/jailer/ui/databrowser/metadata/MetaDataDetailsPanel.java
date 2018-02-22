@@ -84,6 +84,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	private static final List<BlockingQueue<Runnable>> queues = new ArrayList<BlockingQueue<Runnable>>();
 	private final Map<MetaDataDetails, JPanel> detailsPanels = new HashMap<MetaDataDetails, JPanel>();
 	private final JPanel ddlPanel;
+	private final JPanel constraintsPanel;
 	private final Map<Pair<MetaDataDetails, MDTable>, JComponent> detailsViews = new HashMap<Pair<MetaDataDetails, MDTable>, JComponent>();
 	private final Map<Table, JComponent> tableDetailsViews = new HashMap<Table, JComponent>();
 
@@ -97,13 +98,23 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     	this.executionContext = executionContext;
         initComponents();
         
+        if (session != null && session.dbms.getConstraintsQuery() != null) {
+        	constraintsPanel = new JPanel(new BorderLayout());
+        } else {
+        	constraintsPanel = null;
+        }
     	ddlPanel = new JPanel(new BorderLayout());
         for (MetaDataDetails mdd: MetaDataDetails.values()) {
         	JPanel panel = new JPanel(new BorderLayout());
         	detailsPanels.put(mdd, panel);
         	tabbedPane.addTab(mdd.name, panel);
-        	if (tabbedPane.getTabCount() == 2) {
+        	if (tabbedPane.getTabCount() == 3) {
         		tabbedPane.addTab("DDL", ddlPanel);
+        	}
+        	if (tabbedPane.getTabCount() == 4) {
+        		if (constraintsPanel != null) {
+        			tabbedPane.addTab("Constraints", constraintsPanel);
+        		}
         	}
         }
         ((CardLayout) getLayout()).show(this, "table");
@@ -426,6 +437,43 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 			} catch (InterruptedException e) {
 				// ignore
 			}
+    	}
+    	
+    	if (constraintsPanel != null) {
+        	// Constraints
+        	final Runnable doRunGetConstraints = new Runnable() {
+    			@Override
+    			public void run() {
+    				final CachedResultSet constraints = mdTable.getSchema().getConstraints(mdTable);
+    				constraintsPanel.removeAll();
+    		    	if (constraints == null) {
+    		    		constraintsPanel.add(new JLabel(" Constraints not available"));
+    		    	} else {
+    		    		ResultSetRenderer area;
+						try {
+							area = new ResultSetRenderer(constraints, "Constraints", datamodel.get(), session, executionContext);
+						} catch (SQLException e) {
+							return;
+						}
+    		    		constraintsPanel.add(area);
+    		    	}
+    		    	tabbedPane.repaint();
+    			}
+    		};
+    		constraintsPanel.removeAll();
+        	if (mdTable.getSchema().isConstraintsLoaded()) {
+        		doRunGetConstraints.run();
+        	} else {
+        		constraintsPanel.add(new JLabel(" loading..."));
+    	    	tabbedPane.repaint();
+    	    	MDSchema.loadMetaData(new Runnable() {
+    	    		@Override
+    	    		public void run() {
+    	    			mdTable.getSchema().getConstraints(null);
+    	    			SwingUtilities.invokeLater(doRunGetConstraints);
+    	    		}
+    	    	}, 1);
+    		}
     	}
     }
 

@@ -47,8 +47,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -56,6 +58,7 @@ import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -273,67 +276,123 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		}
 	}
 
-// TODO
-//	/**
-//	 * Indexes list view.
-//	 */
-//    private class MDIndexes extends MDDescriptionBasedGeneric {
-//		private final MDSchema mdSchema;
-//
-//		public MDIndexes(String name, MetaDataSource metaDataSource, final MDSchema schema, DataModel dataModel) {
-//			super(name, metaDataSource, schema, dataModel, new DatabaseObjectRenderingDescription() {
-//				{
-//					setIconURL("/net/sf/jailer/ui/resource/indexes.png");
-//					DatabaseObjectRenderingDescription itemDescr = new DatabaseObjectRenderingDescription();
-//					itemDescr.setIconURL("/net/sf/jailer/ui/resource/index.png");
-//					itemDescr.setTextQuery(schema.getMetaDataSource().getSession().dbms.getProcedureSourceQuery());
-//					setItemDescription(itemDescr);
-//				}
-//			});
-//			this.mdSchema = schema;
-//		}
-//
-//		@Override
-//		public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
-//			if (query != null) {
-//				return super.retrieveList(session, query, schema, parentName);
-//			}
-//			CachedResultSet procs = new MetaDataCache.CachedResultSet(getIndexes(session, session.getMetaData(), schema, "%"),
-//					null, session, schema, new int[] { 1 }, new String[] { "Index" });
-//			List<Object[]> catList = new ArrayList<Object[]>();
-//			for (Object[] cat: procs.getRowList()) {
-//				catList.add(cat);
-//			}
-//			procs.close();
-//			return new CachedResultSet(catList, procs.getMetaData());
-//		}
-//
-//		@Override
-//		protected DatabaseObjectRenderingDescription itemDescription(CachedResultSet item) {
-//			DatabaseObjectRenderingDescription desc = new DatabaseObjectRenderingDescription(databaseObjectRenderingDescription.getItemDescription());
-//			if (!item.getRowList().isEmpty() && String.valueOf(DatabaseMetaData.procedureReturnsResult).equals(String.valueOf(item.getRowList().get(0)[3]))) {
-//				desc.setIconURL("/net/sf/jailer/ui/resource/function.png");
-//				desc.setTextQuery(mdSchema.getMetaDataSource().getSession().dbms.getFunctionSourceQuery());
-//			}
-//			return desc;
-//		}
-//
-//		private ResultSet getIndexes(Session session, DatabaseMetaData metaData, String schema, String context) throws SQLException {
-//			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getIndexes(session, metaData, Quoting.staticUnquote(schema), "%");
-////				1.TABLE_CAT String => table catalog (may be null) 
-////				2.TABLE_SCHEM String => table schema (may be null) 
-////				3.TABLE_NAME String => table name 
-////				4.NON_UNIQUE boolean => Can index values be non-unique. false when TYPE is tableIndexStatistic 
-////				5.INDEX_QUALIFIER String => index catalog (may be null); null when TYPE is tableIndexStatistic 
-////				6.INDEX_NAME String => index name; null when TYPE is tableIndexStatistic 
-//			List<Object[]> rowList = new ArrayList<Object[]>();
-//			while (rs.next()) {
-//				rowList.add(new Object[] { rs.getString(3) });
-//			}
-//			rs.close();
-//			return new CachedResultSet(rowList, 1, new String[] { "Index" }, new int[] { Types.VARCHAR });
-//		}
-//	}
+	/**
+	 * Constraints list view.
+	 */
+    private class MDConstraint extends MDDescriptionBasedGeneric {
+		private final MDSchema mdSchema;
+
+		private Map<String, String> constraintTypeNames = new LinkedHashMap<String, String>();
+		{
+			constraintTypeNames.put("PK", "Primary Keys");
+			constraintTypeNames.put("Unique", "Unique Constraints");
+			constraintTypeNames.put("Check", "Check Constraints");
+		}
+		
+		public MDConstraint(String name, MetaDataSource metaDataSource, final MDSchema schema, DataModel dataModel) {
+			super(name, metaDataSource, schema, dataModel, new DatabaseObjectRenderingDescription() {
+				{
+					setIconURL("/net/sf/jailer/ui/resource/constraints.png");
+					DatabaseObjectRenderingDescription itemDescr = new DatabaseObjectRenderingDescription();
+					itemDescr.setTextQuery(schema.getMetaDataSource().getSession().dbms.getProcedureSourceQuery());
+					setItemDescription(itemDescr);
+				}
+			});
+			this.mdSchema = schema;
+		}
+
+		@Override
+		public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
+			if (query != null) {
+				return super.retrieveList(session, query, schema, parentName);
+			}
+			return mdSchema.getConstraints(null);
+		}
+		
+		/**
+		 * Gets a list of descriptions of the details.
+		 * 
+		 * @return list of descriptions of the details
+		 */
+		@Override
+		public List<MDDescriptionBasedGeneric> getDetails() {
+			ArrayList<MDDescriptionBasedGeneric> result = new ArrayList<MDDescriptionBasedGeneric>();
+			try {
+				CachedResultSet theList = retrieveList(getMetaDataSource().getSession());
+				Map<String, String> typeNames = new LinkedHashMap<String, String>(constraintTypeNames);
+				for (final Object[] row: theList.getRowList()) {
+					String type = String.valueOf(row[0]);
+					if (!typeNames.containsKey(type)) {
+						typeNames.put(type, type);
+					}
+				}
+				for (Entry<String, String> e: typeNames.entrySet()) {
+					List<Object[]> rowsPerType = new ArrayList<Object[]>();
+					ArrayList<MDDescriptionBasedGeneric> descs = new ArrayList<MDDescriptionBasedGeneric>();
+					for (final Object[] row: theList.getRowList()) {
+						if (String.valueOf(row[0]).equals(e.getKey())) {
+							rowsPerType.add(row);
+						}
+					}
+					for (final Object[] row: theList.getRowList()) {
+						CachedResultSet detailRS = new CachedResultSet(Collections.singletonList(row), theList.getMetaData());
+						DatabaseObjectRenderingDescription detailDesc = itemDescription(detailRS);
+						if (detailDesc != null) {
+							MDDescriptionBasedGeneric mdDetails = createDetailDescription(row, detailDesc);
+							mdDetails.detailName = String.valueOf(row[getDetailIDIndex()]);
+							if (detailDesc.getListQuery() == null) {
+								mdDetails.list = detailRS;
+							}
+							descs.add(mdDetails);
+						}
+					}
+					DatabaseObjectRenderingDescription desc = new DatabaseObjectRenderingDescription();
+					desc.setItemDescription(new DatabaseObjectRenderingDescription());
+					final CachedResultSet listPerType = new CachedResultSet(rowsPerType, theList.getMetaData());
+					final JLabel label = MDSchema.getConstraintTypeIcon(e.getKey());
+					result.add(new MDDescriptionBasedGeneric(e.getValue(), getMetaDataSource(), schema, dataModel, desc) {
+						protected CachedResultSet retrieveList(Session session) throws SQLException {
+							listPerType.reset();
+							return listPerType;
+						}
+						
+						@Override
+						public List<MDDescriptionBasedGeneric> getDetails() {
+							return super.getDetails();
+						}
+						
+						@Override
+						protected MDDescriptionBasedGeneric createDetailDescription(final Object[] row, DatabaseObjectRenderingDescription detailDesc) {
+							final JLabel label = (JLabel) row[0];
+							return new MDDescriptionBasedGeneric(row[1] + " on " + row[2] + (row[3] != null? "(" + row[3] + ")" : ""), getMetaDataSource(), schema, dataModel, detailDesc) {
+								@Override
+								public Icon getIcon() {
+									return label == null? null : label.getIcon();
+								}
+							};
+						}
+
+						@Override
+						public Icon getIcon() {
+							return label == null? null : label.getIcon();
+						}
+					});
+				}
+			} catch (Throwable t) {
+				logger.info("error", t);
+			}
+			return result;
+		}
+		@Override
+		protected CachedResultSet distinct(CachedResultSet list) throws SQLException {
+			return list;
+		}
+
+		@Override
+		public boolean hasDetails() {
+			return true;
+		}
+	}
 
     private List<MDDescriptionBasedGeneric> getGenericDatabaseObjects(final MDSchema mdSchema) {
 		List<MDDescriptionBasedGeneric> genericDatabaseObjects = new ArrayList<MDDescriptionBasedGeneric>();
@@ -345,9 +404,11 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					}
 				}
 			);
-		// genericDatabaseObjects.add(	new MDIndexes("Indexes", metaDataSource, mdSchema, dataModel));
 		if (DBMS.ORACLE.equals(mdSchema.getMetaDataSource().getSession().dbms)) {
-		genericDatabaseObjects.add(new MDPackages("Packages", metaDataSource, mdSchema, dataModel));
+			genericDatabaseObjects.add(new MDPackages("Packages", metaDataSource, mdSchema, dataModel));
+		}
+		if (mdSchema.getMetaDataSource().getSession().dbms.getConstraintsQuery() != null) {
+			genericDatabaseObjects.add(new MDConstraint("Constraints", metaDataSource, mdSchema, dataModel));
 		}
 		for (DatabaseObjectRenderingDescription desc: mdSchema.getMetaDataSource().getSession().dbms.getObjectRenderers()) {
 			MDDescriptionBasedGeneric mdObjectRenderer
@@ -675,9 +736,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 boolean isView = false;
                 boolean isSynonym = false;
                 Boolean isDirty = false;
-                ImageIcon image = null;
+                Icon image = null;
                 if (value instanceof DefaultMutableTreeNode) {
                     Object uo = ((DefaultMutableTreeNode) value).getUserObject();
+                    if (uo instanceof JLabel) {
+                    	image = ((JLabel) uo).getIcon();
+                    }
                     if (uo == CATEGORY_VIEWS) {
                     	image = viewsIcon;
                     }
@@ -1011,7 +1075,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     		        	return details.iterator();
     				}
     			};
-                createCategoryNode(schemaChild, leafs, desc, desc.isCheap()? 0 : 1);
+                createCategoryNode(schemaChild, leafs, desc, desc.hasDetails(), desc.isCheap()? 0 : 1);
             }
             Iterable<Object> leafs = new Iterable<Object>() {
 				@Override
@@ -1025,7 +1089,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            return leafs.iterator();
 				}
 			};
-            createCategoryNode(schemaChild, leafs, CATEGORY_VIEWS, 0);
+            createCategoryNode(schemaChild, leafs, CATEGORY_VIEWS, true, 0);
             leafs = new Iterable<Object>() {
 				@Override
 				public Iterator<Object> iterator() {
@@ -1038,7 +1102,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            return leafs.iterator();
 				}
 			};
-            createCategoryNode(schemaChild, leafs, CATEGORY_SYNONYMS, 0);
+            createCategoryNode(schemaChild, leafs, CATEGORY_SYNONYMS, true, 0);
             leafs = new Iterable<Object>() {
 				@Override
 				public Iterator<Object> iterator() {
@@ -1051,7 +1115,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            return leafs.iterator();
 				}
 			};
-            DefaultMutableTreeNode schemaTablesChild = createCategoryNode(schemaChild, leafs, CATEGORY_TABLES, 0);
+            DefaultMutableTreeNode schemaTablesChild = createCategoryNode(schemaChild, leafs, CATEGORY_TABLES, true, 0);
             treeNodePerSchema.put(schema, schemaTablesChild);
         }
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
@@ -1060,73 +1124,75 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
 
 	public DefaultMutableTreeNode createCategoryNode(final DefaultMutableTreeNode schemaChild, final Iterable<Object> finalLeafs,
-			Object category, final int queueId) {
+			Object category, boolean hasDetails, final int queueId) {
 		final DefaultMutableTreeNode schemaViewsChild = new DefaultMutableTreeNode(category);
 		schemaChild.add(schemaViewsChild);
 		root.add(schemaChild);
 		MutableTreeNode expandSchema;
-		synchronized (schemaChild) {
-			expandSchema = new ExpandingMutableTreeNode() {
-				private Iterable<Object> leafs = finalLeafs;
-				private boolean expanded = false;
-			    @Override
-			    protected void expandImmediatelly() {
-			        if (!expanded) {
-			            for (Object leaf: leafs) {
-			                DefaultMutableTreeNode tableChild = new DefaultMutableTreeNode(leaf);
-			                schemaViewsChild.add(tableChild);
-			                if (leaf instanceof MDDescriptionBasedGeneric) {
-			                	MDDescriptionBasedGeneric md = (MDDescriptionBasedGeneric) leaf;
-			                	for (MDDescriptionBasedGeneric detail: md.getDetails()) {
-			                		tableChild.add(new DefaultMutableTreeNode(detail));
-			                	}
-			                }
-			            }
-			            schemaViewsChild.remove(this);
-			            TreeModel model = metaDataTree.getModel();
-			            ((DefaultTreeModel) model).nodeStructureChanged(schemaViewsChild);
-			        }
-			        expanded = true;
-			    }
-			    @Override
-			    protected void expand() {
-			    	MDSchema.loadMetaData(new Runnable() {
-						@Override
-						public void run() {
-							synchronized (schemaChild) {
-								ArrayList<Object> leafList = new ArrayList<Object>();
-								for (Object leaf: leafs) {
-									leafList.add(leaf);
-									 if (leaf instanceof MDDescriptionBasedGeneric) {
-										 MDDescriptionBasedGeneric md = (MDDescriptionBasedGeneric) leaf;
-										 md.getDetails();
-									 }
+		if (hasDetails) {
+			synchronized (schemaChild) {
+				expandSchema = new ExpandingMutableTreeNode() {
+					private Iterable<Object> leafs = finalLeafs;
+					private boolean expanded = false;
+				    @Override
+				    protected void expandImmediatelly() {
+				        if (!expanded) {
+				            for (Object leaf: leafs) {
+				                DefaultMutableTreeNode tableChild = new DefaultMutableTreeNode(leaf);
+				                schemaViewsChild.add(tableChild);
+				                if (leaf instanceof MDDescriptionBasedGeneric) {
+				                	MDDescriptionBasedGeneric md = (MDDescriptionBasedGeneric) leaf;
+				                	for (MDDescriptionBasedGeneric detail: md.getDetails()) {
+				                		tableChild.add(new DefaultMutableTreeNode(detail));
+				                	}
+				                }
+				            }
+				            schemaViewsChild.remove(this);
+				            TreeModel model = metaDataTree.getModel();
+				            ((DefaultTreeModel) model).nodeStructureChanged(schemaViewsChild);
+				        }
+				        expanded = true;
+				    }
+				    @Override
+				    protected void expand() {
+				    	MDSchema.loadMetaData(new Runnable() {
+							@Override
+							public void run() {
+								synchronized (schemaChild) {
+									ArrayList<Object> leafList = new ArrayList<Object>();
+									for (Object leaf: leafs) {
+										leafList.add(leaf);
+										 if (leaf instanceof MDDescriptionBasedGeneric) {
+											 MDDescriptionBasedGeneric md = (MDDescriptionBasedGeneric) leaf;
+											 md.getDetails();
+										 }
+									}
+									leafs = leafList;
 								}
-								leafs = leafList;
+						        SwingUtilities.invokeLater(new Runnable() {
+						            @Override
+						            public void run() {
+								        SwingUtilities.invokeLater(new Runnable() {
+								            @Override
+								            public void run() {
+								                try {
+								                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+								                    expandImmediatelly();
+								                } finally {
+								                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+								                }
+								            }
+								        });
+						            }
+						        });
+								
 							}
-					        SwingUtilities.invokeLater(new Runnable() {
-					            @Override
-					            public void run() {
-							        SwingUtilities.invokeLater(new Runnable() {
-							            @Override
-							            public void run() {
-							                try {
-							                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-							                    expandImmediatelly();
-							                } finally {
-							                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-							                }
-							            }
-							        });
-					            }
-					        });
-							
-						}
-					}, queueId);
-			    }
-			};
+						}, queueId);
+				    }
+				};
+			}
+			schemaViewsChild.add(expandSchema);
 		}
-		schemaViewsChild.add(expandSchema);
 		return schemaViewsChild;
 	}
 

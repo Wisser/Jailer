@@ -127,6 +127,58 @@ union all
 SELECT 'Body' as titel, line, text FROM all_source where owner='%1$s' and type='PACKAGE BODY' and name='%2$s'
 ) order by titel desc, line
         </packageSourceQuery>
+        <constraintsQuery>
+Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
+(Select 'PK' CTYPE, CONSTRAINT_NAME CNAME, TABLE_NAME TNAME, COLUMN_NAME COLNAME, null DETAIL, POSITION POS
+	from
+		user_constraints natural join user_cons_columns
+	where
+		CONSTRAINT_TYPE = 'P'
+		and STATUS = 'ENABLED'
+		and TABLE_NAME not like 'BIN$%%'
+   		and OWNER = '%1$s'
+union all
+Select 'Check' CTYPE, CONSTRAINT_NAME CNAME, TABLE_NAME TNAME, COLUMN_NAME COLNAME, SEARCH_CONDITION DETAIL, POSITION POS
+	from
+		user_constraints natural join user_cons_columns
+	where
+		CONSTRAINT_TYPE = 'C'
+		and TABLE_NAME not like 'BIN$%%'
+   		and OWNER = '%1$s'
+union all
+	(
+	Select 'Unique' CTYPE, CNAME, TNAME, COLNAME, null DETAIL, POS from
+		(
+		Select i.INDEX_NAME CNAME, i.TABLE_NAME TNAME, c.COLUMN_NAME COLNAME, c.COLUMN_POSITION POS
+		from USER_INDEXES i, USER_IND_COLUMNS c
+		where 
+		  i.TABLE_OWNER = '%1$s'
+		  and i.UNIQUENESS = 'UNIQUE'
+		  and i.TABLE_NAME not like 'BIN$%%'
+		  and i.TABLE_NAME = c.TABLE_NAME
+		  and i.INDEX_NAME = c.INDEX_NAME
+		  and i.INDEX_NAME not in
+		  	(Select CONSTRAINT_NAME 
+		  	from user_constraints 
+		  	where CONSTRAINT_TYPE = 'P'
+			and STATUS = 'ENABLED'
+			and TABLE_NAME not like 'BIN$%%'
+			and OWNER = '%1$s'
+		  	)
+		union
+		Select con.CONSTRAINT_NAME CNAME, con.TABLE_NAME TNAME, cc.COLUMN_NAME COLNAME, cc.POSITION POS
+		from USER_CONSTRAINTS con, USER_CONS_COLUMNS cc
+		where
+		  con.CONSTRAINT_TYPE in ('U')
+		  and con.OWNER = '%1$s'
+		  and con.STATUS = 'ENABLED'
+		  and con.TABLE_NAME not like 'BIN$%%'
+		  and con.TABLE_NAME = cc.TABLE_NAME
+		  and con.CONSTRAINT_NAME = cc.CONSTRAINT_NAME
+		)
+	)
+) order by CNAME, TNAME, POS, COLNAME
+        </constraintsQuery>
         <objectRenderers>
        		<name>Triggers</name>
         	<iconURL>/net/sf/jailer/ui/resource/triggers.png</iconURL>

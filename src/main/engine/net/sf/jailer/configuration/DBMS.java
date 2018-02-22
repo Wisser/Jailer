@@ -222,6 +222,11 @@ public class DBMS {
 	private String ddlCall;
 
 	/**
+	 * Query to get constraints
+	 */
+	private String constraintsQuery;
+
+	/**
 	 * DB-Query to get DDL of a table
 	 */
 	public String getDdlQuery() {
@@ -980,6 +985,20 @@ public class DBMS {
 
 	public void setProcedureDetailNeedsSpecificName(boolean procedureDetailNeedsSpecificName) {
 		this.procedureDetailNeedsSpecificName = procedureDetailNeedsSpecificName;
+	}
+
+	/**
+	 * Gets query to get constraints
+	 */
+	public String getConstraintsQuery() {
+		return constraintsQuery;
+	}
+
+	/**
+	 * Sets query to get constraints
+	 */
+	public void setConstraintsQuery(String constraintsQuery) {
+		this.constraintsQuery = constraintsQuery;
 	}
 
 	/* (non-Javadoc)

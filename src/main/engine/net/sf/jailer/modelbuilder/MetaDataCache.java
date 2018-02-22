@@ -70,7 +70,7 @@ public class MetaDataCache {
 	private Map<String, List<Object[]>> cache;
 
 	/**
-	 * Meta data of chached row set.
+	 * Meta data of cached row set.
 	 */
 	private MDCResultSetMetaData resultSetMetaData;
 	

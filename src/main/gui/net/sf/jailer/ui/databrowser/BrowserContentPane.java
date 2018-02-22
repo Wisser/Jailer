@@ -781,11 +781,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (render instanceof JLabel) {
 					Row r = null;
 					int rowIndex = row;
+					((JLabel) render).setIcon(null);
 					if (row < rows.size()) {
 						rowIndex = rowSorter.convertRowIndexToModel(row);
 						r = rows.get(rowIndex);
 						if (r != null) {
 							renderRowAsPK = renderRowAsPK(r);
+							Object cellContent = r.values.length > column? r.values[column] : null;
+							if (cellContent instanceof JLabel) {
+								((JLabel) render).setIcon(((JLabel) cellContent).getIcon());
+								((JLabel) render).setText(((JLabel) cellContent).getText());
+							}
 						}
 					}
 					((JLabel) render).setBorder(cellSelected? BorderFactory.createEtchedBorder() : null);
@@ -825,7 +831,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							String text = ((JLabel) render).getText();
 							if (text.indexOf('\n') >= 0) {
 								((JLabel) render).setToolTipText(UIUtil.toHTML(text, 400));
-							} else if (text.length() > 30) {
+							} else if (text.length() > 20) {
 								((JLabel) render).setToolTipText(text);
 							}
 						}

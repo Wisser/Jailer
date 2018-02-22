@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -94,7 +94,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 				CachedResultSet detailRS = new CachedResultSet(Collections.singletonList(row), theList.getMetaData());
 				DatabaseObjectRenderingDescription detailDesc = itemDescription(detailRS);
 				if (detailDesc != null) {
-					MDDescriptionBasedGeneric mdDetails = new MDDescriptionBasedGeneric(String.valueOf(row[0]), getMetaDataSource(), schema, dataModel, detailDesc);
+					MDDescriptionBasedGeneric mdDetails = createDetailDescription(row, detailDesc);
 					mdDetails.detailName = String.valueOf(row[getDetailIDIndex()]);
 					if (detailDesc.getListQuery() == null) {
 						mdDetails.list = detailRS;
@@ -106,6 +106,10 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 			logger.info("error", t);
 		}
 		return result;
+	}
+
+	protected MDDescriptionBasedGeneric createDetailDescription(final Object[] row, DatabaseObjectRenderingDescription detailDesc) {
+		return new MDDescriptionBasedGeneric(String.valueOf(row[0]), getMetaDataSource(), schema, dataModel, detailDesc);
 	}
 
 	protected int getDetailIDIndex() {
@@ -226,7 +230,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 		return panel;
 	}
 
-	private CachedResultSet distinct(CachedResultSet list) throws SQLException {
+	protected CachedResultSet distinct(CachedResultSet list) throws SQLException {
 		List<Object[]> rowList = new ArrayList<Object[]>();
 		Set<Object> seen = new HashSet<Object>();
 		for (Object[] row: list.getRowList()) {
@@ -238,7 +242,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 		return new CachedResultSet(rowList, list.getMetaData());
 	}
 
-	private CachedResultSet list;
+	protected CachedResultSet list;
 	
 	protected synchronized CachedResultSet retrieveList(Session session) throws SQLException {
 		if (list == null) {
@@ -280,12 +284,16 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
         }
 	}
 
-	public ImageIcon getIcon() {
+	public Icon getIcon() {
 		return databaseObjectRenderingDescription.getIcon();
 	}
 
 	public boolean isCheap() {
 		return databaseObjectRenderingDescription.isCheap();
+	}
+
+	public boolean hasDetails() {
+		return true;
 	}
 
 }
