@@ -344,13 +344,17 @@ public class Session {
 		}
 	}
 	
+	private Object silentLock = new Object();
+	
 	/**
 	 * No SQL-Exceptions will be logged in silent mode.
 	 * 
 	 * @param silent <code>true</code> for silence
 	 */
-	public synchronized void setSilent(boolean silent) {
-		this.silent = silent;
+	public void setSilent(boolean silent) {
+		synchronized (silentLock) {
+			this.silent = silent;
+		}
 	}
 	
 	/**
@@ -358,8 +362,10 @@ public class Session {
 	 * 
 	 * @return silent <code>true</code> for silence
 	 */
-	public synchronized boolean getSilent() {
-		return silent;
+	public boolean getSilent() {
+		synchronized (silentLock) {
+			return silent;
+		}
 	}
 
 	/**
