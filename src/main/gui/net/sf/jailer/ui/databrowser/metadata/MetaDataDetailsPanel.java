@@ -444,7 +444,15 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
         	final Runnable doRunGetConstraints = new Runnable() {
     			@Override
     			public void run() {
-    				final CachedResultSet constraints = mdTable.getSchema().getConstraints(mdTable);
+    				final CachedResultSet constraints;
+    				try {
+    					constraints = mdTable.getSchema().getConstraints(mdTable);
+    				} catch (SQLException e) {
+    					constraintsPanel.removeAll();
+    					constraintsPanel.add(new JLabel(" Error: " + e.getMessage()));
+        		    	tabbedPane.repaint();
+        		    	return;
+    				}
     				constraintsPanel.removeAll();
     		    	if (constraints == null) {
     		    		constraintsPanel.add(new JLabel(" Constraints not available"));
@@ -469,7 +477,11 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     	    	MDSchema.loadMetaData(new Runnable() {
     	    		@Override
     	    		public void run() {
-    	    			mdTable.getSchema().getConstraints(null);
+    	    			try {
+							mdTable.getSchema().getConstraints(null);
+						} catch (SQLException e) {
+							// ignore
+						}
     	    			SwingUtilities.invokeLater(doRunGetConstraints);
     	    		}
     	    	}, 1);

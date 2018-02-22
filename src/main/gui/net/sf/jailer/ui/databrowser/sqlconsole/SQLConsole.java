@@ -1310,6 +1310,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             rowsTableScrollPane.setWheelScrollingEnabled(true);
         }
         @Override
+        protected int getReloadLimit() {
+        	return (Integer) limitComboBox.getSelectedItem();
+        }
+        @Override
         protected void unhide() {
         }
         @Override
