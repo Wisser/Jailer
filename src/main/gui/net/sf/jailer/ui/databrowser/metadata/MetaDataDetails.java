@@ -49,24 +49,21 @@ public enum MetaDataDetails {
 			}
 		}
 	},
-	PRIMARYKEY("Primary Key", 0) {
-		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
-		}
-		public void adjustRowsTable(JTable rowsTable) {
-			TableColumnModel columnModel = rowsTable.getColumnModel();
-			if (columnModel.getColumnCount() > 4) {
-				columnModel.moveColumn(3, 0);
-				columnModel.moveColumn(4, 1);
-			}
-		}
-	},
 	INDEXES("Indexes", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			return JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), Quoting.staticUnquote( mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
 		}
 		public void adjustRowsTable(JTable rowsTable) {
 			TableModel dm = rowsTable.getModel();
+			TableColumnModel columnModel = rowsTable.getColumnModel();
+			if (columnModel.getColumnCount() > 2) {
+				columnModel.moveColumn(1, columnModel.getColumnCount() - 1);
+				columnModel.moveColumn(0, columnModel.getColumnCount() - 1);
+			}
+			if (columnModel.getColumnCount() > 6) {
+				columnModel.moveColumn(6, 1);
+				columnModel.moveColumn(4, 2);
+			}
 			if (dm instanceof DefaultTableModel) {
 				DefaultTableModel tm = (DefaultTableModel) dm;
 				if (tm.getRowCount() > 0) {
@@ -76,6 +73,18 @@ public enum MetaDataDetails {
 						tm.removeRow(0);
 					}
 				}
+			}
+		}
+	},
+	PRIMARYKEY("Primary Key", 0) {
+		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
+			return JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
+		}
+		public void adjustRowsTable(JTable rowsTable) {
+			TableColumnModel columnModel = rowsTable.getColumnModel();
+			if (columnModel.getColumnCount() > 4) {
+				columnModel.moveColumn(3, 0);
+				columnModel.moveColumn(4, 1);
 			}
 		}
 	},
