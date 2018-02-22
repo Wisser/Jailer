@@ -256,7 +256,7 @@ public class MDSchema extends MDObject {
 	 * @param table table or <code>null</code> for loading constraints of all tables
 	 * @return constraint list
 	 */
-	public synchronized CachedResultSet getConstraints(MDTable table) {
+	public synchronized CachedResultSet getConstraints(MDTable table) throws SQLException {
 		if (constraints == null) {
 			Statement cStmt = null;
 			try {
@@ -291,9 +291,6 @@ public class MDSchema extends MDObject {
 				result.close();
 				constraints = new MetaDataCache.CachedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
 				constraintsLoaded.set(true);
-			} catch (Exception e) {
-				logger.info("error", e);
-				return null;
 			} finally {
 				if (cStmt != null) {
 					try {

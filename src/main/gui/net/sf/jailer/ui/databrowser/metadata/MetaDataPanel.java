@@ -364,7 +364,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 						@Override
 						protected MDDescriptionBasedGeneric createDetailDescription(final Object[] row, DatabaseObjectRenderingDescription detailDesc) {
 							final JLabel label = (JLabel) row[0];
-							return new MDDescriptionBasedGeneric(row[1] + " on " + row[2] + (row[3] != null? "(" + row[3] + ")" : ""), getMetaDataSource(), schema, dataModel, detailDesc) {
+							return new MDDescriptionBasedGeneric(row[1] + " on " + row[2] + (row[3] != null && row[3].toString().trim().length() > 0? "(" + row[3] + ")" : ""), getMetaDataSource(), schema, dataModel, detailDesc) {
 								@Override
 								public Icon getIcon() {
 									return label == null? null : label.getIcon();

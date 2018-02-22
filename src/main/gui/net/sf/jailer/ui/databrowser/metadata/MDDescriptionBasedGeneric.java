@@ -157,8 +157,10 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
+								panel.removeAll();
 								panel.add(new JLabel("Error: " + message));
 								panel.repaint();
+								panel.revalidate();
 							}
 						});
 						return;
