@@ -484,11 +484,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            all parent rows, if there are more than 1
 	 * @param association
 	 *            {@link Association} with parent row
-	 * @param selectDistinct 
-	 * @param limit 
-	 * @param selectDistinct 
-	 * @param limit 
-	 * @param reload 
 	 */
 	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, List<Row> parentRows,
 			final Association association, Frame parentFrame, Set<Pair<BrowserContentPane, Row>> currentClosure, Set<Pair<BrowserContentPane, String>> currentClosureRowIDs,
@@ -2274,10 +2269,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rows.clear();
 			updateMode("loading");
 			setPendingState(false, false);
-			int limit = 100;
-			if (limitBox.getSelectedItem() instanceof Integer) {
-				limit = (Integer) limitBox.getSelectedItem();
-			}
+			int limit = getReloadLimit();
 			LoadJob reloadJob;
 			if (statementForReloading != null) {
 				reloadJob = new LoadJob(limit, statementForReloading, false);
@@ -2289,6 +2281,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			getRunnableQueue().add(reloadJob);
 		}
+	}
+
+	protected int getReloadLimit() {
+		int limit = 100;
+		if (limitBox.getSelectedItem() instanceof Integer) {
+			limit = (Integer) limitBox.getSelectedItem();
+		}
+		return limit;
 	}
 
 	/**
