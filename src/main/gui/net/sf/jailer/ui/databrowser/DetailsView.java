@@ -183,13 +183,22 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			}
 			if (selectableFields) {
 				JTextField f = new JTextField();
-				f.setText(v == null? "" : v.toString());
+				if (v instanceof JLabel) {
+					f.setText(((JLabel) v).getText());
+				} else {
+					f.setText(v == null? "" : v.toString());
+				}
 				f.setEnabled(v != null);
 				f.setEditable(false);
 				jPanel1.add(f, gridBagConstraints);
 			} else {
 				JLabel f = new JLabel();
-				f.setText((v == null? "null" : v.toString()) + "    ");
+				if (v instanceof JLabel) {
+					f.setText(((JLabel) v).getText() + "    ");
+					f.setIcon(((JLabel) v).getIcon());
+				} else {
+					f.setText((v == null? "null" : v.toString()) + "    ");
+				}
 				f.setFont(v == null? italic : nonbold);
 				if (v == null) {
 					f.setForeground(Color.GRAY);
