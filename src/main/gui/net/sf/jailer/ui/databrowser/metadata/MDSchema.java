@@ -137,58 +137,62 @@ public class MDSchema extends MDObject {
 		return getTables(true);
 	}
 
+	private Object getTablesLock = new String("getTablesLock");
+	
 	/**
 	 * Gets tables of schema
 	 * 
 	 * @return tables of schema
 	 */
-	public synchronized List<MDTable> getTables(boolean loadTableColumns) {
-		if (tables == null) {
-			try {
-				tables = new ArrayList<MDTable>();
-				MetaDataSource metaDataSource = getMetaDataSource();
-				synchronized (metaDataSource.getSession().getMetaData()) {
-					ResultSet rs = metaDataSource.readTables(getName());
-					Map<String, Runnable> loadJobs = new TreeMap<String, Runnable>();
-					while (rs.next()) {
-						String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
-						final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)),
-								"SYNONYM".equalsIgnoreCase(rs.getString(4))
-										|| "ALIAS".equalsIgnoreCase(rs.getString(4)));
-						tables.add(table);
-						if (loadTableColumns) {
-							loadJobs.put(tableName, new Runnable() {
-								@Override
-								public void run() {
-									if (valid) {
-										try {
-											table.getColumns();
-										} catch (SQLException e) {
-											logger.info("error", e);
+	public List<MDTable> getTables(boolean loadTableColumns) {
+		synchronized (getTablesLock) {
+			if (tables == null) {
+				try {
+					tables = new ArrayList<MDTable>();
+					MetaDataSource metaDataSource = getMetaDataSource();
+					synchronized (metaDataSource.getSession().getMetaData()) {
+						ResultSet rs = metaDataSource.readTables(getName());
+						Map<String, Runnable> loadJobs = new TreeMap<String, Runnable>();
+						while (rs.next()) {
+							String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
+							final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)),
+									"SYNONYM".equalsIgnoreCase(rs.getString(4))
+											|| "ALIAS".equalsIgnoreCase(rs.getString(4)));
+							tables.add(table);
+							if (loadTableColumns) {
+								loadJobs.put(tableName, new Runnable() {
+									@Override
+									public void run() {
+										if (valid) {
+											try {
+												table.getColumns();
+											} catch (SQLException e) {
+												logger.info("error", e);
+											}
 										}
 									}
-								}
-							});
+								});
+							}
+						}
+						rs.close();
+						for (Runnable loadJob : loadJobs.values()) {
+							loadTableColumnsQueue.add(loadJob);
 						}
 					}
-					rs.close();
-					for (Runnable loadJob : loadJobs.values()) {
-						loadTableColumnsQueue.add(loadJob);
-					}
+					Collections.sort(tables, new Comparator<MDTable>() {
+						@Override
+						public int compare(MDTable o1, MDTable o2) {
+							return o1.getName().compareTo(o2.getName());
+						}
+					});
+				} catch (SQLException e) {
+					logger.info("error", e);
+				} finally {
+					loaded.set(true);
 				}
-				Collections.sort(tables, new Comparator<MDTable>() {
-					@Override
-					public int compare(MDTable o1, MDTable o2) {
-						return o1.getName().compareTo(o2.getName());
-					}
-				});
-			} catch (SQLException e) {
-				logger.info("error", e);
-			} finally {
-				loaded.set(true);
 			}
+			return tables;
 		}
-		return tables;
 	}
 
 	/**
@@ -219,17 +223,23 @@ public class MDSchema extends MDObject {
 	 *            table name
 	 * @return table by name
 	 */
-	public synchronized MDTable find(String tableName) {
-		if (tablePerUnquotedNameUC.isEmpty()) {
-			for (MDTable table : getTables()) {
-				tablePerUnquotedNameUC.put(Quoting.staticUnquote(table.getName().toUpperCase(Locale.ENGLISH)), table);
+	public MDTable find(String tableName) {
+		synchronized (tablePerUnquotedNameUC) {
+			if (tablePerUnquotedNameUC.isEmpty()) {
+				for (MDTable table : getTables()) {
+					tablePerUnquotedNameUC.put(Quoting.staticUnquote(table.getName().toUpperCase(Locale.ENGLISH)), table);
+				}
 			}
+			return tablePerUnquotedNameUC.get(Quoting.staticUnquote(tableName.toUpperCase(Locale.ENGLISH)));
 		}
-		return tablePerUnquotedNameUC.get(Quoting.staticUnquote(tableName.toUpperCase(Locale.ENGLISH)));
 	}
 
-	public synchronized void setValid(boolean valid) {
-		this.valid = valid;
+	private Object validLock = new Object();
+	
+	public void setValid(boolean valid) {
+		synchronized (validLock) {
+			this.valid = valid;
+		}
 	}
 
 	/**
@@ -250,68 +260,72 @@ public class MDSchema extends MDObject {
 		return constraintsLoaded.get();
 	}
 	
+	private Object getConstraintsLock = new String("getConstraintsLock");
+
 	/**
 	 * Loads constraint list.
 	 * 
 	 * @param table table or <code>null</code> for loading constraints of all tables
 	 * @return constraint list
 	 */
-	public synchronized CachedResultSet getConstraints(MDTable table) throws SQLException {
-		if (constraints == null) {
-			Statement cStmt = null;
-			try {
-				Connection connection = getMetaDataSource().getSession().getConnection();
-				cStmt = connection.createStatement();
-				String schema = getName();
-				if (schema != null) {
-					schema = Quoting.staticUnquote(schema);
+	public CachedResultSet getConstraints(MDTable table) throws SQLException {
+		synchronized (getConstraintsLock) {
+			if (constraints == null) {
+				Statement cStmt = null;
+				try {
+					Connection connection = getMetaDataSource().getSession().getConnection();
+					cStmt = connection.createStatement();
+					String schema = getName();
+					if (schema != null) {
+						schema = Quoting.staticUnquote(schema);
+					}
+					String query = getMetaDataSource().getSession().dbms.getConstraintsQuery();
+					ResultSet rs = cStmt.executeQuery(String.format(query, schema));
+					CachedResultSet result = new MetaDataCache.CachedResultSet(rs, null, getMetaDataSource().getSession(), schema);
+					rs.close();
+					List<Object[]> rows = new ArrayList<Object[]>();
+					Object[] predRow = null;
+					for (Object[] row: result.getRowList()) {
+						String constr = String.valueOf(row[0]);
+						String tab = String.valueOf(row[1]);
+						String col = row[2] == null? null : String.valueOf(row[2]);
+						String type = String.valueOf(row[3]);
+						String detail = row[4] == null? "" : String.valueOf(row[4]).trim();
+						if (type.equals("Check") && detail.matches("\"?" + col + "\"? IS NOT NULL")) {
+							continue;
+						}
+						if (predRow != null && constr.equals(predRow[0]) && tab.equals(predRow[1]) && (col != null && predRow[2] != null) && type.equals(predRow[3])) {
+							rows.get(rows.size() - 1)[3] += ", " + col;
+						} else {
+							rows.add(new Object[] { getConstraintTypeIcon(type), constr, tab, col, detail });
+						}
+						predRow = row;
+					}
+					result.close();
+					constraints = new MetaDataCache.CachedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
+					constraintsLoaded.set(true);
+				} finally {
+					if (cStmt != null) {
+						try {
+							cStmt.close();
+						} catch (SQLException e) {
+						}
+					}
 				}
-				String query = getMetaDataSource().getSession().dbms.getConstraintsQuery();
-				ResultSet rs = cStmt.executeQuery(String.format(query, schema));
-				CachedResultSet result = new MetaDataCache.CachedResultSet(rs, null, getMetaDataSource().getSession(), schema);
-				rs.close();
+			}
+			constraints.reset();
+			if (table != null) {
+				String uCName = Quoting.staticUnquote(table.getName()).toUpperCase(Locale.ENGLISH);
 				List<Object[]> rows = new ArrayList<Object[]>();
-				Object[] predRow = null;
-				for (Object[] row: result.getRowList()) {
-					String constr = String.valueOf(row[0]);
-					String tab = String.valueOf(row[1]);
-					String col = row[2] == null? null : String.valueOf(row[2]);
-					String type = String.valueOf(row[3]);
-					String detail = row[4] == null? "" : String.valueOf(row[4]).trim();
-					if (type.equals("Check") && detail.matches("\"?" + col + "\"? IS NOT NULL")) {
-						continue;
-					}
-					if (predRow != null && constr.equals(predRow[0]) && tab.equals(predRow[1]) && (col != null && predRow[2] != null) && type.equals(predRow[3])) {
-						rows.get(rows.size() - 1)[3] += ", " + col;
-					} else {
-						rows.add(new Object[] { getConstraintTypeIcon(type), constr, tab, col, detail });
-					}
-					predRow = row;
-				}
-				result.close();
-				constraints = new MetaDataCache.CachedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
-				constraintsLoaded.set(true);
-			} finally {
-				if (cStmt != null) {
-					try {
-						cStmt.close();
-					} catch (SQLException e) {
+				for (Object[] row: constraints.getRowList()) {
+					if (uCName.equals(String.valueOf(row[2]).toUpperCase(Locale.ENGLISH))) {
+						rows.add(row);
 					}
 				}
+				return new MetaDataCache.CachedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
 			}
+			return constraints;
 		}
-		constraints.reset();
-		if (table != null) {
-			String uCName = Quoting.staticUnquote(table.getName()).toUpperCase(Locale.ENGLISH);
-			List<Object[]> rows = new ArrayList<Object[]>();
-			for (Object[] row: constraints.getRowList()) {
-				if (uCName.equals(String.valueOf(row[2]).toUpperCase(Locale.ENGLISH))) {
-					rows.add(row);
-				}
-			}
-			return new MetaDataCache.CachedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
-		}
-		return constraints;
 	}
 
 	private static Map<String, ImageIcon> constraintTypeIcons = Collections.synchronizedMap(new HashMap<String, ImageIcon>());
