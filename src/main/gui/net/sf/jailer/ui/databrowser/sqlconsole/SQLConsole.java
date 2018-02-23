@@ -63,11 +63,14 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.RowSorter;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
@@ -702,12 +705,26 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     
 					public void updateColumnsAndTextView(final BrowserContentPane rb,
 							final TabContentPanel tabContentPanel) {
+						String tableSortAndFilterState = "";
+						RowSorter<? extends TableModel> sorter = rb.rowsTable.getRowSorter();
+						if (sorter.getModelRowCount() > sorter.getViewRowCount()) {
+							tableSortAndFilterState = "Filtered";
+						}
+						List<? extends SortKey> skeys = sorter.getSortKeys();
+						if (!skeys.isEmpty()) {
+							tableSortAndFilterState =  tableSortAndFilterState + (tableSortAndFilterState.isEmpty()? "Sorted" : " and sorted")
+									+ " by \"" + rb.rowsTable.getColumnName(skeys.get(0).getColumn()) + "\"";
+						}
 						if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel) {
 							columnsTable = new ColumnsTable(rb.rowsTable);
 							tabContentPanel.columnsScrollPane.setViewportView(columnsTable);
+							tabContentPanel.columnsSortedStateLabel.setText("  " + tableSortAndFilterState);
+							tabContentPanel.columnsSortedStateLabel.setVisible(!tableSortAndFilterState.isEmpty());
 						}
 						if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.textTabPanel) {
 							tabContentPanel.updateTextView(rb.rowsTable);
+							tabContentPanel.textSortedStateLabel.setText("  " + tableSortAndFilterState);
+							tabContentPanel.textSortedStateLabel.setVisible(!tableSortAndFilterState.isEmpty());
 						}
 					}
                 });

@@ -384,6 +384,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         contentPanel = new javax.swing.JPanel();
         columnsPanel = new javax.swing.JPanel();
         columnsScrollPane = new javax.swing.JScrollPane();
+        columnsSortedStateLabel = new javax.swing.JLabel();
         textTabPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea = new javax.swing.JTextArea();
@@ -391,6 +392,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         copyCBButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         headerCheckBox = new javax.swing.JCheckBox();
+        textSortedStateLabel = new javax.swing.JLabel();
         metaTabPanel = new javax.swing.JPanel();
         metaPanel = new javax.swing.JPanel();
         typePanel = new javax.swing.JPanel();
@@ -422,6 +424,10 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         columnsPanel.setLayout(new java.awt.BorderLayout());
         columnsPanel.add(columnsScrollPane, java.awt.BorderLayout.CENTER);
+
+        columnsSortedStateLabel.setForeground(java.awt.Color.blue);
+        columnsSortedStateLabel.setText("jLabel2");
+        columnsPanel.add(columnsSortedStateLabel, java.awt.BorderLayout.NORTH);
 
         tabbedPane.addTab("Columns", columnsPanel);
 
@@ -485,6 +491,14 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         textTabPanel.add(headerCheckBox, gridBagConstraints);
 
+        textSortedStateLabel.setForeground(java.awt.Color.blue);
+        textSortedStateLabel.setText("jLabel2");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        textTabPanel.add(textSortedStateLabel, gridBagConstraints);
+
         tabbedPane.addTab("Text", textTabPanel);
 
         metaTabPanel.setLayout(new java.awt.GridBagLayout());
@@ -537,6 +551,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> columnSeparatorComboBox;
     public javax.swing.JPanel columnsPanel;
     public javax.swing.JScrollPane columnsScrollPane;
+    public javax.swing.JLabel columnsSortedStateLabel;
     public javax.swing.JPanel contentPanel;
     public javax.swing.JPanel controlsPanel1;
     private javax.swing.JButton copyCBButton;
@@ -549,6 +564,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     private javax.swing.JPanel metaTabPanel;
     public javax.swing.JPanel panel;
     public javax.swing.JTabbedPane tabbedPane;
+    public javax.swing.JLabel textSortedStateLabel;
     public javax.swing.JPanel textTabPanel;
     private javax.swing.JPanel typePanel;
     // End of variables declaration//GEN-END:variables

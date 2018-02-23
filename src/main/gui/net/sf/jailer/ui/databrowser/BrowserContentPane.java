@@ -777,7 +777,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Row r = null;
 					int rowIndex = row;
 					((JLabel) render).setIcon(null);
-					if (row < rows.size()) {
+					if (row < rowSorter.getViewRowCount()) {
 						rowIndex = rowSorter.convertRowIndexToModel(row);
 						r = rows.get(rowIndex);
 						if (r != null) {
