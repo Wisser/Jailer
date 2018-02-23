@@ -884,8 +884,10 @@ public class UIUtil {
 	public static void copyToClipboard(JTable table, boolean lineOnSingeCell) {
 		String nl = System.getProperty("line.separator", "\n");
 		StringBuilder sb = new StringBuilder();
+		boolean prepNL = table.getSelectedRows().length > 1;
 		int[] selectedColumns = table.getSelectedColumns();
 		if (table.getSelectedColumnCount() == 1 && table.getSelectedRowCount() == 1 && lineOnSingeCell) {
+			prepNL = true;
 			selectedColumns = new int[table.getColumnCount()];
 			for (int i = 0; i < selectedColumns.length; ++i) {
 				selectedColumns[i] = i;
@@ -893,7 +895,11 @@ public class UIUtil {
 		}
 		RowSorter<? extends TableModel> rowSorter = table.getRowSorter();
 		TableColumnModel columnModel = table.getColumnModel();
+		boolean firstLine = true;
 		for (int row: table.getSelectedRows()) {
+			if (!firstLine) {
+				sb.append(nl);
+			}
 			boolean f = true;
 			for (int col: selectedColumns) {
 				Object value = table.getModel().getValueAt(
@@ -922,6 +928,9 @@ public class UIUtil {
 					sb.append(value == NULL || value == null? "" : value);
 				}
 			}
+			firstLine = false;
+		}
+		if (prepNL) {
 			sb.append(nl);
 		}
 		StringSelection selection = new StringSelection(sb.toString());
