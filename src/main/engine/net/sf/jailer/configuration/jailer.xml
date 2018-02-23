@@ -467,6 +467,14 @@ union all
         AND KCU.TABLE_SCHEMA = '%1$s'
 ) pk order by TYPEPOS, CNAME, TNAME, POS, COLNAME
 		</constraintsQuery>
+        <objectRenderers>
+       		<name>Triggers</name>
+        	<iconURL>/net/sf/jailer/ui/resource/triggers.png</iconURL>
+			<itemDescription>
+	        	<iconURL>/net/sf/jailer/ui/resource/trigger.png</iconURL>
+			</itemDescription>
+			<listQuery>SHOW TRIGGERS FROM %1$s</listQuery>
+		</objectRenderers>
     </dbms>
 
     <!-- for DB2 LUW -->
@@ -568,6 +576,14 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 			AND C.TABSCHEMA = '%1$s'
 ) pk order by TYPEPOS, CNAME, TNAME, POS, COLNAME
 		</constraintsQuery>
+        <objectRenderers>
+       		<name>Triggers</name>
+        	<iconURL>/net/sf/jailer/ui/resource/triggers.png</iconURL>
+			<itemDescription>
+	        	<iconURL>/net/sf/jailer/ui/resource/trigger.png</iconURL>
+			</itemDescription>
+			<listQuery>SELECT TRIGNAME,OWNER,OWNERTYPE,TABSCHEMA,TABNAME,TRIGTIME,TRIGEVENT,GRANULARITY,VALID,CREATE_TIME,QUALIFIER,cast(FUNC_PATH as VARCHAR) FUNC_PATH,cast(TEXT as VARCHAR) TEXT,LAST_REGEN_TIME,REMARKS,PRECOMPILE_OPTIONS,COMPILE_OPTIONS FROM SYSCAT.TRIGGERS WHERE TRIGSCHEMA = '%1$s'</listQuery>
+		</objectRenderers>
     </dbms>
 
     <!-- for DB2 z/OS -->
@@ -812,6 +828,14 @@ union all
 		and C.TABLE_SCHEMA = '%1$s'
 ) pk order by TYPEPOS, CNAME, TNAME, POS, COLNAME
 		</constraintsQuery>
+        <objectRenderers>
+       		<name>Triggers</name>
+        	<iconURL>/net/sf/jailer/ui/resource/triggers.png</iconURL>
+			<itemDescription>
+	        	<iconURL>/net/sf/jailer/ui/resource/trigger.png</iconURL>
+			</itemDescription>
+			<listQuery>select trigger_name, event_manipulation,event_object_catalog,event_object_schema,event_object_table,action_order,action_condition,action_statement,action_orientation,action_timing,action_reference_old_table,action_reference_new_table,action_reference_old_row,action_reference_new_row,created FROM information_schema.triggers where trigger_schema = '%1$s'</listQuery>
+		</objectRenderers>
     </dbms>
     
     <!-- for Cloudscape -->
@@ -1088,6 +1112,14 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 		AND C.TABLE_SCHEMA = '%1$s'
 ) pk order by TYPEPOS, CNAME, TNAME, POS, COLNAME
 		</constraintsQuery>
+        <objectRenderers>
+       		<name>Triggers</name>
+        	<iconURL>/net/sf/jailer/ui/resource/triggers.png</iconURL>
+			<itemDescription>
+	        	<iconURL>/net/sf/jailer/ui/resource/trigger.png</iconURL>
+			</itemDescription>
+			<listQuery>select TRIGGER_CATALOG, TRIGGER_SCHEMA, TRIGGER_NAME, TRIGGER_TYPE, TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, BEFORE, JAVA_CLASS, QUEUE_SIZE, NO_WAIT, REMARKS, SQL, ID FROM information_schema.triggers WHERE TRIGGER_SCHEMA = '%1$s'</listQuery>
+		</objectRenderers>
     </dbms>
 
 </configuration>
