@@ -349,7 +349,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					DatabaseObjectRenderingDescription desc = new DatabaseObjectRenderingDescription();
 					desc.setItemDescription(new DatabaseObjectRenderingDescription());
 					final CachedResultSet listPerType = new CachedResultSet(rowsPerType, theList.getMetaData());
-					final JLabel label = MDSchema.getConstraintTypeIcon(e.getKey());
+					final JLabel label = MDSchema.getConstraintTypeIcon(e.getKey() + "s");
 					result.add(new MDDescriptionBasedGeneric(e.getValue(), getMetaDataSource(), schema, dataModel, desc) {
 						protected CachedResultSet retrieveList(Session session) throws SQLException {
 							listPerType.reset();
