@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
@@ -41,6 +42,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -163,9 +165,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 			gridBagConstraints.weightx = 0;
 			gridBagConstraints.weighty = 0;
-			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = i;
+			if (!selectableFields) {
+				l.setVerticalAlignment(JLabel.TOP);
+			}
 			jPanel1.add(l, gridBagConstraints);
 
 			gridBagConstraints = new java.awt.GridBagConstraints();
@@ -182,7 +187,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				v = SqlUtil.toString((Double) v);
 			}
 			if (selectableFields) {
-				JTextField f = new JTextField();
+				JTextArea f = new JTextArea();
 				if (v instanceof JLabel) {
 					f.setText(((JLabel) v).getText());
 				} else {
@@ -193,12 +198,14 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				jPanel1.add(f, gridBagConstraints);
 			} else {
 				JLabel f = new JLabel();
+				String text;
 				if (v instanceof JLabel) {
-					f.setText(((JLabel) v).getText() + "    ");
+					text = ((JLabel) v).getText() + "    ";
 					f.setIcon(((JLabel) v).getIcon());
 				} else {
-					f.setText((v == null? "null" : v.toString()) + "    ");
+					text = (v == null? "null" : v.toString()) + "    ";
 				}
+				f.setText(UIUtil.toHTML(text, 0));
 				f.setFont(v == null? italic : nonbold);
 				if (v == null) {
 					f.setForeground(Color.GRAY);
