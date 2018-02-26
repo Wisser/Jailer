@@ -97,9 +97,8 @@ import net.sf.jailer.configuration.DatabaseObjectRenderingDescription;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
-import net.sf.jailer.modelbuilder.MetaDataCache;
-import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.JComboBox;
@@ -152,7 +151,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		public List<MDDescriptionBasedGeneric> getDetails() {
 			ArrayList<MDDescriptionBasedGeneric> result = new ArrayList<MDDescriptionBasedGeneric>();
 			try {
-				CachedResultSet theList = retrieveList(getMetaDataSource().getSession());
+				MemorizedResultSet theList = retrieveList(getMetaDataSource().getSession());
 				for (final Object[] row: theList.getRowList()) {
 					MDProcedures procs = new MDProcedures(String.valueOf(row[0]), metaDataSource, schema, dataModel) {
 						@Override
@@ -171,7 +170,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		}
 
 		@Override
-		public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
+		public MemorizedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
 			Set<String> cats = null;
 			if (session.dbms.getPackageNamesQuery() != null) {
 				Statement cStmt = null;
@@ -182,7 +181,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            	schema = Quoting.staticUnquote(schema);
 		            }
 		            ResultSet rs = cStmt.executeQuery(String.format(session.dbms.getPackageNamesQuery(), schema));
-		            CachedResultSet result = new MetaDataCache.CachedResultSet(rs, null, session, schema);
+		            MemorizedResultSet result = new MemorizedResultSet(rs, null, session, schema);
 		            result.close();
 		            rs.close();
 		            cats = new TreeSet<String>();
@@ -215,7 +214,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			for (String cat: cats) {
 				catList.add(new Object[] { cat });
 			}
-			CachedResultSet result = new CachedResultSet(catList, 1, new String[] { "Package", }, new int[] { Types.VARCHAR });
+			MemorizedResultSet result = new MemorizedResultSet(catList, 1, new String[] { "Package", }, new int[] { Types.VARCHAR });
 			return result;
 		}
 	}
@@ -240,11 +239,11 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		}
 
 		@Override
-		public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
+		public MemorizedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
 			if (query != null) {
 				return super.retrieveList(session, query, schema, parentName);
 			}
-			CachedResultSet procs = new MetaDataCache.CachedResultSet(getProcedures(session, session.getMetaData(), schema, "%"),
+			MemorizedResultSet procs = new MemorizedResultSet(getProcedures(session, session.getMetaData(), schema, "%"),
 					null, session, schema, new int[] { 3, 4, 1, 8, 9 }, new String[] { "Name", "Remarks", "Category", "Type", "SpecificName" });
 			List<Object[]> catList = new ArrayList<Object[]>();
 			for (Object[] cat: procs.getRowList()) {
@@ -253,7 +252,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				}
 			}
 			procs.close();
-			return new CachedResultSet(catList, procs.getMetaData());
+			return new MemorizedResultSet(catList, procs.getMetaData());
 		}
 
 		protected int getDetailIDIndex() {
@@ -266,7 +265,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		protected abstract boolean select(Object[] proc);
 
 		@Override
-		protected DatabaseObjectRenderingDescription itemDescription(CachedResultSet item) {
+		protected DatabaseObjectRenderingDescription itemDescription(MemorizedResultSet item) {
 			DatabaseObjectRenderingDescription desc = new DatabaseObjectRenderingDescription(databaseObjectRenderingDescription.getItemDescription());
 			if (!item.getRowList().isEmpty() && String.valueOf(DatabaseMetaData.procedureReturnsResult).equals(String.valueOf(item.getRowList().get(0)[3]))) {
 				desc.setIconURL("/net/sf/jailer/ui/resource/function.png");
@@ -302,7 +301,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		}
 
 		@Override
-		public CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
+		public MemorizedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
 			if (query != null) {
 				return super.retrieveList(session, query, schema, parentName);
 			}
@@ -318,7 +317,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		public List<MDDescriptionBasedGeneric> getDetails() {
 			ArrayList<MDDescriptionBasedGeneric> result = new ArrayList<MDDescriptionBasedGeneric>();
 			try {
-				CachedResultSet theList = retrieveList(getMetaDataSource().getSession());
+				MemorizedResultSet theList = retrieveList(getMetaDataSource().getSession());
 				Map<String, String> typeNames = new LinkedHashMap<String, String>(constraintTypeNames);
 				for (final Object[] row: theList.getRowList()) {
 					String type = String.valueOf(row[0]);
@@ -335,7 +334,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 						}
 					}
 					for (final Object[] row: theList.getRowList()) {
-						CachedResultSet detailRS = new CachedResultSet(Collections.singletonList(row), theList.getMetaData());
+						MemorizedResultSet detailRS = new MemorizedResultSet(Collections.singletonList(row), theList.getMetaData());
 						DatabaseObjectRenderingDescription detailDesc = itemDescription(detailRS);
 						if (detailDesc != null) {
 							MDDescriptionBasedGeneric mdDetails = createDetailDescription(row, detailDesc);
@@ -348,10 +347,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					}
 					DatabaseObjectRenderingDescription desc = new DatabaseObjectRenderingDescription();
 					desc.setItemDescription(new DatabaseObjectRenderingDescription());
-					final CachedResultSet listPerType = new CachedResultSet(rowsPerType, theList.getMetaData());
+					final MemorizedResultSet listPerType = new MemorizedResultSet(rowsPerType, theList.getMetaData());
 					final JLabel label = MDSchema.getConstraintTypeIcon(e.getKey() + "s");
 					result.add(new MDDescriptionBasedGeneric(e.getValue(), getMetaDataSource(), schema, dataModel, desc) {
-						protected CachedResultSet retrieveList(Session session) throws SQLException {
+						protected MemorizedResultSet retrieveList(Session session) throws SQLException {
 							listPerType.reset();
 							return listPerType;
 						}
@@ -384,7 +383,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			return result;
 		}
 		@Override
-		protected CachedResultSet distinct(CachedResultSet list) throws SQLException {
+		protected MemorizedResultSet distinct(MemorizedResultSet list) throws SQLException {
 			return list;
 		}
 
@@ -419,15 +418,15 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		return genericDatabaseObjects;
 	}
 
-	private Map<String, CachedResultSet> proceduresPerSchema = new HashMap<String, CachedResultSet>();
+	private Map<String, MemorizedResultSet> proceduresPerSchema = new HashMap<String, MemorizedResultSet>();
 
 	public synchronized ResultSet getProcedures(Session session, DatabaseMetaData metaData, String schema, String context) throws SQLException {
-		CachedResultSet rs = proceduresPerSchema.get(schema);
+		MemorizedResultSet rs = proceduresPerSchema.get(schema);
 		if (rs == null) {
 			if (schema != null) {
             	schema = Quoting.staticUnquote(schema);
             }
-			rs = new CachedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, metaData, Quoting.staticUnquote(schema), context), null, session, "");
+			rs = new MemorizedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, metaData, Quoting.staticUnquote(schema), context), null, session, "");
 			proceduresPerSchema.put(schema, rs);
 		}
 		rs.reset();

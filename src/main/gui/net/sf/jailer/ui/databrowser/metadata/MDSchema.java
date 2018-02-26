@@ -37,8 +37,7 @@ import javax.swing.JLabel;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.modelbuilder.MetaDataCache;
-import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
+import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -254,7 +253,7 @@ public class MDSchema extends MDObject {
 		loadMetaDataQueues[queueID].add(metaDataLoad);
 	}
 
-	private CachedResultSet constraints;
+	private MemorizedResultSet constraints;
 	
 	public boolean isConstraintsLoaded() {
 		return constraintsLoaded.get();
@@ -268,7 +267,7 @@ public class MDSchema extends MDObject {
 	 * @param table table or <code>null</code> for loading constraints of all tables
 	 * @return constraint list
 	 */
-	public CachedResultSet getConstraints(MDTable table) throws SQLException {
+	public MemorizedResultSet getConstraints(MDTable table) throws SQLException {
 		synchronized (getConstraintsLock) {
 			if (constraints == null) {
 				Statement cStmt = null;
@@ -281,7 +280,7 @@ public class MDSchema extends MDObject {
 					}
 					String query = getMetaDataSource().getSession().dbms.getConstraintsQuery();
 					ResultSet rs = cStmt.executeQuery(String.format(query, schema));
-					CachedResultSet result = new MetaDataCache.CachedResultSet(rs, null, getMetaDataSource().getSession(), schema);
+					MemorizedResultSet result = new MemorizedResultSet(rs, null, getMetaDataSource().getSession(), schema);
 					rs.close();
 					List<Object[]> rows = new ArrayList<Object[]>();
 					Object[] predRow = null;
@@ -302,7 +301,7 @@ public class MDSchema extends MDObject {
 						predRow = row;
 					}
 					result.close();
-					constraints = new MetaDataCache.CachedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
+					constraints = new MemorizedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
 					constraintsLoaded.set(true);
 				} finally {
 					if (cStmt != null) {
@@ -322,7 +321,7 @@ public class MDSchema extends MDObject {
 						rows.add(row);
 					}
 				}
-				return new MetaDataCache.CachedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
+				return new MemorizedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
 			}
 			return constraints;
 		}

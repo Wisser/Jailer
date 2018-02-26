@@ -49,8 +49,8 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
-import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
@@ -262,7 +262,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 	        rowList.add(row);
         }
 
-        return new CachedResultSet(rowList, names.length, titel, types);
+        return new MemorizedResultSet(rowList, names.length, titel, types);
     }
 
     private JTable theRowsTable = null;

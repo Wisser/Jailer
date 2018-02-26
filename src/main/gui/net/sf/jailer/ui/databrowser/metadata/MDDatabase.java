@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
+import net.sf.jailer.modelbuilder.MemorizedResultSet;
 
 /**
  * Information about the database.
@@ -70,12 +70,12 @@ public class MDDatabase extends MDGeneric {
 	        "getDatabaseMajorVersion",
 	        "getDatabaseMinorVersion",
 	        "getDatabaseProductName",
-	        "getIdentifierQuoteString",
 	        "getDatabaseProductVersion",
 	        "getDriverName",
 	        "getDriverVersion",
 	        "getDriverMajorVersion",
 	        "getDriverMinorVersion",
+	        "getIdentifierQuoteString",
 	        "getCatalogSeparator",
 	        "getCatalogTerm",
 	        "getSchemaTerm",
@@ -202,7 +202,7 @@ public class MDDatabase extends MDGeneric {
         	}
         }
 
-        CachedResultSet rs = new CachedResultSet(rowList, 2, new String[] { "Property", "Value" }, new int[] { Types.VARCHAR, Types.VARCHAR });
+        MemorizedResultSet rs = new MemorizedResultSet(rowList, 2, new String[] { "Property", "Value" }, new int[] { Types.VARCHAR, Types.VARCHAR });
         return new ResultSetRenderer(rs, getName(), dataModel, getMetaDataSource().getSession(), executionContext);
 	}
 
