@@ -133,7 +133,7 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
-import net.sf.jailer.modelbuilder.MetaDataCache.MDCResultSetMetaData;
+import net.sf.jailer.modelbuilder.MemorizedResultSet.MemorizedResultSetMetaData;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DataModelManager;
@@ -2790,8 +2790,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					int[] columnTypes = new int[columnCount];
 					for (int ci = 1 + finalNumParentPKColumns; ci <= columnCount; ++ci) {
-						if (metaData instanceof MDCResultSetMetaData) {
-							columnTypes[ci - 1 - finalNumParentPKColumns] = ((MDCResultSetMetaData) metaData).types[ci - 1];
+						if (metaData instanceof MemorizedResultSetMetaData) {
+							columnTypes[ci - 1 - finalNumParentPKColumns] = ((MemorizedResultSetMetaData) metaData).types[ci - 1];
 						} else {
 							columnTypes[ci - 1 - finalNumParentPKColumns] = metaData.getColumnType(ci);
 						}

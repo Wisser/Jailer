@@ -25,6 +25,8 @@ import javax.swing.table.TableModel;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.modelbuilder.MemorizedResultSet;
+import net.sf.jailer.modelbuilder.MemorizedResultSetTransformer;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -51,26 +53,39 @@ public enum MetaDataDetails {
 	},
 	INDEXES("Indexes", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), Quoting.staticUnquote( mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
+			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), Quoting.staticUnquote( mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
+			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
+			rs.close();
+			try {
+				return MemorizedResultSetTransformer.transform(mRs,
+					new MemorizedResultSetTransformer.ColumnTransformation[] {
+							new MemorizedResultSetTransformer.ColumnTransformation(6, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(9, 
+									new MemorizedResultSetTransformer.ListAggregation()),
+							new MemorizedResultSetTransformer.ColumnTransformation(4, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(10, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(7, null)
+				});
+			} catch (Throwable e) {
+				return mRs;
+			}
 		}
 		public void adjustRowsTable(JTable rowsTable) {
 			TableModel dm = rowsTable.getModel();
 			TableColumnModel columnModel = rowsTable.getColumnModel();
-			if (columnModel.getColumnCount() > 2) {
+			if (columnModel.getColumnCount() > 6) {
 				columnModel.moveColumn(1, columnModel.getColumnCount() - 1);
 				columnModel.moveColumn(0, columnModel.getColumnCount() - 1);
-			}
-			if (columnModel.getColumnCount() > 6) {
 				columnModel.moveColumn(6, 1);
 				columnModel.moveColumn(4, 2);
-			}
-			if (dm instanceof DefaultTableModel) {
-				DefaultTableModel tm = (DefaultTableModel) dm;
-				if (tm.getRowCount() > 0) {
-					Object columnName = tm.getValueAt(0, 8);
-					if (columnName == null || !(columnName instanceof String) && "null".equals(columnName.toString())) {
-						// remove first row with COLUMN_NAME == null (ORACLE)
-						tm.removeRow(0);
+				if (dm instanceof DefaultTableModel) {
+					DefaultTableModel tm = (DefaultTableModel) dm;
+					if (tm.getRowCount() > 0) {
+						Object columnName = tm.getValueAt(0, 8);
+						if (columnName == null || !(columnName instanceof String) && "null".equals(columnName.toString())) {
+							// remove first row with COLUMN_NAME == null (ORACLE)
+							tm.removeRow(0);
+						}
 					}
 				}
 			}
@@ -78,7 +93,19 @@ public enum MetaDataDetails {
 	},
 	PRIMARYKEY("Primary Key", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
+			ResultSet rs =  JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
+			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
+			rs.close();
+			try {
+				return MemorizedResultSetTransformer.transform(mRs,
+					new MemorizedResultSetTransformer.ColumnTransformation[] {
+							new MemorizedResultSetTransformer.ColumnTransformation(6, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(4, 
+									new MemorizedResultSetTransformer.ListAggregation())
+				});
+			} catch (Throwable e) {
+				return mRs;
+			}
 		}
 		public void adjustRowsTable(JTable rowsTable) {
 			TableColumnModel columnModel = rowsTable.getColumnModel();
@@ -90,12 +117,60 @@ public enum MetaDataDetails {
 	},
 	EXPORTEDKEY("Exported Keys", 1) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getExportedKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
+			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getExportedKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
+			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
+			rs.close();
+
+			try {
+				return MemorizedResultSetTransformer.transform(mRs,
+					new MemorizedResultSetTransformer.ColumnTransformation[] {
+							new MemorizedResultSetTransformer.ColumnTransformation(3, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(4, 
+									new MemorizedResultSetTransformer.ListAggregation()),
+							new MemorizedResultSetTransformer.ColumnTransformation(7, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(8, 
+									new MemorizedResultSetTransformer.ListAggregation()),
+							new MemorizedResultSetTransformer.ColumnTransformation(12, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(1, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(2, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(5, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(6, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(10, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(11, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(14, null)
+				});
+			} catch (Throwable e) {
+				return mRs;
+			}
 		}
 	},
 	IMPORTEDKEY("Imported Keys", 1) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getImportedKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
+			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getImportedKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
+			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
+			rs.close();
+
+			try {
+				return MemorizedResultSetTransformer.transform(mRs,
+					new MemorizedResultSetTransformer.ColumnTransformation[] {
+							new MemorizedResultSetTransformer.ColumnTransformation(3, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(4, 
+									new MemorizedResultSetTransformer.ListAggregation()),
+							new MemorizedResultSetTransformer.ColumnTransformation(7, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(8, 
+									new MemorizedResultSetTransformer.ListAggregation()),
+							new MemorizedResultSetTransformer.ColumnTransformation(12, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(1, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(2, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(5, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(6, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(10, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(11, null),
+							new MemorizedResultSetTransformer.ColumnTransformation(14, null)
+				});
+			} catch (Throwable e) {
+				return mRs;
+			}
 		}
 	};
 	

@@ -84,7 +84,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
+import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox;
@@ -602,7 +602,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         }
                     }
                 }
-                final CachedResultSet metaDataDetails = new CachedResultSet(resultSet, limit, session, SQLConsole.this) {
+                final MemorizedResultSet metaDataDetails = new MemorizedResultSet(resultSet, limit, session, SQLConsole.this) {
             		@Override
                 	protected Object convertCellContent(Object object) {
             			Object lobRender = BrowserContentPane.toLobRender(object);

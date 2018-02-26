@@ -1,5 +1,8 @@
+7.6.4
+  - Improved table meta data rendering. 
+
 7.6.3
-  - Asynchronous metadata loading.
+  - Asynchronous meta data loading.
 
 7.6.2
   - Added "Columns", "Text" and "Meta" views to SQLConsole.

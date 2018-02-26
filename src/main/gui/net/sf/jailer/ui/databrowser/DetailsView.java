@@ -17,6 +17,7 @@ package net.sf.jailer.ui.databrowser;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.math.BigDecimal;
@@ -205,7 +206,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				} else {
 					text = (v == null? "null" : v.toString()) + "    ";
 				}
-				f.setText(UIUtil.toHTML(text, 0));
+				f.setText(text.indexOf('\n') >= 0? UIUtil.toHTML(text, 0) : text);
 				f.setFont(v == null? italic : nonbold);
 				if (v == null) {
 					f.setForeground(Color.GRAY);

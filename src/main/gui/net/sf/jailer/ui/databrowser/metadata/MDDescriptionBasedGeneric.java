@@ -47,8 +47,7 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.configuration.DatabaseObjectRenderingDescription;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.modelbuilder.MetaDataCache;
-import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
+import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -89,9 +88,9 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	public List<MDDescriptionBasedGeneric> getDetails() {
 		ArrayList<MDDescriptionBasedGeneric> result = new ArrayList<MDDescriptionBasedGeneric>();
 		try {
-			CachedResultSet theList = retrieveList(getMetaDataSource().getSession());
+			MemorizedResultSet theList = retrieveList(getMetaDataSource().getSession());
 			for (final Object[] row: theList.getRowList()) {
-				CachedResultSet detailRS = new CachedResultSet(Collections.singletonList(row), theList.getMetaData());
+				MemorizedResultSet detailRS = new MemorizedResultSet(Collections.singletonList(row), theList.getMetaData());
 				DatabaseObjectRenderingDescription detailDesc = itemDescription(detailRS);
 				if (detailDesc != null) {
 					MDDescriptionBasedGeneric mdDetails = createDetailDescription(row, detailDesc);
@@ -122,7 +121,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	 * 
 	 * @return description of an item
 	 */
-	protected DatabaseObjectRenderingDescription itemDescription(CachedResultSet itemContent) {
+	protected DatabaseObjectRenderingDescription itemDescription(MemorizedResultSet itemContent) {
 		return databaseObjectRenderingDescription.getItemDescription();
 	}
 
@@ -132,8 +131,8 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	 * @return render of the database object
 	 */
 	public JComponent createRender(final Session session, final ExecutionContext executionContext) throws Exception {
-		final AtomicReference<CachedResultSet> resultSet = new AtomicReference<CachedResultSet>();
-		final AtomicReference<CachedResultSet> text = new AtomicReference<CachedResultSet>();
+		final AtomicReference<MemorizedResultSet> resultSet = new AtomicReference<MemorizedResultSet>();
+		final AtomicReference<MemorizedResultSet> text = new AtomicReference<MemorizedResultSet>();
 		int textIndexNF = 1;
 		if (databaseObjectRenderingDescription.getTextQuery() != null) {
 			if (DBMS.MySQL.equals(session.dbms) && databaseObjectRenderingDescription.getTextQuery().matches("\\s*SHOW\\s+CREATE\\b.*")) {
@@ -232,7 +231,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 		return panel;
 	}
 
-	protected CachedResultSet distinct(CachedResultSet list) throws SQLException {
+	protected MemorizedResultSet distinct(MemorizedResultSet list) throws SQLException {
 		List<Object[]> rowList = new ArrayList<Object[]>();
 		Set<Object> seen = new HashSet<Object>();
 		for (Object[] row: list.getRowList()) {
@@ -241,12 +240,12 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 				seen.add(row[getDetailIDIndex()]);
 			}
 		}
-		return new CachedResultSet(rowList, list.getMetaData());
+		return new MemorizedResultSet(rowList, list.getMetaData());
 	}
 
-	protected CachedResultSet list;
+	protected MemorizedResultSet list;
 	
-	protected synchronized CachedResultSet retrieveList(Session session) throws SQLException {
+	protected synchronized MemorizedResultSet retrieveList(Session session) throws SQLException {
 		if (list == null) {
 			list = distinct(retrieveList(session, databaseObjectRenderingDescription.getListQuery(), schema.getName(), null));
 		}
@@ -258,7 +257,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	 * 
 	 * @return list of all objects 
 	 */
-	protected CachedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
+	protected MemorizedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
 		Statement cStmt = null;
         try {
             Connection connection = session.getConnection();
@@ -270,7 +269,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
             	parentName = Quoting.staticUnquote(parentName);
             }
             ResultSet rs = cStmt.executeQuery(String.format(query, schema, parentName));
-            CachedResultSet result = new MetaDataCache.CachedResultSet(rs, null, session, schema);
+            MemorizedResultSet result = new MemorizedResultSet(rs, null, session, schema);
             rs.close();
             return result;
         } catch (Exception e) {

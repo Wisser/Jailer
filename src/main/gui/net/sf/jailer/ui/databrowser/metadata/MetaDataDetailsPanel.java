@@ -52,7 +52,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
+import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
@@ -350,7 +350,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					}
 				};
 		    	
-				final CachedResultSet[] metaDataDetails = new CachedResultSet[1];
+				final MemorizedResultSet[] metaDataDetails = new MemorizedResultSet[1];
 				
 				queues.get(mdd.queueIndex).put(new Runnable() {
 					@Override
@@ -363,7 +363,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 				    	try {
 				    		synchronized (session.getMetaData()) {
 					    		ResultSet rs = mdd.readMetaDataDetails(session, mdTable);
-					    		metaDataDetails[0] = new CachedResultSet(rs, null, session, null);
+					    		metaDataDetails[0] = new MemorizedResultSet(rs, null, session, null);
 					    		rs.close();
 				    		}
 						} catch (SQLException e) {
@@ -444,7 +444,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
         	final Runnable doRunGetConstraints = new Runnable() {
     			@Override
     			public void run() {
-    				final CachedResultSet constraints;
+    				final MemorizedResultSet constraints;
     				try {
     					constraints = mdTable.getSchema().getConstraints(mdTable);
     				} catch (SQLException e) {
