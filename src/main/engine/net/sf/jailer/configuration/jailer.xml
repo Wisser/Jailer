@@ -188,6 +188,14 @@ union all
 			</itemDescription>
 			<listQuery>select TRIGGER_NAME, TRIGGER_TYPE, TRIGGERING_EVENT, TABLE_NAME, COLUMN_NAME, REFERENCING_NAMES, WHEN_CLAUSE, STATUS, DESCRIPTION, ACTION_TYPE, CROSSEDITION, BEFORE_STATEMENT, BEFORE_ROW, AFTER_ROW, AFTER_STATEMENT, INSTEAD_OF_ROW, FIRE_ONCE, APPLY_SERVER_ONLY from ALL_TRIGGERS where table_owner = '%1$s'</listQuery>
 		</objectRenderers>
+        <objectRenderers>
+       		<name>Sequences</name>
+        	<iconURL>/net/sf/jailer/ui/resource/sequences.png</iconURL>
+			<itemDescription>
+	        	<iconURL>/net/sf/jailer/ui/resource/sequence.png</iconURL>
+			</itemDescription>
+			<listQuery>select SEQUENCE_NAME,SEQUENCE_OWNER,MIN_VALUE,MAX_VALUE,INCREMENT_BY,CYCLE_FLAG,ORDER_FLAG,CACHE_SIZE,LAST_NUMBER from ALL_SEQUENCES where SEQUENCE_OWNER = '%1$s'</listQuery>
+		</objectRenderers>
     </dbms>
 
     <!-- for MS SQL Server -->
@@ -584,6 +592,14 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 			</itemDescription>
 			<listQuery>SELECT TRIGNAME,OWNER,OWNERTYPE,TABSCHEMA,TABNAME,TRIGTIME,TRIGEVENT,GRANULARITY,VALID,CREATE_TIME,QUALIFIER,cast(FUNC_PATH as VARCHAR) FUNC_PATH,cast(TEXT as VARCHAR) TEXT,LAST_REGEN_TIME,REMARKS,PRECOMPILE_OPTIONS,COMPILE_OPTIONS FROM SYSCAT.TRIGGERS WHERE TRIGSCHEMA = '%1$s'</listQuery>
 		</objectRenderers>
+        <objectRenderers>
+       		<name>Sequences</name>
+        	<iconURL>/net/sf/jailer/ui/resource/sequences.png</iconURL>
+			<itemDescription>
+	        	<iconURL>/net/sf/jailer/ui/resource/sequence.png</iconURL>
+			</itemDescription>
+			<listQuery>select SEQNAME, SEQSCHEMA, DEFINER, DEFINERTYPE, OWNER, OWNERTYPE, SEQID, SEQTYPE, BASE_SEQSCHEMA, BASE_SEQNAME, INCREMENT, START, MAXVALUE, MINVALUE, NEXTCACHEFIRSTVALUE, CYCLE, CACHE, ORDER, DATATYPEID, SOURCETYPEID, CREATE_TIME, ALTER_TIME, PRECISION, ORIGIN, REMARKS from SYSCAT.SEQUENCES where OWNER = '%1$s'</listQuery>
+		</objectRenderers>
     </dbms>
 
     <!-- for DB2 z/OS -->
@@ -835,6 +851,14 @@ union all
 	        	<iconURL>/net/sf/jailer/ui/resource/trigger.png</iconURL>
 			</itemDescription>
 			<listQuery>select trigger_name, event_manipulation,event_object_catalog,event_object_schema,event_object_table,action_order,action_condition,action_statement,action_orientation,action_timing,action_reference_old_table,action_reference_new_table,action_reference_old_row,action_reference_new_row,created FROM information_schema.triggers where trigger_schema = '%1$s'</listQuery>
+		</objectRenderers>
+        <objectRenderers>
+       		<name>Sequences</name>
+        	<iconURL>/net/sf/jailer/ui/resource/sequences.png</iconURL>
+			<itemDescription>
+	        	<iconURL>/net/sf/jailer/ui/resource/sequence.png</iconURL>
+			</itemDescription>
+			<listQuery>select sequence_name, sequence_schema, sequence_catalog, data_type, numeric_precision, numeric_precision_radix, numeric_scale, start_value, minimum_value, maximum_value, increment, cycle_option from information_schema.sequences where sequence_schema = '%1$s'</listQuery>
 		</objectRenderers>
     </dbms>
     
@@ -1120,6 +1144,14 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 			</itemDescription>
 			<listQuery>select TRIGGER_CATALOG, TRIGGER_SCHEMA, TRIGGER_NAME, TRIGGER_TYPE, TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, BEFORE, JAVA_CLASS, QUEUE_SIZE, NO_WAIT, REMARKS, SQL, ID FROM information_schema.triggers WHERE TRIGGER_SCHEMA = '%1$s'</listQuery>
 		</objectRenderers>
-    </dbms>
+  	  	<objectRenderers>
+       		<name>Sequences</name>
+        	<iconURL>/net/sf/jailer/ui/resource/sequences.png</iconURL>
+			<itemDescription>
+	        	<iconURL>/net/sf/jailer/ui/resource/sequence.png</iconURL>
+			</itemDescription>
+			<listQuery>select SEQUENCE_NAME, SEQUENCE_CATALOG, SEQUENCE_SCHEMA, CURRENT_VALUE, INCREMENT, IS_GENERATED, REMARKS, CACHE, ID from information_schema.sequences where SEQUENCE_SCHEMA = '%1$s'</listQuery>
+		</objectRenderers>
+      </dbms>
 
 </configuration>
