@@ -320,7 +320,7 @@ union all
     <dbms>
         <id>MySQL</id>
         <displayName>MySQL</displayName>
-        <urlPattern>jdbc:mysql.*</urlPattern>
+        <urlPattern>jdbc:mysql.*|jdbc:mariadb.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
