@@ -961,6 +961,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
     public void reset() {
         refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        JDBCMetaDataBasedModelElementFinder.resetCaches(metaDataSource.getSession());
         setOutline(new ArrayList<OutlineInfo>(), -1);
         proceduresPerSchema.clear();
         SwingUtilities.invokeLater(new Runnable() {
