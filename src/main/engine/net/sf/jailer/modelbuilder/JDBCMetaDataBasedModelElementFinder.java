@@ -898,6 +898,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		column.isNullable = metaData.isNullable(i) != ResultSetMetaData.columnNoNulls;
 		return column;
 	}
+	
+	public static void resetCaches(Session session) {
+		session.removeSessionProperties(JDBCMetaDataBasedModelElementFinder.class);
+	}
 
 	/**
 	 * Gets description.
