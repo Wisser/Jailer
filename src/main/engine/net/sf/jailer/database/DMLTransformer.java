@@ -593,6 +593,10 @@ public class DMLTransformer extends AbstractResultSetReader {
 			return content.toString();
 		}
 
+		if (filter != null && filter.getReason() != null) {
+			return cVal + " /*" + filter.getReason() + "*/";
+		}
+		
 		return cVal;
 	}
 
