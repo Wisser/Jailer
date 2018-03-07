@@ -718,7 +718,7 @@ public class SubsettingEngine {
 							if (DBMS.POSTGRESQL.equals(session.dbms) && scriptFormat == ScriptFormat.INTRA_DATABASE) {
 								nullExpression += "::" + column.type;
 							}
-							column.setFilter(new Filter(nullExpression, null, false, null));
+							column.setFilter(new Filter(nullExpression, null, false, null, "deferred due to circular dependency"));
 						}
 					}
 

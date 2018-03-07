@@ -42,6 +42,11 @@ public class Filter {
 	final private FilterSource filterSource;
 	
 	/**
+	 * Reason (optional).
+	 */
+	private final String reason;
+	
+	/**
 	 * <code>true</code> if filter is applied at export instead of import.
 	 */
 	private boolean applyAtExport = true;
@@ -95,10 +100,22 @@ public class Filter {
 	 * @param derived derived from parent primary key column?
 	 */
 	public Filter(String expression, String type, boolean derived, FilterSource filterSource) {
+		this(expression, type, derived, filterSource, null);
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param expression filter expression (in SQL)
+	 * @param derived derived from parent primary key column?
+	 * @param reason reason
+	 */
+	public Filter(String expression, String type, boolean derived, FilterSource filterSource, String reason) {
 		this.expression = expression;
 		this.type = type;
 		this.derived = derived;
 		this.filterSource = filterSource;
+		this.reason = reason;
 	}
 	
 	/**
@@ -147,6 +164,15 @@ public class Filter {
 	 */
 	public void setApplyAtExport(boolean b) {
 		applyAtExport = b;
+	}
+
+	/**
+	 * Gets reasion.
+	 * 
+	 * @return reasion
+	 */
+	public String getReason() {
+		return reason;
 	}
 
 	/**
