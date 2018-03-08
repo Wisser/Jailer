@@ -197,7 +197,7 @@ public class DBMS {
 	/**
 	 * Replacement map for column types used for DDL generation.
 	 */
-	private Map<String, String> typeReplacement;
+	private Map<String, String> typeReplacement = new HashMap<String, String>();
 	
 	/**
 	 * Replacement map for special characters in string literals.
@@ -521,10 +521,7 @@ public class DBMS {
 	 */
 	public Map<String, String> getTypeReplacement() {
 		if (!this.equals(DBMS.ORACLE)) {
-			if (typeReplacement == null) {
-				return Collections.singletonMap("VARCHAR2", "VARCHAR");
-			}
-			if (!typeReplacement.containsKey("VARCHAR2")) {
+			if (typeReplacement == null || !typeReplacement.containsKey("VARCHAR2")) {
 				typeReplacement = new HashMap<String, String>(typeReplacement);
 				typeReplacement.put("VARCHAR2", "VARCHAR");
 			}
