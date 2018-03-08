@@ -17,6 +17,8 @@ package net.sf.jailer.configuration;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -518,6 +520,15 @@ public class DBMS {
 	 * Gets replacement map for column types used for DDL generation.
 	 */
 	public Map<String, String> getTypeReplacement() {
+		if (!this.equals(DBMS.ORACLE)) {
+			if (typeReplacement == null) {
+				return Collections.singletonMap("VARCHAR2", "VARCHAR");
+			}
+			if (!typeReplacement.containsKey("VARCHAR2")) {
+				typeReplacement = new HashMap<String, String>(typeReplacement);
+				typeReplacement.put("VARCHAR2", "VARCHAR");
+			}
+		}
 		return typeReplacement;
 	}
 
