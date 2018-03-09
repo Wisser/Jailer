@@ -18,6 +18,7 @@ package net.sf.jailer.ui.databrowser;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.math.BigDecimal;
@@ -33,6 +34,7 @@ import javax.swing.JTextField;
 import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
@@ -119,6 +121,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				@Override
 				public void ancestorAdded(AncestorEvent event) {
 					closeButton.grabFocus();
+					jScrollPane1.getVerticalScrollBar().setValue(jScrollPane1.getVerticalScrollBar().getMinimum());					
+					jScrollPane1.getHorizontalScrollBar().setValue(jScrollPane1.getHorizontalScrollBar().getMinimum());
 				}
 			});
 		}
