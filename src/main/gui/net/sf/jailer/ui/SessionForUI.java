@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Window;
 import java.sql.Connection;
