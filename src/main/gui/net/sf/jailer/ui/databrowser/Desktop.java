@@ -275,6 +275,11 @@ public abstract class Desktop extends JDesktopPane {
 		 * The link's color.
 		 */
 		public Color color;
+		
+		/**
+		 * Is the link visible?
+		 */
+		public boolean visible = true;
 	}
 
 	/**
@@ -1206,8 +1211,7 @@ public abstract class Desktop extends JDesktopPane {
 				if (visParent == null) {
 					visParent = tableBrowser.parent;
 				}
-				int midx = visParent.internalFrame.getX() + visParent.internalFrame.getWidth() / 2;
-
+				
 				Rectangle cellRect = new Rectangle();
 				boolean ignoreScrolling = false;
 				int i = 0;
@@ -1259,6 +1263,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 
 				for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
+					rowToRowLink.visible = true;
 					x1 = y1 = x2 = y2 = -1;
 					try {
 						if (rowToRowLink.childRowIndex >= 0 && rowToRowLink.parentRowIndex >= 0) {
@@ -1271,19 +1276,13 @@ public abstract class Desktop extends JDesktopPane {
 							if (visParent == null) {
 								visParent = tableBrowser.parent;
 							}
-							int dll = Math.abs(visParent.internalFrame.getX() - internalFrame.getX());
-							int dlr = Math.abs(visParent.internalFrame.getX() - (internalFrame.getX() + internalFrame.getWidth()));
-							int drl = Math.abs((visParent.internalFrame.getX() + visParent.internalFrame.getWidth()) - internalFrame.getX());
-							int drr = Math.abs((visParent.internalFrame.getX() + visParent.internalFrame.getWidth())
-									- (internalFrame.getX() + internalFrame.getWidth()));
-
-							boolean r1, r2;
-							int dmin = Math.min(dll, Math.min(dlr, Math.min(drl, drr)));
-							r2 = dmin == drl || dmin == drr;
-							r1 = dmin == dlr || dmin == drr;
 							ignoreScrolling = false;
 							if (rowToRowLink.childRowIndex >= 0) {
 								i = tableBrowser.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.childRowIndex);
+								if (i < 0) {
+									rowToRowLink.visible = false;
+									continue;
+								}
 								cellRect = tableBrowser.browserContentPane.rowsTable.getCellRect(i, 0, true);
 								if (tableBrowser.browserContentPane.rows != null && tableBrowser.browserContentPane.rows.size() == 1) {
 									cellRect.setBounds(cellRect.x, 0, cellRect.width, Math.min(cellRect.height, 20));
@@ -1320,6 +1319,10 @@ public abstract class Desktop extends JDesktopPane {
 							i = 0;
 							if (rowToRowLink.parentRowIndex >= 0) {
 								i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.parentRowIndex);
+								if (i < 0) {
+									rowToRowLink.visible = false;
+									continue;
+								}
 								cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
 								if (tableBrowser.parent.browserContentPane.rows != null && tableBrowser.parent.browserContentPane.rows.size() == 1) {
 									cellRect.setBounds(cellRect.x, 0, cellRect.width, Math.min(cellRect.height, 20));
@@ -1443,7 +1446,7 @@ public abstract class Desktop extends JDesktopPane {
 								l.add(link);
 							}
 							for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
-								if (rowToRowLink.x1 >= 0) {
+								if (rowToRowLink.visible && rowToRowLink.x1 >= 0) {
 									String sourceRowID = rowToRowLink.childRow.rowId;
 									String destRowID = rowToRowLink.parentRow.rowId;
 

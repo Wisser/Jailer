@@ -779,13 +779,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					((JLabel) render).setIcon(null);
 					if (row < rowSorter.getViewRowCount()) {
 						rowIndex = rowSorter.convertRowIndexToModel(row);
-						r = rows.get(rowIndex);
-						if (r != null) {
-							renderRowAsPK = renderRowAsPK(r);
-							Object cellContent = r.values.length > column? r.values[column] : null;
-							if (cellContent instanceof JLabel) {
-								((JLabel) render).setIcon(((JLabel) cellContent).getIcon());
-								((JLabel) render).setText(((JLabel) cellContent).getText());
+						if (rowIndex < rows.size()) {
+							r = rows.get(rowIndex);
+							if (r != null) {
+								renderRowAsPK = renderRowAsPK(r);
+								Object cellContent = r.values.length > column? r.values[column] : null;
+								if (cellContent instanceof JLabel) {
+									((JLabel) render).setIcon(((JLabel) cellContent).getIcon());
+									((JLabel) render).setText(((JLabel) cellContent).getText());
+								}
 							}
 						}
 					}
@@ -3234,6 +3236,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				protected boolean useToString(int column) {
 					return false;
 				}
+
+				@Override
+			    public void toggleSortOrder(int column) {
+			        List<? extends SortKey> sortKeys = getSortKeys();
+			        if (sortKeys.size() > 0) {
+			            if (sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING) {
+			                setSortKeys(null);
+			                return;
+			            }
+			        }
+			        super.toggleSortOrder(column);
+			    }
 
 				@Override
 				public Comparator<?> getComparator(int n) {
