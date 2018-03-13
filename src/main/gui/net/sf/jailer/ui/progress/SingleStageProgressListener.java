@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -74,7 +75,7 @@ public class SingleStageProgressListener implements ProgressListener {
 	/**
 	 * Row counters.
 	 */
-	private long exportedRows = 0;
+	private AtomicLong exportedRows = new AtomicLong();
 	private long collectedRows = 0;
 	private long explainedRows = 0;
 	private String currentStep = "";
@@ -90,7 +91,7 @@ public class SingleStageProgressListener implements ProgressListener {
 	private long timeDelay = 0;
 	private final Set<String> targetSchemaSet;
 	private final boolean forExportStage;
-	
+
 	/**
 	 * Constructor.
 	 * 
@@ -375,8 +376,8 @@ public class SingleStageProgressListener implements ProgressListener {
 	 *            the number of rows
 	 */
 	@Override
-	public synchronized void exported(Table table, long rc) {
-		exportedRows += rc;
+	public void exported(Table table, long rc) {
+		exportedRows.addAndGet(rc);
 	}
 
 	/**
