@@ -860,8 +860,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	public void readEntities(Table table, boolean orderByPK) throws SQLException {
 		Session.ResultSetReader reader = getTransformerFactory().create(table);
-		long rc = readEntities(table, orderByPK, reader);
-		executionContext.getProgressListenerRegistry().fireExported(table, rc);
+		long rc = readEntities(table, orderByPK, reader, true);
 	}
 
 	/**
@@ -870,7 +869,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
-	private long readEntities(final Table table, final boolean orderByPK, final Session.ResultSetReader reader) throws SQLException {
+	private long readEntities(final Table table, final boolean orderByPK, final Session.ResultSetReader reader, final boolean fireProgressEvents) throws SQLException {
 		String upkColumnList = upkColumnList(table, "E", null);
 		String select = 
 				"Select " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E " +
@@ -886,12 +885,17 @@ public class LocalEntityGraph extends EntityGraph {
 			protected void process(String inlineView) throws SQLException {
 				String sqlQuery = "Select " + filteredSelectionClause(table) + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
 						pkEqualsEntityID(table, "T", "E", "", false);
+				long lrc;
 				if (orderByPK) {
 					String sqlQueryWithOrderBy = sqlQuery +
 						" order by " + rowIdSupport.getPrimaryKey(table).columnList("T.", quoting);
-					rc[0] += remoteSession.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0);
+					lrc = remoteSession.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0);
 				} else {
-					rc[0] += remoteSession.executeQuery(sqlQuery, reader);
+					lrc = remoteSession.executeQuery(sqlQuery, reader);
+				}
+				rc[0] += lrc;
+				if (fireProgressEvents) {
+					executionContext.getProgressListenerRegistry().fireExported(table, lrc);
 				}
 			}
 		});
@@ -946,7 +950,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration) throws SQLException {
 		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, executionContext.getNumberOfEntities(), getTargetSession(), targetConfiguration, importFilterManager, executionContext);
-		readEntities(table, false, reader);
+		readEntities(table, false, reader, false);
 	}
 
 	/**
