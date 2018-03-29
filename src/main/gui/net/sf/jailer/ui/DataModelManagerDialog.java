@@ -24,6 +24,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -233,6 +235,36 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 		
 		setTitle(applicationName);
+		
+		addWindowListener(new WindowListener() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+			}
+			@Override
+			public void windowIconified(WindowEvent e) {
+			}
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+			}
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+			}
+			@Override
+			public void windowClosing(WindowEvent e) {
+			}
+			@Override
+			public void windowClosed(WindowEvent e) {
+		        SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						UIUtil.checkTermination();
+					}
+				});
+			}
+			@Override
+			public void windowActivated(WindowEvent e) {
+			}
+		});
 		
 		setLocation(80, 130);
 		pack();
