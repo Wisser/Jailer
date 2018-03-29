@@ -826,7 +826,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         scopesWithContext.add("values");
         
         Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
-        Pattern pattern = Pattern.compile("(?:\\bas\\b)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\.|\\b(?:on|where|left|right|full|inner|outer|join|and|or|not|set)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("(?:\\bas\\b)|(?:[&][\\w]+\\s*\\.\\.)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\.|\\b(?:on|where|left|right|full|inner|outer|cross|join|and|or|not|set)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(statement + ")");
         boolean inFrom = false;
         boolean inWith = false;

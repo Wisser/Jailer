@@ -561,7 +561,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (render instanceof JLabel) {
 					if (value != null && value.toString().trim().length() > 0) {
 						String tooltip = ConditionEditor.toMultiLine(value.toString());
-						((JLabel) render).setToolTipText(UIUtil.toHTML(tooltip, 500));
+						((JLabel) render).setToolTipText(UIUtil.toHTML(tooltip, 200));
 					} else {
 						((JLabel) render).setToolTipText(null);
 					}
@@ -590,7 +590,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						String value = f.getText();
 						if (value != null && value.toString().trim().length() > 0) {
 							String tooltip = ConditionEditor.toMultiLine(value.toString());
-							andCondition.setToolTipText(UIUtil.toHTML(tooltip, 500));
+							andCondition.setToolTipText(UIUtil.toHTML(tooltip, 200));
 						} else {
 							andCondition.setToolTipText(null);
 						}
@@ -827,7 +827,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							((JLabel) render).setFont(highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? bold : nonbold);
 							String text = ((JLabel) render).getText();
 							if (text.indexOf('\n') >= 0) {
-								((JLabel) render).setToolTipText(UIUtil.toHTML(text, 400));
+								((JLabel) render).setToolTipText(UIUtil.toHTML(text, 200));
 							} else if (text.length() > 20) {
 								((JLabel) render).setToolTipText(text);
 							}

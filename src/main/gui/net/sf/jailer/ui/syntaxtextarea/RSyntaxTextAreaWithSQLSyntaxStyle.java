@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.syntaxtextarea;
 
 import java.awt.Dialog;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Window;
@@ -83,6 +84,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	public static KeyStroke KS_RUN_ALL = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
 	public static KeyStroke KS_FORMAT = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_DOWN_MASK|InputEvent.CTRL_DOWN_MASK);
 	public static KeyStroke KS_SELECTTABLE = KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0);
+	public static KeyStroke KS_ZOOMIN = KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, InputEvent.CTRL_DOWN_MASK);
+	public static KeyStroke KS_ZOOMOUT = KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, InputEvent.CTRL_DOWN_MASK);
+	public static KeyStroke KS_ZOOMRESET = KeyStroke.getKeyStroke(KeyEvent.VK_0, InputEvent.CTRL_DOWN_MASK);
 
 	/**
 	 * Actions.
@@ -92,6 +96,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	public final Action explain;
 	public final Action formatSQL;
 	private final Action selectTableAction;
+	private final Action zoomIn;
+	private final Action zoomOut;
+	private final Action zoomReset;
 	
 	public RSyntaxTextAreaWithSQLSyntaxStyle(boolean withExecuteActions, boolean withSelectTableAction) {
 		this.withExecuteActions = withExecuteActions;
@@ -100,20 +107,53 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		// setTabsEmulated(true);
 		
 		// load images
-		try {
-			String dir = "/net/sf/jailer/ui/resource";
-			icon = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsole.png")));
-    	    iconBegin = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin.png")));
-			iconBeginEnd = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend.png")));
-			iconEnd = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleend.png")));
-			iconf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolef.png")));
-    	    iconBeginf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginf.png")));
-			iconBeginEndf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginendf.png")));
-			iconEndf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleendf.png")));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		loadImages();
 		
+		zoomIn = new AbstractAction("Zoom In") {
+			{
+				putValue(ACCELERATOR_KEY, KS_ZOOMIN);
+				InputMap im = getInputMap();
+				im.put(KS_ZOOMIN, this);
+				ActionMap am = getActionMap();
+				am.put(this, this);
+			}
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				zoom(1.1);
+			}
+		};
+
+		zoomOut = new AbstractAction("Zoom Out") {
+			{
+				putValue(ACCELERATOR_KEY, KS_ZOOMOUT);
+				InputMap im = getInputMap();
+				im.put(KS_ZOOMOUT, this);
+				ActionMap am = getActionMap();
+				am.put(this, this);
+			}
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				zoom(1 / 1.1);
+			}
+		};
+		
+		zoomReset = new AbstractAction("Restore Default Zoom") {
+			{
+				putValue(ACCELERATOR_KEY, KS_ZOOMRESET);
+				InputMap im = getInputMap();
+				im.put(KS_ZOOMRESET, this);
+				ActionMap am = getActionMap();
+				am.put(this, this);
+			}
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				zoom(0);
+			}
+		};
+
 		formatSQL = new AbstractAction("Format SQL") {
 			{
 				putValue(ACCELERATOR_KEY, KS_FORMAT);
@@ -220,6 +260,33 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		updateMenuItemState();
 	}
 
+	private Double initialFontSize = null;
+	private Double currentFontSize = null;
+	
+	private void zoom(double factor) {
+		if (currentFontSize == null) {
+			currentFontSize = (double) getFont().getSize();
+		}
+		if (initialFontSize == null) {
+			initialFontSize = currentFontSize;
+		}
+		if (factor == 0.0) {
+			currentFontSize = initialFontSize;
+		} else {
+			currentFontSize = currentFontSize * factor;
+			if (currentFontSize.intValue() == getFont().getSize()) {
+				if (factor > 1) {
+					++currentFontSize;
+				} else {
+					--currentFontSize;
+				}
+			}
+			currentFontSize = Math.max(currentFontSize, 4);
+			currentFontSize = Math.min(currentFontSize, 4 * initialFontSize);
+		}
+		setFont(new Font(getFont().getName(), getFont().getStyle(), currentFontSize.intValue()));
+	}
+
 	private ImageIcon scaleToLineHeight(ImageIcon imageIcon) {
 		double s = getLineHeight() / (double) imageIcon.getIconHeight();
 		return new ImageIcon(imageIcon.getImage().getScaledInstance((int)(imageIcon.getIconWidth()), (int)(imageIcon.getIconHeight() * s + 0.5), Image.SCALE_SMOOTH));
@@ -286,6 +353,11 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			menu.add(new JSeparator(), 3);
 		}
 
+		menu.addSeparator();
+		menu.add(zoomIn);
+		menu.add(zoomOut);
+		menu.add(zoomReset);
+		
 		return menu;
 	}
 
@@ -763,6 +835,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		if (allowRun && setLineHighlights) {
 			if (!pending.get()) {
 				removeAllLineHighlights();
+				loadImages();
 				setHighlightCurrentLine(true);
 				if (gutter != null) {
 					gutter.removeAllTrackingIcons();
@@ -879,6 +952,27 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		}
 	}
 	
+	private Integer lastLineHeight;
+	
+	private void loadImages() {
+		if (lastLineHeight == null || lastLineHeight != getLineHeight()) {
+			lastLineHeight = getLineHeight();
+			try {
+				String dir = "/net/sf/jailer/ui/resource";
+				icon = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsole.png")));
+	    	    iconBegin = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin.png")));
+				iconBeginEnd = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend.png")));
+				iconEnd = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleend.png")));
+				iconf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolef.png")));
+	    	    iconBeginf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginf.png")));
+				iconBeginEndf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginendf.png")));
+				iconEndf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleendf.png")));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	private ImageIcon icon;
 	private ImageIcon iconBegin;
 	private ImageIcon iconBeginEnd;

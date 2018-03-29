@@ -49,6 +49,7 @@ public class BasicFormatterImpl {
 		BEGIN_CLAUSES.add( "right" );
 		BEGIN_CLAUSES.add( "inner" );
 		BEGIN_CLAUSES.add( "outer" );
+		BEGIN_CLAUSES.add( "cross" );
 		BEGIN_CLAUSES.add( "group" );
 		BEGIN_CLAUSES.add( "order" );
 
