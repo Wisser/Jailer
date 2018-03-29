@@ -120,7 +120,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				zoom(1.1);
+				zoom(1.25);
 			}
 		};
 
@@ -135,7 +135,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				zoom(1 / 1.1);
+				zoom(1 / 1.25);
 			}
 		};
 		
