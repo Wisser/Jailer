@@ -809,7 +809,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
     private void updateOutline(String sql, int startPosition) {
-        final int MAX_CONTEXT_LENGTH = 100;
+        final int MAX_CONTEXT_LENGTH = 80;
         final int MAX_TOOLTIP_LENGTH = 100;
         List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
         provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
@@ -854,10 +854,33 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             relocatedOutlineInfos.add(rlInfo);
             predInfo = info;
         }
+        simplifyOutline(relocatedOutlineInfos);
         setOutlineTables(relocatedOutlineInfos, indexOfInfoAtCaret);
     }
 
-    private void adjustLevels(List<OutlineInfo> outlineInfos) {
+    private void simplifyOutline(List<OutlineInfo> outlineInfos) {
+		// "From <single table>"
+    	List<OutlineInfo> toRemove = new ArrayList<OutlineInfo>();
+    	for (int i = 1; i < outlineInfos.size(); ++i) {
+    		OutlineInfo info = outlineInfos.get(i);
+    		OutlineInfo pred = outlineInfos.get(i - 1);
+    		if (info.mdTable != null && "From".equalsIgnoreCase(pred.scopeDescriptor)) {
+    			if (info.level == pred.level) {
+    				OutlineInfo succ = null;
+    				if (i + 1 < outlineInfos.size()) {
+    					succ = outlineInfos.get(i + 1);
+    				}
+    				if (succ == null || (succ.level != info.level || succ.mdTable == null)) {
+    					info.scopeDescriptor = pred.scopeDescriptor;
+    					toRemove.add(pred);
+    				}
+    			}
+    		}
+    	}
+    	outlineInfos.removeAll(toRemove);
+	}
+
+	private void adjustLevels(List<OutlineInfo> outlineInfos) {
     	if (outlineInfos.size() > 0) {
     		int lastLevel = outlineInfos.get(outlineInfos.size() - 1).level;
     		for (int level = lastLevel - 1; level >= 0; --level) {

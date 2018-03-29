@@ -90,6 +90,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.log4j.Logger;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
@@ -1408,41 +1409,62 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     	}
     }
 
+	private final String fontName; {
+		String name = null;
+		try {
+			name = new RSyntaxTextArea().getFont().getName();
+		} catch (Throwable t) {
+			// ignore
+		}
+		fontName = name;
+	}
+
     private String outlineTableRender(OutlineInfo info, boolean selected) {
-        String render = "<font color=\"#000000\">";
-        if (info.mdTable != null || info.isCTE) {
+        String KEYWORD_ATTRIBUTES = "color=\"#0000cc\"";
+		String face = fontName != null? "face=\"" + fontName + "\" " : "";
+        String render = "<font " + face + "color=\"#000000\">";
+		String KEYWORD_PREFIX = (fontName != null? "<font " + face + "" + face + ">" : "") + "<b>";
+		String KEYWORD_SUFFIX = "</b>" + (fontName != null? "</font>" : "");
+		String scopeDescriptor = info.scopeDescriptor;
+		if (scopeDescriptor != null) {
+			scopeDescriptor = scopeDescriptor.replace(" ", "&nbsp;");
+		}
+		if (info.mdTable != null || info.isCTE) {
         	if (info.isCTE) {
-        		render = info.scopeDescriptor;
+        		render = scopeDescriptor;
         	} else {
 	            if (info.mdTable.getSchema().isDefaultSchema) {
 	                render += info.mdTable.getName();
 	            } else {
 	                render += info.mdTable.getSchema().getName() + "." + info.mdTable.getName();
 	            }
+	            if (scopeDescriptor != null) {
+	                render = "<font " + face + "" + KEYWORD_ATTRIBUTES + ">" + KEYWORD_PREFIX  + "" + scopeDescriptor + "" + KEYWORD_SUFFIX + "&nbsp;" + render;
+	            }
         	}
             String alias = info.alias;
             if (alias != null) {
             	if (!render.isEmpty()) {
-            		render += " ";
+            		render += "&nbsp;";
             	}
-                render += "<font color=\"#0000dd\"><b>as</b></font> " + alias;
+                render += "<font " + face + "" + KEYWORD_ATTRIBUTES + ">" + KEYWORD_PREFIX + "as" + KEYWORD_SUFFIX + "</font>&nbsp;" + alias;
             }
             render += "</font>";
-        } else if (info.scopeDescriptor != null) {
-            render = "<font color=\"#0000dd\"><b>" + info.scopeDescriptor + "</b>" + (info.rowCount > 1? " <i>(" + info.rowCount + " rows)</i>" : "") + "</font>";
+        } else if (scopeDescriptor != null) {
+            render = "<font " + face + "" + KEYWORD_ATTRIBUTES + ">" + KEYWORD_PREFIX + "" + scopeDescriptor + "" + KEYWORD_SUFFIX + "" + (info.rowCount > 1? "&nbsp;<i>(" + info.rowCount + "&nbsp;rows)</i>" : "") + "</font>";
         }
         
         String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         if (info.isCTE && "".equals(info.alias)) {
         	render = "&nbsp;&nbsp;&nbsp;" + render;
-        } else if (info.scopeDescriptor == null || (info.isCTE && !"".equals(info.scopeDescriptor))) {
+        } else if (scopeDescriptor == null || (info.isCTE && !"".equals(scopeDescriptor))) {
         	render = indent + render;
         }
         for (int i = 0; i < info.level; ++i) {
         	render = indent + render;
         }
         if (info.context != null) {
-        	render += "<font color=\"#dd9999\">&nbsp;&nbsp;" + info.context + "</font>";
+        	render += "<font " + face + "color=\"#dd8888\">&nbsp;" + info.context + "</font>";
         }
         render = "<html>" + render;
         return render;
@@ -1495,7 +1517,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         public final String alias;
         public int level;
         public final int position;
-        public final String scopeDescriptor;
+        public String scopeDescriptor;
         public boolean withContext = false;
         public int contextPosition;
         public String context;

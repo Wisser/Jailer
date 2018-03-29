@@ -1,5 +1,5 @@
 7.6.6
-  - Minor GUI Improvements and bug fixes.
+  - Improved SQL Outline rendering.
 
 7.6.5
   - Minor GUI Improvements and bug fixes.
