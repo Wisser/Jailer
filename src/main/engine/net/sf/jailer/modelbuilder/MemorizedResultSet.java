@@ -36,6 +36,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -117,6 +118,17 @@ public class MemorizedResultSet implements ResultSet {
 		return object;
 	}
 
+	public void removeNullRows(int columnIndex) {
+		if (rowList != null) {
+			Iterator<Object[]> i = rowList.iterator();
+			while (i.hasNext()) {
+				if (i.next()[columnIndex - 1] == null) {
+					i.remove();
+				}
+			}
+		}
+	}
+	
 	@Override
 	public Object getObject(int columnIndex) throws SQLException {
 		Object[] row = rowList.get(index);

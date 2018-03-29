@@ -55,6 +55,7 @@ public enum MetaDataDetails {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), Quoting.staticUnquote( mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
 			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
+			mRs.removeNullRows(6);
 			rs.close();
 			try {
 				return MemorizedResultSetTransformer.transform(mRs,

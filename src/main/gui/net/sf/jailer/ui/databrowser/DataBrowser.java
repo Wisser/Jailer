@@ -2813,6 +2813,10 @@ public class DataBrowser extends javax.swing.JFrame {
     private MetaDataPanel metaDataPanel;
     
     private void onNewSession(Session newSession) {
+    	if (session == null) {
+    		return;
+    	}
+
     	ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
     	String alias = connection != null ? " " + connection.alias : " ";
     	

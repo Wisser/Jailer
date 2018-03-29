@@ -71,7 +71,7 @@ public class MetaDataCache {
 			return new MetaDataCache();
 		}
 
-		_log.info("reading primary keys...");
+		_log.info("reading primary keys (may take some time)...");
 
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
@@ -99,7 +99,7 @@ public class MetaDataCache {
 			return new MetaDataCache();
 		}
 
-		_log.info("reading index info...");
+		_log.info("reading index info (may take some time)...");
 
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
@@ -127,7 +127,7 @@ public class MetaDataCache {
 			return new MetaDataCache();
 		}
 
-		_log.info("reading imported keys...");
+		_log.info("reading imported keys (may take some time)...");
 
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
@@ -150,7 +150,7 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readColumns(Session session, DatabaseMetaData metaData, String schema) {
-		_log.info("reading columns...");
+		_log.info("reading columns (may take some time)...");
 
 		MetaDataCache metaDataCache = new MetaDataCache();
 		ResultSet rs;
