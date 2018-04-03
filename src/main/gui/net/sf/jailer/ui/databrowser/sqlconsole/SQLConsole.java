@@ -45,6 +45,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -142,6 +144,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private final AtomicBoolean updatingStatus = new AtomicBoolean(false);
     private final ImageIcon scaledCancelIcon;
     private final ImageIcon scaledExplainIcon;
+    private final VariableSupport variableSupport = new VariableSupport();
 	
     /**
      * Creates new form SQLConsole
@@ -549,6 +552,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         final Status localStatus = new Status();
         String sqlStatement = null;
         String stmtId = null;
+        SortedMap<Integer, Integer> positionOffsets = new TreeMap<Integer, Integer>();
         try {
             status.numStatements++;
             localStatus.numStatements++;
@@ -557,7 +561,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
             sqlStatement = sql.replaceFirst("(?is)(;\\s*)+$", "");
+			sqlStatement = variableSupport.replaceVariables(sqlStatement, positionOffsets);
             boolean hasResultSet;
+            boolean isDefine = false;
             if (explain) {
             	synchronized (this) {
             		stmtId = "Jailer" + (nextPlanID++ % 8);
@@ -569,7 +575,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 statement = session.getConnection().createStatement();
             	hasResultSet = statement.execute(String.format(session.dbms.getExplainQuery(), sqlStatement, stmtId));
             } else {
-            	hasResultSet = statement.execute(sqlStatement);
+            	if (variableSupport.executeDefine(sqlStatement)) {
+            		isDefine = true;
+            		hasResultSet = false;
+            	} else {
+            		hasResultSet = statement.execute(sqlStatement);
+            	}
             }
             if (hasResultSet) {
                 resultSet = statement.getResultSet();
@@ -730,7 +741,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 });
             } else {
                 status.timeInMS += (System.currentTimeMillis() - startTime);
-                int updateCount = statement.getUpdateCount();
+                int updateCount = isDefine? 0 : statement.getUpdateCount();
                 if (updateCount >= 0) {
                     status.numRowsUpdated += updateCount;
                 }
@@ -770,7 +781,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 if (error instanceof SQLException && sqlStatement != null && statementStartOffset >= 0) {
                     int pos = retrieveErrorPos(sqlStatement, error.getMessage());
                     if (pos >= 0) {
-                        status.errorPosition = statementStartOffset + pos;
+                        SortedMap<Integer, Integer> tail = positionOffsets.tailMap(pos);
+                        int positionOffset;
+                        if (tail.isEmpty()) {
+                        	positionOffset = 0;
+                        } else {
+                        	positionOffset = tail.get(tail.firstKey());
+                        }
+						status.errorPosition = statementStartOffset + pos + positionOffset;
                         status.errorPositionIsKnown = true;
                     } else {
                         status.errorPosition = statementStartOffset;
