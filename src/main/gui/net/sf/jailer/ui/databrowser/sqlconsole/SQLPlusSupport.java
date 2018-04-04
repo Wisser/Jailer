@@ -27,8 +27,6 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
-
 /**
  * Supports some Oracle SQL+ statements.
  *
@@ -39,7 +37,7 @@ public class SQLPlusSupport {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
+	private static final Logger logger = Logger.getLogger(SQLPlusSupport.class);
 	
 	/**
 	 * The variables.
