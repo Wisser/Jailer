@@ -107,7 +107,7 @@ public class SQLPlusSupport {
 					String var = matcher.group(1);
 					String replacement = variables.get(var.toUpperCase());
 					if (replacement != null) {
-						matcher.appendReplacement(sb, replacement);
+						matcher.appendReplacement(sb,  Matcher.quoteReplacement(replacement));
 						if (positionOffsets != null) {
 							offset += matcher.group().length() - replacement.length();
 							for (int i = 0; i < replacement.length(); ++i) {
