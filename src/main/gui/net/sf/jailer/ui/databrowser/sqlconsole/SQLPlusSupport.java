@@ -63,7 +63,7 @@ public class SQLPlusSupport {
 		Matcher matcher = DEFINE_PATTERN.matcher(statement);
 		if (matcher.matches()) {
 			String var = matcher.group(1);
-			String val = matcher.group(2);
+			String val = matcher.group(2).trim();
 			if (val.length() > 1 && val.startsWith("\"") && val.endsWith("\"")) {
 				val = val.substring(1, val.length() - 1);
 			}
