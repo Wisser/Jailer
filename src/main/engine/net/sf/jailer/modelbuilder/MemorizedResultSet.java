@@ -89,9 +89,11 @@ public class MemorizedResultSet implements ResultSet {
 			throws SQLException {
 		this.rowList = new ArrayList<Object[]>();
 		ResultSetMetaData rmd = resultSet.getMetaData();
+		prepareHook(rmd);
 		CellContentConverter cellContentConverter = new CellContentConverter(rmd, session, session.dbms);
 		final int numCol = projection == null? rmd.getColumnCount() : projection.length;
 		while (resultSet.next()) {
+			readRowHook(resultSet);
 			Object[] row = new Object[numCol];
 			for (int i = 1; i <= numCol; ++i) {
 				row[i - 1] = convertCellContent(cellContentConverter.getObject(resultSet, projection == null? i : projection[i - 1]));
@@ -112,6 +114,12 @@ public class MemorizedResultSet implements ResultSet {
 			types[i - 1] = rmd.getColumnType(projection == null? i : projection[i - 1]);
 		}
 		resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types);
+	}
+
+	protected void prepareHook(ResultSetMetaData rmd) throws SQLException {
+	}
+
+	protected void readRowHook(ResultSet resultSet) throws SQLException {
 	}
 
 	protected Object convertCellContent(Object object) {

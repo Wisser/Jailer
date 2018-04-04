@@ -144,7 +144,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private final AtomicBoolean updatingStatus = new AtomicBoolean(false);
     private final ImageIcon scaledCancelIcon;
     private final ImageIcon scaledExplainIcon;
-    private final VariableSupport variableSupport = new VariableSupport();
+    private final SQLPlusSupport sqlPlusSupport = new SQLPlusSupport();
 	
     /**
      * Creates new form SQLConsole
@@ -260,7 +260,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         });
         restoreHistory();
         
-        provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
+        provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource) {
+            protected String prepareStatementForAliasAnalysis(String statement) {
+            	return sqlPlusSupport.replaceVariables(statement, null);
+            }
+        };
         new SQLAutoCompletion(provider, editorPane);
 
         RTextScrollPane jScrollPane = new RTextScrollPane();
@@ -561,7 +565,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
             sqlStatement = sql.replaceFirst("(?is)(;\\s*)+$", "");
-			sqlStatement = variableSupport.replaceVariables(sqlStatement, positionOffsets);
+			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
             boolean hasResultSet;
             boolean isDefine = false;
             if (explain) {
@@ -575,7 +579,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 statement = session.getConnection().createStatement();
             	hasResultSet = statement.execute(String.format(session.dbms.getExplainQuery(), sqlStatement, stmtId));
             } else {
-            	if (variableSupport.executeDefine(sqlStatement)) {
+            	if (sqlPlusSupport.executeSQLPLusStatement(sqlStatement)) {
             		isDefine = true;
             		hasResultSet = false;
             	} else {
@@ -621,6 +625,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 			return lobRender;
                 		}
                 		return object;
+            		}
+
+            		@Override
+            		protected void prepareHook(ResultSetMetaData rmd) throws SQLException {
+            			sqlPlusSupport.prepareColumnSubstitution(rmd);
+            		}
+
+            		@Override
+            		protected void readRowHook(ResultSet resultSet) throws SQLException {
+                        try {
+                        	sqlPlusSupport.substituteColumns(resultSet);
+                        } catch (SQLException e) {
+                        	// ignore
+                        }
             		}
                 };
                 resultSet.close();
