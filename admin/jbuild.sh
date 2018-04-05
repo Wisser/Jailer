@@ -10,8 +10,8 @@ fi
 
 
 cd
-cd workspace/jailer/jailer-code/
-svn up
+cd git/Jailer
+git pull
 sh admin/release.sh $1
 cd
 cd tmp

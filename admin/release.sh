@@ -6,11 +6,11 @@ mkdir ~/tmp/jailer
 mkdir ~/tmp/$1
 mkdir ~/tmp/$1.co
 cd ~/tmp/$1.co
-svn checkout --username=rwisser http://svn.code.sf.net/p/jailer/code/trunk
+git clone --depth 1 https://github.com/Wisser/Jailer.git
 cd ..
-mv $1.co/trunk/* jailer
+mv $1.co/Jailer/* jailer
 cd jailer
-find -iname ".svn" -exec rm -rf '{}' \;
+find -iname ".git" -exec rm -rf '{}' \;
 
 ant package
 
