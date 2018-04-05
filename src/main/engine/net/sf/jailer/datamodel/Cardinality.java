@@ -77,6 +77,7 @@ public enum Cardinality {
 	/**
 	 * Stringifies cardinality.
 	 */
+	@Override
 	public String toString() {
 		return name;
 	}

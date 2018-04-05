@@ -71,7 +71,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		
 		paramPanel.add(parameterSelector = new ParameterSelector(this, mappingField, parametersGetter));
 		tableCombobox.addActionListener(new ActionListener() {
-			 public void actionPerformed(java.awt.event.ActionEvent e) {
+			 @Override
+			public void actionPerformed(java.awt.event.ActionEvent e) {
 				 try {
 					 if (table != null) {
 						 table = dataModel.getTableByDisplayName((String) tableCombobox.getSelectedItem());
@@ -182,7 +183,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         formatButton.setText("Format");
         formatButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 formatButtonActionPerformed(evt);
             }
         });
@@ -190,7 +192,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         resetButton.setText("Reset");
         resetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetButtonActionPerformed(evt);
             }
         });
@@ -201,7 +204,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -209,7 +213,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });

@@ -254,6 +254,7 @@ public class XmlRowWriter {
 			return text;
 		}
 		
+		@Override
 		public void visitComment(String comment) {
 			try {
 				if (ifLevel == 0) {
@@ -264,6 +265,7 @@ public class XmlRowWriter {
 			}
 		}
 		
+		@Override
 		public void visitElementEnd(String elementName, boolean isRoot) {
 			if (ifLevel > 0) {
 				--ifLevel;
@@ -281,6 +283,7 @@ public class XmlRowWriter {
 		
 		String jailerNamespaceDeclaration = "xmlns:" + XmlUtil.NS_PREFIX;
 		
+		@Override
 		public void visitElementStart(String elementName, boolean isRoot, String[] aNames, String[] aValues) {
 			if (ifLevel > 0) {
 				++ifLevel;
@@ -323,6 +326,7 @@ public class XmlRowWriter {
 			}
 		}
 		
+		@Override
 		public void visitText(String text) {
 			text = toXml(text, false);
 			try {

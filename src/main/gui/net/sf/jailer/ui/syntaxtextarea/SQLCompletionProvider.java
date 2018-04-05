@@ -802,6 +802,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         final int MAX_OUTLINE_INFOS = 500;
         Map<String, String> scopeDescriptionPerLastKeyword = new HashMap<String, String>();
         
+        statement = prepareStatementForAliasAnalysis(statement);
+        
         scopeDescriptionPerLastKeyword.put("select", "Select");
         scopeDescriptionPerLastKeyword.put("from", "From");
         scopeDescriptionPerLastKeyword.put("with", "With");
@@ -1155,7 +1157,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         return aliases;
     }
 
-    public void mergeOutlineInfos(List<OutlineInfo> outlineInfos, int endIndex) {
+    protected String prepareStatementForAliasAnalysis(String statement) {
+		return statement;
+	}
+
+	public void mergeOutlineInfos(List<OutlineInfo> outlineInfos, int endIndex) {
         // merge "select from dual"
         if (outlineInfos != null && endIndex >= 2 
                 && "from".equalsIgnoreCase(outlineInfos.get(endIndex - 2).scopeDescriptor) 

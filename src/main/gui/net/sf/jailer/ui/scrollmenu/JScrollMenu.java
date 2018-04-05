@@ -9,6 +9,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuElement;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.plaf.MenuItemUI;
 import javax.swing.plaf.PopupMenuUI;
@@ -144,8 +145,8 @@ public class JScrollMenu extends JMenu {
 
 		ensurePopupMenuCreated();
 		JMenuItem mi = new JMenuItem(a);
-		mi.setHorizontalTextPosition(JButton.TRAILING);
-		mi.setVerticalTextPosition(JButton.CENTER);
+		mi.setHorizontalTextPosition(SwingConstants.TRAILING);
+		mi.setVerticalTextPosition(SwingConstants.CENTER);
 		popupMenu.insert(mi, pos);
 		return mi;
 	}

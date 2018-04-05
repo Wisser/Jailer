@@ -154,6 +154,7 @@ public class Session {
 		 * Does nothing.
 		 * @throws SQLException 
 		 */
+		@Override
 		public void close() throws SQLException {
 		}
 
@@ -246,6 +247,7 @@ public class Session {
 		connectionFactory = new ConnectionFactory() {
 			private Connection defaultConnection = null;
 			private Random random = new Random();
+			@Override
 			public Connection getConnection() throws SQLException {
 				@SuppressWarnings("resource")
 				Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;

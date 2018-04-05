@@ -94,6 +94,7 @@ public class LocalEntityGraph extends EntityGraph {
 		
 		private final boolean allUPK;
 		
+		@Override
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
 			Object value = cellContentConverter.getObject(resultSet, i);
 			if (!allUPK && !isUPKColumn(columnNames[i - 1])) {
@@ -129,6 +130,7 @@ public class LocalEntityGraph extends EntityGraph {
 		private final boolean allUPK;
 		private final DBMS localDBMSConfiguration;
 		
+		@Override
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
 			String value = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
 			if (allUPK || isUPKColumn(columnNames[i - 1])) {
@@ -175,7 +177,7 @@ public class LocalEntityGraph extends EntityGraph {
 	
 	private static synchronized LocalDatabaseConfiguration getConfiguration() {
 		if (localConfiguration == null) {
-			localConfiguration = (LocalDatabaseConfiguration) Configuration.getInstance().localEntityGraphConfiguration;
+			localConfiguration = Configuration.getInstance().localEntityGraphConfiguration;
 			if (localConfiguration == null) {
 				localConfiguration = new LocalDatabaseConfiguration();
 			}
@@ -270,6 +272,7 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Closes the graph. Deletes the local database.
 	 */
+	@Override
 	public void close() throws SQLException {
 		localDatabase.shutDown();
 	}
@@ -289,6 +292,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @param birthdayOfSubject birthday of subject rows
 	 */
+	@Override
 	public void setBirthdayOfSubject(int birthdayOfSubject) {
 		this.birthdayOfSubject = birthdayOfSubject;
 	}
@@ -320,6 +324,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param localSession for executing SQL-Statements
 	 * @return the newly created entity-graph
 	 */
+	@Override
 	public EntityGraph copy(int newGraphID, Session globalSession) throws SQLException {
 		LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables, rowIdSupport, executionContext);
 		entityGraph.setBirthdayOfSubject(birthdayOfSubject);
@@ -337,14 +342,17 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param localSession for executing SQL-Statements
 	 * @return the entity-graph
 	 */
+	@Override
 	public EntityGraph find(int graphID, Session localSession, PrimaryKey universalPrimaryKey) throws IOException, SQLException {
 		LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, localSession, executionContext);
 		final boolean[] found = new boolean[1];
 		found[0] = false;
 		localSession.executeQuery("Select * From " + dmlTableReference(ENTITY_GRAPH, localSession) + "Where id=" + graphID + "", new Session.ResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				found[0] = true;
 			}
+			@Override
 			public void close() {
 			}
 		});
@@ -359,13 +367,16 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @return the age of the graph
 	 */
+	@Override
 	public int getAge() throws SQLException {
 		final int[] age = new int[1];
 		age[0] = -1;
 		localSession.executeQuery("Select age From " + dmlTableReference(ENTITY_GRAPH, localSession) + " Where id=" + graphID + "", new Session.ResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				age[0] = resultSet.getInt(1);
 			}
+			@Override
 			public void close() {
 			}
 		});
@@ -377,6 +388,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @param age the age of the graph
 	 */
+	@Override
 	public void setAge(int age) throws SQLException {
 		localSession.executeUpdate("Update " + dmlTableReference(ENTITY_GRAPH, localSession) + " Set age=" + age + " Where id=" + graphID + "");
 	}
@@ -386,13 +398,16 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @return the number of entities in the graph
 	 */
+	@Override
 	public long getSize() throws SQLException {
 		final int[] size = new int[1];
 		size[0] = -1;
 		localSession.executeQuery("Select count(*) From " + dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + " and birthday >= 0", new Session.ResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				size[0] = resultSet.getInt(1);
 			}
+			@Override
 			public void close() {
 			}
 		});
@@ -402,6 +417,7 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Deletes the graph.
 	 */
+	@Override
 	public void delete() throws SQLException {
 		localSession.executeUpdate("Delete from " + dmlTableReference(DEPENDENCY, localSession) + " Where r_entitygraph=" + graphID + "");
 		localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + "");
@@ -417,6 +433,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @return row-count
 	 */
+	@Override
 	public long addEntities(Table table, String condition, int today) throws SQLException {
 		// checkPseudoColumns(table, condition);
 		return addEntities(table, "T", condition, today);
@@ -450,6 +467,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @return row-count or -1, if association is ignored
 	 */
+	@Override
 	public long resolveAssociation(final Table table, Association association, final int today) throws SQLException {
 		if (association.getJoinCondition() != null) {
 			final String jc = SqlUtil.resolvePseudoColumns(association.getJoinCondition(), today, birthdayOfSubject, association.reversed, inDeleteMode);
@@ -602,6 +620,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param aggregationId id of aggregation association (for XML export), 0 if not applicable
 	 * @param dependencyId id of dependency
 	 */
+	@Override
 	public void addDependencies(final Table from, final String fromAlias, final Table to, final String toAlias, final String condition, final int aggregationId, final int dependencyId, boolean isAssociationReversed) throws SQLException {
 		checkPseudoColumns(from, condition);
 		String upkColumnList = upkColumnList(from, "E1", null);
@@ -655,13 +674,16 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Gets distinct association-ids of all edged.
 	 */
+	@Override
 	public Set<Integer> getDistinctDependencyIDs() throws SQLException {
 		String select = "Select distinct depend_id from " + dmlTableReference(DEPENDENCY, localSession) + " Where r_entitygraph=" + graphID;
 		final Set<Integer> ids = new HashSet<Integer>();
 		localSession.executeQuery(select, new Session.ResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				ids.add(resultSet.getInt(1));
 			}
+			@Override
 			public void close() {
 			}
 		});
@@ -672,6 +694,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * Marks all entities of a given table which don't dependent on other entities,
 	 * s.t. they can be read and deleted.
 	 */
+	@Override
 	public void markIndependentEntities(Table table) throws SQLException {
 		StringBuffer fromEqualsPK = new StringBuffer();
 		Map<Column, Column> match = upkMatch(table);
@@ -701,6 +724,7 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Marks all rows which are not target of a dependency.
 	 */
+	@Override
 	public void markRoots(Table table) throws SQLException {
 		StringBuffer toEqualsPK = new StringBuffer();
 		Map<Column, Column> match = upkMatch(table);
@@ -728,6 +752,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
+	@Override
 	public void readMarkedEntities(Table table, boolean orderByPK) throws SQLException {
 		Session.ResultSetReader reader = getTransformerFactory().create(table);
 		readMarkedEntities(table, reader, filteredSelectionClause(table), orderByPK);
@@ -778,6 +803,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
+	@Override
 	public void readMarkedEntities(final Table table, final Session.ResultSetReader reader, final String selectionSchema, final String originalPKAliasPrefix, final boolean orderByPK) throws SQLException {
 		if (originalPKAliasPrefix == null) {
 			readMarkedEntities(table, reader, selectionSchema, orderByPK);
@@ -834,6 +860,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @param graph the graph to be united with this graph
 	 */
+	@Override
 	public void uniteWith(EntityGraph graph) throws SQLException {
 		StringBuffer e1EqualsE2 = new StringBuffer();
 		for (Column column: universalPrimaryKey.getColumns()) {
@@ -858,6 +885,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
+	@Override
 	public void readEntities(Table table, boolean orderByPK) throws SQLException {
 		Session.ResultSetReader reader = getTransformerFactory().create(table);
 		long rc = readEntities(table, orderByPK, reader, true);
@@ -909,6 +937,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param columns the columns
 	 * @param reader to read
 	 */
+	@Override
 	public long readUnfilteredEntityColumns(final Table table, final List<Column> columns, final Session.ResultSetReader reader) throws SQLException {
 		String upkColumnList = upkColumnList(table, "E", null);
 		String select = 
@@ -948,6 +977,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param columns the columns;
 	 */
+	@Override
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration) throws SQLException {
 		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, executionContext.getNumberOfEntities(), getTargetSession(), targetConfiguration, importFilterManager, executionContext);
 		readEntities(table, false, reader, false);
@@ -991,6 +1021,7 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Deletes all entities which are marked as independent.
 	 */
+	@Override
 	public void deleteIndependentEntities(Table table) throws SQLException {
 		StringBuffer fromEqualsPK = new StringBuffer();
 		StringBuffer toEqualsPK = new StringBuffer();
@@ -1036,6 +1067,7 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Deletes all entities from a given table.
 	 */
+	@Override
 	public long deleteEntities(Table table) throws SQLException {
 		return localSession.executeUpdate(
 				"Delete From " + dmlTableReference(ENTITY, localSession) + " " +
@@ -1049,12 +1081,14 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @return the number of entities from table in this graph
 	 */
+	@Override
 	public long countEntities(Table table) throws SQLException {
 		final long[] count = new long[1];
 		localSession.executeQuery(
 				"Select count(*) from " + dmlTableReference(ENTITY, localSession) + " E " +
 				"Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "",
 				new Session.AbstractResultSetReader() {
+					@Override
 					public void readCurrentRow(ResultSet resultSet) throws SQLException {
 						count[0] = resultSet.getLong(1);
 					}
@@ -1070,6 +1104,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param association the association
 	 * @return number of removed entities
 	 */
+	@Override
 	public long removeAssociatedDestinations(final Association association, final boolean deletedEntitiesAreMarked) throws SQLException {
 		final String jc = association.getJoinCondition();
 		checkPseudoColumns(association.source, jc);
@@ -1190,6 +1225,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param reader reads the entities
 	 * @param selectionSchema the selection schema
 	 */
+	@Override
 	public void readDependentEntities(final Table table, final Association association, final ResultSet resultSet, ResultSetMetaData resultSetMetaData, final ResultSetReader reader, final Map<String, Integer> theTypeCache, final String selectionSchema, final String originalPKAliasPrefix) throws SQLException {
 		CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, localSession.dbms);
 		String select = "Select " + upkColumnList(table, "TO_") + " from " + dmlTableReference(DEPENDENCY, localSession) + " D" +
@@ -1232,6 +1268,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param association the dependency
 	 * @param resultSet current row is given entity
 	 */
+	@Override
 	public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
 		String update;
 		CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, localSession.dbms);
@@ -1255,6 +1292,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param table the source of dependencies to look for
 	 * @param reader reads the entities
 	 */
+	@Override
 	public void readNonTraversedDependencies(Table table, ResultSetReader reader) throws SQLException {
 		String select = "Select * from " + dmlTableReference(DEPENDENCY, localSession) + " D " +
 			 " Where (traversed is null or traversed <> 1)" +
@@ -1268,6 +1306,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @param table the table
 	 */
+	@Override
 	public void removeReflexiveDependencies(Table table) throws SQLException {
 		Map<Column, Column> match = upkMatch(table);
 		StringBuffer sb = new StringBuffer();
@@ -1436,6 +1475,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @return total row-count
 	 */
+	@Override
 	public long getTotalRowcount() {
 		return totalRowcount;
 	}
@@ -1455,6 +1495,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @param explain <code>true</code> iff predecessors of each entity must be stored
 	 */
+	@Override
 	public void setExplain(boolean explain) {
 		this.explain = false; // explain feature is not yet implemented for local entity graph
 	}
@@ -1464,6 +1505,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @return the universal primary key
 	 */
+	@Override
 	public PrimaryKey getUniversalPrimaryKey() {
 		return universalPrimaryKey;
 	}
@@ -1485,6 +1527,7 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Shuts down statement-executor.
 	 */
+	@Override
 	public void shutDown() throws SQLException {
 		localSession.shutDown();
 	}

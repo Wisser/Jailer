@@ -278,6 +278,7 @@ public class DDLCreator {
 				final String schema = workingTableSchema == null ? "" : new Quoting(session).requote(workingTableSchema) + ".";
 				
 				Session.ResultSetReader reader = new Session.ResultSetReader() {
+					@Override
 					public void readCurrentRow(ResultSet resultSet) throws SQLException {
 						String contraint = pkColumnConstraint(session);
 						String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
@@ -285,6 +286,7 @@ public class DDLCreator {
 						uptodate[0] = resultSet.getString(1).equals(h);
 					}
 
+					@Override
 					public void close() {
 					}
 				};
@@ -297,8 +299,10 @@ public class DDLCreator {
 				// look for jailer tables
 				for (String table : SqlUtil.JAILER_MH_TABLES) {
 					session.executeQuery("Select * from " + schema + table + " Where 1=0", new Session.ResultSetReader() {
+						@Override
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 						}
+						@Override
 						public void close() {
 						}
 					});
@@ -333,9 +337,11 @@ public class DDLCreator {
 				final boolean[] uptodate = new boolean[] { false };
 				session.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jkey='upk'",
 					new Session.ResultSetReader() {
+						@Override
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							uptodate[0] = true;
 						}
+						@Override
 						public void close() {
 						}
 					});
@@ -362,10 +368,12 @@ public class DDLCreator {
 					final boolean[] uptodate = new boolean[] { false };
 					session.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_
 							+ " where jkey='magic' and jvalue='837065098274756382534403654245288'", new Session.ResultSetReader() {
+						@Override
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							uptodate[0] = true;
 						}
 
+						@Override
 						public void close() {
 						}
 					});
@@ -381,9 +389,11 @@ public class DDLCreator {
 				for (String table : SqlUtil.JAILER_TABLES) {
 					try {
 						session.executeQuery("Select * from " + table + " Where 1=0", new Session.ResultSetReader() {
+							@Override
 							public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							}
 
+							@Override
 							public void close() {
 							}
 						});

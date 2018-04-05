@@ -171,7 +171,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         }));
         columnsComboBox.setSelectedItem(new Integer(tablesPerLine));
         columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            @Override
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 if (evt.getItem() instanceof Integer) {
                     tablesPerLine = (Integer) evt.getItem();
                     refresh();
@@ -258,11 +259,13 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                     expandTablePath(path);
                 }
                 
-                public void mouseClicked(final MouseEvent e) {
+                @Override
+				public void mouseClicked(final MouseEvent e) {
                     mouseReleased(e);
                 }
                 
-                public void mouseReleased(MouseEvent e) {
+                @Override
+				public void mouseReleased(MouseEvent e) {
                 // context menu
                 if (SwingUtilities.isRightMouseButton(e)) {
                     int row = closureTable.rowAtPoint(e.getPoint());
@@ -423,11 +426,14 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                 }
             }
         
-            public void mouseEntered(MouseEvent e) {
+            @Override
+			public void mouseEntered(MouseEvent e) {
             }
-            public void mouseExited(MouseEvent e) {
+            @Override
+			public void mouseExited(MouseEvent e) {
             }
-            public void mousePressed(MouseEvent e) {
+            @Override
+			public void mousePressed(MouseEvent e) {
             }
         });
         
@@ -441,7 +447,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
             private Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
             private Font italicBold = new Font(font.getName(), font.getStyle() | Font.ITALIC | Font.BOLD, font.getSize());
             
-            public Component getTableCellRendererComponent(JTable table,
+            @Override
+			public Component getTableCellRendererComponent(JTable table,
                     Object value, boolean isSelected, boolean hasFocus,
                     int row, int column) {
                 isSelected = selectedTable != null && selectedTable.equals(value);
@@ -894,9 +901,10 @@ public abstract class DBClosureView extends javax.swing.JDialog {
             }
         }
         
-        Object[][] dataArray = (Object[][]) data.toArray(new Object[data.size()][]);
+        Object[][] dataArray = data.toArray(new Object[data.size()][]);
         DefaultTableModel tableModel = new DefaultTableModel(dataArray, columns) {
-            public boolean isCellEditable(int row, int column) {
+            @Override
+			public boolean isCellEditable(int row, int column) {
                 return false;
             }
             private static final long serialVersionUID = -6639310191624899380L;
@@ -1010,7 +1018,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         searchComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 searchComboBoxActionPerformed(evt);
             }
         });
@@ -1029,7 +1038,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         columnsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            @Override
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 columnsComboBoxItemStateChanged(evt);
             }
         });
@@ -1040,7 +1050,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         findButton.setText("Find");
         findButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 findButtonActionPerformed(evt);
             }
         });

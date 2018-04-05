@@ -44,7 +44,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -142,6 +145,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private final AtomicBoolean updatingStatus = new AtomicBoolean(false);
     private final ImageIcon scaledCancelIcon;
     private final ImageIcon scaledExplainIcon;
+    private final SQLPlusSupport sqlPlusSupport = new SQLPlusSupport();
 	
     /**
      * Creates new form SQLConsole
@@ -236,7 +240,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         };
 
         historyComboBox.setRenderer(new DefaultListCellRenderer() {
-             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+             @Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                  if (index == 0) {
                      value = null;
                  }
@@ -257,7 +262,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         });
         restoreHistory();
         
-        provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
+        provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource) {
+            @Override
+			protected String prepareStatementForAliasAnalysis(String statement) {
+            	return sqlPlusSupport.replaceVariables(statement, null);
+            }
+        };
         new SQLAutoCompletion(provider, editorPane);
 
         RTextScrollPane jScrollPane = new RTextScrollPane();
@@ -549,6 +559,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         final Status localStatus = new Status();
         String sqlStatement = null;
         String stmtId = null;
+        TreeMap<Integer, Integer> positionOffsets = new TreeMap<Integer, Integer>();
         try {
             status.numStatements++;
             localStatus.numStatements++;
@@ -557,7 +568,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
             sqlStatement = sql.replaceFirst("(?is)(;\\s*)+$", "");
+			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
             boolean hasResultSet;
+            boolean isDefine = false;
             if (explain) {
             	synchronized (this) {
             		stmtId = "Jailer" + (nextPlanID++ % 8);
@@ -569,7 +582,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 statement = session.getConnection().createStatement();
             	hasResultSet = statement.execute(String.format(session.dbms.getExplainQuery(), sqlStatement, stmtId));
             } else {
-            	hasResultSet = statement.execute(sqlStatement);
+            	if (sqlPlusSupport.executeSQLPLusStatement(sqlStatement)) {
+            		isDefine = true;
+            		hasResultSet = false;
+            	} else {
+            		hasResultSet = statement.execute(sqlStatement);
+            	}
             }
             if (hasResultSet) {
                 resultSet = statement.getResultSet();
@@ -610,6 +628,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 			return lobRender;
                 		}
                 		return object;
+            		}
+
+            		@Override
+            		protected void prepareHook(ResultSetMetaData rmd) throws SQLException {
+            			sqlPlusSupport.prepareColumnSubstitution(rmd);
+            		}
+
+            		@Override
+            		protected void readRowHook(ResultSet resultSet) throws SQLException {
+                        try {
+                        	sqlPlusSupport.substituteColumns(resultSet);
+                        } catch (SQLException e) {
+                        	// ignore
+                        }
             		}
                 };
                 resultSet.close();
@@ -653,7 +685,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.sortColumnsCheckBox.setVisible(true);
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
                         rb.sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
-                            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                            @Override
+							public void actionPerformed(java.awt.event.ActionEvent evt) {
                             	SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
@@ -730,7 +763,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 });
             } else {
                 status.timeInMS += (System.currentTimeMillis() - startTime);
-                int updateCount = statement.getUpdateCount();
+                int updateCount = isDefine? 0 : statement.getUpdateCount();
                 if (updateCount >= 0) {
                     status.numRowsUpdated += updateCount;
                 }
@@ -770,7 +803,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 if (error instanceof SQLException && sqlStatement != null && statementStartOffset >= 0) {
                     int pos = retrieveErrorPos(sqlStatement, error.getMessage());
                     if (pos >= 0) {
-                        status.errorPosition = statementStartOffset + pos;
+                        Entry<Integer, Integer> floor = positionOffsets.floorEntry(pos);
+                        int positionOffset;
+                        if (floor == null) {
+                        	positionOffset = 0;
+                        } else {
+                        	positionOffset = floor.getValue();
+                        }
+						status.errorPosition = statementStartOffset + pos + positionOffset;
                         status.errorPositionIsKnown = true;
                     } else {
                         status.errorPosition = statementStartOffset;
@@ -813,6 +853,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         final int MAX_TOOLTIP_LENGTH = 100;
         List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
         provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
+        sql = sqlPlusSupport.replaceVariables(sql, null);
         adjustLevels(outlineInfos);
         List<OutlineInfo> relocatedOutlineInfos = new ArrayList<OutlineInfo>();
         int indexOfInfoAtCaret = -1;
@@ -1176,7 +1217,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -1490,7 +1532,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         return titlePanel;
     }
     
-    public void grabFocus() {
+    @Override
+	public void grabFocus() {
         editorPane.grabFocus();
     }
     

@@ -289,7 +289,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 	private ImageIcon scaleToLineHeight(ImageIcon imageIcon) {
 		double s = getLineHeight() / (double) imageIcon.getIconHeight();
-		return new ImageIcon(imageIcon.getImage().getScaledInstance((int)(imageIcon.getIconWidth()), (int)(imageIcon.getIconHeight() * s + 0.5), Image.SCALE_SMOOTH));
+		return new ImageIcon(imageIcon.getImage().getScaledInstance((imageIcon.getIconWidth()), (int)(imageIcon.getIconHeight() * s + 0.5), Image.SCALE_SMOOTH));
 	}
 
 	protected MDTable getSelectedTable() {
@@ -364,6 +364,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	/**
 	 * Folding is not supported.
 	 */
+	@Override
 	protected void appendFoldingMenu(JPopupMenu popup) {
 	}
 

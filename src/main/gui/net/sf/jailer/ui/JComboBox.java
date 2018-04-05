@@ -35,6 +35,7 @@ public class JComboBox<T> extends javax.swing.JComboBox<T> {
 	public JComboBox() {
 	}
 
+	@Override
 	public void doLayout() {
 		try {
 			layingOut = true;
@@ -45,6 +46,7 @@ public class JComboBox<T> extends javax.swing.JComboBox<T> {
 		}
 	}
 
+	@Override
 	public Dimension getSize() {
 		Dimension sz = super.getSize();
 		if (!layingOut) {

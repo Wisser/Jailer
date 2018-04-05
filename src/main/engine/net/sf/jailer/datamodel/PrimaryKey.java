@@ -195,6 +195,7 @@ public class PrimaryKey {
 	/**
 	 * Returns a string representation of the primary key.
 	 */ 
+	@Override
 	public String toString() {
 		return toSQL(null);
 	}

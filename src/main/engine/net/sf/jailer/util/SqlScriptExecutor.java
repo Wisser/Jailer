@@ -138,6 +138,7 @@ public class SqlScriptExecutor {
 			}
 			try {
 				exec.execute(new Runnable() {
+					@Override
 					public void run() {
 						try {
 							command.run();
@@ -236,6 +237,7 @@ public class SqlScriptExecutor {
 		CancellationHandler.reset(null);
 		
 		Runnable logProgress = new Runnable() {
+			@Override
 			public void run() {
 				if (System.currentTimeMillis() > t.get() + 1000) {
 					t.set(System.currentTimeMillis());
@@ -303,6 +305,7 @@ public class SqlScriptExecutor {
 					final String stmt = currentStatement.toString();
 					final boolean finalTryMode = tryMode;
 					execute(new Runnable() {
+						@Override
 						public void run() {
 							boolean silent = session.getSilent();
 							boolean startsWithDrop = stmt.trim().toLowerCase().startsWith("drop");

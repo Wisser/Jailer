@@ -142,6 +142,7 @@ public class XmlSketchBuilder {
 		if (table != null && depth < 2) {
 			List<Association> sortedSourceAssociations = new ArrayList<Association>(table.associations);
 			Collections.sort(sortedSourceAssociations, new Comparator<Association>() {
+				@Override
 				public int compare(Association o1, Association o2) {
 					return o1.destination.getName().compareTo(o2.destination.getName());
 				}

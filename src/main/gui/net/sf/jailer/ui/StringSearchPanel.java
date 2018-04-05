@@ -52,6 +52,7 @@ import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -343,7 +344,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        panel.add(new JSeparator(JSeparator.HORIZONTAL), gridBagConstraints);
+        panel.add(new JSeparator(SwingConstants.HORIZONTAL), gridBagConstraints);
         container.add(panel);
         
 		for (MDSchema dmSchema: metaDataSource.getSchemas()) {
@@ -508,7 +509,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         cancelLoadiingButton.setText("Cancel");
         cancelLoadiingButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelLoadiingButtonActionPerformed(evt);
             }
         });
@@ -527,8 +529,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         searchList.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
+            @Override
+			public int getSize() { return strings.length; }
+            @Override
+			public String getElementAt(int i) { return strings[i]; }
         });
         jScrollPane1.setViewportView(searchList);
 
@@ -572,7 +576,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         selectAllButton.setText("Select all");
         selectAllButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectAllButtonActionPerformed(evt);
             }
         });
@@ -603,7 +608,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         okButton.setText(" Ok ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -616,7 +622,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });

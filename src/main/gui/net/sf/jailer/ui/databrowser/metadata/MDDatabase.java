@@ -59,6 +59,7 @@ public class MDDatabase extends MDGeneric {
 	 * 
 	 * @return render of the database object
 	 */
+	@Override
 	public JComponent createRender(Session session, ExecutionContext executionContext) throws Exception {
         List<Object[]> rowList = new ArrayList<Object[]>();
         

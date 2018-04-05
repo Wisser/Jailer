@@ -1,3 +1,6 @@
+7.6.7
+  - SQL-Console: added support for substitution variables.
+
 7.6.6
   - Improved SQL Outline rendering.
 

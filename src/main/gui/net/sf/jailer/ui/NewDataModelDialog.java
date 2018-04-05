@@ -127,6 +127,7 @@ public class NewDataModelDialog extends javax.swing.JDialog {
 
 		createButton.setText("Create New Data Model");
 		createButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				createButtonActionPerformed(evt);
 			}
@@ -140,6 +141,7 @@ public class NewDataModelDialog extends javax.swing.JDialog {
 
 		jButton2.setText("Cancel");
 		jButton2.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				jButton2ActionPerformed(evt);
 			}

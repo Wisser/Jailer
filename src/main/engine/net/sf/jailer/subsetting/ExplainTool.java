@@ -76,6 +76,7 @@ public class ExplainTool {
 		String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session, executionContext) + " E Where E.r_entitygraph=" + graph.graphID +
 			" order by E.birthday, E.type";
 		session.executeQuery(selectLeafs, new Session.AbstractResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				int o = resultSet.getInt(1);
 				String type = null;
@@ -140,6 +141,7 @@ public class ExplainTool {
 		final List<String> preKeys = new ArrayList<String>();
 		final Integer associationID[] = new Integer[1];
 		session.executeQuery(selectPredecessor, new Session.AbstractResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				int o = resultSet.getInt(1);
 				if (!resultSet.wasNull()) {

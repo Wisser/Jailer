@@ -201,6 +201,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		connectionsTable.setDefaultRenderer(Object.class,
 				new TableCellRenderer() {
 
+					@Override
 					public Component getTableCellRendererComponent(
 							JTable table, Object value, boolean isSelected,
 							boolean hasFocus, int row, int column) {
@@ -556,7 +557,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         jButton2.setText(" Cancel ");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
@@ -570,7 +572,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         jButton1.setText(" Connect ");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
@@ -595,7 +598,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         newButton.setText(" New ");
         newButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newButtonActionPerformed(evt);
             }
         });
@@ -608,7 +612,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         editButton.setText(" Edit ");
         editButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
             }
         });
@@ -621,7 +626,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         copy.setText(" Copy ");
         copy.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 copyActionPerformed(evt);
             }
         });
@@ -634,7 +640,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         deleteButton.setText(" Delete ");
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
             }
         });
@@ -753,6 +760,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			CsvFile drivers = new CsvFile(new File("driverlist.csv"));
 			List<Line> lines = new ArrayList<Line>(drivers.getLines());
 			Collections.sort(lines, new Comparator<Line>() {
+				@Override
 				public int compare(Line o1, Line o2) {
 					return o1.cells.get(0).compareTo(o2.cells.get(0));
 				}

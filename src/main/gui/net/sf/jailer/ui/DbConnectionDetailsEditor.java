@@ -95,14 +95,17 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 		});
 		helpjdbc.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				helpjdbc.setEnabled(false);
 			}
+			@Override
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				helpjdbc.setEnabled(true);
 		   }
 		});
 		helpjdbc.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				try {
 					BrowserLauncher.openURL(new URI(jdbcHelpURL));
@@ -259,6 +262,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 		okButton.setText(" Ok ");
 		okButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				okButtonActionPerformed(evt);
 			}
@@ -272,6 +276,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 		cancelButton.setText(" Cancel ");
 		cancelButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				cancelButtonActionPerformed(evt);
 			}
@@ -285,6 +290,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 		testConnectionButton.setText(" Test Connection ");
 		testConnectionButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				testConnectionButtonActionPerformed(evt);
 			}
@@ -344,6 +350,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 		loadButton1.setText(" Browse..");
 		loadButton1.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				loadButton1ActionPerformed(evt);
 			}
@@ -355,6 +362,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 		loadButton2.setText(" Browse..");
 		loadButton2.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				loadButton2ActionPerformed(evt);
 			}

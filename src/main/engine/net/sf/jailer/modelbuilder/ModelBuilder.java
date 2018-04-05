@@ -198,6 +198,7 @@ public class ModelBuilder {
 		String tableDefinitions = "";
 		List<Table> sortedTables = new ArrayList<Table>(tables);
 		Collections.sort(sortedTables, new Comparator<Table>() {
+			@Override
 			public int compare(Table t1, Table t2) {
 				return t1.getName().compareTo(t2.getName());
 			}

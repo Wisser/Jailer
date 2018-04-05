@@ -83,6 +83,7 @@ public class DomainModel {
 			return;
 		}
 		for (File domainFile: domainModelDirectory.listFiles(new FilenameFilter() {
+			@Override
 			public boolean accept(File dir, String name) {
 				return !"composites.csv".equalsIgnoreCase(name) && name.toLowerCase().endsWith(".csv");
 			}
@@ -307,6 +308,7 @@ public class DomainModel {
 	/**
 	 * Stringifies the model.
 	 */
+	@Override
 	public String toString() {
 		StringBuffer modelAsString = new StringBuffer("domain model:\n");
 		for (Domain domain: domains.values()) {

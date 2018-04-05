@@ -151,6 +151,7 @@ public abstract class EntityGraph {
 		final long[] total = new long[1];
 		total[0] = 0;
 		getSession().executeQuery("Select type, count(*) From " + dmlTableReference(ENTITY, getSession()) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				Table table = dataModel.getTableByOrdinal(resultSet.getInt(1));
 				if (tables.contains(table)) {

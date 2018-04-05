@@ -57,6 +57,7 @@ public class CycleFinder {
 			this.length = left == null? 1 : (left.length + right.length);
 		}
 		
+		@Override
 		public boolean equals(Object other) {
 			if (!(other instanceof Path)) {
 				return false;
@@ -72,6 +73,7 @@ public class CycleFinder {
 			return p1.equals(p2);
 		}
 		
+		@Override
 		public int hashCode() {
 			return 1;
 		}
@@ -99,6 +101,7 @@ public class CycleFinder {
 			}
 		}
 
+		@Override
 		public String toString() {
 			return "{" + (left == null? from.getName() + "->" + to.getName() : (left + "-->" + right)) + " " + birthday + "/" + length + "}";
 		}

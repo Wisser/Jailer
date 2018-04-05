@@ -17,8 +17,6 @@ package net.sf.jailer.ui.databrowser;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.math.BigDecimal;
@@ -30,11 +28,10 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingUtilities;
+import javax.swing.SwingConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
@@ -174,7 +171,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = i;
 			if (!selectableFields) {
-				l.setVerticalAlignment(JLabel.TOP);
+				l.setVerticalAlignment(SwingConstants.TOP);
 			}
 			jPanel1.add(l, gridBagConstraints);
 
@@ -307,7 +304,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
         sortCheckBox.setText("Sort Columns");
         sortCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sortCheckBoxActionPerformed(evt);
             }
         });
@@ -320,7 +318,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
         closeButton.setText("CLose");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
             }
         });

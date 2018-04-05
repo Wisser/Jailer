@@ -48,12 +48,14 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
 	/**
 	 * Adds nothing.
 	 */
+	@Override
 	public void addComments(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 	}
 	/**
 	 * Adds epilogs.
 	 */
+	@Override
 	public void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 		File dir = new File("epilog" + File.separatorChar + scriptType);
@@ -63,6 +65,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
 	/**
 	 * Adds prologs.
 	 */
+	@Override
 	public void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 		File dir = new File("prolog" + File.separatorChar + scriptType);

@@ -145,7 +145,8 @@ public class SbEDialog extends javax.swing.JDialog {
 
         jButton1.setText("  OK  ");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
@@ -158,7 +159,8 @@ public class SbEDialog extends javax.swing.JDialog {
 
         jButton3.setText("  Cancel  ");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
             }
         });
@@ -171,7 +173,8 @@ public class SbEDialog extends javax.swing.JDialog {
         regardButton.setSelected(true);
         regardButton.setText("Include parent tables  ");
         regardButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 regardButtonActionPerformed(evt);
             }
         });

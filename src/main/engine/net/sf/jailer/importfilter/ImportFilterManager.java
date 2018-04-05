@@ -112,7 +112,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		if (localSession != null) {
 			this.localSession = localSession;
 		} else {
-			LocalDatabaseConfiguration localConfiguration = (LocalDatabaseConfiguration) Configuration.getInstance().localEntityGraphConfiguration;
+			LocalDatabaseConfiguration localConfiguration = Configuration.getInstance().localEntityGraphConfiguration;
 			try {
 				this.localDatabase = new LocalDatabase(localConfiguration.getDriver(), localConfiguration.getUrlPattern(), localConfiguration.getUser(), localConfiguration.getPassword(), localConfiguration.getLib());
 			} catch (ClassNotFoundException e) {
@@ -165,7 +165,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		List<ColumnToMappingTable> mapColumns = new ArrayList<ColumnToMappingTable>();
 		List<ColumnToMappingTable> mapColumnsLocal = new ArrayList<ColumnToMappingTable>();
 		int mapTableIndex = 0;
-		LocalDatabaseConfiguration localConfiguration = (LocalDatabaseConfiguration) Configuration.getInstance().localEntityGraphConfiguration;
+		LocalDatabaseConfiguration localConfiguration = Configuration.getInstance().localEntityGraphConfiguration;
 		
 		String schema = quotedMappingTablesSchema;
 		

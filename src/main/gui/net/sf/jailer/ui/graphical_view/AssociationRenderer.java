@@ -209,6 +209,7 @@ public class AssociationRenderer extends EdgeRenderer {
 	 * to the position and orientation specified by the provided
 	 * line segment end points.
 	 */
+	@Override
 	protected AffineTransform getArrowTrans(Point2D p1, Point2D p2, 
 											double width)
 	{
@@ -282,6 +283,7 @@ public class AssociationRenderer extends EdgeRenderer {
 	/**
 	 * @see prefuse.render.Renderer#setBounds(prefuse.visual.VisualItem)
 	 */
+	@Override
 	public void setBounds(VisualItem item) {
 		super.setBounds(item);
 		if (starBounds != null ) {

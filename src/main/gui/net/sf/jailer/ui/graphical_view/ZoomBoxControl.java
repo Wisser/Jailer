@@ -77,6 +77,7 @@ public class ZoomBoxControl extends AbstractZoomControl {
 	/**
 	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void mousePressed(MouseEvent e) {
 		if ( UILib.isButtonPressed(e, button) ) {
 			Display display = (Display)e.getComponent();
@@ -102,6 +103,7 @@ public class ZoomBoxControl extends AbstractZoomControl {
 	/**
 	 * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void mouseDragged(MouseEvent e) {
 		if (UILib.isButtonPressed(e, button) ) {
 			Display display = (Display)e.getComponent();
@@ -137,6 +139,7 @@ public class ZoomBoxControl extends AbstractZoomControl {
 	/**
 	 * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void mouseReleased(MouseEvent e) {
 		if ( UILib.isButtonPressed(e, button) ) {
 			if (down != null && current != null) {
@@ -150,6 +153,7 @@ public class ZoomBoxControl extends AbstractZoomControl {
 	/**
 	 * @see prefuse.controls.Control#itemPressed(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void itemPressed(VisualItem item, MouseEvent e) {
 		if ( m_zoomOverItem )
 			mousePressed(e);
@@ -158,6 +162,7 @@ public class ZoomBoxControl extends AbstractZoomControl {
 	/**
 	 * @see prefuse.controls.Control#itemDragged(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void itemDragged(VisualItem item, MouseEvent e) {
 		if ( m_zoomOverItem )
 			mouseDragged(e);
@@ -166,6 +171,7 @@ public class ZoomBoxControl extends AbstractZoomControl {
 	/**
 	 * @see prefuse.controls.Control#itemReleased(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void itemReleased(VisualItem item, MouseEvent e) {
 		if ( m_zoomOverItem )
 			mouseReleased(e);
@@ -202,15 +208,18 @@ public class ZoomBoxControl extends AbstractZoomControl {
 	 */
 	public class ZoomBoxRenderer extends prefuse.render.ShapeRenderer {
 
+		@Override
 		public boolean locatePoint(Point2D p, VisualItem item) {
 			return false;
 		}
 
+		@Override
 		protected Shape getRawShape(VisualItem item) {
 			Rectangle2D bounds = getZoomBoxBounds(1);
 			return rectangle(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
 		}
 
+		@Override
 		public void setBounds(VisualItem item) {
 			Rectangle2D bounds = getZoomBoxBounds(1);
 			item.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());

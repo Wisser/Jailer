@@ -342,6 +342,7 @@ public class SubsettingEngine {
 					executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, association);
 				}
 				JobManager.Job job = new JobManager.Job() {
+					@Override
 					public void run() throws SQLException {
 						runstats(false);
 						if (association.getJoinCondition() != null) {
@@ -376,6 +377,7 @@ public class SubsettingEngine {
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 		for (final Map.Entry<Table, List<JobManager.Job>> entry : jobsPerDestination.entrySet()) {
 			jobs.add(new JobManager.Job() {
+				@Override
 				public void run() throws CancellationException, SQLException {
 					for (JobManager.Job job : entry.getValue()) {
 						job.run();
@@ -414,6 +416,7 @@ public class SubsettingEngine {
 							final String jc = association.getUnrestrictedJoinCondition();
 							done.add(association);
 							jobs.add(new JobManager.Job() {
+								@Override
 								public void run() throws SQLException {
 									_log.info("find aggregation for " + datamodel.getDisplayName(table) + " -> "
 											+ datamodel.getDisplayName(association.destination) + " on " + jc);
@@ -430,6 +433,7 @@ public class SubsettingEngine {
 						if (jc != null && association.isInsertDestinationBeforeSource()) {
 							done.add(association);
 							jobs.add(new JobManager.Job() {
+								@Override
 								public void run() throws SQLException {
 									_log.info("find dependencies " + datamodel.getDisplayName(table) + " -> "
 											+ datamodel.getDisplayName(association.destination) + " on " + jc);
@@ -898,6 +902,7 @@ public class SubsettingEngine {
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			for (final Table table : dependentTables) {
 				jobs.add(new JobManager.Job() {
+					@Override
 					public void run() throws SQLException {
 						theEntityGraph.readMarkedEntities(table, false);
 					}
@@ -1012,6 +1017,7 @@ public class SubsettingEngine {
 
 		List<Table> lexSortedTables = new ArrayList<Table>(progress);
 		Collections.sort(lexSortedTables, new Comparator<Table>() {
+			@Override
 			public int compare(Table t1, Table t2) {
 				boolean s1 = subjects.contains(t1);
 				boolean s2 = subjects.contains(t2);
@@ -1131,11 +1137,13 @@ public class SubsettingEngine {
 	private void checkCompletenessOfXmlExport(Set<Table> cyclicAggregatedTables) throws SQLException {
 		for (Table table: cyclicAggregatedTables) {
 			entityGraph.readNonTraversedDependencies(table, new Session.ResultSetReader() {
+				@Override
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					String message = "Can't export all rows from table '" + datamodel.getTableByOrdinal(resultSet.getInt("TO_TYPE")) + "' due to cyclic aggregation";
 					throw new RuntimeException(message);
 				}
 
+				@Override
 				public void close() {
 				}
 			});
@@ -1167,6 +1175,7 @@ public class SubsettingEngine {
 					writeEntities(independentTable, true);
 				} else {
 					jobs.add(new JobManager.Job() {
+						@Override
 						public void run() throws SQLException {
 							writeEntities(independentTable, false);
 						}
@@ -1592,6 +1601,7 @@ public class SubsettingEngine {
 							executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, a.reversalAssociation);
 						}
 						jobs.add(new JobManager.Job() {
+							@Override
 							public void run() throws SQLException {
 								if (!isFirstStep) {
 									executionContext.getProgressListenerRegistry().fireCollectionJobStarted(finalToday, a.reversalAssociation);

@@ -79,6 +79,7 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 	 * 
 	 * @param session for execution of SQL-statements
 	 */
+	@Override
 	public void renew(Session session, ExecutionContext executionContext) throws Exception {
 		Map<String, String> arguments = new HashMap<String, String>();
 		arguments.put("JAILER_ENTITY", SQLDialect.dmlTableReference("JAILER_ENTITY", session, executionContext));

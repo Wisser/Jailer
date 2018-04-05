@@ -14,7 +14,7 @@ find -iname ".svn" -exec rm -rf '{}' \;
 
 ant package
 
-rm -rf docs
+rm -rf docs/api
 rm -rf out
 
 rm -rf ~/.wine/drive_c/tmp/jailer
@@ -45,6 +45,7 @@ cp admin/*nstall* ..
 
 chmod a+x *.sh
 
+zip -r docs/admin.zip admin
 rm -rf admin
 
 cd ..

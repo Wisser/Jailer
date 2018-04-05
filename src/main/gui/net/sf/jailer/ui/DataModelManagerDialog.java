@@ -31,6 +31,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -145,6 +146,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		dataModelsTable.setDefaultRenderer(Object.class,
 				new TableCellRenderer() {
 
+					@Override
 					public Component getTableCellRendererComponent(
 							JTable table, Object value, boolean isSelected,
 							boolean hasFocus, int row, int column) {
@@ -352,7 +354,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		if (time == null) {
 			return "";
 		}
-		return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.SHORT, SimpleDateFormat.SHORT).format(new Date(time));
+		return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(time));
 	}
 
 	private boolean inRefresh = false;
@@ -538,7 +540,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         browseButton.setText("Browse..");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
@@ -564,7 +567,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         jButton2.setText(" Cancel ");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
@@ -577,7 +581,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         okButton.setText(" OK ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -624,7 +629,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         newButton.setText(" New ");
         newButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newButtonActionPerformed(evt);
             }
         });
@@ -637,7 +643,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         editButton.setText(" Edit ");
         editButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
             }
         });
@@ -650,7 +657,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         analyzeButton.setText(" Analyze Database ");
         analyzeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 analyzeButtonActionPerformed(evt);
             }
         });
@@ -663,7 +671,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         deleteButton.setText(" Delete ");
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
             }
         });

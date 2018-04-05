@@ -163,6 +163,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 
 	
 	
+	@Override
 	public void readCurrentRow(ResultSet singleRow) throws SQLException {
 
 		int columnCount = getMetaData(singleRow).getColumnCount();
@@ -423,6 +424,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		return lobFile;
 	}
 	
+	@Override
 	public void close() {}
 
 }
