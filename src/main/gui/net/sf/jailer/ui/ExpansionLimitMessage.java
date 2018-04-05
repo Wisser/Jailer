@@ -70,7 +70,8 @@ public abstract class ExpansionLimitMessage extends javax.swing.JPanel {
         showMoreButton.setText("Show ? tables more");
         showMoreButton.setOpaque(false);
         showMoreButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showMoreButtonActionPerformed(evt);
             }
         });
@@ -85,7 +86,8 @@ public abstract class ExpansionLimitMessage extends javax.swing.JPanel {
         showAllButton.setText("Show all ? tables");
         showAllButton.setOpaque(false);
         showAllButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showAllButtonActionPerformed(evt);
             }
         });

@@ -54,6 +54,7 @@ public class SQLAutoCompletion extends AutoCompletion {
 				return c;
 			}
 
+			@Override
 			protected void prepareForOtherCompletion(JList list,
 				Completion c, int index, boolean selected, boolean hasFocus) {
 
@@ -90,6 +91,7 @@ public class SQLAutoCompletion extends AutoCompletion {
 		});
 	}
 
+	@Override
 	protected void insertCompletion(Completion c, boolean typedParamListStartChar) {
 		editorPane.beginAtomicEdit();
 		super.insertCompletion(c, typedParamListStartChar);

@@ -86,6 +86,7 @@ public class RestrictionDefinition {
 			}
 		}
 		Collections.sort(list, new Comparator<RestrictionDefinition>() {
+			@Override
 			public int compare(RestrictionDefinition o1, RestrictionDefinition o2) {
 				return (o1.from.getName() + " " + o1.to.getName() + " " + o1.name + " " + o1.condition).
 						compareTo(o2.from.getName() + " " + o2.to.getName() + " " + o2.name + " " + o2.condition);

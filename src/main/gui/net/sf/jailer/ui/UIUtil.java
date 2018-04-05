@@ -370,11 +370,13 @@ public class UIUtil {
             private int lineNr = 0;
             StringBuffer buffer = new StringBuffer();
 
-            public synchronized void write(byte[] arg0, int arg1, int arg2) throws IOException {
+            @Override
+			public synchronized void write(byte[] arg0, int arg1, int arg2) throws IOException {
                 super.write(arg0, arg1, arg2);
             }
 
-            public void write(int b) throws IOException {
+            @Override
+			public void write(int b) throws IOException {
                 if (b != '@') {
                     originalOut.write(b);
                 }
@@ -394,7 +396,8 @@ public class UIUtil {
                             ready[0] = false;
                         }
                         SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
+                            @Override
+							public void run() {
                                 synchronized (buffer) {
                                     if (buffer.length() > 0) {
                                         outputView.appendText(buffer.toString());
@@ -462,7 +465,8 @@ public class UIUtil {
                 }
             });
             new Thread(new Runnable() {
-                public void run() {
+                @Override
+				public void run() {
                     for (int i = 0;; ++i) {
                         try {
                             Thread.sleep(i == 0 ? 500 : 1000);
@@ -479,7 +483,8 @@ public class UIUtil {
             }).start();
 
             new Thread(new Runnable() {
-                public void run() {
+                @Override
+				public void run() {
                     try {
                         if (printCommandLine) {
                             _log.info("arguments: " + arglist.toString().trim());
@@ -498,7 +503,8 @@ public class UIUtil {
                         }
                     }
                     SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
+                        @Override
+						public void run() {
                             synchronized (UIUtil.class) {
                                 outputView.dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                                 if (progressListener != null) {
@@ -815,7 +821,7 @@ public class UIUtil {
     }
 
     public static void checkTermination() {
-        for (Window w : Frame.getWindows()) {
+        for (Window w : Window.getWindows()) {
             if (w.isShowing()) {
                 return;
             }

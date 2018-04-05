@@ -329,6 +329,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	/**
 	 * @see prefuse.render.AbstractShapeRenderer#getRawShape(prefuse.visual.VisualItem)
 	 */
+	@Override
 	protected Shape getRawShape(VisualItem item) {
 		m_text = getText(item);
 		Image[] img  = getImage(item);
@@ -418,6 +419,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	/**
 	 * @see prefuse.render.Renderer#render(java.awt.Graphics2D, prefuse.visual.VisualItem)
 	 */
+	@Override
 	public void render(Graphics2D g, VisualItem item) {
 		item.setTextColor(IN_CLOSURE_COLOR);
 		

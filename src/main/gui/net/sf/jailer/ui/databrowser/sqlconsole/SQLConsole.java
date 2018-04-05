@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -239,7 +240,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         };
 
         historyComboBox.setRenderer(new DefaultListCellRenderer() {
-             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+             @Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                  if (index == 0) {
                      value = null;
                  }
@@ -261,7 +263,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         restoreHistory();
         
         provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource) {
-            protected String prepareStatementForAliasAnalysis(String statement) {
+            @Override
+			protected String prepareStatementForAliasAnalysis(String statement) {
             	return sqlPlusSupport.replaceVariables(statement, null);
             }
         };
@@ -556,7 +559,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         final Status localStatus = new Status();
         String sqlStatement = null;
         String stmtId = null;
-        SortedMap<Integer, Integer> positionOffsets = new TreeMap<Integer, Integer>();
+        TreeMap<Integer, Integer> positionOffsets = new TreeMap<Integer, Integer>();
         try {
             status.numStatements++;
             localStatus.numStatements++;
@@ -682,7 +685,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.sortColumnsCheckBox.setVisible(true);
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
                         rb.sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
-                            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                            @Override
+							public void actionPerformed(java.awt.event.ActionEvent evt) {
                             	SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
@@ -799,12 +803,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 if (error instanceof SQLException && sqlStatement != null && statementStartOffset >= 0) {
                     int pos = retrieveErrorPos(sqlStatement, error.getMessage());
                     if (pos >= 0) {
-                        SortedMap<Integer, Integer> tail = positionOffsets.tailMap(pos);
+                        Entry<Integer, Integer> floor = positionOffsets.floorEntry(pos);
                         int positionOffset;
-                        if (tail.isEmpty()) {
+                        if (floor == null) {
                         	positionOffset = 0;
                         } else {
-                        	positionOffset = tail.get(tail.firstKey());
+                        	positionOffset = floor.getValue();
                         }
 						status.errorPosition = statementStartOffset + pos + positionOffset;
                         status.errorPositionIsKnown = true;
@@ -849,6 +853,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         final int MAX_TOOLTIP_LENGTH = 100;
         List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
         provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
+        sql = sqlPlusSupport.replaceVariables(sql, null);
         adjustLevels(outlineInfos);
         List<OutlineInfo> relocatedOutlineInfos = new ArrayList<OutlineInfo>();
         int indexOfInfoAtCaret = -1;
@@ -1212,7 +1217,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -1526,7 +1532,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         return titlePanel;
     }
     
-    public void grabFocus() {
+    @Override
+	public void grabFocus() {
         editorPane.grabFocus();
     }
     

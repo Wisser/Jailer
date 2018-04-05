@@ -80,6 +80,7 @@ public class Jailer {
 		final Thread mainThread = Thread.currentThread();
 		Thread shutdownHook;
 		Runtime.getRuntime().addShutdownHook(shutdownHook = new Thread("shutdown-hook") {
+			@Override
 			public void run() {
 				CancellationHandler.cancel(null);
 				try {

@@ -439,6 +439,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 */
 	private void sortLineList(List<CsvFile.Line> list, final boolean sortTables) {
 		Collections.sort(list, new Comparator<CsvFile.Line> () {
+			@Override
 			public int compare(CsvFile.Line o1, CsvFile.Line o2) {
 				int c1 = linesFromModelFinder.contains(o1)? 0 : 1;
 				int c2 = linesFromModelFinder.contains(o2)? 0 : 1;
@@ -498,6 +499,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 		setTitle("Data Model Editor");
 		addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override
 			public void windowClosing(java.awt.event.WindowEvent evt) {
 				formWindowClosing(evt);
 			}
@@ -506,6 +508,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		okButton.setText("Ok");
 		okButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				okButtonActionPerformed(evt);
 			}
@@ -514,6 +517,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		cancelButton.setText("Cancel");
 		cancelButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				cancelButtonActionPerformed(evt);
 			}
@@ -534,6 +538,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		tablesList.setModel(createTablesListModel());
 		tablesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+			@Override
 			public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
 				tablesListValueChanged(evt);
 			}
@@ -552,6 +557,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		newTable.setText("Add");
 		newTable.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				newTableActionPerformed(evt);
 			}
@@ -560,6 +566,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		editTable.setText("Edit");
 		editTable.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				editTableActionPerformed(evt);
 			}
@@ -568,6 +575,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		deleteTables.setText("Delete");
 		deleteTables.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				deleteTablesActionPerformed(evt);
 			}
@@ -589,6 +597,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		newAssociation.setText("Add");
 		newAssociation.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				newAssociationActionPerformed(evt);
 			}
@@ -597,6 +606,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		editAssociation.setText("Edit");
 		editAssociation.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				editAssociationActionPerformed(evt);
 			}
@@ -605,6 +615,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		deleteAssociations.setText("Delete");
 		deleteAssociations.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				deleteAssociationsActionPerformed(evt);
 			}
@@ -619,6 +630,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 		associationsList.setModel(createAssociationsListModel());
 		associationsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+			@Override
 			public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
 				associationsListValueChanged(evt);
 			}

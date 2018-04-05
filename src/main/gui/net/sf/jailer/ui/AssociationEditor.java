@@ -210,6 +210,7 @@ public class AssociationEditor extends javax.swing.JDialog {
 
 		jButton1.setText("Ok");
 		jButton1.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				jButton1ActionPerformed(evt);
 			}
@@ -236,11 +237,13 @@ public class AssociationEditor extends javax.swing.JDialog {
 
 		jButton2.setText("Cancel");
 		jButton2.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				jButton2ActionPerformed(evt);
 			}
 		});
 		jButton2.addComponentListener(new java.awt.event.ComponentAdapter() {
+			@Override
 			public void componentResized(java.awt.event.ComponentEvent evt) {
 				jButton2ComponentResized(evt);
 			}

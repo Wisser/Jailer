@@ -64,6 +64,7 @@ public class MDObject {
 		return metaDataSource;
 	}
 	
+	@Override
 	public String toString() {
 		return name;
 	}

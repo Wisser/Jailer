@@ -32,7 +32,8 @@ public class MemorizedResultSetTransformer {
     };
 
     public static class ListAggregation implements AggregateFunction {
-        public Object eval(List<Object[]> group, int columnIndex) {
+        @Override
+		public Object eval(List<Object[]> group, int columnIndex) {
         	StringBuilder sb = new StringBuilder();
         	for (Object[] row: group) {
         		if (sb.length() > 0) {

@@ -214,6 +214,7 @@ public class CellContentConverter {
 		public String getType() {
 			return type;
 		}
+		@Override
 		public String toString() {
 			return value;
 		}
@@ -224,6 +225,7 @@ public class CellContentConverter {
 		public NCharWrapper(String value) {
 			this.value = value;
 		}
+		@Override
 		public String toString() {
 			return value;
 		}
@@ -315,6 +317,7 @@ public class CellContentConverter {
 				if (typeName != null && typeName.toLowerCase().equals("bit")) {
 					final String value = Boolean.TRUE.equals(object)? "B'1'" : "B'0'";
 					return new Object() {
+						@Override
 						public String toString() {
 							return value;
 						}

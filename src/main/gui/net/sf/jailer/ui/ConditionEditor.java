@@ -56,6 +56,7 @@ public class ConditionEditor extends javax.swing.JDialog {
 		super(parent, true);
 		initComponents();
 		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
+			@Override
 			protected void runBlock() {
 				super.runBlock();
 				okButtonActionPerformed(null);
@@ -106,25 +107,31 @@ public class ConditionEditor extends javax.swing.JDialog {
 		table2dropDown.setText(null);
 		table2dropDown.setIcon(dropDownIcon);
 		table1dropDown.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
 			public void mousePressed(java.awt.event.MouseEvent evt) {
 				openColumnDropDownBox(table1dropDown, table1alias, table1);
 			}
 			
+			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				table1dropDown.setEnabled(false);
 			}
+			@Override
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				table1dropDown.setEnabled(true);
 		   }
 		});
 		table2dropDown.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
 			public void mousePressed(java.awt.event.MouseEvent evt) {
 				openColumnDropDownBox(table2dropDown, table2alias, table2);
 			}
 			
+			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				table2dropDown.setEnabled(false);
 			}
+			@Override
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				table2dropDown.setEnabled(true);
 		   }
@@ -156,6 +163,7 @@ public class ConditionEditor extends javax.swing.JDialog {
 			}
 			JMenuItem m = new JMenuItem(c);
 			m.addActionListener(new ActionListener () {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (editorPane.isEnabled()) {
 						if (editorPane.isEditable()) {
@@ -284,7 +292,8 @@ public class ConditionEditor extends javax.swing.JDialog {
 
         okButton.setText(" Ok ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -292,7 +301,8 @@ public class ConditionEditor extends javax.swing.JDialog {
 
         cancelButton.setText(" Cancel ");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });

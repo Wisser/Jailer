@@ -241,6 +241,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 
 		removeCurrentTablesCheckBox.setText("Remove current tables (0)");
 		removeCurrentTablesCheckBox.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				removeCurrentTablesCheckBoxActionPerformed(evt);
 			}
@@ -263,6 +264,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		keepManTablesCheckBox.setText("Keep manually entered tables (0)");
 		keepManTablesCheckBox.setEnabled(false);
 		keepManTablesCheckBox.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				keepManTablesCheckBoxActionPerformed(evt);
 			}
@@ -277,6 +279,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 
 		removeCurrentAssociationsCheckBox.setText("Remove current associations (0)");
 		removeCurrentAssociationsCheckBox.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				removeCurrentAssociationsCheckBoxActionPerformed(evt);
 			}
@@ -293,6 +296,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		keepManAssociationsCheckBox.setText("Keep manually entered associations (0)");
 		keepManAssociationsCheckBox.setEnabled(false);
 		keepManAssociationsCheckBox.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				keepManAssociationsCheckBoxActionPerformed(evt);
 			}
@@ -317,6 +321,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 
 		okButton.setText(" Ok ");
 		okButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				okButtonActionPerformed(evt);
 			}
@@ -331,6 +336,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 
 		cancelButton.setText(" Cancel ");
 		cancelButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				cancelButtonActionPerformed(evt);
 			}
@@ -366,6 +372,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 
 		analyseAlias.setText("Aliases");
 		analyseAlias.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				analyseAliasActionPerformed(evt);
 			}
@@ -381,6 +388,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 
 		analyseSynonyms.setText("Synonyms");
 		analyseSynonyms.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				analyseSynonymsActionPerformed(evt);
 			}
@@ -402,6 +410,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 
 		analyseViews.setText("Views");
 		analyseViews.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				analyseViewsActionPerformed(evt);
 			}

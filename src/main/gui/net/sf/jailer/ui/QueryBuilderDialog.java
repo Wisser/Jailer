@@ -41,6 +41,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -72,6 +73,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	public QueryBuilderDialog(java.awt.Frame parent) {
 		super(parent, true);
 		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
+			@Override
 			protected void runBlock() {
 				super.runBlock();
 				if (sqlEditButton.isVisible()) {
@@ -205,7 +207,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         joinAWithBButton.setText(" Join selected Tables");
         joinAWithBButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 joinAWithBButtonActionPerformed(evt);
             }
         });
@@ -219,7 +222,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         saveButton.setText(" Save ");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveButtonActionPerformed(evt);
             }
         });
@@ -233,7 +237,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         clipboardSingleLineButton.setText(" Copy as Single Line ");
         clipboardSingleLineButton.setToolTipText(" Copy the query as a single line to the clipboard");
         clipboardSingleLineButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clipboardSingleLineButtonActionPerformed(evt);
             }
         });
@@ -269,7 +274,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         clipboardButton.setText(" Copy to Clipboard ");
         clipboardButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clipboardButtonActionPerformed(evt);
             }
         });
@@ -281,7 +287,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         sqlEditButton.setText("SQL Console");
         sqlEditButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sqlEditButtonActionPerformed(evt);
             }
         });
@@ -295,7 +302,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         cancelButton.setText("Close");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -407,6 +415,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			this.operator = operator;
 		}
 
+		@Override
 		public String toString() {
 			return operator;
 		}
@@ -539,6 +548,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				tableCB = new JComboBox() {
 					private boolean layingOut = false;
 
+					@Override
 					public void doLayout() {
 						try {
 							layingOut = true;
@@ -548,6 +558,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 						}
 					}
 
+					@Override
 					public Dimension getSize() {
 						Dimension sz = super.getSize();
 						if (!layingOut) {
@@ -657,17 +668,20 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				gridBagConstraints.insets = new Insets(0, 4, 0, 0);
 
-				minusLabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
+				minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
 				final JComboBox combobox = tableCB;
 				minusLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+					@Override
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						minusLabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.LOWERED));
+						minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
 					}
 
+					@Override
 					public void mouseExited(java.awt.event.MouseEvent evt) {
-						minusLabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
+						minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
 					}
 
+					@Override
 					public void mouseClicked(java.awt.event.MouseEvent evt) {
 						combobox.setSelectedItem("");
 					}
@@ -701,17 +715,20 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 				final JComponent finalTCB = tableCB;
 				finalTCB.setVisible(false);
-				jlabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
+				jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
 
 				jlabel.addMouseListener(new java.awt.event.MouseAdapter() {
+					@Override
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						jlabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.LOWERED));
+						jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
 					}
 
+					@Override
 					public void mouseExited(java.awt.event.MouseEvent evt) {
-						jlabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
+						jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
 					}
 
+					@Override
 					public void mouseClicked(java.awt.event.MouseEvent evt) {
 						finalTCB.setVisible(true);
 						jlabel.setVisible(false);

@@ -182,6 +182,7 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	/**
 	 * Reads result-set and writes into export-script.
 	 */
+	@Override
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		if (columnLabel == null) {
 			columnCount = getMetaData(resultSet).getColumnCount();
@@ -280,6 +281,7 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	/**
 	 * Finalizes reading.
 	 */
+	@Override
 	public void close() {
 		if (columnLabel != null) {
 			synchronized (transformerHandler) {

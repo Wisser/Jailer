@@ -256,6 +256,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			return new MemorizedResultSet(catList, procs.getMetaData());
 		}
 
+		@Override
 		protected int getDetailIDIndex() {
 			if (mdSchema.getMetaDataSource().getSession().dbms.isProcedureDetailNeedsSpecificName()) {
 				return 4;
@@ -351,6 +352,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					final MemorizedResultSet listPerType = new MemorizedResultSet(rowsPerType, theList.getMetaData());
 					final JLabel label = MDSchema.getConstraintTypeIcon(e.getKey() + "s");
 					result.add(new MDDescriptionBasedGeneric(e.getValue(), getMetaDataSource(), schema, dataModel, desc) {
+						@Override
 						protected MemorizedResultSet retrieveList(Session session) throws SQLException {
 							listPerType.reset();
 							return listPerType;
@@ -766,7 +768,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                             unknownTable = true;
                         } else {
                             if (((MDTable) uo).isLoaded()) {
-                                isDirty = dirtyTables.get((MDTable) uo);
+                                isDirty = dirtyTables.get(uo);
                                 if (isDirty == null) {
                                     isDirty = !((MDTable) uo).isUptodate(table);
                                     dirtyTables.put(((MDTable) uo), isDirty);
@@ -1262,7 +1264,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         refreshButton.setText("Refresh");
         refreshButton.setToolTipText("Refresh Database Meta Data Cache");
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButtonActionPerformed(evt);
             }
         });
@@ -1275,7 +1278,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         refreshButton1.setText("Select");
         refreshButton1.setToolTipText("Choose the selecetd table in the tables tree");
         refreshButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButton1ActionPerformed(evt);
             }
         });
@@ -1292,8 +1296,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
         outlineList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
+            @Override
+			public int getSize() { return strings.length; }
+            @Override
+			public Object getElementAt(int i) { return strings[i]; }
         });
         outlineList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         outlineScrollPane.setViewportView(outlineList);

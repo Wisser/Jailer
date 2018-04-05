@@ -115,7 +115,7 @@ public class ColumnsTable extends JTable {
 				int ri = rowAtPoint(e.getPoint());
 				if (ri >= 0) {
 						Rectangle r = getCellRect(ri, 0, false);
-						int x = Math.max((int) e.getPoint().x, (int) r.getMinX());
+						int x = Math.max(e.getPoint().x, (int) r.getMinX());
 						int y = (int) r.getMaxY() - 2;
 						if (e.getButton() != MouseEvent.BUTTON1) {
 							JPopupMenu popup;

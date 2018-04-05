@@ -77,6 +77,7 @@ public class CsvFile {
 		/**
 		 * Line as String.
 		 */
+		@Override
 		public String toString() {
 			int num = 0;
 			int l = 0;
@@ -271,7 +272,7 @@ public class CsvFile {
 			esc = false;
 		}
 		cells.add(sb.toString());
-		return (String[]) cells.toArray(new String[cells.size()]);
+		return cells.toArray(new String[cells.size()]);
 	}
 
 	/**

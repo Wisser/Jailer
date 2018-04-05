@@ -215,6 +215,7 @@ public class Association extends ModelElement {
 	/**
 	 * Stringifies the association.
 	 */
+	@Override
 	public String toString() {
 		return toString(30, false);
 	}

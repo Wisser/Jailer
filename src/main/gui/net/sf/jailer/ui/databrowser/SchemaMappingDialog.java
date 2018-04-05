@@ -154,6 +154,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 
 		okButton.setText(" Ok ");
 		okButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				okButtonActionPerformed(evt);
 			}
@@ -167,6 +168,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 
 		jButton2.setText(" Cancel ");
 		jButton2.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				jButton2ActionPerformed(evt);
 			}

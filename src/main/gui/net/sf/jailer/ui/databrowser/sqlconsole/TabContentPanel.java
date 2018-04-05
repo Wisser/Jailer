@@ -37,6 +37,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.RowSorter;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumnModel;
@@ -416,7 +417,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.BorderLayout());
 
-        tabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+        tabbedPane.setTabPlacement(SwingConstants.BOTTOM);
 
         contentPanel.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         contentPanel.setLayout(new java.awt.BorderLayout());
@@ -461,7 +462,8 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         copyCBButton.setText("Copy to Clipboard");
         copyCBButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 copyCBButtonActionPerformed(evt);
             }
         });
@@ -480,7 +482,8 @@ public class TabContentPanel extends javax.swing.JPanel {
         headerCheckBox.setSelected(true);
         headerCheckBox.setText("Include Header");
         headerCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 headerCheckBoxActionPerformed(evt);
             }
         });

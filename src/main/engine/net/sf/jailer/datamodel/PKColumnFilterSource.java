@@ -44,6 +44,7 @@ public class PKColumnFilterSource implements FilterSource {
 	 * 
 	 * @return clear text description
 	 */
+	@Override
 	public String getDescription() {
 		return "Filter on " + table.getName() + "." + column.name;
 	}

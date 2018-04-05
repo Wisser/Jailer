@@ -438,6 +438,7 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.setMaximizable(true);
 		jInternalFrame.setVisible(true);
 		jInternalFrame.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+			@Override
 			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
 				onMouseWheelMoved(evt);
 				onMouseWheelMoved(evt, parentFrame.getDesktopScrollPane());
@@ -820,6 +821,7 @@ public abstract class Desktop extends JDesktopPane {
 
 		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
 		browserContentPane.rowsTableScrollPane.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+			@Override
 			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
 				onMouseWheelMoved(evt);
 				onMouseWheelMoved(evt, browserContentPane.rowsTableScrollPane);
@@ -1595,7 +1597,7 @@ public abstract class Desktop extends JDesktopPane {
 		if (start.distance(end) < 2)
 			return;
 
-		long lineHash = ((long) start.hashCode()) + (((long) Integer.MAX_VALUE) + 1) * ((long) end.hashCode());
+		long lineHash = (start.hashCode()) + (((long) Integer.MAX_VALUE) + 1) * (end.hashCode());
 		if (lineHashes.contains(lineHash)) {
 			return;
 		}
@@ -1649,6 +1651,7 @@ public abstract class Desktop extends JDesktopPane {
 	private static int FRAME_OFFSET = 20;
 	private MDIDesktopManager manager;
 
+	@Override
 	public void setBounds(int x, int y, int w, int h) {
 		super.setBounds(x, y, w, h);
 		checkDesktopSize();
@@ -1690,6 +1693,7 @@ public abstract class Desktop extends JDesktopPane {
 		return retval;
 	}
 
+	@Override
 	public void remove(Component c) {
 		super.remove(c);
 		checkDesktopSize();
@@ -1772,11 +1776,13 @@ public abstract class Desktop extends JDesktopPane {
 			this.desktop = desktop;
 		}
 
+		@Override
 		public void endResizingFrame(JComponent f) {
 			super.endResizingFrame(f);
 			resizeDesktop();
 		}
 
+		@Override
 		public void endDraggingFrame(JComponent f) {
 			super.endDraggingFrame(f);
 			resizeDesktop();

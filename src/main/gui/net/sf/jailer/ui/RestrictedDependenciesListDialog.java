@@ -48,6 +48,7 @@ public abstract class RestrictedDependenciesListDialog extends ClosureBorderDial
 	/**
 	 * Refreshes view after model changes.
 	 */
+	@Override
 	public void refresh() {
 		DataModel datamodel = getDataModel();
 		 if (datamodel != null) {

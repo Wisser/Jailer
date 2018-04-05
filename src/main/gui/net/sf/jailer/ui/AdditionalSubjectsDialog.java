@@ -183,6 +183,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			public void mouseReleased(MouseEvent e) {
 				mouseClicked(e);
 			}
+			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				ConditionEditor conditionEditor = new ConditionEditor(AdditionalSubjectsDialog.this.parent, parametersGetter, AdditionalSubjectsDialog.this.extractionModel.dataModel);
 				Object item = detailsComboBox.getSelectedItem();
@@ -201,9 +202,11 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 				}
 			}
 			
+			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				detailsLabel.setIcon(conditionEditorSelectedIcon);
 			}
+			@Override
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				detailsLabel.setIcon(conditionEditorIcon);
 		   }
@@ -320,7 +323,8 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
         okButton.setText(" Ok ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -333,7 +337,8 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -344,7 +349,8 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
         addAllButton.setText("Add remaining tables");
         addAllButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addAllButtonActionPerformed(evt);
             }
         });
@@ -355,7 +361,8 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
         removeAllButton.setText("Delete all");
         removeAllButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeAllButtonActionPerformed(evt);
             }
         });

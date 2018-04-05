@@ -1,5 +1,6 @@
 package net.sf.jailer.ui.scrollmenu;
 
+import java.awt.Adjustable;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -48,7 +49,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 
 	protected JScrollBar getScrollBar() {
 		if (popupScrollBar == null) {
-			popupScrollBar = new JScrollBar(JScrollBar.VERTICAL);
+			popupScrollBar = new JScrollBar(Adjustable.VERTICAL);
 			popupScrollBar.addAdjustmentListener(new AdjustmentListener() {
 				@Override
 				public void adjustmentValueChanged(AdjustmentEvent e) {
@@ -71,6 +72,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 		this.maximumVisibleRows = maximumVisibleRows;
 	}
 
+	@Override
 	public void paintChildren(Graphics g) {
 		Insets insets = getInsets();
 		g.clipRect(insets.left, insets.top, getWidth(), getHeight()
@@ -78,6 +80,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 		super.paintChildren(g);
 	}
 
+	@Override
 	protected void addImpl(Component comp, Object constraints, int index) {
 		super.addImpl(comp, constraints, index);
 
@@ -86,6 +89,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 		}
 	}
 
+	@Override
 	public void remove(int index) {
 		// can't remove the scrollbar
 		++index;
@@ -97,6 +101,7 @@ public class JScrollPopupMenu extends JPopupMenu {
 		}
 	}
 
+	@Override
 	public void show(Component invoker, int x, int y) {
 		JScrollBar scrollBar = getScrollBar();
 		if (scrollBar.isVisible()) {

@@ -109,10 +109,11 @@ public class SQLPlusSupport {
 					if (replacement != null) {
 						matcher.appendReplacement(sb,  Matcher.quoteReplacement(replacement));
 						if (positionOffsets != null) {
-							offset += matcher.group().length() - replacement.length();
 							for (int i = 0; i < replacement.length(); ++i) {
-								positionOffsets.put(sb.length() - replacement.length() + i, offset + (replacement.length() - i - 2));
+								positionOffsets.put(sb.length() - replacement.length() + i, offset - i);
 							}
+							offset += matcher.group().length() - replacement.length();
+							positionOffsets.put(sb.length(), offset);
 						}
 					}
 					result = matcher.find();

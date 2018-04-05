@@ -67,6 +67,7 @@ public class PanControl extends ControlAdapter {
 	/**
 	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void mousePressed(MouseEvent e) {
 		if ( UILib.isButtonPressed(e, m_button) ) {
 			e.getComponent().setCursor(
@@ -80,6 +81,7 @@ public class PanControl extends ControlAdapter {
 	/**
 	 * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void mouseDragged(MouseEvent e) {
 		if ( UILib.isButtonPressed(e, m_button) ) {
 			Display display = (Display)e.getComponent();
@@ -98,6 +100,7 @@ public class PanControl extends ControlAdapter {
 	/**
 	 * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void mouseReleased(MouseEvent e) {
 		if ( UILib.isButtonPressed(e, m_button) ) {
 			e.getComponent().setCursor(Cursor.getDefaultCursor());
@@ -110,6 +113,7 @@ public class PanControl extends ControlAdapter {
 	/**
 	 * @see prefuse.controls.Control#itemPressed(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void itemPressed(VisualItem item, MouseEvent e) {
 		if ( m_panOverItem )
 			mousePressed(e);
@@ -118,6 +122,7 @@ public class PanControl extends ControlAdapter {
 	/**
 	 * @see prefuse.controls.Control#itemDragged(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void itemDragged(VisualItem item, MouseEvent e) {
 		if ( m_panOverItem )
 			mouseDragged(e);
@@ -126,6 +131,7 @@ public class PanControl extends ControlAdapter {
 	/**
 	 * @see prefuse.controls.Control#itemReleased(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
 	 */
+	@Override
 	public void itemReleased(VisualItem item, MouseEvent e) {
 		if ( m_panOverItem )
 			mouseReleased(e);

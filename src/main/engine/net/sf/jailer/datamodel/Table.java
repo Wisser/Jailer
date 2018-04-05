@@ -157,6 +157,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	/**
 	 * Compares tables.
 	 */
+	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Table) {
 			return name.equals(((Table) other).name);
@@ -167,6 +168,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	/**
 	 * The hash-code.
 	 */
+	@Override
 	public int hashCode() {
 		return name.hashCode();
 	}
@@ -174,10 +176,12 @@ public class Table extends ModelElement implements Comparable<Table> {
 	/**
 	 * Stringifies the table.
 	 */
+	@Override
 	public String toString() {
 		String str = name + " (" + primaryKey + ")\n";
 		List<Association> all = new ArrayList<Association>(associations);
 		Collections.sort(all, new Comparator<Association>() {
+			@Override
 			public int compare(Association o1, Association o2) {
 				return o1.destination.getName().compareTo(o2.destination.getName());
 			}
@@ -235,6 +239,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 		return str + "\n";
 	}
 
+	@Override
 	public int compareTo(Table o) {
 		return name.compareTo(o.name);
 	}
@@ -352,15 +357,20 @@ public class Table extends ModelElement implements Comparable<Table> {
 		// find associations:
 		final Set<String> mappedAssociations = new HashSet<String>();
 		XmlUtil.visitDocumentNodes(template, new NodeVisitor() {
+			@Override
 			public void visitAssociationElement(String associationName) {
 				mappedAssociations.add(associationName);
 			}
+			@Override
 			public void visitElementEnd(String elementName, boolean isRoot) {
 			}
+			@Override
 			public void visitText(String text) {
 			}
+			@Override
 			public void visitComment(String comment) {
 			}
+			@Override
 			public void visitElementStart(String elementName, boolean isRoot,
 					String[] attributeNames, String[] attributeValues) {
 			}

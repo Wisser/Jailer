@@ -104,6 +104,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 			final Color BG1 = new Color(255, 255, 255);
 			final Color BG2 = new Color(230, 255, 255);
 
+			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
 				if (render instanceof JLabel) {
@@ -427,7 +428,8 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 
         closeButton.setText("Close");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
             }
         });
@@ -489,7 +491,8 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         sqlConsoleButton.setText("SQL Console");
         sqlConsoleButton.setEnabled(false);
         sqlConsoleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sqlConsoleButtonActionPerformed(evt);
             }
         });
@@ -552,7 +555,8 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         viewButton.setText("View");
         viewButton.setEnabled(false);
         viewButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 viewButtonActionPerformed(evt);
             }
         });

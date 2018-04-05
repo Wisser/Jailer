@@ -56,6 +56,7 @@ public class ShellScriptBasedStatisticRenovator implements StatisticRenovator {
 	 * 
 	 * @param session for execution of SQL-statements
 	 */
+	@Override
 	public void renew(Session session, ExecutionContext executionContext) throws Exception {
 		String theScriptInvocation = getScriptInvocation(session);
 		_log.info("executing: " + theScriptInvocation);

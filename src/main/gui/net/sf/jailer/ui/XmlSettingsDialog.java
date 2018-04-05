@@ -38,11 +38,13 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		setModal(true);
 		setLocation(100, 150);
 		datePattern.getEditor().addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				updateExamples();
 			}
 		});
 		timestampPattern.getEditor().addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				updateExamples();
 			}
@@ -224,11 +226,13 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		datePattern.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Eintrag 1", "Eintrag 2", "Eintrag 3", "Eintrag 4" }));
 		datePattern.setEditable(true);
 		datePattern.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				datePatternActionPerformed(evt);
 			}
 		});
 		datePattern.addKeyListener(new java.awt.event.KeyAdapter() {
+			@Override
 			public void keyTyped(java.awt.event.KeyEvent evt) {
 				datePatternKeyTyped(evt);
 			}
@@ -245,11 +249,13 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		timestampPattern.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Eintrag 1", "Eintrag 2", "Eintrag 3", "Eintrag 4" }));
 		timestampPattern.setEditable(true);
 		timestampPattern.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				timestampPatternActionPerformed(evt);
 			}
 		});
 		timestampPattern.addKeyListener(new java.awt.event.KeyAdapter() {
+			@Override
 			public void keyTyped(java.awt.event.KeyEvent evt) {
 				timestampPatternKeyTyped(evt);
 			}
@@ -292,6 +298,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 
 		noRootTag.setText("no root tag");
 		noRootTag.addItemListener(new java.awt.event.ItemListener() {
+			@Override
 			public void itemStateChanged(java.awt.event.ItemEvent evt) {
 				noRootTagItemStateChanged(evt);
 			}
@@ -306,6 +313,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 
 		Ok.setText("OK");
 		Ok.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				OkActionPerformed(evt);
 			}
@@ -319,6 +327,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 
 		cancelButton.setText("Cancel");
 		cancelButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				cancelButtonActionPerformed(evt);
 			}

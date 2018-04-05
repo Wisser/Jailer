@@ -250,6 +250,7 @@ public class ImportDialog extends javax.swing.JDialog {
 		copyButton.setText("Copy to Clipboard"); // NOI18N
 		copyButton.setToolTipText("Copy to Clipboard"); // NOI18N
 		copyButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				copyButtonActionPerformed(evt);
 			}
@@ -280,6 +281,7 @@ public class ImportDialog extends javax.swing.JDialog {
 		transactionalCheckBox.setToolTipText("execute all statements in a single transaction");
 		transactionalCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		transactionalCheckBox.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				transactionalCheckBoxActionPerformed(evt);
 			}
@@ -334,6 +336,7 @@ public class ImportDialog extends javax.swing.JDialog {
 
 		okButton.setText("Import Data"); // NOI18N
 		okButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				okButtonActionPerformed(evt);
 			}
@@ -349,6 +352,7 @@ public class ImportDialog extends javax.swing.JDialog {
 
 		cancelButton.setText(" Cancel ");
 		cancelButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				cancelButtonActionPerformed(evt);
 			}

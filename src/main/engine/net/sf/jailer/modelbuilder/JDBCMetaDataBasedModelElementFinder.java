@@ -116,6 +116,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * @param namingSuggestion to put naming suggestions for associations into
 	 * @return found associations
 	 */
+	@Override
 	public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session session, ExecutionContext executionContext) throws Exception {
 		Collection<Association> associations = new ArrayList<Association>();
 		DatabaseMetaData metaData = session.getMetaData();
@@ -223,6 +224,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * 
 	 * @param session the statement executor for executing SQL-statements 
 	 */
+	@Override
 	public Set<Table> findTables(Session session, ExecutionContext executionContext) throws Exception {
 		PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
 		
@@ -669,6 +671,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * 
 	 * @throws Exception on each error
 	 */
+	@Override
 	public List<Column> findColumns(Table table, Session session, ExecutionContext executionContext) throws Exception {
 		List<Column> columns = new ArrayList<Column>();
 		DatabaseMetaData metaData = session.getMetaData();
@@ -906,6 +909,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	/**
 	 * Gets description.
 	 */
+	@Override
 	public String toString() {
 		return "JDBC based model element finder";
 	}

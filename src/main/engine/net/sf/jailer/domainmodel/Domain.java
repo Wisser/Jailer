@@ -100,6 +100,7 @@ public class Domain implements Comparable<Domain> {
 		return superClosure.contains(domain);
 	}
 
+	@Override
 	public int compareTo(Domain o) {
 		return name.compareTo(o.name);
 	}
@@ -107,6 +108,7 @@ public class Domain implements Comparable<Domain> {
 	/**
 	 * The hash-code.
 	 */
+	@Override
 	public int hashCode() {
 		return name.hashCode();
 	}
@@ -114,6 +116,7 @@ public class Domain implements Comparable<Domain> {
 	/**
 	 * Compares domains.
 	 */
+	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Domain) {
 			return name.equals(((Domain) other).name);
@@ -124,6 +127,7 @@ public class Domain implements Comparable<Domain> {
 	/**
 	 * Stringifies the domain.
 	 */
+	@Override
 	public String toString() {
 		return "Domain " + name;
 	}

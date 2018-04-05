@@ -142,6 +142,7 @@ public class ProgressTable extends JTable {
 			private Font kursiv = new Font(font.getName(), (font.getStyle() & ~Font.BOLD) | Font.ITALIC, font.getSize());
 			private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
 
+			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				Color color = bgColors.get(row);
 				boolean fontIsSet = false;
@@ -233,6 +234,7 @@ public class ProgressTable extends JTable {
 			colNames[i] = "";
 		}
 		tableModel = new DefaultTableModel(colNames, 0) {
+			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
@@ -717,8 +719,8 @@ public class ProgressTable extends JTable {
 		ta = arrowWidth / (2.0f * ((float) Math.tan(theta) / 2.0f) * fLength);
 
 		// find the base of the arrow
-		baseX = ((float) xPoints[0] - ta * vecLine[0]);
-		baseY = ((float) yPoints[0] - ta * vecLine[1]);
+		baseX = (xPoints[0] - ta * vecLine[0]);
+		baseY = (yPoints[0] - ta * vecLine[1]);
 
 		// build the points on the sides of the arrow
 		xPoints[1] = (int) (baseX + th * vecLeft[0]);

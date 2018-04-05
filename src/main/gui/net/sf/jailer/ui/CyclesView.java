@@ -138,6 +138,7 @@ public class CyclesView extends javax.swing.JDialog {
 		jScrollPane1.setColumnHeaderView(null);
 		
 		cyclesTable.addMouseListener(new MouseListener() {
+			@Override
 			public void mouseClicked(MouseEvent e) {
 				// context menu
 				if (SwingUtilities.isRightMouseButton(e)) {
@@ -154,12 +155,16 @@ public class CyclesView extends javax.swing.JDialog {
 					}
 				}
 			}
+			@Override
 			public void mouseEntered(MouseEvent e) {
 			}
+			@Override
 			public void mouseExited(MouseEvent e) {
 			}
+			@Override
 			public void mousePressed(MouseEvent e) {
 			}
+			@Override
 			public void mouseReleased(MouseEvent e) {
 			}
 		});
@@ -170,6 +175,7 @@ public class CyclesView extends javax.swing.JDialog {
 			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
 			private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
 			
+			@Override
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
 					int row, int column) {
@@ -250,6 +256,7 @@ public class CyclesView extends javax.swing.JDialog {
 
 			jButton1.setText(" Abort ");
 			jButton1.addActionListener(new java.awt.event.ActionListener() {
+				@Override
 				public void actionPerformed(java.awt.event.ActionEvent evt) {
 					jButton1ActionPerformed(evt);
 				}
@@ -407,8 +414,9 @@ public class CyclesView extends javax.swing.JDialog {
 			++distance;
 		}
 		
-		Object[][] dataArray = (Object[][]) data.toArray(new Object[data.size()][]);
+		Object[][] dataArray = data.toArray(new Object[data.size()][]);
 		DefaultTableModel tableModel = new DefaultTableModel(dataArray, columns) {
+			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
