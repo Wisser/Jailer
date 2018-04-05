@@ -41,7 +41,7 @@ sed s/%VERSION%/$1/g admin/Jailer.nsi > admin/tmp.nsi
 wine ~/nsis-3.03/makensis.exe admin/tmp.nsi
 rm admin/tmp.nsi
 
-cp admin/*nstall* ..
+mv admin/*nstall* ..
 
 chmod a+x *.sh
 
