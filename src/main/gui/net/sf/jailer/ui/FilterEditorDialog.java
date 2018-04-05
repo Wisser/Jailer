@@ -817,6 +817,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					}
 				}
 				applyAtCB.addItemListener(new java.awt.event.ItemListener() {
+					@Override
 					public void itemStateChanged(java.awt.event.ItemEvent evt) {
 						explicitlySetApplyAtPerColumn.put(c, applyAtCB.getSelectedIndex());
 						apply();
@@ -1489,7 +1490,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
         templateDetailsExcludedCheckBox.setText("Excluded from export");
         templateDetailsExcludedCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            @Override
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 templateDetailsExcludedCheckBoxItemStateChanged(evt);
             }
         });
@@ -1508,7 +1510,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         clauseDetailsSubjectComboBox.setMaximumRowCount(22);
         clauseDetailsSubjectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         clauseDetailsSubjectComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            @Override
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 clauseDetailsSubjectComboBoxItemStateChanged(evt);
             }
         });
@@ -1517,7 +1520,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         clauseDetailsPredicateComboBox.setMaximumRowCount(22);
         clauseDetailsPredicateComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         clauseDetailsPredicateComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            @Override
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 clauseDetailsPredicateComboBoxItemStateChanged(evt);
             }
         });
@@ -1556,7 +1560,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
         jButton1.setText("Help");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
@@ -1612,7 +1617,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
         okButton.setText("  OK  ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -1626,7 +1632,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
         cancelButton.setText(" Cancel ");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -1664,7 +1671,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
         helpButton.setText(" Help ");
         helpButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpButtonActionPerformed(evt);
             }
         });
@@ -1711,7 +1719,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
         applyButton.setText("Apply");
         applyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 applyButtonActionPerformed(evt);
             }
         });
@@ -1772,7 +1781,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         tableBox.setMaximumRowCount(20);
         tableBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         tableBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            @Override
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 tableBoxItemStateChanged(evt);
             }
         });

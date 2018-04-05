@@ -54,11 +54,13 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 		return false;
 	}
 	
+	@Override
 	public void addComments(Writer script, ScriptType scriptType,
 			Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 	}
 
+	@Override
 	public void addEpilog(Writer script, ScriptType scriptType,
 			Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
@@ -67,6 +69,7 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 		}
 	}
 
+	@Override
 	public void addProlog(Writer script, ScriptType scriptType,
 			Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {

@@ -104,6 +104,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @param birthdayOfSubject birthday of subject rows
 	 */
+	@Override
 	public void setBirthdayOfSubject(int birthdayOfSubject) {
 		this.birthdayOfSubject = birthdayOfSubject;
 	}
@@ -145,6 +146,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param session for executing SQL-Statements
 	 * @return the newly created entity-graph
 	 */
+	@Override
 	public EntityGraph copy(int newGraphID, Session session) throws SQLException {
 		RemoteEntityGraph entityGraph = create(dataModel, newGraphID, session, universalPrimaryKey, executionContext);
 		entityGraph.setBirthdayOfSubject(birthdayOfSubject);
@@ -162,14 +164,17 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param session for executing SQL-Statements
 	 * @return the entity-graph
 	 */
+	@Override
 	public EntityGraph find(int graphID, Session session, PrimaryKey universalPrimaryKey) throws SQLException {
 		RemoteEntityGraph entityGraph = new RemoteEntityGraph(dataModel, graphID, session, universalPrimaryKey, executionContext);
 		final boolean[] found = new boolean[1];
 		found[0] = false;
 		session.executeQuery("Select * From " + dmlTableReference(ENTITY_GRAPH, session) + "Where id=" + graphID + "", new Session.ResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				found[0] = true;
 			}
+			@Override
 			public void close() {
 			}
 		});
@@ -184,13 +189,16 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @return the age of the graph
 	 */
+	@Override
 	public int getAge() throws SQLException {
 		final int[] age = new int[1];
 		age[0] = -1;
 		session.executeQuery("Select age From " + dmlTableReference(ENTITY_GRAPH, session) + " Where id=" + graphID + "", new Session.ResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				age[0] = resultSet.getInt(1);
 			}
+			@Override
 			public void close() {
 			}
 		});
@@ -202,6 +210,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @param age the age of the graph
 	 */
+	@Override
 	public void setAge(int age) throws SQLException {
 		session.executeUpdate("Update " + dmlTableReference(ENTITY_GRAPH, session) + " Set age=" + age + " Where id=" + graphID + "");
 	}
@@ -211,13 +220,16 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @return the number of entities in the graph
 	 */
+	@Override
 	public long getSize() throws SQLException {
 		final int[] size = new int[1];
 		size[0] = -1;
 		session.executeQuery("Select count(*) From " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + " and birthday >= 0", new Session.ResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				size[0] = resultSet.getInt(1);
 			}
+			@Override
 			public void close() {
 			}
 		});
@@ -230,10 +242,12 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @return the number of entities in the graph
 	 */
+	@Override
 	public long getSize(final Set<Table> tables) throws SQLException {
 		final long[] total = new long[1];
 		total[0] = 0;
 		session.executeQuery("Select type, count(*) From " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				Table table = dataModel.getTableByOrdinal(resultSet.getInt(1));
 				if (tables.contains(table)) {
@@ -248,6 +262,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
 	 * Deletes the graph.
 	 */
+	@Override
 	public void delete() throws SQLException {
 		session.executeUpdate("Delete from " + dmlTableReference(DEPENDENCY, session) + " Where r_entitygraph=" + graphID + "");
 		session.executeUpdate("Delete from " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + "");
@@ -263,6 +278,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @return row-count
 	 */
+	@Override
 	public long addEntities(Table table, String condition, int today) throws SQLException {
 		return addEntities(table, "T", condition, null, null, null, null, false, today, 0, true);
 	}
@@ -278,6 +294,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @return row-count or -1, if association is ignored
 	 */
+	@Override
 	public long resolveAssociation(Table table, Association association, int today) throws SQLException {
 		String jc = association.getJoinCondition();
 		if (jc != null) {
@@ -388,6 +405,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param aggregationId id of aggregation association (for XML export), 0 if not applicable
 	 * @param dependencyId id of dependency
 	 */
+	@Override
 	public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int aggregationId, int dependencyId, boolean isAssociationReversed) throws SQLException {
 		condition = SqlUtil.resolvePseudoColumns(condition, isAssociationReversed? "E1" : "E2", isAssociationReversed? "E2" : "E1", 0, birthdayOfSubject, inDeleteMode);
 		String insert = "Insert into " + dmlTableReference(DEPENDENCY, session) + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + upkColumnList(from, "FROM_") + ", " + upkColumnList(to, "TO_") + ") " +
@@ -404,13 +422,16 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
 	 * Gets distinct association-ids of all edged.
 	 */
+	@Override
 	public Set<Integer> getDistinctDependencyIDs() throws SQLException {
 		String select = "Select distinct depend_id from " + dmlTableReference(DEPENDENCY, session) + " Where r_entitygraph=" + graphID;
 		final Set<Integer> ids = new HashSet<Integer>();
 		session.executeQuery(select, new Session.ResultSetReader() {
+			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				ids.add(resultSet.getInt(1));
 			}
+			@Override
 			public void close() {
 			}
 		});
@@ -421,6 +442,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * Marks all entities of a given table which don't dependent on other entities,
 	 * s.t. they can be read and deleted.
 	 */
+	@Override
 	public void markIndependentEntities(Table table) throws SQLException {
 		StringBuffer fromEqualsPK = new StringBuffer();
 		Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
@@ -446,6 +468,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
 	 * Marks all rows which are not target of a dependency.
 	 */
+	@Override
 	public void markRoots(Table table) throws SQLException {
 		StringBuffer toEqualsPK = new StringBuffer();
 		Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
@@ -473,6 +496,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
+	@Override
 	public void readMarkedEntities(Table table, boolean orderByPK) throws SQLException {
 		Session.ResultSetReader reader = getTransformerFactory().create(table);
 		readMarkedEntities(table, reader, filteredSelectionClause(table, false), orderByPK);
@@ -506,6 +530,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
+	@Override
 	public void readMarkedEntities(Table table, Session.ResultSetReader reader, String selectionSchema, String originalPKAliasPrefix, boolean orderByPK) throws SQLException {
 		if (originalPKAliasPrefix == null) {
 			readMarkedEntities(table, reader, selectionSchema, orderByPK);
@@ -541,6 +566,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @param graph the graph to be united with this graph
 	 */
+	@Override
 	public void uniteWith(EntityGraph graph) throws SQLException {
 		StringBuffer e1EqualsE2 = new StringBuffer();
 		for (Column column: universalPrimaryKey.getColumns()) {
@@ -565,6 +591,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
+	@Override
 	public void readEntities(Table table, boolean orderByPK) throws SQLException {
 		Session.ResultSetReader reader = getTransformerFactory().create(table);
 		long rc = readEntities(table, orderByPK, reader);
@@ -578,6 +605,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param columns the columns
 	 * @param reader to read
 	 */
+	@Override
 	public long readUnfilteredEntityColumns(final Table table, final List<Column> columns, final Session.ResultSetReader reader) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
@@ -625,6 +653,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param columns the columns;
 	 */
+	@Override
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration) throws SQLException {
 		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, executionContext.getNumberOfEntities(), getTargetSession(), targetConfiguration, importFilterManager, executionContext);
 		readEntities(table, false, reader);
@@ -694,6 +723,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
 	 * Deletes all entities which are marked as independent.
 	 */
+	@Override
 	public void deleteIndependentEntities(Table table) throws SQLException {
 		StringBuffer fromEqualsPK = new StringBuffer();
 		StringBuffer toEqualsPK = new StringBuffer();
@@ -739,6 +769,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
 	 * Deletes all entities from a given table.
 	 */
+	@Override
 	public long deleteEntities(Table table) throws SQLException {
 		return session.executeUpdate(
 				"Delete From " + dmlTableReference(ENTITY, session) + " " +
@@ -752,12 +783,14 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @return the number of entities from table in this graph
 	 */
+	@Override
 	public long countEntities(Table table) throws SQLException {
 		final long[] count = new long[1];
 		session.executeQuery(
 				"Select count(*) from " + dmlTableReference(ENTITY, session) + " E " +
 				"Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "",
 				new Session.AbstractResultSetReader() {
+					@Override
 					public void readCurrentRow(ResultSet resultSet) throws SQLException {
 						count[0] = resultSet.getLong(1);
 					}
@@ -773,6 +806,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param association the association
 	 * @return number of removed entities
 	 */
+	@Override
 	public long removeAssociatedDestinations(Association association, boolean deletedEntitiesAreMarked) throws SQLException {
 		String jc = association.getJoinCondition();
 		if (jc != null) {
@@ -849,6 +883,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param reader reads the entities
 	 * @param selectionSchema the selection schema
 	 */
+	@Override
 	public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema, String originalPKAliasPrefix) throws SQLException {
 		String select;
 		CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, session.dbms);
@@ -886,6 +921,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param association the dependency
 	 * @param resultSet current row is given entity
 	 */
+	@Override
 	public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
 		String update;
 		CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, session.dbms);
@@ -909,6 +945,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param table the source of dependencies to look for
 	 * @param reader reads the entities
 	 */
+	@Override
 	public void readNonTraversedDependencies(Table table, ResultSetReader reader) throws SQLException {
 		String select = "Select * from " + dmlTableReference(DEPENDENCY, session) + " D " +
 			 " Where (traversed is null or traversed <> 1)" +
@@ -922,6 +959,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @param table the table
 	 */
+	@Override
 	public void removeReflexiveDependencies(Table table) throws SQLException {
 		Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
 		StringBuffer sb = new StringBuffer();
@@ -1082,6 +1120,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @return total row-count
 	 */
+	@Override
 	public long getTotalRowcount() {
 		return totalRowcount;
 	}
@@ -1101,6 +1140,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @param explain <code>true</code> iff predecessors of each entity must be stored
 	 */
+	@Override
 	public void setExplain(boolean explain) {
 		this.explain = explain;
 	}
@@ -1110,6 +1150,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * 
 	 * @return the universal primary key
 	 */
+	@Override
 	public PrimaryKey getUniversalPrimaryKey() {
 		return universalPrimaryKey;
 	}
@@ -1131,6 +1172,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
 	 * Shuts down statement-executor.
 	 */
+	@Override
 	public void shutDown() throws SQLException {
 		session.shutDown();
 	}

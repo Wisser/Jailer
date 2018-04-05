@@ -221,6 +221,7 @@ public class GraphicalDataModelView extends JPanel {
 		// set up the renderers
 		
 		final ShapeRenderer sr = new ShapeRenderer() {
+			@Override
 			protected Shape getRawShape(VisualItem item) {
 				item.setFillColor(ColorLib.rgba(220,210,0,100));
 				double x = item.getX();
@@ -246,6 +247,7 @@ public class GraphicalDataModelView extends JPanel {
 		tableRenderer.setVerticalPadding(3);
 		tableRenderer.setHorizontalPadding(3);
 		visualization.setRendererFactory(new RendererFactory() {
+			@Override
 			public Renderer getRenderer(VisualItem item) {
 				if (zoomBoxControl.getRenderer().isBoxItem(item)) {
 					return zoomBoxControl.getRenderer();
@@ -266,6 +268,7 @@ public class GraphicalDataModelView extends JPanel {
 		// fix selected focus nodes
 		TupleSet focusGroup = visualization.getGroup(Visualization.FOCUS_ITEMS); 
 		focusGroup.addTupleSetListener(new TupleSetListener() {
+			@Override
 			public void tupleSetChanged(TupleSet ts, Tuple[] add, Tuple[] rem)
 			{
 				boolean draw = false;
@@ -366,6 +369,7 @@ public class GraphicalDataModelView extends JPanel {
 				super.itemClicked(item, e);
 			}
 
+			@Override
 			public void itemPressed(VisualItem item, MouseEvent e) {
 				if (UILib.isButtonPressed(e, LEFT_MOUSE_BUTTON)) {
 					Association association = (Association) item.get("association");
@@ -406,6 +410,7 @@ public class GraphicalDataModelView extends JPanel {
 				super.itemPressed(item, e);
 			}
 			
+			@Override
 			public void itemReleased(VisualItem item, MouseEvent e) {
 				// fix after drag
 				super.itemReleased(item, e);
@@ -421,6 +426,7 @@ public class GraphicalDataModelView extends JPanel {
 			/**
 			 * @see java.awt.event.MouseWheelListener#mouseWheelMoved(java.awt.event.MouseWheelEvent)
 			 */
+			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				Display display = (Display)e.getComponent();
 				Point p = e.getPoint();
@@ -471,6 +477,7 @@ public class GraphicalDataModelView extends JPanel {
 		}
 		
 		layout = new ForceDirectedLayout(graph) {
+			@Override
 			protected float getMassValue(VisualItem n) {
 				return zoomBoxControl.getRenderer().isBoxItem(n)? 0.01f : showTableDetails? 2.0f : 1.0f;
 			}
@@ -485,6 +492,7 @@ public class GraphicalDataModelView extends JPanel {
 		}
 		updateTableDetailsMode();
 		layout.getForceSimulator().setIntegrator(new Integrator() {
+			@Override
 			public void integrate(ForceSimulator sim, long timestep) {                
 				float speedLimit = sim.getSpeedLimit();
 				float vx, vy, v, coeff;
@@ -737,6 +745,7 @@ public class GraphicalDataModelView extends JPanel {
 					mi.setToolTipText(miText);
 				}
 				mi.addActionListener(new ActionListener () {
+					@Override
 					public void actionPerformed(ActionEvent e) {
 						GraphicalDataModelView.this.modelEditor.select(a);
 					}
@@ -764,6 +773,7 @@ public class GraphicalDataModelView extends JPanel {
 //		});
 		JMenuItem selectAsRoot = new JMenuItem("Focus " + table.getName());
 		selectAsRoot.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				GraphicalDataModelView.this.modelEditor.captureLayout();
 				try {
@@ -775,18 +785,21 @@ public class GraphicalDataModelView extends JPanel {
 		});
 		JMenuItem dataBrowser = new JMenuItem("Browse Data");
 		dataBrowser.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.extractionModelFrame.openDataBrowser(table, "");
 			}
 		});
 		JMenuItem zoomToFit = new JMenuItem("Zoom To Fit");
 		zoomToFit.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				zoomToFit();
 			}
 		});
 		JMenuItem hide = new JMenuItem("Hide " + table.getName());
 		hide.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				GraphicalDataModelView.this.modelEditor.captureLayout();
 				hideTable(table);
@@ -799,12 +812,14 @@ public class GraphicalDataModelView extends JPanel {
 		}
 		JMenuItem toggleDetails = new JMenuItem(showDetails(table)? "Hide Details" : "Show Details");
 		toggleDetails.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				toggleShowDetails(table);
 			}
 		});
 		JMenuItem mapColumns = new JMenuItem("XML Column Mapping");
 		mapColumns.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.openColumnMapper(table);
 			}
@@ -813,6 +828,7 @@ public class GraphicalDataModelView extends JPanel {
 		
 		JMenuItem restrictAll = new JMenuItem("Disable Associations");
 		restrictAll.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "Disable each association with '" + model.getDisplayName(table) + "'?\n(except dependencies)?", "Add restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
 					modelEditor.ignoreAll(table);
@@ -823,6 +839,7 @@ public class GraphicalDataModelView extends JPanel {
 		
 		JMenuItem removeRestrictions = new JMenuItem("Remove Restrictions");
 		removeRestrictions.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "Remove all restrictions from associations with '" + model.getDisplayName(table) + "'?", "Remove restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
 					modelEditor.removeAllRestrictions(table);
@@ -831,12 +848,14 @@ public class GraphicalDataModelView extends JPanel {
 		});
 		JMenuItem htmlRender = new JMenuItem("Open HTML Render");
 		htmlRender.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.extractionModelFrame.openHTMLRender(table);
 			}
 		});
 		JMenuItem queryBuilder = new JMenuItem("Query Builder");
 		queryBuilder.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				openQueryBuilder(table, false);
 			}
@@ -858,6 +877,7 @@ public class GraphicalDataModelView extends JPanel {
 
 		JMenuItem filterEditor= new JMenuItem("Edit Filters...");
 		filterEditor.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.extractionModelFrame.openFilterEditor(table);
 			}
@@ -897,6 +917,7 @@ public class GraphicalDataModelView extends JPanel {
 			popup.add(insertModeMenu);
 			JRadioButtonMenuItem insert = new JRadioButtonMenuItem("Insert");
 			insert.addActionListener(new ActionListener () {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.FALSE.equals(table.upsert)) {
 						table.upsert = false;
@@ -910,6 +931,7 @@ public class GraphicalDataModelView extends JPanel {
 			JRadioButtonMenuItem upsert = new JRadioButtonMenuItem("Upsert/Merge");
 			insertModeMenu.add(upsert);
 			upsert.addActionListener(new ActionListener () {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.TRUE.equals(table.upsert)) {
 						table.upsert = true;
@@ -922,6 +944,7 @@ public class GraphicalDataModelView extends JPanel {
 			JRadioButtonMenuItem deflt = new JRadioButtonMenuItem("Data model default (" + ((table.defaultUpsert? "Upsert" : "Insert") + ")"));
 			insertModeMenu.add(deflt);
 			deflt.addActionListener(new ActionListener () {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (table.upsert != null) {
 						table.upsert = null;
@@ -952,6 +975,7 @@ public class GraphicalDataModelView extends JPanel {
 			popup.add(excludeMenu);
 			JRadioButtonMenuItem yes = new JRadioButtonMenuItem("Yes");
 			yes.addActionListener(new ActionListener () {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.TRUE.equals(table.excludeFromDeletion)) {
 						table.excludeFromDeletion = true;
@@ -965,6 +989,7 @@ public class GraphicalDataModelView extends JPanel {
 			JRadioButtonMenuItem no = new JRadioButtonMenuItem("No");
 			excludeMenu.add(no);
 			no.addActionListener(new ActionListener () {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.FALSE.equals(table.excludeFromDeletion)) {
 						table.excludeFromDeletion = false;
@@ -977,6 +1002,7 @@ public class GraphicalDataModelView extends JPanel {
 			deflt = new JRadioButtonMenuItem("Data model default (" + ((table.defaultExcludeFromDeletion? "Yes" : "No") + ")"));
 			excludeMenu.add(deflt);
 			deflt.addActionListener(new ActionListener () {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (table.excludeFromDeletion != null) {
 						table.excludeFromDeletion = null;
@@ -1026,18 +1052,21 @@ public class GraphicalDataModelView extends JPanel {
 		
 		JMenuItem disable = new JMenuItem("Disable Association");
 		disable.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				setRestriction(association, true);
 			}
 		});
 		JMenuItem enable = new JMenuItem("Enable Association");
 		enable.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				setRestriction(association, false);
 			}
 		});
 		JMenuItem zoomToFit = new JMenuItem("Zoom To Fit");
 		zoomToFit.addActionListener(new ActionListener () {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				zoomToFit();
 			}
@@ -1703,6 +1732,7 @@ public class GraphicalDataModelView extends JPanel {
 			return associationRenderer.locatePoint(p, item);
 		}
 
+		@Override
 		public boolean locatePoint(Point2D p, VisualItem item) {
 			if (useAssociationRendererForLocation) {
 				return locatePointWithAssociationRenderer(p, item);
@@ -1710,6 +1740,7 @@ public class GraphicalDataModelView extends JPanel {
 			return associationFullRenderer.locatePoint(p, item);
 		}
 
+		@Override
 		public void render(Graphics2D g, VisualItem item) {
 			item.setInteractive(true);
 			boolean isSelected = selectedAssociation != null && selectedAssociation.equals(item.get("association"));
@@ -1719,6 +1750,7 @@ public class GraphicalDataModelView extends JPanel {
 			reversedAssociationRenderer.render(g, item, isReversedSelected);
 		}
 
+		@Override
 		public void setBounds(VisualItem item) {
 			associationFullRenderer.setBounds(item);
 		}

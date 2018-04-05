@@ -239,7 +239,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         };
 
         historyComboBox.setRenderer(new DefaultListCellRenderer() {
-             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+             @Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                  if (index == 0) {
                      value = null;
                  }
@@ -261,7 +262,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         restoreHistory();
         
         provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource) {
-            protected String prepareStatementForAliasAnalysis(String statement) {
+            @Override
+			protected String prepareStatementForAliasAnalysis(String statement) {
             	return sqlPlusSupport.replaceVariables(statement, null);
             }
         };
@@ -682,7 +684,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.sortColumnsCheckBox.setVisible(true);
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
                         rb.sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
-                            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                            @Override
+							public void actionPerformed(java.awt.event.ActionEvent evt) {
                             	SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
@@ -1212,7 +1215,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -1526,7 +1530,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         return titlePanel;
     }
     
-    public void grabFocus() {
+    @Override
+	public void grabFocus() {
         editorPane.grabFocus();
     }
     

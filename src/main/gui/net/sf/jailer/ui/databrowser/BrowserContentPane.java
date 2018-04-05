@@ -201,6 +201,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 
+		@Override
 		public void run() {
 			int l;
 			synchronized (this) {
@@ -523,13 +524,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		dropA.setIcon(dropDownIcon);
 		sqlLabel1.setIcon(dropDownIcon);
 		dropA.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
 			public void mousePressed(java.awt.event.MouseEvent evt) {
 				openColumnDropDownBox(dropA, "A", table);
 			}
 			
+			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				dropA.setEnabled(false);
 			}
+			@Override
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				dropA.setEnabled(true);
 		   }
@@ -539,13 +543,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			dropB.setText(null);
 			dropB.setIcon(dropDownIcon);
 			dropB.addMouseListener(new java.awt.event.MouseAdapter() {
+				@Override
 				public void mousePressed(java.awt.event.MouseEvent evt) {
 					openColumnDropDownBox(dropB, "B", association.source);
 				}
 				
+				@Override
 				public void mouseEntered(java.awt.event.MouseEvent evt) {
 					dropB.setEnabled(false);
 				}
+				@Override
 				public void mouseExited(java.awt.event.MouseEvent evt) {
 					dropB.setEnabled(true);
 			   }
@@ -740,6 +747,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Font italic = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC, nonbold.getSize());
 			final Font italicBold = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC | Font.BOLD, nonbold.getSize());
 
+			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				boolean cellSelected = isSelected; 
 				
@@ -864,7 +872,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						currentRowSelection = ri;
 						onRedraw();
 						Rectangle r = rowsTable.getCellRect(ri, 0, false);
-						int x = Math.max((int) e.getPoint().x, (int) r.getMinX());
+						int x = Math.max(e.getPoint().x, (int) r.getMinX());
 						int y = (int) r.getMaxY() - 2;
 						if (singleRowDetailsView != null) {
 							y = e.getY();
@@ -940,10 +948,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				});
 			}
 
+			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				openEditorLabel.setIcon(conditionEditorSelectedIcon);
 			}
 
+			@Override
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				openEditorLabel.setIcon(conditionEditorIcon);
 			}
@@ -983,11 +993,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					});
 				}
 	
+				@Override
 				public void mouseEntered(java.awt.event.MouseEvent evt) {
 					in = true;
 					updateBorder();
 				}
 	
+				@Override
 				public void mouseExited(java.awt.event.MouseEvent evt) {
 					in = false;
 					updateBorder();
@@ -1027,11 +1039,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				});
 			}
 
+			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				in = true;
 				updateBorder();
 			}
 
+			@Override
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				in = false;
 				updateBorder();
@@ -1499,7 +1513,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		insert.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Insert Into " + tableName, x, y, new Object() { public String toString() { return SQLDMLBuilder.buildInsert(table, rows, session); }});
+				openSQLDialog("Insert Into " + tableName, x, y, new Object() { @Override
+				public String toString() { return SQLDMLBuilder.buildInsert(table, rows, session); }});
 			}
 		});
 		JMenuItem update = new JMenuItem("Updates");
@@ -1507,7 +1522,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		update.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Update " + tableName, x, y,  new Object() { public String toString() { return SQLDMLBuilder.buildUpdate(table, rows, session); }});
+				openSQLDialog("Update " + tableName, x, y,  new Object() { @Override
+				public String toString() { return SQLDMLBuilder.buildUpdate(table, rows, session); }});
 			}
 		});
 		JMenuItem delete = new JMenuItem("Deletes");
@@ -1515,7 +1531,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		delete.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Delete from " + tableName, x, y,  new Object() { public String toString() { return SQLDMLBuilder.buildDelete(table, rows, session); }});
+				openSQLDialog("Delete from " + tableName, x, y,  new Object() { @Override
+				public String toString() { return SQLDMLBuilder.buildDelete(table, rows, session); }});
 			}
 		});
 		insert.setEnabled(rows.size() > 0);
@@ -1821,6 +1838,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (dep.source == browserContentPane.table && !regardedChildren.contains(dep.destination)) {
 				node.add(new DefaultMutableTreeNode(new Object() {
 					String item = dataModel.getDisplayName(dep.destination);
+					@Override
 					public String toString() {
 						return item;
 					}
@@ -1852,6 +1870,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		public int distanceFromRoot;
 		public boolean isIgnored;
 		public boolean isIgnoredIfReversalIsRestricted = false;
+		@Override
 		public String toString() {
 			return "Cond:" + condition + " Dist: " + distanceFromRoot + " isIgnored: " + isIgnored + " isIgnoredIfReversalIsRestricted: " + isIgnoredIfReversalIsRestricted;
 		}
@@ -2162,6 +2181,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			
 			final ActionListener itemAction = new ActionListener() {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					highlightedRows.add(rowIndex);
 					if (navigateFromAllRows) {
@@ -2863,6 +2883,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Object value = "";
 					if (unknownColumnIndexes.contains(i)) {
 						value = new UnknownValue() {
+							@Override
 							public String toString() {
 								return "?";
 							}
@@ -2894,6 +2915,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								if (o instanceof byte[]) {
 									final long length = ((byte[]) o).length;
 									o = new LobValue() {
+										@Override
 										public String toString() {
 											return "<Blob> " + length + " bytes";
 										}
@@ -2973,6 +2995,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public static class TableModelItem {
 		public int blockNr;
 		public Object value;
+		@Override
 		public String toString() {
 			if (value instanceof Double) {
 				return SqlUtil.toString((Double) value);
@@ -3567,7 +3590,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         loadButton.setText(" Reload ");
         loadButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadButtonActionPerformed(evt);
             }
         });
@@ -3691,7 +3715,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         sortColumnsCheckBox.setText("sort columns   ");
         sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sortColumnsCheckBoxActionPerformed(evt);
             }
         });
@@ -3709,7 +3734,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         selectDistinctCheckBox.setSelected(true);
         selectDistinctCheckBox.setText("select distinct (-100 rows)");
         selectDistinctCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectDistinctCheckBoxActionPerformed(evt);
             }
         });
@@ -3744,7 +3770,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         cancelLoadButton.setText("Cancel");
         cancelLoadButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelLoadButtonActionPerformed(evt);
             }
         });
@@ -3903,7 +3930,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         limitBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         limitBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            @Override
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 limitBoxItemStateChanged(evt);
             }
         });
@@ -4133,6 +4161,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			JMenuItem m = new JMenuItem(c);
 			m.addActionListener(new ActionListener () {
+				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (andCondition.isEnabled()) {
 						if (andCondition.isEditable()) {
@@ -4503,12 +4532,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			try {
 				final long length = ((Blob) object).length();
 				value = new LobValue() {
+					@Override
 					public String toString() {
 						return "<Blob> " + length + " bytes";
 					}
 				};
 			} catch (Exception e) {
 				value = new LobValue() {
+					@Override
 					public String toString() {
 						return "<Blob>";
 					}
@@ -4519,12 +4550,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			try {
 				final String content = readClob((Clob) object);
 				value = new LobValue() {
+					@Override
 					public String toString() {
 						return content;
 					}
 				};
 			} catch (Exception e) {
 				value = new LobValue() {
+					@Override
 					public String toString() {
 						return "<Clob>";
 					}
@@ -4535,12 +4568,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			try {
 				final String content = readSQLXML((SQLXML) object);
 				value = new LobValue() {
+					@Override
 					public String toString() {
 						return content;
 					}
 				};
 			} catch (Exception e) {
 				value = new LobValue() {
+					@Override
 					public String toString() {
 						return "<XML>";
 					}

@@ -303,7 +303,8 @@ public class TableDetailsView extends javax.swing.JPanel {
         sortColumnsCheckBox.setText("sort columns      ");
         sortColumnsCheckBox.setOpaque(false);
         sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sortColumnsCheckBoxActionPerformed(evt);
             }
         });

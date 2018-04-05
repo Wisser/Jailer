@@ -173,6 +173,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 *            for executing SQL-Statements
 	 * @return the newly created entity-graph
 	 */
+	@Override
 	public EntityGraph copy(int newGraphID, Session session)
 			throws SQLException {
 		IntraDatabaseEntityGraph entityGraph = create(dataModel, newGraphID,
@@ -200,6 +201,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 *            for executing SQL-Statements
 	 * @return the entity-graph
 	 */
+	@Override
 	public EntityGraph find(int graphID, Session session,
 			PrimaryKey universalPrimaryKey) throws SQLException {
 		IntraDatabaseEntityGraph entityGraph = new IntraDatabaseEntityGraph(
@@ -211,11 +213,13 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 						+ SQLDialect.dmlTableReference(ENTITY_GRAPH, session, executionContext)
 						+ "Where id=" + graphID + "",
 				new Session.ResultSetReader() {
+					@Override
 					public void readCurrentRow(ResultSet resultSet)
 							throws SQLException {
 						found[0] = true;
 					}
 
+					@Override
 					public void close() {
 					}
 				});
@@ -236,6 +240,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @param orderByPK
 	 *            not used
 	 */
+	@Override
 	public void readMarkedEntities(Table table, boolean orderByPK)
 			throws SQLException {
 		String selectionSchema = filteredSelectionClause(table, COLUMN_PREFIX, quoting, true);
@@ -255,6 +260,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @param orderByPK
 	 *            not used
 	 */
+	@Override
 	public void readEntities(Table table, boolean orderByPK)
 			throws SQLException {
 		readEntitiesByQuery(table, "Select " + filteredSelectionClause(table, COLUMN_PREFIX, quoting, true) + " From "
@@ -271,6 +277,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @param table the table
 	 * @param columns the columns;
 	 */
+	@Override
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration) throws SQLException {
 		File tmp = Configuration.getInstance().createTempFile();
 		OutputStreamWriter tmpFileWriter;

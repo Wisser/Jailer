@@ -80,6 +80,7 @@ public class Clause {
 		
 		public abstract Object getSubject(Table table, Column column);
 		
+		@Override
 		public String toString() {
 			return description;
 		}
@@ -144,6 +145,7 @@ public class Clause {
 			protected boolean eval(Object subject, String object) {
 				return matches((String) subject, object);
 			}
+			@Override
 			public String validateObject(String object) {
 				return validateRE(object);
 			}
@@ -153,6 +155,7 @@ public class Clause {
 			protected boolean eval(Object subject, String object) {
 				return !matches((String) subject, object);
 			}
+			@Override
 			public String validateObject(String object) {
 				return validateRE(object);
 			}
@@ -234,6 +237,7 @@ public class Clause {
 			return null;
 		}
 
+		@Override
 		public String toString() {
 			return description;
 		}

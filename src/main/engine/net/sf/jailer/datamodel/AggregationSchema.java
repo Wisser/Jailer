@@ -54,6 +54,7 @@ public enum AggregationSchema {
 	/**
 	 * Gets human readable name.
 	 */
+	@Override
 	public String toString() {
 		return displayName;
 	}

@@ -170,7 +170,8 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
         copyButton.setText("Copy to Clipboard");
         copyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 copyButtonActionPerformed(evt);
             }
         });
@@ -206,7 +207,8 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
         jButton1.setText(" Close ");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
@@ -218,7 +220,8 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
         sendButton.setText("Report and Close");
         sendButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sendButtonActionPerformed(evt);
             }
         });

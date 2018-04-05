@@ -275,6 +275,7 @@ public class RestrictionModel {
 	/**
 	 * Stringifies the restriction model.
 	 */
+	@Override
 	public String toString() {
 		return filesRead.toString();
 	}

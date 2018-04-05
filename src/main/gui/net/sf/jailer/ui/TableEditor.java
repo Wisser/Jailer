@@ -180,6 +180,7 @@ public class TableEditor extends javax.swing.JDialog {
 			return null;
 		}
 
+		@Override
 		protected Dimension detailsViewMinSize() {
 			return new Dimension(300, 0);
 		}
@@ -276,21 +277,26 @@ public class TableEditor extends javax.swing.JDialog {
 		columnDetailsPanel.add(primaryKey1, gridBagConstraints);
 
 		columnName.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				columnNameActionPerformed(evt);
 			}
 		});
 		columnName.addInputMethodListener(new java.awt.event.InputMethodListener() {
+			@Override
 			public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
 			}
+			@Override
 			public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
 				columnNameInputMethodTextChanged(evt);
 			}
 		});
 		columnName.addKeyListener(new java.awt.event.KeyAdapter() {
+			@Override
 			public void keyReleased(java.awt.event.KeyEvent evt) {
 				columnNameKeyReleased(evt);
 			}
+			@Override
 			public void keyTyped(java.awt.event.KeyEvent evt) {
 				columnNameKeyTyped(evt);
 			}
@@ -332,21 +338,26 @@ public class TableEditor extends javax.swing.JDialog {
 		columnDetailsPanel.add(jLabel11, gridBagConstraints);
 
 		columnType.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				columnTypeActionPerformed(evt);
 			}
 		});
 		columnType.addInputMethodListener(new java.awt.event.InputMethodListener() {
+			@Override
 			public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
 			}
+			@Override
 			public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
 				columnTypeInputMethodTextChanged(evt);
 			}
 		});
 		columnType.addKeyListener(new java.awt.event.KeyAdapter() {
+			@Override
 			public void keyReleased(java.awt.event.KeyEvent evt) {
 				columnTypeKeyReleased(evt);
 			}
+			@Override
 			public void keyTyped(java.awt.event.KeyEvent evt) {
 				columnTypeKeyTyped(evt);
 			}
@@ -361,21 +372,26 @@ public class TableEditor extends javax.swing.JDialog {
 
 		columnLength.setColumns(4);
 		columnLength.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				columnLengthActionPerformed(evt);
 			}
 		});
 		columnLength.addInputMethodListener(new java.awt.event.InputMethodListener() {
+			@Override
 			public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
 			}
+			@Override
 			public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
 				columnLengthInputMethodTextChanged(evt);
 			}
 		});
 		columnLength.addKeyListener(new java.awt.event.KeyAdapter() {
+			@Override
 			public void keyReleased(java.awt.event.KeyEvent evt) {
 				columnLengthKeyReleased(evt);
 			}
+			@Override
 			public void keyTyped(java.awt.event.KeyEvent evt) {
 				columnLengthKeyTyped(evt);
 			}
@@ -390,21 +406,26 @@ public class TableEditor extends javax.swing.JDialog {
 
 		columnPrec.setColumns(4);
 		columnPrec.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				columnPrecActionPerformed(evt);
 			}
 		});
 		columnPrec.addInputMethodListener(new java.awt.event.InputMethodListener() {
+			@Override
 			public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
 			}
+			@Override
 			public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
 				columnPrecInputMethodTextChanged(evt);
 			}
 		});
 		columnPrec.addKeyListener(new java.awt.event.KeyAdapter() {
+			@Override
 			public void keyReleased(java.awt.event.KeyEvent evt) {
 				columnPrecKeyReleased(evt);
 			}
+			@Override
 			public void keyTyped(java.awt.event.KeyEvent evt) {
 				columnPrecKeyTyped(evt);
 			}
@@ -492,6 +513,7 @@ public class TableEditor extends javax.swing.JDialog {
 
 		jButton1.setText("Ok");
 		jButton1.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				jButton1ActionPerformed(evt);
 			}
@@ -517,6 +539,7 @@ public class TableEditor extends javax.swing.JDialog {
 
 		jButton2.setText("Cancel");
 		jButton2.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				jButton2ActionPerformed(evt);
 			}
@@ -552,6 +575,7 @@ public class TableEditor extends javax.swing.JDialog {
 		excludeFromDeletion.setText(" exclude from deletion");
 		excludeFromDeletion.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		excludeFromDeletion.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				excludeFromDeletionActionPerformed(evt);
 			}

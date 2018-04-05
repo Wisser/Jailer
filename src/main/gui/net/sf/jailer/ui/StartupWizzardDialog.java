@@ -117,6 +117,7 @@ private static final long serialVersionUID = -6737420167295938488L;
 		newModelButton.setToolTipText("New Model without Restrictions");
 		newModelButton.setMargin(new java.awt.Insets(6, 14, 6, 14));
 		newModelButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				newModelButtonActionPerformed(evt);
 			}
@@ -132,6 +133,7 @@ private static final long serialVersionUID = -6737420167295938488L;
 		newModelWRjButton.setToolTipText("New Model with disabled non-dependencies");
 		newModelWRjButton.setMargin(new java.awt.Insets(6, 14, 6, 14));
 		newModelWRjButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				newModelWRjButtonActionPerformed(evt);
 			}
@@ -146,6 +148,7 @@ private static final long serialVersionUID = -6737420167295938488L;
 		loadButton.setText("Load Model");
 		loadButton.setMargin(new java.awt.Insets(6, 14, 6, 14));
 		loadButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				loadButtonActionPerformed(evt);
 			}

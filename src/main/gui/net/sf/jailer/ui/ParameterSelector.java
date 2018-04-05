@@ -55,6 +55,7 @@ public class ParameterSelector extends javax.swing.JPanel {
 		paramTable.setShowGrid(false);
 		paramTable.setDefaultRenderer(Object.class,
 				new TableCellRenderer() {
+					@Override
 					public Component getTableCellRendererComponent(
 							JTable table, Object value, boolean isSelected,
 							boolean hasFocus, int row, int column) {

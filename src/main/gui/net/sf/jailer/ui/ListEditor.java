@@ -151,6 +151,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		};
 		columnsTable.setDefaultRenderer(Object.class, renderer);
 		columnsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				updateEnableState();
 				onSelectionChange();
@@ -187,6 +188,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 	 */
 	private TableModel createTableModel() {
 		DefaultTableModel model = new DefaultTableModel() {
+			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
@@ -300,6 +302,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 
 		cancelButton.setText("Cancel");
 		cancelButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				cancelButtonActionPerformed(evt);
 			}
@@ -312,6 +315,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 
 		okButton.setText(" Ok ");
 		okButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				okButtonActionPerformed(evt);
 			}
@@ -352,6 +356,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 
 		upButton.setText("Up");
 		upButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				upButtonActionPerformed(evt);
 			}
@@ -365,6 +370,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 
 		downButton.setText("Down");
 		downButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				downButtonActionPerformed(evt);
 			}
@@ -379,6 +385,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 
 		addButton.setText("Add");
 		addButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				addButtonActionPerformed(evt);
 			}
@@ -392,6 +399,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 
 		updateButton.setText("Edit");
 		updateButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				updateButtonActionPerformed(evt);
 			}
@@ -405,6 +413,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 
 		deleteButton.setText("Delete");
 		deleteButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				deleteButtonActionPerformed(evt);
 			}
@@ -420,6 +429,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 
 		copyButton.setText("Copy");
 		copyButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				copyButtonActionPerformed(evt);
 			}

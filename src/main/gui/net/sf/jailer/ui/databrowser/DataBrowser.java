@@ -76,6 +76,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
@@ -367,7 +368,8 @@ public class DataBrowser extends javax.swing.JFrame {
                 mItem.setText(lfInfo.getName());
                 view.add(mItem);
                 mItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent arg0) {
+                    @Override
+					public void actionPerformed(ActionEvent arg0) {
                         setPLAF(lfInfo.getClassName());
                     }
                 });
@@ -481,7 +483,8 @@ public class DataBrowser extends javax.swing.JFrame {
             int m_XDifference, m_YDifference;
             Container c;
 
-            public void mouseDragged(MouseEvent e) {
+            @Override
+			public void mouseDragged(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     return;
                 }
@@ -505,7 +508,8 @@ public class DataBrowser extends javax.swing.JFrame {
                 }
             }
 
-            public void mousePressed(MouseEvent e) {
+            @Override
+			public void mousePressed(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     return;
                 }
@@ -514,7 +518,8 @@ public class DataBrowser extends javax.swing.JFrame {
                 m_YDifference = e.getY();
             }
 
-            public void mouseReleased(MouseEvent e) {
+            @Override
+			public void mouseReleased(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     return;
                 }
@@ -629,12 +634,14 @@ public class DataBrowser extends javax.swing.JFrame {
                 desktop.openSchemaMappingDialog(false);
             }
 
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            @Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
                 in = true;
                 updateBorder();
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            @Override
+			public void mouseExited(java.awt.event.MouseEvent evt) {
                 in = false;
                 updateBorder();
             }
@@ -1065,7 +1072,8 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
         workbenchTabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+            @Override
+			public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 workbenchTabbedPaneStateChanged(evt);
             }
         });
@@ -1080,7 +1088,8 @@ public class DataBrowser extends javax.swing.JFrame {
         jScrollPane1.setAutoscrolls(true);
         jScrollPane1.setWheelScrollingEnabled(false);
         jScrollPane1.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
-            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+            @Override
+			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
                 jScrollPane1MouseWheelMoved(evt);
             }
         });
@@ -1144,7 +1153,8 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationPanel.setLayout(new java.awt.GridBagLayout());
 
         navigationTree.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+            @Override
+			public void mouseClicked(java.awt.event.MouseEvent evt) {
                 navigationTreeMouseClicked(evt);
             }
         });
@@ -1162,7 +1172,8 @@ public class DataBrowser extends javax.swing.JFrame {
         openTableButton.setText("Open");
         openTableButton.setToolTipText("Open table browser for the selected table");
         openTableButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openTableButtonActionPerformed(evt);
             }
         });
@@ -1359,7 +1370,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         newBrowserjMenuItem.setText("New Data Browser");
         newBrowserjMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newBrowserjMenuItemActionPerformed(evt);
             }
         });
@@ -1369,7 +1381,8 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem3.setText("Open Table");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem3ActionPerformed(evt);
             }
         });
@@ -1379,7 +1392,8 @@ public class DataBrowser extends javax.swing.JFrame {
         storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         storeSessionItem.setText("Store Layout");
         storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 storeSessionItemActionPerformed(evt);
             }
         });
@@ -1388,7 +1402,8 @@ public class DataBrowser extends javax.swing.JFrame {
         restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         restoreSessionItem.setText("Restore Layout");
         restoreSessionItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 restoreSessionItemActionPerformed(evt);
             }
         });
@@ -1397,7 +1412,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         reconnectMenuItem.setText("Reconnect...");
         reconnectMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reconnectMenuItemActionPerformed(evt);
             }
         });
@@ -1407,7 +1423,8 @@ public class DataBrowser extends javax.swing.JFrame {
         cloaseAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         cloaseAllMenuItem.setText("Close All");
         cloaseAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cloaseAllMenuItemActionPerformed(evt);
             }
         });
@@ -1415,7 +1432,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         schemaMappingMenuItem.setText("Schema Mapping");
         schemaMappingMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 schemaMappingMenuItemActionPerformed(evt);
             }
         });
@@ -1427,7 +1445,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         analyseMenuItem.setText("Analyse Database");
         analyseMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 analyseMenuItemActionPerformed(evt);
             }
         });
@@ -1435,7 +1454,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         dataModelEditorjMenuItem.setText("Data Model Editor");
         dataModelEditorjMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dataModelEditorjMenuItemActionPerformed(evt);
             }
         });
@@ -1444,7 +1464,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         showDataModelMenuItem.setText("Show Data Model");
         showDataModelMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showDataModelMenuItemActionPerformed(evt);
             }
         });
@@ -1456,7 +1477,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         exportDataMenuItem.setText("Export Data");
         exportDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportDataMenuItemActionPerformed(evt);
             }
         });
@@ -1464,7 +1486,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         dataImport.setLabel("Import SQL Data");
         dataImport.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dataImportActionPerformed(evt);
             }
         });
@@ -1473,7 +1496,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         createExtractionModelMenuItem.setText("Create Extraction Model");
         createExtractionModelMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createExtractionModelMenuItemActionPerformed(evt);
             }
         });
@@ -1482,7 +1506,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         consistencyCheckMenuItem.setText("Check Consistency");
         consistencyCheckMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 consistencyCheckMenuItemActionPerformed(evt);
             }
         });
@@ -1495,7 +1520,8 @@ public class DataBrowser extends javax.swing.JFrame {
         layoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
         layoutMenuItem.setText("Arrange Layout");
         layoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 layoutMenuItemActionPerformed(evt);
             }
         });
@@ -1505,7 +1531,8 @@ public class DataBrowser extends javax.swing.JFrame {
         thumbnailLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_MASK));
         thumbnailLayoutRadioButtonMenuItem.setText("Thumbnail Layout");
         thumbnailLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 thumbnailLayoutRadioButtonMenuItemActionPerformed(evt);
             }
         });
@@ -1514,7 +1541,8 @@ public class DataBrowser extends javax.swing.JFrame {
         tinyLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_MASK));
         tinyLayoutRadioButtonMenuItem.setText("Tiny Layout");
         tinyLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tinyLayoutRadioButtonMenuItemActionPerformed(evt);
             }
         });
@@ -1523,7 +1551,8 @@ public class DataBrowser extends javax.swing.JFrame {
         smallLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_MASK));
         smallLayoutRadioButtonMenuItem.setText("Small Layout");
         smallLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 smallLayoutRadioButtonMenuItemActionPerformed(evt);
             }
         });
@@ -1532,7 +1561,8 @@ public class DataBrowser extends javax.swing.JFrame {
         mediumLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_3, java.awt.event.InputEvent.CTRL_MASK));
         mediumLayoutRadioButtonMenuItem.setText("Medium Layout");
         mediumLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mediumLayoutRadioButtonMenuItemActionPerformed(evt);
             }
         });
@@ -1541,7 +1571,8 @@ public class DataBrowser extends javax.swing.JFrame {
         largeLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_4, java.awt.event.InputEvent.CTRL_MASK));
         largeLayoutRadioButtonMenuItem.setText("Large Layout");
         largeLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 largeLayoutRadioButtonMenuItemActionPerformed(evt);
             }
         });
@@ -1551,7 +1582,8 @@ public class DataBrowser extends javax.swing.JFrame {
         newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         newWindowMenuItem.setText("New Window");
         newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newWindowMenuItemActionPerformed(evt);
             }
         });
@@ -1567,7 +1599,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jMenuItem4.setText("Manual");
         jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem4ActionPerformed(evt);
             }
         });
@@ -1575,7 +1608,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         helpForum.setText("Forum");
         helpForum.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpForumActionPerformed(evt);
             }
         });
@@ -1583,7 +1617,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         aboutMenuItem.setText("About Jailer");
         aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 aboutMenuItemActionPerformed(evt);
             }
         });
@@ -1913,7 +1948,8 @@ public class DataBrowser extends javax.swing.JFrame {
         } catch (Exception e) {
         }
         java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
+            @Override
+			public void run() {
                 try {
                     try {
                         // L&F can no longer be changed
@@ -1952,12 +1988,12 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize, ExecutionContext executionContext, DataBrowser theDataBrowser) throws Exception {
         DataBrowser dataBrowser = theDataBrowser != null? theDataBrowser : new DataBrowser(datamodel, null, "", null, false, executionContext);
-        dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        dataBrowser.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 //		if (maximize) {
 //			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
 //		}
         dataBrowser.setVisible(true);
-        dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        dataBrowser.setExtendedState(Frame.MAXIMIZED_BOTH);
 
         if (dbConnectionDialog == null) {
             dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName(), null, executionContext);
@@ -2552,7 +2588,8 @@ public class DataBrowser extends javax.swing.JFrame {
             treeNodeByIFrame.put(rowBrowser.internalFrame, this);
         }
 
-        public String toString() {
+        @Override
+		public String toString() {
             return title;
         }
     }
@@ -2743,7 +2780,8 @@ public class DataBrowser extends javax.swing.JFrame {
         		}
             }
 
-            protected void select(String selectedTable) {
+            @Override
+			protected void select(String selectedTable) {
 				 try {
 					 if (selectedTable != null) {
 						 RowBrowser rb = getVisibleTables().get(datamodel.get().getTableByDisplayName(selectedTable));

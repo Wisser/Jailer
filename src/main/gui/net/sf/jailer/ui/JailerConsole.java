@@ -109,6 +109,7 @@ public class JailerConsole {
 		getJTextPane().setFont(new Font("Monospaced", Font.PLAIN, 12));
 		
 		getLoadExportLog().addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					new FileView(dialog, "export.log");
@@ -118,6 +119,7 @@ public class JailerConsole {
 			}
 		});
 		getLoadSqlLog().addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					new FileView(dialog, "sql.log");
@@ -127,6 +129,7 @@ public class JailerConsole {
 			}
 		});
 		getLoadExplainLog().addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					new FileView(dialog, "explain.log");

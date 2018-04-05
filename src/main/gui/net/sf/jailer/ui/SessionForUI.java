@@ -126,7 +126,8 @@ public class SessionForUI extends Session {
 
         cancelConnectingButton .setText("Cancel");
         cancelConnectingButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
             	cancelled.set(true);
             	connectionDialog.setVisible(false);
             }
@@ -134,6 +135,7 @@ public class SessionForUI extends Session {
         connectingPanel.add(cancelConnectingButton);
 	}
 
+	@Override
 	protected void init() throws SQLException {
 	}
 	

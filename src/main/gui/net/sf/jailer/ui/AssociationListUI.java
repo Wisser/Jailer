@@ -133,6 +133,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		/**
 		 * The source table.
 		 */
+		@Override
 		public String getSourceName() {
 			return association.getDataModel().getDisplayName(association.source);
 		}
@@ -140,6 +141,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		/**
 		 * The destination table.
 		 */
+		@Override
 		public String getDestinationName() {
 			return association.getDataModel().getDisplayName(association.destination);
 		}
@@ -147,6 +149,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		/**
 		 * The join-condition for joining source with destination table.
 		 */
+		@Override
 		public String getJoinCondition() {
 			return association.getUnrestrictedJoinCondition();
 		}
@@ -154,6 +157,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		/**
 		 * The cardinality.
 		 */
+		@Override
 		public Cardinality getCardinality() {
 			return association.getCardinality();
 		}
@@ -161,6 +165,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		/**
 		 * <code>true</code> for reversed association.
 		 */
+		@Override
 		public boolean isReversed() {
 			return association.reversed;
 		}
@@ -168,10 +173,12 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		/**
 		 * The name of the association.
 		 */
+		@Override
 		public String getName() {
 			return association.getName();
 		}
 
+		@Override
 		public DataModel getDataModel() {
 			return association.getDataModel();
 		}
@@ -308,39 +315,48 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	};
 	
 	private static class TypeGetter extends ColumnContentGetter {
+		@Override
 		public String getContent(AssociationModel association) {
 			return association.getType().name;
 		}
+		@Override
 		public String getDisplayName() {
 			return "Type";
 		}
 	};
 	
 	private static class SourceGetter extends ColumnContentGetter {
+		@Override
 		public String getContent(AssociationModel association) {
 			return association.getSourceName();
 		}
+		@Override
 		public String getDisplayName() {
 			return "From";
 		}
+		@Override
 		public Color getFgColor(Collection<AssociationModel> group) {
 			return null;
 		}
 	};
 
 	private static class DestinationGetter extends ColumnContentGetter {
+		@Override
 		public String getContent(AssociationModel association) {
 			return association.getDestinationName();
 		}
+		@Override
 		public String getDisplayName() {
 			return "To";
 		}
 	};
 
 	private static class AssociationNameGetter extends ColumnContentGetter {
+		@Override
 		public String getContent(AssociationModel association) {
 			return association.getName();
 		}
+		@Override
 		public String getDisplayName() {
 			return "Association Name";
 		}
@@ -397,6 +413,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			this.columnContentGetter = columnContentGetter;
 		}
 		
+		@Override
 		public String toString() {
 			return displayName;
 		}
@@ -860,6 +877,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		hideButton.setText("Hide");
 		hideButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				hideButtonActionPerformed(evt);
 			}
@@ -871,6 +889,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		unhideButton.setText("Unhide");
 		unhideButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				unhideButtonActionPerformed(evt);
 			}
@@ -882,6 +901,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		doItButton.setText("doIt");
 		doItButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				doItButtonActionPerformed(evt);
 			}

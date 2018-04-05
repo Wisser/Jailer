@@ -100,6 +100,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * 
 	 * @param dataModel the data-model
 	 */
+	@Override
 	public void render(DataModel dataModel, List<String> restrictionFiles) {
 		try {
 			new File(outputFolder).mkdirs();
@@ -192,6 +193,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			
 			List<Composite> cl = new ArrayList<Composite>(associatedComposites);
 			Collections.sort(cl, new Comparator<Composite>() {
+				@Override
 				public int compare(Composite o1, Composite o2) {
 					return o1.mainTable.compareTo(o2.mainTable);
 				}
@@ -263,6 +265,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 		StringBuffer lines = new StringBuffer();
 		List<Association> all = new ArrayList<Association>(table.associations);
 		Collections.sort(all, new Comparator<Association>() {
+			@Override
 			public int compare(Association o1, Association o2) {
 				return o1.destination.getName().compareTo(o2.destination.getName());
 			}

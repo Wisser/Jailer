@@ -81,6 +81,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		initComponents();
 		
 		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
+			@Override
 			protected void runBlock() {
 				super.runBlock();
 				executeButtonActionPerformed(null);
@@ -161,7 +162,8 @@ public class SQLDMLPanel extends javax.swing.JPanel {
         clipboardSingleLineButton.setText(" Copy as Single Line ");
         clipboardSingleLineButton.setToolTipText(" Copy the SQL statement as a single line to the clipboard");
         clipboardSingleLineButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clipboardSingleLineButtonActionPerformed(evt);
             }
         });
@@ -172,7 +174,8 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         saveButton.setText(" Save ");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveButtonActionPerformed(evt);
             }
         });
@@ -185,7 +188,8 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         clipboardButton.setText(" Copy to Clipboard ");
         clipboardButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clipboardButtonActionPerformed(evt);
             }
         });
@@ -197,7 +201,8 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         executeButton.setText(" Execute ");
         executeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 executeButtonActionPerformed(evt);
             }
         });
@@ -235,7 +240,8 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         singleLineCheckBox.setText("single line  ");
         singleLineCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            @Override
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 singleLineCheckBoxItemStateChanged(evt);
             }
         });
@@ -254,7 +260,8 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         sqlConsoleButton.setText("SQL Console");
         sqlConsoleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sqlConsoleButtonActionPerformed(evt);
             }
         });
@@ -268,7 +275,8 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         closeButton.setText("Close");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
             }
         });

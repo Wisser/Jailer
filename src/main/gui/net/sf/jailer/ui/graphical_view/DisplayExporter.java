@@ -121,7 +121,7 @@ public class DisplayExporter {
 			Rectangle2D bounds = display.getVisualization().getBounds(m_group);
 			
 			// Some little extra spacing
-			GraphicsLib.expand(bounds, 10 + (int) (1 /* / display.getScale() */));
+			GraphicsLib.expand(bounds, 10 + (1 /* / display.getScale() */));
 			
 			// Get a buffered image to draw into
 			BufferedImage img = getNewOffscreenBuffer(display, (int) (bounds.getWidth() * display.getScale()), (int) (bounds.getHeight() * display.getScale()));

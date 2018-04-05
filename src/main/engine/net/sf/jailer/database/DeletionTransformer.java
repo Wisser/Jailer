@@ -154,6 +154,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	 * 
 	 * @param resultSet the result set
 	 */
+	@Override
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		try {
 			final SQLDialect currentDialect = targetDBMSConfiguration.getSqlDialect();
@@ -238,6 +239,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	/**
 	 * Finalizes reading.
 	 */
+	@Override
 	public void close() {
 		try {
 			writeToScriptFile(deleteStatementBuilder.build());

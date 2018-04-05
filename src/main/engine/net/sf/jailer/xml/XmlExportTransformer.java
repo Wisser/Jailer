@@ -142,6 +142,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	/**
 	 * Reads result-set and writes into export-script.
 	 */
+	@Override
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		try {
 			writeEntity(table, null, resultSet, new ArrayList<String>(), getCellContentConverter(resultSet, session, session.dbms));
@@ -197,12 +198,14 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		final Map<String, Association> finalAssociationMap = associationMap;
 		
 		XmlUtil.visitDocumentNodes(tableMapping.template, xmlRowWriter.new XmlWritingNodeVisitor(resultSet, getMetaData(resultSet), table, association, session) {
+			@Override
 			public void visitAssociationElement(String associationName) {
 				final Association sa = finalAssociationMap.get(associationName);
 				if (sa != null) {
 					if (totalProgress.contains(sa.destination)) {
 						if (sa.getAggregationSchema() != AggregationSchema.NONE) {
 							ResultSetReader reader = new ResultSetReader() {
+								@Override
 								public void readCurrentRow(ResultSet resultSet) throws SQLException {
 									try {
 										writeEntity(sa.destination, sa, resultSet, ancestors, getCellContentConverter(resultSet, session, session.dbms));
@@ -214,6 +217,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 										throw new RuntimeException(e);
 									}
 								}
+								@Override
 								public void close() {
 								}
 							};
@@ -268,6 +272,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	/**
 	 * Flushes the export-reader.
 	 */
+	@Override
 	public void close() {
 	}
 	
@@ -376,15 +381,20 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 					sb.append(text.substring(XmlUtil.SQL_PREFIX.length()) + " AS C" + nr++);
 				}
 			}
+			@Override
 			public void visitAssociationElement(String associationName) {
 			}
+			@Override
 			public void visitComment(String comment) {
 			}
+			@Override
 			public void visitElementEnd(String elementName, boolean isRoot) {
 			}
+			@Override
 			public void visitText(String text) {
 				appendSchema(text);
 			}
+			@Override
 			public void visitElementStart(String elementName, boolean isRoot,
 					String[] attributeNames, String[] attributeValues) {
 				for (String value: attributeValues) {

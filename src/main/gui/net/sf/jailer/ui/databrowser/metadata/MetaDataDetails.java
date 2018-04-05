@@ -37,9 +37,11 @@ import net.sf.jailer.util.Quoting;
 public enum MetaDataDetails {
 	
 	COLUMNS("Columns", 0) {
+		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			return JDBCMetaDataBasedModelElementFinder.getColumns(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", true);
 		}
+		@Override
 		public void adjustRowsTable(JTable rowsTable) {
 			TableColumnModel columnModel = rowsTable.getColumnModel();
 			if (columnModel.getColumnCount() > 17) {
@@ -52,6 +54,7 @@ public enum MetaDataDetails {
 		}
 	},
 	INDEXES("Indexes", 0) {
+		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), Quoting.staticUnquote( mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
 			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
@@ -71,6 +74,7 @@ public enum MetaDataDetails {
 				return mRs;
 			}
 		}
+		@Override
 		public void adjustRowsTable(JTable rowsTable) {
 			TableModel dm = rowsTable.getModel();
 			TableColumnModel columnModel = rowsTable.getColumnModel();
@@ -93,6 +97,7 @@ public enum MetaDataDetails {
 		}
 	},
 	PRIMARYKEY("Primary Key", 0) {
+		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			ResultSet rs =  JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
 			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
@@ -108,6 +113,7 @@ public enum MetaDataDetails {
 				return mRs;
 			}
 		}
+		@Override
 		public void adjustRowsTable(JTable rowsTable) {
 			TableColumnModel columnModel = rowsTable.getColumnModel();
 			if (columnModel.getColumnCount() > 4) {
@@ -117,6 +123,7 @@ public enum MetaDataDetails {
 		}
 	},
 	EXPORTEDKEY("Exported Keys", 1) {
+		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getExportedKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
 			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
@@ -146,6 +153,7 @@ public enum MetaDataDetails {
 		}
 	},
 	IMPORTEDKEY("Imported Keys", 1) {
+		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getImportedKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
 			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");

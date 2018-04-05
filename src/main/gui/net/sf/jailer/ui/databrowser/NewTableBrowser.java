@@ -135,7 +135,8 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 
         okButton.setText(" Open Table ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -148,7 +149,8 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 
         analyzeButton.setText(" Analyze Database ");
         analyzeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 analyzeButtonActionPerformed(evt);
             }
         });
@@ -160,7 +162,8 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 
         restoreSessionButton.setText(" Restore Layout ");
         restoreSessionButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 restoreSessionButtonActionPerformed(evt);
             }
         });

@@ -355,6 +355,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			public void mouseReleased(MouseEvent e) {
 				mouseClicked(e);
 			}
+			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				String cond = subjectConditionEditor.edit(where.getText(), "Subject", "T", subject, null, null, null, false);
 				if (cond != null) {
@@ -365,9 +366,11 @@ public class ExportDialog extends javax.swing.JDialog {
 				}
 			}
 			
+			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				openWhereEditor.setIcon(conditionEditorSelectedIcon);
 			}
+			@Override
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				openWhereEditor.setIcon(conditionEditorIcon);
 		   }
@@ -985,6 +988,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
 		threads.setMinimumSize(new java.awt.Dimension(44, 19));
 		threads.addFocusListener(new java.awt.event.FocusAdapter() {
+			@Override
 			public void focusLost(java.awt.event.FocusEvent evt) {
 				threadsFocusLost(evt);
 			}
@@ -1090,6 +1094,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		buttonGroup1.add(scopeSession);
 		scopeSession.setText("temporary tables    "); // NOI18N
 		scopeSession.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				scopeSessionActionPerformed(evt);
 			}
@@ -1103,6 +1108,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		buttonGroup1.add(scopeGlobal);
 		scopeGlobal.setText("global tables"); // NOI18N
 		scopeGlobal.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				scopeGlobalActionPerformed(evt);
 			}
@@ -1116,6 +1122,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		buttonGroup1.add(scopeLocal);
 		scopeLocal.setText("local database");
 		scopeLocal.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				scopeLocalActionPerformed(evt);
 			}
@@ -1234,6 +1241,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		copyButton.setText("Copy to Clipboard"); // NOI18N
 		copyButton.setToolTipText("Copy to Clipboard"); // NOI18N
 		copyButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				copyButtonActionPerformed(evt);
 			}
@@ -1264,6 +1272,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		sortedCheckBox.setToolTipText("sort exported rows according to dependencies");
 		sortedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		sortedCheckBox.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				sortedCheckBoxActionPerformed(evt);
 			}
@@ -1279,6 +1288,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		unicode.setText("UTF-8 encoding"); // NOI18N
 		unicode.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		unicode.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				unicodeActionPerformed(evt);
 			}
@@ -1314,6 +1324,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		useRowIds.setText("use \"ROWID\" column"); // NOI18N
 		useRowIds.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		useRowIds.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				useRowIdsActionPerformed(evt);
 			}
@@ -1335,6 +1346,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
 		workingTableSchemaComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 		workingTableSchemaComboBox.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				workingTableSchemaComboBoxActionPerformed(evt);
 			}
@@ -1349,6 +1361,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		confirmInsert.setText("ask for permission to insert into target schema"); // NOI18N
 		confirmInsert.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		confirmInsert.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				confirmInsertActionPerformed(evt);
 			}
@@ -1395,6 +1408,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		iFMTableSchemaComboBox.setEditable(true);
 		iFMTableSchemaComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 		iFMTableSchemaComboBox.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				iFMTableSchemaComboBoxActionPerformed(evt);
 			}
@@ -1432,6 +1446,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
 		browseInsertButton.setText(" Browse..");
 		browseInsertButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				browseInsertButtonActionPerformed(evt);
 			}
@@ -1443,6 +1458,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
 		browseDeleteButton.setText(" Browse..");
 		browseDeleteButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				browseDeleteButtonActionPerformed(evt);
 			}
@@ -1477,6 +1493,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
 		jButton1.setText("Export Data"); // NOI18N
 		jButton1.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				jButton1ActionPerformed(evt);
 			}
@@ -1500,6 +1517,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
 		cancelButton.setText(" Cancel ");
 		cancelButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				cancelButtonActionPerformed(evt);
 			}

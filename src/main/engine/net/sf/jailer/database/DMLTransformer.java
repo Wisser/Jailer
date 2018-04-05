@@ -272,6 +272,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	/**
 	 * Reads result-set and writes into export-script.
 	 */
+	@Override
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		if (columnLabel == null) {
 			columnCount = getMetaData(resultSet).getColumnCount();
@@ -764,6 +765,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	/**
 	 * Flushes the export-reader.
 	 */
+	@Override
 	public void close() {
 		flush();
 		synchronized (scriptFileWriter) {

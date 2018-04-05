@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -449,7 +450,7 @@ public class DataModel {
 							aName = line.cells.get(0);
 						}
 					}
-					Table tableA = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, aName));
+					Table tableA = tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, aName));
 					if (tableA == null) {
 						 continue;
 //	                     throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(0) + "' not found");
@@ -461,7 +462,7 @@ public class DataModel {
 							bName = line.cells.get(1);
 						}
 					}
-					Table tableB = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, bName));
+					Table tableB = tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, bName));
 					if (tableB == null) {
 						continue;
 //	                	throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(1) + "' not found");
@@ -703,6 +704,7 @@ public class DataModel {
 	/**
 	 * Stringifies the data model.
 	 */
+	@Override
 	public String toString() {
 		List<Table> sortedTables;
 		sortedTables = getSortedTables();
@@ -729,6 +731,7 @@ public class DataModel {
 		List<Table> sortedTables;
 		sortedTables = new ArrayList<Table>(getTables());
 		Collections.sort(sortedTables, new Comparator<Table>() {
+			@Override
 			public int compare(Table o1, Table o2) {
 				return o1.getName().compareTo(o2.getName());
 			}
@@ -912,7 +915,7 @@ public class DataModel {
 	 */
 	public String getLastModifiedAsString() {
 		try {
-			return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.MEDIUM, SimpleDateFormat.MEDIUM).format(new Date(getLastModified()));
+			return DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM).format(new Date(getLastModified()));
 		} catch (Throwable t) {
 			return "";
 		}

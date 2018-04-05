@@ -130,6 +130,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	 * 
 	 * @return render of the database object
 	 */
+	@Override
 	public JComponent createRender(final Session session, final ExecutionContext executionContext) throws Exception {
 		final AtomicReference<MemorizedResultSet> resultSet = new AtomicReference<MemorizedResultSet>();
 		final AtomicReference<MemorizedResultSet> text = new AtomicReference<MemorizedResultSet>();
@@ -145,6 +146,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 		panel.add(new JLabel("  loading..."));
 		synchronized (this) {
 			MDSchema.loadMetaData(new Runnable() {
+				@Override
 				public void run() {
 					try {
 						resultSet.set(distinct(retrieveList(session)));

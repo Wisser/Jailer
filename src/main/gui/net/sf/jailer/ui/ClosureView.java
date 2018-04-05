@@ -172,6 +172,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		}));
 		columnsComboBox.setSelectedItem(new Integer(tablesPerLine));
 		columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
+			@Override
 			public void itemStateChanged(java.awt.event.ItemEvent evt) {
 				if (evt.getItem() instanceof Integer) {
 					tablesPerLine = (Integer) evt.getItem();
@@ -247,8 +248,10 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		jScrollPane1.setViewportView(closureTable);
 
 		closureTable.addMouseListener(new MouseListener() {
+			@Override
 			public void mouseClicked(final MouseEvent e) {
 			}
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				// context menu
 				if (SwingUtilities.isRightMouseButton(e)) {
@@ -277,6 +280,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						JMenuItem restrictAll = new JMenuItem("Disable all associations");
 						restrictAll.setToolTipText("disables every non-dependent (child) association with this table");
 						restrictAll.addActionListener(new ActionListener () {
+							@Override
 							public void actionPerformed(ActionEvent e) {
 								ClosureView.this.extractionModelEditor.ignoreAll(table);
 							}
@@ -285,6 +289,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						
 						JMenuItem removeRestrictions = new JMenuItem("Remove all restrictions");
 						removeRestrictions.addActionListener(new ActionListener () {
+							@Override
 							public void actionPerformed(ActionEvent e) {
 								ClosureView.this.extractionModelEditor.removeAllRestrictions(table);
 							}
@@ -362,10 +367,13 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					}
 				}
 			}
+			@Override
 			public void mouseEntered(MouseEvent e) {
 			}
+			@Override
 			public void mouseExited(MouseEvent e) {
 			}
+			@Override
 			public void mousePressed(MouseEvent e) {
 			}
 		});
@@ -378,6 +386,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
 			private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
 			
+			@Override
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
 					int row, int column) {
@@ -435,6 +444,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 //		closureTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		closureTable.setRowSelectionAllowed(false);
 		rootTable.addItemListener(new java.awt.event.ItemListener() {
+			@Override
 			public void itemStateChanged(java.awt.event.ItemEvent evt) {
 				Table table = getDataModel().getTableByDisplayName((String) ClosureView.this.rootTable.getSelectedItem());
 				refresh(table);
@@ -804,8 +814,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			}
 		}
 		
-		Object[][] dataArray = (Object[][]) data.toArray(new Object[data.size()][]);
+		Object[][] dataArray = data.toArray(new Object[data.size()][]);
 		DefaultTableModel tableModel = new DefaultTableModel(dataArray, columns) {
+			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
@@ -1225,7 +1236,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         tabbedPane.setMinimumSize(new java.awt.Dimension(182, 190));
         tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+            @Override
+			public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 tabbedPaneStateChanged(evt);
             }
         });
@@ -1265,7 +1277,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         searchComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 searchComboBoxActionPerformed(evt);
             }
         });
@@ -1284,7 +1297,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         columnsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            @Override
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 columnsComboBoxItemStateChanged(evt);
             }
         });
@@ -1295,7 +1309,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         findButton.setText("Search");
         findButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            @Override
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
                 findButtonActionPerformed(evt);
             }
         });
@@ -1373,7 +1388,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         showOnlyEnabledCheckBox.setText("Show only enabled associations");
         showOnlyEnabledCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            @Override
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 showOnlyEnabledCheckBoxItemStateChanged(evt);
             }
         });
