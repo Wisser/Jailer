@@ -676,6 +676,7 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationTree.getSelectionModel().addTreeSelectionListener(treeListener);
     }
 
+	@SuppressWarnings("unchecked")
 	public void updateNavigationCombobox() {
 		List<String> tables = new ArrayList<String>();
 		
@@ -683,6 +684,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			tables.add(datamodel.get().getDisplayName(table));
 		}
 		Collections.sort(tables);
+		@SuppressWarnings({ "rawtypes" })
 		ComboBoxModel model = new DefaultComboBoxModel(new Vector(tables));
 			
 		tablesComboBox.setModel(model);
@@ -800,6 +802,7 @@ public class DataBrowser extends javax.swing.JFrame {
         }
     }
 
+    @SuppressWarnings("deprecation")
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -810,7 +813,7 @@ public class DataBrowser extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed"
     // <editor-fold defaultstate="collapsed"
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+	private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
         dummy = new javax.swing.JPanel();
