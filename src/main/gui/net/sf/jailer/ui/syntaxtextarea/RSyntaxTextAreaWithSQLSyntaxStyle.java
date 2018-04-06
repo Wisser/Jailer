@@ -357,8 +357,13 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		menu.add(zoomIn);
 		menu.add(zoomOut);
 		menu.add(zoomReset);
+
+		appendPopupMenu(menu);
 		
 		return menu;
+	}
+
+	protected void appendPopupMenu(JPopupMenu menu) {
 	}
 
 	/**
@@ -785,6 +790,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		}
 	}
 
+
 	protected void runBlock() {
 	}
 
@@ -907,7 +913,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			}
 		}
 	}
-
+	
 	/**
 	 * Formats SQL statement at caret position.
 	 */

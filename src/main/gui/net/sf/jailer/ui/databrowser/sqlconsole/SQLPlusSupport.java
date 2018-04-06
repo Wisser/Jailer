@@ -18,14 +18,20 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+
+import net.sf.jailer.modelbuilder.MemorizedResultSet;
 
 /**
  * Supports some Oracle SQL+ statements.
@@ -42,12 +48,12 @@ public class SQLPlusSupport {
 	/**
 	 * The variables.
 	 */
-	private Map<String, String> variables = new HashMap<String, String>();
+	private Map<String, String> variables = new TreeMap<String, String>();
 	
 	/**
 	 * Column substitutions.
 	 */
-	private Map<String, String[]> columnSubstitutions = new HashMap<String, String[]>();
+	private Map<String, String[]> columnSubstitutions = new TreeMap<String, String[]>();
 	
 	private Pattern DEFINE_PATTERN = Pattern.compile("\\s*DEFINE\\s+(\\w+)\\s*=\\s*(.*)\\s*", Pattern.CASE_INSENSITIVE);
 	private Pattern UNDEFINE_PATTERN = Pattern.compile("\\s*UNDEFINE\\s+((?:\\w+\\s*)+)", Pattern.CASE_INSENSITIVE);
@@ -86,6 +92,23 @@ public class SQLPlusSupport {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Executes a SQLPlus query.
+	 * 
+	 * @param query the query
+	 * @return <code>true</code> if statement is a valid SQLPlus query
+	 */
+	public ResultSet executeSQLPLusQuery(String query) {
+		if ("DEFINE".equalsIgnoreCase(query.trim())) {
+			List<Object[]> rowList = new ArrayList<Object[]>();
+			for (Entry<String, String> e: variables.entrySet()) {
+				rowList.add(new Object[] { e.getKey(), e.getValue() });
+			}
+			return new MemorizedResultSet(rowList, 2, new String[] { "Variable", "Value" }, new int[] { Types.VARCHAR, Types.VARCHAR } );
+		}
+		return null;
 	}
 
 	/**

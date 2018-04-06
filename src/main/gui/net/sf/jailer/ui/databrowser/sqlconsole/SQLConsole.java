@@ -24,6 +24,8 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.BufferedReader;
@@ -64,7 +66,9 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
@@ -108,6 +112,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.metadata.ResultSetRenderer;
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
@@ -237,6 +242,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 }
                 return null;
             }
+
+        	@Override
+        	protected void appendPopupMenu(JPopupMenu menu) {
+        		menu.addSeparator();
+        		JMenuItem item = new JMenuItem("Substitute Variables");
+        		item.addActionListener(new ActionListener() {
+        			@Override
+        			public void actionPerformed(ActionEvent e) {
+        				substituteVariables();
+        			}
+        		});
+        		menu.add(item);
+        	}
+
         };
 
         historyComboBox.setRenderer(new DefaultListCellRenderer() {
@@ -571,6 +590,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
             boolean hasResultSet;
             boolean isDefine = false;
+            ResultSet sqlPlusResultSet = null;
             if (explain) {
             	synchronized (this) {
             		stmtId = "Jailer" + (nextPlanID++ % 8);
@@ -582,7 +602,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 statement = session.getConnection().createStatement();
             	hasResultSet = statement.execute(String.format(session.dbms.getExplainQuery(), sqlStatement, stmtId));
             } else {
-            	if (sqlPlusSupport.executeSQLPLusStatement(sqlStatement)) {
+            	sqlPlusResultSet = sqlPlusSupport.executeSQLPLusQuery(sqlStatement);
+            	if (sqlPlusResultSet != null) {
+            		hasResultSet = true;
+            	} else if (sqlPlusSupport.executeSQLPLusStatement(sqlStatement)) {
             		isDefine = true;
             		hasResultSet = false;
             	} else {
@@ -590,7 +613,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             	}
             }
             if (hasResultSet) {
-                resultSet = statement.getResultSet();
+                resultSet = sqlPlusResultSet != null? sqlPlusResultSet : statement.getResultSet();
                 ResultSetMetaData metaData = resultSet.getMetaData();
                 final String columnLabels[] = new String[metaData.getColumnCount()];
                 for (int i = 0; i < metaData.getColumnCount(); ++i) {
@@ -852,8 +875,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         final int MAX_CONTEXT_LENGTH = 80;
         final int MAX_TOOLTIP_LENGTH = 100;
         List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
-        provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
-        sql = sqlPlusSupport.replaceVariables(sql, null);
+        TreeMap<Integer,Integer> offsets = new TreeMap<Integer,Integer>();
+		provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
+        sql = sqlPlusSupport.replaceVariables(sql, offsets);
         adjustLevels(outlineInfos);
         List<OutlineInfo> relocatedOutlineInfos = new ArrayList<OutlineInfo>();
         int indexOfInfoAtCaret = -1;
@@ -864,10 +888,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	if (info.isBegin || info.isEnd) {
         		continue;
         	}
-            if (info.position + startPosition <= caretPos || indexOfInfoAtCaret < 0) {
+            int pos = info.position;
+            Entry<Integer, Integer> floor = offsets.floorEntry(pos);
+            if (floor != null) {
+            	pos += floor.getValue();
+            }
+            if (pos + startPosition <= caretPos || indexOfInfoAtCaret < 0) {
                 indexOfInfoAtCaret = relocatedOutlineInfos.size();
             }
-            OutlineInfo rlInfo = new OutlineInfo(info.mdTable, info.alias, info.level, info.position + startPosition, info.scopeDescriptor);
+			OutlineInfo rlInfo = new OutlineInfo(info.mdTable, info.alias, info.level, pos + startPosition, info.scopeDescriptor);
             rlInfo.isCTE = info.isCTE;
             rlInfo.rowCount = info.rowCount;
             if (info.withContext) {
@@ -895,12 +924,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             relocatedOutlineInfos.add(rlInfo);
             predInfo = info;
         }
-        simplifyOutline(relocatedOutlineInfos);
+        indexOfInfoAtCaret -= simplifyOutline(relocatedOutlineInfos, indexOfInfoAtCaret);
         setOutlineTables(relocatedOutlineInfos, indexOfInfoAtCaret);
     }
 
-    private void simplifyOutline(List<OutlineInfo> outlineInfos) {
+    private int simplifyOutline(List<OutlineInfo> outlineInfos, int indexOfInfoAtCaret) {
 		// "From <single table>"
+    	int caretOffset = 0;
     	List<OutlineInfo> toRemove = new ArrayList<OutlineInfo>();
     	for (int i = 1; i < outlineInfos.size(); ++i) {
     		OutlineInfo info = outlineInfos.get(i);
@@ -913,12 +943,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     				}
     				if (succ == null || (succ.level != info.level || succ.mdTable == null)) {
     					info.scopeDescriptor = pred.scopeDescriptor;
+    					info.position = pred.position;
     					toRemove.add(pred);
+    					if (i - 1 < indexOfInfoAtCaret) {
+    						++caretOffset;
+    					}
     				}
     			}
     		}
     	}
     	outlineInfos.removeAll(toRemove);
+    	return caretOffset;
 	}
 
 	private void adjustLevels(List<OutlineInfo> outlineInfos) {
@@ -1778,6 +1813,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
         return -1;
     }
+
+	private void substituteVariables() {
+		String currentStatement = editorPane.getCurrentStatement(true);
+		String newStatement = sqlPlusSupport.replaceVariables(currentStatement, null);
+		if (!currentStatement.equals(newStatement)) {
+			editorPane.replaceCurrentStatement(newStatement, true);
+		}
+	}
 
     static private ImageIcon runIcon;
     static private ImageIcon runAllIcon;

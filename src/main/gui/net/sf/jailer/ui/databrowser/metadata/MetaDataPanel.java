@@ -1522,7 +1522,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		public final MDTable mdTable;
         public final String alias;
         public int level;
-        public final int position;
+        public int position;
         public String scopeDescriptor;
         public boolean withContext = false;
         public int contextPosition;
