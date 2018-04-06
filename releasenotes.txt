@@ -1,5 +1,6 @@
 7.6.7
   - SQL-Console: added support for substitution variables.
+  - Fixed a bug concerning SQL outline rendering.
 
 7.6.6
   - Improved SQL Outline rendering.
@@ -25,7 +26,7 @@
 
 7.6.0
   - Constraint checking tool.
-  - Fix for "#23 Bugs when exporting timestamps and JSON ", https://sourceforge.net/p/jailer/bugs/23/
+  - Fix for "#23 Bugs when exporting timestamps and JSON", https://sourceforge.net/p/jailer/bugs/23/
   - Minor GUI Improvements and bug fixes.
 
 7.5.10
