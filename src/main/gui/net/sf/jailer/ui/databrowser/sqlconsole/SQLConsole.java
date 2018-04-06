@@ -852,8 +852,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         final int MAX_CONTEXT_LENGTH = 80;
         final int MAX_TOOLTIP_LENGTH = 100;
         List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
-        provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
-        sql = sqlPlusSupport.replaceVariables(sql, null);
+        TreeMap<Integer,Integer> offsets = new TreeMap<Integer,Integer>();
+		provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
+        sql = sqlPlusSupport.replaceVariables(sql, offsets);
         adjustLevels(outlineInfos);
         List<OutlineInfo> relocatedOutlineInfos = new ArrayList<OutlineInfo>();
         int indexOfInfoAtCaret = -1;
@@ -864,10 +865,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	if (info.isBegin || info.isEnd) {
         		continue;
         	}
-            if (info.position + startPosition <= caretPos || indexOfInfoAtCaret < 0) {
+            int pos = info.position;
+            Entry<Integer, Integer> floor = offsets.floorEntry(pos);
+            if (floor != null) {
+            	pos += floor.getValue();
+            }
+            if (pos + startPosition <= caretPos || indexOfInfoAtCaret < 0) {
                 indexOfInfoAtCaret = relocatedOutlineInfos.size();
             }
-            OutlineInfo rlInfo = new OutlineInfo(info.mdTable, info.alias, info.level, info.position + startPosition, info.scopeDescriptor);
+			OutlineInfo rlInfo = new OutlineInfo(info.mdTable, info.alias, info.level, pos + startPosition, info.scopeDescriptor);
             rlInfo.isCTE = info.isCTE;
             rlInfo.rowCount = info.rowCount;
             if (info.withContext) {
@@ -895,12 +901,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             relocatedOutlineInfos.add(rlInfo);
             predInfo = info;
         }
-        simplifyOutline(relocatedOutlineInfos);
+        indexOfInfoAtCaret -= simplifyOutline(relocatedOutlineInfos, indexOfInfoAtCaret);
         setOutlineTables(relocatedOutlineInfos, indexOfInfoAtCaret);
     }
 
-    private void simplifyOutline(List<OutlineInfo> outlineInfos) {
+    private int simplifyOutline(List<OutlineInfo> outlineInfos, int indexOfInfoAtCaret) {
 		// "From <single table>"
+    	int caretOffset = 0;
     	List<OutlineInfo> toRemove = new ArrayList<OutlineInfo>();
     	for (int i = 1; i < outlineInfos.size(); ++i) {
     		OutlineInfo info = outlineInfos.get(i);
@@ -913,12 +920,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     				}
     				if (succ == null || (succ.level != info.level || succ.mdTable == null)) {
     					info.scopeDescriptor = pred.scopeDescriptor;
+    					info.position = pred.position;
     					toRemove.add(pred);
+    					if (i - 1 < indexOfInfoAtCaret) {
+    						++caretOffset;
+    					}
     				}
     			}
     		}
     	}
     	outlineInfos.removeAll(toRemove);
+    	return caretOffset;
 	}
 
 	private void adjustLevels(List<OutlineInfo> outlineInfos) {
