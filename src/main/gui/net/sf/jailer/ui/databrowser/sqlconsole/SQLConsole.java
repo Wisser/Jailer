@@ -689,7 +689,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             rb.setResultSetType(resultTypes);
                         }
                         rb.setAlternativeColumnLabels(columnLabels);
-                        rb.setTableFilterEnabled(metaDataDetails.getSize() > 10);
+                        rb.setTableFilterEnabled(metaDataDetails.getSize() > 1);
                         rb.setStatementForReloading(finalSqlStatement);
                         metaDataDetails.reset();
                         LoadJob loadJob = rb.newLoadJob(metaDataDetails, limit);
@@ -1112,7 +1112,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             Color failedColor = new Color(255, 200, 200);
                             Color okColor = new Color(210, 255, 210);
                             Color pendingColor = new Color(235, 235, 255);
-                            Color runningColor = new Color(255, 255, 210);
+                            Color runningColor = new Color(255, 249, 200);
                             if (location != null) {
                                 editorPane.removeAllLineHighlights();
                                 editorPane.setHighlightCurrentLine(false);
@@ -1367,7 +1367,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        CancellationHandler.cancel(this);
+        statusLabel.setText("Canceling...");
+        statusLabel.setForeground(Color.RED);
+    	CancellationHandler.cancel(this);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
