@@ -3042,6 +3042,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		for (int i = 0; i < columnNames.length; ++i) {
 			columnNames[i] = columns.get(i).name;
+			if ("".equals(columnNames[i])) {
+				columnNames[i] = " ";
+			}
 			if (pkColumnNames.contains(columnNames[i])) {
 				pkColumns.add(i);
 			}

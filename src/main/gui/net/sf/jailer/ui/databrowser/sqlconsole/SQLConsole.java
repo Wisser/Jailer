@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -112,7 +111,6 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.metadata.ResultSetRenderer;
-import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
@@ -417,7 +415,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     private void resetStatus() {
         statusLabel.setVisible(false);
-        statusScrollPane.setVisible(false);
         cancelButton.setEnabled(false);
     }
 
@@ -746,6 +743,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								updateColumnsAndTextView(rb, tabContentPanel);
 							}
 						});
+                        removeLastErrorTab();
                         jTabbedPane1.add(rTabContainer);
                         jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, title));
 
@@ -1070,26 +1068,26 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         try {
                             synchronized (Status.this) {
                                 Font font = new JLabel("X").getFont();
-                                statusLabel.setFont(new Font(font.getName(), font.getStyle(), (font.getSize() * 13) / 10));
+                                statusLabel.setFont(new Font(font.getName(), font.getStyle(), (font.getSize() * 14) / 10));
                                 statusLabel.setVisible(false);
                                 cancelButton.setEnabled(false);
-                                statusScrollPane.setVisible(false);
                                 if (!failed) {
                                     cancelButton.setEnabled(running);
                                     statusLabel.setVisible(true);
                                     statusLabel.setForeground(running? new Color(0, 100, 0) : Color.BLACK);
                                     statusLabel.setText(getText());
                                 } else {
-                                    statusScrollPane.setVisible(true);
+                                	statusLabel.setVisible(true);
                                     if (error instanceof CancellationException) {
-                                        statusTextPane.setText("Cancelled");
+                                        statusLabel.setForeground(Color.RED);
+                                        statusLabel.setText("Cancelled");
                                     } else if (error instanceof SQLException) {
                                         String pos = "";
                                         int errorLine = -1;
                                         try {
                                             errorLine = editorPane.getLineOfOffset(errorPosition);
                                             if (errorPositionIsKnown) {
-                                                int col = errorPosition - editorPane.getLineStartOffset(errorLine);
+                                                int col = errorPosition - editorPane.getLineStartOffset(errorLine) + 1;
                                                 pos = "Error at line " + (errorLine + 1) + ", column " + col + ": ";
                                             }
                                             editorPane.setCaretPosition(errorPosition);
@@ -1099,7 +1097,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                         if (errorLine >= 0) {
                                             editorPane.setLineTrackingIcon(errorLine, scaledCancelIcon);
                                         }
-                                        statusTextPane.setText(pos + error.getMessage()
+                                        showError(pos + error.getMessage()
                                                 + (sqlFragment == null? "" : 
                                                     "\nSQL: \"" + (sqlFragment.trim()) + "\""));
                                     } else {
@@ -1107,9 +1105,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                         PrintWriter pw = new PrintWriter(sw);
                                         error.printStackTrace(pw);
                                         String sStackTrace = sw.toString(); // stack trace as a string
-                                        statusTextPane.setText(sStackTrace);
+                                        showError(sStackTrace);
                                     }
-                                    statusTextPane.setCaretPosition(0);
                                 }
                             }
                             Color failedColor = new Color(255, 200, 200);
@@ -1141,7 +1138,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 }
                             }
                             
-                            jPanel4.revalidate();
                             jPanel2.repaint();
                             
                             if (withDDL && !running) {
@@ -1156,7 +1152,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
         }
 
-        private String getText() {
+		private String getText() {
             String text = "";
             if (running) {
                 text = "Running... ";
@@ -1181,6 +1177,34 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     }
     
+    private void showError(String errorMessage) {
+    	statusLabel.setVisible(true);
+    	statusLabel.setForeground(Color.RED);
+    	statusLabel.setText("Error");
+    	
+    	removeLastErrorTab();
+    	
+    	JComponent rTabContainer = new ErrorPanel(errorMessage);
+		jTabbedPane1.add(rTabContainer);
+        jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, "Error"));
+
+        if (jTabbedPane1.getTabCount() > MAX_TAB_COUNT) {
+            jTabbedPane1.remove(0);
+        }
+        jTabbedPane1.setSelectedIndex(jTabbedPane1.getTabCount() - 1);
+        jTabbedPane1.repaint();
+    }
+    
+    private void removeLastErrorTab() {
+		if (jTabbedPane1.getTabCount() > 0) {
+			if (jTabbedPane1.getTabComponentAt(jTabbedPane1.getTabCount() - 1) instanceof TitelPanel) {
+				if (((TitelPanel) jTabbedPane1.getTabComponentAt(jTabbedPane1.getTabCount() - 1)).rTabContainer instanceof ErrorPanel) {
+					jTabbedPane1.removeTabAt(jTabbedPane1.getTabCount() - 1);
+				}
+			}
+		}
+	}
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -1202,16 +1226,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         runSQLButton = new javax.swing.JButton();
         runnAllButton = new javax.swing.JButton();
         explainButton = new javax.swing.JButton();
-        jSplitPane1 = new javax.swing.JSplitPane();
         jPanel6 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
         statusLabel = new javax.swing.JLabel();
-        jPanel4 = new javax.swing.JPanel();
-        statusScrollPane = new javax.swing.JScrollPane();
-        statusTextPane = new javax.swing.JTextPane();
-        jLabel4 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
 
@@ -1252,8 +1268,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -1289,30 +1304,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel2.add(jPanel5, gridBagConstraints);
 
-        jSplitPane2.setLeftComponent(jPanel2);
-
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setOneTouchExpandable(true);
-
         jPanel6.setLayout(new java.awt.GridBagLayout());
-
-        jLabel3.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        jPanel6.add(jLabel3, gridBagConstraints);
-
-        jLabel6.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        jPanel6.add(jLabel6, gridBagConstraints);
-
-        jLabel7.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        jPanel6.add(jLabel7, gridBagConstraints);
 
         statusLabel.setForeground(java.awt.Color.gray);
         statusLabel.setText(" ctrl-space for code completion");
@@ -1324,49 +1316,24 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 8, 10, 0);
         jPanel6.add(statusLabel, gridBagConstraints);
-
-        jPanel4.setLayout(new java.awt.GridBagLayout());
-
-        statusTextPane.setEditable(false);
-        statusTextPane.setForeground(java.awt.Color.red);
-        statusScrollPane.setViewportView(statusTextPane);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 40;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel4.add(statusScrollPane, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridheight = 20;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel6.add(jPanel4, gridBagConstraints);
+        jPanel2.add(jPanel6, gridBagConstraints);
 
-        jLabel4.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        jPanel6.add(jLabel4, gridBagConstraints);
-
-        jSplitPane1.setLeftComponent(jPanel6);
+        jSplitPane2.setLeftComponent(jPanel2);
 
         jPanel3.setLayout(new java.awt.BorderLayout());
 
         jTabbedPane1.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
         jPanel3.add(jTabbedPane1, java.awt.BorderLayout.CENTER);
 
-        jSplitPane1.setRightComponent(jPanel3);
-
-        jSplitPane2.setRightComponent(jSplitPane1);
+        jSplitPane2.setRightComponent(jPanel3);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1394,25 +1361,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JPanel consoleContainerPanel;
     private javax.swing.JButton explainButton;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
-    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JComboBox limitComboBox;
     private javax.swing.JButton runSQLButton;
     private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;
-    private javax.swing.JScrollPane statusScrollPane;
-    private javax.swing.JTextPane statusTextPane;
     // End of variables declaration//GEN-END:variables
 
     class ResultContentPane extends BrowserContentPane {
@@ -1550,28 +1509,35 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     };
 
-    private JPanel getTitlePanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, String title) {
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        titlePanel.setOpaque(false);
-        JLabel titleLbl = new JLabel(title);
-        titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-        titlePanel.add(titleLbl);
-        SmallButton closeButton = new SmallButton(closeIcon) {
-            @Override
-            protected void onClick() {
-                tabbedPane.remove(rTabContainer);
-            }
-        };
-        titlePanel.add(closeButton);
-
-        return titlePanel;
+    private class TitelPanel extends JPanel {
+    	public final JComponent rTabContainer;
+    	
+    	public TitelPanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, String title) {
+    		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    		this.rTabContainer = rTabContainer;
+    		setOpaque(false);
+    		JLabel titleLbl = new JLabel(title);
+    		titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+    		add(titleLbl);
+    		SmallButton closeButton = new SmallButton(closeIcon) {
+    			@Override
+    			protected void onClick() {
+    				tabbedPane.remove(rTabContainer);
+    			}
+    		};
+    		add(closeButton);
+    	}
     }
-    
+
+    private JPanel getTitlePanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, String title) {
+        return new TitelPanel(tabbedPane, rTabContainer, title);
+    }
+
     @Override
 	public void grabFocus() {
         editorPane.grabFocus();
     }
-    
+
     private Icon closeIcon;
     {
         String dir = "/net/sf/jailer/ui/resource";

@@ -56,7 +56,6 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
@@ -1987,7 +1986,7 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize, ExecutionContext executionContext, DataBrowser theDataBrowser) throws Exception {
-        DataBrowser dataBrowser = theDataBrowser != null? theDataBrowser : new DataBrowser(datamodel, null, "", null, false, executionContext);
+        final DataBrowser dataBrowser = theDataBrowser != null? theDataBrowser : new DataBrowser(datamodel, null, "", null, false, executionContext);
         dataBrowser.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 //		if (maximize) {
 //			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -2027,6 +2026,12 @@ public class DataBrowser extends javax.swing.JFrame {
                 }
             }
         }
+        SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+		        dataBrowser.toFront();
+			}
+		});
         return dataBrowser;
     }
 
