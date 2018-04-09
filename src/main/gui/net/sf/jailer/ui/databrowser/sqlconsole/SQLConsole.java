@@ -689,7 +689,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             rb.setResultSetType(resultTypes);
                         }
                         rb.setAlternativeColumnLabels(columnLabels);
-                        rb.setTableFilterEnabled(metaDataDetails.getSize() > 10);
+                        rb.setTableFilterEnabled(metaDataDetails.getSize() > 1);
                         rb.setStatementForReloading(finalSqlStatement);
                         metaDataDetails.reset();
                         LoadJob loadJob = rb.newLoadJob(metaDataDetails, limit);
