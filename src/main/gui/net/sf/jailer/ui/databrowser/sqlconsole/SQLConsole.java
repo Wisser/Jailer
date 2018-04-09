@@ -1228,6 +1228,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         explainButton = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
+        dummyLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
 
@@ -1313,11 +1314,24 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 20;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        jPanel6.add(statusLabel, gridBagConstraints);
+
+        dummyLabel.setForeground(java.awt.Color.gray);
+        dummyLabel.setText(" ");
+        dummyLabel.setToolTipText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 8, 10, 0);
-        jPanel6.add(statusLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 0);
+        jPanel6.add(dummyLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1359,6 +1373,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel consoleContainerPanel;
+    private javax.swing.JLabel dummyLabel;
     private javax.swing.JButton explainButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
