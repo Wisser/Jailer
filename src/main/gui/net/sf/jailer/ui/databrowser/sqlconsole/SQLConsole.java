@@ -591,7 +591,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             statement = session.getConnection().createStatement();
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
-            sqlStatement = sql.replaceAll(" \\\\([ \\t\\r]*\\n)", "  $1").replaceFirst("(?is)(;\\s*)+$", "");
+            sqlStatement = sql.replaceAll("(;(?: |\\\\t|\\\\r|(?:--.*))*) \\\\([ \\t\\r]*\\n)", "$1  $2").replaceFirst("(?is)(;\\s*)+$", "");
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
             boolean hasResultSet;
             boolean isDefine = false;
@@ -1597,7 +1597,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
         }
         sql = sql.replaceAll("\\s*\\n", "\n").trim();
-        if (!sql.endsWith(";")) {
+        if (!sql.endsWith(";") && !sql.endsWith(" \\")) {
             sql += ";";
         }
         editorPane.append(pre + sql + "\n");
@@ -1814,12 +1814,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private void toggleLineContinuation() {
 		String currentStatement = editorPane.getCurrentStatement(false);
 		String newStatement;
-		Pattern p = Pattern.compile(".*\\\\( |\\t|\\r)*\\n.*", Pattern.DOTALL);
+		Pattern p = Pattern.compile(".*;( |\\\\t|\\\\r)*(:--.*)? \\\\( |\\t|\\r)*\\n.*", Pattern.DOTALL);
         Matcher m = p.matcher(currentStatement);
-        if (m.matches()) { // ( |\\t|\\r)*\\n.*)")) {
-			newStatement = currentStatement.replaceAll(" \\\\([ \\t\\r]*\\n)", "$1");
+        if (m.matches()) {
+			newStatement = currentStatement.replaceAll("(;(?: |\\\\t|\\\\r|(?:--.*))*) \\\\([ \\t\\r]*\\n)", "$1$2");
 		} else {
-			newStatement = currentStatement.replaceAll("(\\n(\\r)?)", " \\\\$1");
+			newStatement = currentStatement.replaceAll("(;(?: |\\\\t|\\\\r|(?:--.*))*)(\\n(\\r)?)", "$1 \\\\$2");
 		}
 		if (!currentStatement.equals(newStatement)) {
 			editorPane.replaceCurrentStatement(newStatement, false);
