@@ -796,6 +796,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 if (isDDLStatement(sql)) {
                     status.withDDL = true;
                 }
+                SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+		            	removeLastErrorTab();
+					}
+				});
             }
             CancellationHandler.end(statement, SQLConsole.this);
             statement.close();
