@@ -244,7 +244,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	@Override
         	protected void appendPopupMenu(JPopupMenu menu) {
         		menu.addSeparator();
-        		JMenuItem item = new JMenuItem("Substitute Variables");
+        		JMenuItem item = new JMenuItem("Toggle Line Continuation");
+        		item.addActionListener(new ActionListener() {
+        			@Override
+        			public void actionPerformed(ActionEvent e) {
+        				toggleLineContinuation();
+        			}
+        		});
+        		menu.add(item);
+        		item = new JMenuItem("Substitute Variables");
         		item.addActionListener(new ActionListener() {
         			@Override
         			public void actionPerformed(ActionEvent e) {
@@ -583,7 +591,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             statement = session.getConnection().createStatement();
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
-            sqlStatement = sql.replaceFirst("(?is)(;\\s*)+$", "");
+            sqlStatement = sql.replaceAll("(;(?: |\\\\t|\\\\r)*) \\\\([ \\t\\r]*\\n)", "$1  $2").replaceFirst("(?is)(;\\s*)+$", "");
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
             boolean hasResultSet;
             boolean isDefine = false;
@@ -1589,7 +1597,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
         }
         sql = sql.replaceAll("\\s*\\n", "\n").trim();
-        if (!sql.endsWith(";")) {
+        if (!sql.endsWith(";") && !sql.endsWith(" \\")) {
             sql += ";";
         }
         editorPane.append(pre + sql + "\n");
@@ -1802,6 +1810,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
         return -1;
     }
+
+    private void toggleLineContinuation() {
+		String currentStatement = editorPane.getCurrentStatement(false);
+		String newStatement;
+		Pattern p = Pattern.compile(".*;( |\\\\t|\\\\r)* \\\\( |\\t|\\r)*\\n.*", Pattern.DOTALL);
+        Matcher m = p.matcher(currentStatement);
+        if (m.matches()) { // ( |\\t|\\r)*\\n.*)")) {
+			newStatement = currentStatement.replaceAll("(;(?: |\\\\t|\\\\r)*) \\\\([ \\t\\r]*\\n)", "$1$2");
+		} else {
+			newStatement = currentStatement.replaceAll("(;(?: |\\\\t|\\\\r)*)(\\n(\\r)?)", "$1 \\\\$2");
+		}
+		if (!currentStatement.equals(newStatement)) {
+			editorPane.replaceCurrentStatement(newStatement, false);
+		}
+	}
 
 	private void substituteVariables() {
 		String currentStatement = editorPane.getCurrentStatement(true);

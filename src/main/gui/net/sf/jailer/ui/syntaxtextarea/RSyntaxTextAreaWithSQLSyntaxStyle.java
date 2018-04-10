@@ -512,7 +512,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				Segment txt = new Segment();
 				getDocument().getText(startM1Off, getLineEndOffset(start - 1) - startM1Off, txt);
 				String sLine = txt.toString().trim();
-				boolean endsWithSemicolon = sLine.endsWith(";");
+				boolean endsWithSemicolon = endsWithSemicolon(sLine);
 				if (endsWithSemicolon && eosLines != null) {
 					eosLines.add(start - 1);
 				}
@@ -541,7 +541,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				Segment txt = new Segment();
 				getDocument().getText(lOff, getLineEndOffset(l) - lOff, txt);
 				String sLine = txt.toString().trim();
-				boolean endsWithSemicolon = sLine.endsWith(";");
+				boolean endsWithSemicolon = endsWithSemicolon(sLine);
 				if (endsWithSemicolon) {
 					if (eosLines != null) {
 						eosLines.add(l);
@@ -571,7 +571,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 						}
 						break;
 					}
-					boolean endsWithSemicolon = sLine.endsWith(";");
+					boolean endsWithSemicolon = endsWithSemicolon(sLine);
 					if (endsWithSemicolon && eosLines != null) {
 						eosLines.add(end);
 					}
@@ -598,7 +598,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				Segment txt = new Segment();
 				getDocument().getText(lOff, getLineEndOffset(l) - lOff, txt);
 				String sLine = txt.toString().trim();
-				boolean endsWithSemicolon = sLine.endsWith(";");
+				boolean endsWithSemicolon = endsWithSemicolon(sLine);
 				if (sLine.length() > 0) {
 					nonEmptyLineSeen = true;
 				}
@@ -625,6 +625,58 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	private boolean endsWithSemicolon(String line) {
+		if (line.endsWith(" \\")) {
+			return false;
+		}
+		int l = line.length();
+		char c = ' ';
+		boolean cand = false;
+		boolean inLit = false;
+		boolean inMLComment = false;
+		for (int i = 0; i < l; ++i) {
+			char next = line.charAt(i);
+			if (c == '-' && next == '-') {
+				if (!inLit && !inMLComment) {
+					c = ' ';
+					break;
+				}
+			} else if (c == '/' && next == '*') {
+				if (!inLit) {
+					inMLComment = true;
+				}
+			} else if (c == '*' && next == '/') {
+				if (!inLit) {
+					inMLComment = false;
+					c = ' ';
+					continue;
+				}
+			} else if (c == '\'') {
+				if (!inMLComment) {
+					inLit = !inLit;
+					cand = false;
+				}
+			}
+			
+			if (!inLit && !inMLComment) {
+				if (c == ';') {
+					cand = true;
+				} else if (c != ' ' && c != '\t') {
+					cand = false;
+				}
+			}
+			c = next;
+		}
+		if (!inLit && !inMLComment) {
+			if (c == ';') {
+				cand = true;
+			} else if (c != ' ' && c != '\t') {
+				cand = false;
+			}
+		}
+		return cand;
 	}
 
 	private List<CaretListener> listenerList = new ArrayList<CaretListener>();
@@ -886,7 +938,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 					} catch (BadLocationException e) {
 					}
 				}
-				if (loc.b - loc.a > 10000) {
+				if (loc.b - loc.a > 1000) {
 					stopped.set(false);
 					pending.set(true);
 					new Thread(new Runnable() {
