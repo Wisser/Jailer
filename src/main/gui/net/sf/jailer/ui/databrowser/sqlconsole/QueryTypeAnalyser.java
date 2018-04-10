@@ -373,7 +373,9 @@ public class QueryTypeAnalyser {
 								}
 								for (Join join: plainSelect.getJoins()) {
 									expressionAnalyzer.setOuterJoinExpression(join.isOuter() || join.isLeft() || join.isRight());
-									join.getOnExpression().accept(expressionAnalyzer);
+									if (join.getOnExpression() != null) {
+										join.getOnExpression().accept(expressionAnalyzer);
+									}
 								}
 							}
 						}
