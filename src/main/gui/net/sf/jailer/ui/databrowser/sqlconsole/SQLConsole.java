@@ -455,6 +455,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             } catch (BadLocationException e) {
                 lineStartOffset = -1;
             }
+            disableLastErrorTab();
             final int finalLineStartOffset = lineStartOffset;
             queue.add(new Runnable() {
                 @Override
@@ -1124,6 +1125,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                     if (error instanceof CancellationException) {
                                         statusLabel.setForeground(Color.RED);
                                         statusLabel.setText("Cancelled");
+                                        removeLastErrorTab();
                                     } else if (error instanceof SQLException) {
                                         String pos = "";
                                         int errorLine = -1;
@@ -1240,6 +1242,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (jTabbedPane1.getTabComponentAt(jTabbedPane1.getTabCount() - 1) instanceof TitelPanel) {
 				if (((TitelPanel) jTabbedPane1.getTabComponentAt(jTabbedPane1.getTabCount() - 1)).rTabContainer instanceof ErrorPanel) {
 					jTabbedPane1.removeTabAt(jTabbedPane1.getTabCount() - 1);
+				}
+			}
+		}
+	}
+    
+    private void disableLastErrorTab() {
+		if (jTabbedPane1.getTabCount() > 0) {
+			if (jTabbedPane1.getTabComponentAt(jTabbedPane1.getTabCount() - 1) instanceof TitelPanel) {
+				if (((TitelPanel) jTabbedPane1.getTabComponentAt(jTabbedPane1.getTabCount() - 1)).rTabContainer instanceof ErrorPanel) {
+					((ErrorPanel)((TitelPanel) jTabbedPane1.getTabComponentAt(jTabbedPane1.getTabCount() - 1)).rTabContainer).doDisable();
+						
 				}
 			}
 		}

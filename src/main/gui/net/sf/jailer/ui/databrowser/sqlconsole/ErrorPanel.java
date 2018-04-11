@@ -18,15 +18,11 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 import java.awt.Rectangle;
 
 import javax.swing.Icon;
-import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
-import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-
-import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 
 /**
  * SQL-Console error view.
@@ -53,7 +49,7 @@ public class ErrorPanel extends javax.swing.JPanel {
 		} catch (Throwable t) {
 			// ignore
 		}
-		RSyntaxTextArea sqlEditorPane = new RSyntaxTextArea();
+		sqlEditorPane = new RSyntaxTextArea();
 		sqlEditorPane.setFadeCurrentLineHighlight(true);
 		sqlEditorPane.setEditable(false);
 		sqlEditorPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
@@ -139,4 +135,13 @@ public class ErrorPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel statementPanel;
     // End of variables declaration//GEN-END:variables
+    private final RSyntaxTextArea sqlEditorPane;
+
+	public void doDisable() {
+		iconLabel.setEnabled(false);
+		statementPanel.setEnabled(false);
+		errorTextArea.setEnabled(false);
+		sqlEditorPane.setText("");
+		jLabel1.setEnabled(false);
+	}
 }
