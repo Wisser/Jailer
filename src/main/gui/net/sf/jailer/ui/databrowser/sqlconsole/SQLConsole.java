@@ -23,6 +23,7 @@ import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -392,7 +393,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 return;
             }
             
-            if (sql.length() > 100000) {
+            if (sql.length() > 20000) {
                 stopped.set(false);
                 pending.set(true);
                 new Thread(new Runnable() {
@@ -856,13 +857,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         	positionOffset = floor.getValue();
                         }
 						status.errorPosition = statementStartOffset + pos + positionOffset;
+						status.origErrorPosition = pos;
                         status.errorPositionIsKnown = true;
                     } else {
                         status.errorPosition = statementStartOffset;
                         status.errorPositionIsKnown = false;
                     }
                 }
-                
+
                 if (error instanceof CancellationException) {
                     CancellationHandler.reset(SQLConsole.this);
                     queue.clear();
@@ -888,6 +890,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	public void setCaretPosition(int position) {
     	if (editorPane.getDocument().getLength() >= position) {
+    		try {
+    			int l = editorPane.getLineOfOffset(position);
+    			editorPane.setCaretPosition(position);
+    			int lineHeight = editorPane.getLineHeight();
+    			editorPane.scrollRectToVisible(new Rectangle(0, Math.max(0, l - 2) * lineHeight, 1, 4 * lineHeight));
+    		} catch (Exception e) {
+    			// ignore
+    		}
     		editorPane.setCaretPosition(position);
     		grabFocus();
     	}
@@ -898,8 +908,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         final int MAX_TOOLTIP_LENGTH = 100;
         List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
         TreeMap<Integer,Integer> offsets = new TreeMap<Integer,Integer>();
-		provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
         sql = sqlPlusSupport.replaceVariables(sql, offsets);
+		provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
         adjustLevels(outlineInfos);
         List<OutlineInfo> relocatedOutlineInfos = new ArrayList<OutlineInfo>();
         int indexOfInfoAtCaret = -1;
@@ -907,14 +917,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         OutlineInfo predInfo = null;
         for (int i = 0; i < outlineInfos.size(); ++i) {
             OutlineInfo info = outlineInfos.get(i);
+            Entry<Integer, Integer> floor = offsets.floorEntry(info.position);
+            if (floor != null) {
+            	info.origPosition = info.position + floor.getValue();
+            }
+        }
+        for (int i = 0; i < outlineInfos.size(); ++i) {
+            OutlineInfo info = outlineInfos.get(i);
         	if (info.isBegin || info.isEnd) {
         		continue;
         	}
             int pos = info.position;
-            Entry<Integer, Integer> floor = offsets.floorEntry(pos);
-            if (floor != null) {
-            	pos += floor.getValue();
-            }
             if (pos + startPosition <= caretPos || indexOfInfoAtCaret < 0) {
                 indexOfInfoAtCaret = relocatedOutlineInfos.size();
             }
@@ -966,6 +979,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     				if (succ == null || (succ.level != info.level || succ.mdTable == null)) {
     					info.scopeDescriptor = pred.scopeDescriptor;
     					info.position = pred.position;
+    					info.origPosition = pred.origPosition;
     					toRemove.add(pred);
     					if (i - 1 < indexOfInfoAtCaret) {
     						++caretOffset;
@@ -1064,7 +1078,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
     private class Status {
-        public int errorPosition = -1;
+        public int origErrorPosition;
+		public int errorPosition = -1;
         public boolean errorPositionIsKnown = false;
         protected int linesExecuting;
         protected int linesExecuted;
@@ -1114,20 +1129,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                                 int col = errorPosition - editorPane.getLineStartOffset(errorLine) + 1;
                                                 pos = "Error at line " + (errorLine + 1) + ", column " + col + ": ";
                                             }
-                                            editorPane.setCaretPosition(errorPosition);
-                                            editorPane.grabFocus();
+                                            setCaretPosition(errorPosition);
                                         } catch (BadLocationException e) {
                                         }
                                         if (errorLine >= 0) {
                                             editorPane.setLineTrackingIcon(errorLine, scaledCancelIcon);
                                         }
-                                        showError(pos + error.getMessage(), statement);
+                                        showError(pos + error.getMessage(), statement, origErrorPosition);
                                     } else {
                                         StringWriter sw = new StringWriter();
                                         PrintWriter pw = new PrintWriter(sw);
                                         error.printStackTrace(pw);
                                         String sStackTrace = sw.toString(); // stack trace as a string
-                                        showError(sStackTrace, statement);
+                                        showError(sStackTrace, statement, origErrorPosition);
                                     }
                                 }
                             }
@@ -1199,14 +1213,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     }
     
-    private void showError(String errorMessage, String statement) {
+    private void showError(String errorMessage, String statement, int errorPosition) {
     	statusLabel.setVisible(true);
     	statusLabel.setForeground(Color.RED);
     	statusLabel.setText("Error");
     	
     	removeLastErrorTab();
     	
-    	JComponent rTabContainer = new ErrorPanel(errorMessage, statement);
+    	JComponent rTabContainer = new ErrorPanel(errorMessage, statement, errorPosition);
 		jTabbedPane1.add(rTabContainer);
         jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, "Error"));
 
@@ -1609,8 +1623,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             sql += ";";
         }
         editorPane.append(pre + sql + "\n");
-        editorPane.setCaretPosition(editorPane.getDocument().getLength());
-        editorPane.grabFocus();
+        setCaretPosition(editorPane.getDocument().getLength());
         if (!running.get()) {
             resetStatus();
         }

@@ -549,7 +549,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					if (i >= 0) {
 						Object value = outlineList.getModel().getElementAt(i);
 						if (value instanceof OutlineInfo) {
-							setCaretPosition(((OutlineInfo) value).position);
+							setCaretPosition(((OutlineInfo) value).origPosition);
 						}
 					}
 				}
@@ -1534,12 +1534,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		public boolean isEnd;
         public boolean withSeparator;
 		public int rowCount;
+		public int origPosition;
         
         public OutlineInfo(MDTable mdTable, String alias, int level, int position, String scopeDescriptor) {
             this.mdTable = mdTable;
             this.alias = alias;
             this.level = level;
             this.position = position;
+            this.origPosition = position;
             this.scopeDescriptor = scopeDescriptor;
         }
     }

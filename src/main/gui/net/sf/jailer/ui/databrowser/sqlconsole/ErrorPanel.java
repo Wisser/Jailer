@@ -15,10 +15,13 @@
  */
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
+import java.awt.Rectangle;
+
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
+import javax.swing.text.BadLocationException;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
@@ -37,8 +40,9 @@ public class ErrorPanel extends javax.swing.JPanel {
      * 
      * @param errorMessage the error message
      * @param statement the statement
+     * @param errorPosition error position
      */
-    public ErrorPanel(String errorMessage, String statement) {
+    public ErrorPanel(String errorMessage, String statement, int errorPosition) {
         initComponents();
         errorTextArea.setText(errorMessage);
         errorTextArea.setCaretPosition(0);
@@ -59,7 +63,14 @@ public class ErrorPanel extends javax.swing.JPanel {
 		if (statement != null) {
 			sqlEditorPane.setText(statement.trim());
 		}
-		sqlEditorPane.setCaretPosition(0);
+		try {
+			int l = sqlEditorPane.getLineOfOffset(errorPosition);
+			sqlEditorPane.setCaretPosition(errorPosition);
+			int lineHeight = sqlEditorPane.getLineHeight();
+			sqlEditorPane.scrollRectToVisible(new Rectangle(0, Math.max(0, l - 2) * lineHeight, 1, 4 * lineHeight));
+		} catch (Exception e) {
+			// ignore
+		}
     }
 
     /**
