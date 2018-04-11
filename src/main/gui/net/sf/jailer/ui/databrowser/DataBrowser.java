@@ -1975,7 +1975,7 @@ public class DataBrowser extends javax.swing.JFrame {
 //					} catch (Exception x) {
 //					}
                     ToolTipManager.sharedInstance().setInitialDelay(400);
-                    ToolTipManager.sharedInstance().setDismissDelay(20000);
+                    ToolTipManager.sharedInstance().setDismissDelay(10000);
 
                     createFrame();
                 } catch (Exception e) {

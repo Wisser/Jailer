@@ -251,6 +251,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         				toggleLineContinuation();
         			}
         		});
+        		item.setToolTipText("<html>Adds (or remove) line-continuation-character ('\\') <br> to each line terminated by ';'");
         		menu.add(item);
         		item = new JMenuItem("Substitute Variables");
         		item.addActionListener(new ActionListener() {
@@ -259,6 +260,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         				substituteVariables();
         			}
         		});
+        		item.setToolTipText(
+        				"<html>Substitutes variables <i>(&amp;VAR[.])</i> with corresponding values. <br><br>\n" + 
+        				"<b>Statements:</b>\n" + 
+        				"<table>\n" + 
+        				"<tr><td><b>&nbsp;DEFINE VAR=\"VALUE\"</b></td><td>&nbsp;&nbsp;&nbsp;</td><td>Assigns a value to variable VAR</td></tr>\n" + 
+        				"<tr><td><b>&nbsp;DEFINE</b></td><td></td><td>Lists all variables</td></tr>\n" + 
+        				"<tr><td><b>&nbsp;&amp;VAR</b>&nbsp;&nbsp;or&nbsp;&nbsp;<b>&nbsp;&amp;VAR.</b></td><td></td><td>Variable substitution (inside other statements)</td></tr>\n" + 
+        				"</table>");
         		menu.add(item);
         	}
 

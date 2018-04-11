@@ -43,7 +43,6 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -1715,7 +1714,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	public static void customizeNimbus() {
 		try {
 			ToolTipManager.sharedInstance().setInitialDelay(400);
-			ToolTipManager.sharedInstance().setDismissDelay(20000);
+			ToolTipManager.sharedInstance().setDismissDelay(10000);
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
