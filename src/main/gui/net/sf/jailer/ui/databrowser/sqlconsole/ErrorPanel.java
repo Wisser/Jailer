@@ -16,7 +16,14 @@
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.UIManager;
+
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 
 /**
  * SQL-Console error view.
@@ -29,8 +36,9 @@ public class ErrorPanel extends javax.swing.JPanel {
      * Creates new form ErrorPanel.
      * 
      * @param errorMessage the error message
+     * @param statement the statement
      */
-    public ErrorPanel(String errorMessage) {
+    public ErrorPanel(String errorMessage, String statement) {
         initComponents();
         errorTextArea.setText(errorMessage);
         errorTextArea.setCaretPosition(0);
@@ -41,6 +49,17 @@ public class ErrorPanel extends javax.swing.JPanel {
 		} catch (Throwable t) {
 			// ignore
 		}
+		RSyntaxTextArea sqlEditorPane = new RSyntaxTextArea();
+		sqlEditorPane.setFadeCurrentLineHighlight(true);
+		sqlEditorPane.setEditable(false);
+		sqlEditorPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+		JScrollPane jScrollPane1 = new JScrollPane();
+		jScrollPane1.setViewportView(sqlEditorPane);
+		statementPanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+		if (statement != null) {
+			sqlEditorPane.setText(statement.trim());
+		}
+		sqlEditorPane.setCaretPosition(0);
     }
 
     /**
@@ -56,6 +75,8 @@ public class ErrorPanel extends javax.swing.JPanel {
         iconLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         errorTextArea = new javax.swing.JTextArea();
+        statementPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -65,6 +86,7 @@ public class ErrorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 2);
         add(iconLabel, gridBagConstraints);
 
         errorTextArea.setEditable(false);
@@ -79,12 +101,31 @@ public class ErrorPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints);
+
+        statementPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(statementPanel, gridBagConstraints);
+
+        jLabel1.setText("Statement");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(jLabel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea errorTextArea;
     private javax.swing.JLabel iconLabel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel statementPanel;
     // End of variables declaration//GEN-END:variables
 }

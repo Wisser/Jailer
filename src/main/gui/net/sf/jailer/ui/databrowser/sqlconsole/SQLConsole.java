@@ -493,7 +493,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                     executeSQL(pureSql, status, lineStartOffset, explain);
                                     if (status.failed) {
                                         if (locFragmentOffset != null) {
-                                            status.sqlFragment = sql;
                                             if (status.errorPositionIsKnown) {
                                                 try {
                                                     status.errorPosition += locFragmentOffset.a - editorPane.getLineStartOffset(editorPane.getLineOfOffset(locFragmentOffset.a));
@@ -593,6 +592,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             long startTime = System.currentTimeMillis();
             sqlStatement = sql.replaceAll("(;(?: |\\\\t|\\\\r|(?:--.*))*) \\\\([ \\t\\r]*\\n)", "$1  $2").replaceFirst("(?is)(;\\s*)+$", "");
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
+	        status.statement = sqlStatement;
             boolean hasResultSet;
             boolean isDefine = false;
             ResultSet sqlPlusResultSet = null;
@@ -685,6 +685,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     localStatus.limitExceeded = true;
                 }
                 status.updateView(false);
+            	status.statement = sqlStatement;
                 final String finalSqlStatement = sqlStatement;
                 final Table finalResultType = resultType;
                 
@@ -1069,7 +1070,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         boolean hasUpdated = false;
         long timeInMS;
         Throwable error;
-        String sqlFragment;
+        String statement;
         Pair<Integer, Integer> location;
 
         private synchronized void updateView(boolean force) {
@@ -1111,15 +1112,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                         if (errorLine >= 0) {
                                             editorPane.setLineTrackingIcon(errorLine, scaledCancelIcon);
                                         }
-                                        showError(pos + error.getMessage()
-                                                + (sqlFragment == null? "" : 
-                                                    "\nSQL: \"" + (sqlFragment.trim()) + "\""));
+                                        showError(pos + error.getMessage(), statement);
                                     } else {
                                         StringWriter sw = new StringWriter();
                                         PrintWriter pw = new PrintWriter(sw);
                                         error.printStackTrace(pw);
                                         String sStackTrace = sw.toString(); // stack trace as a string
-                                        showError(sStackTrace);
+                                        showError(sStackTrace, statement);
                                     }
                                 }
                             }
@@ -1191,14 +1190,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     }
     
-    private void showError(String errorMessage) {
+    private void showError(String errorMessage, String statement) {
     	statusLabel.setVisible(true);
     	statusLabel.setForeground(Color.RED);
     	statusLabel.setText("Error");
     	
     	removeLastErrorTab();
     	
-    	JComponent rTabContainer = new ErrorPanel(errorMessage);
+    	JComponent rTabContainer = new ErrorPanel(errorMessage, statement);
 		jTabbedPane1.add(rTabContainer);
         jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, "Error"));
 

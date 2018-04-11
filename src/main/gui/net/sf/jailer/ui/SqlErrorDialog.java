@@ -56,6 +56,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		sqlEditorPane.setEditable(false);
 		if (sqlError) {
 			this.sqlEditorPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+			this.sqlEditorPane.setFadeCurrentLineHighlight(true);
 			sql = new BasicFormatterImpl().format(sql);
 		}
 		initComponents();

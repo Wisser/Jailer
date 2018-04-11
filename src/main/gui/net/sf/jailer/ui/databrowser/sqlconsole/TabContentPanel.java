@@ -415,9 +415,9 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         add(panel, gridBagConstraints);
 
-        jPanel1.setLayout(new java.awt.BorderLayout());
+        jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        tabbedPane.setTabPlacement(SwingConstants.BOTTOM);
+        tabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
 
         contentPanel.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         contentPanel.setLayout(new java.awt.BorderLayout());
@@ -462,8 +462,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         copyCBButton.setText("Copy to Clipboard");
         copyCBButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 copyCBButtonActionPerformed(evt);
             }
         });
@@ -482,8 +481,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         headerCheckBox.setSelected(true);
         headerCheckBox.setText("Include Header");
         headerCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 headerCheckBoxActionPerformed(evt);
             }
         });
@@ -526,7 +524,14 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         tabbedPane.addTab("Meta", metaTabPanel);
 
-        jPanel1.add(tabbedPane, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        jPanel1.add(tabbedPane, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
