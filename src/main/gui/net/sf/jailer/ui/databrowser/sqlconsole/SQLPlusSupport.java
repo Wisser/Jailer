@@ -55,9 +55,10 @@ public class SQLPlusSupport {
 	 */
 	private Map<String, String[]> columnSubstitutions = new TreeMap<String, String[]>();
 	
-	private Pattern DEFINE_PATTERN = Pattern.compile("\\s*DEFINE\\s+(\\w+)\\s*=\\s*(.*)\\s*", Pattern.CASE_INSENSITIVE);
-	private Pattern UNDEFINE_PATTERN = Pattern.compile("\\s*UNDEFINE\\s+((?:\\w+\\s*)+)", Pattern.CASE_INSENSITIVE);
-	private Pattern COLUMN_PATTERN = Pattern.compile("\\s*COLUMN\\s+(\\w+)\\s*((?:(?:new_value|old_value)\\s+\\w+\\s*)+)", Pattern.CASE_INSENSITIVE);
+	private final Pattern DEFINE_PATTERN = Pattern.compile("\\s*DEFINE\\s+(\\w+)\\s*=\\s*(.*)\\s*", Pattern.CASE_INSENSITIVE);
+	private final Pattern UNDEFINE_PATTERN = Pattern.compile("\\s*UNDEFINE\\s+((?:\\w+\\s*)+)", Pattern.CASE_INSENSITIVE);
+	private final Pattern COLUMN_PATTERN = Pattern.compile("\\s*COLUMN\\s+(\\w+)\\s*((?:(?:new_value|old_value)\\s+\\w+\\s*)+)", Pattern.CASE_INSENSITIVE);
+	private final Pattern COMMENTS_PATTERN = Pattern.compile("(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
 	
 	/**
 	 * Executes a SQLPlus statement.
@@ -66,6 +67,7 @@ public class SQLPlusSupport {
 	 * @return <code>true</code> if statement is a valid SQLPlus statement
 	 */
 	public boolean executeSQLPLusStatement(String statement) {
+		statement = removeComments(statement).trim();
 		Matcher matcher = DEFINE_PATTERN.matcher(statement);
 		if (matcher.matches()) {
 			String var = matcher.group(1);
@@ -104,7 +106,9 @@ public class SQLPlusSupport {
 		if ("DEFINE".equalsIgnoreCase(query.trim())) {
 			List<Object[]> rowList = new ArrayList<Object[]>();
 			for (Entry<String, String> e: variables.entrySet()) {
-				rowList.add(new Object[] { e.getKey(), e.getValue() });
+				if (e.getKey().length() > 0) {
+					rowList.add(new Object[] { e.getKey(), e.getValue() });
+				}
 			}
 			return new MemorizedResultSet(rowList, 2, new String[] { "Variable", "Value" }, new int[] { Types.VARCHAR, Types.VARCHAR } );
 		}
@@ -174,4 +178,30 @@ public class SQLPlusSupport {
 		}
 	}
 
+    /**
+     * Removes comments SQL statement.
+     * 
+     * @param statement the statement
+     * 
+     * @return statement the statement without comments
+     */
+    public String removeComments(String statement) {
+        Pattern pattern = COMMENTS_PATTERN;
+        Matcher matcher = pattern.matcher(statement);
+        boolean result = matcher.find();
+        StringBuffer sb = new StringBuffer();
+        if (result) {
+            do {
+                int l = matcher.group(0).length();
+                matcher.appendReplacement(sb, "");
+                while (l > 0) {
+                    --l;
+                    sb.append(' ');
+                }
+                result = matcher.find();
+            } while (result);
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
 }

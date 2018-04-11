@@ -600,9 +600,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             statement = session.getConnection().createStatement();
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
-            sqlStatement = sql.replaceAll("(;(?: |\\\\t|\\\\r|(?:--.*))*) \\\\([ \\t\\r]*\\n)", "$1  $2").replaceFirst("(?is)(;\\s*)+$", "");
+            sqlStatement = sql.replaceFirst("(?is)(;\\s*)+$", "").replaceAll("(;(?: |\\\\t|\\\\r|(?:--.*))*) \\\\([ \\t\\r]*\\n)", "$1  $2");
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
 	        status.statement = sqlStatement;
+	        boolean loadButtonIsVisible = true;
             boolean hasResultSet;
             boolean isDefine = false;
             ResultSet sqlPlusResultSet = null;
@@ -620,6 +621,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             	sqlPlusResultSet = sqlPlusSupport.executeSQLPLusQuery(sqlStatement);
             	if (sqlPlusResultSet != null) {
             		hasResultSet = true;
+            		loadButtonIsVisible = false;
             	} else if (sqlPlusSupport.executeSQLPLusStatement(sqlStatement)) {
             		isDefine = true;
             		hasResultSet = false;
@@ -645,7 +647,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final ResultSetRenderer metaDataRenderer = theMetaDataRenderer;
                 final String finalResultSetType = resultSetType;
 				final Integer limit = (Integer) limitComboBox.getSelectedItem();
-                final List<Table> resultTypes = explain? null : QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
+                final List<Table> resultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
                 Table resultType = null;
                 if (resultTypes != null && !resultTypes.isEmpty()) {
                     if (resultTypes.size() == 1) {
@@ -698,6 +700,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             	status.statement = sqlStatement;
                 final String finalSqlStatement = sqlStatement;
                 final Table finalResultType = resultType;
+                final boolean finalLoadButtonIsVisible = loadButtonIsVisible;
                 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -735,6 +738,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             }
                         });
                         tabContentPanel.controlsPanel1.add(rb.loadButton);
+                        rb.loadButton.setVisible(finalLoadButtonIsVisible);
                         rb.loadButton.setIcon(UIUtil.scaleIcon(SQLConsole.this, runIcon));
                         rb.setOnReloadAction(new Runnable() {
 							@Override
