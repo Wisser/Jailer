@@ -258,8 +258,9 @@ public abstract class EntityGraph {
 	 * 
 	 * @param table the table
 	 * @param columns the columns;
+	 * @param reason to be written as comment
 	 */
-	public abstract void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration) throws SQLException;
+	public abstract void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration, String reason) throws SQLException;
 
 	/**
 	 * Reads some columns of all entities of a given table without using filters.

@@ -116,7 +116,12 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
-	
+
+	/**
+	 * To be written as comment.
+	 */
+	private String reason;
+
 	private final Set<String> primaryKeyColumnNames;
 
 	/**
@@ -127,8 +132,9 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	 * @param maxBodySize maximum length of SQL values list (for generated inserts)
 	 * @param session the session
 	 * @param targetDBMSConfiguration configuration of the target DBMS
+	 * @param reason to be written as comment
 	 */
-	public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
+	public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, String reason, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;
 		this.targetDBMSConfiguration = targetDBMSConfiguration;
 		this.maxBodySize = maxBodySize;
@@ -138,6 +144,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 		this.currentDialect = targetDBMSConfiguration.getSqlDialect();
 		this.quoting = new Quoting(session);
 		this.importFilterTransformer = importFilterTransformer;
+		this.reason = reason;
 		if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
 			if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
 				this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
@@ -428,6 +435,10 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	 */
 	private void writeToScriptFile(String content, boolean wrap) throws IOException {
 		synchronized (scriptFileWriter) {
+			if (reason != null) {
+				scriptFileWriter.write("-- " + reason + "\n");
+				reason = null;
+			}
 			if (wrap && DBMS.ORACLE.equals(targetDBMSConfiguration)) {
 				   scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
 			} else {

@@ -276,14 +276,15 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * 
 	 * @param table the table
 	 * @param columns the columns;
+	 * @param reason to be written as comment
 	 */
 	@Override
-	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration) throws SQLException {
+	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration, String reason) throws SQLException {
 		File tmp = Configuration.getInstance().createTempFile();
 		OutputStreamWriter tmpFileWriter;
 		try {
 			tmpFileWriter = new FileWriter(tmp);
-			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, executionContext.getNumberOfEntities(), getSession(), getSession().dbms, importFilterManager, executionContext);
+			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, executionContext.getNumberOfEntities(), getSession(), getSession().dbms, importFilterManager, reason, executionContext);
 			readEntities(table, false, reader);
 			tmpFileWriter.close();
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());

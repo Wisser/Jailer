@@ -840,7 +840,7 @@ public class SubsettingEngine {
 			jobs.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
-					eg.updateEntities(entry.getKey(), entry.getValue(), result, targetDBMSConfiguration(entityGraph.getTargetSession()));
+					eg.updateEntities(entry.getKey(), entry.getValue(), result, targetDBMSConfiguration(entityGraph.getTargetSession()), "explicit due to circular dependency");
 				}
 			});
 		}
