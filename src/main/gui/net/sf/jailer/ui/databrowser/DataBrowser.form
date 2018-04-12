@@ -685,27 +685,16 @@
                             </Container>
                           </SubComponents>
                         </Container>
-                        <Container class="javax.swing.JPanel" name="sqlConsoleContainerPanel">
+                        <Container class="javax.swing.JPanel" name="addSQLConsoleTab">
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                              <JTabbedPaneConstraints tabName="SQL Console">
-                                <Property name="tabTitle" type="java.lang.String" value="SQL Console"/>
+                              <JTabbedPaneConstraints tabName="+">
+                                <Property name="tabTitle" type="java.lang.String" value="+"/>
                               </JTabbedPaneConstraints>
                             </Constraint>
                           </Constraints>
 
-                          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
-                          <SubComponents>
-                            <Container class="javax.swing.JPanel" name="jPanel8">
-                              <Constraints>
-                                <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-                                  <BorderConstraints direction="Center"/>
-                                </Constraint>
-                              </Constraints>
-
-                              <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
-                            </Container>
-                          </SubComponents>
+                          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
                         </Container>
                       </SubComponents>
                     </Container>

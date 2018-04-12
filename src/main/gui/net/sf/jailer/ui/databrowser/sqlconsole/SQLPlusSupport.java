@@ -20,6 +20,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,8 +49,8 @@ public class SQLPlusSupport {
 	/**
 	 * The variables.
 	 */
-	private Map<String, String> variables = new TreeMap<String, String>();
-	
+	private static Map<String, String> variables = Collections.synchronizedMap(new TreeMap<String, String>());
+
 	/**
 	 * Column substitutions.
 	 */
@@ -105,9 +106,11 @@ public class SQLPlusSupport {
 	public ResultSet executeSQLPLusQuery(String query) {
 		if ("DEFINE".equalsIgnoreCase(query.trim())) {
 			List<Object[]> rowList = new ArrayList<Object[]>();
-			for (Entry<String, String> e: variables.entrySet()) {
-				if (e.getKey().length() > 0) {
-					rowList.add(new Object[] { e.getKey(), e.getValue() });
+			synchronized (variables) {
+				for (Entry<String, String> e: variables.entrySet()) {
+					if (e.getKey().length() > 0) {
+						rowList.add(new Object[] { e.getKey(), e.getValue() });
+					}
 				}
 			}
 			return new MemorizedResultSet(rowList, 2, new String[] { "Variable", "Value" }, new int[] { Types.VARCHAR, Types.VARCHAR } );
@@ -123,33 +126,35 @@ public class SQLPlusSupport {
 	 * @return statement with variable replacements
 	 */
 	public String replaceVariables(String statement, SortedMap<Integer, Integer> positionOffsets) {
-		if (!variables.isEmpty()) {
-			Matcher matcher = Pattern.compile("&(\\w+)(\\.|\\b)").matcher(statement);
-			matcher.reset();
-			int offset = 0;
-			boolean result = matcher.find();
-			if (result) {
-				StringBuffer sb = new StringBuffer();
-				do {
-					String var = matcher.group(1);
-					String replacement = variables.get(var.toUpperCase());
-					if (replacement != null) {
-						matcher.appendReplacement(sb,  Matcher.quoteReplacement(replacement));
-						if (positionOffsets != null) {
-							for (int i = 0; i < replacement.length(); ++i) {
-								positionOffsets.put(sb.length() - replacement.length() + i, offset - i);
+		synchronized (variables) {
+			if (!variables.isEmpty()) {
+				Matcher matcher = Pattern.compile("&(\\w+)(\\.|\\b)").matcher(statement);
+				matcher.reset();
+				int offset = 0;
+				boolean result = matcher.find();
+				if (result) {
+					StringBuffer sb = new StringBuffer();
+					do {
+						String var = matcher.group(1);
+						String replacement = variables.get(var.toUpperCase());
+						if (replacement != null) {
+							matcher.appendReplacement(sb,  Matcher.quoteReplacement(replacement));
+							if (positionOffsets != null) {
+								for (int i = 0; i < replacement.length(); ++i) {
+									positionOffsets.put(sb.length() - replacement.length() + i, offset - i);
+								}
+								offset += matcher.group().length() - replacement.length();
+								positionOffsets.put(sb.length(), offset);
 							}
-							offset += matcher.group().length() - replacement.length();
-							positionOffsets.put(sb.length(), offset);
 						}
-					}
-					result = matcher.find();
-				} while (result);
-				matcher.appendTail(sb);
-				return sb.toString();
+						result = matcher.find();
+					} while (result);
+					matcher.appendTail(sb);
+					return sb.toString();
+				}
 			}
+			return statement;
 		}
-		return statement;
 	}
 
 	private Map<Integer, String[]> varsPerIndex = new HashMap<Integer, String[]>();
