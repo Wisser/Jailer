@@ -19,6 +19,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -48,9 +49,11 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -126,6 +129,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
+import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Quoting;
 
@@ -853,6 +857,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jInternalFrame1 = new javax.swing.JInternalFrame();
         hiddenPanel = new javax.swing.JPanel();
         closurePanel = new javax.swing.JPanel();
+        addSQLConsoleTab = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jSplitPane4 = new javax.swing.JSplitPane();
         tableTreesTabbedPane = new javax.swing.JTabbedPane();
@@ -1121,6 +1126,7 @@ public class DataBrowser extends javax.swing.JFrame {
         desktopSplitPane.setRightComponent(closurePanel);
 
         workbenchTabbedPane.addTab("Desktop", desktopSplitPane);
+        workbenchTabbedPane.addTab("+", addSQLConsoleTab);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1641,9 +1647,19 @@ public class DataBrowser extends javax.swing.JFrame {
     	}
     }//GEN-LAST:event_openTableButtonActionPerformed
 
+    private boolean ignoreTabChangeEvent = false;
+    
     private void workbenchTabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_workbenchTabbedPaneStateChanged
 		if (initialized) {
-	    	if (!(workbenchTabbedPane.getSelectedComponent() instanceof SQLConsole)) {
+			if (workbenchTabbedPane.getSelectedComponent() == addSQLConsoleTab) {
+				if (!ignoreTabChangeEvent) {
+					try {
+						createNewSQLConsole(getMetaDataSource(session));
+					} catch (SQLException e) {
+						UIUtil.showException(this, "Error", e);
+					}
+				}
+			} else if (!(workbenchTabbedPane.getSelectedComponent() instanceof SQLConsole)) {
 				for (SQLConsole sqlConsole: sqlConsoles) {
 		        	if (sqlConsole.getDataHasChanged()) {
 		        		try {
@@ -1660,6 +1676,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	        	if (sqlConsole != null) {
 	        		tableTreesTabbedPane.setSelectedComponent(tablesPanel);
 	        		sqlConsole.grabFocus();
+	        		sqlConsole.update();
 	        	}
 	        }
 		}
@@ -1999,7 +2016,17 @@ public class DataBrowser extends javax.swing.JFrame {
         SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-		        dataBrowser.toFront();
+		        SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+					        dataBrowser.toFront();
+						}
+					});
+					}
+				});
 			}
 		});
         return dataBrowser;
@@ -2114,6 +2141,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JPanel addSQLConsoleTab;
     private javax.swing.JMenuItem analyseMenuItem;
     private javax.swing.JLabel associatedWith;
     private javax.swing.JPanel borderBrowserPanel;
@@ -2992,8 +3020,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			try {
 				if (sqlConsoles.isEmpty()) {
 					createNewSQLConsole(metaDataSource);
-					createNewSQLConsole(metaDataSource);
-// TODO
+					workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
 				} else {
 					for (SQLConsole sqlConsole: sqlConsoles) {
 						sqlConsole.reset(session, metaDataSource);
@@ -3008,8 +3035,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 	}
 
+    private int sqlConsoleNr = 0;
+
 	private void createNewSQLConsole(MetaDataSource metaDataSource) throws SQLException {
-		sqlConsoles.add(new SQLConsole(session, metaDataSource, datamodel, executionContext) {
+		final SQLConsole sqlConsole = new SQLConsole(session, metaDataSource, datamodel, executionContext) {
 			@Override
 			protected void refreshMetaData() {
 				metaDataPanel.reset();
@@ -3022,8 +3051,46 @@ public class DataBrowser extends javax.swing.JFrame {
 			protected void setOutlineTables(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret) {
 				metaDataPanel.setOutline(outlineTables, indexOfInfoAtCaret);
 			}
-		});
-		workbenchTabbedPane.addTab("SQL Console", getCurrentSQLConsole());
+		};
+		sqlConsoles.add(sqlConsole);
+		
+		try {
+			ignoreTabChangeEvent = true;
+			String tabName = "SQL Console";
+			++sqlConsoleNr;
+			final String titel = tabName + (sqlConsoleNr > 1? " " + sqlConsoleNr : "");
+			workbenchTabbedPane.insertTab(titel, null, sqlConsole, null, sqlConsoles.size());
+			JPanel titelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+			titelPanel.setOpaque(false);
+			JLabel titleLbl = new JLabel(titel);
+			titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+			titelPanel.add(titleLbl);
+			SmallButton closeButton = new SmallButton(closeIcon) {
+				@Override
+				protected void onClick() {
+					if (!sqlConsole.isEmpty()) {
+						if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(DataBrowser.this, "Close " + titel + "?", "Close Console", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+							return;
+						}
+					}
+					try {
+						ignoreTabChangeEvent = true;
+						workbenchTabbedPane.remove(sqlConsole);
+						sqlConsoles.remove(sqlConsole);
+					} finally {
+						ignoreTabChangeEvent = false;
+					}
+					workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
+				}
+			};
+			titelPanel.add(closeButton);
+			if (sqlConsoles.size() > 1) {
+				workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.indexOfComponent(sqlConsole), titelPanel);
+			}
+		} finally {
+			ignoreTabChangeEvent = false;
+		}
+		workbenchTabbedPane.setSelectedComponent(sqlConsole);
 	}
     
 	private MetaDataDetailsPanel metaDataDetailsPanel;
@@ -3049,6 +3116,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon redIcon;
 	private ImageIcon blueIcon;
 	private ImageIcon greenIcon;
+	private Icon closeIcon;
 	{
         String dir = "/net/sf/jailer/ui/resource";
         
@@ -3059,9 +3127,9 @@ public class DataBrowser extends javax.swing.JFrame {
             redIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/reddot.gif")));
             blueIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/bluedot.gif")));
             greenIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/greendot.gif")));
+            closeIcon = new ImageIcon(getClass().getResource(dir + "/Close-16-1.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 }

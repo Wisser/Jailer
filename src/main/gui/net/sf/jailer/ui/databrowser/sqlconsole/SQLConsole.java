@@ -368,9 +368,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private AtomicBoolean stopped = new AtomicBoolean(false);
     private String prevSql = null;
     private int prevCaretPos;
+
+    /**
+     * Update of outline of statement under caret and history after switching from another console to this.
+     */
+    public void update() {
+    	updateOutline(false);
+    	restoreHistory();
+    }
     
     /**
-     * Update of outline of statement under carret.
+     * Update of outline of statement under caret.
      */
     private void updateOutline(boolean checkPrevSql) {
         if (!pending.get()) {
@@ -1872,7 +1880,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
-    static private ImageIcon runIcon;
+	/**
+	 * @return <code>true</code> iff console editor is empty
+	 */
+	public boolean isEmpty() {
+		return editorPane.getDocument().getLength() == 0;
+	}
+
+	static private ImageIcon runIcon;
     static private ImageIcon runAllIcon;
     static private ImageIcon cancelIcon;
     static private ImageIcon explainIcon;
