@@ -252,7 +252,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         				toggleLineContinuation();
         			}
         		});
-        		item.setToolTipText("<html>Adds (or remove) line-continuation-character ('\\') <br> to each line terminated by ';'");
+        		item.setToolTipText(
+        				"<html>Adds (or remove) line-continuation-character ('\\') <br>" +
+        				" to each line terminated by ';' <br>"
+        				+ "(allowing you to execute PL/SQL code)");
         		menu.add(item);
         		item = new JMenuItem("Substitute Variables");
         		item.addActionListener(new ActionListener() {
@@ -609,7 +612,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             statement = session.getConnection().createStatement();
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
-            sqlStatement = sql.replaceFirst("(?is)(;\\s*)+$", "").replaceAll("(;(?: |\\\\t|\\\\r|(?:--.*))*) \\\\([ \\t\\r]*\\n)", "$1  $2");
+            sqlStatement = 
+            		sql
+            		.replaceFirst("(?is)(;\\s*)+$", "")
+            		.replaceAll("((?:(?:;(?: |\\t|\\r)*(?:--[^\\n]*)?))) \\\\([ \\t\\r]*\\n)", "$1$2")
+            		.replaceAll("((?:\\n(?: |\\t|\\r)*)) \\\\([ \\t\\r]*)(?=\\n)", "$1");
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
 	        status.statement = sqlStatement;
 	        boolean loadButtonIsVisible = true;
@@ -1860,12 +1867,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private void toggleLineContinuation() {
 		String currentStatement = editorPane.getCurrentStatement(false);
 		String newStatement;
-		Pattern p = Pattern.compile(".*;( |\\\\t|\\\\r)*(:--.*)? \\\\( |\\t|\\r)*\\n.*", Pattern.DOTALL);
+		Pattern p = Pattern.compile("(?:(?:;( |\\t|\\r)*(?:--[^\\n]*)?)|(?:\\n( |\\t|\\r)*)) \\\\( |\\t|\\r)*\\n", Pattern.DOTALL);
         Matcher m = p.matcher(currentStatement);
-        if (m.matches()) {
-			newStatement = currentStatement.replaceAll("(;(?: |\\\\t|\\\\r|(?:--.*))*) \\\\([ \\t\\r]*\\n)", "$1$2");
+        if (m.find()) {
+			newStatement = currentStatement.replaceAll("((?:(?:;(?: |\\t|\\r)*(?:--[^\\n]*)?))) \\\\([ \\t\\r]*\\n)", "$1$2");
+			newStatement = newStatement.replaceAll("((?:\\n(?: |\\t|\\r)*)) \\\\([ \\t\\r]*)(?=\\n)", "$1$2");
 		} else {
-			newStatement = currentStatement.replaceAll("(;(?: |\\\\t|\\\\r|(?:--.*))*)(\\n(\\r)?)", "$1 \\\\$2");
+			newStatement = currentStatement.replaceAll("((?:(?:;(?: |\\t|\\r)*(?:--[^\\n]*)?)))(\\n(\\r)?)", "$1 \\\\$2");
+			newStatement = newStatement.replaceAll("((?:(?:\\n(?: |\\t|\\r)*)))(?=\\n)", "$1 \\\\");
 		}
 		if (!currentStatement.equals(newStatement)) {
 			editorPane.replaceCurrentStatement(newStatement, false);
