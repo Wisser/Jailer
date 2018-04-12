@@ -57,7 +57,7 @@ import net.sf.jailer.util.SqlUtil;
  * consistent, referentially intact row-sets from relational databases. It
  * removes obsolete data without violating integrity. It is DBMS agnostic,
  * platform independent, and generates topologically sorted SQL-DML,
- * hierarchically structured XML, and DbUnit datasets.
+ * hierarchically structured XML, and DBUnit datasets.
  * 
  * <a href="http://jailer.sourceforge.net/">http://jailer.sourceforge.net</a>
  * 
