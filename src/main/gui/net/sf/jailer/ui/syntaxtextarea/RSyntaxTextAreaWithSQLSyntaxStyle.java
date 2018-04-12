@@ -971,6 +971,18 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 */
 	private void formatSQL() {
 		String currentStatement = getCurrentStatement(true);
+		if (currentStatement.trim().length() == 0) {
+			int pos = getCaretPosition();
+			int l = getLineStartOffsetOfCurrentLine();
+			if (l > 0) {
+				setCaretPosition(l - 1);
+				currentStatement = getCurrentStatement(true);
+				if (currentStatement.trim().length() == 0) {
+					setCaretPosition(pos);
+					return;
+				}
+			}
+		}
 		Pattern pattern = Pattern.compile("(.*?)(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(currentStatement + ";");
 		boolean result = matcher.find();
