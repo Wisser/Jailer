@@ -55,9 +55,9 @@ import net.sf.jailer.util.SqlUtil;
 /**
  * Tool for database subsetting, schema browsing, and rendering. It exports
  * consistent, referentially intact row-sets from relational databases. It
- * removes obsolete data without violating integrity. It is DBMS agnostic (by
- * using JDBC), platform independent, and generates DbUnit datasets,
- * hierarchically structured XML, and topologically sorted SQL-DML.
+ * removes obsolete data without violating integrity. It is DBMS agnostic,
+ * platform independent, and generates topologically sorted SQL-DML,
+ * hierarchically structured XML, and DbUnit datasets.
  * 
  * <a href="http://jailer.sourceforge.net/">http://jailer.sourceforge.net</a>
  * 
