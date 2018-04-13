@@ -341,7 +341,9 @@ public class DataBrowser extends javax.swing.JFrame {
 							icon = tableIcon;
 						}
 					} else {
-						icon = databaseIcon;
+						if (((JLabel) render).getText().trim().length() > 0) {
+							icon = databaseIcon;
+						}
 					}
 					((JLabel) render).setIcon(icon);
 				}
@@ -411,7 +413,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
             @Override
             protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
-                storeSessionItem.setEnabled(hasIFrame);
+            	storeSessionItem.setEnabled(hasIFrame);
+            	closeAllMenuItem.setEnabled(hasIFrame);
                 exportDataMenuItem.setEnabled(hasTableBrowser);
                 createExtractionModelMenuItem.setEnabled(hasTableBrowser);
                 updateIFramesBar();
@@ -903,26 +906,26 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel26 = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
-        newBrowserjMenuItem = new javax.swing.JMenuItem();
-        jSeparator11 = new javax.swing.JPopupMenu.Separator();
         loadScriptMenuItem = new javax.swing.JMenuItem();
         saveScriptMenuItem = new javax.swing.JMenuItem();
         saveScriptAsMenuItem = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JPopupMenu.Separator();
         jMenuItem3 = new javax.swing.JMenuItem();
+        closeAllMenuItem = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         storeSessionItem = new javax.swing.JMenuItem();
         restoreSessionItem = new javax.swing.JMenuItem();
-        jSeparator2 = new javax.swing.JPopupMenu.Separator();
-        reconnectMenuItem = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
-        cloaseAllMenuItem = new javax.swing.JMenuItem();
-        schemaMappingMenuItem = new javax.swing.JMenuItem();
+        reconnectMenuItem = new javax.swing.JMenuItem();
+        newBrowserjMenuItem = new javax.swing.JMenuItem();
+        jSeparator12 = new javax.swing.JPopupMenu.Separator();
+        exitMenuItem = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
         dataModelEditorjMenuItem = new javax.swing.JMenuItem();
         jSeparator10 = new javax.swing.JPopupMenu.Separator();
         showDataModelMenuItem = new javax.swing.JCheckBoxMenuItem();
+        schemaMappingMenuItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         exportDataMenuItem = new javax.swing.JMenuItem();
         dataImport = new javax.swing.JMenuItem();
@@ -1376,15 +1379,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jMenu1.setText("File");
 
-        newBrowserjMenuItem.setText("New Data Browser");
-        newBrowserjMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newBrowserjMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(newBrowserjMenuItem);
-        jMenu1.add(jSeparator11);
-
         loadScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         loadScriptMenuItem.setText("Open SQL Script...");
         loadScriptMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1420,6 +1414,15 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItem3);
+
+        closeAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        closeAllMenuItem.setText("Close All Tables");
+        closeAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeAllMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(closeAllMenuItem);
         jMenu1.add(jSeparator4);
 
         storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
@@ -1439,7 +1442,7 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(restoreSessionItem);
-        jMenu1.add(jSeparator2);
+        jMenu1.add(jSeparator7);
 
         reconnectMenuItem.setText("Reconnect...");
         reconnectMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1448,24 +1451,23 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(reconnectMenuItem);
-        jMenu1.add(jSeparator7);
 
-        cloaseAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        cloaseAllMenuItem.setText("Close All");
-        cloaseAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        newBrowserjMenuItem.setText("New Data Browser");
+        newBrowserjMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cloaseAllMenuItemActionPerformed(evt);
+                newBrowserjMenuItemActionPerformed(evt);
             }
         });
-        jMenu1.add(cloaseAllMenuItem);
+        jMenu1.add(newBrowserjMenuItem);
+        jMenu1.add(jSeparator12);
 
-        schemaMappingMenuItem.setText("Schema Mapping");
-        schemaMappingMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        exitMenuItem.setText("Exit");
+        exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                schemaMappingMenuItemActionPerformed(evt);
+                exitMenuItemActionPerformed(evt);
             }
         });
-        jMenu1.add(schemaMappingMenuItem);
+        jMenu1.add(exitMenuItem);
 
         menuBar.add(jMenu1);
 
@@ -1495,6 +1497,14 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuTools.add(showDataModelMenuItem);
+
+        schemaMappingMenuItem.setText("Schema Mapping");
+        schemaMappingMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                schemaMappingMenuItemActionPerformed(evt);
+            }
+        });
+        menuTools.add(schemaMappingMenuItem);
 
         menuBar.add(menuTools);
 
@@ -1754,7 +1764,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private void reconnectMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_reconnectMenuItemActionPerformed
         synchronized (this) {
-            if (dbConnectionDialog.connect("Reconnect")) {
+            if (dbConnectionDialog.connect("Reconnect", true)) {
                 try {
                     setConnection(dbConnectionDialog);
                 } catch (Exception e) {
@@ -1773,7 +1783,7 @@ public class DataBrowser extends javax.swing.JFrame {
         openNewTableBrowser(false);
     }// GEN-LAST:event_jMenuItem1ActionPerformed
 
-    private void cloaseAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cloaseAllMenuItemActionPerformed
+    private void closeAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cloaseAllMenuItemActionPerformed
         desktop.closeAll();
     }// GEN-LAST:event_cloaseAllMenuItemActionPerformed
 
@@ -2041,19 +2051,7 @@ public class DataBrowser extends javax.swing.JFrame {
             } else {
             	dataBrowser.dbConnectionDialog = dbConnectionDialog;
             }
-            for (int i = 0; i < dataBrowser.menuBar.getMenuCount(); ++i) {
-                JMenu menu = dataBrowser.menuBar.getMenu(i);
-                if (menu != dataBrowser.helpMenu) {
-                    for (int j = 0; j < menu.getItemCount(); ++j) {
-                        JMenuItem item = menu.getItem(j);
-                        if (item != null) {
-                        	if (item != dataBrowser.reconnectMenuItem && item != dataBrowser.newBrowserjMenuItem) {
-                        		item.setEnabled(false);
-                        	}
-                        }
-                    }
-                }
-            }
+            dataBrowser.dispose();
         }
         SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -2188,7 +2186,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel associatedWith;
     private javax.swing.JPanel borderBrowserPanel;
     private javax.swing.JPanel borderBrowserTabPane;
-    private javax.swing.JMenuItem cloaseAllMenuItem;
+    private javax.swing.JMenuItem closeAllMenuItem;
     private javax.swing.JPanel closurePanel;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JMenuItem consistencyCheckMenuItem;
@@ -2200,6 +2198,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JSplitPane desktopSplitPane;
     private javax.swing.JTabbedPane detailsAndBorderBrowserTabbedPane;
     private javax.swing.JPanel dummy;
+    private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportDataMenuItem;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JMenuItem helpForum;
@@ -2241,8 +2240,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
-    private javax.swing.JPopupMenu.Separator jSeparator11;
-    private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator12;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -3208,7 +3206,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
 	private void loadScriptMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadScriptMenuItemActionPerformed
-        String fName = UIUtil.choseFile(null, ".", "Load SQL Script", ".sql", this, false, true);
+        String fName = UIUtil.choseFile(null, ".", "Load SQL Script", "", this, false, true);
         if (fName != null) {
         	File file = new File(fName);
         	loadSQLScriptFile(file);
@@ -3253,7 +3251,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private void saveScriptAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveScriptAsMenuItemActionPerformed
 		SQLConsole sqlConsole = getCurrentSQLConsole();
 		if (sqlConsole != null) {
-			String fName = UIUtil.choseFile(null, ".", "Save SQL Script", ".sql", this, false, false);
+			String fName = UIUtil.choseFile(null, ".", "Save SQL Script", "", this, false, false);
 			if (fName != null) {
 				File file = new File(fName);
 		    	try {
@@ -3267,6 +3265,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		}
     }//GEN-LAST:event_saveScriptAsMenuItemActionPerformed
+
+    private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMenuItemActionPerformed
+       	if (closeAllSQLConsoles()) {
+       		DataBrowser.this.dispose();
+       	}
+    }//GEN-LAST:event_exitMenuItemActionPerformed
 
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();

@@ -126,16 +126,34 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * @return <code>true</code> if connection succeeded
 	 */
 	public boolean connect(String reason) {
-		setTitle((reason == null ? "" : (reason + " - ")) + "Connect.");
-		sortConnectionList();
-		refresh();
-		setVisible(true);
-		if (currentConnection == null) {
-			isConnected = false;
-		}
-		return isConnected;
+		return connect(reason, false);
 	}
-	
+
+	/**
+	 * Gets connection to DB.
+	 * 
+	 * @return <code>true</code> if connection succeeded
+	 */
+	public boolean connect(String reason, boolean keepState) {
+		boolean oldIsConnected = isConnected;
+		ConnectionInfo oldCurrentConnection = currentConnection;
+		try {
+			setTitle((reason == null ? "" : (reason + " - ")) + "Connect.");
+			sortConnectionList();
+			refresh();
+			setVisible(true);
+			if (currentConnection == null) {
+				isConnected = false;
+			}
+			return isConnected;
+		} finally {
+			if (keepState) {
+				isConnected = oldIsConnected;
+				currentConnection = oldCurrentConnection;
+			}
+		}
+	}
+
 	private final InfoBar infoBar;
 	private final String currentModelSubfolder;
 	private final boolean dataModelAware;
