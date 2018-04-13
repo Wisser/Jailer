@@ -27,6 +27,13 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -470,7 +477,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
             @Override
             public void windowClosing(WindowEvent e) {
-                // desktop.stop();
+               	if (closeAllSQLConsoles()) {
+               		DataBrowser.this.dispose();
+               	}
             }
 
             @Override
@@ -686,6 +695,7 @@ public class DataBrowser extends javax.swing.JFrame {
         };
 
         navigationTree.getSelectionModel().addTreeSelectionListener(treeListener);
+        initDnD();
     }
 
 	@SuppressWarnings("unchecked")
@@ -894,6 +904,10 @@ public class DataBrowser extends javax.swing.JFrame {
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         newBrowserjMenuItem = new javax.swing.JMenuItem();
+        jSeparator11 = new javax.swing.JPopupMenu.Separator();
+        loadScriptMenuItem = new javax.swing.JMenuItem();
+        saveScriptMenuItem = new javax.swing.JMenuItem();
+        saveScriptAsMenuItem = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JPopupMenu.Separator();
         jMenuItem3 = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
@@ -1369,6 +1383,33 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(newBrowserjMenuItem);
+        jMenu1.add(jSeparator11);
+
+        loadScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        loadScriptMenuItem.setText("Open SQL Script...");
+        loadScriptMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadScriptMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(loadScriptMenuItem);
+
+        saveScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveScriptMenuItem.setText("Save");
+        saveScriptMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveScriptMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(saveScriptMenuItem);
+
+        saveScriptAsMenuItem.setText("Save as...");
+        saveScriptAsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveScriptAsMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(saveScriptAsMenuItem);
         jMenu1.add(jSeparator9);
 
         jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
@@ -1381,7 +1422,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(jMenuItem3);
         jMenu1.add(jSeparator4);
 
-        storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
         storeSessionItem.setText("Store Layout");
         storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1679,6 +1720,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	        		sqlConsole.update();
 	        	}
 	        }
+			updateLoadSaveScriptMenuItemsState();
 		}
     }//GEN-LAST:event_workbenchTabbedPaneStateChanged
 
@@ -1974,7 +2016,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize, ExecutionContext executionContext, DataBrowser theDataBrowser) throws Exception {
         final DataBrowser dataBrowser = theDataBrowser != null? theDataBrowser : new DataBrowser(datamodel, null, "", null, false, executionContext);
-        dataBrowser.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dataBrowser.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 //		if (maximize) {
 //			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
 //		}
@@ -2199,6 +2241,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
+    private javax.swing.JPopupMenu.Separator jSeparator11;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
@@ -2216,6 +2259,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
     private javax.swing.JPanel legende2;
+    private javax.swing.JMenuItem loadScriptMenuItem;
     private javax.swing.JRadioButtonMenuItem mediumLayoutRadioButtonMenuItem;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenu menuTools;
@@ -2231,6 +2275,8 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JButton openTableButton;
     private javax.swing.JMenuItem reconnectMenuItem;
     private javax.swing.JMenuItem restoreSessionItem;
+    private javax.swing.JMenuItem saveScriptAsMenuItem;
+    private javax.swing.JMenuItem saveScriptMenuItem;
     private javax.swing.JMenuItem schemaMappingMenuItem;
     private javax.swing.JLabel schemaName;
     private javax.swing.JPanel schemaNamePanel;
@@ -2398,7 +2444,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel1.revalidate();
     }
 
-    private static final class BrowserAssociationModel extends DefaultAssociationModel {
+	private static final class BrowserAssociationModel extends DefaultAssociationModel {
         private final RowBrowser rowBrowser;
 
         public BrowserAssociationModel(RowBrowser rowBrowser, Association association) {
@@ -3035,66 +3081,195 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 	}
 
+    private final class SQLConsoleWithTitle extends SQLConsole {
+		private final String initialTitle;
+		private final JLabel titleLbl;
+		private String title;
+
+		private SQLConsoleWithTitle(Session session, MetaDataSource metaDataSource, Reference<DataModel> datamodel,
+				ExecutionContext executionContext, String title, JLabel titleLbl) throws SQLException {
+			super(session, metaDataSource, datamodel, executionContext);
+			this.initialTitle = title;
+			this.titleLbl = titleLbl;
+		}
+
+		@Override
+		protected void refreshMetaData() {
+			metaDataPanel.reset();
+		}
+
+		@Override
+		protected void selectTable(MDTable mdTable) {
+			metaDataPanel.select(mdTable);
+		}
+
+		@Override
+		protected void setOutlineTables(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret) {
+			metaDataPanel.setOutline(outlineTables, indexOfInfoAtCaret);
+		}
+
+		@Override
+		protected void onContentStateChange(File file, boolean dirty) {
+			if (file == null) {
+				title = initialTitle;
+			} else {
+				title = file.getName();
+			}
+			if (dirty && file != null) {
+				titleLbl.setText("* " + title);
+			} else {
+				titleLbl.setText(title);
+			}
+			updateLoadSaveScriptMenuItemsState();
+		}
+		
+		public String getTitle() {
+			return title;
+		}
+	}
+
     private int sqlConsoleNr = 0;
 
-	private void createNewSQLConsole(MetaDataSource metaDataSource) throws SQLException {
-		final SQLConsole sqlConsole = new SQLConsole(session, metaDataSource, datamodel, executionContext) {
-			@Override
-			protected void refreshMetaData() {
-				metaDataPanel.reset();
-			}
-			@Override
-			protected void selectTable(MDTable mdTable) {
-				metaDataPanel.select(mdTable);
-			}
-			@Override
-			protected void setOutlineTables(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret) {
-				metaDataPanel.setOutline(outlineTables, indexOfInfoAtCaret);
-			}
-		};
+	private SQLConsole createNewSQLConsole(MetaDataSource metaDataSource) throws SQLException {
+		final JLabel titleLbl = new JLabel();
+		String tabName = "SQL Console";
+		++sqlConsoleNr;
+		final String title = tabName + (sqlConsoleNr > 1? " " + sqlConsoleNr : "");
+
+		final SQLConsoleWithTitle sqlConsole = new SQLConsoleWithTitle(session, metaDataSource, datamodel, executionContext, title, titleLbl);
 		sqlConsoles.add(sqlConsole);
 		
 		try {
 			ignoreTabChangeEvent = true;
-			String tabName = "SQL Console";
-			++sqlConsoleNr;
-			final String titel = tabName + (sqlConsoleNr > 1? " " + sqlConsoleNr : "");
-			workbenchTabbedPane.insertTab(titel, null, sqlConsole, null, sqlConsoles.size());
+			workbenchTabbedPane.insertTab(title, null, sqlConsole, null, sqlConsoles.size());
 			JPanel titelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 			titelPanel.setOpaque(false);
-			JLabel titleLbl = new JLabel(titel);
+			titleLbl.setText(title);
 			titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
 			titelPanel.add(titleLbl);
 			SmallButton closeButton = new SmallButton(closeIcon) {
 				@Override
 				protected void onClick() {
-					if (!sqlConsole.isEmpty()) {
-						if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(DataBrowser.this, "Close " + titel + "?", "Close Console", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-							return;
-						}
+					if (closeSQLConsole(sqlConsole)) {
+						workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
 					}
-					try {
-						ignoreTabChangeEvent = true;
-						workbenchTabbedPane.remove(sqlConsole);
-						sqlConsoles.remove(sqlConsole);
-					} finally {
-						ignoreTabChangeEvent = false;
-					}
-					workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
 				}
 			};
 			titelPanel.add(closeButton);
 			if (sqlConsoles.size() > 1) {
 				workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.indexOfComponent(sqlConsole), titelPanel);
+			} else {
+				workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.indexOfComponent(sqlConsole), titleLbl);
 			}
 		} finally {
 			ignoreTabChangeEvent = false;
 		}
 		workbenchTabbedPane.setSelectedComponent(sqlConsole);
+		return sqlConsole;
 	}
-    
+
+	private boolean closeAllSQLConsoles() {
+		List<SQLConsoleWithTitle> toClose = new ArrayList<SQLConsoleWithTitle>(sqlConsoles);
+		for (SQLConsoleWithTitle sqlConsole: toClose) {
+			workbenchTabbedPane.setSelectedComponent(sqlConsole);
+			if (sqlConsole.getFile() != null && sqlConsole.isDirty()) {
+				if (!closeSQLConsole(sqlConsole)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private boolean closeSQLConsole(SQLConsoleWithTitle sqlConsole) {
+		if (!sqlConsole.isEmpty() && !(sqlConsole.getFile() != null && !sqlConsole.isDirty())) {
+			if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(DataBrowser.this, "Close \"" + sqlConsole.getTitle() + "\"" + (sqlConsole.getFile() == null? "?" : " without saving?"), "Close Console", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+				return false;
+			}
+		}
+		try {
+			ignoreTabChangeEvent = true;
+			workbenchTabbedPane.remove(sqlConsole);
+			sqlConsoles.remove(sqlConsole);
+		} finally {
+			ignoreTabChangeEvent = false;
+		}
+		return true;
+	}
+
+	private void updateLoadSaveScriptMenuItemsState() {
+		SQLConsole sqlConsole = null;
+		Component sc = workbenchTabbedPane.getSelectedComponent();
+		if (sc instanceof SQLConsole) {
+			sqlConsole = (SQLConsole) sc;
+		}
+		saveScriptMenuItem.setEnabled(sqlConsole != null && sqlConsole.isDirty());
+		saveScriptAsMenuItem.setEnabled(sqlConsole != null && !sqlConsole.isEmpty());
+	}
+
+	private void loadScriptMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadScriptMenuItemActionPerformed
+        String fName = UIUtil.choseFile(null, ".", "Load SQL Script", ".sql", this, false, true);
+        if (fName != null) {
+        	File file = new File(fName);
+        	loadSQLScriptFile(file);
+        }
+    }//GEN-LAST:event_loadScriptMenuItemActionPerformed
+
+	private void loadSQLScriptFile(File file) {
+		for (SQLConsole sqlConsole: sqlConsoles) {
+			if (file.equals(sqlConsole.getFile())) {
+				workbenchTabbedPane.setSelectedComponent(sqlConsole);
+				return;
+			}
+		}
+		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			createNewSQLConsole(getMetaDataSource()).loadFromFile(file);
+		} catch (Throwable e) {
+			UIUtil.showException(this, "Error", e, session);
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}
+	}
+
+    private void saveScriptMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveScriptMenuItemActionPerformed
+    	SQLConsole sqlConsole = getCurrentSQLConsole();
+		if (sqlConsole != null) {
+			if (sqlConsole.getFile() == null) {
+				saveScriptAsMenuItemActionPerformed(evt);
+			} else {
+				try {
+					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					sqlConsole.storeToFile(null);
+				} catch (Throwable e) {
+					UIUtil.showException(this, "Error", e, session);
+				} finally {
+					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				}
+			}
+		}
+    }//GEN-LAST:event_saveScriptMenuItemActionPerformed
+
+    private void saveScriptAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveScriptAsMenuItemActionPerformed
+		SQLConsole sqlConsole = getCurrentSQLConsole();
+		if (sqlConsole != null) {
+			String fName = UIUtil.choseFile(null, ".", "Save SQL Script", ".sql", this, false, false);
+			if (fName != null) {
+				File file = new File(fName);
+		    	try {
+					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					sqlConsole.storeToFile(file);
+				} catch (Throwable e) {
+					UIUtil.showException(this, "Error", e, session);
+				} finally {
+					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				}
+			}
+		}
+    }//GEN-LAST:event_saveScriptAsMenuItemActionPerformed
+
 	private MetaDataDetailsPanel metaDataDetailsPanel;
-	private List<SQLConsole> sqlConsoles = new ArrayList<SQLConsole>();
+	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();
 
 	private SQLConsole getCurrentSQLConsole() {
 		Component sc = workbenchTabbedPane.getSelectedComponent();
@@ -3104,13 +3279,64 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (sqlConsoles.isEmpty()) {
 			return null;
 		}
+		for (int i = sqlConsoles.size() - 1; i >= 0; --i) {
+			if (sqlConsoles.get(i).getFile() == null) {
+				return sqlConsoles.get(i);
+			}
+		}
 		return sqlConsoles.get(sqlConsoles.size() - 1);
 	}
-	
+
 	public MetaDataSource getMetaDataSource() {
 		return getMetaDataSource(session);
 	}
-	
+
+	private void initDnD() {
+		new DropTarget(this, new DropTargetListener() {
+			@Override
+			public void drop(DropTargetDropEvent dtde) {
+				try {
+					Transferable tr = dtde.getTransferable();
+					DataFlavor[] flavors = tr.getTransferDataFlavors();
+					for (int i = 0; i < flavors.length; i++) {
+						if (flavors[i].isFlavorJavaFileListType()) {
+							dtde.acceptDrop(dtde.getDropAction());
+							@SuppressWarnings("unchecked")
+							java.util.List<File> files = (java.util.List<File>) tr.getTransferData(flavors[i]);
+							for (int k = 0; k < files.size(); k++) {
+								loadSQLScriptFile(files.get(k));
+							}
+
+							dtde.dropComplete(true);
+						}
+					}
+					return;
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				dtde.rejectDrop();
+
+			}
+
+			@Override
+			public void dragEnter(DropTargetDragEvent dtde) {
+			}
+
+			@Override
+			public void dragOver(DropTargetDragEvent dtde) {
+			}
+
+			@Override
+			public void dropActionChanged(DropTargetDragEvent dtde) {
+			}
+
+			@Override
+			public void dragExit(DropTargetEvent dte) {
+			}
+
+		});
+	}
+
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;
 	private ImageIcon redIcon;

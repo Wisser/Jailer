@@ -30,9 +30,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.CallableStatement;
@@ -77,6 +79,8 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -150,7 +154,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private final ImageIcon scaledCancelIcon;
     private final ImageIcon scaledExplainIcon;
     private final SQLPlusSupport sqlPlusSupport = new SQLPlusSupport();
-	
+	private File file;
+    
+	private final String IGNORED_STATEMENTS = "(\\s*/\\s*)";
+
     /**
      * Creates new form SQLConsole
      */
@@ -347,6 +354,23 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
         });
 
+        initialContentSize = editorPane.getDocument().getLength();
+        initialContentHash = editorPane.getText().hashCode();
+        editorPane.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				checkDirty();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				checkDirty();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				checkDirty();
+			}
+		});
+        
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -615,13 +639,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             sqlStatement = 
             		sql
             		.replaceFirst("(?is)(;\\s*)+$", "")
-            		.replaceAll("((?:(?:;(?: |\\t|\\r)*(?:--[^\\n]*)?))) \\\\([ \\t\\r]*\\n)", "$1$2")
-            		.replaceAll("((?:\\n(?: |\\t|\\r)*)) \\\\([ \\t\\r]*)(?=\\n)", "$1");
+            		.replaceAll("((?:(?:;(?: |\\t|\\r)*?(?:--[^\\n]*)?))) ?\\\\([ \\t\\r]*\\n)", "$1$2")
+            		.replaceAll("((?:\\n(?: |\\t|\\r)*?)) ?\\\\([ \\t\\r]*)(?=\\n)", "$1");
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
 	        status.statement = sqlStatement;
 	        boolean loadButtonIsVisible = true;
             boolean hasResultSet;
-            boolean isDefine = false;
+            boolean hasUpdateCount = true;
             ResultSet sqlPlusResultSet = null;
             if (explain) {
             	synchronized (this) {
@@ -639,7 +663,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             		hasResultSet = true;
             		loadButtonIsVisible = false;
             	} else if (sqlPlusSupport.executeSQLPLusStatement(sqlStatement)) {
-            		isDefine = true;
+            		hasUpdateCount = false;
+            		hasResultSet = false;
+            	} else if (sqlStatement.matches(IGNORED_STATEMENTS)) {
+            		hasUpdateCount = false;
             		hasResultSet = false;
             	} else {
             		hasResultSet = statement.execute(sqlStatement);
@@ -823,7 +850,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 });
             } else {
                 status.timeInMS += (System.currentTimeMillis() - startTime);
-                int updateCount = isDefine? 0 : statement.getUpdateCount();
+                int updateCount = !hasUpdateCount? 0 : statement.getUpdateCount();
                 if (updateCount >= 0) {
                     status.numRowsUpdated += updateCount;
                 }
@@ -1299,13 +1326,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         dummyLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
+        jLabel2 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane2.setResizeWeight(0.5);
+        jSplitPane2.setResizeWeight(0.6);
         jSplitPane2.setOneTouchExpandable(true);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -1410,10 +1438,24 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jSplitPane2.setLeftComponent(jPanel2);
 
-        jPanel3.setLayout(new java.awt.BorderLayout());
+        jPanel3.setLayout(new java.awt.GridBagLayout());
 
         jTabbedPane1.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
-        jPanel3.add(jTabbedPane1, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel3.add(jTabbedPane1, gridBagConstraints);
+
+        jLabel2.setText(" ");
+        jLabel2.setToolTipText("");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        jPanel3.add(jLabel2, gridBagConstraints);
 
         jSplitPane2.setRightComponent(jPanel3);
 
@@ -1446,6 +1488,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JLabel dummyLabel;
     private javax.swing.JButton explainButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -1867,14 +1910,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private void toggleLineContinuation() {
 		String currentStatement = editorPane.getCurrentStatement(false);
 		String newStatement;
-		Pattern p = Pattern.compile("(?:(?:;( |\\t|\\r)*(?:--[^\\n]*)?)|(?:\\n( |\\t|\\r)*)) \\\\( |\\t|\\r)*\\n", Pattern.DOTALL);
+		Pattern p = Pattern.compile("(?:(?:;( |\\t|\\r)*(?:--[^\\n]*)?)|(?:\\n( |\\t|\\r)*)) ?\\\\( |\\t|\\r)*\\n", Pattern.DOTALL);
         Matcher m = p.matcher(currentStatement);
         if (m.find()) {
-			newStatement = currentStatement.replaceAll("((?:(?:;(?: |\\t|\\r)*(?:--[^\\n]*)?))) \\\\([ \\t\\r]*\\n)", "$1$2");
-			newStatement = newStatement.replaceAll("((?:\\n(?: |\\t|\\r)*)) \\\\([ \\t\\r]*)(?=\\n)", "$1$2");
+			newStatement = currentStatement.replaceAll("((?:(?:;(?: |\\t|\\r)*?(?:--[^\\n]*)?))) ?\\\\([ \\t\\r]*\\n)", "$1$2");
+			newStatement = newStatement.replaceAll("((?:\\n(?: |\\t|\\r)*?)) ?\\\\([ \\t\\r]*)(?=\\n)", "$1$2");
 		} else {
 			newStatement = currentStatement.replaceAll("((?:(?:;(?: |\\t|\\r)*(?:--[^\\n]*)?)))(\\n(\\r)?)", "$1 \\\\$2");
 			newStatement = newStatement.replaceAll("((?:(?:\\n(?: |\\t|\\r)*)))(?=\\n)", "$1 \\\\");
+			newStatement = newStatement.replaceAll("\\\\(\\s*)$", "$1");
 		}
 		if (!currentStatement.equals(newStatement)) {
 			editorPane.replaceCurrentStatement(newStatement, false);
@@ -1895,6 +1939,92 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	public boolean isEmpty() {
 		return editorPane.getDocument().getLength() == 0;
 	}
+
+	private int initialContentSize;
+	private int initialContentHash;
+	private boolean dirty;
+	
+	/**
+	 * Loads content from file.
+	 * 
+	 * @param file the file
+	 */
+	public void loadFromFile(File file) throws IOException {
+		this.file = file;
+		if (file.exists()) {
+			BufferedReader in = new BufferedReader(new FileReader(file));
+			StringBuilder sb = new StringBuilder();
+			int c;
+	        while ((c = in.read()) != -1) {
+	        	sb.append((char) c);
+	        }
+	        in.close();
+	        editorPane.setText(sb.toString());
+	        dirty = false;
+		} else {
+			editorPane.setText("");
+	        dirty = true;
+		}
+        initialContentSize = editorPane.getDocument().getLength();
+        initialContentHash = editorPane.getText().hashCode();
+        consoleContainerPanel.setVisible(false);
+        SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+		        consoleContainerPanel.setVisible(true);
+			}
+		});
+        setCaretPosition(0);
+        onContentStateChange(file, dirty);
+	}
+
+	/**
+	 * Stores content to file if console is dirty or new file is given.
+	 * 
+	 * @param newFile the file or <code>null</code> to store into assigned file
+	 */
+	public void storeToFile(File newFile) throws IOException {
+		if (newFile != null || file != null && dirty) {
+			if (newFile != null) {
+				file = newFile;
+			}
+			BufferedWriter out = new BufferedWriter(new FileWriter(file));
+			out.write(editorPane.getText());
+			out.close();
+	        initialContentSize = editorPane.getDocument().getLength();
+	        initialContentHash = editorPane.getText().hashCode();
+	        dirty = false;
+	        onContentStateChange(file, dirty);
+		}
+	}
+
+	private void checkDirty() {
+		boolean newState = false;
+        if (initialContentSize != editorPane.getDocument().getLength()) {
+        	newState = true;
+        } else {
+        	newState = initialContentHash != editorPane.getText().hashCode();
+        }
+        if (newState != dirty) {
+        	dirty = newState;
+            onContentStateChange(file, dirty);
+        }
+	}
+
+	/**
+	 * Gets the file associated with this console.
+	 * 
+	 * @return file associated with this console or <code>null</code>, if the console is not assigned to a file
+	 */
+	public File getFile() {
+		return file;
+	}
+
+	public boolean isDirty() {
+		return dirty;
+	}
+
+	protected abstract void onContentStateChange(File file, boolean dirty);
 
 	static private ImageIcon runIcon;
     static private ImageIcon runAllIcon;
