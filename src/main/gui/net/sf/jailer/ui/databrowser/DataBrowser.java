@@ -217,6 +217,7 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
+        workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
         initialized = true;
         
         tablesComboBox = new JComboBox<String>() {
@@ -3129,7 +3130,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private int sqlConsoleNr = 0;
 
 	private SQLConsole createNewSQLConsole(MetaDataSource metaDataSource) throws SQLException {
-		final JLabel titleLbl = new JLabel();
+		final JLabel titleLbl = new JLabel(sqlConsoleIcon);
 		String tabName = "SQL Console";
 		++sqlConsoleNr;
 		final String title = tabName + (sqlConsoleNr > 1? " " + sqlConsoleNr : "");
@@ -3347,6 +3348,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon blueIcon;
 	private ImageIcon greenIcon;
 	private Icon closeIcon;
+	private ImageIcon sqlConsoleIcon;
+	private ImageIcon desktopIcon;
 	{
         String dir = "/net/sf/jailer/ui/resource";
         
@@ -3358,6 +3361,8 @@ public class DataBrowser extends javax.swing.JFrame {
             blueIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/bluedot.gif")));
             greenIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/greendot.gif")));
             closeIcon = new ImageIcon(getClass().getResource(dir + "/Close-16-1.png"));
+            sqlConsoleIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/runall.png"));
+            desktopIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/tables.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
