@@ -217,8 +217,9 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         initComponents();
         workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
+        workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.getTabCount() - 1, new JLabel(addSqlConsoleIcon));
         initialized = true;
-        
+
         tablesComboBox = new JComboBox<String>() {
         	@Override
         	public Dimension getMinimumSize() {
@@ -3354,6 +3355,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon greenIcon;
 	private Icon closeIcon;
 	private ImageIcon sqlConsoleIcon;
+	private ImageIcon addSqlConsoleIcon;
 	private ImageIcon desktopIcon;
 	{
         String dir = "/net/sf/jailer/ui/resource";
@@ -3365,9 +3367,10 @@ public class DataBrowser extends javax.swing.JFrame {
             redIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/reddot.gif")));
             blueIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/bluedot.gif")));
             greenIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/greendot.gif")));
-            closeIcon = new ImageIcon(getClass().getResource(dir + "/Close-16-1.png"));
-            sqlConsoleIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/runall.png"));
-            desktopIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/tables.png"));
+            closeIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/Close-16-1.png"));
+            sqlConsoleIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/runall.png"));
+            desktopIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/tables.png"));
+            addSqlConsoleIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/add.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
