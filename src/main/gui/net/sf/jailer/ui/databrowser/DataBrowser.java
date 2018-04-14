@@ -69,7 +69,6 @@ import javax.swing.JDialog;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -907,13 +906,13 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel26 = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        closeAllMenuItem = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
         loadScriptMenuItem = new javax.swing.JMenuItem();
         saveScriptMenuItem = new javax.swing.JMenuItem();
         saveScriptAsMenuItem = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JPopupMenu.Separator();
-        jMenuItem3 = new javax.swing.JMenuItem();
-        closeAllMenuItem = new javax.swing.JMenuItem();
-        jSeparator4 = new javax.swing.JPopupMenu.Separator();
         storeSessionItem = new javax.swing.JMenuItem();
         restoreSessionItem = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
@@ -1136,7 +1135,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 24, 58);
+        layeredPaneContent.setBounds(0, 0, 26, 59);
 
         desktopSplitPane.setLeftComponent(jLayeredPane1);
 
@@ -1380,6 +1379,25 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jMenu1.setText("File");
 
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setText("Open Table");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem3);
+
+        closeAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        closeAllMenuItem.setText("Close All Tables");
+        closeAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeAllMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(closeAllMenuItem);
+        jMenu1.add(jSeparator4);
+
         loadScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         loadScriptMenuItem.setText("Open SQL Script...");
         loadScriptMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1406,25 +1424,6 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(saveScriptAsMenuItem);
         jMenu1.add(jSeparator9);
-
-        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem3.setText("Open Table");
-        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem3ActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jMenuItem3);
-
-        closeAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        closeAllMenuItem.setText("Close All Tables");
-        closeAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closeAllMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(closeAllMenuItem);
-        jMenu1.add(jSeparator4);
 
         storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
         storeSessionItem.setText("Store Layout");
@@ -1696,6 +1695,7 @@ public class DataBrowser extends javax.swing.JFrame {
     	if (tablesComboBox.getSelectedItem() != null) {
     		String tableName = tablesComboBox.getSelectedItem().toString();
     		desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
+    		switchToDesktop();
     	}
     }//GEN-LAST:event_openTableButtonActionPerformed
 
@@ -1900,7 +1900,8 @@ public class DataBrowser extends javax.swing.JFrame {
             @Override
             void openTableBrowser(String tableName) {
                 desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
-            }
+        		switchToDesktop();
+           }
 
             @Override
             void openDatabaseAnalyzer() {
@@ -3294,6 +3295,10 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	public MetaDataSource getMetaDataSource() {
 		return getMetaDataSource(session);
+	}
+	
+	private void switchToDesktop() {
+		workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
 	}
 
 	private void initDnD() {
