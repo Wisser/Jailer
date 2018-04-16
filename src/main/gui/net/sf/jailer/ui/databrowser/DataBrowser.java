@@ -3151,7 +3151,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			SmallButton closeButton = new SmallButton(closeIcon) {
 				@Override
 				protected void onClick() {
-					if (closeSQLConsole(sqlConsole)) {
+					if (closeSQLConsole(sqlConsole, true)) {
 						workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
 					}
 				}
@@ -3173,8 +3173,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		List<SQLConsoleWithTitle> toClose = new ArrayList<SQLConsoleWithTitle>(sqlConsoles);
 		for (SQLConsoleWithTitle sqlConsole: toClose) {
 			workbenchTabbedPane.setSelectedComponent(sqlConsole);
-			if (!sqlConsole.isEmpty() && !(sqlConsole.getFile() != null && !sqlConsole.isDirty())) {
-				if (!closeSQLConsole(sqlConsole)) {
+			if (sqlConsole.getFile() != null && sqlConsole.isDirty()) {
+				if (!closeSQLConsole(sqlConsole, true)) {
 					return false;
 				}
 			}
@@ -3182,19 +3182,19 @@ public class DataBrowser extends javax.swing.JFrame {
 		toClose = new ArrayList<SQLConsoleWithTitle>(sqlConsoles);
 		for (SQLConsoleWithTitle sqlConsole: toClose) {
 			workbenchTabbedPane.setSelectedComponent(sqlConsole);
-			if (!(!sqlConsole.isEmpty() && !(sqlConsole.getFile() != null && !sqlConsole.isDirty()))) {
-				if (!closeSQLConsole(sqlConsole)) {
-					return false;
-				}
+			if (!closeSQLConsole(sqlConsole, false)) {
+				return false;
 			}
 		}
 		return true;
 	}
 
-	private boolean closeSQLConsole(SQLConsoleWithTitle sqlConsole) {
-		if (!sqlConsole.isEmpty() && !(sqlConsole.getFile() != null && !sqlConsole.isDirty())) {
-			if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(DataBrowser.this, "Close \"" + sqlConsole.getTitle() + "\"" + (sqlConsole.getFile() == null? "?" : " without saving?"), "Close Console", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-				return false;
+	private boolean closeSQLConsole(SQLConsoleWithTitle sqlConsole, boolean ask) {
+		if (ask) {
+			if (!sqlConsole.isEmpty() && !(sqlConsole.getFile() != null && !sqlConsole.isDirty())) {
+				if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(DataBrowser.this, "Close \"" + sqlConsole.getTitle() + "\"" + (sqlConsole.getFile() == null? "?" : " without saving?"), "Close Console", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+					return false;
+				}
 			}
 		}
 		try {
@@ -3336,7 +3336,6 @@ public class DataBrowser extends javax.swing.JFrame {
 					t.printStackTrace();
 				}
 				dtde.rejectDrop();
-
 			}
 
 			@Override
