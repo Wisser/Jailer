@@ -158,6 +158,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     
 	private final String IGNORED_STATEMENTS = "(\\s*/\\s*)";
 
+	/**
+	 * Stops the consumer thread.
+	 */
+    private final Runnable STOP = new Runnable() {
+		@Override
+		public void run() {
+			// nothing to do
+		}
+	};
+
     /**
      * Creates new form SQLConsole
      */
@@ -374,19 +384,23 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                for (;;) {
+            	Runnable action = null;
+            	do {
                     try {
-                        queue.take().run();
+                    	action = queue.take();
+                        action.run();
                     } catch (Throwable t) {
                         logger.info("error", t);
                     }
-                }
+                } while (action != STOP);
             }
-        });
+        }, "console-thread-" + (threadNum++));
         thread.setDaemon(true);
         thread.start();
     }
-    
+
+    private static int threadNum = 1;
+
     private boolean canExplain() {
 		return metaDataSource.getSession().dbms.getExplainQuery() != null && !metaDataSource.getSession().dbms.getExplainQuery().isEmpty();
 	}
@@ -1972,6 +1986,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			@Override
 			public void run() {
 		        consoleContainerPanel.setVisible(true);
+		        grabFocus();
 			}
 		});
         setCaretPosition(0);
@@ -2024,6 +2039,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		return dirty;
 	}
 
+	/**
+	 * Closes this console.
+	 */
+	public void close() {
+    	CancellationHandler.cancel(this);
+    	queue.add(STOP);
+	}
+	
 	protected abstract void onContentStateChange(File file, boolean dirty);
 
 	static private ImageIcon runIcon;

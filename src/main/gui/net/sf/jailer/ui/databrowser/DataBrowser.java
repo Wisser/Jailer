@@ -3173,7 +3173,16 @@ public class DataBrowser extends javax.swing.JFrame {
 		List<SQLConsoleWithTitle> toClose = new ArrayList<SQLConsoleWithTitle>(sqlConsoles);
 		for (SQLConsoleWithTitle sqlConsole: toClose) {
 			workbenchTabbedPane.setSelectedComponent(sqlConsole);
-			if (sqlConsole.getFile() != null && sqlConsole.isDirty()) {
+			if (!sqlConsole.isEmpty() && !(sqlConsole.getFile() != null && !sqlConsole.isDirty())) {
+				if (!closeSQLConsole(sqlConsole)) {
+					return false;
+				}
+			}
+		}
+		toClose = new ArrayList<SQLConsoleWithTitle>(sqlConsoles);
+		for (SQLConsoleWithTitle sqlConsole: toClose) {
+			workbenchTabbedPane.setSelectedComponent(sqlConsole);
+			if (!(!sqlConsole.isEmpty() && !(sqlConsole.getFile() != null && !sqlConsole.isDirty()))) {
 				if (!closeSQLConsole(sqlConsole)) {
 					return false;
 				}
@@ -3189,6 +3198,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		}
 		try {
+			sqlConsole.close();
 			ignoreTabChangeEvent = true;
 			workbenchTabbedPane.remove(sqlConsole);
 			sqlConsoles.remove(sqlConsole);
