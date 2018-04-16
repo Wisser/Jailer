@@ -147,7 +147,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 			return isConnected;
 		} finally {
-			if (keepState) {
+			if (keepState && !isConnected) {
 				isConnected = oldIsConnected;
 				currentConnection = oldCurrentConnection;
 			}
