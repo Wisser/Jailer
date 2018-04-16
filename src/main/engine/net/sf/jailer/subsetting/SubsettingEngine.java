@@ -625,13 +625,13 @@ public class SubsettingEngine {
 		
 		long rest = 0;
 		Set<Table> dependentTables = null;
-		Set<Table> currentProgress = progress;
+		Set<Table> currentProgress = new TreeSet<Table>(progress);
 		
 		while (!currentProgress.isEmpty()) {
 			// first write entities of independent tables
 			dependentTables = writeEntitiesOfIndependentTables(result, transformerHandler, scriptType, currentProgress, sqlScriptFile);
 			Set<Table> prevProgress = currentProgress;
-			currentProgress = new HashSet<Table>();
+			currentProgress = new TreeSet<Table>();
 			
 			// then write entities of tables having cyclic-dependencies
 			Set<Table> descendants = getDescentants(dependentTables);
@@ -1162,7 +1162,7 @@ public class SubsettingEngine {
 	 */
 	private Set<Table> writeEntitiesOfIndependentTables(final OutputStreamWriter result, final TransformerHandler transformerHandler, final ScriptType scriptType,
 			Set<Table> progress, final String filepath) throws SQLException, IOException {
-		Set<Table> tables = new HashSet<Table>(progress);
+		Set<Table> tables = new TreeSet<Table>(progress);
 
 		Set<Table> independentTables = datamodel.getIndependentTables(tables);
 		while (!independentTables.isEmpty()) {

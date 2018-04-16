@@ -668,7 +668,7 @@ public class DataModel {
 	 * @return the sub-set of independent tables of the table-set
 	 */
 	public Set<Table> getIndependentTables(Set<Table> tableSet, Set<Association> associations) {
-		Set<Table> independentTables = new HashSet<Table>();
+		Set<Table> independentTables = new TreeSet<Table>();
 		
 		for (Table table: tableSet) {
 			boolean depends = false;
