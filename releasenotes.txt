@@ -1,4 +1,4 @@
-7.7.1
+7.7.2
   - SQL-Console
     - new "Toggle Line Continuation" context menu item.
     - "Substitute Variables" context menu item.
