@@ -1010,10 +1010,19 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 						while (from > 0 && Character.isAlphabetic(statement.charAt(from - 1))) {
 							--from;
 						}
-					}
+					} else if (isSpaceOrTab(statement.charAt(from))) {
+						while (from < statement.length() && isSpaceOrTab(statement.charAt(from + 1))) {
+							++from;
+						}
+					} 
 					if (Character.isAlphabetic(statement.charAt(to - 1))) {
 						while (to < statement.length() && Character.isAlphabetic(statement.charAt(to))) {
 							++to;
+						}
+					} else if (isSpaceOrTab(statement.charAt(to - 1))) {
+						--to;
+						while (to > 0 && isSpaceOrTab(statement.charAt(to))) {
+							--to;
 						}
 					}
 					statement = statement.substring(0, from) + "\f" + statement.substring(from, to) + "\f" + statement.substring(to);
@@ -1040,6 +1049,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			String tail = matcher.matches() ? matcher.group(1) : "";
 			replaceCurrentStatement(sb.toString() + tail, true);
 		}
+	}
+
+	private boolean isSpaceOrTab(char c) {
+		return c == ' ' || c == '\t';
 	}
 
 	private final AtomicBoolean stopped = new AtomicBoolean(false);
