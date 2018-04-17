@@ -88,7 +88,7 @@ public class BasicFormatterImpl {
 
 	public String format(String source) {
 		try {
-			return new FormatProcess( source ).perform();
+			return new FormatProcess(source).perform();
 		} catch (Throwable t) {
 			return source;
 		}
@@ -106,7 +106,7 @@ public class BasicFormatterImpl {
 		int parensSinceSelect = 0;
 		private LinkedList parenCounts = new LinkedList();
 		private LinkedList afterByOrFromOrSelects = new LinkedList();
-
+		
 		int indent = 1;
 
 		StringBuffer result = new StringBuffer();
@@ -130,7 +130,15 @@ public class BasicFormatterImpl {
 			String nextToken = null;
 			boolean lastWasWS = false;
 			while ( tokens.hasMoreTokens() ) {
-				token = nextToken == null? tokens.nextToken() : nextToken;
+				if (nextToken == null) {
+					token = tokens.nextToken();
+					if ("\f".equals(token)) {
+						out();
+						continue;
+					}
+				} else {
+					token = nextToken;
+				}
 				nextToken = null;
 				lcToken = token.toLowerCase();
 
@@ -248,7 +256,14 @@ public class BasicFormatterImpl {
 				}
 
 			}
-			return result.toString().trim().replaceAll("\\s*\\n", "\n");
+			CharSequence FREP = "(\f)";
+			return result.toString()
+					.replaceAll("^\\s*\\f", "\f")
+					.replaceAll("\\f\\s*$", "\f")
+					.replace("\f", FREP)
+					.trim()
+					.replaceAll("\\s*\\n", "\n")
+					.replace(FREP, "\f");
 		}
 
 		private void commaAfterOn() {

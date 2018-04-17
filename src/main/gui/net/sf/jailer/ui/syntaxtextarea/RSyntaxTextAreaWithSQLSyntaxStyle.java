@@ -983,15 +983,52 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				}
 			}
 		}
+		Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> fPos = getCurrentStatementFragmentLocation();
+		Pair<Integer, Integer> loc = fPos != null? getCurrentStatementLocation(true, false, null, false) : null;
+		Integer startOffset = null;
+		if (loc != null) {
+			try {
+				startOffset = fPos.b.a - getLineStartOffset(loc.a);
+			} catch (BadLocationException e) {
+				// ignore
+			}
+		}
+
 		Pattern pattern = Pattern.compile("(.*?)(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(currentStatement + ";");
 		boolean result = matcher.find();
 		if (result) {
 			StringBuffer sb = new StringBuffer();
 			do {
-				matcher.appendReplacement(sb,
-						Matcher.quoteReplacement(new BasicFormatterImpl().format(matcher.group(1)))
-								+ matcher.group(2));
+				String statement = matcher.group(1);
+				int from = -1;
+				int to = -1;
+				if (startOffset != null) {
+					from = startOffset;
+					to = from + (fPos.b.b - fPos.b.a);
+					if (Character.isAlphabetic(statement.charAt(from))) {
+						while (from > 0 && Character.isAlphabetic(statement.charAt(from - 1))) {
+							--from;
+						}
+					}
+					if (Character.isAlphabetic(statement.charAt(to - 1))) {
+						while (to < statement.length() && Character.isAlphabetic(statement.charAt(to))) {
+							++to;
+						}
+					}
+					statement = statement.substring(0, from) + "\f" + statement.substring(from, to) + "\f" + statement.substring(to);
+				}
+				String formatted = new BasicFormatterImpl().format(statement);
+				if (startOffset != null) {
+					int fi = formatted.indexOf('\f');
+					int li = formatted.lastIndexOf('\f');
+					if (fi >= 0 && li >= 0) {
+						formatted = statement.substring(0, from) + formatted.substring(fi + 1, li) + statement.substring(to + 2);
+						formatted = formatted.replaceAll("\\s*\\n", "\n");
+					}
+					startOffset = null;
+				}
+				matcher.appendReplacement(sb, Matcher.quoteReplacement(formatted) + matcher.group(2));
 				result = matcher.find();
 			} while (result);
 			matcher.appendTail(sb);

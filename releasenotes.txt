@@ -1,3 +1,7 @@
+7.7.3
+  - incremental SQL formatting.
+  - Minor GUI Improvements and bug fixes.
+
 7.7.2
   - SQL-Console
     - new "Toggle Line Continuation" context menu item.
