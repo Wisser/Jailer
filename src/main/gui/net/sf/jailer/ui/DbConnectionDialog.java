@@ -18,6 +18,7 @@ package net.sf.jailer.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ComponentEvent;
@@ -37,6 +38,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -50,10 +52,13 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -65,6 +70,11 @@ import net.sf.jailer.util.Pair;
  * @author Ralf Wisser
  */
 public class DbConnectionDialog extends javax.swing.JDialog {
+
+	/**
+	 * The logger.
+	 */
+	private static final Logger logger = Logger.getLogger(MetaDataPanel.class);
 
 	/**
 	 * <code>true</code> if valid connection is available.
@@ -392,17 +402,27 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			editButton.setEnabled(currentConnection != null);
 			deleteButton.setEnabled(currentConnection != null);
 			copy.setEnabled(currentConnection != null);
-			jButton1.setEnabled(currentConnection != null && selectedRowIndex >= 0 && selectedRowIndex < connectionList.size() && isAssignedToDataModel(selectedRowIndex));
+			jButton1.setEnabled(currentConnection != null && selectedRowIndex >= 0 && selectedRowIndex < connectionList.size());
+			warnOnConnect = !(selectedRowIndex < 0 || isAssignedToDataModel(selectedRowIndex));
+			if (currentModelSubfolder == null && warnOnConnect) {
+				warnOnConnect = false;
+				jButton1.setEnabled(false);
+			} else {
+				jButton1.setEnabled(true);
+			}
+			jButton1.setIcon(!warnOnConnect? null : getScaledWarnIcon());
 		} finally {
 			inRefresh = false;
 		}
 	}
-	
+
+	private boolean warnOnConnect = false;
+
 	/**
 	 * File to store connections.
 	 */
 	private static String CONNECTIONS_FILE = ".connections";
-	
+
 	/**
 	 * Stores the connections into the CONNECTIONS_FILE.
 	 */
@@ -860,7 +880,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (currentConnection == null) {
 			return;
 		}
-
+		
+		if (warnOnConnect) {
+			if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, "Connection is not associated with " + (currentModelSubfolder == null? "any data model." : ("data model \"" + currentModelSubfolder + "\".")) + "\nDo you still want to connect?", "Connect", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE)) {
+				return;
+			}
+		}
+		
 		isConnected = false;
 
 		Component root = SwingUtilities.getWindowAncestor(mainPanel);
@@ -1052,4 +1078,31 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		return null;
 	}
 
+    private ImageIcon getScaledWarnIcon() {
+        if (scaledWarnIcon == null) {
+            int heigth = getFontMetrics(new JLabel("M").getFont()).getHeight();
+            double s = heigth / (double) warnIcon.getIconHeight();
+            try {
+            	scaledWarnIcon = new ImageIcon(warnIcon.getImage().getScaledInstance((int)(warnIcon.getIconWidth() * s), (int)(warnIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
+            } catch (Exception e) {
+            	logger.info("error", e);
+                return null;
+            }
+        }
+        return scaledWarnIcon;
+    }
+
+    private static ImageIcon warnIcon;
+    private static ImageIcon scaledWarnIcon;
+    static {
+        String dir = "/net/sf/jailer/ui/resource";
+        
+        // load images
+        try {
+            warnIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/wanr.png"));
+ 	    } catch (Exception e) {
+	    	logger.info("error", e);
+	        e.printStackTrace();
+	    }
+	}
 }
