@@ -90,6 +90,7 @@ import org.apache.log4j.Logger;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -102,6 +103,7 @@ import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.DataBrowser;
@@ -155,7 +157,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private final ImageIcon scaledExplainIcon;
     private final SQLPlusSupport sqlPlusSupport = new SQLPlusSupport();
 	private File file;
-    
+	private JMenuItem menuItemToggle;
+	private JMenuItem menuItemSubstituteVariables;
+	private JMenuItem menuItemAnalyse;
+
 	private final String IGNORED_STATEMENTS = "(\\s*/\\s*)";
 
 	/**
@@ -178,7 +183,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         this.datamodel = datamodel;
         this.executionContext = executionContext;
         initComponents();
-
+        initMenuItems();
         historyComboBox.setMaximumRowCount(25);
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -214,6 +219,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             protected void selectTable(MDTable mdTable) {
                 SQLConsole.this.selectTable(mdTable);
             }
+            @Override
+        	protected void updateMenuItems(boolean isTextSelected) {
+            	SQLConsole.this.updateMenuItems(isTextSelected);
+        	}
             @Override
             protected MDTable getSelectedTable() {		
                 Document doc = getDocument();
@@ -262,34 +271,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	@Override
         	protected void appendPopupMenu(JPopupMenu menu) {
         		menu.addSeparator();
-        		JMenuItem item = new JMenuItem("Toggle Line Continuation");
-        		item.addActionListener(new ActionListener() {
-        			@Override
-        			public void actionPerformed(ActionEvent e) {
-        				toggleLineContinuation();
-        			}
-        		});
-        		item.setToolTipText(
-        				"<html>Adds (or remove) line-continuation-character ('\\') <br>" +
-        				" to each line terminated by ';' <br>"
-        				+ "(allowing you to execute PL/SQL code)");
-        		menu.add(item);
-        		item = new JMenuItem("Substitute Variables");
-        		item.addActionListener(new ActionListener() {
-        			@Override
-        			public void actionPerformed(ActionEvent e) {
-        				substituteVariables();
-        			}
-        		});
-        		item.setToolTipText(
-        				"<html>Substitutes variables <i>(&amp;VAR[.])</i> with corresponding values. <br><br>\n" + 
-        				"<b>Statements:</b>\n" + 
-        				"<table>\n" + 
-        				"<tr><td><b>&nbsp;DEFINE VAR=\"VALUE\"</b></td><td>&nbsp;&nbsp;&nbsp;</td><td>Assigns a value to variable VAR</td></tr>\n" + 
-        				"<tr><td><b>&nbsp;DEFINE</b></td><td></td><td>Lists all variables</td></tr>\n" + 
-        				"<tr><td><b>&nbsp;&amp;VAR</b>&nbsp;&nbsp;or&nbsp;&nbsp;<b>&nbsp;&amp;VAR.</b></td><td></td><td>Variable substitution (inside other statements)</td></tr>\n" + 
-        				"</table>");
-        		menu.add(item);
+        		menu.add(menuItemToggle);
+        		menu.add(menuItemSubstituteVariables);
+        		menu.addSeparator();
+        		menu.add(menuItemAnalyse);
         	}
 
         };
@@ -399,12 +384,67 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         thread.start();
     }
 
-    private static int threadNum = 1;
+	protected void initMenuItems() {
+		JMenuItem item = new JMenuItem("Toggle Line Continuation");
+		item.setEnabled(false);
+		menuItemToggle = item;
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				toggleLineContinuation();
+			}
+		});
+		item.setToolTipText(
+				"<html>Adds (or remove) line-continuation-character ('\\') <br>" +
+				" to each line terminated by ';' <br>"
+				+ "(allowing you to execute PL/SQL code)");
+		item = new JMenuItem("Substitute Variables");
+		item.setEnabled(false);
+		menuItemSubstituteVariables = item;
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				substituteVariables();
+			}
+		});
+		item.setToolTipText(
+				"<html>Substitutes variables <i>(&amp;VAR[.])</i> with corresponding values. <br><br>\n" + 
+				"<b>Statements:</b>\n" + 
+				"<table>\n" + 
+				"<tr><td><b>&nbsp;DEFINE VAR=\"VALUE\"</b></td><td>&nbsp;&nbsp;&nbsp;</td><td>Assigns a value to variable VAR</td></tr>\n" + 
+				"<tr><td><b>&nbsp;DEFINE</b></td><td></td><td>Lists all variables</td></tr>\n" + 
+				"<tr><td><b>&nbsp;&amp;VAR</b>&nbsp;&nbsp;or&nbsp;&nbsp;<b>&nbsp;&amp;VAR.</b></td><td></td><td>Variable substitution (inside other statements)</td></tr>\n" + 
+				"</table>");
+		item = new JMenuItem("Analyze SQL");
+		item.setEnabled(false);
+		menuItemAnalyse = item;
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				analyzeSQL();
+			}
+		});
+		item.setToolTipText("Analyzes selected SQL and proposes association definitions.");
+	}
+
+	private void updateMenuItems(boolean isTextSelected) {
+    	if (menuItemToggle != null) {
+    		menuItemToggle.setEnabled(isTextSelected);
+    	}
+    	if (menuItemSubstituteVariables != null) {
+    		menuItemSubstituteVariables.setEnabled(isTextSelected);
+    	}
+    	if (menuItemAnalyse != null) {
+    		menuItemAnalyse.setEnabled(isTextSelected);
+    	}
+	}
+
+	private static int threadNum = 1;
 
     private boolean canExplain() {
 		return metaDataSource.getSession().dbms.getExplainQuery() != null && !metaDataSource.getSession().dbms.getExplainQuery().isEmpty();
 	}
-    
+
     private AtomicBoolean pending = new AtomicBoolean(false);
     private AtomicBoolean stopped = new AtomicBoolean(false);
     private String prevSql = null;
@@ -1112,6 +1152,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     protected abstract void refreshMetaData();
     protected abstract void selectTable(MDTable mdTable);
     protected abstract void setOutlineTables(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret);
+    protected abstract JFrame getOwner();
+    protected abstract void openDataModelEditor(boolean merge);
     
     private boolean dataHasChanged = false;
     
@@ -1938,6 +1980,29 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			editorPane.replaceCurrentStatement(newStatement, false);
 		}
 	}
+
+    private void analyzeSQL() {
+		String currentStatement = editorPane.getCurrentStatement(false);
+		File tempFile = Configuration.getInstance().createTempFile();
+		try {
+			BufferedWriter out = new BufferedWriter(new FileWriter(tempFile));
+			Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(false, false, null, false);
+			if (loc != null) {
+				for (int i = 0; i < loc.a; ++i) {
+					out.write("\n");
+				}
+			}
+			out.write(currentStatement);
+			out.close();
+			AssociationProposerView associationProposer = new AssociationProposerView(getOwner(), datamodel.get(), tempFile, executionContext);
+			if (associationProposer.isAccepted()) {
+				openDataModelEditor(true);
+			}
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e);
+		}
+		tempFile.delete();
+    }
 
 	private void substituteVariables() {
 		String currentStatement = editorPane.getCurrentStatement(true);

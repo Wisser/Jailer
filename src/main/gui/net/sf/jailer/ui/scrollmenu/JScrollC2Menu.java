@@ -4,7 +4,6 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;

@@ -66,6 +66,7 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
@@ -115,6 +116,7 @@ import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.ImportDialog;
@@ -924,6 +926,8 @@ public class DataBrowser extends javax.swing.JFrame {
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
         dataModelEditorjMenuItem = new javax.swing.JMenuItem();
+        jSeparator11 = new javax.swing.JPopupMenu.Separator();
+        analyseSQLMenuItem1 = new javax.swing.JMenuItem();
         jSeparator10 = new javax.swing.JPopupMenu.Separator();
         showDataModelMenuItem = new javax.swing.JCheckBoxMenuItem();
         schemaMappingMenuItem = new javax.swing.JMenuItem();
@@ -1136,7 +1140,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 26, 59);
+        layeredPaneContent.setBounds(0, 0, 24, 58);
 
         desktopSplitPane.setLeftComponent(jLayeredPane1);
 
@@ -1489,6 +1493,15 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuTools.add(dataModelEditorjMenuItem);
+        menuTools.add(jSeparator11);
+
+        analyseSQLMenuItem1.setText("Analyze SQL Script");
+        analyseSQLMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyseSQLMenuItem1ActionPerformed(evt);
+            }
+        });
+        menuTools.add(analyseSQLMenuItem1);
         menuTools.add(jSeparator10);
 
         showDataModelMenuItem.setText("Show Data Model");
@@ -1938,7 +1951,7 @@ public class DataBrowser extends javax.swing.JFrame {
     }// GEN-LAST:event_analyseMenuItemActionPerformed
 
     private void dataModelEditorjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_dataModelEditorjMenuItemActionPerformed
-        openDataModelEditor();
+        openDataModelEditor(false);
     }// GEN-LAST:event_dataModelEditorjMenuItemActionPerformed
 
     /**
@@ -2106,10 +2119,10 @@ public class DataBrowser extends javax.swing.JFrame {
     /**
      * Opens the data model editor.
      */
-    private void openDataModelEditor() {
+    private void openDataModelEditor(boolean merge) {
         try {
             String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
-            DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelname, null, executionContext);
+            DataModelEditor dataModelEditor = new DataModelEditor(this, merge, false, null, null, null, modelname, null, executionContext);
             dataModelEditor.setVisible(true);
             removeMetaDataSource(session);
             desktop.reloadDataModel(desktop.schemaMapping);
@@ -2186,6 +2199,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JPanel addSQLConsoleTab;
     private javax.swing.JMenuItem analyseMenuItem;
+    private javax.swing.JMenuItem analyseSQLMenuItem1;
     private javax.swing.JLabel associatedWith;
     private javax.swing.JPanel borderBrowserPanel;
     private javax.swing.JPanel borderBrowserTabPane;
@@ -2243,6 +2257,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
+    private javax.swing.JPopupMenu.Separator jSeparator11;
     private javax.swing.JPopupMenu.Separator jSeparator12;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
@@ -2330,7 +2345,7 @@ public class DataBrowser extends javax.swing.JFrame {
                     updateDataModel();
                     break;
                 case 1:
-                    openDataModelEditor();
+                    openDataModelEditor(false);
                     break;
                 }
             } else if (!new File(DataModel.getColumnsFile(executionContext)).exists()) {
@@ -2340,7 +2355,7 @@ public class DataBrowser extends javax.swing.JFrame {
                     updateDataModel();
                     break;
                 case 1:
-                    openDataModelEditor();
+                    openDataModelEditor(false);
                     break;
                 }
             }
@@ -3127,6 +3142,16 @@ public class DataBrowser extends javax.swing.JFrame {
 		public String getTitle() {
 			return title;
 		}
+
+		@Override
+		protected JFrame getOwner() {
+			return DataBrowser.this;
+		}
+
+		@Override
+		protected void openDataModelEditor(boolean merge) {
+			DataBrowser.this.openDataModelEditor(merge);
+		}
 	}
 
     private int sqlConsoleNr = 0;
@@ -3284,6 +3309,13 @@ public class DataBrowser extends javax.swing.JFrame {
        		DataBrowser.this.dispose();
        	}
     }//GEN-LAST:event_exitMenuItemActionPerformed
+
+    private void analyseSQLMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyseSQLMenuItem1ActionPerformed
+    	AssociationProposerView assocProposerView = new AssociationProposerView(this, datamodel.get(), null, executionContext);
+    	if (assocProposerView.isAccepted()) {
+    		openDataModelEditor(true);
+    	}
+    }//GEN-LAST:event_analyseSQLMenuItem1ActionPerformed
 
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();

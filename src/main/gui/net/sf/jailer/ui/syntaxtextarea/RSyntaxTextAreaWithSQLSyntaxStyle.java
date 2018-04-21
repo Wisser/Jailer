@@ -888,6 +888,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		} else {
 			loc = getCurrentStatementLocation(eosLines);
 		}
+		updateMenuItems(loc != null && !isTextEmpty(loc.a, loc.b));
 		runBlock.setEnabled(allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
 		explain.setEnabled(canExplain() && allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
 		runAll.setEnabled(allowRun && RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
@@ -1092,6 +1093,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				e.printStackTrace();
 			}
 		}
+	}
+
+	protected void updateMenuItems(boolean isTextSelected) {
 	}
 
 	private ImageIcon icon;

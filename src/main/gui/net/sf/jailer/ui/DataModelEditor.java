@@ -219,7 +219,16 @@ public class DataModelEditor extends javax.swing.JDialog {
 		sortLineList(tables, true);
 		File modelFinderAssociationsFile = new File(ModelBuilder.getModelBuilderAssociationsFilename(executionContext));
 		if (merge && modelFinderAssociationsFile.exists()) {
+			Set<String> allNames = new HashSet<String>();
+			for (Line as: associations) {
+				allNames.add(as.cells.get(5));
+			}
 			List<CsvFile.Line> associationsFromModelFinder = new CsvFile(modelFinderAssociationsFile).getLines();
+			for (Iterator<Line> it = associationsFromModelFinder.iterator(); it.hasNext(); ) {
+				if (allNames.contains(it.next().cells.get(5))) {
+					it.remove();
+				}
+			}
 			associations.addAll(associationsFromModelFinder);
 			linesFromModelFinder.addAll(associationsFromModelFinder);
 			newAssociations += associationsFromModelFinder.size();

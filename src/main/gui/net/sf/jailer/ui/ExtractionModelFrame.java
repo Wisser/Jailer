@@ -71,6 +71,7 @@ import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.util.CancellationHandler;
@@ -325,6 +326,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         updateDataModel = new javax.swing.JMenuItem();
         openDataModelEditor = new javax.swing.JMenuItem();
+        jSeparator13 = new javax.swing.JPopupMenu.Separator();
+        analyzeSQLMenuItem = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         dataExport = new javax.swing.JMenuItem();
         dataImport = new javax.swing.JMenuItem();
@@ -345,18 +348,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Extraction Model Editor");
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
-            @Override
-			public void windowGainedFocus(java.awt.event.WindowEvent evt) {
+            public void windowGainedFocus(java.awt.event.WindowEvent evt) {
                 formWindowGainedFocus(evt);
             }
-            @Override
-			public void windowLostFocus(java.awt.event.WindowEvent evt) {
+            public void windowLostFocus(java.awt.event.WindowEvent evt) {
                 formWindowLostFocus(evt);
             }
         });
         addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-			public void windowClosing(java.awt.event.WindowEvent evt) {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
             }
         });
@@ -371,8 +371,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         fileMenu.setText("File");
         fileMenu.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fileMenuActionPerformed(evt);
             }
         });
@@ -380,8 +379,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         newModel.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         newModel.setText("New");
         newModel.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newModelActionPerformed(evt);
             }
         });
@@ -390,8 +388,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         load.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         load.setText("Load");
         load.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadActionPerformed(evt);
             }
         });
@@ -399,8 +396,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         reload.setText("Reload");
         reload.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reloadActionPerformed(evt);
             }
         });
@@ -410,8 +406,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         save.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         save.setText("Save");
         save.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveActionPerformed(evt);
             }
         });
@@ -420,8 +415,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
         saveAs.setText("Save as...");
         saveAs.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsActionPerformed(evt);
             }
         });
@@ -429,8 +423,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         exportDisplay.setText("Export graph as image");
         exportDisplay.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportDisplayActionPerformed(evt);
             }
         });
@@ -439,8 +432,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         connectDb.setText("Connect with database");
         connectDb.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 connectDbActionPerformed(evt);
             }
         });
@@ -448,8 +440,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         disconnectDb.setText("Disconnect");
         disconnectDb.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 disconnectDbActionPerformed(evt);
             }
         });
@@ -458,8 +449,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         exit.setText("Exit");
         exit.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exitActionPerformed(evt);
             }
         });
@@ -472,8 +462,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         ignoreAll.setActionCommand("Disable all associations");
         ignoreAll.setLabel("Disable all associations");
         ignoreAll.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ignoreAllActionPerformed(evt);
             }
         });
@@ -481,8 +470,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         removeAllRestrictions.setLabel("Remove all restrictions");
         removeAllRestrictions.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeAllRestrictionsActionPerformed(evt);
             }
         });
@@ -492,8 +480,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem2.setText("Filter editor...");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem2ActionPerformed(evt);
             }
         });
@@ -506,8 +493,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         collapseAll.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
         collapseAll.setText("Collapse all");
         collapseAll.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 collapseAllActionPerformed(evt);
             }
         });
@@ -516,8 +502,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         expandAll.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
         expandAll.setLabel("Expand all");
         expandAll.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 expandAllActionPerformed(evt);
             }
         });
@@ -526,8 +511,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         expandAllVisible.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
         expandAllVisible.setText("Expand visible tables");
         expandAllVisible.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 expandAllVisibleActionPerformed(evt);
             }
         });
@@ -536,8 +520,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem3.setText("Fix all");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem3ActionPerformed(evt);
             }
         });
@@ -546,8 +529,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenuItem4.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem4.setText("Unfix all");
         jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem4ActionPerformed(evt);
             }
         });
@@ -556,8 +538,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         refresh.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         refresh.setText("Reset");
         refresh.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshActionPerformed(evt);
             }
         });
@@ -567,8 +548,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         zoomToFit.setText("Zoom to fit");
         zoomToFit.setVerifyInputWhenFocusTarget(false);
         zoomToFit.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 zoomToFitActionPerformed(evt);
             }
         });
@@ -578,8 +558,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         showIgnored.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
         showIgnored.setText("Show disabled associations");
         showIgnored.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showIgnoredActionPerformed(evt);
             }
         });
@@ -588,8 +567,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         showTableDetails.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
         showTableDetails.setText("Show table details");
         showTableDetails.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showTableDetailsActionPerformed(evt);
             }
         });
@@ -600,8 +578,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         horizontalLayoutMenuItem.setSelected(true);
         horizontalLayoutMenuItem.setText("Horizontal layout");
         horizontalLayoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 horizontalLayoutMenuItemActionPerformed(evt);
             }
         });
@@ -616,8 +593,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptime0.setSelected(true);
         steptime0.setText("default");
         steptime0.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime0ActionPerformed(evt);
             }
         });
@@ -626,8 +602,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptimeGroup.add(steptime10);
         steptime10.setText("10");
         steptime10.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime10ActionPerformed(evt);
             }
         });
@@ -636,8 +611,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptimeGroup.add(steptime20);
         steptime20.setText("20");
         steptime20.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime20ActionPerformed(evt);
             }
         });
@@ -646,8 +620,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptimeGroup.add(steptime30);
         steptime30.setText("30");
         steptime30.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime30ActionPerformed(evt);
             }
         });
@@ -656,8 +629,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptimeGroup.add(steptime50);
         steptime50.setText("50");
         steptime50.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime50ActionPerformed(evt);
             }
         });
@@ -666,8 +638,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptimeGroup.add(steptime75);
         steptime75.setText("75");
         steptime75.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime75ActionPerformed(evt);
             }
         });
@@ -676,8 +647,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptimeGroup.add(steptime100);
         steptime100.setText("100");
         steptime100.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime100ActionPerformed(evt);
             }
         });
@@ -686,8 +656,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptimeGroup.add(steptime200);
         steptime200.setText("200");
         steptime200.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime200ActionPerformed(evt);
             }
         });
@@ -696,8 +665,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptimeGroup.add(steptime500);
         steptime500.setText("500");
         steptime500.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime500ActionPerformed(evt);
             }
         });
@@ -711,8 +679,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         updateDataModel.setText("Analyze Database");
         updateDataModel.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 updateDataModelActionPerformed(evt);
             }
         });
@@ -720,12 +687,20 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         openDataModelEditor.setLabel("Data Model Editor");
         openDataModelEditor.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openDataModelEditorActionPerformed(evt);
             }
         });
         jMenu1.add(openDataModelEditor);
+        jMenu1.add(jSeparator13);
+
+        analyzeSQLMenuItem.setText("Analyze SQL Script");
+        analyzeSQLMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyzeSQLMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(analyzeSQLMenuItem);
 
         jMenuBar2.add(jMenu1);
 
@@ -733,8 +708,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         dataExport.setLabel("Export Data");
         dataExport.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dataExportActionPerformed(evt);
             }
         });
@@ -742,8 +716,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         dataImport.setLabel("Import SQL Data");
         dataImport.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dataImportActionPerformed(evt);
             }
         });
@@ -752,8 +725,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         openDataBrowserItem.setText("Data Browser");
         openDataBrowserItem.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openDataBrowserItemActionPerformed(evt);
             }
         });
@@ -761,8 +733,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         queryBuilder.setText("Query Builder");
         queryBuilder.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 queryBuilderActionPerformed(evt);
             }
         });
@@ -770,8 +741,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         cycleView.setText("Cycle View");
         cycleView.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cycleViewActionPerformed(evt);
             }
         });
@@ -779,8 +749,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         restrictedDependenciesToolMenuItem.setText("Restricted Dependencies View");
         restrictedDependenciesToolMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 restrictedDependenciesToolMenuItemActionPerformed(evt);
             }
         });
@@ -788,8 +757,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         renderHtml.setText("HTML Rendering");
         renderHtml.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renderHtmlActionPerformed(evt);
             }
         });
@@ -801,8 +769,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         helpContent.setText("Manual");
         helpContent.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpContentActionPerformed(evt);
             }
         });
@@ -810,8 +777,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         tutorial.setLabel("Tutorial");
         tutorial.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tutorialActionPerformed(evt);
             }
         });
@@ -820,8 +786,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         helpForum.setLabel("Help Forum");
         helpForum.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpForumActionPerformed(evt);
             }
         });
@@ -830,8 +795,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenuItem1.setText("About Jailer");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem1ActionPerformed(evt);
             }
         });
@@ -1005,17 +969,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
 	private void openDataModelEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDataModelEditorActionPerformed
-		openDataModelEditor(null);
+		openDataModelEditor(null, false);
 	}//GEN-LAST:event_openDataModelEditorActionPerformed
 
 	/**
 	 * Opens the data model editor.
 	 */
-	private void openDataModelEditor(Table toEdit) {
+	private void openDataModelEditor(Table toEdit, boolean merge) {
 		try {
 			if (saveIfNeeded("edit data model", true, false)) {
 				String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
-				   DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, toEdit, null, null, modelname, null, executionContext);
+				   DataModelEditor dataModelEditor = new DataModelEditor(this, merge, false, toEdit, null, null, modelname, null, executionContext);
 				   dataModelEditor.setVisible(true);
 			   //	if (dataModelEditor.saved) {
 					   reload();
@@ -1204,7 +1168,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		} catch (Exception e) {
 			if (e instanceof DataModel.NoPrimaryKeyException) {
 				if (JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, new Object[] { "Edit Table", "Cancel" }, null) == 0) {
-					openDataModelEditor(((NoPrimaryKeyException) e).table);
+					openDataModelEditor(((NoPrimaryKeyException) e).table, false);
 					if (onDataModelUpdate != null) {
 						onDataModelUpdate.run();
 					}
@@ -1674,7 +1638,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			UIUtil.showException(this, "Error", t);
 		}
     }//GEN-LAST:event_reloadActionPerformed
-	
+
+    private void analyzeSQLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyzeSQLMenuItemActionPerformed
+    	AssociationProposerView assocProposerView = new AssociationProposerView(this, extractionModelEditor.dataModel, null, executionContext);
+    	if (assocProposerView.isAccepted()) {
+    		openDataModelEditor(null, true);
+    	}
+    }//GEN-LAST:event_analyzeSQLMenuItemActionPerformed
+
 	boolean isHorizontalLayout = false;
 	
 	/**
@@ -1926,6 +1897,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem analyzeSQLMenuItem;
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JCheckBoxMenuItem connectDb;
     private javax.swing.JMenuItem cycleView;
@@ -1956,6 +1928,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
     private javax.swing.JSeparator jSeparator12;
+    private javax.swing.JPopupMenu.Separator jSeparator13;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
