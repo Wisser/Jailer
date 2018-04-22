@@ -510,8 +510,15 @@ public class AssociationProposer {
 
 							net.sf.jailer.datamodel.Column leftColumn = getColumn(left);
 							if (leftColumn != null) {
-								// TODO: nicht, wenn aliase gleich
+								// TODO: nicht, wenn aliase gleich  bei reflex nixht beide
 								// TODO: equalsIgnoreQuoting
+								// TODO: new line nach ; bei QBuilder statements
+								// TODO: tracking icons bei statement border anzeige alternierend hell/dunkel grün
+								/* TODO: join cond umdrehen bei autom. gen. stmts in cons. codecomp + query builder, "join A -> A.* = B.*)
+								  ColMapping verwenden
+								*/
+								// TODO: Desktop -> QueryBuilder scheint left joins auszulassen, wenn tab rechts leer ist. Sollte nicht so sein.
+								// TODO: Desktop, "DML -> insert new row" scheint nicht zu funktionieren
 								net.sf.jailer.datamodel.Column rightColumn = getColumn(right);
 								if (rightColumn != null) {
 									equations.add(new Equation(leftColumn, rightColumn, false));
