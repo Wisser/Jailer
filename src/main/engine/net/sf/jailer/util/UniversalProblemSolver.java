@@ -20,7 +20,7 @@ package net.sf.jailer.util;
  * 
  * @author Ralf Wisser
  */
-public class UniveralProblemSolver {
+public class UniversalProblemSolver {
 	
 	/**
 	 * Solves all the problems of the world.
