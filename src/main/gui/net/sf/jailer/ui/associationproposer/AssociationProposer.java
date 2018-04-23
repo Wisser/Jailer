@@ -525,8 +525,16 @@ public class AssociationProposer {
 										}
 									}
 									if (!sameTable) {
-										Equation e1 = new Equation(leftColumn, rightColumn, false);
-										Equation e2 = new Equation(rightColumn, leftColumn, false);
+										if (leftAlias == null) {
+											leftAlias = columnToTable.get(leftColumn).getUnqualifiedName();
+										}
+										if (rightAlias == null) {
+											rightAlias = columnToTable.get(rightColumn).getUnqualifiedName();
+										}
+										leftAlias = Quoting.staticUnquote(leftAlias.toUpperCase(Locale.ENGLISH));
+										rightAlias = Quoting.staticUnquote(rightAlias.toUpperCase(Locale.ENGLISH));
+										Equation e1 = new Equation(leftAlias, leftColumn, rightAlias, rightColumn, false);
+										Equation e2 = new Equation(rightAlias, rightColumn, leftAlias, leftColumn, false);
 										e1.reversal = e2;
 										e2.reversal = e1;
 										equations.add(e1);
@@ -552,29 +560,31 @@ public class AssociationProposer {
 						tableCandidat.addAll(scopes.get(i).aliasToTable.values());
 					}
 					for (String tn: tableCandidat) {
-						int iDot = tn.indexOf('.');
-						String tnSchema;
-						String tnName;
-						if (iDot >= 0) {
-							tnSchema = tn.substring(0, iDot);
-							tnName = tn.substring(iDot + 1);
-						} else {
-							tnSchema = "";
-							tnName = tn;
-						}
-						for (net.sf.jailer.datamodel.Table table: dataModel.getTables()) {
-							String schema = Quoting.staticUnquote(table.getSchema("").toUpperCase(Locale.ENGLISH));
-							String uName = Quoting.staticUnquote(table.getUnqualifiedName().toUpperCase(Locale.ENGLISH));
-							if (uName.equals(tnName)) {
-								if (!withSchema || schema.equals(tnSchema)) {
-									String uqColName = Quoting.staticUnquote(column.getColumnName());
-									for (net.sf.jailer.datamodel.Column dColumn: table.getColumns()) {
-										if (Quoting.staticUnquote(dColumn.name).equalsIgnoreCase(uqColName)) {
-											columnToTable.put(dColumn, table);
-											return dColumn;
+						if (tn != null) {
+							int iDot = tn.indexOf('.');
+							String tnSchema;
+							String tnName;
+							if (iDot >= 0) {
+								tnSchema = tn.substring(0, iDot);
+								tnName = tn.substring(iDot + 1);
+							} else {
+								tnSchema = "";
+								tnName = tn;
+							}
+							for (net.sf.jailer.datamodel.Table table: dataModel.getTables()) {
+								String schema = Quoting.staticUnquote(table.getSchema("").toUpperCase(Locale.ENGLISH));
+								String uName = Quoting.staticUnquote(table.getUnqualifiedName().toUpperCase(Locale.ENGLISH));
+								if (uName.equals(tnName)) {
+									if (!withSchema || schema.equals(tnSchema)) {
+										String uqColName = Quoting.staticUnquote(column.getColumnName());
+										for (net.sf.jailer.datamodel.Column dColumn: table.getColumns()) {
+											if (Quoting.staticUnquote(dColumn.name).equalsIgnoreCase(uqColName)) {
+												columnToTable.put(dColumn, table);
+												return dColumn;
+											}
 										}
+										break;
 									}
-									break;
 								}
 							}
 						}
@@ -586,12 +596,16 @@ public class AssociationProposer {
 	}
 
 	private static class Equation {
+		public final String aliasA;
 		public final net.sf.jailer.datamodel.Column a;
+		public final String aliasB;
 		public final net.sf.jailer.datamodel.Column b;
 		public final boolean isTransient;
 		public Equation reversal;
 		
-		public Equation(net.sf.jailer.datamodel.Column a, net.sf.jailer.datamodel.Column b, boolean isTransient) {
+		public Equation(String aliasA, net.sf.jailer.datamodel.Column a, String aliasB, net.sf.jailer.datamodel.Column b, boolean isTransient) {
+			this.aliasA = aliasA;
+			this.aliasB = aliasB;
 			this.a = a;
 			this.b = b;
 			this.isTransient = isTransient;
@@ -633,8 +647,10 @@ public class AssociationProposer {
 		}
 
 		public Equation join(Equation other) {
-			if (b == other.a && a != other.b) {
-				return new Equation(a, other.b, true);
+			if (b == other.a && aliasB.equals(other.aliasA)) {
+				if (!(a == other.b && aliasA.equals(other.aliasB))) {
+					return new Equation(aliasA, a, other.aliasB, other.b, true);
+				}
 			}
 			return null;
 		}
@@ -678,12 +694,23 @@ public class AssociationProposer {
 			}
 		}
 		for (Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table> pair: pairs) {
-			boolean hasNonTransientEquation = false;
-			StringBuilder sb = new StringBuilder();
-			Set<Equation> seen = new HashSet<Equation>();
+			List<Equation> theEquations = new ArrayList<Equation>();
+			Set<Pair<String, String>> aliasesPairs = new HashSet<Pair<String, String>>();
 			for (Equation e: sortedEquations) {
 				if (columnToTable.get(e.a) == pair.a) {
 					if (columnToTable.get(e.b) == pair.b) {
+						theEquations.add(e);
+						aliasesPairs.add(new Pair<String, String>(e.aliasA, e.aliasB));
+					}
+				}
+			}
+			
+			for (Pair<String, String> aliasesPair: aliasesPairs) {
+				boolean hasNonTransientEquation = false;
+				StringBuilder sb = new StringBuilder();
+				Set<Equation> seen = new HashSet<Equation>();
+				for (Equation e: theEquations) {
+					if (e.aliasA.equals(aliasesPair.a) && e.aliasB.equals(aliasesPair.b)) {
 						if (e.reversal == null || !seen.contains(e.reversal)) {
 							seen.add(e);
 							if (!e.isTransient) {
@@ -692,19 +719,19 @@ public class AssociationProposer {
 							if (sb.length() > 0) {
 								sb.append(" and \n");
 							}
-							sb.append("A." + e.a.name + " = B." + e.b.name);
+							sb.append("A." + e.a.name + "=B." + e.b.name);
 						}
 					}
 				}
-			}
-			if (hasNonTransientEquation) {
-				String name = ("AP" + (UUID.randomUUID().toString()));
-				Association association = new Association(pair.a, pair.b, false, false, sb.toString(), dataModel, false, null, "Association Proposer");
-				Association revAssociation = new Association(pair.b, pair.a, false, false, sb.toString(), dataModel, true, null, "Association Proposer");
-				association.setName(name);
-				association.reversalAssociation = revAssociation;
-				revAssociation.reversalAssociation = association;
-				addAssociation(name, pair, association, true);
+				if (hasNonTransientEquation) {
+					String name = ("AP" + (UUID.randomUUID().toString()));
+					Association association = new Association(pair.a, pair.b, false, false, sb.toString(), dataModel, false, null, "Association Proposer");
+					Association revAssociation = new Association(pair.b, pair.a, false, false, sb.toString(), dataModel, true, null, "Association Proposer");
+					association.setName(name);
+					association.reversalAssociation = revAssociation;
+					revAssociation.reversalAssociation = association;
+					addAssociation(name, pair, association, true);
+				}
 			}
 		}
 	}

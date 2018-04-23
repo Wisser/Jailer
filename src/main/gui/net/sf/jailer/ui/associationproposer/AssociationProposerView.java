@@ -17,6 +17,7 @@ package net.sf.jailer.ui.associationproposer;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.TextArea;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -78,7 +79,12 @@ import net.sf.jailer.util.Quoting;
 public class AssociationProposerView extends javax.swing.JPanel {
 
 	
-	// TODO: Docu Label mit Infos, was ein SQL Script ist
+	// TODO: beifehöer in analyse, except. mit Zeilennummer zeigen (UIUtil.
+	// TODO: vor mischen nochmal nach Duplikaten suchen (neu + alt)
+	// TODO: Data Model Editor: assoc editor wie hier
+	// TODO: Assoc Mapping muss 1:1 sein (testen: filter + deferring fk insertion)
+	// TODO: prüfen: scalare subq statt join (mehrfach)
+	// TODO: assocpropview: wenn keine pobs oder know aber proplems, dann initial problems tab selectieren 
 
 	private int numErrors;
 	private RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
@@ -109,6 +115,10 @@ public class AssociationProposerView extends javax.swing.JPanel {
 				applyButtonActionPerformed(null);
 			}
 		};
+		
+		Font infoFont = jinfoLabe.getFont();
+		jinfoLabe.setFont(new Font(infoFont.getName(), infoFont.getStyle(), (int) (infoFont.getSize() * 1.2)));
+	
 		if (dataModel != null) {
 			try {
 				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
@@ -260,6 +270,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
     private void updateConditionEditorState() {
 		int i = proposalTable.getSelectedRow();
 		if (i >= 0) {
+			i = proposalTable.getRowSorter().convertRowIndexToModel(i);
 			editorPane.setText(String.valueOf(proposalsModel.getValueAt(i, 3)));
 			editorPane.setCaretPosition(0);
 			editorPane.setEnabled(true);
@@ -287,6 +298,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
     	int i = proposalTable.getSelectedRow();
 		if (i >= 0) {
+			i = proposalTable.getRowSorter().convertRowIndexToModel(i);
 			proposalsModel.setValueAt(editorPane.getText(), i, 3);
 			applyButton.setEnabled(false);
 		}
@@ -382,6 +394,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
 								addResult(1000L, associationProposer.pickUpNewAssociations(), associationProposer.pickUpKnownAssociations(), null);
 								jProgressBar1.setValue(1000);
 								loadButton.setEnabled(true);
+								acceptButton.grabFocus();
 							}
 						});
 					} catch (Throwable e) {
@@ -401,10 +414,10 @@ public class AssociationProposerView extends javax.swing.JPanel {
 			UIUtil.showException(this, "Error", e);
 		}
 	}
-    
+
     private List<Association> newAssociations = new ArrayList<Association>();
     private final int MAX_ERRORS = 1000;
-    
+
     private void addResult(final long progess, final List<Association> associations, final List<Association> knownAssociations, final String error) {
     	SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -476,7 +489,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         loadButton = new javax.swing.JButton();
         emptyLineCheckBox = new javax.swing.JCheckBox();
         dummyLabel1 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        jinfoLabe = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
 
         setLayout(new java.awt.GridBagLayout());
@@ -567,6 +580,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         jPanel4.add(deselectAllButton, gridBagConstraints);
 
         acceptButton.setText("Accept selected proposals");
+        acceptButton.setToolTipText("Merge the selected proposals into the Data Model.");
         acceptButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 acceptButtonActionPerformed(evt);
@@ -680,6 +694,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         tabbedPane.getAccessibleContext().setAccessibleDescription("");
 
         loadButton.setText("Load and Analyze SQL Script");
+        loadButton.setToolTipText("<html>A SQL Script is a text file that contains SQL-statements. <br>\nEach statement is terminated by a ';' character.<br>\nEmpty lines may or may not separate statements.");
         loadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadButtonActionPerformed(evt);
@@ -710,14 +725,14 @@ public class AssociationProposerView extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(dummyLabel1, gridBagConstraints);
 
-        jLabel5.setText("Analyzes SQL statements and proposes association definitions.");
+        jinfoLabe.setText("Analyzes SQL statements and proposes association definitions.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        jPanel1.add(jLabel5, gridBagConstraints);
+        jPanel1.add(jinfoLabe, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -776,7 +791,6 @@ public class AssociationProposerView extends javax.swing.JPanel {
     private javax.swing.JButton deselectAllButton;
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JCheckBox emptyLineCheckBox;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -786,6 +800,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel jinfoLabe;
     private javax.swing.JPanel knownPanel;
     private javax.swing.JTable knownTable;
     private javax.swing.JButton loadButton;
@@ -833,7 +848,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
 				comp = table.getCellRenderer(line, i).getTableCellRendererComponent(table, dtm.getValueAt(line, i), false, false, line, i);
 				width = Math.max(width, comp.getPreferredSize().width);
 			}
-			column.setPreferredWidth(Math.min(width, 500));
+			column.setPreferredWidth(Math.min(width, 400));
 			if (i == 0 && fixFirstColumn) {
 				column.setWidth(column.getPreferredWidth());
 			}

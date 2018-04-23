@@ -395,6 +395,52 @@ public class SqlUtil {
 		return s;
 	}
 
+	public static String normalizeRestrictionCondition(String cond) {
+		String[] equations = cond.replaceAll("\\(|\\)", " ").trim()
+				.split("\\s*\\b(a|A)(n|N)(d|D)\\b\\s*");
+		StringBuilder sb = new StringBuilder();
+		for (String equation: equations) {
+			String hs[] = equation.split("\\s*=\\s*");
+			if (hs.length != 2) {
+				return cond;
+			}
+			String lhs[] = hs[0].split("\\s*\\.\\s*");
+			String rhs[] = hs[1].split("\\s*\\.\\s*");
+			if (lhs.length != 2 || rhs.length != 2 || lhs[0].length() != 1 || rhs[0].length() != 1) {
+				return cond;
+			}
+			String dColumn = null, sColumn = null;
+			boolean swap = false;
+			if ("A".equalsIgnoreCase(lhs[0])) {
+				sColumn = lhs[1];
+				swap = true;
+			}
+			if ("B".equalsIgnoreCase(lhs[0])) {
+				dColumn = lhs[1];
+			}
+			if ("A".equalsIgnoreCase(rhs[0])) {
+				sColumn = rhs[1];
+			}
+			if ("B".equalsIgnoreCase(rhs[0])) {
+				dColumn = rhs[1];
+			}
+			if (sColumn == null || dColumn == null) {
+				return cond;
+			}
+
+			if (sb.length() > 0) {
+				sb.append(" and ");
+			}
+			if (swap) {
+				sb.append("B." + dColumn + "=" + "A." + sColumn);
+			} else {
+				sb.append("A." + sColumn + "=" + "B." + dColumn);
+			}
+		}
+
+		return sb.toString();
+	}
+
 	/**
 	 * Maps SQL types from {@link java.sql.Types} to clear text types.
 	 */

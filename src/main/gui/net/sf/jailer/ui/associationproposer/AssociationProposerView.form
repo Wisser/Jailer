@@ -166,6 +166,7 @@
                             <Component class="javax.swing.JButton" name="acceptButton">
                               <Properties>
                                 <Property name="text" type="java.lang.String" value="Accept selected proposals"/>
+                                <Property name="toolTipText" type="java.lang.String" value="Merge the selected proposals into the Data Model."/>
                               </Properties>
                               <Events>
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="acceptButtonActionPerformed"/>
@@ -293,6 +294,7 @@
         <Component class="javax.swing.JButton" name="loadButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Load and Analyze SQL Script"/>
+            <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;A SQL Script is a text file that contains SQL-statements. &lt;br&gt;&#xa;Each statement is terminated by a &apos;;&apos; character.&lt;br&gt;&#xa;Empty lines may or may not separate statements."/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadButtonActionPerformed"/>
@@ -327,7 +329,7 @@
             </Constraint>
           </Constraints>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel5">
+        <Component class="javax.swing.JLabel" name="jinfoLabe">
           <Properties>
             <Property name="text" type="java.lang.String" value="Analyzes SQL statements and proposes association definitions."/>
           </Properties>
