@@ -901,6 +901,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 					gutter.removeAllTrackingIcons();
 					try {
 						boolean el = false;
+						boolean useIconSet2 = true;
 						if (loc.a != loc.b || !getText(loc.a, loc.b, true).trim().isEmpty()) {
 							for (int l = loc.a; l <= loc.b; ++l) {
 								if (eosLines.contains(-l - 1)) {
@@ -913,6 +914,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 								boolean end = l == loc.b || eosLines.contains(l);
 								el = false;
 								if (beginn) {
+									useIconSet2 = !useIconSet2;
 									theIcon = end? iconBeginEnd : iconBegin;
 								} else if (end) {
 									theIcon = iconEnd;
@@ -931,6 +933,19 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 									}
 									if (theIcon == iconEnd) {
 										theIcon = iconEndf;
+									}
+								} else if (useIconSet2) {
+									if (theIcon == icon) {
+										theIcon = icon2;
+									}
+									if (theIcon == iconBegin) {
+										theIcon = iconBegin2;
+									}
+									if (theIcon == iconBeginEnd) {
+										theIcon = iconBeginEnd2;
+									}
+									if (theIcon == iconEnd) {
+										theIcon = iconEnd2;
 									}
 								}
 								gutter.addLineTrackingIcon(l, theIcon);
@@ -1089,6 +1104,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	    	    iconBeginf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginf.png")));
 				iconBeginEndf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginendf.png")));
 				iconEndf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleendf.png")));
+				icon2 = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsole2.png")));
+	    	    iconBegin2 = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin2.png")));
+				iconBeginEnd2 = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend2.png")));
+				iconEnd2 = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleend2.png")));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1102,6 +1121,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	private ImageIcon iconBegin;
 	private ImageIcon iconBeginEnd;
 	private ImageIcon iconEnd;
+	private ImageIcon icon2;
+	private ImageIcon iconBegin2;
+	private ImageIcon iconBeginEnd2;
+	private ImageIcon iconEnd2;
 	private ImageIcon iconf;
 	private ImageIcon iconBeginf;
 	private ImageIcon iconBeginEndf;

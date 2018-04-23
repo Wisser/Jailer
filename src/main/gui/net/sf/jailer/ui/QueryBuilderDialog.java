@@ -1058,7 +1058,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				String jc;
 				if (!r.association.reversed) {
 					jc = SqlUtil.replaceAliases(
-							r.association.getUnrestrictedJoinCondition(),
+							SqlUtil.normalizeRestrictionCondition(r.association.getUnrestrictedJoinCondition()),
 							lastAlias, alias);
 				} else {
 					jc = SqlUtil.replaceAliases(

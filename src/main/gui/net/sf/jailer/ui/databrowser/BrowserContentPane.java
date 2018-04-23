@@ -431,7 +431,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected Set<Pair<BrowserContentPane, String>> currentClosureRowIDs;
 	private DetailsView singleRowDetailsView;
 	private int initialRowHeight;
-	public SQLBrowserContentPane sqlBrowserContentPane;
 
 	private boolean suppressReload;
 
@@ -1501,11 +1500,35 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		popup.add(sqlDml);
 		JMenuItem insertNewRow = new JMenuItem("Insert New Row");
 		sqlDml.add(insertNewRow);
+		Row parent = null;
+		if (association.isInsertSourceBeforeDestination()) {
+			if (parentrow != null) {
+				parent = parentrow;
+			} else {
+				RowBrowser parentRowBrowser = getParentBrowser();
+				if (parentRowBrowser != null && parentRowBrowser.browserContentPane != null) {
+					BrowserContentPane parentContentPane = parentRowBrowser.browserContentPane;
+					if (parentContentPane.rows != null) {
+						if (parentContentPane.rows.size() == 1) {
+							parent = parentContentPane.rows.get(0);
+						} else {
+							if (parentContentPane.highlightedRows != null && parentContentPane.highlightedRows.size() == 1) {
+								int i = parentContentPane.highlightedRows.iterator().next();
+								if (i >= 0 && i < parentContentPane.rows.size()) {
+									parent = parentContentPane.rows.get(i);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		final String tableName = dataModel.getDisplayName(table);
+		final Row fParent = parent;
 		insertNewRow.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Insert New Row Into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, createNewRow(parentrow, table), true, session));
+				openSQLDialog("Insert New Row Into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, createNewRow(fParent, table), true, session));
 			}
 		});
 		JMenuItem insert = new JMenuItem("Inserts");
@@ -2296,7 +2319,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (statementForReloading != null) {
 				reloadJob = new LoadJob(limit, statementForReloading, false);
 			} else {
-				reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? sqlBrowserContentPane.sqlEditorPane.getText() : getAndConditionText(), selectDistinctCheckBox.isSelected());
+				reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? "" : getAndConditionText(), selectDistinctCheckBox.isSelected());
 			}
 			synchronized (this) {
 				currentLoadJob = reloadJob;
@@ -3388,11 +3411,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		selectDistinctCheckBox.setVisible(nndr > 0);
 		selectDistinctCheckBox.setText("select distinct (-" + nndr + " row" + (nndr == 1? "" : "s") + ")");
-		
-		if (sqlBrowserContentPane != null) {
-			sqlBrowserContentPane.detailsButton.setEnabled(!rows.isEmpty());
-		}
-		
+
 		if (isTableFilterEnabled && !noFilter) {
 			if (filterHeader == null) {
 				filterHeader = new TableFilterHeader();

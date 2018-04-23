@@ -331,6 +331,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                 String cond = a.getUnrestrictedJoinCondition();
                                 if (a.reversed) {
                                     cond = SqlUtil.reversRestrictionCondition(cond);
+                                } else {
+                                    cond = SqlUtil.normalizeRestrictionCondition(cond);
                                 }
                                 cond = SqlUtil.replaceAliases(cond, matcher.group(1), matcher.group(2));
                                 Color color = null;
@@ -373,6 +375,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                         String cond = a.getUnrestrictedJoinCondition();
                                         if (a.reversed) {
                                             cond = SqlUtil.reversRestrictionCondition(cond);
+                                        } else {
+                                            cond = SqlUtil.normalizeRestrictionCondition(cond);
                                         }
                                         cond = SqlUtil.replaceAliases(cond, matcher.group(1), getTableName(dest));
                                         Color color = null;

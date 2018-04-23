@@ -510,19 +510,28 @@ public class AssociationProposer {
 
 							net.sf.jailer.datamodel.Column leftColumn = getColumn(left);
 							if (leftColumn != null) {
-								// TODO: nicht, wenn aliase gleich  bei reflex nixht beide
-								// TODO: equalsIgnoreQuoting
-								// TODO: new line nach ; bei QBuilder statements
-								// TODO: tracking icons bei statement border anzeige alternierend hell/dunkel grün
-								/* TODO: join cond umdrehen bei autom. gen. stmts in cons. codecomp + query builder, "join A -> A.* = B.*)
-								  ColMapping verwenden
-								*/
-								// TODO: Desktop -> QueryBuilder scheint left joins auszulassen, wenn tab rechts leer ist. Sollte nicht so sein.
-								// TODO: Desktop, "DML -> insert new row" scheint nicht zu funktionieren
 								net.sf.jailer.datamodel.Column rightColumn = getColumn(right);
 								if (rightColumn != null) {
-									equations.add(new Equation(leftColumn, rightColumn, false));
-									equations.add(new Equation(rightColumn, leftColumn, false));
+									boolean sameTable = false;
+									String leftAlias = ((Column) leftExpression).getTable().getName();
+									String rightAlias = ((Column) rightExpression).getTable().getName();
+									if (leftAlias != null && rightAlias != null) {
+										if (Quoting.equalsIgnoreQuotingAndCase(leftAlias, rightAlias)) {
+											sameTable = true;
+										}
+									} else {
+										if (columnToTable.get(leftColumn) == columnToTable.get(rightColumn)) {
+											sameTable = true;
+										}
+									}
+									if (!sameTable) {
+										Equation e1 = new Equation(leftColumn, rightColumn, false);
+										Equation e2 = new Equation(rightColumn, leftColumn, false);
+										e1.reversal = e2;
+										e2.reversal = e1;
+										equations.add(e1);
+										equations.add(e2);
+									}
 								}								
 							}
 						}
@@ -533,35 +542,39 @@ public class AssociationProposer {
 
 		private net.sf.jailer.datamodel.Column getColumn(Column column) {
 			String alias = column.getTable().getName();
-			if (alias != null) {
-				for (boolean withSchema: new boolean[] { true, false }) {
-					for (int i = scopes.size() - 1; i >= 0; --i) {
-						String tn = scopes.get(i).aliasToTable.get(Quoting.staticUnquote(alias.toUpperCase(Locale.ENGLISH)));
-						if (tn != null) {
-							int iDot = tn.indexOf('.');
-							String tnSchema;
-							String tnName;
-							if (iDot >= 0) {
-								tnSchema = tn.substring(0, iDot);
-								tnName = tn.substring(iDot + 1);
-							} else {
-								tnSchema = "";
-								tnName = tn;
-							}
-							for (net.sf.jailer.datamodel.Table table: dataModel.getTables()) {
-								String schema = Quoting.staticUnquote(table.getSchema("").toUpperCase(Locale.ENGLISH));
-								String uName = Quoting.staticUnquote(table.getUnqualifiedName().toUpperCase(Locale.ENGLISH));
-								if (uName.equals(tnName)) {
-									if (!withSchema || schema.equals(tnSchema)) {
-										String uqColName = Quoting.staticUnquote(column.getColumnName());
-										for (net.sf.jailer.datamodel.Column dColumn: table.getColumns()) {
-											if (Quoting.staticUnquote(dColumn.name).equalsIgnoreCase(uqColName)) {
-												columnToTable.put(dColumn, table);
-												return dColumn;
-											}
+			Set<String> tableCandidat = new HashSet<String>();
+			for (boolean withSchema: new boolean[] { true, false }) {
+				for (int i = scopes.size() - 1; i >= 0; --i) {
+					tableCandidat.clear();
+					if (alias != null) {
+						tableCandidat.add(scopes.get(i).aliasToTable.get(Quoting.staticUnquote(alias.toUpperCase(Locale.ENGLISH))));
+					} else {
+						tableCandidat.addAll(scopes.get(i).aliasToTable.values());
+					}
+					for (String tn: tableCandidat) {
+						int iDot = tn.indexOf('.');
+						String tnSchema;
+						String tnName;
+						if (iDot >= 0) {
+							tnSchema = tn.substring(0, iDot);
+							tnName = tn.substring(iDot + 1);
+						} else {
+							tnSchema = "";
+							tnName = tn;
+						}
+						for (net.sf.jailer.datamodel.Table table: dataModel.getTables()) {
+							String schema = Quoting.staticUnquote(table.getSchema("").toUpperCase(Locale.ENGLISH));
+							String uName = Quoting.staticUnquote(table.getUnqualifiedName().toUpperCase(Locale.ENGLISH));
+							if (uName.equals(tnName)) {
+								if (!withSchema || schema.equals(tnSchema)) {
+									String uqColName = Quoting.staticUnquote(column.getColumnName());
+									for (net.sf.jailer.datamodel.Column dColumn: table.getColumns()) {
+										if (Quoting.staticUnquote(dColumn.name).equalsIgnoreCase(uqColName)) {
+											columnToTable.put(dColumn, table);
+											return dColumn;
 										}
-										return null;
 									}
+									break;
 								}
 							}
 						}
@@ -576,6 +589,7 @@ public class AssociationProposer {
 		public final net.sf.jailer.datamodel.Column a;
 		public final net.sf.jailer.datamodel.Column b;
 		public final boolean isTransient;
+		public Equation reversal;
 		
 		public Equation(net.sf.jailer.datamodel.Column a, net.sf.jailer.datamodel.Column b, boolean isTransient) {
 			this.a = a;
@@ -666,16 +680,20 @@ public class AssociationProposer {
 		for (Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table> pair: pairs) {
 			boolean hasNonTransientEquation = false;
 			StringBuilder sb = new StringBuilder();
+			Set<Equation> seen = new HashSet<Equation>();
 			for (Equation e: sortedEquations) {
 				if (columnToTable.get(e.a) == pair.a) {
 					if (columnToTable.get(e.b) == pair.b) {
-						if (!e.isTransient) {
-							hasNonTransientEquation = true;
+						if (e.reversal == null || !seen.contains(e.reversal)) {
+							seen.add(e);
+							if (!e.isTransient) {
+								hasNonTransientEquation = true;
+							}
+							if (sb.length() > 0) {
+								sb.append(" and \n");
+							}
+							sb.append("A." + e.a.name + " = B." + e.b.name);
 						}
-						if (sb.length() > 0) {
-							sb.append(" and \n");
-						}
-						sb.append("A." + e.a.name + " = B." + e.b.name);
 					}
 				}
 			}

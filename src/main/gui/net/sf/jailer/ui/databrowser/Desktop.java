@@ -193,7 +193,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// addTableBrowser(null, null, 0, null, null, queryBuilderDialog.getSQL(), null, null, true);
-				getSqlConsole(true).appendStatement(queryBuilderDialog.getSQL(), true);
+				getSqlConsole(true).appendStatement(queryBuilderDialog.getSQL() + "\n;", true);
 				queryBuilderDialog.setVisible(false);
 			}
 		});
@@ -881,18 +881,7 @@ public abstract class Desktop extends JDesktopPane {
 		} catch (PropertyVetoException e1) {
 			// ignore
 		}
-		if (browserContentPane.sqlBrowserContentPane != null) {
-			if (this.layoutMode == LayoutMode.THUMBNAIL || this.layoutMode == LayoutMode.TINY) {
-				try {
-					jInternalFrame.setMaximum(true);
-				} catch (PropertyVetoException e1) {
-					// ignore
-				}
-			}
-			browserContentPane.sqlBrowserContentPane.sqlEditorPane.grabFocus();
-		} else {
-			browserContentPane.andCondition.grabFocus();
-		}
+		browserContentPane.andCondition.grabFocus();
 		updateMenu();
 		return tableBrowser;
 	}
@@ -2375,9 +2364,7 @@ public abstract class Desktop extends JDesktopPane {
 			csv += rb.internalFrame.getSize().width + "; " + rb.internalFrame.getSize().height + "; ";
 			csv += rb.browserContentPane.limitBox.getSelectedItem() + "; " + rb.browserContentPane.selectDistinctCheckBox.isSelected() + "; ";
 
-			if (rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable) {
-				csv += "Q; " + CsvFile.encodeCell(rb.browserContentPane.sqlBrowserContentPane.sqlEditorPane.getText()) + "; ";
-			} else {
+			if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
 				csv += "T; " + CsvFile.encodeCell(rb.browserContentPane.table.getName()) + "; "
 						+ (rb.association == null ? "" : CsvFile.encodeCell(rb.association.getName())) + "; ";
 			}
