@@ -573,7 +573,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         mainPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
+        closeButton = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         newButton = new javax.swing.JButton();
@@ -593,11 +593,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jButton2.setText(" Cancel ");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+        closeButton.setText(" Cancel ");
+        closeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -606,12 +605,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
-        jPanel2.add(jButton2, gridBagConstraints);
+        jPanel2.add(closeButton, gridBagConstraints);
 
         jButton1.setText(" Connect ");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
@@ -636,8 +634,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         newButton.setText(" New ");
         newButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newButtonActionPerformed(evt);
             }
         });
@@ -650,8 +647,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         editButton.setText(" Edit ");
         editButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
             }
         });
@@ -664,8 +660,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         copy.setText(" Copy ");
         copy.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 copyActionPerformed(evt);
             }
         });
@@ -678,8 +673,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         deleteButton.setText(" Delete ");
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
             }
         });
@@ -860,10 +854,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}//GEN-LAST:event_editButtonActionPerformed
 
-	private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+	private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
 		isConnected = false;
 		setVisible(false);
-	}//GEN-LAST:event_jButton2ActionPerformed
+	}//GEN-LAST:event_closeButtonActionPerformed
 
 	/**
 	 * Opens detail editor for a connection.
@@ -1033,13 +1027,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    javax.swing.JButton closeButton;
     private javax.swing.JTable connectionsTable;
     private javax.swing.JButton copy;
     private javax.swing.JButton deleteButton;
     private javax.swing.JButton editButton;
     private javax.swing.JLabel infoBarLabel;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;

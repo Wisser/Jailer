@@ -79,12 +79,7 @@ import net.sf.jailer.util.Quoting;
 public class AssociationProposerView extends javax.swing.JPanel {
 
 	
-	// TODO: beifehöer in analyse, except. mit Zeilennummer zeigen (UIUtil.
-	// TODO: vor mischen nochmal nach Duplikaten suchen (neu + alt)
 	// TODO: Data Model Editor: assoc editor wie hier
-	// TODO: Assoc Mapping muss 1:1 sein (testen: filter + deferring fk insertion)
-	// TODO: prüfen: scalare subq statt join (mehrfach)
-	// TODO: assocpropview: wenn keine pobs oder know aber proplems, dann initial problems tab selectieren 
 
 	private int numErrors;
 	private RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
@@ -347,6 +342,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
+					int lineNr = 0;
 					try {
 						FileInputStream inputStream = new FileInputStream(file);
 						long fileSize = Math.max(file.length(), 1);
@@ -354,10 +350,9 @@ public class AssociationProposerView extends javax.swing.JPanel {
 					    SQLPlusSupport sqlPlusSupport = new SQLPlusSupport();
 
 						String line = null;
-						StringBuffer currentStatement = new StringBuffer();
 						long bytesRead = 0;
 						LineReader lineReader = new LineReader(bufferedReader);
-						int lineNr = 0;
+						final StringBuffer currentStatement = new StringBuffer();
 						while ((line = lineReader.readLine()) != null) {
 							++lineNr;
 							bytesRead += line.length() + 1;
@@ -381,7 +376,6 @@ public class AssociationProposerView extends javax.swing.JPanel {
 										addResult(bytesRead * 1000L / fileSize, null, null, associationProposer.analyze(stmt, lineNr));
 									}
 								}
-								
 								currentStatement.setLength(0);
 							} else {
 								currentStatement.append(line + " \n");
@@ -399,10 +393,11 @@ public class AssociationProposerView extends javax.swing.JPanel {
 						});
 					} catch (Throwable e) {
 						final Throwable fe = e;
+						final String title = "Error in file \"" + file.getName() + "\" at line " + lineNr;
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
-								UIUtil.showException(AssociationProposerView.this, "Error", fe);
+								UIUtil.showException(AssociationProposerView.this, title, fe, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 								loadButton.setEnabled(true);
 							}
 						});
@@ -446,6 +441,9 @@ public class AssociationProposerView extends javax.swing.JPanel {
 					statusLabel.setVisible(true);
 					statusLabel.setText(proposalsModel.getRowCount() + " Proposals, " + knownModel.getRowCount() + " already known associations, " + numErrors + " Problems");
 					adjustTableColumnsWidth();
+					if (proposalsModel.getRowCount() == 0 && knownModel.getRowCount() == 0 && numErrors > 0) {
+						tabbedPane.setSelectedComponent(problemTabPanel);
+					}
 				}
 				
 		    	jProgressBar1.setValue((int) progess);

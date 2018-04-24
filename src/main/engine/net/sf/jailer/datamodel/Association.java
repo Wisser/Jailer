@@ -18,7 +18,9 @@ package net.sf.jailer.datamodel;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.SqlUtil;
@@ -482,6 +484,7 @@ public class Association extends ModelElement {
 		String[] equations = getUnrestrictedJoinCondition().replaceAll("\\(|\\)", " ").trim()
 				.split("\\s*\\b(a|A)(n|N)(d|D)\\b\\s*");
 		Map<Column, Column> mapping = new HashMap<Column, Column>();
+		Set<Column> destinationColumns = new HashSet<Column>();
 		for (String equation: equations) {
 			String hs[] = equation.split("\\s*=\\s*");
 			if (hs.length != 2) {
@@ -533,7 +536,13 @@ public class Association extends ModelElement {
 				return Collections.emptyMap();
 			}
 
-			mapping.put(sourceColumn, destinationColumn);
+			if (mapping.put(sourceColumn, destinationColumn) != null) {
+				return Collections.emptyMap();
+			}
+			
+			if (!destinationColumns.add(destinationColumn)) {
+				return Collections.emptyMap();
+			}
 		}
 
 		return mapping;

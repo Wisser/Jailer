@@ -20,6 +20,8 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -296,6 +298,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				}
 			}
 		};
+		dbConnectionDialog.closeButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				close();
+			}
+		});
 		connectionDialogPanel.removeAll();
 		connectionDialogPanel.add(dbConnectionDialog.mainPanel);
 	}
@@ -767,10 +775,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}
 
 	private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+		close();
+	}//GEN-LAST:event_jButton2ActionPerformed
+
+	private void close() {
 		hasSelectedModel = false;
 		setVisible(false);
 		dispose();
-	}//GEN-LAST:event_jButton2ActionPerformed
+	}
 
 	private void analyzeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyzeButtonActionPerformed
 		activateCurrentModel();

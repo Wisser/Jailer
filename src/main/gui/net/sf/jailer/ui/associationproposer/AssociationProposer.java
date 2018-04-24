@@ -340,11 +340,6 @@ public class AssociationProposer {
 		@Override
 		public void visit(PlainSelect plainSelect) {
 			scopes.push(new Scope());
-			if (plainSelect.getSelectItems() != null) {
-				for (SelectItem item: plainSelect.getSelectItems()) {
-					item.accept(this);
-				}
-			}
 			
 			FromItemVisitor fromItemVisitor = new FromItemVisitor() {
 				@Override
@@ -419,6 +414,13 @@ public class AssociationProposer {
 			for (Expression expr: scopes.peek().expressions) {
 				expr.accept(this);
 			}
+
+			if (plainSelect.getSelectItems() != null) {
+				for (SelectItem item: plainSelect.getSelectItems()) {
+					item.accept(this);
+				}
+			}
+
 			analyseTopScope();
 			scopes.pop();
 		}

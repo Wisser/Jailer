@@ -1,3 +1,6 @@
+7.8
+   - Improved render quality on high resolution screens.
+
 7.7.3
   - incremental SQL formatting.
   - Minor GUI Improvements and bug fixes.
