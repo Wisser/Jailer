@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.Component;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -24,11 +25,14 @@ import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.util.CsvFile.Line;
 
 /**
@@ -447,6 +451,69 @@ public class AssociationEditor extends javax.swing.JDialog {
 	private net.sf.jailer.ui.JComboBox source;
 	private net.sf.jailer.ui.JComboBox type;
 	// Ende der Variablendeklaration//GEN-END:variables
+
+	private class CompletionProvider extends SQLCompletionProvider<String, String, String> {
+
+		public CompletionProvider(Session session, String metaDataSource) throws SQLException {
+			super(session, metaDataSource);
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		protected List<String> getColumns(String table, long timeOut, JComponent waitCursorSubject) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		protected String getDefaultSchema(String metaDataSource) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		protected String findSchema(String metaDataSource, String name) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		protected String findTable(String schema, String name) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		protected String getTableName(String table) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		protected List<String> getTables(String schema) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		protected String getSchemaName(String schema) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		protected List<String> getSchemas(String metaDataSource) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		protected List<Association> getAssociations(String source, String destination) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+	}
 	
 	private static final long serialVersionUID = 603961628104674406L;
 }

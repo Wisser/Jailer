@@ -37,14 +37,19 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
@@ -268,10 +273,10 @@ public class DataModelEditor extends javax.swing.JDialog {
 			}
 		});
 		
-		UIUtil.wireComponentWithButton(tablesList, editTable);
-		UIUtil.wireComponentWithButton(associationsList, editAssociation);
+		UIUtil.wireComponentWithButton(tablesTable, editTable);
+		UIUtil.wireComponentWithButton(associationsTable, editAssociation);
 		
-		setSize(900, 700);
+		setSize(1000, 700);
 		setLocation(100, 32);
 
 		File modelFinderColumnFile = new File(ModelBuilder.getModelBuilderColumnsFilename(executionContext));
@@ -294,17 +299,19 @@ public class DataModelEditor extends javax.swing.JDialog {
 		info.setVisible(merge);
 		updateButtons();
 		
-		final Color BG_COLOR = new Color(0.8f, 1.0f, 0.6f);
-		final Color BG_SELCOLOR = new Color(0.4f, 1.0f, 0.1f);
-		
-		ListCellRenderer tablesListItemRenderer = new DefaultListCellRenderer() {
+		final Color BG_COLOR = new Color(0.8f, 1.0f, 0.7f);
+		final Color BG_SELCOLOR = new Color(0.45f, 0.85f, 1.0f);
+		final Color BG1 = new Color(255, 255, 255);
+		final Color BG2 = new Color(240, 255, 255);
+
+		TableCellRenderer tablesListItemRenderer = new DefaultTableCellRenderer() {
 			@Override
-			public Component getListCellRendererComponent(JList list,
-					Object value,
-					int index,
-					boolean isSelected,
-					boolean cellHasFocus) {
+			public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
 				boolean fromModelFinder = linesFromModelFinder.contains(value);
+				if (!(value instanceof CsvFile.Line)) {
+					return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				}
 				CsvFile.Line line = (CsvFile.Line) value;
 				String tableName = line.cells.get(0);
 				String pk = "";
@@ -317,51 +324,108 @@ public class DataModelEditor extends javax.swing.JDialog {
 					}
 					pk += line.cells.get(i);
 				}
-				value = line.cells.get(0) + (pk.isEmpty()? "" : (" (" + pk + ")"));
-				Component render = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				value = column == 0? line.cells.get(0) : (pk.isEmpty()? "" : pk);
+				Component render = super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
+				render.setForeground(Color.BLACK);
 				if (pk.equals("")) {
 					render.setForeground(Color.RED);
 				}
 				if (fromModelFinder || modifiedColumnTables.contains(tableName)) {
 					render.setBackground(isSelected? BG_SELCOLOR : BG_COLOR);
+				} else {
+					render.setBackground(isSelected? BG_SELCOLOR : (row % 2 == 0) ? BG1 : BG2);
+				}
+				if (render instanceof JLabel) {
+					((JLabel) render).setToolTipText(UIUtil.toHTML(String.valueOf(value), 100));
 				}
 				return render;
 			}
 			private static final long serialVersionUID = -8591324056536900244L;
 		};
 		
-		ListCellRenderer associationsListItemRenderer = new DefaultListCellRenderer() {
+		DefaultTableCellRenderer associationsListItemRenderer = new DefaultTableCellRenderer() {
 			@Override
-			public Component getListCellRendererComponent(JList list,
-					Object value,
-					int index,
-					boolean isSelected,
-					boolean cellHasFocus) {
+			public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
 				boolean fromModelFinder = linesFromModelFinder.contains(value);
+				if (!(value instanceof CsvFile.Line)) {
+					return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				}
 				CsvFile.Line line = (CsvFile.Line) value;
 				String type = "associates";
+				String typeTT = "associates";
 				if ("B".equalsIgnoreCase(line.cells.get(2))) {
-					type = "depends on (has parent)";
+					type = "depends on";
+					typeTT = "depends on (has parent)";
 				}
 				if ("A".equalsIgnoreCase(line.cells.get(2))) {
 					type = "has dependent (has child)";
+					typeTT = "has dependent";
 				}
 				String name = "";
 				if (line.cells.get(5).length() > 0) {
-					name = "(" + line.cells.get(5) + ") ";
+					name = line.cells.get(5);
 				}
-				value = line.cells.get(0) + " " + type + " " + line.cells.get(1) + " " + name + line.cells.get(3) + " on " + line.cells.get(4);
-				Component render = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				switch (column) {
+				case 0: value = line.cells.get(0); break;
+				case 1: value = line.cells.get(1); break;
+				case 2: value = line.cells.get(4); break;
+				case 3: value = type; break;
+				case 4: value = line.cells.get(3); break;
+				case 5: value = name; break;
+				}
+				// value = line.cells.get(0) + " " + type + " " + line.cells.get(1) + " " + name + line.cells.get(3) + " on " + line.cells.get(4);
+				Component render = super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
 				if (fromModelFinder) {
 					render.setBackground(isSelected? BG_SELCOLOR: BG_COLOR);
+				} else {
+					render.setBackground(isSelected? BG_SELCOLOR : (row % 2 == 0) ? BG1 : BG2);
+				}
+				render.setForeground(Color.BLACK);
+				if (render instanceof JLabel) {
+					if (column == 3) {
+						((JLabel) render).setToolTipText(typeTT);
+					} else {
+						((JLabel) render).setToolTipText(UIUtil.toHTML(String.valueOf(value), 100));
+					}
 				}
 				return render;
 			}
 			private static final long serialVersionUID = -6057505075587930064L;
 		};
 	
-		tablesList.setCellRenderer(tablesListItemRenderer);
-		associationsList.setCellRenderer(associationsListItemRenderer);
+		tablesTable.setAutoCreateRowSorter(true);
+		
+		tablesTable.setDefaultRenderer(Object.class, tablesListItemRenderer);
+		tablesTable.setModel(createTablesListModel());
+
+		// tablesTable.setRowSelectionAllowed(false);
+		tablesTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		tablesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				updateButtons();
+			}
+		});
+		adjustTableColumnsWidth(tablesTable);
+
+		associationsTable.setDefaultRenderer(Object.class, associationsListItemRenderer);
+		
+		associationsTable.setAutoCreateRowSorter(true);
+//		List<SortKey> keys = new ArrayList<SortKey>();
+//		keys.add(new SortKey(1, SortOrder.ASCENDING));
+//		keys.add(new SortKey(3, SortOrder.ASCENDING));
+//		associationsTable.getRowSorter().setSortKeys(keys);
+		associationsTable.setModel(createAssociationsListModel());
+		adjustTableColumnsWidth(associationsTable);
+
+		associationsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				updateButtons();
+			}
+		});
+
 		invalidate();
 		if (initiallyDirty) {
 			markDirty();
@@ -407,7 +471,24 @@ public class DataModelEditor extends javax.swing.JDialog {
 			ModelBuilder.cleanUp(executionContext);
 		}
 	}
-	
+
+	public void adjustTableColumnsWidth(JTable table) {
+		DefaultTableModel dtm = (DefaultTableModel) table.getModel();
+		for (int i = 0; i < table.getColumnCount(); i++) {
+			TableColumn column = table.getColumnModel().getColumn(i);
+			Component comp = table.getDefaultRenderer(String.class).getTableCellRendererComponent(table, column.getHeaderValue(), false, false, 0, i);
+			int width = 1;
+			width = Math.max(width, comp.getPreferredSize().width);
+
+			int line = 0;
+			for (; line < table.getRowCount(); ++line) {
+				comp = table.getCellRenderer(line, i).getTableCellRendererComponent(table, dtm.getValueAt(line, i), false, false, line, i);
+				width = Math.max(width, comp.getPreferredSize().width);
+			}
+			column.setPreferredWidth(Math.min(width, 400));
+		}
+	}
+
 	private KnownIdentifierMap createKnownIdentifierMap() throws IOException {
 		KnownIdentifierMap knownIdentifierMap = new KnownIdentifierMap();
 		File modelFinderTablesFile = new File(ModelBuilder.getModelBuilderTablesFilename(executionContext));
@@ -477,236 +558,233 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * WARNING: Do NOT modify this code. The content of this method is
 	 * always regenerated by the Form Editor.
 	 */
-	// <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-	private void initComponents() {
-		java.awt.GridBagConstraints gridBagConstraints;
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
-		jPanel6 = new javax.swing.JPanel();
-		okButton = new javax.swing.JButton();
-		cancelButton = new javax.swing.JButton();
-		jPanel1 = new javax.swing.JPanel();
-		jPanel2 = new javax.swing.JPanel();
-		jScrollPane1 = new javax.swing.JScrollPane();
-		tablesList = new javax.swing.JList();
-		jPanel4 = new javax.swing.JPanel();
-		newTable = new javax.swing.JButton();
-		editTable = new javax.swing.JButton();
-		deleteTables = new javax.swing.JButton();
-		jPanel3 = new javax.swing.JPanel();
-		jPanel5 = new javax.swing.JPanel();
-		newAssociation = new javax.swing.JButton();
-		editAssociation = new javax.swing.JButton();
-		deleteAssociations = new javax.swing.JButton();
-		jScrollPane2 = new javax.swing.JScrollPane();
-		associationsList = new javax.swing.JList();
-		info = new javax.swing.JLabel();
-		jLabel1 = new javax.swing.JLabel();
-		jLabel2 = new javax.swing.JLabel();
-		locationLabel = new javax.swing.JLabel();
-		nameTextField = new javax.swing.JTextField();
+        jPanel6 = new javax.swing.JPanel();
+        okButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
+        info = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        locationLabel = new javax.swing.JLabel();
+        nameTextField = new javax.swing.JTextField();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jPanel2 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        newTable = new javax.swing.JButton();
+        editTable = new javax.swing.JButton();
+        deleteTables = new javax.swing.JButton();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tablesTable = new javax.swing.JTable();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        newAssociation = new javax.swing.JButton();
+        editAssociation = new javax.swing.JButton();
+        deleteAssociations = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        associationsTable = new javax.swing.JTable();
 
-		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-		setTitle("Data Model Editor");
-		addWindowListener(new java.awt.event.WindowAdapter() {
-			@Override
-			public void windowClosing(java.awt.event.WindowEvent evt) {
-				formWindowClosing(evt);
-			}
-		});
-		getContentPane().setLayout(new java.awt.GridBagLayout());
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setTitle("Data Model Editor");
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
+        getContentPane().setLayout(new java.awt.GridBagLayout());
 
-		okButton.setText("Ok");
-		okButton.addActionListener(new java.awt.event.ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				okButtonActionPerformed(evt);
-			}
-		});
-		jPanel6.add(okButton);
+        okButton.setText("Ok");
+        okButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
+            }
+        });
+        jPanel6.add(okButton);
 
-		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new java.awt.event.ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				cancelButtonActionPerformed(evt);
-			}
-		});
-		jPanel6.add(cancelButton);
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+        jPanel6.add(cancelButton);
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 20;
-		gridBagConstraints.gridwidth = 3;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-		getContentPane().add(jPanel6, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        getContentPane().add(jPanel6, gridBagConstraints);
 
-		jPanel1.setLayout(new java.awt.GridLayout(1, 0));
+        info.setForeground(new java.awt.Color(1, 75, 1));
+        info.setText("jLabel1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        getContentPane().add(info, gridBagConstraints);
 
-		jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tables"));
-		jPanel2.setLayout(new java.awt.GridBagLayout());
+        jLabel1.setText(" Name  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        getContentPane().add(jLabel1, gridBagConstraints);
 
-		tablesList.setModel(createTablesListModel());
-		tablesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-			@Override
-			public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-				tablesListValueChanged(evt);
-			}
-		});
-		jScrollPane1.setViewportView(tablesList);
+        jLabel2.setText(" Location  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        getContentPane().add(jLabel2, gridBagConstraints);
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		jPanel2.add(jScrollPane1, gridBagConstraints);
+        locationLabel.setText(" Location  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        getContentPane().add(locationLabel, gridBagConstraints);
 
-		jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2));
+        nameTextField.setText("jTextField1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 22);
+        getContentPane().add(nameTextField, gridBagConstraints);
 
-		newTable.setText("Add");
-		newTable.addActionListener(new java.awt.event.ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				newTableActionPerformed(evt);
-			}
-		});
-		jPanel4.add(newTable);
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tables"));
+        jPanel2.setLayout(new java.awt.GridBagLayout());
 
-		editTable.setText("Edit");
-		editTable.addActionListener(new java.awt.event.ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				editTableActionPerformed(evt);
-			}
-		});
-		jPanel4.add(editTable);
+        jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2));
 
-		deleteTables.setText("Delete");
-		deleteTables.addActionListener(new java.awt.event.ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				deleteTablesActionPerformed(evt);
-			}
-		});
-		jPanel4.add(deleteTables);
+        newTable.setText("Add");
+        newTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newTableActionPerformed(evt);
+            }
+        });
+        jPanel4.add(newTable);
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		jPanel2.add(jPanel4, gridBagConstraints);
+        editTable.setText("Edit");
+        editTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editTableActionPerformed(evt);
+            }
+        });
+        jPanel4.add(editTable);
 
-		jPanel1.add(jPanel2);
+        deleteTables.setText("Delete");
+        deleteTables.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteTablesActionPerformed(evt);
+            }
+        });
+        jPanel4.add(deleteTables);
 
-		jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Associations"));
-		jPanel3.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel2.add(jPanel4, gridBagConstraints);
 
-		jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2));
+        tablesTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(tablesTable);
 
-		newAssociation.setText("Add");
-		newAssociation.addActionListener(new java.awt.event.ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				newAssociationActionPerformed(evt);
-			}
-		});
-		jPanel5.add(newAssociation);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(jScrollPane3, gridBagConstraints);
 
-		editAssociation.setText("Edit");
-		editAssociation.addActionListener(new java.awt.event.ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				editAssociationActionPerformed(evt);
-			}
-		});
-		jPanel5.add(editAssociation);
+        jSplitPane1.setLeftComponent(jPanel2);
 
-		deleteAssociations.setText("Delete");
-		deleteAssociations.addActionListener(new java.awt.event.ActionListener() {
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				deleteAssociationsActionPerformed(evt);
-			}
-		});
-		jPanel5.add(deleteAssociations);
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Associations"));
+        jPanel3.setLayout(new java.awt.GridBagLayout());
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		jPanel3.add(jPanel5, gridBagConstraints);
+        jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2));
 
-		associationsList.setModel(createAssociationsListModel());
-		associationsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-			@Override
-			public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-				associationsListValueChanged(evt);
-			}
-		});
-		jScrollPane2.setViewportView(associationsList);
+        newAssociation.setText("Add");
+        newAssociation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newAssociationActionPerformed(evt);
+            }
+        });
+        jPanel5.add(newAssociation);
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 2.0;
-		gridBagConstraints.weighty = 1.0;
-		jPanel3.add(jScrollPane2, gridBagConstraints);
+        editAssociation.setText("Edit");
+        editAssociation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editAssociationActionPerformed(evt);
+            }
+        });
+        jPanel5.add(editAssociation);
 
-		jPanel1.add(jPanel3);
+        deleteAssociations.setText("Delete");
+        deleteAssociations.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteAssociationsActionPerformed(evt);
+            }
+        });
+        jPanel5.add(deleteAssociations);
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 10;
-		gridBagConstraints.gridwidth = 3;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-		getContentPane().add(jPanel1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel3.add(jPanel5, gridBagConstraints);
 
-		info.setForeground(new java.awt.Color(1, 111, 1));
-		info.setText("jLabel1");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-		gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-		getContentPane().add(info, gridBagConstraints);
+        associationsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(associationsTable);
 
-		jLabel1.setText(" Name  ");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		getContentPane().add(jLabel1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel3.add(jScrollPane1, gridBagConstraints);
 
-		jLabel2.setText(" Location  ");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		getContentPane().add(jLabel2, gridBagConstraints);
+        jSplitPane1.setRightComponent(jPanel3);
 
-		locationLabel.setText(" Location  ");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		getContentPane().add(locationLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        getContentPane().add(jSplitPane1, gridBagConstraints);
 
-		nameTextField.setText("jTextField1");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 22);
-		getContentPane().add(nameTextField, gridBagConstraints);
-
-		pack();
-	}// </editor-fold>//GEN-END:initComponents
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
 
 	private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 		save();
@@ -728,7 +806,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		CsvFile.Line line = new CsvFile.Line("?", cells);
 		if (new AssociationEditor(this, tables, associations).edit(line)) {
 			associations.add(0, line);
-			associationsList.setModel(createAssociationsListModel());
+			associationsTable.setModel(createAssociationsListModel());
 			repaint();
 			markDirty();
 		}
@@ -736,11 +814,8 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 	private void editAssociationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editAssociationActionPerformed
 		CsvFile.Line line = null;
-		for (int i = 0; i < associations.size(); ++i) {
-			if (associationsList.getSelectionModel().isSelectedIndex(i)) {
-				line = associations.get(i);
-				break;
-			}
+		if (associationsTable.getSelectedRow() >= 0) {
+			line = associations.get(associationsTable.getRowSorter().convertRowIndexToModel(associationsTable.getSelectedRow()));
 		}
 		if (line != null) {
 			if (new AssociationEditor(this, tables, associations).edit(line)) {
@@ -762,21 +837,15 @@ public class DataModelEditor extends javax.swing.JDialog {
 		CsvFile.Line line = new CsvFile.Line("?", cells);
 		if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion).edit(line, columns)) {
 			tables.add(0, line);
-			tablesList.setModel(createTablesListModel());
+			tablesTable.setModel(createTablesListModel());
 			markDirty();
 			repaint();
 		}
 	}//GEN-LAST:event_newTableActionPerformed
 
 	private void editTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editTableActionPerformed
-		CsvFile.Line line = null;
-		for (int i = 0; i < tables.size(); ++i) {
-			if (tablesList.getSelectionModel().isSelectedIndex(i)) {
-				line = tables.get(i);
-				break;
-			}
-		}
-		if (line != null) {
+		if (tablesTable.getSelectedRow() >= 0) {
+			CsvFile.Line line = tables.get(tablesTable.getRowSorter().convertRowIndexToModel(tablesTable.getSelectedRow()));
 			if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion).edit(line, columns)) {
 				markDirty();
 				repaint();
@@ -785,30 +854,20 @@ public class DataModelEditor extends javax.swing.JDialog {
 	}//GEN-LAST:event_editTableActionPerformed
 
 	private void updateButtons() {
-		editTable.setEnabled(!tablesList.isSelectionEmpty());
-		deleteTables.setEnabled(!tablesList.isSelectionEmpty());
-		editAssociation.setEnabled(!associationsList.isSelectionEmpty());
-		deleteAssociations.setEnabled(!associationsList.isSelectionEmpty());
+		editTable.setEnabled(tablesTable.getSelectedRowCount() > 0);
+		deleteTables.setEnabled(tablesTable.getSelectedRowCount() > 0);
+		editAssociation.setEnabled(associationsTable.getSelectedRowCount() > 0);
+		deleteAssociations.setEnabled(associationsTable.getSelectedRowCount() > 0);
 	}
 	
-	private void associationsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_associationsListValueChanged
-		updateButtons();
-	}//GEN-LAST:event_associationsListValueChanged
-
-	private void tablesListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_tablesListValueChanged
-		updateButtons();
-	}//GEN-LAST:event_tablesListValueChanged
-
 	private void deleteTablesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteTablesActionPerformed
 		Collection<CsvFile.Line> toDelete = new ArrayList<CsvFile.Line>();
 		Collection<String> namesOfTablesToDelete = new ArrayList<String>();
-		for (int i = 0; i < tables.size(); ++i) {
-			if (tablesList.getSelectionModel().isSelectedIndex(i)) {
-				Line table = tables.get(i);
-				if (table != null) {
-					toDelete.add(table);
-					namesOfTablesToDelete.add(table.cells.get(0));
-				}
+		for (int i: tablesTable.getSelectedRows()) {
+			Line table = tables.get(tablesTable.getRowSorter().convertRowIndexToModel(i));
+			if (table != null) {
+				toDelete.add(table);
+				namesOfTablesToDelete.add(table.cells.get(0));
 			}
 		}
 		Collection<CsvFile.Line> assToDelete = new HashSet<CsvFile.Line>();
@@ -825,9 +884,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 				displayNames.remove(k);
 			}
 			excludeFromDeletion.removeAll(namesOfTablesToDelete);
-			tablesList.setModel(createTablesListModel());
+			tablesTable.setModel(createTablesListModel());
 			associations.removeAll(assToDelete);
-			associationsList.setModel(createAssociationsListModel());
+			associationsTable.setModel(createAssociationsListModel());
 			for (Line l: toDelete) {
 				columns.remove(l.cells.get(0));
 			}
@@ -837,13 +896,11 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 	private void deleteAssociationsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteAssociationsActionPerformed
 		Collection<CsvFile.Line> toDelete = new ArrayList<CsvFile.Line>();
-		for (int i = 0; i < associations.size(); ++i) {
-			if (associationsList.getSelectionModel().isSelectedIndex(i)) {
-				toDelete.add(associations.get(i));
-			}
+		for (int i: associationsTable.getSelectedRows()) {
+			toDelete.add(associations.get(associationsTable.getRowSorter().convertRowIndexToModel(i)));
 		}
 		associations.removeAll(toDelete);
-		associationsList.setModel(createAssociationsListModel());
+		associationsTable.setModel(createAssociationsListModel());
 		markDirty();
 	}//GEN-LAST:event_deleteAssociationsActionPerformed
 
@@ -852,12 +909,17 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * 
 	 * @return model for tables-list component
 	 */
-	private ListModel createTablesListModel() {
-		DefaultListModel tablesListModel = new DefaultListModel();
+	private TableModel createTablesListModel() {
+		DefaultTableModel tablesTableModel = new DefaultTableModel(new Object[] { "Name", "Primary Key" }, 0) {
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		};
 		for (CsvFile.Line line: tables) {
-			tablesListModel.addElement(line);
+			tablesTableModel.addRow(new Object[] { line, line });
 		}
-		return tablesListModel;
+		return tablesTableModel;
 	}
 
 	/**
@@ -865,12 +927,17 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * 
 	 * @return model for associations-list component
 	 */
-	private ListModel createAssociationsListModel() {
-		DefaultListModel associationsListModel = new DefaultListModel();
+	private TableModel createAssociationsListModel() {
+		DefaultTableModel associationsTableModel = new DefaultTableModel(new Object[] { "A", "B", "Condition", "Type", "Cardinality", "Name" }, 0) {
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		};
 		for (CsvFile.Line line: associations) {
-			associationsListModel.addElement(line);
+			associationsTableModel.addRow(new Object[] { line, line, line, line, line, line });
 		}
-		return associationsListModel;
+		return associationsTableModel;
 	}
 	
 	/**
@@ -1015,31 +1082,31 @@ public class DataModelEditor extends javax.swing.JDialog {
 		return a.equals(b);
 	}
 
-	// Variables declaration - do not modify//GEN-BEGIN:variables
-	private javax.swing.JList associationsList;
-	private javax.swing.JButton cancelButton;
-	private javax.swing.JButton deleteAssociations;
-	private javax.swing.JButton deleteTables;
-	private javax.swing.JButton editAssociation;
-	private javax.swing.JButton editTable;
-	private javax.swing.JLabel info;
-	private javax.swing.JLabel jLabel1;
-	private javax.swing.JLabel jLabel2;
-	private javax.swing.JPanel jPanel1;
-	private javax.swing.JPanel jPanel2;
-	private javax.swing.JPanel jPanel3;
-	private javax.swing.JPanel jPanel4;
-	private javax.swing.JPanel jPanel5;
-	private javax.swing.JPanel jPanel6;
-	private javax.swing.JScrollPane jScrollPane1;
-	private javax.swing.JScrollPane jScrollPane2;
-	private javax.swing.JLabel locationLabel;
-	private javax.swing.JTextField nameTextField;
-	private javax.swing.JButton newAssociation;
-	private javax.swing.JButton newTable;
-	private javax.swing.JButton okButton;
-	private javax.swing.JList tablesList;
-	// End of variables declaration//GEN-END:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable associationsTable;
+    private javax.swing.JButton cancelButton;
+    private javax.swing.JButton deleteAssociations;
+    private javax.swing.JButton deleteTables;
+    private javax.swing.JButton editAssociation;
+    private javax.swing.JButton editTable;
+    private javax.swing.JLabel info;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JLabel locationLabel;
+    private javax.swing.JTextField nameTextField;
+    private javax.swing.JButton newAssociation;
+    private javax.swing.JButton newTable;
+    private javax.swing.JButton okButton;
+    private javax.swing.JTable tablesTable;
+    // End of variables declaration//GEN-END:variables
 	
 	private static final long serialVersionUID = -1267039412732180237L;
 }
