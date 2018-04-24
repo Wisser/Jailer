@@ -657,6 +657,8 @@ public class DataModelEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 22);
         getContentPane().add(nameTextField, gridBagConstraints);
 
+        jSplitPane1.setOneTouchExpandable(true);
+
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tables"));
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
