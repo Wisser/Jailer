@@ -1500,35 +1500,36 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		popup.add(sqlDml);
 		JMenuItem insertNewRow = new JMenuItem("Insert New Row");
 		sqlDml.add(insertNewRow);
-		Row parent = null;
-		if (association.isInsertSourceBeforeDestination()) {
-			if (parentrow != null) {
-				parent = parentrow;
-			} else {
-				RowBrowser parentRowBrowser = getParentBrowser();
-				if (parentRowBrowser != null && parentRowBrowser.browserContentPane != null) {
-					BrowserContentPane parentContentPane = parentRowBrowser.browserContentPane;
-					if (parentContentPane.rows != null) {
-						if (parentContentPane.rows.size() == 1) {
-							parent = parentContentPane.rows.get(0);
-						} else {
-							if (parentContentPane.highlightedRows != null && parentContentPane.highlightedRows.size() == 1) {
-								int i = parentContentPane.highlightedRows.iterator().next();
-								if (i >= 0 && i < parentContentPane.rows.size()) {
-									parent = parentContentPane.rows.get(i);
+		final String tableName = dataModel.getDisplayName(table);
+		insertNewRow.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Row parent = null;
+				if (association.isInsertSourceBeforeDestination()) {
+					if (parentrow != null) {
+						parent = parentrow;
+					} else {
+						RowBrowser parentRowBrowser = getParentBrowser();
+						if (parentRowBrowser != null && parentRowBrowser.browserContentPane != null) {
+							BrowserContentPane parentContentPane = parentRowBrowser.browserContentPane;
+							if (parentContentPane.rows != null) {
+								if (parentContentPane.rows.size() == 1) {
+									parent = parentContentPane.rows.get(0);
+								} else {
+									if (parentContentPane.currentClosureRowIDs != null) {
+										for (Row row: parentContentPane.rows) {
+											if (parentContentPane.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(parentContentPane, row.rowId))) {
+												parent = row;
+												break;
+											}
+										}
+									}
 								}
 							}
 						}
 					}
 				}
-			}
-		}
-		final String tableName = dataModel.getDisplayName(table);
-		final Row fParent = parent;
-		insertNewRow.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Insert New Row Into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, createNewRow(fParent, table), true, session));
+				openSQLDialog("Insert New Row Into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, createNewRow(parent, table), true, session));
 			}
 		});
 		JMenuItem insert = new JMenuItem("Inserts");

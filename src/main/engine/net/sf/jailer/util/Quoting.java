@@ -264,6 +264,24 @@ public class Quoting {
 		quote = identifierQuoteString;
 	}
 
+	/**
+	 * Compares a String to another String, ignoring case considerations and quoting.
+	 * 
+	 * @param a first String
+	 * @param b second String
+	 * @return <code>true</code> if a equals b
+	 */
+	public static boolean equalsIgnoreQuotingAndCase(String a, String b) {
+		// TODO: statt dessen: normalizeIdentifier
+		if (a == null) {
+			return b == null;
+		}
+		if (b == null) {
+			return false;
+		}
+		return staticUnquote(a).equalsIgnoreCase(staticUnquote(b));
+	}
+
 	public static final HashSet<String> UCSQL92KEYWORDS = new HashSet<String>(Arrays.asList(new String[] { "ABSOLUTE", "ACTION",
 			"ADD", "ALL", "ALLOCATE", "ALTER", "AND", "ANY", "ARE", "AS",
 			"ASC", "ASSERTION", "AT", "AUTHORIZATION", "AVG", "BEGIN",
