@@ -1,5 +1,6 @@
 7.8
-   - Improved render quality on high resolution screens.
+  - New feature "Analyze SQL" analyzes SQL statements and proposes association definitions.
+  - Improved render quality on high resolution screens.
 
 7.7.3
   - incremental SQL formatting.

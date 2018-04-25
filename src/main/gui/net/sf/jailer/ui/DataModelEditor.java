@@ -41,6 +41,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SortOrder;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -50,6 +52,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
@@ -407,6 +410,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				updateButtons();
 			}
 		});
+		initRowSorter(tablesTable, new int[] { 0, 2 });
 		adjustTableColumnsWidth(tablesTable);
 
 		associationsTable.setDefaultRenderer(Object.class, associationsListItemRenderer);
@@ -425,6 +429,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				updateButtons();
 			}
 		});
+		initRowSorter(associationsTable, new int[] { 0, 1, 4, 2, 3, 5 });
 
 		invalidate();
 		if (initiallyDirty) {
@@ -432,28 +437,29 @@ public class DataModelEditor extends javax.swing.JDialog {
 		}
 		UIUtil.initPeer();
 		
-		if (toEdit != null) {
-			addWindowListener(new WindowListener() {
-				@Override
-				public void windowActivated(WindowEvent e) {
-				}
-				@Override
-				public void windowClosed(WindowEvent e) {
-				}
-				@Override
-				public void windowClosing(WindowEvent e) {
-				}
-				@Override
-				public void windowDeactivated(WindowEvent e) {
-				}
-				@Override
-				public void windowDeiconified(WindowEvent e) {
-				}
-				@Override
-				public void windowIconified(WindowEvent e) {
-				}
-				@Override
-				public void windowOpened(WindowEvent e) {
+		addWindowListener(new WindowListener() {
+			@Override
+			public void windowActivated(WindowEvent e) {
+			}
+			@Override
+			public void windowClosed(WindowEvent e) {
+			}
+			@Override
+			public void windowClosing(WindowEvent e) {
+			}
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+			}
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+			}
+			@Override
+			public void windowIconified(WindowEvent e) {
+			}
+			@Override
+			public void windowOpened(WindowEvent e) {
+				jSplitPane1.setDividerLocation(0.3);
+				if (toEdit != null) {
 					for (Line l: tables) {
 						if (toEdit.getName().equals(l.cells.get(0))) {
 							if (new TableEditor(DataModelEditor.this, displayNames, tables, associations, excludeFromDeletion).edit(l, columns)) {
@@ -464,17 +470,55 @@ public class DataModelEditor extends javax.swing.JDialog {
 						}
 					}
 				}
-			});
-		}
+			}
+		});
 		
 		if (merge) {
 			ModelBuilder.cleanUp(executionContext);
 		}
 	}
 
+	private void initRowSorter(JTable table, final int[] mapping) {
+		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel()) {
+			@Override
+			protected boolean useToString(int column) {
+				return false;
+			}
+
+			@Override
+		    public void toggleSortOrder(int column) {
+		        List<? extends SortKey> sortKeys = getSortKeys();
+		        if (sortKeys.size() > 0) {
+		            if (sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING) {
+		                setSortKeys(null);
+		                return;
+		            }
+		        }
+		        super.toggleSortOrder(column);
+		    }
+
+			@Override
+			public Comparator<?> getComparator(final int n) {
+				return new Comparator<Object>() {
+					@SuppressWarnings("unchecked")
+					@Override
+					public int compare(Object o1, Object o2) {
+						if (o1 instanceof Line) {
+							if (o2 instanceof Line) {
+								return ((Line) o1).cells.get(mapping[n]).compareTo(((Line) o2).cells.get(mapping[n]));
+							}
+						}
+						return String.valueOf(o1).compareTo(String.valueOf(o2));
+					}
+				};
+			}
+		};
+		table.setRowSorter(sorter);
+	}
+
 	public void adjustTableColumnsWidth(JTable table) {
 		DefaultTableModel dtm = (DefaultTableModel) table.getModel();
-		for (int i = 0; i < table.getColumnCount(); i++) {
+		for (int i = 0; i < table.getColumnCount() - 1; i++) {
 			TableColumn column = table.getColumnModel().getColumn(i);
 			Component comp = table.getDefaultRenderer(String.class).getTableCellRendererComponent(table, column.getHeaderValue(), false, false, 0, i);
 			int width = 1;
@@ -485,8 +529,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 				comp = table.getCellRenderer(line, i).getTableCellRendererComponent(table, dtm.getValueAt(line, i), false, false, line, i);
 				width = Math.max(width, comp.getPreferredSize().width);
 			}
-			column.setPreferredWidth(Math.min(width, 400));
+			column.setPreferredWidth(Math.min(width, 200));
 		}
+		table.getColumnModel().getColumn(table.getColumnModel().getColumnCount() - 1).setPreferredWidth(80);
 	}
 
 	private KnownIdentifierMap createKnownIdentifierMap() throws IOException {
@@ -806,7 +851,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 			cells.add("");
 		}
 		CsvFile.Line line = new CsvFile.Line("?", cells);
-		if (new AssociationEditor(this, tables, associations).edit(line)) {
+		if (new AssociationEditor(this, tables, associations, columns).edit(line)) {
 			associations.add(0, line);
 			associationsTable.setModel(createAssociationsListModel());
 			repaint();
@@ -820,7 +865,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 			line = associations.get(associationsTable.getRowSorter().convertRowIndexToModel(associationsTable.getSelectedRow()));
 		}
 		if (line != null) {
-			if (new AssociationEditor(this, tables, associations).edit(line)) {
+			if (new AssociationEditor(this, tables, associations, columns).edit(line)) {
 				markDirty();
 				repaint();
 			}
