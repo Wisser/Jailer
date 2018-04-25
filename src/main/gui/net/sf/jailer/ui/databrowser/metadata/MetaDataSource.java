@@ -283,10 +283,10 @@ public class MetaDataSource {
 	public synchronized MDSchema find(String schemaName) {
 		if (schemaPerUnquotedNameUC.isEmpty()) {
 			for (MDSchema schema: getSchemas()) {
-				schemaPerUnquotedNameUC.put(Quoting.staticUnquote(schema.getName().toUpperCase(Locale.ENGLISH)), schema);
+				schemaPerUnquotedNameUC.put(Quoting.normalizeIdentifier(schema.getName()), schema);
 			}
 		}
-		return schemaPerUnquotedNameUC.get(Quoting.staticUnquote(schemaName.toUpperCase(Locale.ENGLISH)));
+		return schemaPerUnquotedNameUC.get(Quoting.normalizeIdentifier(schemaName));
 	}
 
 }

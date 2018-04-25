@@ -424,7 +424,7 @@ public class ModelBuilder {
 	 * @return <code>true</code> if table is one of Jailers working tables
 	 */
 	public static boolean isJailerTable(String table) {
-		String tName = Quoting.staticUnquote(table.toUpperCase());
+		String tName = Quoting.normalizeIdentifier(table);
 		return SqlUtil.JAILER_TABLES.contains(tName)
 			|| tName.startsWith(ImportFilterManager.MAPPINGTABLE_NAME_PREFIX)
 			|| (tName.endsWith("_T") && SqlUtil.JAILER_TABLES.contains(tName.substring(0, tName.length() - 2)));

@@ -27,8 +27,8 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 		for (Table table: metaDataSource.getTables()) {
 			String schema = table.getSchema("");
 			String name = table.getUnqualifiedName();
-			schemaPerUUCName.put(Quoting.staticUnquote(schema).toUpperCase(Locale.ENGLISH), schema);
-			schemaTablePerUUCName.put(Quoting.staticUnquote(schema).toUpperCase(Locale.ENGLISH) + "." + Quoting.staticUnquote(name).toUpperCase(Locale.ENGLISH), table);
+			schemaPerUUCName.put(Quoting.normalizeIdentifier(schema), schema);
+			schemaTablePerUUCName.put(Quoting.normalizeIdentifier(schema) + "." + Quoting.staticUnquote(name), table);
 			List<Table> tps = tablesPerSchema.get(schema);
 			if (tps == null) {
 				tps = new ArrayList<Table>();
@@ -54,12 +54,12 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 
 	@Override
 	protected String findSchema(DataModel metaDataSource, String name) {
-		return schemaPerUUCName.get(Quoting.staticUnquote(name).toUpperCase(Locale.ENGLISH));
+		return schemaPerUUCName.get(Quoting.normalizeIdentifier(name));
 	}
 
 	@Override
 	protected Table findTable(String schema, String name) {
-		return schemaTablePerUUCName.get(Quoting.staticUnquote(schema).toUpperCase(Locale.ENGLISH) + "." + Quoting.staticUnquote(name).toUpperCase(Locale.ENGLISH));
+		return schemaTablePerUUCName.get(Quoting.normalizeIdentifier(schema) + "." + Quoting.staticUnquote(name));
 	}
 
 	@Override

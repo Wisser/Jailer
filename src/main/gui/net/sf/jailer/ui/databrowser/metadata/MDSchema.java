@@ -226,10 +226,10 @@ public class MDSchema extends MDObject {
 		synchronized (tablePerUnquotedNameUC) {
 			if (tablePerUnquotedNameUC.isEmpty()) {
 				for (MDTable table : getTables()) {
-					tablePerUnquotedNameUC.put(Quoting.staticUnquote(table.getName().toUpperCase(Locale.ENGLISH)), table);
+					tablePerUnquotedNameUC.put(Quoting.normalizeIdentifier(table.getName()), table);
 				}
 			}
-			return tablePerUnquotedNameUC.get(Quoting.staticUnquote(tableName.toUpperCase(Locale.ENGLISH)));
+			return tablePerUnquotedNameUC.get(Quoting.normalizeIdentifier(tableName));
 		}
 	}
 
@@ -314,7 +314,7 @@ public class MDSchema extends MDObject {
 			}
 			constraints.reset();
 			if (table != null) {
-				String uCName = Quoting.staticUnquote(table.getName()).toUpperCase(Locale.ENGLISH);
+				String uCName = Quoting.normalizeIdentifier(table.getName());
 				List<Object[]> rows = new ArrayList<Object[]>();
 				for (Object[] row: constraints.getRowList()) {
 					if (uCName.equals(String.valueOf(row[2]).toUpperCase(Locale.ENGLISH))) {

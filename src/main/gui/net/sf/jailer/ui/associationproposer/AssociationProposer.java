@@ -433,10 +433,10 @@ public class AssociationProposer {
 					}
 					String fn = "";
 					if (tableName.getSchemaName() != null) {
-						fn = Quoting.staticUnquote(tableName.getSchemaName().toUpperCase(Locale.ENGLISH)) + ".";
+						fn = Quoting.normalizeIdentifier(tableName.getSchemaName()) + ".";
 					}
-					fn += Quoting.staticUnquote(tableName.getName().toUpperCase(Locale.ENGLISH));
-					scopes.peek().aliasToTable.put(Quoting.staticUnquote(alias.toUpperCase(Locale.ENGLISH)), fn);
+					fn += Quoting.normalizeIdentifier(tableName.getName());
+					scopes.peek().aliasToTable.put(Quoting.normalizeIdentifier(alias), fn);
 				}
 			};
 			if (plainSelect.getFromItem() != null) {
@@ -578,8 +578,8 @@ public class AssociationProposer {
 										if (rightAlias == null) {
 											rightAlias = columnToTable.get(rightColumn).getUnqualifiedName();
 										}
-										leftAlias = Quoting.staticUnquote(leftAlias.toUpperCase(Locale.ENGLISH));
-										rightAlias = Quoting.staticUnquote(rightAlias.toUpperCase(Locale.ENGLISH));
+										leftAlias = Quoting.normalizeIdentifier(leftAlias);
+										rightAlias = Quoting.normalizeIdentifier(rightAlias);
 										Equation e1 = new Equation(leftAlias, leftColumn, rightAlias, rightColumn, false);
 										Equation e2 = new Equation(rightAlias, rightColumn, leftAlias, leftColumn, false);
 										e1.reversal = e2;
@@ -602,7 +602,7 @@ public class AssociationProposer {
 				for (int i = scopes.size() - 1; i >= 0; --i) {
 					tableCandidat.clear();
 					if (alias != null) {
-						tableCandidat.add(scopes.get(i).aliasToTable.get(Quoting.staticUnquote(alias.toUpperCase(Locale.ENGLISH))));
+						tableCandidat.add(scopes.get(i).aliasToTable.get(Quoting.normalizeIdentifier(alias)));
 					} else {
 						tableCandidat.addAll(scopes.get(i).aliasToTable.values());
 					}
@@ -619,8 +619,8 @@ public class AssociationProposer {
 								tnName = tn;
 							}
 							for (net.sf.jailer.datamodel.Table table: dataModel.getTables()) {
-								String schema = Quoting.staticUnquote(table.getSchema("").toUpperCase(Locale.ENGLISH));
-								String uName = Quoting.staticUnquote(table.getUnqualifiedName().toUpperCase(Locale.ENGLISH));
+								String schema = Quoting.normalizeIdentifier(table.getSchema(""));
+								String uName = Quoting.normalizeIdentifier(table.getUnqualifiedName());
 								if (uName.equals(tnName)) {
 									if (!withSchema || schema.equals(tnSchema)) {
 										String uqColName = Quoting.staticUnquote(column.getColumnName());

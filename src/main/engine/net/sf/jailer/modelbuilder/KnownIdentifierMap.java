@@ -96,11 +96,11 @@ public class KnownIdentifierMap {
 	}
 
 	private String normalizeTableName(String tableName) {
-		return "T" + Quoting.staticUnquote(tableName).toUpperCase(Locale.ENGLISH);
+		return "T" + Quoting.normalizeIdentifier(tableName);
 	}
 
 	private String normalizeColumnName(String tableName, String columnName) {
-		return "C" + Quoting.staticUnquote(tableName).toUpperCase(Locale.ENGLISH) + "(.)" + Quoting.staticUnquote(columnName).toUpperCase(Locale.ENGLISH);
+		return "C" + Quoting.normalizeIdentifier(tableName) + "(.)" + Quoting.staticUnquote(columnName);
 	}
 
 	private Pattern columnComparisionPattern = Pattern.compile("(A|a|B|b)( *\\. *)((?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+))");
@@ -111,7 +111,7 @@ public class KnownIdentifierMap {
         if (result) {
             StringBuffer sb = new StringBuffer();
             do {
-                m.appendReplacement(sb, Matcher.quoteReplacement(m.group(1).toUpperCase(Locale.ENGLISH) + m.group(2) + Quoting.staticUnquote(m.group(3)).toUpperCase(Locale.ENGLISH)));
+                m.appendReplacement(sb, Matcher.quoteReplacement(m.group(1).toUpperCase(Locale.ENGLISH) + m.group(2) + Quoting.normalizeIdentifier(m.group(3))));
                 result = m.find();
             } while (result);
             m.appendTail(sb);

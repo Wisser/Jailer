@@ -81,7 +81,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
      * @param table the table
      */
     public void addAlias(String name, TABLE table) {
-        userDefinedAliases.put(Quoting.staticUnquote(name).toUpperCase(Locale.ENGLISH), table);
+        userDefinedAliases.put(Quoting.normalizeIdentifier(name), table);
     }
 
     /**
@@ -543,7 +543,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                     break;
                                 }
                                 for (String column: tableColumns) {
-                                    String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
+                                    String unquotedColumn = Quoting.normalizeIdentifier(column);
                                     if (count.containsKey(unquotedColumn)) {
                                         count.put(unquotedColumn, count.get(unquotedColumn) + 1);
                                     } else {
@@ -637,7 +637,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         for (int i = 0; i < tables.size(); ++i) {
             TABLE table = tables.get(i);
             for (String column: getAndWaitForColumns(table)) {
-                allColumnNames.add(Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH));
+                allColumnNames.add(Quoting.normalizeIdentifier(column));
             }
         }
         StringBuilder sb = new StringBuilder();
@@ -646,7 +646,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
             for (String column: getAndWaitForColumns(table)) {
                 for (;;) {
                     String suffix = "";
-                    String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
+                    String unquotedColumn = Quoting.normalizeIdentifier(column);
                     if (count.containsKey(unquotedColumn)) {
                         int nr = count.get(unquotedColumn);
                         if (nr != 1) {
@@ -664,7 +664,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     } else {
                         columnWithSuffix = column.substring(0, column.length() - 1) + suffix + column.charAt(column.length() - 1);
                     }
-                    String unquotedColumnWithSuffix = Quoting.staticUnquote(columnWithSuffix).toUpperCase(Locale.ENGLISH);
+                    String unquotedColumnWithSuffix = Quoting.normalizeIdentifier(columnWithSuffix);
                     if (!suffix.isEmpty()) {
                         if (allColumnNames.contains(unquotedColumnWithSuffix)) {
                             continue;
@@ -929,7 +929,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 		firstCTE = false;
                 	} else {
                 		if (cteExpected && identifier != null) {
-                			ctes.add(Quoting.staticUnquote(identifier).toUpperCase(Locale.ENGLISH));
+                			ctes.add(Quoting.normalizeIdentifier(identifier));
                             int pos = matcher.start();
                             nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
                             OutlineInfo info = new OutlineInfo(null, "", level, pos, identifier);
@@ -989,7 +989,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             }
                             if (mdSchema != null) {
                                 TABLE mdTable = findTable(mdSchema, table);
-                                if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.staticUnquote(table).toUpperCase(Locale.ENGLISH))) {
+                                if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.normalizeIdentifier(table))) {
                                     if (outlineInfos != null && (mdTable == null || mdTable instanceof MDTable)) {
                                     	OutlineInfo info = new OutlineInfo((MDTable) mdTable, alias, level, pos, mdTable == null? table : null);
                                     	info.isCTE = mdTable == null;
@@ -1039,7 +1039,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             }
                             if (mdSchema != null) {
                                 TABLE mdTable = findTable(mdSchema, table);
-                                if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.staticUnquote(table).toUpperCase(Locale.ENGLISH))) {
+                                if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.normalizeIdentifier(table))) {
                                     if (outlineInfos != null) {
                                         if (outlineInfos != null && (mdTable == null || mdTable instanceof MDTable)) {
                                             OutlineInfo info = new OutlineInfo((MDTable) mdTable, null, level, pos, mdTable == null? table : null);
@@ -1314,7 +1314,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         TABLE context;
         context = null;
         for (Entry<String, TABLE> entry: aliases.entrySet()) {
-            if (Quoting.staticUnquote(entry.getKey()).toUpperCase(Locale.ENGLISH).equals(Quoting.staticUnquote(aliasName).toUpperCase(Locale.ENGLISH))) {
+            if (Quoting.normalizeIdentifier(entry.getKey()).equals(Quoting.staticUnquote(aliasName))) {
                 context = entry.getValue();
                 break;
             }

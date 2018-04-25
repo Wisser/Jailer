@@ -227,14 +227,14 @@ public class MDTable extends MDObject {
     public boolean isUptodate(Table table) {
         Set<String> unquotedUCColumnNames = new HashSet<String>();
         for (Column column: table.getColumns()) {
-            unquotedUCColumnNames.add(Quoting.staticUnquote(column.name).toUpperCase(Locale.ENGLISH));
+            unquotedUCColumnNames.add(Quoting.normalizeIdentifier(column.name));
         }
         try {
             if (getColumns().size() != table.getColumns().size()) {
                 return false;
             }
             for (String column: getColumns()) {
-                if (!unquotedUCColumnNames.contains(Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH))) {
+                if (!unquotedUCColumnNames.contains(Quoting.normalizeIdentifier(column))) {
                     return false;
                 }
             }

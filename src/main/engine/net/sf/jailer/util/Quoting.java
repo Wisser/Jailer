@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -265,6 +266,22 @@ public class Quoting {
 	}
 
 	/**
+	 * Normalizes an identifier.
+	 * <code>
+	 * normalizeIdentifier(a).equals(normalizeIdentifier(b)) iff a and b identify the same thing
+	 * </code>
+	 * 
+	 * @param identifier the identifier
+	 * @return normalize identifier
+	 */
+	public static String normalizeIdentifier(String identifier) {
+		if (identifier == null) {
+			return null;
+		}
+		return staticUnquote(identifier).toUpperCase(Locale.ENGLISH);
+	}
+
+	/**
 	 * Compares a String to another String, ignoring case considerations and quoting.
 	 * 
 	 * @param a first String
@@ -272,7 +289,6 @@ public class Quoting {
 	 * @return <code>true</code> if a equals b
 	 */
 	public static boolean equalsIgnoreQuotingAndCase(String a, String b) {
-		// TODO: statt dessen: normalizeIdentifier
 		if (a == null) {
 			return b == null;
 		}
