@@ -89,8 +89,19 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 
 /**
- * Analyzes SQL statements and proposes association definitions.
- *
+ * Analyzes SQL statements and proposes association definitions. <br>
+ * This allows to reverse-engineer the data model based on existing SQL queries. <br><br>
+ * 
+ * It uses this recursive procedure:
+ * <ul>
+ * <li>Open new scope.</li>
+ * <li>Retrieve information about used tables and aliases.</li>
+ * <li>Analyze sub-queries</li>
+ * <li>Collect equations between columns.</li>
+ * <li>Assemble association-proposals based on transitive closure of the equations.</li>
+ * <li>Close the scope.</li>
+ * </ul>
+ * 
  * @author Ralf Wisser
  */
 public class AssociationProposer {
@@ -102,6 +113,11 @@ public class AssociationProposer {
 	private final Set<Equation> equations = new HashSet<Equation>();
 	private final Set<Association> fromDataModel = new HashSet<Association>();
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param dataModel the data model
+	 */
 	public AssociationProposer(DataModel dataModel) {
 		this.dataModel = dataModel;
 		for (Entry<String, Association> e: dataModel.namedAssociations.entrySet()) {
@@ -114,6 +130,13 @@ public class AssociationProposer {
 		}
 	}
 
+	/**
+	 * Analyzes a given statement.
+	 * 
+	 * @param sqlStatement the statement
+	 * @param startLineNumber the line number at which the statement begins in the script
+	 * @return an error message if statement is invalid, else <code>null</code>
+	 */
 	public synchronized String analyze(String sqlStatement, int startLineNumber) {
 		sqlStatement = removeCommentsAndLiterals(sqlStatement);
 		for (String function : FUNCTIONS_TO_IGNORE) {
@@ -222,13 +245,14 @@ public class AssociationProposer {
 	}
 
 	/**
-	 * Select scope.
+	 * Scope of a "PlainSelect".
 	 */
 	private class Scope {
 		Map<String, String> aliasToTable = new HashMap<String, String>();
-		public List<Expression> expressions = new ArrayList<Expression>();
+		List<Expression> expressions = new ArrayList<Expression>();
 		// List<Cond>
 
+		@Override
 		public String toString() {
 			return aliasToTable.toString() + "\n" + expressions;
 		}
@@ -306,6 +330,16 @@ public class AssociationProposer {
 
 		@Override
 		public void visit(Merge merge) {
+			if (merge.getUsingSelect() != null) {
+				if (merge.getUsingSelect().getWithItemsList() != null) {
+					for (WithItem item: merge.getUsingSelect().getWithItemsList()) {
+						item.accept(this);
+					}
+				}
+				if (merge.getUsingSelect().getSelectBody() != null) {
+					merge.getUsingSelect().getSelectBody().accept(this);
+				}
+			}
 		}
 
 		@Override
@@ -337,6 +371,17 @@ public class AssociationProposer {
 			selectExpressionItem.getExpression().accept(this);
 		}
 
+		/**
+		 * Analyzes a "PlainSelect".
+		 * <ul>
+		 * <li>Opens new scope.</li>
+		 * <li>Retrieves information about used tables and aliases.</li>
+		 * <li>Analyzes sub-queries</li>
+		 * <li>Collects equations between columns.</li>
+		 * <li>Assembles associations based on transitive closure of the equations.</li>
+		 * <li>Closes the scope.</li>
+		 * </ul>
+		 */
 		@Override
 		public void visit(PlainSelect plainSelect) {
 			scopes.push(new Scope());
@@ -597,6 +642,9 @@ public class AssociationProposer {
 		}
 	}
 
+	/**
+	 * Equation between two columns.
+	 */
 	private static class Equation {
 		public final String aliasA;
 		public final net.sf.jailer.datamodel.Column a;
@@ -658,6 +706,9 @@ public class AssociationProposer {
 		}
 	}
 
+	/**
+	 * Creates transitive closure of the equations.
+	 */
 	private void closeEquations() {
 		Set<Equation> joined = new HashSet<Equation>();
 		do {
@@ -674,6 +725,9 @@ public class AssociationProposer {
 		} while (!joined.isEmpty());
 	}
 
+	/**
+	 * Assemble association-proposals based on transitive closure of the equations.
+	 */
 	private void proposeJoinConditions() {
 		Set<Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table>> pairs = new LinkedHashSet<Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table>>();
 		List<Equation> sortedEquations = new ArrayList<Equation>(equations);
@@ -774,12 +828,22 @@ public class AssociationProposer {
 		}
 	}
 
+	/**
+	 * Picks up new associations.
+	 * 
+	 * @return new associations
+	 */
 	public synchronized List<Association> pickUpNewAssociations() {
 		ArrayList<Association> result = new ArrayList<Association>(newAssociations);
 		newAssociations.clear();
 		return result;
 	}
 
+	/**
+	 * Picks up already known associations (Associations that are in data model)
+	 * 
+	 * @return already known associations
+	 */
 	public synchronized List<Association> pickUpKnownAssociations() {
 		ArrayList<Association> result = new ArrayList<Association>(newKnownAssociations);
 		newKnownAssociations.clear();

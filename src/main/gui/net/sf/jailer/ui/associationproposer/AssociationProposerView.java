@@ -72,15 +72,12 @@ import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
 
 /**
- * Analyzes SQL statements and proposes association definitions.
+ * Analyzes SQL statements and proposes association definitions. <br>
+ * This allows to reverse-engineer the data model based on existing SQL queries. <br><br>
  *
  * @author Ralf Wisser
  */
 public class AssociationProposerView extends javax.swing.JPanel {
-
-	
-	// TODO: Data Model Editor: assoc editor wie hier
-
 	private int numErrors;
 	private RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
 	private TextArea checksPane;
