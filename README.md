@@ -22,7 +22,8 @@ Jailer is a tool for database subsetting and relational data browsing.
  
 ## News
 
- - 2018-04-06   SQL Console with code completion, syntax highlighting and database metadata visualization.
+ - 2018-04-26   The new feature "Analyze SQL" analyzes SQL statements and proposes association definitions. This allows to reverse-engineer the data model based on existing SQL queries.
+ - 2018-03-06   SQL Console with code completion, syntax highlighting and database metadata visualization.
  - 2017-05-10   New API provides programmatic access to the data export and import functionality. http://jailer.sourceforge.net/api.html
  - 2017-03-30 	Improved filter management. Support for import-filters and literal-filters.
  - 2017-01-27 	Referential cycles can now be exported by deferring the insert of nullable foreign keys.
