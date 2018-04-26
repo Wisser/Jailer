@@ -39,6 +39,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -736,9 +737,10 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 
 	public void adjustTableColumnsWidth() {
 		DefaultTableModel dtm = (DefaultTableModel) problemsTable.getModel();
+		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
 		for (int i = 0; i < problemsTable.getColumnCount(); i++) {
 			TableColumn column = problemsTable.getColumnModel().getColumn(i);
-			Component comp = problemsTable.getDefaultRenderer(String.class).getTableCellRendererComponent(problemsTable, column.getHeaderValue(), false, false, 0, i);
+			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(problemsTable, column.getHeaderValue(), false, false, 0, i);
 			int width = problemsTable.getWidth() / 3;
 			if (i < 2) {
 				width = Math.max(width, comp.getPreferredSize().width);

@@ -38,6 +38,7 @@ import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -188,12 +189,13 @@ public class ColumnsTable extends JTable {
 
 	private void adjustTableColumnsWidth() {
 		DefaultTableModel dtm = (DefaultTableModel) getModel();
+		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
 		int maxWidth = getColumnCount() > 2? 300 : 1200;
 		for (int i = 0; i < getColumnCount(); i++) {
 			TableColumn column = getColumnModel().getColumn(i);
 			int width = 0;
 
-			Component comp = getDefaultRenderer(String.class).getTableCellRendererComponent(this, column.getHeaderValue(), false, false, 0, i);
+			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(this, column.getHeaderValue(), false, false, 0, i);
 			int pw = comp.getPreferredSize().width;
 			if (pw < 100) {
 				pw = (pw * 130) / 100 + 10;

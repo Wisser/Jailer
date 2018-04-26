@@ -518,9 +518,10 @@ public class DataModelEditor extends javax.swing.JDialog {
 
 	public void adjustTableColumnsWidth(JTable table) {
 		DefaultTableModel dtm = (DefaultTableModel) table.getModel();
+		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
 		for (int i = 0; i < table.getColumnCount() - 1; i++) {
 			TableColumn column = table.getColumnModel().getColumn(i);
-			Component comp = table.getDefaultRenderer(String.class).getTableCellRendererComponent(table, column.getHeaderValue(), false, false, 0, i);
+			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(table, column.getHeaderValue(), false, false, 0, i);
 			int width = 1;
 			width = Math.max(width, comp.getPreferredSize().width);
 

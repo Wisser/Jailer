@@ -106,6 +106,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -771,6 +772,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(rowsTable, value, isSelected, false, row, column);
+				final RowSorter<?> rowSorter = rowsTable.getRowSorter();
+				if (rowSorter.getViewRowCount() == 0) {
+					return render;
+				}
 				if (value instanceof Row) {
 					Row theRow = (Row) value;
 					Pair<BrowserContentPane, String> pair = new Pair<BrowserContentPane, String>(BrowserContentPane.this, theRow.rowId);
@@ -778,7 +783,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					return singleRowDetailsView;
 				}
 
-				final RowSorter<?> rowSorter = rowsTable.getRowSorter();
 				boolean renderRowAsPK = false;
 				if (render instanceof JLabel) {
 					Row r = null;
@@ -3413,6 +3417,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		selectDistinctCheckBox.setVisible(nndr > 0);
 		selectDistinctCheckBox.setText("select distinct (-" + nndr + " row" + (nndr == 1? "" : "s") + ")");
 
+		if (filterHeader != null) {
+			if (rowsTable.getRowSorter() != null && rowsTable.getRowSorter().getViewRowCount() == 0) {
+				filterHeader.setTable(null);
+				filterHeader = null;
+			}
+		}
+
 		if (isTableFilterEnabled && !noFilter) {
 			if (filterHeader == null) {
 				filterHeader = new TableFilterHeader();
@@ -3494,11 +3505,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (rowsTable.getColumnCount() > 0) {
 			MAXLINES = Math.max(10 * MAXLINES / rowsTable.getColumnCount(), 10);
 		}
+		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
 		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
 			TableColumn column = rowsTable.getColumnModel().getColumn(i);
 			int width = ((int) (Desktop.BROWSERTABLE_DEFAULT_WIDTH * getLayoutFactor()) - 18) / rowsTable.getColumnCount();
 
-			Component comp = rowsTable.getDefaultRenderer(String.class).getTableCellRendererComponent(rowsTable, column.getHeaderValue(), false, false, 0, i);
+			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(rowsTable, column.getHeaderValue(), false, false, 0, i);
 			int pw = comp.getPreferredSize().width;
 			if (pw < 100) {
 				pw = (pw * 130) / 100 + 10;
@@ -3508,7 +3520,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			int line = 0;
 			for (; line < rowsTable.getRowCount(); ++line) {
 				comp = rowsTable.getCellRenderer(line, i).getTableCellRendererComponent(rowsTable, dtm.getValueAt(line, i), false, false, line, i);
-				width = Math.max(width, comp.getPreferredSize().width + (singleRowDetailsView == null ? 16 : 0));
+				width = Math.max(width, comp.getPreferredSize().width + (singleRowDetailsView == null ? 24 : 0));
 				if (line > MAXLINES) {
 					break;
 				}

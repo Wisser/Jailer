@@ -206,10 +206,11 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 	
 	private void adjustColumnsWidth() {
 		DefaultTableModel dtm = (DefaultTableModel) columnsTable.getModel();
+		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
 		for (int i = 0; i < columnsTable.getColumnCount(); i++) {
 			TableColumn column = columnsTable.getColumnModel().getColumn(i);
 			
-			Component comp = columnsTable.getDefaultRenderer(String.class).getTableCellRendererComponent(columnsTable, column.getHeaderValue(), false, false, 0, i);
+			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(columnsTable, column.getHeaderValue(), false, false, 0, i);
 			int width = comp.getPreferredSize().width;
 
 			for (int line = 0; line < columnsTable.getRowCount(); ++line) {

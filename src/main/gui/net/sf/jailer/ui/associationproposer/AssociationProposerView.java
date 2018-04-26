@@ -49,6 +49,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -109,7 +110,9 @@ public class AssociationProposerView extends javax.swing.JPanel {
 		};
 		
 		Font infoFont = jinfoLabe.getFont();
-		jinfoLabe.setFont(new Font(infoFont.getName(), infoFont.getStyle(), (int) (infoFont.getSize() * 1.2)));
+		infoFont = new Font(infoFont.getName(), infoFont.getStyle(), (int) (infoFont.getSize() * 1.2));
+		jinfoLabe.setFont(infoFont);
+		jinfoLabe1.setFont(infoFont);
 	
 		if (dataModel != null) {
 			try {
@@ -486,6 +489,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         dummyLabel1 = new javax.swing.JLabel();
         jinfoLabe = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
+        jinfoLabe1 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -697,7 +701,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         jPanel1.add(loadButton, gridBagConstraints);
@@ -706,7 +710,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         emptyLineCheckBox.setText("Empty line separates statements");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 8, 0);
         jPanel1.add(emptyLineCheckBox, gridBagConstraints);
@@ -730,11 +734,20 @@ public class AssociationProposerView extends javax.swing.JPanel {
         jPanel1.add(jinfoLabe, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         jPanel1.add(jSeparator1, gridBagConstraints);
+
+        jinfoLabe1.setText("This allows to reverse-engineer the data model based on existing SQL queries.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(jinfoLabe1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -796,6 +809,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel jinfoLabe;
+    private javax.swing.JLabel jinfoLabe1;
     private javax.swing.JPanel knownPanel;
     private javax.swing.JTable knownTable;
     private javax.swing.JButton loadButton;
@@ -832,9 +846,10 @@ public class AssociationProposerView extends javax.swing.JPanel {
 
 	public void adjustTableColumnsWidth(JTable table, boolean fixFirstColumn) {
 		DefaultTableModel dtm = (DefaultTableModel) table.getModel();
+		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
 		for (int i = 0; i < table.getColumnCount(); i++) {
 			TableColumn column = table.getColumnModel().getColumn(i);
-			Component comp = table.getDefaultRenderer(String.class).getTableCellRendererComponent(table, column.getHeaderValue(), false, false, 0, i);
+			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(table, column.getHeaderValue(), false, false, 0, i);
 			int width = 1;
 			width = Math.max(width, comp.getPreferredSize().width);
 
