@@ -3421,6 +3421,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (rowsTable.getRowSorter() != null && rowsTable.getRowSorter().getViewRowCount() == 0) {
 				filterHeader.setTable(null);
 				filterHeader = null;
+				adjustRowTableColumnsWidth();
 			}
 		}
 
@@ -3513,7 +3514,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(rowsTable, column.getHeaderValue(), false, false, 0, i);
 			int pw = comp.getPreferredSize().width;
 			if (pw < 100) {
-				pw = (pw * 130) / 100 + 10;
+				pw = (pw * 110) / 100 + 2;
 			}
 			width = Math.max(width, pw);
 
