@@ -2006,17 +2006,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void run() {
                 try {
                     try {
-                        // L&F can no longer be changed
-//						File plafSetting = new File(PLAFSETTING);
-                        String plaf;
-//						if (!plafSetting.exists()) {
-                            plaf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
-//						} else {
-//							BufferedReader in = new BufferedReader(new FileReader(plafSetting));
-//							plaf = in.readLine();
-//							in.close();
-//						}
-                        UIManager.setLookAndFeel(plaf);
+                    	for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                            if ("Nimbus".equals(info.getName())) {
+                                UIManager.setLookAndFeel(info.getClassName());
+                                break;
+                            }
+                        }
                         ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
                         ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
                         Object dSize = UIManager.get("SplitPane.dividerSize");
