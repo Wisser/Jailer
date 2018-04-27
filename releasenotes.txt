@@ -1,4 +1,4 @@
-7.8
+7.8.1
   - The new feature "Analyze SQL" analyzes SQL statements and proposes association definitions.
     This allows to reverse-engineer the data model based on existing SQL queries.
   - Improved render quality on high resolution screens.

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.restrictionmodel.RestrictionModel;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -512,6 +513,9 @@ public class Association extends ModelElement {
 				return Collections.emptyMap();
 			}
 
+			sColumn = Quoting.normalizeIdentifier(sColumn);
+			dColumn = Quoting.normalizeIdentifier(dColumn);
+			
 			if (reversed) {
 				String h = sColumn;
 				sColumn = dColumn;
@@ -520,14 +524,14 @@ public class Association extends ModelElement {
 
 			Column sourceColumn = null;
 			for (Column c : source.getColumns()) {
-				if (c.name.equals(sColumn)) {
+				if (Quoting.normalizeIdentifier(c.name).equals(sColumn)) {
 					sourceColumn = c;
 					break;
 				}
 			}
 			Column destinationColumn = null;
 			for (Column c : destination.getColumns()) {
-				if (c.name.equals(dColumn)) {
+				if (Quoting.normalizeIdentifier(c.name).equals(dColumn)) {
 					destinationColumn = c;
 					break;
 				}
