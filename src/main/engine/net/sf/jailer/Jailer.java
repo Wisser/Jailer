@@ -15,6 +15,9 @@
  */
 package net.sf.jailer;
 
+// TODO: subqueries in subject conditions
+
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.StringReader;
@@ -53,13 +56,21 @@ import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 
 /**
- * Tool for database subsetting, schema browsing, and rendering. It exports
- * consistent, referentially intact row-sets from relational databases. It
- * removes obsolete data without violating integrity. It is DBMS agnostic,
- * platform independent, and generates topologically sorted SQL-DML,
- * hierarchically structured XML, and DBUnit datasets.
+ * Jailer is a tool for database subsetting and relational data browsing. <br>
+ * <ul>
+ * <li>
+ * The Subsetter exports consistent, referentially intact row-sets from relational databases, 
+ * generates topologically sorted SQL-DML, DbUnit datasets 
+ * and hierarchically structured XML.
+ * </li>
+ * <li>
+ * The Data Browser allows bidirectional navigation through the database 
+ * by following foreign-key-based or user-defined relationships.
+ * </li>
+ * </ul>
  * 
- * <a href="http://jailer.sourceforge.net/">http://jailer.sourceforge.net</a>
+ * <a href="http://jailer.sourceforge.net/">http://jailer.sourceforge.net</a> <br>
+ * <a href="https://github.com/Wisser/Jailer">https://github.com/Wisser/Jailer</a> <br><br>
  * 
  * @author Ralf Wisser
  */
