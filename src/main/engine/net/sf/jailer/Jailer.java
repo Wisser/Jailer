@@ -15,9 +15,6 @@
  */
 package net.sf.jailer;
 
-// TODO: subqueries in subject conditions
-
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.StringReader;
