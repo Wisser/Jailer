@@ -1333,9 +1333,9 @@ public class SubsettingEngine {
 		appendCommentHeader("");
 		String condition = (subjectCondition != null && !"1=1".equals(subjectCondition)) ? extractionModel.subject.getName() + " where " + subjectCondition
 				: "all rows from " + extractionModel.subject.getName();
-		appendCommentHeader("Extraction Model:  " + condition + " (" + extractionModelURL + ")");
+		appendCommentHeader("Extraction Model:  " + (condition.replaceAll("\\s+", " ")) + " (" + extractionModelURL + ")");
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
-			condition = (as.getCondition() != null && as.getCondition().trim().length() > 0) ? as.getSubject().getName() + " where " + as.getCondition()
+			condition = (as.getCondition() != null && as.getCondition().trim().length() > 0) ? as.getSubject().getName() + " where " + (as.getCondition().replaceAll("\\s+", " "))
 					: "all rows from " + as.getSubject().getName();
 			appendCommentHeader("                   Union " + condition);
 		}

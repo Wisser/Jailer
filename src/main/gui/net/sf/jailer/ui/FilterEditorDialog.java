@@ -133,9 +133,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			}
 			checkBox.setSelected(condition.trim().startsWith(Filter.LITERAL_PREFIX));
 			if (!withColumnsDropDown) {
-				return super.edit(condition, null, null, null, table2label, table2alias, table2, addPseudoColumns);
+				return super.edit(condition, null, null, null, table2label, table2alias, table2, addPseudoColumns, false);
 			}
-			return super.edit(condition, table1label, table1alias, table1, table2label, table2alias, table2, addPseudoColumns);
+			return super.edit(condition, table1label, table1alias, table1, table2label, table2alias, table2, addPseudoColumns, false);
 		}
 	}
 

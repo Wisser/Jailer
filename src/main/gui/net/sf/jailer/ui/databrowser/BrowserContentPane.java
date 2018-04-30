@@ -938,7 +938,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						String cond = andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false);
+						String cond = andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
 						if (cond != null) {
 							if (!getAndConditionText().equals(ConditionEditor.toSingleLine(cond))) {
 								setAndCondition(ConditionEditor.toSingleLine(cond), true);

@@ -587,7 +587,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (currentAssociation != null && restrictionEditor.restriction.isEditable()) {
-					String cond = restrictionConditionEditor.edit(restrictionEditor.restriction.getText(), "Table A", "A", currentAssociation.source, "Table B", "B", currentAssociation.destination, true);
+					String cond = restrictionConditionEditor.edit(restrictionEditor.restriction.getText(), "Table A", "A", currentAssociation.source, "Table B", "B", currentAssociation.destination, true, false);
 					if (cond != null) {
 						if (!restrictionEditor.restriction.getText().equals(ConditionEditor.toSingleLine(cond))) {
 							restrictionEditor.restriction.setText(ConditionEditor.toSingleLine(cond));
@@ -616,7 +616,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				String cond = subjectConditionEditor.edit(condition.getText(), "Subject", "T", subject, null, null, null, false);
+				String cond = subjectConditionEditor.edit(condition.getText(), "Subject", "T", subject, null, null, null, false, true);
 				if (cond != null) {
 					if (!condition.getText().equals(ConditionEditor.toSingleLine(cond))) {
 						condition.setText(ConditionEditor.toSingleLine(cond));

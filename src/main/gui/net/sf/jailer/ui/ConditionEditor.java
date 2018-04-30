@@ -22,6 +22,7 @@ import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -30,15 +31,18 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * Editor for multi-line SQL conditions with parameter support.
@@ -198,6 +202,7 @@ public class ConditionEditor extends javax.swing.JDialog {
         table2name = new javax.swing.JLabel();
         table2dropDown = new javax.swing.JLabel();
         addOnPanel = new javax.swing.JPanel();
+        toSubQueryButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -284,16 +289,32 @@ public class ConditionEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel2.add(addOnPanel, gridBagConstraints);
 
+        toSubQueryButton.setText("Convert to Subquery");
+        toSubQueryButton.setToolTipText("<html>Converts condition into a subquery.<br> This allows to add joins with related tables or limiting clauses etc. </html>");
+        toSubQueryButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toSubQueryButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        jPanel2.add(toSubQueryButton, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 20;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel1.add(jPanel2, gridBagConstraints);
 
         okButton.setText(" Ok ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -301,8 +322,7 @@ public class ConditionEditor extends javax.swing.JDialog {
 
         cancelButton.setText(" Cancel ");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -345,6 +365,43 @@ public class ConditionEditor extends javax.swing.JDialog {
 		setVisible(false);
 	}//GEN-LAST:event_cancelButtonActionPerformed
 
+    private void toSubQueryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toSubQueryButtonActionPerformed
+        if (table1alias != null && table1 != null) {
+        	String condition = editorPane.getText();
+        	if ("T".equalsIgnoreCase(table1alias)) {
+        		condition = SqlUtil.replaceAlias(condition, table1.getUnqualifiedName());
+        	} else if ("A".equalsIgnoreCase(table1alias)) {
+        		condition = SqlUtil.replaceAliases(condition, table1.getUnqualifiedName(), "B");
+        	} else {
+        		return;
+        	}
+        	StringBuilder prefix = new StringBuilder();
+        	StringBuilder suffix = new StringBuilder();
+        	StringBuilder pkCond = new StringBuilder();
+        	
+        	for (Column pk: table1.primaryKey.getColumns()) {
+        		if (pkCond.length() > 0) {
+        			pkCond.append(" and ");
+        		}
+        		pkCond.append(table1.getUnqualifiedName() + "." + pk.name + "=" + table1alias + "." + pk.name);
+        	}
+        	
+        	if (table1.primaryKey.getColumns().size() == 1) {
+        		prefix.append(table1alias + "." + table1.primaryKey.getColumns().get(0).name + " in (Select " + table1.primaryKey.getColumns().get(0).name + " From " + table1.getName() + " Where\n  ");
+        		suffix.append("\n)");
+        	} else {
+        		prefix.append("exists(Select 1 From " + table1.getName() + " Where (\n  ");
+        		suffix.append("\n) and " + pkCond + ")");
+        	}
+        	editorPane.beginAtomicEdit();
+        	editorPane.setText(prefix + condition + suffix);
+        	editorPane.setCaretPosition(prefix.length() + condition.length());
+        	editorPane.endAtomicEdit();
+        	editorPane.grabFocus();
+        	toSubQueryButton.setEnabled(false);
+        }
+    }//GEN-LAST:event_toSubQueryButtonActionPerformed
+
 	private Table table1, table2;
 	private String table1alias, table2alias;
 	private boolean addPseudoColumns;
@@ -355,8 +412,9 @@ public class ConditionEditor extends javax.swing.JDialog {
 	 * @param condition the condition
 	 * @return new condition or <code>null</code>, if user canceled the editor
 	 */
-	public String edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns) {
+	public String edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
 		condition = toMultiLine(condition);
+		condition = new BasicFormatterImpl().format(condition);
 		this.table1 = table1;
 		this.table2 = table2;
 		this.table1alias = table1alias;
@@ -384,6 +442,14 @@ public class ConditionEditor extends javax.swing.JDialog {
 			this.table2name.setVisible(false);
 			this.table2dropDown.setVisible(false);
 		}
+		toSubQueryButton.setVisible(addConvertSubqueryButton);
+		toSubQueryButton.setEnabled(true);
+		if (table1 != null && (table1.primaryKey == null || table1.primaryKey.getColumns() == null|| table1.primaryKey.getColumns().isEmpty())) {
+			toSubQueryButton.setEnabled(false);
+		}
+		if (Pattern.compile("(exists|in)\\s*\\(\\s*select", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
+			toSubQueryButton.setEnabled(false);
+		}
 		ok = false;
 		editorPane.setText(condition);
 		editorPane.setCaretPosition(0);
@@ -401,56 +467,68 @@ public class ConditionEditor extends javax.swing.JDialog {
 				provider.addAlias(table2alias, table2);
 			}
 		}
-		editorPane.grabFocus();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				editorPane.grabFocus();
+			}
+		});
 		setVisible(true);
-		return ok? editorPane.getText() : null;
+		if (ok && condition.equals(editorPane.getText())) {
+			ok = false;
+		}
+		return ok? editorPane.getText().replaceAll("\\n(\\r?) +", " ") : null;
 	}
 	
 	/**
 	 * Converts multi-line text into single line presentation.
 	 */
 	public static String toSingleLine(String s) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < s.length(); ++i) {
-			char c = s.charAt(i);
-			if (c == '\\') {
-				sb.append("\\\\");
-			} else if (c == '\n') {
-				sb.append("\\n");
-			} else if (c == '\r') {
-				sb.append("\\r");
-			} else {
-				sb.append(c);
-			}
-		}
-		return sb.toString();
+		return s;
+		// TODO this doesn't seem to work
+//		StringBuilder sb = new StringBuilder();
+//		for (int i = 0; i < s.length(); ++i) {
+//			char c = s.charAt(i);
+//			if (c == '\\') {
+//				sb.append("\\\\");
+//			} else if (c == '\n') {
+//				sb.append("\\n");
+//			} else if (c == '\r') {
+//				sb.append("\\r");
+//			} else {
+//				sb.append(c);
+//			}
+//		}
+//		return sb.toString();
 	}
 
 	/**
 	 * Converts single line presentation into multi-line text.
 	 */
 	public static String toMultiLine(String s) {
-		StringBuilder sb = new StringBuilder();
-		boolean esc = false;
-		for (int i = 0; i < s.length(); ++i) {
-			char c = s.charAt(i);
-			if (c == '\\') {
-				if (esc) {
-					esc = false;
-				} else {
-					esc = true;
-					continue;
-				}
-			}
-			if (esc && c == 'n') {
-				c = '\n';
-			} else if (esc && c == 'r') {
-				c = '\r';
-			}
-			sb.append(c);
-			esc = false;
-		}
-		return sb.toString();
+		return s;
+		// TODO this doesn't seem to work
+//		StringBuilder sb = new StringBuilder();
+//		boolean esc = false;
+//		for (int i = 0; i < s.length(); ++i) {
+//			char c = s.charAt(i);
+//			if (c == '\\') {
+//				if (esc) {
+//					esc = false;
+//				} else {
+//					esc = true;
+//					continue;
+//				}
+//			}
+//			if (esc && c == 'n') {
+//				c = '\n';
+//			} else if (esc && c == 'r') {
+//				c = '\r';
+//			}
+//			sb.append(c);
+//			esc = false;
+//		}
+//		return sb.toString();
 	}
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -469,6 +547,7 @@ public class ConditionEditor extends javax.swing.JDialog {
     private javax.swing.JLabel table2dropDown;
     private javax.swing.JLabel table2label;
     private javax.swing.JLabel table2name;
+    private javax.swing.JButton toSubQueryButton;
     // End of variables declaration//GEN-END:variables
 	
 	private Icon dropDownIcon;

@@ -193,7 +193,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 					table = extractionModel.dataModel.getTableByDisplayName(item.toString());
 					conditionEditor.setTitle(item.toString());
 				}
-				String cond = conditionEditor.edit(detailsCondtition.getText(), "Subject", "T", table, null, null, null, false);
+				String cond = conditionEditor.edit(detailsCondtition.getText(), "Subject", "T", table, null, null, null, false, true);
 				if (cond != null) {
 					if (!detailsCondtition.getText().equals(ConditionEditor.toSingleLine(cond))) {
 						detailsCondtition.setText(ConditionEditor.toSingleLine(cond));

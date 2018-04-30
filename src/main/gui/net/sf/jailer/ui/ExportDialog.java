@@ -357,7 +357,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			}
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				String cond = subjectConditionEditor.edit(where.getText(), "Subject", "T", subject, null, null, null, false);
+				String cond = subjectConditionEditor.edit(where.getText(), "Subject", "T", subject, null, null, null, false, true);
 				if (cond != null) {
 					if (!where.getText().equals(ConditionEditor.toSingleLine(cond))) {
 						where.setText(ConditionEditor.toSingleLine(cond));
