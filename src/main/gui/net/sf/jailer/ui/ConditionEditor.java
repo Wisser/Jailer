@@ -22,6 +22,7 @@ import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.Icon;
@@ -477,9 +478,49 @@ public class ConditionEditor extends javax.swing.JDialog {
 		if (ok && condition.equals(editorPane.getText())) {
 			ok = false;
 		}
-		return ok? editorPane.getText().replaceAll("\\n(\\r?) +", " ") : null;
+		return ok? removeSingleLineComments(editorPane.getText()).replaceAll("\\n(\\r?) +", " ") : null;
 	}
-	
+
+	/**
+	 * Removes single line comments.
+	 * 
+	 * @param statement
+	 *            the statement
+	 * 
+	 * @return statement the statement without comments and literals
+	 */
+	private String removeSingleLineComments(String statement) {
+		Pattern pattern = Pattern.compile("('(?:[^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(statement);
+		boolean result = matcher.find();
+		StringBuffer sb = new StringBuffer();
+		if (result) {
+			do {
+				if (matcher.group(3) == null) {
+					matcher.appendReplacement(sb, "$0");
+					result = matcher.find();
+					continue;
+				}
+				int l = matcher.group(0).length();
+				matcher.appendReplacement(sb, "");
+				if (matcher.group(1) != null) {
+					l -= 2;
+					sb.append("'");
+				}
+				while (l > 0) {
+					--l;
+					sb.append(' ');
+				}
+				if (matcher.group(1) != null) {
+					sb.append("'");
+				}
+				result = matcher.find();
+			} while (result);
+		}
+		matcher.appendTail(sb);
+		return sb.toString();
+	}
+
 	/**
 	 * Converts multi-line text into single line presentation.
 	 */
