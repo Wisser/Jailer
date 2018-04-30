@@ -388,11 +388,11 @@ public class ConditionEditor extends javax.swing.JDialog {
         	}
         	
         	if (table1.primaryKey.getColumns().size() == 1) {
-        		prefix.append(table1alias + "." + table1.primaryKey.getColumns().get(0).name + " in (Select " + table1.primaryKey.getColumns().get(0).name + " From " + table1.getName() + " Where\n  ");
+        		prefix.append(table1alias + "." + table1.primaryKey.getColumns().get(0).name + " in (\n    Select " + table1.primaryKey.getColumns().get(0).name + "\n    From " + table1.getName() + " \n    Where\n        ");
         		suffix.append("\n)");
         	} else {
-        		prefix.append("exists(Select 1 From " + table1.getName() + " Where (\n  ");
-        		suffix.append("\n) and " + pkCond + ")");
+        		prefix.append("exists(\n    Select 1\n    From " + table1.getName() + " \n    Where (\n        ");
+        		suffix.append("\n        ) and " + pkCond + ")");
         	}
         	editorPane.beginAtomicEdit();
         	editorPane.setText(prefix + condition + suffix);
