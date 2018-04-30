@@ -190,8 +190,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			}
 			if (selectableFields) {
 				JTextArea f = new JTextArea();
-				if (v instanceof JLabel) {
-					f.setText(((JLabel) v).getText());
+				if (v instanceof UIUtil.IconWithText) {
+					f.setText(((UIUtil.IconWithText) v).text);
 				} else {
 					f.setText(v == null? "" : v.toString());
 				}
@@ -201,9 +201,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			} else {
 				JLabel f = new JLabel();
 				String text;
-				if (v instanceof JLabel) {
-					text = ((JLabel) v).getText() + "    ";
-					f.setIcon(((JLabel) v).getIcon());
+				if (v instanceof UIUtil.IconWithText) {
+					text = ((UIUtil.IconWithText) v).text + "    ";
+					f.setIcon(((UIUtil.IconWithText) v).icon);
 				} else {
 					text = (v == null? "null" : v.toString()) + "    ";
 				}

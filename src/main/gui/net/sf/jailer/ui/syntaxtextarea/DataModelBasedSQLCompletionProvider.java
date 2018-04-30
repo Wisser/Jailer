@@ -28,7 +28,7 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 			String schema = table.getSchema("");
 			String name = table.getUnqualifiedName();
 			schemaPerUUCName.put(Quoting.normalizeIdentifier(schema), schema);
-			schemaTablePerUUCName.put(Quoting.normalizeIdentifier(schema) + "." + Quoting.staticUnquote(name), table);
+			schemaTablePerUUCName.put(Quoting.normalizeIdentifier(schema) + "." + Quoting.normalizeIdentifier(name), table);
 			List<Table> tps = tablesPerSchema.get(schema);
 			if (tps == null) {
 				tps = new ArrayList<Table>();
@@ -59,7 +59,7 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 
 	@Override
 	protected Table findTable(String schema, String name) {
-		return schemaTablePerUUCName.get(Quoting.normalizeIdentifier(schema) + "." + Quoting.staticUnquote(name));
+		return schemaTablePerUUCName.get(Quoting.normalizeIdentifier(schema) + "." + Quoting.normalizeIdentifier(name));
 	}
 
 	@Override

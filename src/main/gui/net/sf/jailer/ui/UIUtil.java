@@ -944,4 +944,22 @@ public class UIUtil {
 	    clipboard.setContents(selection, selection);
 	}
 
+	/**
+	 * Pair of Icon and Text.
+	 */
+	public static class IconWithText {
+		public final String text;
+		public final ImageIcon icon;
+
+		public IconWithText(String text, ImageIcon icon) {
+			this.text = text;
+			this.icon = icon;
+		}
+
+		@Override
+		public String toString() {
+			return text;
+		}
+	}
+	
 }

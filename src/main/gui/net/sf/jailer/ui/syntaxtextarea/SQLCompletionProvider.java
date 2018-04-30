@@ -1314,7 +1314,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         TABLE context;
         context = null;
         for (Entry<String, TABLE> entry: aliases.entrySet()) {
-            if (Quoting.normalizeIdentifier(entry.getKey()).equals(Quoting.staticUnquote(aliasName))) {
+            if (Quoting.normalizeIdentifier(entry.getKey()).equals(Quoting.normalizeIdentifier(aliasName))) {
                 context = entry.getValue();
                 break;
             }

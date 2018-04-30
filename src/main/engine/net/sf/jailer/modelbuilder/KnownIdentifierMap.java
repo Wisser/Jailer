@@ -100,7 +100,7 @@ public class KnownIdentifierMap {
 	}
 
 	private String normalizeColumnName(String tableName, String columnName) {
-		return "C" + Quoting.normalizeIdentifier(tableName) + "(.)" + Quoting.staticUnquote(columnName);
+		return "C" + Quoting.normalizeIdentifier(tableName) + "(.)" + Quoting.normalizeIdentifier(columnName);
 	}
 
 	private Pattern columnComparisionPattern = Pattern.compile("(A|a|B|b)( *\\. *)((?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+))");

@@ -33,11 +33,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -328,8 +328,8 @@ public class MDSchema extends MDObject {
 	}
 
 	private static Map<String, ImageIcon> constraintTypeIcons = Collections.synchronizedMap(new HashMap<String, ImageIcon>());
-	
-	public static JLabel getConstraintTypeIcon(final String type) {
+
+	public static UIUtil.IconWithText getConstraintTypeIcon(final String type) {
 		ImageIcon icon = null;
 		if (type != null) {
 			String iconURL = "constraint_" + (type.replaceAll(" +", "").toLowerCase()) + ".png";
@@ -342,14 +342,7 @@ public class MDSchema extends MDObject {
 			}
 			constraintTypeIcons.put(iconURL, icon);
 		}
-		JLabel label = new JLabel(type) {
-			@Override
-			public String toString() {
-				return type;
-			}
-		};
-		label.setIcon(icon);
-		return label;
+		return new UIUtil.IconWithText(type, icon);
 	}
 
 }

@@ -466,7 +466,7 @@ public class QueryTypeAnalyser {
 		if (strict) {
 			return a.equals(b);
 		}
-		return Quoting.normalizeIdentifier(a).equals(Quoting.staticUnquote(b));
+		return Quoting.normalizeIdentifier(a).equals(Quoting.normalizeIdentifier(b));
 	}
 
 	private static ExpressionVisitor createExpressionVisitor(final boolean[] noSubexpression, final Column[] column) {

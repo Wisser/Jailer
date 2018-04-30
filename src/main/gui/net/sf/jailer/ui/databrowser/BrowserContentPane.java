@@ -795,9 +795,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							if (r != null) {
 								renderRowAsPK = renderRowAsPK(r);
 								Object cellContent = r.values.length > column? r.values[column] : null;
-								if (cellContent instanceof JLabel) {
-									((JLabel) render).setIcon(((JLabel) cellContent).getIcon());
-									((JLabel) render).setText(((JLabel) cellContent).getText());
+								if (cellContent instanceof UIUtil.IconWithText) {
+									((JLabel) render).setIcon(((UIUtil.IconWithText) cellContent).icon);
+									((JLabel) render).setText(((UIUtil.IconWithText) cellContent).text);
 								}
 							}
 						}

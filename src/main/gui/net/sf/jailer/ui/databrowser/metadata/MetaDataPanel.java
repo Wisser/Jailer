@@ -104,6 +104,8 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.StringSearchPanel;
+import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.IconWithText;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -350,7 +352,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					DatabaseObjectRenderingDescription desc = new DatabaseObjectRenderingDescription();
 					desc.setItemDescription(new DatabaseObjectRenderingDescription());
 					final MemorizedResultSet listPerType = new MemorizedResultSet(rowsPerType, theList.getMetaData());
-					final JLabel label = MDSchema.getConstraintTypeIcon(e.getKey() + "s");
+					final UIUtil.IconWithText label = MDSchema.getConstraintTypeIcon(e.getKey() + "s");
 					result.add(new MDDescriptionBasedGeneric(e.getValue(), getMetaDataSource(), schema, dataModel, desc) {
 						@Override
 						protected MemorizedResultSet retrieveList(Session session) throws SQLException {
@@ -365,18 +367,18 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 						
 						@Override
 						protected MDDescriptionBasedGeneric createDetailDescription(final Object[] row, DatabaseObjectRenderingDescription detailDesc) {
-							final JLabel label = (JLabel) row[0];
+							final IconWithText label = (IconWithText) row[0];
 							return new MDDescriptionBasedGeneric(row[1] + " on " + row[2] + (row[3] != null && row[3].toString().trim().length() > 0? "(" + row[3] + ")" : ""), getMetaDataSource(), schema, dataModel, detailDesc) {
 								@Override
 								public Icon getIcon() {
-									return label == null? null : label.getIcon();
+									return label == null? null : label.icon;
 								}
 							};
 						}
 
 						@Override
 						public Icon getIcon() {
-							return label == null? null : label.getIcon();
+							return label == null? null : label.icon;
 						}
 					});
 				}
