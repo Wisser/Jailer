@@ -369,10 +369,12 @@ public class ConditionEditor extends javax.swing.JDialog {
     private void toSubQueryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toSubQueryButtonActionPerformed
         if (table1alias != null && table1 != null) {
         	String condition = editorPane.getText();
+        	String subAlias = table1alias + "_SUB";
+    		
         	if ("T".equalsIgnoreCase(table1alias)) {
-        		condition = SqlUtil.replaceAlias(condition, table1.getUnqualifiedName());
+        		condition = SqlUtil.replaceAlias(condition, subAlias);
         	} else if ("A".equalsIgnoreCase(table1alias)) {
-        		condition = SqlUtil.replaceAliases(condition, table1.getUnqualifiedName(), "B");
+        		condition = SqlUtil.replaceAliases(condition, subAlias, "B");
         	} else {
         		return;
         	}
@@ -384,14 +386,14 @@ public class ConditionEditor extends javax.swing.JDialog {
         		if (pkCond.length() > 0) {
         			pkCond.append(" and ");
         		}
-        		pkCond.append(table1.getUnqualifiedName() + "." + pk.name + "=" + table1alias + "." + pk.name);
+        		pkCond.append(subAlias + "." + pk.name + "=" + table1alias + "." + pk.name);
         	}
         	
         	if (table1.primaryKey.getColumns().size() == 1) {
-        		prefix.append(table1alias + "." + table1.primaryKey.getColumns().get(0).name + " in (\n    Select " + table1.primaryKey.getColumns().get(0).name + "\n    From " + table1.getName() + " \n    Where\n        ");
+        		prefix.append(table1alias + "." + table1.primaryKey.getColumns().get(0).name + " in (\n    Select " + subAlias + "." + table1.primaryKey.getColumns().get(0).name + "\n    From " + table1.getName() + " " + subAlias + " \n    Where\n        ");
         		suffix.append("\n)");
         	} else {
-        		prefix.append("exists(\n    Select 1\n    From " + table1.getName() + " \n    Where (\n        ");
+        		prefix.append("exists(\n    Select 1\n    From " + table1.getName() + " " + subAlias + " \n    Where (\n        ");
         		suffix.append("\n        ) and " + pkCond + ")");
         	}
         	editorPane.beginAtomicEdit();
@@ -415,7 +417,9 @@ public class ConditionEditor extends javax.swing.JDialog {
 	 */
 	public String edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
 		condition = toMultiLine(condition);
-		condition = new BasicFormatterImpl().format(condition);
+		if (Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
+			condition = new BasicFormatterImpl().format(condition);
+		}
 		this.table1 = table1;
 		this.table2 = table2;
 		this.table1alias = table1alias;
@@ -478,7 +482,7 @@ public class ConditionEditor extends javax.swing.JDialog {
 		if (ok && condition.equals(editorPane.getText())) {
 			ok = false;
 		}
-		return ok? removeSingleLineComments(editorPane.getText()).replaceAll("\\n(\\r?) +", " ") : null;
+		return ok? removeSingleLineComments(editorPane.getText()).replaceAll("\\n(\\r?) *", " ").replace('\n', ' ').replace('\r', ' ') : null;
 	}
 
 	/**
