@@ -104,6 +104,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.event.RowSorterEvent;
+import javax.swing.event.RowSorterListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -641,18 +643,30 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //				}
 				int maxI = Math.min(rowsTable.getRowCount(), rows.size());
 
+				RowSorter<? extends TableModel> sorter = getRowSorter();
+				if (sorter != null) {
+					maxI = sorter.getViewRowCount();
+				}
+				
+				int lastPMIndex = -1;
 				for (int i = 0; i < maxI; ++i) {
-					if (rows.get(i).isBlockEnd()) {
+					int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
+					if (mi >= rows.size()) {
+						continue;
+					}
+					if (rows.get(mi).getParentModelInndex() != lastPMIndex) {
+						lastPMIndex = rows.get(mi).getParentModelInndex();
+						int vi = i;
 						Graphics2D g2d = (Graphics2D) graphics;
 						g2d.setColor(color);
 						g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 						g2d.setStroke(new BasicStroke(1));
-						Rectangle r = rowsTable.getCellRect(i, 0, false);
+						Rectangle r = rowsTable.getCellRect(vi, 0, false);
 						x[0] = (int) r.getMinX();
-						y[0] = (int) r.getMaxY();
-						r = rowsTable.getCellRect(i, rowsTable.getColumnCount() - 1, false);
+						y[0] = (int) r.getMinY();
+						r = rowsTable.getCellRect(vi, rowsTable.getColumnCount() - 1, false);
 						x[1] = (int) r.getMaxX();
-						y[1] = (int) r.getMaxY();
+						y[1] = (int) r.getMinY();
 						g2d.drawPolyline(x, y, 2);
 					}
 				}
@@ -2441,6 +2455,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			pRows = Collections.singletonList(parentRow);
 		} else {
 			pRows = new ArrayList<Row>(pRows);
+//			RowBrowser pb = getParentBrowser();
+//			if (pb != null) {
+//				if (pb.browserContentPane != null) {
+//					if (pb.browserContentPane.rowsTable != null) {
+//						final RowSorter pSorter = pb.browserContentPane.rowsTable.getRowSorter();
+//						ArrayList<Row> sortedPRows = new ArrayList<Row>();
+//						for (int y = 0; y < pSorter.getViewRowCount(); ++y) {
+//							int my = pSorter.convertRowIndexToModel(y);
+//							sortedPRows.add(pRows.get(my));
+//							pRows.set(my, null);
+//						}
+//						for (int i = 0; i < pRows.size(); i++) {
+//							Row r = pRows.get(i);
+//							if (r != null) {
+//								sortedPRows.add(r);
+//							}
+//						}
+//						pRows = sortedPRows;
+//					}
+//				}
+//			}
 		}
 		Map<String, Row> rowSet = new HashMap<String, Row>();
 		if (parentRows != null) {
@@ -2567,14 +2602,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (newBlockRows.get(rId) != null) {
 					newRows.addAll(newBlockRows.get(rId));
 				}
+				sortNewRows(newRows);
 				if (parentRows != null) {
 					if (!newRows.isEmpty()) {
 						newRows.get(newRows.size() - 1).setBlockEnd(true);
-						++blockNr;
 						for (Row r: newRows) {
-							r.setBlockNr(blockNr);
+							r.setParentModelIndex(blockNr);
 						}
 					}
+					++blockNr;
 					for (Row row : newRows) {
 						Row exRow = rowSet.get(row.rowId);
 						if (!dupParent) {
@@ -2603,6 +2639,54 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			if (limit <= 0) {
 				break;
+			}
+		}
+	}
+
+	private void sortNewRows(List<Row> newRows) {
+		if (rowsTable != null && rowsTable.getRowSorter() != null) {
+			List<? extends SortKey> sk = rowsTable.getRowSorter().getSortKeys();
+			final int col;
+			final boolean asc;
+			if (!sk.isEmpty()) {
+				col = sk.get(0).getColumn();
+				asc = sk.get(0).getSortOrder() == SortOrder.ASCENDING;
+			} else {
+				col = getDefaultSortColumn();
+				asc = true;
+			}
+			if (col >= 0) {
+				Collections.sort(newRows, new Comparator<Row>() {
+					@Override
+					public int compare(Row a, Row b) {
+						Object va = null;
+						if (a != null && a.values != null && a.values.length > col) {
+							va = a.values[col];
+						}
+						Object vb = null;
+						if (b != null && b.values != null && b.values.length > col) {
+							vb = b.values[col];
+						}
+						if (a == null && b == null) {
+							return 0;
+						}
+						if (a == null) {
+							return -1;
+						}
+						if (b == null) {
+							return 1;
+						}
+						if (a.getClass().equals(b.getClass())) {
+							if (a instanceof Comparable<?>) {
+								int cmp = ((Comparable) a).compareTo(b);
+								return asc? cmp : -cmp;
+							}
+							return 0;
+						}
+						int cmp = a.getClass().getName().compareTo(b.getClass().getName());
+						return asc? cmp : -cmp;
+					}
+				});
 			}
 		}
 	}
@@ -3239,7 +3323,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				for (int i = 0; i < columns.size(); ++i) {
 					TableModelItem item = new TableModelItem();
-					item.blockNr = row.getBlockNr();
+					item.blockNr = row.getParentModelInndex();
 					item.value = rowData[i];
 					rowData[i] = item;
 				}
@@ -3285,6 +3369,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rowsTable.setModel(dtm);
 			rowsTable.setRowHeight(initialRowHeight);
 
+			final int defaultSortColumn = getDefaultSortColumn();
+			
 			TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(dtm) {
 				@Override
 				protected boolean useToString(int column) {
@@ -3296,7 +3382,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			        List<? extends SortKey> sortKeys = getSortKeys();
 			        if (sortKeys.size() > 0) {
 			            if (sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING) {
-			                setSortKeys(null);
+			                List<SortKey> sk = new ArrayList<SortKey>();
+			                if (defaultSortColumn >= 0) {
+			                	sk.add(new SortKey(defaultSortColumn, SortOrder.ASCENDING));
+			                }
+							setSortKeys(sk);
 			                return;
 			            }
 			        }
@@ -3312,9 +3402,31 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						@SuppressWarnings("unchecked")
 						@Override
 						public int compare(Object o1, Object o2) {
+							RowSorter pSorter = null;
+							RowBrowser pb = getParentBrowser();
+							if (pb != null) {
+								if (pb.browserContentPane != null) {
+									if (pb.browserContentPane.rowsTable != null) {
+										pSorter = pb.browserContentPane.rowsTable.getRowSorter();
+									}
+								}
+							}
 							if (o1 instanceof TableModelItem && o2 instanceof TableModelItem) {
 								int b1 = ((TableModelItem) o1).blockNr;
 								int b2 = ((TableModelItem) o2).blockNr;
+								if (pSorter != null) {
+									int b;
+									b = pSorter.convertRowIndexToView(b1);
+									if (b < 0) {
+										b = b1 + Integer.MAX_VALUE / 2;
+									}
+									b1 = b;
+									b = pSorter.convertRowIndexToView(b2);
+									if (b < 0) {
+										b = b1 + Integer.MAX_VALUE / 2;
+									}
+									b2 = b;
+								}
 								if (b1 != b2) {
 									return (b1 - b2) * (desc? -1 : 1);
 								}
@@ -3345,9 +3457,37 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					};
 				}
 			};
+			sorter.addRowSorterListener(new RowSorterListener() {
+				@Override
+				public void sorterChanged(RowSorterEvent e) {
+					if (e.getType() == RowSorterEvent.Type.SORTED) {
+						List<RowBrowser> chBrs = getChildBrowsers();
+						if (chBrs != null) {
+							for (RowBrowser chBr: chBrs) {
+								if (chBr.browserContentPane != null) {
+									if (chBr.browserContentPane.rowsTable != null) {
+										RowSorter chSorter = chBr.browserContentPane.rowsTable.getRowSorter();
+										if (chSorter instanceof TableRowSorter) {
+											((TableRowSorter) chSorter).sort();
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			});
 			rowsTable.setRowSorter(sorter);
 			try {
-				rowsTable.getRowSorter().setSortKeys(sortKeys);
+				if (!sortKeys.isEmpty()) {
+					rowsTable.getRowSorter().setSortKeys(sortKeys);
+				} else {
+					List<SortKey> sk = new ArrayList<SortKey>();
+					if (defaultSortColumn >= 0) {
+						sk.add(new SortKey(defaultSortColumn, SortOrder.ASCENDING));
+					}
+					rowsTable.getRowSorter().setSortKeys(sk);
+				}
 				if (filterHeader != null) {
 					for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
 						filterHeader.getFilterEditor(i).setContent(filterContent.get(i));
@@ -3475,6 +3615,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		isLimitExceeded = limitExceeded;
+	}
+
+	private int getDefaultSortColumn() {
+		if (table == null || table instanceof SqlStatementTable || getQueryBuilderDialog() == null /* SQL Console */) {
+			return -1;
+		}
+		if (table.primaryKey.getColumns() != null && table.primaryKey.getColumns().size() > 0) {
+			Column pk = table.primaryKey.getColumns().get(0);
+			for (int i = 0; i < table.getColumns().size(); ++i) {
+				if (table.getColumns().get(i).equals(pk)) {
+					return i;
+				}
+			}
+		}
+		return 0;
 	}
 
 	private TableFilterHeader filterHeader;

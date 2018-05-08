@@ -71,20 +71,20 @@ public class Row {
 	/**
 	 * The block number.
 	 */
-	private int blockNr = 0;
+	private int parentModelInndex = 0;
 
 	/**
-	 * @return the blockNr
+	 * @return the parentModelInndex
 	 */
-	public int getBlockNr() {
-		return blockNr;
+	public int getParentModelInndex() {
+		return parentModelInndex;
 	}
 
 	/**
-	 * @param blockNr the blockNr to set
+	 * @param parentModelInndex the parentModelInndex to set
 	 */
-	public void setBlockNr(int blockNr) {
-		this.blockNr = blockNr;
+	public void setParentModelIndex(int parentModelInndex) {
+		this.parentModelInndex = parentModelInndex;
 	}
 	
 }
