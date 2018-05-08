@@ -260,6 +260,12 @@ public class CellContentConverter {
 						 type = Types.NVARCHAR;
 					 }
 				 }
+				 // workaround for JDTS bug
+				 if (DBMS.MSSQL.equals(configuration)) {
+					 if ("datetimeoffset".equalsIgnoreCase(resultSetMetaData.getColumnTypeName(i))) {
+						 type = Types.TIMESTAMP;
+					 }
+				 }
 				 if (type == Types.CHAR) {
 					 if ("nchar".equalsIgnoreCase(resultSetMetaData.getColumnTypeName(i))) {
 						 type = Types.NCHAR;
@@ -282,7 +288,7 @@ public class CellContentConverter {
 			if (type == Types.ARRAY) {
 				return resultSet.getString(i);
 			}
-			if (type == Types.TIMESTAMP) {
+			if (type == Types.TIMESTAMP || type == 2014 /* Types.TIMESTAMP_WITH_TIMEZONE */) {
 				return resultSet.getTimestamp(i);
 			}
 			if (type == Types.DATE) {

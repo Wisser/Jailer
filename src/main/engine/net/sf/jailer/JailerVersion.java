@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "7.8.2";
+	public static final String VERSION = "7.8.3.0";
 
 	/**
 	 * The Jailer working tables version.
