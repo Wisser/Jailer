@@ -464,7 +464,20 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				try {
 					List<String> dma = (List<String>) in.readObject();
 					for (int n = 0; n < dma.size(); ++n) {
-						cis.get(n).dataModelFolder = dma.get(n);
+						ConnectionInfo connectionInfo = cis.get(n);
+						connectionInfo.dataModelFolder = dma.get(n);
+						if (connectionInfo.jar1 == null) {
+							connectionInfo.jar1 = "";
+						}
+						if (connectionInfo.jar2 == null) {
+							connectionInfo.jar2 = "";
+						}
+						if (connectionInfo.jar3 == null) {
+							connectionInfo.jar3 = "";
+						}
+						if (connectionInfo.jar4 == null) {
+							connectionInfo.jar4 = "";
+						}
 					}
 					preV4 = false;
 				} catch (Throwable t) {
