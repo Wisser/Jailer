@@ -42,6 +42,7 @@ public class Environment {
 	
 	public static void init() {
 		Locale.setDefault(Locale.ENGLISH);
+		Configuration configuration = Configuration.getInstance();
 		if (new File(".singleuser").exists()) {
 			home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
@@ -55,8 +56,8 @@ public class Environment {
 				copyIfNotExists("demo-scott.h2.db");
 				copyIfNotExists("demo-sakila.h2.db");
 
-				Configuration.getInstance().setTempFileFolder(newFile("tmp").getPath());
-				HtmlDataModelRenderer renderer = Configuration.getInstance().getRenderer();
+				configuration.setTempFileFolder(newFile("tmp").getPath());
+				HtmlDataModelRenderer renderer = configuration.getRenderer();
 				if (renderer != null) {
 					renderer.setOutputFolder(newFile(renderer.getOutputFolder()).getAbsolutePath());
 				}

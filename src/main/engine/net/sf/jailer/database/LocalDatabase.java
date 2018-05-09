@@ -47,7 +47,7 @@ public class LocalDatabase {
 	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws ClassNotFoundException, FileNotFoundException, SQLException {
 		this.databaseFolder = new File(Configuration.getInstance().getTempFileFolder() + File.separator + UUID.randomUUID().toString()).getAbsolutePath();
 		new File(databaseFolder).mkdirs();
-		BasicDataSource dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, 0, ClasspathUtil.toURLArray(jarfile, null));
+		BasicDataSource dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, 0, ClasspathUtil.toURLArray(jarfile, null, null, null));
 		session = new Session(dataSource, dataSource.dbms, null, false, true);
 	}
 	

@@ -235,7 +235,7 @@ public class ResultSetRenderer extends javax.swing.JPanel {
         protected void appendLayout() {
         }
         @Override
-        protected void adjustClosure(BrowserContentPane tabu) {
+        protected void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne) {
         }
         @Override
         protected void addRowToRowLink(Row pRow, Row exRow) {

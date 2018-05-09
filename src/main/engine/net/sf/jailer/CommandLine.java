@@ -126,8 +126,14 @@ public class CommandLine {
 	@Option(name="-jdbcjar", usage="JDBC driver's jar file")
 	public String jdbcjar = null;
 
-	@Option(name="-jdbcjar2", usage="JDBC driver's secondary jar file")
+	@Option(name="-jdbcjar2", usage="JDBC driver's additional jar file")
 	public String jdbcjar2 = null;
+
+	@Option(name="-jdbcjar3", usage="JDBC driver's 2. additional jar file")
+	public String jdbcjar3 = null;
+
+	@Option(name="-jdbcjar4", usage="JDBC driver's 3. additional jar file")
+	public String jdbcjar4 = null;
 
 	@Option(name="-no-sorting", usage="the exported rows will not be sorted according to foreign key constraints")
 	public boolean noSorting = false;

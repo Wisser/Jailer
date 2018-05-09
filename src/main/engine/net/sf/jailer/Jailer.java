@@ -151,7 +151,7 @@ public class Jailer {
 				}
 			}
 			
-			URL[] jdbcJarURLs = ClasspathUtil.toURLArray(commandLine.jdbcjar, commandLine.jdbcjar2);
+			URL[] jdbcJarURLs = ClasspathUtil.toURLArray(commandLine.jdbcjar, commandLine.jdbcjar2, commandLine.jdbcjar3, commandLine.jdbcjar4);
 
 			if ("check-domainmodel".equalsIgnoreCase(command)) {
 				DataModel dataModel = new DataModel(executionContext);

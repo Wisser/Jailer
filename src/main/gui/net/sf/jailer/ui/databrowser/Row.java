@@ -33,20 +33,6 @@ public class Row {
 		this.values = v;
 		this.primaryKey = primaryKey;
 	}
-	
-	/**
-	 * @param isBlockEnd <code>true</code> if this row is the last one of a block.
-	 */
-	public void setBlockEnd(boolean isBlockEnd) {
-		this.isBlockEnd = isBlockEnd;
-	}
-
-	/**
-	 * @return <code>true</code> if this row is the last one of a block.
-	 */
-	public boolean isBlockEnd() {
-		return isBlockEnd;
-	}
 
 	/**
 	 * Unique ID, also serves as SQL predicate which identifies this row.
@@ -62,29 +48,24 @@ public class Row {
 	 * Primary key values.
 	 */
 	public final String[] primaryKey;
-	
-	/**
-	 * <code>true</code> if this row is the last one of a block.
-	 */
-	private boolean isBlockEnd = false;
-	
+
 	/**
 	 * The block number.
 	 */
-	private int parentModelInndex = 0;
+	private int parentModelIndex = 0;
 
 	/**
 	 * @return the parentModelInndex
 	 */
-	public int getParentModelInndex() {
-		return parentModelInndex;
+	public int getParentModelIndex() {
+		return parentModelIndex;
 	}
 
 	/**
-	 * @param parentModelInndex the parentModelInndex to set
+	 * @param parentModelIndex the parentModelInndex to set
 	 */
-	public void setParentModelIndex(int parentModelInndex) {
-		this.parentModelInndex = parentModelInndex;
+	public void setParentModelIndex(int parentModelIndex) {
+		this.parentModelIndex = parentModelIndex;
 	}
-	
+
 }

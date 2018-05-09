@@ -773,8 +773,8 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected void adjustClosure(BrowserContentPane tabu) {
-				Desktop.this.adjustClosure(tabu);
+			protected void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne) {
+				Desktop.this.adjustClosure(tabu, thisOne);
 			}
 
 			@Override
@@ -2040,7 +2040,7 @@ public abstract class Desktop extends JDesktopPane {
 					(int) (fixed.y * scale - getVisibleRect().height / 2)), getVisibleRect().width, getVisibleRect().height);
 			scrollRectToVisible(vr);
 			updateMenu(layoutMode);
-			adjustClosure(null);
+			adjustClosure(null, null);
 		} finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
@@ -2600,12 +2600,15 @@ public abstract class Desktop extends JDesktopPane {
 	 * Adjusts scroll-position of each table browser s.t. rows in closure are
 	 * visible.
 	 * 
-	 * @param tabu
-	 *            don't adjust this one
+	 * @param tabu don't adjust this one
+	 * @param thisOne only adjust this one if it is not <code>null</code>
 	 */
-	protected synchronized void adjustClosure(BrowserContentPane tabu) {
+	protected synchronized void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne) {
 		for (RowBrowser rb : tableBrowsers) {
 			if (rb.browserContentPane == tabu) {
+				continue;
+			}
+			if (thisOne != null && rb.browserContentPane != thisOne) {
 				continue;
 			}
 			List<Row> rowsOfRB = new ArrayList<Row>();

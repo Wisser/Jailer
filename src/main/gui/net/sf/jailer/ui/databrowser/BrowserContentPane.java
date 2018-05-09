@@ -633,14 +633,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void paint(Graphics graphics) {
 				super.paint(graphics);
-				if (!(graphics instanceof Graphics2D))
+				if (!(graphics instanceof Graphics2D)) {
 					return;
-//				RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
-//				for (int i = 0; i < rowsTable.getRowCount(); ++i) {
-//					if (rowSorter.convertRowIndexToView(i) != i) {
-//						return;
-//					}
-//				}
+				}
+				if (BrowserContentPane.this.association != null && BrowserContentPane.this.association.isInsertDestinationBeforeSource()) {
+					return;
+				}
+				
 				int maxI = Math.min(rowsTable.getRowCount(), rows.size());
 
 				RowSorter<? extends TableModel> sorter = getRowSorter();
@@ -654,8 +653,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (mi >= rows.size()) {
 						continue;
 					}
-					if (rows.get(mi).getParentModelInndex() != lastPMIndex) {
-						lastPMIndex = rows.get(mi).getParentModelInndex();
+					if (rows.get(mi).getParentModelIndex() != lastPMIndex) {
+						lastPMIndex = rows.get(mi).getParentModelIndex();
 						int vi = i;
 						Graphics2D g2d = (Graphics2D) graphics;
 						g2d.setColor(color);
@@ -2128,6 +2127,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 	
 	protected abstract SQLConsole getSqlConsole(boolean switchToConsole);
+	
+	private void appendClosure() {
+		if (getParentBrowser() != null) {
+			BrowserContentPane parentContentPane = getParentBrowser().browserContentPane;
+	
+			Set<Pair<BrowserContentPane, Row>> newElements = new HashSet<Pair<BrowserContentPane, Row>>();
+			for (Pair<BrowserContentPane, Row> e: currentClosure) {
+				if (e.a == parentContentPane) {
+					parentContentPane.findClosure(e.b, newElements, true);
+				}
+			}
+			currentClosure.addAll(newElements);
+			currentClosureRowIDs.clear();
+			for (Pair<BrowserContentPane, Row> r: currentClosure) {
+				currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.rowId));
+			}
+			rowsTable.repaint();
+			adjustClosure(null, this);
+		}
+	}
 
 	protected void setCurrentRowSelection(int i) {
 		currentRowSelection = i;
@@ -2138,21 +2157,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Rectangle pos = rowsTable.getCellRect(i, 0, false);
 			rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, pos.y, 1, pos.height));
 		}
-//		if (currentClosure.size() == 1) {
-//			currentClosure.clear();
-//		}
 		currentClosureRowIDs.clear();
 		for (Pair<BrowserContentPane, Row> r: currentClosure) {
 			currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.rowId));
 		}
-		
-//		Set<RowBrowser> toAdjust = new HashSet<Desktop.RowBrowser>(getChildBrowsers());
-//		if (getParentBrowser() != null) {
-//			toAdjust.add(getParentBrowser());
-//		}
-		
 		rowsTable.repaint();
-		adjustClosure(this);
+		adjustClosure(this, null);
 	}
 	
 	private JPopupMenu createNavigationMenu(JPopupMenu popup, final Row row, final int rowIndex, List<String> assList, Map<String, Association> assMap,
@@ -2544,7 +2554,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			currentBlock.add(pRow);
 		}
-		
+		int parentIndex = 0;
+
 		if (!pRows.isEmpty()) for (List<Row> pRowBlockI : parentBlocks) {
 			List<Row> pRowBlock = pRowBlockI;
 			Map<String, List<Row>> newBlockRows = new HashMap<String, List<Row>>();
@@ -2588,7 +2599,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				pRowBlock = new ArrayList<Row>();
 				pRowBlock.add(null);
 			}
-			int blockNr = 0;
 			for (Row pRow: pRowBlock) {
 				boolean dupParent = false;
 				if (pRow != null) {
@@ -2605,12 +2615,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				sortNewRows(newRows);
 				if (parentRows != null) {
 					if (!newRows.isEmpty()) {
-						newRows.get(newRows.size() - 1).setBlockEnd(true);
 						for (Row r: newRows) {
-							r.setParentModelIndex(blockNr);
+							r.setParentModelIndex(parentIndex);
 						}
 					}
-					++blockNr;
+					++parentIndex;
 					for (Row row : newRows) {
 						Row exRow = rowSet.get(row.rowId);
 						if (!dupParent) {
@@ -3323,7 +3332,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				for (int i = 0; i < columns.size(); ++i) {
 					TableModelItem item = new TableModelItem();
-					item.blockNr = row.getParentModelInndex();
+					item.blockNr = row.getParentModelIndex();
 					item.value = rowData[i];
 					rowData[i] = item;
 				}
@@ -3615,6 +3624,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		isLimitExceeded = limitExceeded;
+		appendClosure();
 	}
 
 	private int getDefaultSortColumn() {
@@ -4444,7 +4454,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void close();
 	protected abstract void showInNewWindow();
 	protected abstract void appendLayout();
-	protected abstract void adjustClosure(BrowserContentPane tabu);
+	protected abstract void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne);
 	protected abstract void reloadDataModel() throws Exception;
 	protected abstract MetaDataSource getMetaDataSource();
 	

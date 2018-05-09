@@ -1706,8 +1706,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * @param args the command line arguments
 	 */
 	private static void start(final String args[]) {
-		Environment.init();
-
+		try {
+			Environment.init();
+		} catch (Throwable e) {
+			UIUtil.showException(null, "Error", e);
+			return;
+		}
 		// turn off logging for prefuse library
 		try {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);

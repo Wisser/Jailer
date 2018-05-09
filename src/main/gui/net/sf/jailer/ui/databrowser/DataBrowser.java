@@ -1975,7 +1975,12 @@ public class DataBrowser extends javax.swing.JFrame {
      *            the command line arguments
      */
     private static void start(final String args[]) {
-        Environment.init();
+        try {
+        	Environment.init();
+        } catch (Throwable e) {
+			UIUtil.showException(null, "Error", e);
+			return;
+		}
 
         // turn off logging for prefuse library
         try {

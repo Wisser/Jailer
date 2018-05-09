@@ -19,6 +19,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Loads jar files dynamically.
@@ -27,40 +31,49 @@ import java.net.URL;
  */
 public class ClasspathUtil {
 	
-	public static URL[] toURLArray(String jarName1, String jarName2) throws FileNotFoundException {
-		URL[] urls;
+	public static URL[] toURLArray(String jarName1, String jarName2, String jarName3, String jarName4) throws FileNotFoundException {
 		if (jarName1 != null && jarName1.trim().length() == 0) {
 			jarName1 = null;
 		}
 		if (jarName2 != null && jarName2.trim().length() == 0) {
 			jarName2 = null;
 		}
-		if (jarName1 == null) {
-			if (jarName2 == null) {
-				return new URL[0];
+		if (jarName3 != null && jarName3.trim().length() == 0) {
+			jarName3 = null;
+		}
+		if (jarName4 != null && jarName4.trim().length() == 0) {
+			jarName4 = null;
+		}
+		
+		Set<String> jars = new LinkedHashSet<String>();
+		if (jarName1 != null) {
+			jars.add(jarName1);
+		}
+		if (jarName2 != null) {
+			jars.add(jarName2);
+		}
+		if (jarName3 != null) {
+			jars.add(jarName3);
+		}
+		if (jarName4 != null) {
+			jars.add(jarName4);
+		}
+
+		List<URL> urlList = new ArrayList<URL>();
+
+		for (String fn: jars) {
+			File file = new File(fn);
+			if (!file.exists()) {
+				throw new FileNotFoundException("Jar-file not found: '" + fn + "'");
 			}
-			jarName1 = jarName2;
-			jarName2 = null;
-		}
-		File file = new File(jarName1);
-		if (!file.exists()) {
-			throw new FileNotFoundException("Jar-file not found: '" + jarName1 + "'");
-		}
-		try {
-			if (jarName2 == null) {
-				urls = new URL[] { file.toURI().toURL() };
-			} else {
-				File file2 = new File(jarName2);
-				if (!file2.exists()) {
-					throw new FileNotFoundException("Jar-file not found: '" + jarName2 + "'");
-				}
-				urls = new URL[] { file.toURI().toURL(),
-						file2.toURI().toURL() };
+			try {
+				urlList.add(file.toURI().toURL());
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
 			}
-			return urls;
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
 		}
+		
+		return urlList.toArray(new URL[0]);
 	}
 
 }

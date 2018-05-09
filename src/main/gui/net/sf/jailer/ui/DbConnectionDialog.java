@@ -97,6 +97,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		public String password = "";
 		public String jar1 = "";
 		public String jar2 = "";
+		public String jar3 = "";
+		public String jar4 = "";
 		public transient String dataModelFolder;
 		
 		/**
@@ -754,6 +756,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						ci.driverClass = currentConnection.driverClass;
 						ci.jar1 = currentConnection.jar1;
 						ci.jar2 = currentConnection.jar2;
+						ci.jar3 = currentConnection.jar3;
+						ci.jar4 = currentConnection.jar4;
 						ci.password = currentConnection.password;
 						ci.url = currentConnection.url;
 						ci.user = currentConnection.user;
@@ -915,15 +919,23 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	public static boolean testConnection(Component parent, ConnectionInfo ci) {
 		String d1 = ci.jar1.trim();
 		String d2 = ci.jar2.trim();
+		String d3 = ci.jar3.trim();
+		String d4 = ci.jar4.trim();
 		if (d1.length() == 0) {
 			d1 = null;
 		}
 		if (d2.length() == 0) {
 			d2 = null;
 		}
+		if (d3.length() == 0) {
+			d3 = null;
+		}
+		if (d4.length() == 0) {
+			d4 = null;
+		}
 		URL[] urls;
 		try {
-			urls = ClasspathUtil.toURLArray(d1, d2);
+			urls = ClasspathUtil.toURLArray(d1, d2, d3, d4);
 		} catch (Throwable e) {
 			UIUtil.showException(parent, "Error loading driver jars", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 			return false;
@@ -957,7 +969,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	public List<String> getDBSchemas(String[] defaultSchema) throws Exception {
 		BasicDataSource dataSource = new BasicDataSource(currentConnection.driverClass,
 				currentConnection.url, currentConnection.user,
-				currentConnection.password, 0, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2));
+				currentConnection.password, 0, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2, currentConnection.jar3, currentConnection.jar4));
 		Session session = new Session(dataSource, dataSource.dbms);
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
 				session, currentConnection.user);
@@ -979,7 +991,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			throws Exception {
 		BasicDataSource dataSource = new BasicDataSource(currentConnection.driverClass,
 				currentConnection.url, currentConnection.user,
-				currentConnection.password, 0, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2));
+				currentConnection.password, 0, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2, currentConnection.jar3, currentConnection.jar4));
 		Session session = new Session(dataSource, dataSource.dbms);
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
 				session, currentConnection.user);
@@ -1030,6 +1042,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			args.add("-jdbcjar2");
 			args.add(currentConnection.jar2.trim());
 		}
+		if (currentConnection.jar3.trim().length() > 0) {
+			args.add("-jdbcjar3");
+			args.add(currentConnection.jar3.trim());
+		}
+		if (currentConnection.jar4.trim().length() > 0) {
+			args.add("-jdbcjar4");
+			args.add(currentConnection.jar4.trim());
+		}
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1073,7 +1093,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 	public URL[] currentJarURLs() throws Exception {
 		if (currentConnection != null) {
-			return ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2);
+			return ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2, currentConnection.jar3, currentConnection.jar4);
 		}
 		return null;
 	}
