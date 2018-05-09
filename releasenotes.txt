@@ -1,6 +1,7 @@
 7.8.3
   - Fix for "#25 Invalid SQL when exporting for H2 dialect"
     https://sourceforge.net/p/jailer/bugs/25/?limit=25#49d4
+  - Minor GUI Improvements and bug fixes.
 
 7.8.2
   - The new feature "Analyze SQL" analyzes SQL statements and proposes association definitions.
