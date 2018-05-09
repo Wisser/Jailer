@@ -282,7 +282,27 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1;
         jLayeredPane1.add(layeredPaneContent, gridBagConstraints);
         jLayeredPane1.add(dummy, gridBagConstraints);
-        
+
+        layoutButton = new JButton("Arrange Layout");
+        layoutButton.setToolTipText("Arrange Layout (cntrl-L)");
+        layoutButton.setVisible(false);
+        jLayeredPane1.setLayer(layoutButton, JLayeredPane.MODAL_LAYER);
+        layoutButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				arrangeLayout();
+			}
+		});
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.weightx = 0;
+        gridBagConstraints.weighty = 0;
+        gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        jLayeredPane1.add(layoutButton, gridBagConstraints);
+
         if (jScrollPane1.getVerticalScrollBar() != null) {
             jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
         }
@@ -414,7 +434,33 @@ public class DataBrowser extends javax.swing.JFrame {
                 updateDataModel();
             }
 
-            @Override
+			@Override
+			public void rescaleLayout(LayoutMode layoutMode, Point fixed) {
+				layoutButtonKeepState = true;
+				super.rescaleLayout(layoutMode, fixed);
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										SwingUtilities.invokeLater(new Runnable() {
+											@Override
+											public void run() {
+												layoutButtonKeepState = false;
+											}
+										});
+									}
+								});
+							}
+						});
+					}
+				});
+			}
+
             protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
             	storeSessionItem.setEnabled(hasIFrame);
             	closeAllMenuItem.setEnabled(hasIFrame);
@@ -460,6 +506,15 @@ public class DataBrowser extends javax.swing.JFrame {
 					workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
 				}
 				return getCurrentSQLConsole();
+			}
+
+			@Override
+			public void onLayoutChanged() {
+				if (desktop.getAllFramesFromTableBrowsers().length > 3) {
+					if (!layoutButtonKeepState) {
+						layoutButton.setVisible(true);
+					}
+				}
 			}
         };
 
@@ -1827,7 +1882,7 @@ public class DataBrowser extends javax.swing.JFrame {
     }// GEN-LAST:event_restoreSessionItemActionPerformed
 
     private void tinyLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tinyLayoutRadioButtonMenuItemActionPerformed
-        desktop.rescaleLayout(Desktop.LayoutMode.TINY, null);
+    	desktop.rescaleLayout(Desktop.LayoutMode.TINY, null);
         wheelzoomTip();
     }// GEN-LAST:event_tinyLayoutRadioButtonMenuItemActionPerformed
 
@@ -1836,17 +1891,17 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     private void smallLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_smallLayoutRadioButtonMenuItemActionPerformed
-        desktop.rescaleLayout(Desktop.LayoutMode.SMALL, null);
+    	desktop.rescaleLayout(Desktop.LayoutMode.SMALL, null);
         wheelzoomTip();
     }// GEN-LAST:event_smallLayoutRadioButtonMenuItemActionPerformed
 
     private void mediumLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_mediumLayoutRadioButtonMenuItemActionPerformed
-        desktop.rescaleLayout(Desktop.LayoutMode.MEDIUM, null);
+    	desktop.rescaleLayout(Desktop.LayoutMode.MEDIUM, null);
         wheelzoomTip();
     }// GEN-LAST:event_mediumLayoutRadioButtonMenuItemActionPerformed
 
     private void largeLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_largeLayoutRadioButtonMenuItemActionPerformed
-        desktop.rescaleLayout(Desktop.LayoutMode.LARGE, null);
+    	desktop.rescaleLayout(Desktop.LayoutMode.LARGE, null);
         wheelzoomTip();
     }// GEN-LAST:event_largeLayoutRadioButtonMenuItemActionPerformed
 
@@ -1899,6 +1954,12 @@ public class DataBrowser extends javax.swing.JFrame {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
             desktop.layoutBrowser();
+            SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+		            layoutButton.setVisible(false);
+				}
+			});
         } finally {
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
@@ -3389,6 +3450,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		});
 	}
 
+	private JButton layoutButton;
+	private boolean layoutButtonKeepState = false;
+	
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;
 	private ImageIcon redIcon;

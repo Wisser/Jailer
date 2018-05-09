@@ -844,6 +844,7 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.addInternalFrameListener(new InternalFrameListener() {
 			@Override
 			public void internalFrameOpened(InternalFrameEvent e) {
+				onLayoutChanged();
 			}
 
 			@Override
@@ -867,6 +868,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void internalFrameClosed(InternalFrameEvent e) {
 				close(tableBrowser, true);
+				onLayoutChanged();
 			}
 
 			@Override
@@ -883,6 +885,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		browserContentPane.andCondition.grabFocus();
 		updateMenu();
+		onLayoutChanged();
 		return tableBrowser;
 	}
 
@@ -984,19 +987,23 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.addComponentListener(new ComponentListener() {
 			@Override
 			public void componentHidden(ComponentEvent e) {
+				onLayoutChanged();
 			}
 
 			@Override
 			public void componentMoved(ComponentEvent e) {
+				onLayoutChanged();
 			}
 
 			@Override
 			public void componentResized(ComponentEvent e) {
+				onLayoutChanged();
 				initIFrameContent(jInternalFrame, browserContentPane, thumbnail);
 			}
 
 			@Override
 			public void componentShown(ComponentEvent e) {
+				onLayoutChanged();
 			}
 		});
 	}
@@ -2213,6 +2220,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	public abstract void openSchemaAnalyzer();
 	public abstract void onNewDataModel();
+	public abstract void onLayoutChanged();
 
 	public void openSchemaMappingDialog(boolean silent) {
 		try {
