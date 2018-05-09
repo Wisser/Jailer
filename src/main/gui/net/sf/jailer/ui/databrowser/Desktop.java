@@ -844,7 +844,7 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.addInternalFrameListener(new InternalFrameListener() {
 			@Override
 			public void internalFrameOpened(InternalFrameEvent e) {
-				onLayoutChanged();
+				onLayoutChanged(false);
 			}
 
 			@Override
@@ -868,7 +868,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void internalFrameClosed(InternalFrameEvent e) {
 				close(tableBrowser, true);
-				onLayoutChanged();
+				onLayoutChanged(false);
 			}
 
 			@Override
@@ -885,7 +885,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		browserContentPane.andCondition.grabFocus();
 		updateMenu();
-		onLayoutChanged();
+		onLayoutChanged(false);
 		return tableBrowser;
 	}
 
@@ -987,23 +987,23 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.addComponentListener(new ComponentListener() {
 			@Override
 			public void componentHidden(ComponentEvent e) {
-				onLayoutChanged();
+				onLayoutChanged(false);
 			}
 
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				onLayoutChanged();
+				onLayoutChanged(false);
 			}
 
 			@Override
 			public void componentResized(ComponentEvent e) {
-				onLayoutChanged();
+				onLayoutChanged(jInternalFrame.isMaximum());
 				initIFrameContent(jInternalFrame, browserContentPane, thumbnail);
 			}
 
 			@Override
 			public void componentShown(ComponentEvent e) {
-				onLayoutChanged();
+				onLayoutChanged(false);
 			}
 		});
 	}
@@ -2220,7 +2220,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	public abstract void openSchemaAnalyzer();
 	public abstract void onNewDataModel();
-	public abstract void onLayoutChanged();
+	public abstract void onLayoutChanged(boolean isLayouted);
 
 	public void openSchemaMappingDialog(boolean silent) {
 		try {
@@ -2510,6 +2510,9 @@ public abstract class Desktop extends JDesktopPane {
 		for (RowBrowser rb : toBeLoaded) {
 			rb.browserContentPane.reloadRows();
 		}
+		
+		onLayoutChanged(true);		
+		
 		if (toBeAppended != null && toBeLoaded.isEmpty()) {
 			JOptionPane.showMessageDialog(pFrame,
 					"Layout doesn't contain table \"" + datamodel.get().getDisplayName(toBeAppended.browserContentPane.table) + "\" as root.");

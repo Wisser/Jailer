@@ -436,29 +436,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			public void rescaleLayout(LayoutMode layoutMode, Point fixed) {
-				layoutButtonKeepState = true;
+				layoutButtonKeepStateUntil = System.currentTimeMillis() + 2000;
 				super.rescaleLayout(layoutMode, fixed);
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										SwingUtilities.invokeLater(new Runnable() {
-											@Override
-											public void run() {
-												layoutButtonKeepState = false;
-											}
-										});
-									}
-								});
-							}
-						});
-					}
-				});
 			}
 
             protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
@@ -509,9 +488,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 			@Override
-			public void onLayoutChanged() {
-				if (desktop.getAllFramesFromTableBrowsers().length > 3) {
-					if (!layoutButtonKeepState) {
+			public void onLayoutChanged(boolean isLayouted) {
+				if (isLayouted) {
+					layoutButtonKeepStateUntil = System.currentTimeMillis() + 2000;
+					layoutButton.setVisible(false);
+				} else if (desktop.getAllFramesFromTableBrowsers().length > 3) {
+					if (layoutButtonKeepStateUntil < System.currentTimeMillis()) {
 						layoutButton.setVisible(true);
 					}
 				}
@@ -3451,7 +3433,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
 	private JButton layoutButton;
-	private boolean layoutButtonKeepState = false;
+	private long layoutButtonKeepStateUntil;
 	
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;

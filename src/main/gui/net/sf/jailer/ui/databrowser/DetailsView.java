@@ -17,6 +17,7 @@ package net.sf.jailer.ui.databrowser;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridBagLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.math.BigDecimal;
@@ -27,6 +28,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
@@ -139,12 +141,23 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	
 	private int currentRow;
 	private boolean sortColumns;
+	private JPanel content;
 	
 	private void setCurrentRow(int row, boolean selectableFields) {
 		currentRow = row;
-		jPanel1.removeAll();
-		int i = 0;
+
 		java.awt.GridBagConstraints gridBagConstraints;
+		
+		JPanel oldContent = content;
+		content = new JPanel(new GridBagLayout());
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.weightx = 1;
+		gridBagConstraints.weighty = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		
+		int i = 0;
 		final List<Column> columns = rowIdSupport.getColumns(table);
 		List<Integer> columnIndex = new ArrayList<Integer>();
 		for (int j = 0; j < columns.size(); ++j) {
@@ -173,7 +186,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			if (!selectableFields) {
 				l.setVerticalAlignment(SwingConstants.TOP);
 			}
-			jPanel1.add(l, gridBagConstraints);
+			content.add(l, gridBagConstraints);
 
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -197,7 +210,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				}
 				f.setEnabled(v != null);
 				f.setEditable(false);
-				jPanel1.add(f, gridBagConstraints);
+				content.add(f, gridBagConstraints);
 			} else {
 				JLabel f = new JLabel();
 				String text;
@@ -212,7 +225,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				if (v == null) {
 					f.setForeground(Color.GRAY);
 				}
-				jPanel1.add(f, gridBagConstraints);
+				content.add(f, gridBagConstraints);
 				f.setBackground(i % 2 == 0? BG1 : BG2);
 				l.setBackground(i % 2 == 0? BG1 : BG2);
 				f.setOpaque(true);
@@ -235,12 +248,14 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 			gridBagConstraints.gridx = 1;
 			gridBagConstraints.gridy = i;
-			jPanel1.add(l, gridBagConstraints);
+			content.add(l, gridBagConstraints);
 		}
-		invalidate();
-		validate();
-		setSize(getWidth() - 1, getHeight() - 1);
-		setSize(getWidth() + 1, getHeight() + 1);
+		jPanel1.add(content, gridBagConstraints);
+		if (oldContent != null) {
+			jPanel1.remove(oldContent);
+		}
+		jPanel1.revalidate();
+		jPanel1.repaint();
 		onRowChanged(row);
 	}
 
@@ -261,7 +276,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
         sortCheckBox = new javax.swing.JCheckBox();
         closeButton = new javax.swing.JButton();
 
@@ -281,14 +295,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setText("jLabel2");
-        jPanel1.add(jLabel2, new java.awt.GridBagConstraints());
-
-        jTextField1.setText("jTextField1");
+        jLabel2.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 500;
         gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jTextField1, gridBagConstraints);
+        jPanel1.add(jLabel2, gridBagConstraints);
 
         jScrollPane1.setViewportView(jPanel1);
 
@@ -304,8 +316,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
         sortCheckBox.setText("Sort Columns");
         sortCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sortCheckBoxActionPerformed(evt);
             }
         });
@@ -318,8 +329,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
         closeButton.setText("CLose");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
             }
         });
@@ -346,7 +356,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JSpinner rowSpinner;
     private javax.swing.JCheckBox sortCheckBox;
     // End of variables declaration//GEN-END:variables

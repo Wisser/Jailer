@@ -860,6 +860,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						// ignore
 					}
 				}
+				// indent 1. column
+				if (render instanceof JLabel) {
+					((JLabel) render).setText(" " + ((JLabel) render).getText());
+				}
 				return render;
 			}
 		});
