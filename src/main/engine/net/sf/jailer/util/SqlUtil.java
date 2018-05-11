@@ -55,7 +55,7 @@ public class SqlUtil {
 		for (int i = 0; i < condition.length(); ++i) {
 			char c = condition.charAt(i);
 			if (c == 'A' || c == 'B' || c == 'a' || c == 'b') {
-				if (i + 1 < condition.length() && condition.charAt(i + 1) == '.') {
+				if (nextNonSpace(condition, i + 1) == '.') {
 					if (i == 0 || chars.indexOf(condition.charAt(i - 1)) < 0) {
 						reversed.append(c == 'A' || c == 'a'? 'B' : 'A');
 						continue;
@@ -81,7 +81,7 @@ public class SqlUtil {
 		for (int i = 0; i < condition.length(); ++i) {
 			char c = condition.charAt(i);
 			if (c == 'A' || c == 'B' || c == 'a' || c == 'b') {
-				if (i + 1 < condition.length() && condition.charAt(i + 1) == '.') {
+				if (nextNonSpace(condition, i + 1) == '.') {
 					if (i == 0 || chars.indexOf(condition.charAt(i - 1)) < 0) {
 						String alias = c == 'A' || c == 'a'? aliasA : aliasB;
 						if (alias == null) {
@@ -111,7 +111,7 @@ public class SqlUtil {
 		for (int i = 0; i < condition.length(); ++i) {
 			char c = condition.charAt(i);
 			if (c == 'T' || c == 't') {
-				if (i + 1 < condition.length() && condition.charAt(i + 1) == '.') {
+				if (nextNonSpace(condition, i + 1) == '.') {
 					if (i == 0 || chars.indexOf(condition.charAt(i - 1)) < 0) {
 						result.append(alias);
 						continue;
@@ -439,6 +439,17 @@ public class SqlUtil {
 		}
 
 		return sb.toString();
+	}
+
+	private static char nextNonSpace(String condition, int i) {
+		while (i < condition.length()) {
+			char c = condition.charAt(i);
+			if (!Character.isWhitespace(c)) {
+				return c;
+			}
+			++i;
+		}
+		return 0;
 	}
 
 	/**

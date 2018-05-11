@@ -64,8 +64,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	
 	/** Creates new form DetailsView 
 	 * @param rowSorter 
+	 * @param showSelectButton 
 	*/
-	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, RowIdSupport rowIdSupport) {
+	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, boolean showSelectButton, RowIdSupport rowIdSupport) {
 		this.table = table;
 		this.rows = rows;
 		this.rowSorter = rowSorter;
@@ -102,11 +103,15 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		rowSpinner.addKeyListener(keyListener);
 		sortCheckBox.addKeyListener(keyListener);
 		closeButton.addKeyListener(keyListener);
+		if (!showSelectButton) {
+			selectButton.setVisible(false);
+		}
 		if (!showSpinner) {
 			jLabel1.setVisible(false);
 			rowSpinner.setVisible(false);
 			sortCheckBox.setVisible(false);
 			closeButton.setVisible(false);
+			selectButton.setVisible(false);
 			jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 			jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		} else {
@@ -243,7 +248,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			l.setText(" ");
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-			gridBagConstraints.weightx = 0;
+			gridBagConstraints.weightx = 1;
 			gridBagConstraints.weighty = 1;
 			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 			gridBagConstraints.gridx = 1;
@@ -261,6 +266,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
 	protected abstract void onRowChanged(int row);
 	protected abstract void onClose();
+	protected abstract void onSelectRow(Row row);
 
 	/** This method is called from within the constructor to
 	 * initialize the form.
@@ -275,9 +281,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
         rowSpinner = new javax.swing.JSpinner();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
         sortCheckBox = new javax.swing.JCheckBox();
         closeButton = new javax.swing.JButton();
+        selectButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -294,14 +300,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
         add(rowSpinner, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        jLabel2.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 500;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jLabel2, gridBagConstraints);
-
         jScrollPane1.setViewportView(jPanel1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -338,6 +336,19 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         add(closeButton, gridBagConstraints);
+
+        selectButton.setText("Select Row");
+        selectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(selectButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void sortCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortCheckBoxActionPerformed
@@ -349,14 +360,18 @@ public abstract class DetailsView extends javax.swing.JPanel {
         onClose();
     }//GEN-LAST:event_closeButtonActionPerformed
 
+    private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
+        onSelectRow(rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(currentRow) : currentRow));
+    }//GEN-LAST:event_selectButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSpinner rowSpinner;
+    private javax.swing.JButton selectButton;
     private javax.swing.JCheckBox sortCheckBox;
     // End of variables declaration//GEN-END:variables
 

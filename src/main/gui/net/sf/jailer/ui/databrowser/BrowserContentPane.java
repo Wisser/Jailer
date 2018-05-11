@@ -1420,7 +1420,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						&& currentSelectedRowCondition.equals(getAndConditionText())
 						&& rows.size() == 1) {
 					JMenuItem sr = new JMenuItem("Deselect Row");
-					popup.insert(sr, 1);
+					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -1431,18 +1431,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				} else {
 					JMenuItem sr = new JMenuItem("Select Row");
 					sr.setEnabled(rows.size() > 1);
-					popup.insert(sr, 1);
+					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							String cond = SqlUtil.replaceAliases(row.rowId, "A", "A");
-							String currentCond = getAndConditionText().trim();
-							if (currentCond.length() > 0) {
-								cond = "(" + cond + ") and (" + currentCond + ")";
-							}
-							andCondition.setSelectedItem(cond);
-							currentSelectedRowCondition = cond;
-							reloadRows();
+							selectRow(row);
 						}
 					});
 				}
@@ -3531,12 +3524,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				// ignore
 			}
 		} else {
-			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, rowIdSupport) {
+			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport) {
 				@Override
 				protected void onRowChanged(int row) {
 				}
 				@Override
 				protected void onClose() {
+				}
+				@Override
+				protected void onSelectRow(Row row) {
 				}
 			};
 			singleRowDetailsView.setSortColumns(sortColumnsCheckBox.isSelected());
@@ -4499,7 +4495,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void openDetails(final int x, final int y) {
 		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
-		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, rowIdSupport) {
+		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport) {
 			@Override
 			protected void onRowChanged(int row) {
 				setCurrentRowSelection(row);
@@ -4507,6 +4503,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			protected void onClose() {
 				d.setVisible(false);
+			}
+			@Override
+			protected void onSelectRow(Row row) {
+				d.setVisible(false);
+				selectRow(row);
 			}
 		});
 		d.pack();
@@ -4559,7 +4560,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void openDetailsView(int rowIndex, int x, int y) {
 		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
-		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, rowIdSupport) {
+		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport) {
 			@Override
 			protected void onRowChanged(int row) {
 				setCurrentRowSelection(row);
@@ -4567,6 +4568,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			protected void onClose() {
 				d.setVisible(false);
+			}
+			@Override
+			protected void onSelectRow(Row row) {
+				d.setVisible(false);
+				selectRow(row);
 			}
 		});
 		d.pack();
@@ -4724,6 +4730,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	public void setAlternativeColumnLabels(String[] columnLabels) {
 		this.alternativeColumnLabels = columnLabels;
+	}
+
+	private void selectRow(Row row) {
+		String cond = SqlUtil.replaceAliases(row.rowId, "A", "A");
+		String currentCond = getAndConditionText().trim();
+		if (currentCond.length() > 0) {
+			cond = "(" + cond + ") and (" + currentCond + ")";
+		}
+		andCondition.setSelectedItem(cond);
+		currentSelectedRowCondition = cond;
+		reloadRows();
 	}
 
 	private static String readCharacterStream(final Reader reader)
