@@ -48,6 +48,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 	private static final long serialVersionUID = -6737420167295938488L;
 
 	/** Creates new form SqlErrorDialog */
+	@SuppressWarnings("serial")
 	public SqlErrorDialog(Window parent, String message, String sql, boolean sqlError, String title) {
 		super(parent, ModalityType.APPLICATION_MODAL);
 		this.sqlError = sqlError;
