@@ -296,11 +296,11 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
         gridBagConstraints.weightx = 0;
         gridBagConstraints.weighty = 0;
-        gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new Insets(4, 16, 54, 4);
         jLayeredPane1.add(layoutButton, gridBagConstraints);
 
         if (jScrollPane1.getVerticalScrollBar() != null) {
@@ -1166,7 +1166,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         layeredPaneContent.add(jScrollPane1, gridBagConstraints);
 
-        hiddenPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Hidden"));
         hiddenPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1177,7 +1176,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 24, 58);
+        layeredPaneContent.setBounds(0, 0, 24, 35);
 
         desktopSplitPane.setLeftComponent(jLayeredPane1);
 
