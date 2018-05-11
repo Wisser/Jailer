@@ -28,6 +28,16 @@ public class RowCounter {
 	private final RowIdSupport rowIdSupport;
 	private final int TIMEOUT = 6;
 	
+	public static class RowCount {
+		public final long count;
+		public final boolean isExact;
+
+		public RowCount(long count, boolean isExact) {
+			this.count = count;
+			this.isExact = isExact;
+		}
+	}
+	
 	public RowCounter(Table table, Association association, List<Row> theRows, Session session, RowIdSupport rowIdSupport) {
 		this.table = table;
 		this.association = association;
@@ -44,7 +54,7 @@ public class RowCounter {
 	 * @param limit
 	 *            row number limit
 	 */
-	public long countRows(String andCond, Object context, int limit, boolean selectDistinct) throws SQLException {
+	public RowCount countRows(String andCond, Object context, int limit, boolean selectDistinct) throws SQLException {
 
 		List<Row> pRows = theRows;
 		pRows = new ArrayList<Row>(pRows);
@@ -53,10 +63,10 @@ public class RowCounter {
 		
 		if (association != null && rowIdSupport.getPrimaryKey(association.source).getColumns().isEmpty()) {
 			try {
-				loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime, null);
-			} catch (SQLException e) {
+				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime, null);
+			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				if (System.currentTimeMillis() >= maxTime) {
-					return -1;
+					return new RowCount(-1, true);
 				}
 				throw e;
 			}
@@ -67,34 +77,34 @@ public class RowCounter {
 					if (inlineViewStyle != null) {
 						return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime, inlineViewStyle);
 					}
-				} catch (Exception e) {
+				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 					if (System.currentTimeMillis() >= maxTime) {
-						return -1;
+						return new RowCount(-1, true);
 					}
 					Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 				}
 			}
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime, null);
-			} catch (SQLException e) {
+			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				if (System.currentTimeMillis() >= maxTime) {
-					return -1;
+					return new RowCount(-1, true);
 				}
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100, maxTime, null);
-			} catch (SQLException e) {
+			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				if (System.currentTimeMillis() >= maxTime) {
-					return -1;
+					return new RowCount(-1, true);
 				}
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40, maxTime, null);
-			} catch (SQLException e) {
+			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				if (System.currentTimeMillis() >= maxTime) {
-					return -1;
+					return new RowCount(-1, true);
 				}
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
@@ -102,15 +112,15 @@ public class RowCounter {
 		
 		try {
 			return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime, null);
-		} catch (SQLException e) {
+		} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 			if (System.currentTimeMillis() >= maxTime) {
-				return -1;
+				return new RowCount(-1, true);
 			}
 			throw e;
 		}
 	}
 
-	private long loadRowBlocks(String andCond, Object context, int limit, boolean selectDistinct, List<Row> pRows,
+	private RowCount loadRowBlocks(String andCond, Object context, int limit, boolean selectDistinct, List<Row> pRows,
 			Map<String, Row> rowSet, int NUM_PARENTS, long maxTime, InlineViewStyle inlineViewStyle) throws SQLException {
 		List<List<Row>> parentBlocks = new ArrayList<List<Row>>();
 		List<Row> currentBlock = new ArrayList<Row>();
@@ -124,11 +134,12 @@ public class RowCounter {
 		}
 		
 		long rc = 0;
-		
+		boolean isExact = true;
+
 		if (!pRows.isEmpty()) for (List<Row> pRowBlockI : parentBlocks) {
 
 			if (System.currentTimeMillis() >= maxTime) {
-				return -1;
+				return new RowCount(-1, true);
 			}
 
 			List<Row> pRowBlock = pRowBlockI;
@@ -145,9 +156,9 @@ public class RowCounter {
 					session.setSilent(true);
 					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, session.dbms.getSqlLimitSuffix(), selectDistinct, maxTime, inlineViewStyle);
 					loaded = true;
-				} catch (SQLException e) {
+				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 					if (System.currentTimeMillis() >= maxTime) {
-						return -1;
+						return new RowCount(-1, true);
 					}
 					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
 				} finally {
@@ -159,9 +170,9 @@ public class RowCounter {
 					session.setSilent(true);
 					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, true, null, selectDistinct, maxTime, inlineViewStyle);
 					loaded = true;
-				} catch (SQLException e) {
+				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 					if (System.currentTimeMillis() >= maxTime) {
-						return -1;
+						return new RowCount(-1, true);
 					}
 					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
 				} finally {
@@ -176,14 +187,18 @@ public class RowCounter {
 					}
 				}
 			}
+			if (rc > 0 && brc > 0) {
+				isExact = false;
+				break;
+			}
 			rc += brc;
 			limit -= brc;
 			if (limit <= 0) {
 				break;
 			}
 		}
-		
-		return rc;
+
+		return new RowCount(rc, isExact);
 	}
 
 	/**

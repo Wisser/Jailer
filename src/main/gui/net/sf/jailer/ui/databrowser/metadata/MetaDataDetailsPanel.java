@@ -226,7 +226,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		    	final int tableNameColumnIndex = 3;
 		    	final Set<String> pkNames = Collections.synchronizedSet(new HashSet<String>());
 		    	final BrowserContentPane rb = new BrowserContentPane(datamodel.get(), null, "", session, null, null,
-						null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), 0, false, false, executionContext) {
+						null, null, new BrowserContentPane.RowsClosure(), 0, false, false, executionContext) {
 		    		{
 		    			noSingleRowDetailsView = true;
 		    			rowsTableScrollPane.setWheelScrollingEnabled(true);
@@ -293,19 +293,9 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					}
 					@Override
 					protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward) {
-						Pair<BrowserContentPane, Row> thisRow = new Pair<BrowserContentPane, Row>(this, row);
-						if (!closure.contains(thisRow)) {
-							closure.add(thisRow);
-						}
 					}
 					@Override
 					protected void findClosure(Row row) {
-						Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
-						findClosure(row, rows, false);
-						currentClosure.addAll(rows);
-						rows = new HashSet<Pair<BrowserContentPane, Row>>();
-						findClosure(row, rows, true);
-						currentClosure.addAll(rows);
 					}
 					@Override
 					protected Relationship createQBRelations(boolean withParents) {

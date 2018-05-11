@@ -148,6 +148,7 @@ import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
@@ -387,8 +388,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Cache for association row count.
 	 */
-	private final Map<Pair<String, Association>, Pair<Long, Long>> rowCountCache = 
-			Collections.synchronizedMap(new HashMap<Pair<String,Association>, Pair<Long,Long>>());
+	private final Map<Pair<String, Association>, Pair<RowCount, Long>> rowCountCache = 
+			Collections.synchronizedMap(new HashMap<Pair<String,Association>, Pair<RowCount, Long>>());
 	
 	private final long MAX_ROWCOUNTCACHE_RETENTION_TIME = 5 * 60 * 1000L;
 	
@@ -430,11 +431,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private int currentRowSelection = -1;
 
 	private List<Row> parentRows;
-	protected final Set<Pair<BrowserContentPane, Row>> currentClosure;
-	protected Set<Pair<BrowserContentPane, String>> currentClosureRowIDs;
 	private DetailsView singleRowDetailsView;
 	private int initialRowHeight;
 
+	public static class RowsClosure {
+		Set<Pair<BrowserContentPane, Row>> currentClosure = new HashSet<Pair<BrowserContentPane, Row>>();
+		Set<Pair<BrowserContentPane, String>> currentClosureRowIDs = new HashSet<Pair<BrowserContentPane, String>>();
+		String currentClosureRootID;
+	};
+	
+	private final RowsClosure rowsClosure;
+	
 	private boolean suppressReload;
 
 	/**
@@ -489,7 +496,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            {@link Association} with parent row
 	 */
 	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, List<Row> parentRows,
-			final Association association, Frame parentFrame, Set<Pair<BrowserContentPane, Row>> currentClosure, Set<Pair<BrowserContentPane, String>> currentClosureRowIDs,
+			final Association association, Frame parentFrame, RowsClosure rowsClosure,
 			Integer limit, Boolean selectDistinct, boolean reload, ExecutionContext executionContext) {
 		this.table = table;
 		this.session = session;
@@ -498,8 +505,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		this.parentRow = parentRow;
 		this.parentRows = parentRows;
 		this.association = association;
-		this.currentClosure = currentClosure;
-		this.currentClosureRowIDs = currentClosureRowIDs;
+		this.rowsClosure = rowsClosure;
 		this.executionContext = executionContext;
 		
 		rowIdSupport.setUseRowIdsOnlyForTablesWithoutPK(true);
@@ -792,7 +798,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (value instanceof Row) {
 					Row theRow = (Row) value;
 					Pair<BrowserContentPane, String> pair = new Pair<BrowserContentPane, String>(BrowserContentPane.this, theRow.rowId);
-					singleRowDetailsView.setBorderColor(isSelected? render.getBackground() : BrowserContentPane.this.currentClosureRowIDs.contains(pair)? BG3 : Color.WHITE);
+					singleRowDetailsView.setBorderColor(isSelected? render.getBackground() : BrowserContentPane.this.rowsClosure.currentClosureRowIDs.contains(pair)? BG3 : Color.WHITE);
 					return singleRowDetailsView;
 				}
 
@@ -819,8 +825,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 					if (!isSelected && (table == rowsTable || !cellSelected)) {
 						if (BrowserContentPane.this.getQueryBuilderDialog() != null && // SQL Console
-							BrowserContentPane.this.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
+							BrowserContentPane.this.rowsClosure.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
 							((JLabel) render).setBackground(BG3);
+							if (BrowserContentPane.this.rowsClosure.currentClosureRootID != null
+									&& !BrowserContentPane.this.rowsClosure.currentClosureRootID.isEmpty()
+									&& BrowserContentPane.this.rowsClosure.currentClosureRootID.equals(rows.get(rowSorter.convertRowIndexToModel(row)).rowId)) {
+								((JLabel) render).setBackground(BG4);
+							}
 						} else {
 							Table type = getResultSetTypeForColumn(convertedColumnIndex);
 							if (isEditMode && table == rowsTable && r != null && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
@@ -1251,6 +1262,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		tableFilter.setAccelerator(KS_FILTER);
 		tableFilter.setSelected(isTableFilterEnabled);
+		if (isLimitExceeded) {
+			tableFilter.setForeground(Color.red);
+			tableFilter.setToolTipText("Row limit exceeded. Filtering may be incomplete.");
+		}
 		tableFilter.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1537,9 +1552,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								if (parentContentPane.rows.size() == 1) {
 									parent = parentContentPane.rows.get(0);
 								} else {
-									if (parentContentPane.currentClosureRowIDs != null) {
+									if (parentContentPane.rowsClosure.currentClosureRowIDs != null) {
 										for (Row row: parentContentPane.rows) {
-											if (parentContentPane.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(parentContentPane, row.rowId))) {
+											if (parentContentPane.rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(parentContentPane, row.rowId))) {
 												parent = row;
 												break;
 											}
@@ -1639,6 +1654,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		tableFilter.setAccelerator(KS_FILTER);
 		tableFilter.setSelected(isTableFilterEnabled);
+		if (isLimitExceeded) {
+			tableFilter.setForeground(Color.red);
+			tableFilter.setToolTipText("Row limit exceeded. Filtering may be incomplete.");
+		}
 		tableFilter.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -2137,15 +2156,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			BrowserContentPane parentContentPane = getParentBrowser().browserContentPane;
 	
 			Set<Pair<BrowserContentPane, Row>> newElements = new HashSet<Pair<BrowserContentPane, Row>>();
-			for (Pair<BrowserContentPane, Row> e: currentClosure) {
+			for (Pair<BrowserContentPane, Row> e: rowsClosure.currentClosure) {
 				if (e.a == parentContentPane) {
 					parentContentPane.findClosure(e.b, newElements, true);
 				}
 			}
-			currentClosure.addAll(newElements);
-			currentClosureRowIDs.clear();
-			for (Pair<BrowserContentPane, Row> r: currentClosure) {
-				currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.rowId));
+			rowsClosure.currentClosure.addAll(newElements);
+			rowsClosure.currentClosureRowIDs.clear();
+			for (Pair<BrowserContentPane, Row> r: rowsClosure.currentClosure) {
+				rowsClosure.currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.rowId));
 			}
 			rowsTable.repaint();
 			adjustClosure(null, this);
@@ -2155,15 +2174,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected void setCurrentRowSelection(int i) {
 		currentRowSelection = i;
 		if (i >= 0) {
-			currentClosure.clear();
-			findClosure(rows.get(rowsTable.getRowSorter().convertRowIndexToModel(i)));
+			Row row = rows.get(rowsTable.getRowSorter().convertRowIndexToModel(i));
+			rowsClosure.currentClosure.clear();
+			rowsClosure.currentClosureRootID = row.rowId;
+			findClosure(row);
 			Rectangle visibleRect = rowsTable.getVisibleRect();
 			Rectangle pos = rowsTable.getCellRect(i, 0, false);
 			rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, pos.y, 1, pos.height));
 		}
-		currentClosureRowIDs.clear();
-		for (Pair<BrowserContentPane, Row> r: currentClosure) {
-			currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.rowId));
+		rowsClosure.currentClosureRowIDs.clear();
+		for (Pair<BrowserContentPane, Row> r: rowsClosure.currentClosure) {
+			rowsClosure.currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.rowId));
 		}
 		rowsTable.repaint();
 		adjustClosure(this, null);
@@ -2275,8 +2296,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							key = new Pair<String, Association>(row.rowId, association);
 						}
 	
-						Pair<Long, Long> cachedCount = rowCountCache.get(key);
-						long rowCount;
+						Pair<RowCount, Long> cachedCount = rowCountCache.get(key);
+						RowCount rowCount;
 						
 						if (cachedCount != null && cachedCount.b > System.currentTimeMillis()) {
 							rowCount = cachedCount.a;
@@ -2285,23 +2306,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							try {
 								rowCount = rc.countRows(getAndConditionText(), context, MAX_RC + 1, false);
 							} catch (SQLException e) {
-								rowCount = -1;
+								rowCount = new RowCount(-1, true);
 							}
-							rowCountCache.put(key, new Pair<Long, Long>(rowCount, System.currentTimeMillis() + MAX_ROWCOUNTCACHE_RETENTION_TIME));
+							rowCountCache.put(key, new Pair<RowCount, Long>(rowCount, System.currentTimeMillis() + MAX_ROWCOUNTCACHE_RETENTION_TIME));
 						}
 						
-						final long count = rowCount;
+						final RowCount count = rowCount;
 						
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
-								String cs = " " + (count < 0? "?" : (count > MAX_RC)? (">" + MAX_RC) : count) + " ";
+								String cs = " " + (count.count < 0? "?" : (count.count > MAX_RC)? (">" + MAX_RC) : count.isExact? count.count : (">=" + count.count)) + " ";
 								countLabel.setText(cs);
-								if (count == 0) {
+								if (count.count == 0) {
 									countLabel.setForeground(Color.lightGray);
 								}
 								if (!fExcludeFromANEmpty) {
-									allNonEmptyItem.rowsCounted(count, itemAction);
+									allNonEmptyItem.rowsCounted(count.count, itemAction);
 								}
 							}
 						});
@@ -2384,7 +2405,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			session.setSilent(true);
 			reloadRows(inputResultSet, andCond, rows, context, limit, selectDistinct, null);
 			return;
-		} catch (SQLException e) {
+		} catch (SQLException e) { // embedded DBMS may throw non-SQLException
 			Session._log.warn("failed, try another strategy (" +  e.getMessage() + ")");
 		} finally {
 			session.setSilent(false);
@@ -2508,32 +2529,32 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						loadRowBlocks(inputResultSet, inlineViewStyle, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
 						return;
 					}
-				} catch (Exception e) {
+				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 					Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 				}
 			}
 			try {
 				loadRowBlocks(inputResultSet, null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
 				return;
-			} catch (SQLException e) {
+			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
 				loadRowBlocks(inputResultSet, null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 300, existingColumnsLowerCase);
 				return;
-			} catch (SQLException e) {
+			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
 				loadRowBlocks(inputResultSet, null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 100, existingColumnsLowerCase);
 				return;
-			} catch (SQLException e) {
+			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
 				loadRowBlocks(inputResultSet, null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 40, existingColumnsLowerCase);
 				return;
-			} catch (SQLException e) {
+			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 		}
@@ -2574,7 +2595,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					session.setSilent(true);
 					reloadRows(inputResultSet, inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, session.dbms.getSqlLimitSuffix(), existingColumnsLowerCase);
 					loaded = true;
-				} catch (SQLException e) {
+				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
 				} finally {
 					session.setSilent(false);
@@ -2585,7 +2606,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					session.setSilent(true);
 					reloadRows(inputResultSet, inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, true, null, existingColumnsLowerCase);
 					loaded = true;
-				} catch (SQLException e) {
+				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
 				} finally {
 					session.setSilent(false);
@@ -2680,23 +2701,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						if (b != null && b.values != null && b.values.length > col) {
 							vb = b.values[col];
 						}
-						if (a == null && b == null) {
+						if (va == null && vb == null) {
 							return 0;
 						}
-						if (a == null) {
+						if (va == null) {
 							return -1;
 						}
-						if (b == null) {
+						if (vb == null) {
 							return 1;
 						}
-						if (a.getClass().equals(b.getClass())) {
-							if (a instanceof Comparable<?>) {
-								int cmp = ((Comparable) a).compareTo(b);
+						if (va.getClass().equals(vb.getClass())) {
+							if (va instanceof Comparable<?>) {
+								int cmp = ((Comparable) va).compareTo(vb);
 								return asc? cmp : -cmp;
 							}
 							return 0;
 						}
-						int cmp = a.getClass().getName().compareTo(b.getClass().getName());
+						int cmp = va.getClass().getName().compareTo(vb.getClass().getName());
 						return asc? cmp : -cmp;
 					}
 				});
@@ -4531,7 +4552,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		association = null;
 		parentRow = null;
 		parentRows = null;
-		currentClosureRowIDs.clear();
+		rowsClosure.currentClosureRowIDs.clear();
 		adjustGui();
 		reloadRows();
 	}

@@ -99,6 +99,7 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
@@ -163,8 +164,7 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	private final ExecutionContext executionContext;
 	
-	private Set<Pair<BrowserContentPane, Row>> currentClosure = new HashSet<Pair<BrowserContentPane, Row>>();
-	private Set<Pair<BrowserContentPane, String>> currentClosureRowIDs = new HashSet<Pair<BrowserContentPane, String>>();
+	private RowsClosure rowsClosure = new RowsClosure();
 
 	private final QueryBuilderDialog queryBuilderDialog;
 
@@ -518,7 +518,7 @@ public abstract class Desktop extends JDesktopPane {
 			row = origParent.browserContentPane.rows.get(parentRowIndex);
 		}
 		final BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, row, parent == null || parentRowIndex >= 0 ? null : parent.browserContentPane.rows,
-				association, parentFrame, currentClosure, currentClosureRowIDs, limit, selectDistinct, reload, executionContext) {
+				association, parentFrame, rowsClosure, limit, selectDistinct, reload, executionContext) {
 
 			@Override
 			protected void reloadDataModel() throws Exception {
@@ -580,10 +580,10 @@ public abstract class Desktop extends JDesktopPane {
 			protected void findClosure(Row row) {
 				Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
 				findClosure(row, rows, false);
-				currentClosure.addAll(rows);
+				rowsClosure.currentClosure.addAll(rows);
 				rows = new HashSet<Pair<BrowserContentPane, Row>>();
 				findClosure(row, rows, true);
-				currentClosure.addAll(rows);
+				rowsClosure.currentClosure.addAll(rows);
 			}
 
 			@Override
@@ -2623,7 +2623,7 @@ public abstract class Desktop extends JDesktopPane {
 				continue;
 			}
 			List<Row> rowsOfRB = new ArrayList<Row>();
-			for (Pair<BrowserContentPane, Row> r : currentClosure) {
+			for (Pair<BrowserContentPane, Row> r : rowsClosure.currentClosure) {
 				if (r.a == rb.browserContentPane) {
 					rowsOfRB.add(r.b);
 				}

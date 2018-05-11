@@ -20,7 +20,6 @@ import java.awt.Window;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +39,7 @@ import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.Desktop;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Row;
@@ -62,7 +62,7 @@ public class ResultSetRenderer extends javax.swing.JPanel {
         titelLabel.setText(titel);
         
 		final BrowserContentPane rb = new ResultContentPane(datamodel, null, "", session, null, null,
-                null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), Integer.MAX_VALUE, false, false,
+                null, null, new RowsClosure(), Integer.MAX_VALUE, false, false,
                 resultSet.getMetaData().getColumnCount() > 1? 180 : 400,
                 executionContext);
 		rb.setTableFilterEnabled(false);
@@ -124,11 +124,10 @@ public class ResultSetRenderer extends javax.swing.JPanel {
     class ResultContentPane extends BrowserContentPane {
         public ResultContentPane(DataModel dataModel, Table table, String condition, Session session, Row parentRow,
                 List<Row> parentRows, Association association, Frame parentFrame,
-                Set<Pair<BrowserContentPane, Row>> currentClosure,
-                Set<Pair<BrowserContentPane, String>> currentClosureRowIDs, Integer limit, Boolean selectDistinct,
+                RowsClosure rowsClosure, Integer limit, Boolean selectDistinct,
                 boolean reload, int maxColumnWidth, ExecutionContext executionContext) {
-            super(dataModel, table, condition, session, parentRow, parentRows, association, parentFrame, currentClosure,
-                    currentClosureRowIDs, limit, selectDistinct, reload, executionContext);
+            super(dataModel, table, condition, session, parentRow, parentRows, association, parentFrame, 
+            		rowsClosure, limit, selectDistinct, reload, executionContext);
             singleRowDetailsViewTitel = "Details";
             this.maxColumnWidth = maxColumnWidth;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
@@ -200,20 +199,9 @@ public class ResultSetRenderer extends javax.swing.JPanel {
         }
         @Override
         protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward) {
-            Pair<BrowserContentPane, Row> thisRow = new Pair<BrowserContentPane, Row>(this, row);
-            if (!closure.contains(thisRow)) {
-                closure.add(thisRow);
-            }
         }
         @Override
-        protected void findClosure(Row row) {
-            Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
-            findClosure(row, rows, false);
-            currentClosure.addAll(rows);
-            rows = new HashSet<Pair<BrowserContentPane, Row>>();
-            findClosure(row, rows, true);
-            currentClosure.addAll(rows);
-        }
+        protected void findClosure(Row row) {}
         @Override
         protected Relationship createQBRelations(boolean withParents) {
             return null;

@@ -46,7 +46,6 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -106,6 +105,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.databrowser.Desktop;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -803,12 +803,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     @Override
                     public void run() {
                         final BrowserContentPane rb = new ResultContentPane(datamodel.get(), finalResultType, "", session, null, null,
-                                null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), limit, false, false, executionContext);
+                                null, null, new RowsClosure(), limit, false, false, executionContext);
                         if (resultTypes != null && resultTypes.size() > 1) {
                             rb.setResultSetType(resultTypes);
                         }
                         rb.setAlternativeColumnLabels(columnLabels);
-                        rb.setTableFilterEnabled(metaDataDetails.getSize() > 1);
+                        rb.setTableFilterEnabled(metaDataDetails.getSize() > 1 && metaDataDetails.getSize() <= limit);
                         rb.setStatementForReloading(finalSqlStatement);
                         metaDataDetails.reset();
                         LoadJob loadJob = rb.newLoadJob(metaDataDetails, limit);
@@ -1561,11 +1561,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     class ResultContentPane extends BrowserContentPane {
         public ResultContentPane(DataModel dataModel, Table table, String condition, Session session, Row parentRow,
                 List<Row> parentRows, Association association, Frame parentFrame,
-                Set<Pair<BrowserContentPane, Row>> currentClosure,
-                Set<Pair<BrowserContentPane, String>> currentClosureRowIDs, Integer limit, Boolean selectDistinct,
+                RowsClosure rowsClosure, Integer limit, Boolean selectDistinct,
                 boolean reload, ExecutionContext executionContext) {
-            super(dataModel, table, condition, session, parentRow, parentRows, association, parentFrame, currentClosure,
-                    currentClosureRowIDs, limit, selectDistinct, reload, executionContext);
+            super(dataModel, table, condition, session, parentRow, parentRows, association, parentFrame, 
+            		rowsClosure, limit, selectDistinct, reload, executionContext);
             noSingleRowDetailsView = true;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
         }
@@ -1639,19 +1638,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
         @Override
         protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward) {
-            Pair<BrowserContentPane, Row> thisRow = new Pair<BrowserContentPane, Row>(this, row);
-            if (!closure.contains(thisRow)) {
-                closure.add(thisRow);
-            }
         }
         @Override
         protected void findClosure(Row row) {
-            Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
-            findClosure(row, rows, false);
-            currentClosure.addAll(rows);
-            rows = new HashSet<Pair<BrowserContentPane, Row>>();
-            findClosure(row, rows, true);
-            currentClosure.addAll(rows);
         }
         @Override
         protected Relationship createQBRelations(boolean withParents) {
