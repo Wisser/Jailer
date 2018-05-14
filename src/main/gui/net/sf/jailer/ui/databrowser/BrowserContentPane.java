@@ -2576,6 +2576,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							continue;
 						}
 					}
+				} else if (!inClosure) {
+					break;
 				}
 				if (currentBlock.size() >= NUM_PARENTS || (!inClosure && !firstNonClosure)) {
 					if (!currentBlock.isEmpty()) {
