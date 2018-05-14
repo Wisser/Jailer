@@ -361,7 +361,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		if (time == null) {
 			return "";
 		}
-		return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(time));
+		return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Environment.initialLocal).format(new Date(time));
 	}
 
 	private boolean inRefresh = false;

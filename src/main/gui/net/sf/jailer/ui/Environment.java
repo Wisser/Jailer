@@ -39,8 +39,10 @@ import net.sf.jailer.render.HtmlDataModelRenderer;
 public class Environment {
 
 	private static File home = null;
+	public static Locale initialLocal = Locale.ENGLISH;
 	
 	public static void init() {
+		initialLocal = Locale.getDefault();
 		Locale.setDefault(Locale.ENGLISH);
 		Configuration configuration = Configuration.getInstance();
 		if (new File(".singleuser").exists()) {
