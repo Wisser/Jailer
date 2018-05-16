@@ -1684,8 +1684,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public static void customizeNimbus() {
 		try {
-			ToolTipManager.sharedInstance().setInitialDelay(400);
-			ToolTipManager.sharedInstance().setDismissDelay(10000);
+            ToolTipManager.sharedInstance().setInitialDelay(500);
+            ToolTipManager.sharedInstance().setDismissDelay(7000);
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
