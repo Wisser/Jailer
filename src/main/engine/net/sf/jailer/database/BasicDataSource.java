@@ -230,17 +230,23 @@ public class BasicDataSource implements DataSource {
 				boolean ok = true;
 				if (c.getTestQuery() != null) {
 					Connection connection = null;
+					Statement st = null;
 					try {
 						connection = getConnection(defaultDBMS, false);
-						Statement st = connection.createStatement();
+						st = connection.createStatement();
 						ResultSet rs = st.executeQuery(c.getTestQuery());
 						while (rs.next()) {
 						}
 						rs.close();
-						st.close();
 					} catch (SQLException e) {
 						ok = false;
 					} finally {
+						if (st != null) {
+							try {
+								st.close();
+							} catch (SQLException e) {
+							}
+						}
 						if (connection != null) {
 							try {
 								connection.close();

@@ -314,37 +314,47 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 								+ " values (?)"));
 					}
 					
-					entityGraph.readUnfilteredEntityColumns(table, columns, new Session.AbstractResultSetReader() {
-						private int batchSize[] = new int[columns.size()];
-						private final int MAX_BATCH_SIZE = 1000;
-						@Override
-						public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, entityGraph.getSession(), entityGraph.getSession().dbms);
-							for (int i = 0; i < columns.size(); ++i) {
-								Object content = cellContentConverter.getObject(resultSet, i + 1);
-								if (content != null) {
-									String value = cellContentConverter.toSql(content);
-									insertStatement.get(columns.get(i)).setString(1, value);
-									insertStatement.get(columns.get(i)).addBatch();
-									++batchSize[i];
-									if (batchSize[i] > MAX_BATCH_SIZE) {
+					try {
+						entityGraph.readUnfilteredEntityColumns(table, columns, new Session.AbstractResultSetReader() {
+							private int batchSize[] = new int[columns.size()];
+							private final int MAX_BATCH_SIZE = 1000;
+							@Override
+							public void readCurrentRow(ResultSet resultSet) throws SQLException {
+								CellContentConverter cellContentConverter = getCellContentConverter(resultSet, entityGraph.getSession(), entityGraph.getSession().dbms);
+								for (int i = 0; i < columns.size(); ++i) {
+									Object content = cellContentConverter.getObject(resultSet, i + 1);
+									if (content != null) {
+										String value = cellContentConverter.toSql(content);
+										insertStatement.get(columns.get(i)).setString(1, value);
+										insertStatement.get(columns.get(i)).addBatch();
+										++batchSize[i];
+										if (batchSize[i] > MAX_BATCH_SIZE) {
+											insertStatement.get(columns.get(i)).executeBatch();
+											batchSize[i] = 0;
+										}
+									}
+								}
+							}
+							
+							@Override
+							public void close() throws SQLException {
+								for (int i = 0; i < columns.size(); ++i) {
+									if (batchSize[i] > 0) {
 										insertStatement.get(columns.get(i)).executeBatch();
 										batchSize[i] = 0;
 									}
 								}
 							}
-						}
-						
-						@Override
-						public void close() throws SQLException {
-							for (int i = 0; i < columns.size(); ++i) {
-								if (batchSize[i] > 0) {
-									insertStatement.get(columns.get(i)).executeBatch();
-									batchSize[i] = 0;
-								}
+						});
+					} finally {
+						for (PreparedStatement st: insertStatement.values()) {
+							try {
+								st.close();
+							} catch (SQLException e) {
+								// ignore
 							}
 						}
-					});
+					}
 				}
 			});
 		}

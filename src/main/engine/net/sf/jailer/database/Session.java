@@ -434,41 +434,51 @@ public class Session {
 	private long executeQuery(Connection theConnection, String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit, int timeout) throws SQLException {
 		long rc = 0;
 		CancellationHandler.checkForCancellation(context);
-		Statement statement = theConnection.createStatement();
-		CancellationHandler.begin(statement, context);
-		ResultSet resultSet;
+		Statement statement = null;
 		try {
-			if (timeout > 0) {
-				statement.setQueryTimeout(timeout);
+			statement = theConnection.createStatement();
+			CancellationHandler.begin(statement, context);
+			ResultSet resultSet;
+			try {
+				if (timeout > 0) {
+					statement.setQueryTimeout(timeout);
+				}
+				resultSet = statement.executeQuery(sqlQuery);
+			} catch (SQLException e) {
+				if (alternativeSQL != null) {
+					_log.warn("query failed, using alternative query. Reason: " + e.getMessage());
+					_log.info(alternativeSQL);
+					CancellationHandler.checkForCancellation(context);
+					resultSet = statement.executeQuery(alternativeSQL);
+				} else {
+					throw e;
+				}
 			}
-			resultSet = statement.executeQuery(sqlQuery);
-		} catch (SQLException e) {
-			if (alternativeSQL != null) {
-				_log.warn("query failed, using alternative query. Reason: " + e.getMessage());
-				_log.info(alternativeSQL);
-				CancellationHandler.checkForCancellation(context);
-				resultSet = statement.executeQuery(alternativeSQL);
-			} else {
-				throw e;
+			if (reader instanceof AbstractResultSetReader) {
+				((AbstractResultSetReader) reader).init(resultSet);
+			}
+			while (resultSet.next()) {
+				reader.readCurrentRow(resultSet);
+				++rc;
+				if (rc % 100 == 0) {
+					CancellationHandler.checkForCancellation(context);
+				}
+				if (limit > 0 && rc >= limit) {
+					break;
+				}
+			}
+			reader.close();
+			resultSet.close();
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					// ignore
+				}
+				CancellationHandler.end(statement, context);
 			}
 		}
-		if (reader instanceof AbstractResultSetReader) {
-			((AbstractResultSetReader) reader).init(resultSet);
-		}
-		while (resultSet.next()) {
-			reader.readCurrentRow(resultSet);
-			++rc;
-			if (rc % 100 == 0) {
-				CancellationHandler.checkForCancellation(context);
-			}
-			if (limit > 0 && rc >= limit) {
-				break;
-			}
-		}
-		reader.close();
-		resultSet.close();
-		statement.close();
-		CancellationHandler.end(statement, context);
 		_log.info(rc + " row(s)");
 		return rc;
 	}
@@ -641,12 +651,18 @@ public class Session {
 			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8");
 			statement.setCharacterStream(1, inputStreamReader, (int) length);
 			statement.execute();
-			statement.close();
-			CancellationHandler.end(statement, null);
 			inputStreamReader.close();
 		} catch (SQLException e) {
 			CancellationHandler.checkForCancellation(null);
 			throw e;
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+					CancellationHandler.end(statement, null);
+				} catch (SQLException e) {
+				}
+			}
 		}
 	}
 
@@ -663,12 +679,18 @@ public class Session {
 			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8");
 			statement.setCharacterStream(1, inputStreamReader, (int) length);
 			statement.execute();
-			statement.close();
-			CancellationHandler.end(statement, null);
 			inputStreamReader.close();
 		} catch (SQLException e) {
 			CancellationHandler.checkForCancellation(null);
 			throw e;
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+					CancellationHandler.end(statement, null);
+				} catch (SQLException e) {
+				}
+			}
 		}
 	}
 
@@ -685,12 +707,18 @@ public class Session {
 			FileInputStream fileInputStream = new FileInputStream(lobFile);
 			statement.setBinaryStream(1, fileInputStream, (int) lobFile.length());
 			statement.execute();
-			statement.close();
-			CancellationHandler.end(statement, null);
 			fileInputStream.close();
 		} catch (SQLException e) {
 			CancellationHandler.checkForCancellation(null);
 			throw e;
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+					CancellationHandler.end(statement, null);
+				} catch (SQLException e) {
+				}
+			}
 		}
 	}
 
@@ -711,13 +739,12 @@ public class Session {
 	public long execute(String sql, Object cancellationContext) throws SQLException {
 		_log.info(sql);
 		long rc = 0;
+		Statement statement = null;
 		try {
 			CancellationHandler.checkForCancellation(cancellationContext);
-			Statement statement = connectionFactory.getConnection().createStatement();
+			statement = connectionFactory.getConnection().createStatement();
 			CancellationHandler.begin(statement, cancellationContext);
 			rc = statement.executeUpdate(sql);
-			statement.close();
-			CancellationHandler.end(statement, cancellationContext);
 			_log.info("" + rc + " row(s)");
 		} catch (SQLException e) {
 			CancellationHandler.checkForCancellation(cancellationContext);
@@ -725,6 +752,15 @@ public class Session {
 				_log.error("Error executing statement", e);
 			}
 			throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sql + "\"", sql, e);
+		} finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (SQLException e) {
+					// ignore
+				}
+				CancellationHandler.end(statement, cancellationContext);
+			}
 		}
 		return rc;
 	}
