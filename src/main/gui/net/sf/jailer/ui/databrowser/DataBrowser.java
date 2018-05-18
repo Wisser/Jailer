@@ -190,7 +190,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	/**
 	 * Allowed row limits.
 	 */
-	public static final Integer[] ROW_LIMITS = new Integer[] { 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 70000, 100000 };
+	public static final Integer[] ROW_LIMITS = new Integer[] { 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 70000, 100000 };
 
     /**
      * Constructor.
@@ -3209,7 +3209,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		final JLabel titleLbl = new JLabel(sqlConsoleIcon);
 		String tabName = "SQL Console";
 		++sqlConsoleNr;
-		final String title = tabName + (sqlConsoleNr > 1? " " + sqlConsoleNr : "");
+		final String title = tabName + (sqlConsoleNr > 1? " (" + sqlConsoleNr + ")" : "");
 
 		final SQLConsoleWithTitle sqlConsole = new SQLConsoleWithTitle(session, metaDataSource, datamodel, executionContext, title, titleLbl);
 		sqlConsoles.add(sqlConsole);

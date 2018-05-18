@@ -900,6 +900,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 }
                 label.setOpaque(false);
                 panel.add(label);
+                panel.add(new JLabel("                                      "));
                 panel.setOpaque(false);
                 panel.setToolTipText(tooltip);
                 comp = panel;
