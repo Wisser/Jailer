@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -64,6 +65,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -612,7 +614,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         tablesComboBox.setVisible(false);
         refreshButton1.setVisible(false);
         searchButton.setText("Select Table");
-        
+
         metaDataTree.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -653,28 +655,49 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             }
             @Override
             public void mouseClicked(MouseEvent evt) {
-                final MDTable mdTable = findTable(evt);
-                if (evt.getButton() == MouseEvent.BUTTON3) {
-                    if (mdTable != null) {
+            	 final MDTable mdTable = findTable(evt);
+            	 final Set<MDTable> mdTables = new LinkedHashSet<MDTable>();
+           		 findTables(mdTables);
+            	 if (evt.getButton() == MouseEvent.BUTTON3) {
+                    if (mdTable != null || !mdTables.isEmpty()) {
+                    	int itemCount = 0;
                         JPopupMenu popup = new JPopupMenu();
-                        JMenuItem open = new JMenuItem("Open");
-                        popup.add(open);
-                        open.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                openTable(mdTable);
+                        if (mdTable != null) {
+	                        JMenuItem open = new JMenuItem("Open");
+	                        popup.add(open);
+	                        ++itemCount;
+	                        open.addActionListener(new ActionListener() {
+	                            @Override
+	                            public void actionPerformed(ActionEvent e) {
+	                                openTable(mdTable);
+	                            }
+	                        });
+                        }
+                        if (mdTable != null && MetaDataPanel.this.metaDataSource.toTable(mdTable) == null) {
+                            if (itemCount > 0) {
+                            	popup.addSeparator();
                             }
-                        });
-                        if (MetaDataPanel.this.metaDataSource.toTable(mdTable) == null) {
-                            popup.addSeparator();
                             JMenuItem analyse = new JMenuItem("Analyse schema \""+ mdTable.getSchema().getUnquotedName() + "\"");
                             popup.add(analyse);
+                            ++itemCount;
                             analyse.addActionListener(new ActionListener() {
                                 @Override
                                 public void actionPerformed(ActionEvent e) {
                                     analyseSchema(mdTable.getSchema().getName());
                                 }
                             });
+                        }
+                        if (!mdTables.isEmpty()) {
+                            if (itemCount > 0) {
+                            	popup.addSeparator();
+                            }
+                            JMenu menu = new JMenu("Create Script");
+                            popup.add(menu);
+                            ++itemCount;
+                            menu.add(createScriptMenuItem("Delete Script", "Delete from %1$s;", "", mdTables, false));
+                            menu.add(createScriptMenuItem("Drop Table Script", "Drop Table %1$s;", "", mdTables, false));
+                            menu.addSeparator();
+                            menu.add(createScriptMenuItem("Count Rows Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true));
                         }
                         popup.show(evt.getComponent(), evt.getX(), evt.getY());
                     }
@@ -687,9 +710,69 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     }
                 }
             }
-            private MDTable findTable(MouseEvent evt) {
+            private JMenuItem createScriptMenuItem(String title, final String template, final String separator, final Set<MDTable> mdTables, final boolean execute) {
+                JMenuItem item = new JMenuItem(title);
+                item.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                    	StringBuilder script = new StringBuilder();
+                    	for (MDTable mdTable: mdTables) {
+                    		if (script.length() > 0) {
+                    			script.append(separator + "\n");
+                    		}
+                    		String tableName;
+                    		if (mdTable.getSchema().isDefaultSchema) {
+                    			tableName = mdTable.getName();
+                    		} else {
+                    			tableName = mdTable.getSchema() + "." + mdTable.getName();
+                    		}
+                    		script.append(String.format(template, tableName));
+                    	}
+            			script.append("\n");
+						appendScript(script.toString(), execute);
+                    }
+                });
+                return item;
+			}
+			private void findTables(Set<MDTable> mdTables) {
+				TreePath[] paths = metaDataTree.getSelectionPaths();
+				if (paths != null) {
+					for (TreePath path: paths) {
+						findTables(mdTables, path.getLastPathComponent());
+					}
+				}
+			}
+			private void findTables(Set<MDTable> mdTables, Object node) {
+				if (node instanceof DefaultMutableTreeNode && node != metaDataTree.getModel().getRoot()) {
+					DefaultMutableTreeNode defaultMutableTreeNode = (DefaultMutableTreeNode) node;
+					Object selNode = defaultMutableTreeNode.getUserObject();
+                    if (selNode instanceof MDTable) {
+                        mdTables.add((MDTable) selNode);
+                    }
+                    for (int i = 0; i < defaultMutableTreeNode.getChildCount(); ++i) {
+                    	findTables(mdTables, defaultMutableTreeNode.getChildAt(i));
+                    }
+				}
+			}
+			private MDTable findTable(MouseEvent evt) {
                 MDTable mdTable = null;
-                TreePath node = metaDataTree.getPathForLocation(evt.getX(), evt.getY());
+                TreePath node = findNode(evt);
+                if (node != null) {
+                    Object sel = node.getLastPathComponent();
+                    if (sel instanceof DefaultMutableTreeNode) {
+                        Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
+                        if (selNode instanceof MDTable) {
+                            mdTable = (MDTable) selNode;
+                        }
+                        if (!metaDataTree.isPathSelected(node)) {
+                        	metaDataTree.setSelectionPath(node);
+                        }
+                    }
+                }
+                return mdTable;
+            }
+			private TreePath findNode(MouseEvent evt) {
+				TreePath node = metaDataTree.getPathForLocation(evt.getX(), evt.getY());
                 if (node == null) {
                     for (int x = metaDataTree.getWidth(); x > 0; x -= 32) {
                         node = metaDataTree.getPathForLocation(x, evt.getY());
@@ -698,18 +781,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                     }
                 }
-                if (node != null) {
-                    Object sel = node.getLastPathComponent();
-                    if (sel instanceof DefaultMutableTreeNode) {
-                        Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
-                        if (selNode instanceof MDTable) {
-                            mdTable = (MDTable) selNode;
-                            metaDataTree.setSelectionPath(node);
-                        }
-                    }
-                }
-                return mdTable;
-            }
+				return node;
+			}
         });
         
         metaDataTree.addTreeWillExpandListener(new TreeWillExpandListener() {
@@ -837,7 +910,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         renderer.setLeafIcon(null);
         renderer.setClosedIcon(null);
         metaDataTree.setCellRenderer(renderer);
-        metaDataTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        metaDataTree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         
         metaDataTree.addTreeSelectionListener(new TreeSelectionListener() {
             @Override
@@ -1575,6 +1648,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     protected abstract void openNewTableBrowser();
     protected abstract void updateDataModelView(Table table);
     protected abstract void setCaretPosition(int position);
+	protected abstract void appendScript(String script, boolean execute);
 
     public void onSelectTable() {
         Object item = tablesComboBox.getSelectedItem();

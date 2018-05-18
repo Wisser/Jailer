@@ -1,3 +1,6 @@
+7.9.1
+  - Minor GUI Improvements and bug fixes.
+
 7.9
   - Comprehensive usability improvements of the data browser.
   - Fix for "#25 Invalid SQL when exporting for H2 dialect"

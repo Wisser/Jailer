@@ -26,10 +26,10 @@ Oracle OCI;jdbc:oracle:oci:@<SID>;oracle.jdbc.driver.OracleDriver
 #PostgreSQL (JDBC Driver 9.4);jdbc:postgresql://<HOST>:<PORT>/<DB>;org.postgresql.Driver;lib/postgresql-9.4.1211.jre6.jar
 #PostgreSQL (JDBC Driver 9.1);jdbc:postgresql://<HOST>:<PORT>/<DB>;org.postgresql.Driver;lib/postgresql-9.1-901.jdbc4.jar
 PostgreSQL JDBC Driver 42.2.0;jdbc:postgresql://<HOST>:<PORT>/<DB>;org.postgresql.Driver;lib/postgresql-42.2.0.jre7.jar
-Sybase (jTDS);jdbc:jtds:sybase://<server>[:<port>][/<database>];net.sourceforge.jtds.jdbc.Driver;lib/jtds-1.3.1.jar
+# Sybase (jTDS);jdbc:jtds:sybase://<server>[:<port>][/<database>];net.sourceforge.jtds.jdbc.Driver;lib/jtds-1.3.1.jar
 # Sybase (jConnect 4.2 and earlier);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc.SybDriver
 # Sybase (jConnect 5.2);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc2.jdbc.SybDriver 
-# Sybase (jConnect 6.0);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc3.jdbc.SybDriver
+Sybase (jConnect 6.0);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc3.jdbc.SybDriver
 Derby;jdbc:derby://<HOST>:<PORT>/<DB>;org.apache.derby.jdbc.ClientDriver;lib/derbyclient.jar lib/derbytools.jar
 Derby embedded;jdbc:derby:<DB>;org.apache.derby.jdbc.EmbeddedDriver;lib/derbyclient.jar lib/derbytools.jar
 SQLite 3.8;jdbc:sqlite:<file>;org.sqlite.JDBC;lib/sqlite-jdbc-3.8.11.2.jar

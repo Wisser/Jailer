@@ -3080,6 +3080,17 @@ public class DataBrowser extends javax.swing.JFrame {
 							UIUtil.showException(this, "Error", e);
 						}
 					}
+					
+					@Override
+					protected void appendScript(String script, boolean execute) {
+						try {
+							workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
+							getCurrentSQLConsole().grabFocus();
+							getCurrentSQLConsole().appendStatement(script, execute);
+						} catch (Throwable e) {
+							UIUtil.showException(this, "Error", e);
+						}
+					}
 
 					@Override
 					protected void onTableSelect(MDTable mdTable) {

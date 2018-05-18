@@ -1285,15 +1285,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		if (table instanceof SqlStatementTable && resultSetType == null) {
 			JPopupMenu jPopupMenu = new JPopupMenu();
-			JMenuItem update = new JMenuItem("Update");
-			jPopupMenu.add(update);
-			update.setEnabled(false);
-			JMenuItem delete = new JMenuItem("Delete");
-			jPopupMenu.add(delete);
-			delete.setEnabled(false);
-			JMenuItem insert = new JMenuItem("Insert");
-			jPopupMenu.add(insert);
-			insert.setEnabled(false);
+			if (row != null) {
+				JMenuItem det = new JMenuItem("Details");
+				det.setAccelerator(KS_DETAILS);
+				jPopupMenu.add(det);
+				jPopupMenu.add(new JSeparator());
+				det.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						openDetailsView(rowIndex, x, y);
+					}
+				});
+			}
+			JMenu script = new JMenu("Create Script");
+			script.setEnabled(false);
+			jPopupMenu.add(script);
 			jPopupMenu.addSeparator();
 			jPopupMenu.add(copyTCB);
 			jPopupMenu.addSeparator();
@@ -1440,7 +1446,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					});
 				}
 				
-				JMenu sql = new JMenu("SQL/DML");
+				JMenu sql = new JMenu("Create Script");
 				final String rowName = !(table instanceof SqlStatementTable)? dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")" : "";
 				JMenuItem update = new JMenuItem("Update");
 				sql.add(update);
@@ -1473,9 +1479,44 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					popup.removeAll();
 					popup.add(det);
 					popup.addSeparator();
-					popup.add(insert);
-					popup.add(update);
-					popup.add(delete);
+					JMenu script = new JMenu("Create Script");
+					popup.add(script);
+					script.add(insert);
+					script.add(update);
+					script.add(delete);
+					JMenuItem inserts = new JMenuItem("Inserts (all rows)");
+					script.add(inserts);
+					final String tableName = dataModel.getDisplayName(table);
+					inserts.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							openSQLDialog("Insert Into " + tableName, x, y, new Object() { @Override
+							public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), session); }});
+						}
+					});
+					JMenuItem updates = new JMenuItem("Updates (all rows)");
+					script.add(updates);
+					updates.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							openSQLDialog("Update " + tableName, x, y,  new Object() { @Override
+							public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(rows), session); }});
+						}
+					});
+					JMenuItem deletes = new JMenuItem("Deletes (all rows)");
+					script.add(deletes);
+					deletes.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							openSQLDialog("Delete from " + tableName, x, y,  new Object() { @Override
+							public String toString() { return SQLDMLBuilder.buildDelete(table, sortedAndFiltered(rows), session); }
+							});
+						}
+					});
+					inserts.setEnabled(rows.size() > 0);
+					updates.setEnabled(rows.size() > 0);
+					deletes.setEnabled(rows.size() > 0);
+
 				} else {
 					popup.add(sql);
 				}
@@ -1525,9 +1566,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				openQueryBuilder(true);
 			}
 		});
-		JMenu sqlDml = new JMenu("SQL/DML");
+		JMenu sqlDml = new JMenu("Create Script");
 		popup.add(sqlDml);
 		JMenuItem insertNewRow = new JMenuItem("Insert New Row");
+		insertNewRow.setEnabled(association != null);
 		sqlDml.add(insertNewRow);
 		final String tableName = dataModel.getDisplayName(table);
 		insertNewRow.addActionListener(new ActionListener() {
@@ -1567,7 +1609,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				openSQLDialog("Insert Into " + tableName, x, y, new Object() { @Override
-				public String toString() { return SQLDMLBuilder.buildInsert(table, rows, session); }});
+				public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), session); }});
 			}
 		});
 		JMenuItem update = new JMenuItem("Updates");
@@ -1576,7 +1618,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				openSQLDialog("Update " + tableName, x, y,  new Object() { @Override
-				public String toString() { return SQLDMLBuilder.buildUpdate(table, rows, session); }});
+				public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(rows), session); }});
 			}
 		});
 		JMenuItem delete = new JMenuItem("Deletes");
@@ -1585,7 +1627,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				openSQLDialog("Delete from " + tableName, x, y,  new Object() { @Override
-				public String toString() { return SQLDMLBuilder.buildDelete(table, rows, session); }});
+				public String toString() { return SQLDMLBuilder.buildDelete(table, sortedAndFiltered(rows), session); }});
 			}
 		});
 		insert.setEnabled(rows.size() > 0);
@@ -1643,6 +1685,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		
+		popup.addSeparator();
+		JMenuItem m = new JMenuItem("Hide from View");
+		popup.add(m);
+		m.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onHide();
+			}
+		});
+		m = new JMenuItem("Close" + (getChildBrowsers().isEmpty()? "" : " Subtree"));
+		popup.add(m);
+		m.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				closeSubTree(BrowserContentPane.this);
+			}
+			private void closeSubTree(BrowserContentPane cp) {
+				for (RowBrowser c: cp.getChildBrowsers()) {
+					closeSubTree(c.browserContentPane);
+				}
+				cp.close();
+			}
+		});
 		popup.add(new JSeparator());
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		tableFilter.setAccelerator(KS_FILTER);
@@ -1670,29 +1735,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		popup.add(editMode);
-		popup.addSeparator();
-		JMenuItem m = new JMenuItem("Hide from View");
-		popup.add(m);
-		m.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				onHide();
-			}
-		});
-		m = new JMenuItem("Close" + (getChildBrowsers().isEmpty()? "" : " Subtree"));
-		popup.add(m);
-		m.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				closeSubTree(BrowserContentPane.this);
-			}
-			private void closeSubTree(BrowserContentPane cp) {
-				for (RowBrowser c: cp.getChildBrowsers()) {
-					closeSubTree(c.browserContentPane);
-				}
-				cp.close();
-			}
-		});
 		return popup;
 	}
 
@@ -2113,7 +2155,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					return;
 				}
 			}
-			d = new JDialog(getOwner(), "SQL/DML - " + titel, true);
+			d = new JDialog(getOwner(), "Create Script - " + titel, true);
 			d.getContentPane().add(new SQLDMLPanel(sqlString, getSqlConsole(false), session, getMetaDataSource(), 
 					new Runnable() {
 						@Override
@@ -4790,6 +4832,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return sb.toString();
 	}
 
+	private List<Row> sortedAndFiltered(List<Row> rows) {
+		RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
+		if (sorter != null) {
+			List<Row> result = new ArrayList<Row>();
+			for (int i = 0; i < sorter.getViewRowCount(); ++i) {
+				result.add(rows.get(sorter.convertRowIndexToModel(i)));
+			}
+			return result;
+		}
+		return rows;
+	}
+	
 	private void sortChildren() {
 		((TableRowSorter) rowsTable.getRowSorter()).sort();
 		for (RowBrowser ch: getChildBrowsers()) {
