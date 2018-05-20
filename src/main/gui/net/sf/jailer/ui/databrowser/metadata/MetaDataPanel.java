@@ -656,6 +656,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             @Override
             public void mouseClicked(MouseEvent evt) {
             	 final MDTable mdTable = findTable(evt);
+            	 TreePath node = findNode(evt);
+            	 if (node != null) {
+            		 metaDataTree.scrollRectToVisible(new Rectangle(0, (int) evt.getPoint().getY(), 1, 1));
+            	 }
             	 final Set<MDTable> mdTables = new LinkedHashSet<MDTable>();
            		 findTables(mdTables);
             	 if (evt.getButton() == MouseEvent.BUTTON3) {
@@ -868,10 +872,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 String tooltip = null;
             	if (comp instanceof JLabel) {
             		String text = ((JLabel) comp).getText();
-            		int maxLength = 40;
+            		int maxLength = 20;
             		if (text != null && text.length() > maxLength) {
+            			// TODO tooltips dont work with tree nodes
             			tooltip = text;
-            			((JLabel) comp).setText(text.substring(0, maxLength) + "...");
             		}
             	}	
                 Font font = comp.getFont();
@@ -900,7 +904,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 }
                 label.setOpaque(false);
                 panel.add(label);
-                panel.add(new JLabel("                                      "));
+                panel.add(new JLabel("                                                                                                                  "));
                 panel.setOpaque(false);
                 panel.setToolTipText(tooltip);
                 comp = panel;
@@ -1199,6 +1203,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         }
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         metaDataTree.setModel(treeModel);
+ 		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				metaDataTree.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
+		 	}
+		});
         selectSchema(metaDataSource.getDefaultSchema());
     }
 
@@ -1326,6 +1336,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setViewportView(metaDataTree);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1340,8 +1351,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         refreshButton.setText("Refresh");
         refreshButton.setToolTipText("Refresh Database Meta Data Cache");
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButtonActionPerformed(evt);
             }
         });
@@ -1354,8 +1364,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         refreshButton1.setText("Select");
         refreshButton1.setToolTipText("Choose the selecetd table in the tables tree");
         refreshButton1.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButton1ActionPerformed(evt);
             }
         });
@@ -1372,10 +1381,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
         outlineList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            @Override
-			public int getSize() { return strings.length; }
-            @Override
-			public Object getElementAt(int i) { return strings[i]; }
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
         });
         outlineList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         outlineScrollPane.setViewportView(outlineList);
