@@ -1,4 +1,5 @@
 7.9.1
+  - Fixed statement leak.
   - Minor GUI Improvements and bug fixes.
 
 7.9
