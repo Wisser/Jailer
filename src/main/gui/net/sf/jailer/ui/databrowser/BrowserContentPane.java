@@ -62,6 +62,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -182,8 +183,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		private final boolean selectDistinct;
 		private boolean finished;
 		private final ResultSet inputResultSet;
+		private final RowBrowser parentBrowser;
 		
-		public LoadJob(int limit, String andCond, boolean selectDistinct) {
+		public LoadJob(int limit, String andCond, RowBrowser parentBrowser, boolean selectDistinct) {
 			this.andCond = andCond;
 			this.selectDistinct = selectDistinct;
 			this.inputResultSet = null;
@@ -191,6 +193,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				this.limit = limit;
 				finished = false;
 				isCanceled = false;
+				this.parentBrowser = parentBrowser;
 			}
 		}
 
@@ -202,6 +205,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				this.limit = limit;
 				finished = false;
 				isCanceled = false;
+				parentBrowser = null;
 			}
 		}
 
@@ -250,6 +254,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							rows.remove(rows.size() - 1);
 						}
 						isCanceled = true; // done
+						sortRowsByParentViewIndex();
 					}
 					if (e != null) {
 						updateMode("error");
@@ -302,6 +307,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 			});
+		}
+
+		protected void sortRowsByParentViewIndex() {
+			if (parentBrowser != null && parentBrowser.browserContentPane != null && parentBrowser.browserContentPane.rowsTable != null) {
+				final RowSorter<? extends TableModel> parentSorter = parentBrowser.browserContentPane.rowsTable.getRowSorter();
+				Collections.sort(rows, new Comparator<Row>() {
+					@Override
+					public int compare(Row a, Row b) {
+						int avi = a.getParentModelIndex();
+						if (avi >= 0 && avi < parentSorter.getModelRowCount()) {
+							avi = parentSorter.convertRowIndexToView(avi);
+						}
+						int bvi = b.getParentModelIndex();
+						if (bvi >= 0 && avi < parentSorter.getModelRowCount()) {
+							bvi = parentSorter.convertRowIndexToView(bvi);
+						}
+						return avi - bvi;
+					}
+				});
+			}
 		}
 
 		public void cancel() {
@@ -2421,9 +2446,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			int limit = getReloadLimit();
 			LoadJob reloadJob;
 			if (statementForReloading != null) {
-				reloadJob = new LoadJob(limit, statementForReloading, false);
+				reloadJob = new LoadJob(limit, statementForReloading, getParentBrowser(), false);
 			} else {
-				reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? "" : getAndConditionText(), selectDistinctCheckBox.isSelected());
+				reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? "" : getAndConditionText(), getParentBrowser(), selectDistinctCheckBox.isSelected());
 			}
 			synchronized (this) {
 				currentLoadJob = reloadJob;
@@ -2600,6 +2625,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		List<List<Row>> parentBlocks = new ArrayList<List<Row>>();
 		List<Row> currentBlock = new ArrayList<Row>();
 		Set<String> regPRows = new HashSet<String>();
+		Map<Row, Integer> parentRowIndex = new IdentityHashMap<Row, Integer>();
+		for (int i = 0; i < pRows.size(); ++i) {
+			parentRowIndex.put(pRows.get(i), i);
+		}
 		parentBlocks.add(currentBlock);
 		BrowserContentPane parentPane = null;
 		if (getParentBrowser() != null) {
@@ -2694,8 +2723,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				sortNewRows(newRows);
 				if (parentRows != null) {
 					if (!newRows.isEmpty()) {
+						Integer i = parentRowIndex.get(pRow);
 						for (Row r: newRows) {
-							r.setParentModelIndex(parentIndex);
+							r.setParentModelIndex(i != null? i : parentIndex);
 						}
 					}
 					++parentIndex;

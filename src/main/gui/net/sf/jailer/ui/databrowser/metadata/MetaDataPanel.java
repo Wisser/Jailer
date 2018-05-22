@@ -768,9 +768,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         if (selNode instanceof MDTable) {
                             mdTable = (MDTable) selNode;
                         }
-                        if (!metaDataTree.isPathSelected(node)) {
-                        	metaDataTree.setSelectionPath(node);
-                        }
                     }
                 }
                 return mdTable;
