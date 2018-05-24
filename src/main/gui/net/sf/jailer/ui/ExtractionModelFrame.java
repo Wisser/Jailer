@@ -324,11 +324,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptime100 = new javax.swing.JRadioButtonMenuItem();
         steptime200 = new javax.swing.JRadioButtonMenuItem();
         steptime500 = new javax.swing.JRadioButtonMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        columnOrderItem = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         updateDataModel = new javax.swing.JMenuItem();
         openDataModelEditor = new javax.swing.JMenuItem();
-        jSeparator13 = new javax.swing.JPopupMenu.Separator();
-        columnOrderItem = new javax.swing.JMenuItem();
         jSeparator14 = new javax.swing.JPopupMenu.Separator();
         analyzeSQLMenuItem = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
@@ -675,6 +675,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu4.add(steptime500);
 
         viewMenu.add(jMenu4);
+        viewMenu.add(jSeparator3);
+
+        columnOrderItem.setText("Column Ordering");
+        columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnOrderItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(columnOrderItem);
 
         jMenuBar2.add(viewMenu);
 
@@ -695,15 +704,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu1.add(openDataModelEditor);
-        jMenu1.add(jSeparator13);
-
-        columnOrderItem.setText("Column Ordering...");
-        columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                columnOrderItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(columnOrderItem);
         jMenu1.add(jSeparator14);
 
         analyzeSQLMenuItem.setText("Analyze SQL Script");
@@ -1975,9 +1975,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
     private javax.swing.JSeparator jSeparator12;
-    private javax.swing.JPopupMenu.Separator jSeparator13;
     private javax.swing.JPopupMenu.Separator jSeparator14;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator7;

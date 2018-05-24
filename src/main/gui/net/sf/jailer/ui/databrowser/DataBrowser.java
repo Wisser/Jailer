@@ -964,13 +964,13 @@ public class DataBrowser extends javax.swing.JFrame {
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
         dataModelEditorjMenuItem = new javax.swing.JMenuItem();
-        jSeparator13 = new javax.swing.JPopupMenu.Separator();
-        columnOrderItem = new javax.swing.JMenuItem();
         jSeparator11 = new javax.swing.JPopupMenu.Separator();
         analyseSQLMenuItem1 = new javax.swing.JMenuItem();
         jSeparator10 = new javax.swing.JPopupMenu.Separator();
         showDataModelMenuItem = new javax.swing.JCheckBoxMenuItem();
         schemaMappingMenuItem = new javax.swing.JMenuItem();
+        jviewMenu = new javax.swing.JMenu();
+        columnOrderItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         exportDataMenuItem = new javax.swing.JMenuItem();
         dataImport = new javax.swing.JMenuItem();
@@ -1179,7 +1179,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 24, 35);
+        layeredPaneContent.setBounds(0, 0, 26, 37);
 
         desktopSplitPane.setLeftComponent(jLayeredPane1);
 
@@ -1532,15 +1532,6 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuTools.add(dataModelEditorjMenuItem);
-        menuTools.add(jSeparator13);
-
-        columnOrderItem.setText("Column Ordering...");
-        columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                columnOrderItemActionPerformed(evt);
-            }
-        });
-        menuTools.add(columnOrderItem);
         menuTools.add(jSeparator11);
 
         analyseSQLMenuItem1.setText("Analyze SQL Script");
@@ -1569,6 +1560,18 @@ public class DataBrowser extends javax.swing.JFrame {
         menuTools.add(schemaMappingMenuItem);
 
         menuBar.add(menuTools);
+
+        jviewMenu.setText("View");
+
+        columnOrderItem.setText("Column Ordering");
+        columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnOrderItemActionPerformed(evt);
+            }
+        });
+        jviewMenu.add(columnOrderItem);
+
+        menuBar.add(jviewMenu);
 
         jMenu2.setText("Tools");
 
@@ -2310,7 +2313,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JPopupMenu.Separator jSeparator11;
     private javax.swing.JPopupMenu.Separator jSeparator12;
-    private javax.swing.JPopupMenu.Separator jSeparator13;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -2321,6 +2323,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane4;
     private javax.swing.JTable jTable1;
+    private javax.swing.JMenu jviewMenu;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
     private javax.swing.JPanel layeredPaneContent;
     private javax.swing.JMenuItem layoutMenuItem;
