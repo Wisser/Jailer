@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -55,6 +56,7 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.LineFilter;
 import net.sf.jailer.util.PrintUtil;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -91,6 +93,18 @@ public class DataModel {
 	 * The restriction model.
 	 */
 	private RestrictionModel restrictionModel;
+
+	/**
+	 * Order priority of a column.
+	 */
+	public enum ColumnOrderPriority {
+		HI, LO
+	};
+	
+	/**
+	 * Maps normalized column name to order priority.
+	 */
+	public final Map<String, ColumnOrderPriority> columnOrderPrio = new TreeMap<String, ColumnOrderPriority>();
 	
 	/**
 	 * Internal version number. Incremented on each modification.
@@ -152,6 +166,13 @@ public class DataModel {
 	 */
 	public static String getAssociationsFile(ExecutionContext executionContext) {
 		return getDatamodelFolder(executionContext) + File.separator + "association.csv";
+	}
+
+	/**
+	 * Gets name of file containing the column order definitions.
+	 */
+	private static String getColumnOrderFile(ExecutionContext executionContext) {
+		return getDatamodelFolder(executionContext) + File.separator + "columnorder.csv";
 	}
 	
 	/**
@@ -404,6 +425,22 @@ public class DataModel {
 				tables.put(mappedSchemaTableName, table);
 			}
 			
+			// column order
+			File orderFile = new File(getColumnOrderFile(executionContext));
+			if (orderFile.exists()) {
+				List<CsvFile.Line> orderList = new CsvFile(orderFile).getLines();
+				for (CsvFile.Line line: orderList) {
+					String column = line.cells.get(0);
+					if (column != null && !column.isEmpty()) {
+						if ("hi".equalsIgnoreCase(line.cells.get(1))) {
+							columnOrderPrio.put(column, ColumnOrderPriority.HI);
+						} else if ("lo".equalsIgnoreCase(line.cells.get(1))) {
+							columnOrderPrio.put(column, ColumnOrderPriority.LO);
+						}
+					}
+				}
+			}
+			
 			// columns
 			File colFile = new File(getColumnsFile(executionContext));
 			InputStream is = openModelFile(colFile, executionContext);
@@ -417,12 +454,32 @@ public class DataModel {
 						String newName = null;
 						if (knownIdentifiers != null) {
 							Column c = Column.parse(col);
-							newName = knownIdentifiers.getColumnName(line.cells.get(0), c.name);
+							newName = knownIdentifiers.getColumnName(Quoting.normalizeIdentifier(line.cells.get(0)), c.name);
 						}
 						try {
 							columns.add(Column.parse(newName, col));
 						} catch (Exception e) {
 							// ignore
+						}
+						// order columns
+						if (!columnOrderPrio.isEmpty()) {
+							Collections.sort(columns, new Comparator<Column>() {
+								@Override
+								public int compare(Column a, Column b) {
+									ColumnOrderPriority prioA = columnOrderPrio.get(Quoting.normalizeIdentifier(a.name));
+									ColumnOrderPriority prioB = columnOrderPrio.get(Quoting.normalizeIdentifier(b.name));
+									if (prioA != prioB) {
+										if (prioA == ColumnOrderPriority.HI) {
+											return -1;
+										} else if (prioA == ColumnOrderPriority.LO) {
+											return 1;
+										} else {
+											return prioB == ColumnOrderPriority.HI? 1 : -1;
+										}
+									}
+									return 0;
+								}
+							});
 						}
 					}
 					Table table = tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
@@ -1088,6 +1145,19 @@ public class DataModel {
 						+ CsvFile.encodeCell(clause.getObject()) + ";");
 			}
 		}
+	}
+
+	/**
+	 * Saves the order priority of the columns.
+	 */
+	public void saveColumnOrderPrio() throws FileNotFoundException {
+		File orderFile = new File(getColumnOrderFile(executionContext));
+		PrintWriter out = new PrintWriter(orderFile);
+		out.println("#column;prio (HI/LO)");
+		for (Entry<String, ColumnOrderPriority> e: columnOrderPrio.entrySet()) {
+			out.println(CsvFile.encodeCell(e.getKey()) + ";" + e.getValue());
+		}
+		out.close();
 	}
 
 	/**

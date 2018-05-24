@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -327,6 +328,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         updateDataModel = new javax.swing.JMenuItem();
         openDataModelEditor = new javax.swing.JMenuItem();
         jSeparator13 = new javax.swing.JPopupMenu.Separator();
+        columnOrderItem = new javax.swing.JMenuItem();
+        jSeparator14 = new javax.swing.JPopupMenu.Separator();
         analyzeSQLMenuItem = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         dataExport = new javax.swing.JMenuItem();
@@ -694,6 +697,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu1.add(openDataModelEditor);
         jMenu1.add(jSeparator13);
 
+        columnOrderItem.setText("Column Ordering...");
+        columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnOrderItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(columnOrderItem);
+        jMenu1.add(jSeparator14);
+
         analyzeSQLMenuItem.setText("Analyze SQL Script");
         analyzeSQLMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -975,75 +987,72 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	/**
 	 * Opens the data model editor.
 	 */
-	private void openDataModelEditor(Table toEdit, boolean merge) {
-		try {
-			if (saveIfNeeded("edit data model", true, false)) {
-				String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
-				   DataModelEditor dataModelEditor = new DataModelEditor(this, merge, false, toEdit, null, null, modelname, null, executionContext);
-				   dataModelEditor.setVisible(true);
-			   //	if (dataModelEditor.saved) {
-					   reload();
-			   //	}
-				   askForDataModel(this);
-				extractionModelEditor.closureBorderView.refresh();
-				restrictedDependenciesView.refresh();
+	private void openDataModelEditor(final Table toEdit, final boolean merge) {
+        executeAndReload(new Callable<Boolean>() {
+			@Override
+			public Boolean call() {
+				try {
+					String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
+					DataModelEditor dataModelEditor = new DataModelEditor(ExtractionModelFrame.this, merge, false, toEdit, null, null, modelname, null, executionContext);
+					dataModelEditor.setVisible(true);
+				} catch (Exception e) {
+					UIUtil.showException(ExtractionModelFrame.this, "Error", e);
+				}
+				return true;
 			}
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
-		}
+        });
 	}
 
 	private void updateDataModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateDataModelActionPerformed
-		try {
-			if (saveIfNeeded("Analyze Database", true, false)) {
-				if (connectToDBIfNeeded("Analyze Database")) {
-					List<String> args = new ArrayList<String>();
-					args.add("build-model-wo-merge");
-					dbConnectionDialog.addDbArgs(args);
+		executeAndReload(new Callable<Boolean>() {
+			@Override
+			public Boolean call() {
+				try {
+					if (connectToDBIfNeeded("Analyze Database")) {
+						List<String> args = new ArrayList<String>();
+						args.add("build-model-wo-merge");
+						dbConnectionDialog.addDbArgs(args);
 					
-					AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, extractionModelEditor.dataModel, executionContext);
-					boolean[] isDefaultSchema = new boolean[1];
-					String[] defaultSchema = new String[1];
-					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					List<String> schemas;
-					try {
-						CancellationHandler.reset(null);
-						schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
-					} finally {
-						setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-					}
-					if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
-						String schema = analyseOptionsDialog.getSelectedSchema();
-						if (schema != null) {
-							args.add("-schema");
-							args.add(schema);
+						AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(ExtractionModelFrame.this, extractionModelEditor.dataModel, executionContext);
+						boolean[] isDefaultSchema = new boolean[1];
+						String[] defaultSchema = new String[1];
+						setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+						List<String> schemas;
+						try {
+							CancellationHandler.reset(null);
+							schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
+						} finally {
+							setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 						}
-						if (!isDefaultSchema[0]) {
-							args.add("-qualifyNames");
-						}
-						analyseOptionsDialog.appendAnalyseCLIOptions(args);
-						ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-						if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
-							ModelBuilder.assocFilter = null;
-							String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
-							DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, executionContext);
-							if (dataModelEditor.dataModelHasChanged()) {
-								dataModelEditor.setVisible(true);
+						if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
+							String schema = analyseOptionsDialog.getSelectedSchema();
+							if (schema != null) {
+								args.add("-schema");
+								args.add(schema);
 							}
-				   //			if (dataModelEditor.saved) {
-								   reload();
-				   //			}
-							   askForDataModel(this);
+							if (!isDefaultSchema[0]) {
+								args.add("-qualifyNames");
+							}
+							analyseOptionsDialog.appendAnalyseCLIOptions(args);
+							ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
+							if (UIUtil.runJailer(ExtractionModelFrame.this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
+								ModelBuilder.assocFilter = null;
+								String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
+								DataModelEditor dataModelEditor = new DataModelEditor(ExtractionModelFrame.this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, executionContext);
+								if (dataModelEditor.dataModelHasChanged()) {
+									dataModelEditor.setVisible(true);
+								}
+							}
 						}
 					}
+				} catch (Exception e) {
+					UIUtil.showException(ExtractionModelFrame.this, "Error", e);
+				} finally {
+					ModelBuilder.assocFilter = null;
 				}
-				askForDataModel(this);
+				return true;
 			}
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
-		} finally {
-			ModelBuilder.assocFilter = null;
-		}
+		});
 	}//GEN-LAST:event_updateDataModelActionPerformed
 
 	void dataExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataExportActionPerformed
@@ -1646,6 +1655,44 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	}
     }//GEN-LAST:event_analyzeSQLMenuItemActionPerformed
 
+    private void columnOrderItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnOrderItemActionPerformed
+        executeAndReload(new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+	        	new ColumnOrderEditor(ExtractionModelFrame.this, extractionModelEditor.dataModel, executionContext);
+				return true;
+			}
+        });
+    }//GEN-LAST:event_columnOrderItemActionPerformed
+
+    private void executeAndReload(Callable<Boolean> callable) {
+        File tmpFile = null;
+        String extractionModelFile = extractionModelEditor.extractionModelFile;
+        boolean needsSave = extractionModelEditor.needsSave;
+    	try {
+    		tmpFile = Configuration.getInstance().createTempFile();
+        	if (extractionModelEditor.save(tmpFile.getPath())) {
+                if (Boolean.TRUE.equals(callable.call())) {
+	        		extractionModelEditor.extractionModelFile = tmpFile.getPath();
+					reload();
+					askForDataModel(this);
+					extractionModelEditor.closureBorderView.refresh();
+					restrictedDependenciesView.refresh();
+                }
+        	}
+        } catch (Throwable e) {
+            UIUtil.showException(this, "Error", e);
+        } finally {
+    		extractionModelEditor.extractionModelFile = extractionModelFile;
+    		extractionModelEditor.needsSave = needsSave;
+        	extractionModelEditor.extractionModelFrame.updateTitle(needsSave);
+        	reload.setEnabled(extractionModelEditor.extractionModelFile != null && needsSave);
+        	if (tmpFile != null) {
+        		tmpFile.delete();
+        	}
+        }
+    }
+    
 	boolean isHorizontalLayout = false;
 	
 	/**
@@ -1898,6 +1945,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem analyzeSQLMenuItem;
     private javax.swing.JMenuItem collapseAll;
+    private javax.swing.JMenuItem columnOrderItem;
     private javax.swing.JCheckBoxMenuItem connectDb;
     private javax.swing.JMenuItem cycleView;
     private javax.swing.JMenuItem dataExport;
@@ -1928,6 +1976,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator11;
     private javax.swing.JSeparator jSeparator12;
     private javax.swing.JPopupMenu.Separator jSeparator13;
+    private javax.swing.JPopupMenu.Separator jSeparator14;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;

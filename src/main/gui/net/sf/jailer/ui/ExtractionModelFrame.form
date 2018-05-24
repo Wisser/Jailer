@@ -404,6 +404,16 @@
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator13">
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="columnOrderItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Column Ordering..."/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="columnOrderItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator14">
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="analyzeSQLMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Analyze SQL Script"/>

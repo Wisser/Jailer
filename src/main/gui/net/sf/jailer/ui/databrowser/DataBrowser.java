@@ -110,6 +110,7 @@ import net.sf.jailer.ui.AssociationListUI.AssociationModel;
 import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.BrowserLauncher;
+import net.sf.jailer.ui.ColumnOrderEditor;
 import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DataModelManager;
@@ -963,6 +964,8 @@ public class DataBrowser extends javax.swing.JFrame {
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
         dataModelEditorjMenuItem = new javax.swing.JMenuItem();
+        jSeparator13 = new javax.swing.JPopupMenu.Separator();
+        columnOrderItem = new javax.swing.JMenuItem();
         jSeparator11 = new javax.swing.JPopupMenu.Separator();
         analyseSQLMenuItem1 = new javax.swing.JMenuItem();
         jSeparator10 = new javax.swing.JPopupMenu.Separator();
@@ -1529,6 +1532,15 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuTools.add(dataModelEditorjMenuItem);
+        menuTools.add(jSeparator13);
+
+        columnOrderItem.setText("Column Ordering...");
+        columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnOrderItemActionPerformed(evt);
+            }
+        });
+        menuTools.add(columnOrderItem);
         menuTools.add(jSeparator11);
 
         analyseSQLMenuItem1.setText("Analyze SQL Script");
@@ -2243,6 +2255,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel borderBrowserTabPane;
     private javax.swing.JMenuItem closeAllMenuItem;
     private javax.swing.JPanel closurePanel;
+    private javax.swing.JMenuItem columnOrderItem;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JMenuItem consistencyCheckMenuItem;
     private javax.swing.JMenuItem createExtractionModelMenuItem;
@@ -2297,6 +2310,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JPopupMenu.Separator jSeparator11;
     private javax.swing.JPopupMenu.Separator jSeparator12;
+    private javax.swing.JPopupMenu.Separator jSeparator13;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -3365,6 +3379,20 @@ public class DataBrowser extends javax.swing.JFrame {
     		openDataModelEditor(true);
     	}
     }//GEN-LAST:event_analyseSQLMenuItem1ActionPerformed
+
+    private void columnOrderItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnOrderItemActionPerformed
+        try {
+        	new ColumnOrderEditor(this, datamodel.get(), executionContext);
+			removeMetaDataSource(session);
+            desktop.reloadDataModel(desktop.schemaMapping);
+            dataModelViewFrame = null;
+            updateDataModelView(null);
+            updateStatusBar();
+            askForDataModel();
+		} catch (Throwable e) {
+			UIUtil.showException(this, "Error", e);
+		}
+    }//GEN-LAST:event_columnOrderItemActionPerformed
 
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();
