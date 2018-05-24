@@ -1,5 +1,5 @@
 7.9.2
-  - Feature to define the rendering position of a column. 
+  - Feature to define the rendering position of a column.
 
 7.9.1
   - Fixed statement leak.
