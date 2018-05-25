@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Font;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -58,11 +59,16 @@ import net.sf.jailer.util.Quoting;
  * @author Ralf Wisser
  */
 public class ColumnOrderEditor extends javax.swing.JPanel {
+
 	private DefaultTableModel columnOrderModel;
 	private final DataModel dataModel;
 	private JDialog dialog;
 	private final ExecutionContext executionContext;
 	private Map<String, DataModel.ColumnOrderPriority> columnOrderPrio;
+
+	private static final String TYPE_PK = "PK";
+	private static final String TYPE_FK = "FK";
+	private static final String TYPE_FK_PK = "FK+PK";
 
     /**
      * Creates new form ConstraintChecker
@@ -149,72 +155,89 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 					render.setBackground((row % 2 == 0) ? BG1 : BG2);
 				}
 				if (render instanceof JLabel) {
-					String valueAsString = String.valueOf(value);
-					if (valueAsString.length() > 0) {
-						((JLabel) render).setToolTipText(UIUtil.toHTML(valueAsString, 200));
+					if (column == 2) {
+						if (TYPE_FK.equals(value)) {
+							((JLabel) render).setToolTipText("Foreign Key");
+						} else if (TYPE_PK.equals(value)) {
+							((JLabel) render).setToolTipText("Primary Key");
+						} else if (TYPE_FK_PK.equals(value)) {
+							((JLabel) render).setToolTipText("Primary Key + Foreign Key");
+						} else {
+							((JLabel) render).setToolTipText(null);
+						}
 					} else {
-						((JLabel) render).setToolTipText(null);
+						String valueAsString = String.valueOf(value);
+						if (valueAsString.length() > 0) {
+							((JLabel) render).setToolTipText(UIUtil.toHTML(valueAsString, 200));
+						} else {
+							((JLabel) render).setToolTipText(null);
+						}
 					}
 				}
 				return render;
 			}
 		};
 		
-		Set<String> pks = new HashSet<String>();
-		Set<String> fks = new HashSet<String>();
-		
-		Map<String, Integer> columnsCount = new TreeMap<String, Integer>();
-		for (Table table: dataModel.getTables()) {
-			for (Column column: table.getColumns()) {
-				String name = Quoting.normalizeIdentifier(column.name);
-				Integer i = columnsCount.get(name);
-				if (i == null) {
-					columnsCount.put(name, 1);
-				} else {
-					columnsCount.put(name, i + 1);
+		try {
+			owner.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+	        
+			Set<String> pks = new HashSet<String>();
+			Set<String> fks = new HashSet<String>();
+			
+			Map<String, Integer> columnsCount = new TreeMap<String, Integer>();
+			for (Table table: dataModel.getTables()) {
+				for (Column column: table.getColumns()) {
+					String name = Quoting.normalizeIdentifier(column.name);
+					Integer i = columnsCount.get(name);
+					if (i == null) {
+						columnsCount.put(name, 1);
+					} else {
+						columnsCount.put(name, i + 1);
+					}
 				}
-			}
-			if (table.primaryKey != null && table.primaryKey.getColumns() != null) {
-				for (Column column: table.primaryKey.getColumns()) {
-					pks.add(Quoting.normalizeIdentifier(column.name));
+				if (table.primaryKey != null && table.primaryKey.getColumns() != null) {
+					for (Column column: table.primaryKey.getColumns()) {
+						pks.add(Quoting.normalizeIdentifier(column.name));
+					}
 				}
-			}
-			for (Association a: table.associations) {
-				if (a.isInsertDestinationBeforeSource()) {
-					Map<Column, Column> mapping = a.createSourceToDestinationKeyMapping();
-					if (mapping != null) {
-						for (Column column: mapping.keySet()) {
-							fks.add(Quoting.normalizeIdentifier(column.name));
+				for (Association a: table.associations) {
+					if (a.isInsertDestinationBeforeSource()) {
+						Map<Column, Column> mapping = a.createSourceToDestinationKeyMapping();
+						if (mapping != null) {
+							for (Column column: mapping.keySet()) {
+								fks.add(Quoting.normalizeIdentifier(column.name));
+							}
 						}
 					}
 				}
 			}
-		}
-		for (Entry<String, Integer> e: columnsCount.entrySet()) {
-			String type = "";
-			if (fks.contains(e.getKey())) {
-				if (pks.contains(e.getKey())) {
-					type = "FK+PK";
-				} else {
-					type = "FK";
+			for (Entry<String, Integer> e: columnsCount.entrySet()) {
+				String type = "";
+				if (fks.contains(e.getKey())) {
+					if (pks.contains(e.getKey())) {
+						type = TYPE_FK_PK;
+					} else {
+						type = TYPE_FK;
+					}
+				} else if (pks.contains(e.getKey())) {
+					type = TYPE_PK;
 				}
-			} else if (pks.contains(e.getKey())) {
-				type = "PK";
+				columnOrderModel.addRow(new Object[] { e.getKey(), e.getValue(), type, DataModel.ColumnOrderPriority.HI == dataModel.columnOrderPrio.get(e.getKey()), DataModel.ColumnOrderPriority.LO == dataModel.columnOrderPrio.get(e.getKey()) });
 			}
-			columnOrderModel.addRow(new Object[] { e.getKey(), e.getValue(), type, DataModel.ColumnOrderPriority.HI == dataModel.columnOrderPrio.get(e.getKey()), DataModel.ColumnOrderPriority.LO == dataModel.columnOrderPrio.get(e.getKey()) });
+			
+			columnOrderPrio = new TreeMap<String, DataModel.ColumnOrderPriority>(dataModel.columnOrderPrio);
+			
+			columnOrderTable.getColumnModel().getColumn(3).setCellRenderer(renderer);
+			columnOrderTable.getColumnModel().getColumn(4).setCellRenderer(renderer);
+			columnOrderTable.setDefaultRenderer(Object.class, renderer);
+			columnOrderTable.setAutoCreateRowSorter(true);
+			List<SortKey> keys = new ArrayList<SortKey>();
+			keys.add(new SortKey(1, SortOrder.DESCENDING));
+			columnOrderTable.getRowSorter().setSortKeys(keys);
+			adjustTableColumnsWidth();
+		} finally {
+			owner.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
-		
-		columnOrderPrio = new TreeMap<String, DataModel.ColumnOrderPriority>(dataModel.columnOrderPrio);
-		
-		columnOrderTable.getColumnModel().getColumn(3).setCellRenderer(renderer);
-		columnOrderTable.getColumnModel().getColumn(4).setCellRenderer(renderer);
-		columnOrderTable.setDefaultRenderer(Object.class, renderer);
-		columnOrderTable.setAutoCreateRowSorter(true);
-		List<SortKey> keys = new ArrayList<SortKey>();
-		keys.add(new SortKey(1, SortOrder.DESCENDING));
-		columnOrderTable.getRowSorter().setSortKeys(keys);
-		adjustTableColumnsWidth();
-		
         dialog = new EscapableDialog(owner, "Column Ordering") {
         };
         dialog.setModal(true);
