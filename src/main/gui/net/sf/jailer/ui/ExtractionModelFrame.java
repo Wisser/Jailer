@@ -295,6 +295,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         disconnectDb = new javax.swing.JMenuItem();
         jSeparator10 = new javax.swing.JSeparator();
         exit = new javax.swing.JMenuItem();
+        jMenu1 = new javax.swing.JMenu();
+        updateDataModel = new javax.swing.JMenuItem();
+        openDataModelEditor = new javax.swing.JMenuItem();
+        jSeparator14 = new javax.swing.JPopupMenu.Separator();
+        analyzeSQLMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         ignoreAll = new javax.swing.JMenuItem();
         removeAllRestrictions = new javax.swing.JMenuItem();
@@ -326,11 +331,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptime500 = new javax.swing.JRadioButtonMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
         columnOrderItem = new javax.swing.JMenuItem();
-        jMenu1 = new javax.swing.JMenu();
-        updateDataModel = new javax.swing.JMenuItem();
-        openDataModelEditor = new javax.swing.JMenuItem();
-        jSeparator14 = new javax.swing.JPopupMenu.Separator();
-        analyzeSQLMenuItem = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         dataExport = new javax.swing.JMenuItem();
         dataImport = new javax.swing.JMenuItem();
@@ -459,6 +459,35 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         fileMenu.add(exit);
 
         jMenuBar2.add(fileMenu);
+
+        jMenu1.setText("DataModel");
+
+        updateDataModel.setText("Analyze Database");
+        updateDataModel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateDataModelActionPerformed(evt);
+            }
+        });
+        jMenu1.add(updateDataModel);
+
+        openDataModelEditor.setLabel("Data Model Editor");
+        openDataModelEditor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openDataModelEditorActionPerformed(evt);
+            }
+        });
+        jMenu1.add(openDataModelEditor);
+        jMenu1.add(jSeparator14);
+
+        analyzeSQLMenuItem.setText("Analyze SQL Script");
+        analyzeSQLMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyzeSQLMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(analyzeSQLMenuItem);
+
+        jMenuBar2.add(jMenu1);
 
         editMenu.setText("Edit");
 
@@ -686,35 +715,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         viewMenu.add(columnOrderItem);
 
         jMenuBar2.add(viewMenu);
-
-        jMenu1.setText("DataModel");
-
-        updateDataModel.setText("Analyze Database");
-        updateDataModel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateDataModelActionPerformed(evt);
-            }
-        });
-        jMenu1.add(updateDataModel);
-
-        openDataModelEditor.setLabel("Data Model Editor");
-        openDataModelEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openDataModelEditorActionPerformed(evt);
-            }
-        });
-        jMenu1.add(openDataModelEditor);
-        jMenu1.add(jSeparator14);
-
-        analyzeSQLMenuItem.setText("Analyze SQL Script");
-        analyzeSQLMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                analyzeSQLMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(analyzeSQLMenuItem);
-
-        jMenuBar2.add(jMenu1);
 
         jMenu3.setText("Tools");
 
