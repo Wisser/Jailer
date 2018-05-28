@@ -17,6 +17,7 @@ package net.sf.jailer.database;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -47,7 +48,12 @@ public class LocalDatabase {
 	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws ClassNotFoundException, FileNotFoundException, SQLException {
 		this.databaseFolder = new File(Configuration.getInstance().getTempFileFolder() + File.separator + UUID.randomUUID().toString()).getAbsolutePath();
 		new File(databaseFolder).mkdirs();
-		BasicDataSource dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, 0, ClasspathUtil.toURLArray(jarfile, null, null, null));
+		BasicDataSource dataSource;
+		try {
+			dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, 0, new URL[0]);
+		} catch (Exception e) {
+			dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, 0, ClasspathUtil.toURLArray(jarfile, null, null, null));
+		}
 		session = new Session(dataSource, dataSource.dbms, null, false, true);
 	}
 	
