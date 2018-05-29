@@ -35,6 +35,7 @@ public class RowIdSupport {
 	private final boolean useRowIds;
 	private boolean useRowIdsOnlyForTablesWithoutPK = false;
 	private final DataModel dataModel;
+	private Column rowIdColumn;
 	private PrimaryKey tablePK;
 	private PrimaryKey uPK;
 	
@@ -50,7 +51,8 @@ public class RowIdSupport {
 		this.dataModel = dataModel;
 		this.useRowIds = useRowIds;
 		if (useRowIds) {
-			tablePK = new PrimaryKey(Arrays.asList(new Column(configuration.getRowidName(), rowIdType, 0, -1)));
+			rowIdColumn = new Column(configuration.getRowidName(), rowIdType, 0, -1);
+			tablePK = new PrimaryKey(Arrays.asList(rowIdColumn));
 			uPK = new PrimaryKey(Arrays.asList(new Column("PK", rowIdType, 0, -1)));
 		}
 	}
@@ -155,6 +157,10 @@ public class RowIdSupport {
 			}
 		}
 		return columns;
+	}
+
+	public boolean isRowIdColumn(Column column) {
+		return rowIdColumn != null && rowIdColumn.name.equals(column.name);
 	}
 		
 }

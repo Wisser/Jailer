@@ -1198,7 +1198,7 @@ public abstract class Desktop extends JDesktopPane {
 				return changed;
 			}
 			if (tableBrowser.parent != null) {
-				int BORDER = 6;
+				int BORDER = 3;
 				int BOT_H = 32;
 				int x1 = internalFrame.getX(); // + internalFrame.getWidth() / 2;
 				int y1 = internalFrame.getY() + internalFrame.getHeight() / 2;

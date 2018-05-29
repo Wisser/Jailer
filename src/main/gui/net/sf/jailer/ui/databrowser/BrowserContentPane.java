@@ -2893,7 +2893,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			
 			for (Column column : rowIdSupport.getColumns(table)) {
 				String name = quoting.requote(column.name);
-				if (existingColumnsLowerCase != null && !existingColumnsLowerCase.contains(quoting.unquote(name).toLowerCase())) {
+				if (existingColumnsLowerCase != null && !rowIdSupport.isRowIdColumn(column) && !existingColumnsLowerCase.contains(quoting.unquote(name).toLowerCase())) {
 					sql += (!f ? ", " : "") + "'?' AS A" + i;
 					unknownColumnIndexes.add(colI);
 				} else {
