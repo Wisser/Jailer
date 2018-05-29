@@ -42,6 +42,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -135,7 +136,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Default width of a row-browser frame.
 	 */
 	public static final int BROWSERTABLE_DEFAULT_WIDTH = 476;
-	private final int BROWSERTABLE_DEFAULT_MIN = 0, BROWSERTABLE_DEFAULT_HEIGHT = 460, BROWSERTABLE_DEFAULT_DISTANCE = 64;
+	private final int BROWSERTABLE_DEFAULT_MIN = 0, BROWSERTABLE_DEFAULT_HEIGHT = 460, BROWSERTABLE_DEFAULT_DISTANCE = 100;
 
 	/**
 	 * <code>true</code> while the desktop is visible.
@@ -868,7 +869,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void internalFrameClosed(InternalFrameEvent e) {
 				close(tableBrowser, true);
-				onLayoutChanged(false);
+				// onLayoutChanged(false);
 			}
 
 			@Override
@@ -987,23 +988,23 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.addComponentListener(new ComponentListener() {
 			@Override
 			public void componentHidden(ComponentEvent e) {
-				onLayoutChanged(false);
+//				onLayoutChanged(false);
 			}
 
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				onLayoutChanged(false);
+//				onLayoutChanged(false);
 			}
 
 			@Override
 			public void componentResized(ComponentEvent e) {
-				onLayoutChanged(jInternalFrame.isMaximum());
+//				onLayoutChanged(jInternalFrame.isMaximum());
 				initIFrameContent(jInternalFrame, browserContentPane, thumbnail);
 			}
 
 			@Override
 			public void componentShown(ComponentEvent e) {
-				onLayoutChanged(false);
+//				onLayoutChanged(false);
 			}
 		});
 	}
@@ -1522,51 +1523,49 @@ public abstract class Desktop extends JDesktopPane {
 					for (RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
 						if (!tableBrowser.isHidden()) {
 							Map<String, List<Link>> links = rbSourceToLinks.get(tableBrowser);
+							List<Link> linksToRender = new ArrayList<Link>(1000);
 							for (Map.Entry<String, List<Link>> e : links.entrySet()) {
+								int dir = 0;
 								for (Link link : e.getValue()) {
 									if (link.visible && !link.from.isHidden() && !link.to.isHidden()) {
-										Color color = pbg ? Color.white : link.color;
 										Point2D start = new Point2D.Double(link.x2, link.y2);
 										Point2D end = new Point2D.Double(link.x1, link.y1);
-										paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, linesHash, link.dotted);
+										long lineHash = (start.hashCode()) + (((long) Integer.MAX_VALUE) + 1) * (end.hashCode());
+										if (!linesHash.contains(lineHash)) {
+											linksToRender.add(link);
+											linesHash.add(lineHash);
+											if (link.y1 < link.y2) {
+												++dir;
+											} else {
+												--dir;
+											}
+										}
 									}
+								}
+								final int finalDir = dir;
+								Collections.sort(linksToRender, new Comparator<Link>() {
+									@Override
+									public int compare(Link a, Link b) {
+										return finalDir > 0? (a.y1 - b.y1) : (b.y1 - a.y1);
+									}
+								});
+								int i = 1;
+								for (Link link : linksToRender) {
+									Color color = pbg ? Color.white : link.color;
+									Point2D start = new Point2D.Double(link.x2, link.y2);
+									Point2D end = new Point2D.Double(link.x1, link.y1);
+									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, i * 1.0 / linksToRender.size());
+									++i;
 								}
 							}
 						}
-
-						// if (!tableBrowser.internalFrame.isIcon() &&
-						// (tableBrowser.parent == null ||
-						// !tableBrowser.parent.internalFrame.isIcon())) {
-						// Color color = pbg? Color.white : tableBrowser.color;
-						// if (tableBrowser.parent != null &&
-						// (tableBrowser.rowIndex >= 0 ||
-						// tableBrowser.rowToRowLinks.isEmpty())) {
-						// Point2D start = new Point2D.Double(tableBrowser.x2,
-						// tableBrowser.y2);
-						// Point2D end = new Point2D.Double(tableBrowser.x1,
-						// tableBrowser.y1);
-						// paintLink(start, end, color, g2d, tableBrowser, pbg,
-						// true, linesHash, tableBrowser.parent == null ||
-						// tableBrowser.rowIndex < 0);
-						// }
-						// for (RowToRowLink rowToRowLink:
-						// tableBrowser.rowToRowLinks) {
-						// if (rowToRowLink.x1 >= 0) {
-						// paintLink(new Point2D.Double(rowToRowLink.x2,
-						// rowToRowLink.y2), new Point2D.Double(rowToRowLink.x1,
-						// rowToRowLink.y1), color, g2d, tableBrowser, pbg,
-						// false, linesHash, false);
-						// }
-						// }
-						// }
 					}
 				}
 			}
 		}
 	}
 
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect,
-			Set<Long> lineHashes, boolean dotted) {
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 3 : 1) : (pbg ? 5 : 3));
@@ -1593,12 +1592,6 @@ public abstract class Desktop extends JDesktopPane {
 		if (start.distance(end) < 2)
 			return;
 
-		long lineHash = (start.hashCode()) + (((long) Integer.MAX_VALUE) + 1) * (end.hashCode());
-		if (lineHashes.contains(lineHash)) {
-			return;
-		}
-		lineHashes.add(lineHash);
-
 		// create the arrow head shape
 		m_arrowHead = new Polygon();
 		double ws = 0.5;
@@ -1610,14 +1603,25 @@ public abstract class Desktop extends JDesktopPane {
 		m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
 		m_arrowHead.addPoint(0, 0);
 
-		AffineTransform at = getArrowTrans(start, end, 10);
+		AffineTransform at = getArrowTrans(new Point2D.Double(start.getX(), end.getY()), end, 10);
 		Shape m_curArrow = at.createTransformedShape(m_arrowHead);
 
 		Point2D lineEnd = end;
 		lineEnd.setLocation(0, -2);
 		at.transform(lineEnd, lineEnd);
 
-		g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
+		double border = 0.25;
+		int midX = (int) (start.getX() + ((end.getX() - start.getX()) * (border + (midPos * (1.0 - 2.0 * border)))));
+//		midX = (int) (start.getX() + ((end.getX() - start.getX()) * (0.5)));
+		int midY = (int) ((start.getY() + end.getY()) / 2.0);
+		
+		// g2d.drawLine((int) start.getX(), (int) start.getY(), midX, midY);
+		Path2D.Double path = new Path2D.Double();
+		path.moveTo(start.getX(), start.getY());
+		path.curveTo(midX, start.getY(), midX, end.getY(), end.getX(), end.getY());
+		g2d.draw(path);
+		
+		// g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setStroke(new BasicStroke(1));
 		g2d.fill(m_curArrow);
@@ -1896,32 +1900,45 @@ public abstract class Desktop extends JDesktopPane {
 
 	LayoutMode layoutMode = LayoutMode.MEDIUM;
 
-	public void layoutBrowser() {
-		JInternalFrame selectedFrame = getSelectedFrame();
-		List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
-		layout(all, 0);
-
-		optimizeLayout();
-
-		all.clear();
-		int maxH = 0;
-		for (RowBrowser rb : tableBrowsers) {
-			if (rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable) {
-				all.add(rb);
-			} else {
-				maxH = Math.max(maxH, rb.internalFrame.getBounds().y + rb.internalFrame.getBounds().height);
-			}
+	private boolean layouting = false;
+	
+	public void layoutBrowser(JInternalFrame selectedFrame) {
+		if (layouting) {
+			return;
 		}
-		layout(all, maxH + (int) (16 * layoutMode.factor));
-
-		checkDesktopSize();
-		if (selectedFrame != null) {
-			try {
-				selectedFrame.setSelected(true);
-			} catch (PropertyVetoException e) {
-				// ignore
+		
+		try {
+			layouting = true;
+			if (selectedFrame == null) {
+				selectedFrame = getSelectedFrame();
 			}
-			this.scrollToCenter(selectedFrame);
+			List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
+			layout(all, 0);
+	
+			optimizeLayout();
+	
+			all.clear();
+			int maxH = 0;
+			for (RowBrowser rb : tableBrowsers) {
+				if (rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable) {
+					all.add(rb);
+				} else {
+					maxH = Math.max(maxH, rb.internalFrame.getBounds().y + rb.internalFrame.getBounds().height);
+				}
+			}
+			layout(all, maxH + (int) (16 * layoutMode.factor));
+	
+			checkDesktopSize();
+			if (selectedFrame != null) {
+				try {
+					selectedFrame.setSelected(true);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+				this.scrollToCenter(selectedFrame);
+			}
+		} finally {
+			layouting = false;
 		}
 	}
 

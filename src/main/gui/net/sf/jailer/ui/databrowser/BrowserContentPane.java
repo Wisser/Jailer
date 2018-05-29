@@ -781,7 +781,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2 = new Color(230, 255, 255);
 			final Color BG1_EM = new Color(255, 255, 236);
 			final Color BG2_EM = new Color(230, 255, 236);
-			final Color BG3 = new Color(180, 205, 255);
+			final Color BG3 = new Color(188, 218, 255);
+			final Color BG3_2 = new Color(180, 205, 255);
 			final Color BG4 = new Color(30, 200, 255);
 			final Color FG1 = new Color(155, 0, 0);
 			final Color FG2 = new Color(0, 0, 255);
@@ -851,7 +852,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (!isSelected && (table == rowsTable || !cellSelected)) {
 						if (BrowserContentPane.this.getQueryBuilderDialog() != null && // SQL Console
 							BrowserContentPane.this.rowsClosure.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
-							((JLabel) render).setBackground(BG3);
+							((JLabel) render).setBackground((row % 2) == 0? BG3 : BG3_2);
 							if (BrowserContentPane.this.rowsClosure.currentClosureRootID != null
 									&& !BrowserContentPane.this.rowsClosure.currentClosureRootID.isEmpty()
 									&& BrowserContentPane.this.rowsClosure.currentClosureRootID.equals(rows.get(rowSorter.convertRowIndexToModel(row)).rowId)) {

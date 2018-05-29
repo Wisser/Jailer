@@ -41,6 +41,11 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.sql.SQLException;
@@ -219,6 +224,7 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
+        autoLayoutMenuItem.setSelected(inAutoLayoutMode());
         workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
         workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.getTabCount() - 1, new JLabel(addSqlConsoleIcon));
         initialized = true;
@@ -283,26 +289,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1;
         jLayeredPane1.add(layeredPaneContent, gridBagConstraints);
         jLayeredPane1.add(dummy, gridBagConstraints);
-
-        layoutButton = new JButton("Arrange Layout");
-        layoutButton.setToolTipText("Arrange Layout (cntrl-L)");
-        layoutButton.setVisible(false);
-        jLayeredPane1.setLayer(layoutButton, JLayeredPane.MODAL_LAYER);
-        layoutButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				arrangeLayout();
-			}
-		});
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-        gridBagConstraints.weightx = 0;
-        gridBagConstraints.weighty = 0;
-        gridBagConstraints.insets = new Insets(4, 16, 54, 4);
-        jLayeredPane1.add(layoutButton, gridBagConstraints);
 
         if (jScrollPane1.getVerticalScrollBar() != null) {
             jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
@@ -435,12 +421,6 @@ public class DataBrowser extends javax.swing.JFrame {
                 updateDataModel();
             }
 
-			@Override
-			public void rescaleLayout(LayoutMode layoutMode, Point fixed) {
-				layoutButtonKeepStateUntil = System.currentTimeMillis() + 2000;
-				super.rescaleLayout(layoutMode, fixed);
-			}
-
             protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
             	storeSessionItem.setEnabled(hasIFrame);
             	closeAllMenuItem.setEnabled(hasIFrame);
@@ -490,13 +470,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			public void onLayoutChanged(boolean isLayouted) {
-				if (isLayouted) {
-					layoutButtonKeepStateUntil = System.currentTimeMillis() + 2000;
-					layoutButton.setVisible(false);
-				} else if (desktop.getAllFramesFromTableBrowsers().length > 3) {
-					if (layoutButtonKeepStateUntil < System.currentTimeMillis()) {
-						layoutButton.setVisible(true);
-					}
+				if (!isLayouted && autoLayoutMenuItem.isSelected()) {
+					arrangeLayout();
 				}
 			}
         };
@@ -980,6 +955,7 @@ public class DataBrowser extends javax.swing.JFrame {
         consistencyCheckMenuItem = new javax.swing.JMenuItem();
         menuWindow = new javax.swing.JMenu();
         layoutMenuItem = new javax.swing.JMenuItem();
+        autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         thumbnailLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         tinyLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
@@ -1179,7 +1155,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 26, 37);
+        layeredPaneContent.setBounds(0, 0, 24, 35);
 
         desktopSplitPane.setLeftComponent(jLayeredPane1);
 
@@ -1621,6 +1597,16 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuWindow.add(layoutMenuItem);
+
+        autoLayoutMenuItem.setSelected(true);
+        autoLayoutMenuItem.setText("Auto Layout");
+        autoLayoutMenuItem.setToolTipText("Automatically layout windows ");
+        autoLayoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                autoLayoutMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(autoLayoutMenuItem);
         menuWindow.add(jSeparator5);
 
         thumbnailLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_MASK));
@@ -1947,15 +1933,9 @@ public class DataBrowser extends javax.swing.JFrame {
     }// GEN-LAST:event_layoutMenuItemActionPerformed
 
     public void arrangeLayout() {
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            desktop.layoutBrowser();
-            SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-		            layoutButton.setVisible(false);
-				}
-			});
+            desktop.layoutBrowser(null);
         } finally {
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
@@ -2254,6 +2234,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem analyseMenuItem;
     private javax.swing.JMenuItem analyseSQLMenuItem1;
     private javax.swing.JLabel associatedWith;
+    private javax.swing.JCheckBoxMenuItem autoLayoutMenuItem;
     private javax.swing.JPanel borderBrowserPanel;
     private javax.swing.JPanel borderBrowserTabPane;
     private javax.swing.JMenuItem closeAllMenuItem;
@@ -3397,6 +3378,39 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
     }//GEN-LAST:event_columnOrderItemActionPerformed
 
+    private static final String AUTOLAYOUT_SETTINGS_FILE = ".autolayout";
+    
+	private boolean inAutoLayoutMode() {
+		File file = Environment.newFile(AUTOLAYOUT_SETTINGS_FILE);
+		if (!file.exists()) {
+			return true;
+		}
+		ObjectInputStream in;
+		try {
+			in = new ObjectInputStream(new FileInputStream(file));
+			Object content = in.readObject();
+			in.close();
+			return Boolean.TRUE.equals(content);
+		} catch (Exception e) {
+			return true;
+		}
+	}
+
+	private void setAutoLayoutMode(boolean selected) {
+		try {
+			File file = Environment.newFile(AUTOLAYOUT_SETTINGS_FILE);
+			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+			out.writeObject(autoLayoutMenuItem.isSelected());
+			out.close();
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+
+	private void autoLayoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoLayoutMenuItemActionPerformed
+        setAutoLayoutMode(autoLayoutMenuItem.isSelected());
+    }//GEN-LAST:event_autoLayoutMenuItemActionPerformed
+
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();
 
@@ -3469,9 +3483,6 @@ public class DataBrowser extends javax.swing.JFrame {
 		});
 	}
 
-	private JButton layoutButton;
-	private long layoutButtonKeepStateUntil;
-	
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;
 	private ImageIcon redIcon;
