@@ -1,5 +1,6 @@
 7.9.2
   - Feature to define the rendering position of a column.
+  - Rendering of row-to-row links as bezier curves.
 
 7.9.1
   - Fixed statement leak.
