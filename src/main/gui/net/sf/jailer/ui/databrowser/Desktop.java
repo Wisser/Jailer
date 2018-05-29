@@ -1200,7 +1200,7 @@ public abstract class Desktop extends JDesktopPane {
 			if (tableBrowser.parent != null) {
 				int BORDER = 6;
 				int BOT_H = 32;
-				int x1 = internalFrame.getX() + internalFrame.getWidth() / 2;
+				int x1 = internalFrame.getX(); // + internalFrame.getWidth() / 2;
 				int y1 = internalFrame.getY() + internalFrame.getHeight() / 2;
 
 				RowBrowser visParent = tableBrowser.parent;
@@ -1554,7 +1554,7 @@ public abstract class Desktop extends JDesktopPane {
 									Color color = pbg ? Color.white : link.color;
 									Point2D start = new Point2D.Double(link.x2, link.y2);
 									Point2D end = new Point2D.Double(link.x1, link.y1);
-									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, i * 1.0 / linksToRender.size());
+									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : i * 1.0 / linksToRender.size());
 									++i;
 								}
 							}
@@ -1585,9 +1585,9 @@ public abstract class Desktop extends JDesktopPane {
 		if (intersect) {
 			Point2D[] sect = new Point2D[10];
 			int i = GraphicsLib.intersectLineRectangle(start, end, tableBrowser.internalFrame.getBounds(), sect);
-			if (i == 0)
-				return;
-			end = sect[0];
+			if (i > 0) {
+				end = sect[0];
+			}
 		}
 		if (start.distance(end) < 2)
 			return;
