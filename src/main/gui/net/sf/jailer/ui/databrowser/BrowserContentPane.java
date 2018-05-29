@@ -768,6 +768,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTable.setAutoCreateRowSorter(true);
 		rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 		rowsTableScrollPane.setViewportView(rowsTable);
+		rowsTable.setAutoscrolls(false);
 
 		setAndCondition(ConditionEditor.toSingleLine(condition), true);
 		from.setText(table == null? "" : this.dataModel.getDisplayName(table));
