@@ -275,7 +275,12 @@ public abstract class Desktop extends JDesktopPane {
 		/**
 		 * The link's color.
 		 */
-		public Color color;
+		public Color color1;
+		
+		/**
+		 * The link's alternating color.
+		 */
+		public Color color2;
 		
 		/**
 		 * Is the link visible?
@@ -321,7 +326,12 @@ public abstract class Desktop extends JDesktopPane {
 		/**
 		 * The link's color.
 		 */
-		public Color color;
+		public Color color1;
+		
+		/**
+		 * The link's alternating color.
+		 */
+		public Color color2;
 
 		/**
 		 * Row-to-row links.
@@ -565,7 +575,8 @@ public abstract class Desktop extends JDesktopPane {
 					RowToRowLink rowToRowLink = new RowToRowLink();
 					rowToRowLink.parentRow = parentRow;
 					rowToRowLink.childRow = childRow;
-					rowToRowLink.color = getAssociationColor(association);
+					rowToRowLink.color1 = getAssociationColor1(association);
+					rowToRowLink.color2 = getAssociationColor2(association);
 					tableBrowser.rowToRowLinks.add(rowToRowLink);
 				}
 			}
@@ -837,7 +848,8 @@ public abstract class Desktop extends JDesktopPane {
 		tableBrowser.parent = parent;
 		tableBrowser.association = association;
 		if (association != null) {
-			tableBrowser.color = getAssociationColor(association);
+			tableBrowser.color1 = getAssociationColor1(association);
+			tableBrowser.color2 = getAssociationColor2(association);
 		}
 		tableBrowsers.add(tableBrowser);
 
@@ -1017,7 +1029,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private Color getAssociationColor(Association association) {
+	private Color getAssociationColor1(Association association) {
 		Color color = new java.awt.Color(0, 100, 255);
 		if (association.isInsertDestinationBeforeSource()) {
 			color = new java.awt.Color(170, 0, 0);
@@ -1027,6 +1039,16 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		if (association.isIgnored()) {
 			color = new java.awt.Color(153, 153, 153);
+		}
+		return color;
+	}
+
+	private Color getAssociationColor2(Association association) {
+		Color color;
+		if (association.isInsertSourceBeforeDestination()) {
+			color = new java.awt.Color(0, 190, 0);
+		} else {
+			color = getAssociationColor1(association);
 		}
 		return color;
 	}
@@ -1390,10 +1412,11 @@ public abstract class Desktop extends JDesktopPane {
 		public final RowBrowser from, to;
 		public final String sourceRowID, destRowID;
 		public int x1, y1, x2, y2;
-		public final Color color;
+		public final Color color1;
+		public final Color color2;
 		public final boolean dotted, intersect;
 
-		public Link(RowBrowser from, RowBrowser to, String sourceRowID, String destRowID, int x1, int y1, int x2, int y2, Color color, boolean dotted,
+		public Link(RowBrowser from, RowBrowser to, String sourceRowID, String destRowID, int x1, int y1, int x2, int y2, Color color1, Color color2, boolean dotted,
 				boolean intersect) {
 			this.from = from;
 			this.to = to;
@@ -1403,7 +1426,8 @@ public abstract class Desktop extends JDesktopPane {
 			this.y1 = y1;
 			this.x2 = x2;
 			this.y2 = y2;
-			this.color = color;
+			this.color1 = color1;
+			this.color2 = color2;
 			this.dotted = dotted;
 			this.intersect = intersect;
 		}
@@ -1428,7 +1452,8 @@ public abstract class Desktop extends JDesktopPane {
 						Map<String, List<Link>> links = new TreeMap<String, List<Link>>();
 						rbSourceToLinks.put(tableBrowser, links);
 						if (!tableBrowser.internalFrame.isIcon() && (tableBrowser.parent == null || !tableBrowser.parent.internalFrame.isIcon())) {
-							Color color = tableBrowser.color;
+							Color color1 = tableBrowser.color1;
+							Color color2 = tableBrowser.color2;
 							if (tableBrowser.parent != null && (tableBrowser.rowIndex >= 0 || tableBrowser.rowToRowLinks.isEmpty())) {
 								String sourceRowID = ALL;
 								String destRowID = ALL;
@@ -1436,7 +1461,7 @@ public abstract class Desktop extends JDesktopPane {
 									destRowID = tableBrowser.browserContentPane.parentRow.rowId;
 								}
 								Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
-										tableBrowser.x2, tableBrowser.y2, color, tableBrowser.parent == null || tableBrowser.rowIndex < 0, true);
+										tableBrowser.x2, tableBrowser.y2, color1, color2, tableBrowser.parent == null || tableBrowser.rowIndex < 0, true);
 								List<Link> l = links.get(sourceRowID);
 								if (l == null) {
 									l = new ArrayList<Link>();
@@ -1455,7 +1480,7 @@ public abstract class Desktop extends JDesktopPane {
 									}
 
 									Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, rowToRowLink.x1, rowToRowLink.y1,
-											rowToRowLink.x2, rowToRowLink.y2, color, false, false);
+											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false);
 									List<Link> l = links.get(sourceRowID);
 									if (l == null) {
 										l = new ArrayList<Link>();
@@ -1500,14 +1525,11 @@ public abstract class Desktop extends JDesktopPane {
 
 									for (Link toJoin : toJoinList) {
 										toJoin.visible = false;
-										Color color = /*
-													 * link.color.equals(toJoin.
-													 * color)? link.color :
-													 */Color.black;
+										Color color = Color.black;
 										boolean intersect = link.intersect;
 										boolean dotted = link.dotted || toJoin.dotted;
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
-												color, dotted, intersect));
+												color, color, dotted, intersect));
 									}
 								}
 							}
@@ -1549,13 +1571,28 @@ public abstract class Desktop extends JDesktopPane {
 										return finalDir > 0? (a.y1 - b.y1) : (b.y1 - a.y1);
 									}
 								});
-								int i = 1;
-								for (Link link : linksToRender) {
-									Color color = pbg ? Color.white : link.color;
+								boolean light = true;
+								int lastY = -1;
+								int lastLastY = -1;
+								for (int i = 0; i < linksToRender.size(); ++i) {
+									Link link = linksToRender.get(i);
+									if (lastY != link.y2) {
+										if (lastLastY == lastY) {
+											light = !light;
+										} else {
+											if (i < linksToRender.size() - 1) {
+												if (linksToRender.get(i + 1).y2 == link.y2) {
+													light = !light;
+												}
+											}
+										}
+										lastLastY = lastY;
+										lastY = link.y2;
+									}
+									Color color = pbg ? Color.white : light? link.color1 : link.color2;
 									Point2D start = new Point2D.Double(link.x2, link.y2);
 									Point2D end = new Point2D.Double(link.x1, link.y1);
-									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : i * 1.0 / linksToRender.size());
-									++i;
+									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (i + 1) * 1.0 / linksToRender.size());
 								}
 							}
 						}
@@ -1568,7 +1605,7 @@ public abstract class Desktop extends JDesktopPane {
 	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 3 : 1) : (pbg ? 5 : 3));
+		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 5 : 3));
 		g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
 				1.0f) : stroke);
 
@@ -1592,6 +1629,18 @@ public abstract class Desktop extends JDesktopPane {
 		if (start.distance(end) < 2)
 			return;
 
+		double border = 0.25;
+		double f = midPos * (1.0 - 2.0 * border);
+		int midX = (int) (start.getX() + ((end.getX() - start.getX()) * (border + f)));
+//		midX = (int) (start.getX() + ((end.getX() - start.getX()) * (0.5)));
+		
+		// g2d.drawLine((int) start.getX(), (int) start.getY(), midX, midY);
+		Path2D.Double path = new Path2D.Double();
+		path.moveTo(start.getX(), start.getY());
+		f = 0.5 * f * (end.getY() - start.getY());
+		path.curveTo(midX, start.getY() + f, midX, end.getY() - f, end.getX(), end.getY());
+		g2d.draw(path);
+		
 		// create the arrow head shape
 		m_arrowHead = new Polygon();
 		double ws = 0.5;
@@ -1603,24 +1652,13 @@ public abstract class Desktop extends JDesktopPane {
 		m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
 		m_arrowHead.addPoint(0, 0);
 
-		AffineTransform at = getArrowTrans(new Point2D.Double(start.getX(), end.getY()), end, 10);
+		AffineTransform at = getArrowTrans(new Point2D.Double( midX, end.getY() - f), end, 10);
 		Shape m_curArrow = at.createTransformedShape(m_arrowHead);
 
 		Point2D lineEnd = end;
 		lineEnd.setLocation(0, -2);
 		at.transform(lineEnd, lineEnd);
 
-		double border = 0.25;
-		int midX = (int) (start.getX() + ((end.getX() - start.getX()) * (border + (midPos * (1.0 - 2.0 * border)))));
-//		midX = (int) (start.getX() + ((end.getX() - start.getX()) * (0.5)));
-		int midY = (int) ((start.getY() + end.getY()) / 2.0);
-		
-		// g2d.drawLine((int) start.getX(), (int) start.getY(), midX, midY);
-		Path2D.Double path = new Path2D.Double();
-		path.moveTo(start.getX(), start.getY());
-		path.curveTo(midX, start.getY(), midX, end.getY(), end.getX(), end.getY());
-		g2d.draw(path);
-		
 		// g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setStroke(new BasicStroke(1));
