@@ -1030,12 +1030,12 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private Color getAssociationColor1(Association association) {
-		Color color = new java.awt.Color(0, 100, 255);
+		Color color = new java.awt.Color(0, 120, 255);
 		if (association.isInsertDestinationBeforeSource()) {
-			color = new java.awt.Color(170, 0, 0);
+			color = new java.awt.Color(170, 60, 0);
 		}
 		if (association.isInsertSourceBeforeDestination()) {
-			color = new java.awt.Color(0, 112, 0);
+			color = new java.awt.Color(0, 122, 0);
 		}
 		if (association.isIgnored()) {
 			color = new java.awt.Color(153, 153, 153);
@@ -1044,11 +1044,13 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private Color getAssociationColor2(Association association) {
-		Color color;
+		Color color = new java.awt.Color(0, 60, 235);
 		if (association.isInsertSourceBeforeDestination()) {
-			color = new java.awt.Color(0, 190, 0);
-		} else {
-			color = getAssociationColor1(association);
+			color = new java.awt.Color(0, 180, 60);
+		} else if (association.isInsertDestinationBeforeSource()) {
+			color = new java.awt.Color(210, 0, 60);
+		} else if (association.isIgnored()) {
+			color = new java.awt.Color(133, 133, 153);
 		}
 		return color;
 	}
@@ -1565,10 +1567,15 @@ public abstract class Desktop extends JDesktopPane {
 									}
 								}
 								final int finalDir = dir;
+								final boolean isToParentLink = tableBrowser.association != null && tableBrowser.association.isInsertDestinationBeforeSource();
 								Collections.sort(linksToRender, new Comparator<Link>() {
 									@Override
 									public int compare(Link a, Link b) {
-										return finalDir > 0? (a.y1 - b.y1) : (b.y1 - a.y1);
+										if (isToParentLink) {
+											return finalDir > 0? (a.y1 - b.y1) : (b.y1 - a.y1);
+										} else {
+											return finalDir > 0? (a.y2 - b.y2) : (b.y2 - a.y2);
+										}
 									}
 								});
 								boolean light = true;
@@ -1576,19 +1583,21 @@ public abstract class Desktop extends JDesktopPane {
 								int lastLastY = -1;
 								for (int i = 0; i < linksToRender.size(); ++i) {
 									Link link = linksToRender.get(i);
-									if (lastY != link.y2) {
+									int y = isToParentLink? link.y1 : link.y2;
+									if (lastY != y) {
 										if (lastLastY == lastY) {
 											light = !light;
 										} else {
 											if (i < linksToRender.size() - 1) {
-												if (linksToRender.get(i + 1).y2 == link.y2) {
+												int nextY = isToParentLink? linksToRender.get(i + 1).y1 : linksToRender.get(i + 1).y2;
+												if (nextY == y) {
 													light = !light;
 												}
 											}
 										}
-										lastLastY = lastY;
-										lastY = link.y2;
 									}
+									lastLastY = lastY;
+									lastY = y;
 									Color color = pbg ? Color.white : light? link.color1 : link.color2;
 									Point2D start = new Point2D.Double(link.x2, link.y2);
 									Point2D end = new Point2D.Double(link.x1, link.y1);
@@ -1637,7 +1646,7 @@ public abstract class Desktop extends JDesktopPane {
 		// g2d.drawLine((int) start.getX(), (int) start.getY(), midX, midY);
 		Path2D.Double path = new Path2D.Double();
 		path.moveTo(start.getX(), start.getY());
-		f = 0.5 * f * (end.getY() - start.getY());
+		f = 0.25 * f * (end.getY() - start.getY());
 		path.curveTo(midX, start.getY() + f, midX, end.getY() - f, end.getX(), end.getY());
 		g2d.draw(path);
 		
