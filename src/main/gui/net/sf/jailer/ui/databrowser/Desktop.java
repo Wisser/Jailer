@@ -67,6 +67,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -222,17 +223,22 @@ public abstract class Desktop extends JDesktopPane {
 								return;
 							}
 						}
+						final AtomicBoolean inProgress = new AtomicBoolean(false);
 						try {
-							Thread.sleep(300);
-							SwingUtilities.invokeAndWait(new Runnable() {
-								@Override
-								public void run() {
-									boolean cl = calculateLinks();
-									if (cl) {
-										repaintDesktop();
+							Thread.sleep(150);
+							if (!inProgress.get()) {
+								inProgress.set(true);
+								SwingUtilities.invokeAndWait(new Runnable() {
+									@Override
+									public void run() {
+										boolean cl = calculateLinks();
+										if (cl) {
+											repaintDesktop();
+										}
+										inProgress.set(false);
 									}
-								}
-							});
+								});
+							}
 						} catch (InterruptedException e) {
 							// ignore
 						} catch (InvocationTargetException e) {
@@ -1032,7 +1038,7 @@ public abstract class Desktop extends JDesktopPane {
 	private Color getAssociationColor1(Association association) {
 		Color color = new java.awt.Color(0, 120, 255);
 		if (association.isInsertDestinationBeforeSource()) {
-			color = new java.awt.Color(170, 60, 0);
+			color = new java.awt.Color(140, 40, 0);
 		}
 		if (association.isInsertSourceBeforeDestination()) {
 			color = new java.awt.Color(60, 132, 0);
@@ -1046,9 +1052,9 @@ public abstract class Desktop extends JDesktopPane {
 	private Color getAssociationColor2(Association association) {
 		Color color = new java.awt.Color(0, 60, 235);
 		if (association.isInsertSourceBeforeDestination()) {
-			color = new java.awt.Color(0, 170, 80);
+			color = new java.awt.Color(0, 180, 80);
 		} else if (association.isInsertDestinationBeforeSource()) {
-			color = new java.awt.Color(210, 0, 60);
+			color = new java.awt.Color(220, 0, 50);
 		} else if (association.isIgnored()) {
 			color = new java.awt.Color(133, 133, 153);
 		}
@@ -1395,7 +1401,7 @@ public abstract class Desktop extends JDesktopPane {
 			changed = true;
 		}
 		renderLinks = true;
-		if (lastPTS + 1000 < System.currentTimeMillis()) {
+		if (lastPTS + 500 < System.currentTimeMillis()) {
 			changed = true;
 		}
 		if (changed) {
@@ -1566,7 +1572,6 @@ public abstract class Desktop extends JDesktopPane {
 										}
 									}
 								}
-								final int finalDir = dir;
 								final boolean isToParentLink = tableBrowser.association != null && tableBrowser.association.isInsertDestinationBeforeSource();
 								Collections.sort(linksToRender, new Comparator<Link>() {
 									@Override
@@ -1580,6 +1585,27 @@ public abstract class Desktop extends JDesktopPane {
 								});
 								boolean light = true;
 								int lastY = -1;
+								Set<Integer> noArrowIndexes = new HashSet<Integer>(linksToRender.size());
+								if (isToParentLink) {
+									int beginBlock = -1;
+									for (int i = 0; i <= linksToRender.size(); ++i) {
+										Link link = i < linksToRender.size()? linksToRender.get(i) : null;
+										int y = link != null? link.y1 : Integer.MAX_VALUE;
+										if (y != lastY) {
+											if (beginBlock >= 0) {
+												int mid = beginBlock + ((i - 1 - beginBlock) / 2);
+												for (int n = beginBlock; n < i; ++n) {
+													if (n != mid) {
+														noArrowIndexes.add(n);
+													}
+												}
+											}
+											beginBlock = i;
+										}
+										lastY = y;
+									}
+								}
+								lastY = -1;
 								int lastLastY = -1;
 								for (int i = 0; i < linksToRender.size(); ++i) {
 									Link link = linksToRender.get(i);
@@ -1602,7 +1628,7 @@ public abstract class Desktop extends JDesktopPane {
 									Point2D start = new Point2D.Double(link.x2, link.y2);
 									Point2D end = new Point2D.Double(link.x1, link.y1);
 									int ir = dir > 0? i : linksToRender.size() - 1 - i;
-									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), light);
+									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), light, noArrowIndexes.contains(i));
 								}
 							}
 						}
@@ -1612,7 +1638,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light) {
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 3 : 2));
@@ -1653,33 +1679,31 @@ public abstract class Desktop extends JDesktopPane {
 		Path2D.Double path = new Path2D.Double();
 		path.moveTo(start.getX(), start.getY());
 		f = 0.25 * f * (end.getY() - start.getY());
-		path.curveTo(midX, start.getY() + f, midX, end.getY() - f, end.getX(), end.getY());
+		path.curveTo(midX, start.getY() + f, midX, end.getY() - f, end.getX() - 5, end.getY());
 		g2d.draw(path);
 		
 		// create the arrow head shape
-		m_arrowHead = new Polygon();
-		double ws = 0.5;
-		double hs = 2.0 / 3.0;
-		double w = !intersect ? (pbg ? 3 : 3) : (pbg ? 3 : 3), h = w;
-		m_arrowHead.addPoint(0, 0);
-		m_arrowHead.addPoint((int) (ws * -w), (int) (hs * (-h)));
-		// m_arrowHead.addPoint(0, (int) (hs * (-2 * h)));
-		m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
-		m_arrowHead.addPoint(0, 0);
-
-		AffineTransform at = getArrowTrans(new Point2D.Double( midX, end.getY() - f), end, 10);
-		Shape m_curArrow = at.createTransformedShape(m_arrowHead);
-
-		Point2D lineEnd = end;
-		lineEnd.setLocation(0, -2);
-		at.transform(lineEnd, lineEnd);
-
-		// g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setStroke(new BasicStroke(1));
-		g2d.fill(m_curArrow);
-		if (pbg) {
-			g2d.draw(m_curArrow);
+		if (!noArrow) {
+			m_arrowHead = new Polygon();
+			double ws = 0.6;
+			double hs = 2.0 / 3.0;
+			double w = !intersect ? (pbg ? 3 : 3) : (pbg ? 3 : 3), h = w;
+			m_arrowHead.addPoint(0, 0);
+			m_arrowHead.addPoint((int) (ws * -w), (int) (hs * (-h)));
+			// m_arrowHead.addPoint(0, (int) (hs * (-2 * h)));
+			m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
+			m_arrowHead.addPoint(0, 0);
+	
+			AffineTransform at = getArrowTrans(new Point2D.Double(midX, end.getY() - f), end, 10);
+			Shape m_curArrow = at.createTransformedShape(m_arrowHead);
+	
+			// g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
+			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			g2d.setStroke(new BasicStroke(1));
+			g2d.fill(m_curArrow);
+			if (pbg) {
+				g2d.draw(m_curArrow);
+			}
 		}
 	}
 
@@ -1692,8 +1716,9 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	protected AffineTransform getArrowTrans(Point2D p1, Point2D p2, double width) {
 		AffineTransform m_arrowTrans = new AffineTransform();
-		m_arrowTrans.setToTranslation(p2.getX(), p2.getY());
-		m_arrowTrans.rotate(-Math.PI / 2.0 + Math.atan2(p2.getY() - p1.getY(), p2.getX() - p1.getX()));
+		int o = 1;
+		m_arrowTrans.setToTranslation(p2.getX() + o, p2.getY());
+		m_arrowTrans.rotate(-Math.PI / 2.0 + Math.atan2(p2.getY() - p1.getY(), p2.getX() + o - p1.getX()));
 		if (width > 1) {
 			double scalar = width / 2;
 			m_arrowTrans.scale(scalar, scalar);
