@@ -231,11 +231,14 @@ public abstract class Desktop extends JDesktopPane {
 								SwingUtilities.invokeAndWait(new Runnable() {
 									@Override
 									public void run() {
-										boolean cl = calculateLinks();
-										if (cl) {
-											repaintDesktop();
+										try {
+											boolean cl = calculateLinks();
+											if (cl) {
+												repaintDesktop();
+											}
+										} finally {
+											inProgress.set(false);
 										}
-										inProgress.set(false);
 									}
 								});
 							}
