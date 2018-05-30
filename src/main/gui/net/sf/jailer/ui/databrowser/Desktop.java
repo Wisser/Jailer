@@ -1035,7 +1035,7 @@ public abstract class Desktop extends JDesktopPane {
 			color = new java.awt.Color(170, 60, 0);
 		}
 		if (association.isInsertSourceBeforeDestination()) {
-			color = new java.awt.Color(0, 122, 0);
+			color = new java.awt.Color(60, 132, 0);
 		}
 		if (association.isIgnored()) {
 			color = new java.awt.Color(153, 153, 153);
@@ -1046,7 +1046,7 @@ public abstract class Desktop extends JDesktopPane {
 	private Color getAssociationColor2(Association association) {
 		Color color = new java.awt.Color(0, 60, 235);
 		if (association.isInsertSourceBeforeDestination()) {
-			color = new java.awt.Color(0, 180, 60);
+			color = new java.awt.Color(0, 170, 80);
 		} else if (association.isInsertDestinationBeforeSource()) {
 			color = new java.awt.Color(210, 0, 60);
 		} else if (association.isIgnored()) {
@@ -1601,7 +1601,7 @@ public abstract class Desktop extends JDesktopPane {
 									Color color = pbg ? Color.white : light? link.color1 : link.color2;
 									Point2D start = new Point2D.Double(link.x2, link.y2);
 									Point2D end = new Point2D.Double(link.x1, link.y1);
-									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (i + 1) * 1.0 / linksToRender.size());
+									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (i + 1) * 1.0 / linksToRender.size(), light);
 								}
 							}
 						}
@@ -1611,12 +1611,17 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos) {
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 3 : 2));
-		g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
+		if (!dotted && light) {
+			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 8f, 4f },
+					1.0f));
+		} else {
+			g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
 				1.0f) : stroke);
+		}
 
 		AffineTransform t = new AffineTransform();
 		t.setToRotation(Math.PI / 4);
