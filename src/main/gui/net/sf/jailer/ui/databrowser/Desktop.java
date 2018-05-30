@@ -136,7 +136,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Default width of a row-browser frame.
 	 */
 	public static final int BROWSERTABLE_DEFAULT_WIDTH = 476;
-	private final int BROWSERTABLE_DEFAULT_MIN = 0, BROWSERTABLE_DEFAULT_HEIGHT = 460, BROWSERTABLE_DEFAULT_DISTANCE = 100;
+	private final int BROWSERTABLE_DEFAULT_MIN = 0, BROWSERTABLE_DEFAULT_HEIGHT = 460, BROWSERTABLE_DEFAULT_DISTANCE = 90;
 
 	/**
 	 * <code>true</code> while the desktop is visible.
@@ -1572,9 +1572,9 @@ public abstract class Desktop extends JDesktopPane {
 									@Override
 									public int compare(Link a, Link b) {
 										if (isToParentLink) {
-											return finalDir > 0? (a.y1 - b.y1) : (b.y1 - a.y1);
+											return a.y1 - b.y1;
 										} else {
-											return finalDir > 0? (a.y2 - b.y2) : (b.y2 - a.y2);
+											return a.y2 - b.y2;
 										}
 									}
 								});
@@ -1601,7 +1601,8 @@ public abstract class Desktop extends JDesktopPane {
 									Color color = pbg ? Color.white : light? link.color1 : link.color2;
 									Point2D start = new Point2D.Double(link.x2, link.y2);
 									Point2D end = new Point2D.Double(link.x1, link.y1);
-									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (i + 1) * 1.0 / linksToRender.size(), light);
+									int ir = dir > 0? i : linksToRender.size() - 1 - i;
+									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), light);
 								}
 							}
 						}
