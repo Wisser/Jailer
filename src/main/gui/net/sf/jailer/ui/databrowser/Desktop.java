@@ -1614,7 +1614,7 @@ public abstract class Desktop extends JDesktopPane {
 	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 5 : 3));
+		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 3 : 2));
 		g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
 				1.0f) : stroke);
 
