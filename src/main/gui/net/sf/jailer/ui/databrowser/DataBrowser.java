@@ -43,7 +43,6 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
@@ -625,7 +624,7 @@ public class DataBrowser extends javax.swing.JFrame {
                         largeLayoutRadioButtonMenuItemActionPerformed(e);
                     }
                 });
-                popup.show(desktop, e.getX(), e.getY());
+                showPopup(desktop, e.getX(), e.getY(), popup);
             }
         };
 
@@ -1919,7 +1918,7 @@ public class DataBrowser extends javax.swing.JFrame {
                                     popup.add(c);
                                 }
                                 UIUtil.fit(popup);
-                                popup.show(evt.getComponent(), evt.getX(), evt.getY());
+                                showPopup(evt.getComponent(), evt.getX(), evt.getY(), popup);
                             }
                         }
                     }
@@ -1927,6 +1926,15 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         }
     }// GEN-LAST:event_navigationTreeMouseClicked
+
+    private void showPopup(final Component invoker, final int x, final int y, final JPopupMenu popup) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				popup.show(invoker, x, y);
+			}
+		});
+	}
 
     private void layoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_layoutMenuItemActionPerformed
         arrangeLayout();

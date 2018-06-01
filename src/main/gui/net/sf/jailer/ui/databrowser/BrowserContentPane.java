@@ -942,7 +942,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							JPopupMenu popup;
 							popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1);
 							if (popup != null) {
-								popup.show(rowsTable, x, y);
+								showPopup(rowsTable, x, y, popup);
 								popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 	
 									@Override
@@ -1046,7 +1046,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									}
 								}
 							});
-							popup.show(relatedRowsPanel, 0, relatedRowsPanel.getHeight());
+							showPopup(relatedRowsPanel, 0, relatedRowsPanel.getHeight(), popup);
 						}
 					});
 				}
@@ -1092,7 +1092,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							}
 						});
-						popup.show(sqlPanel, 0, sqlPanel.getHeight());
+						showPopup(sqlPanel, 0, sqlPanel.getHeight(), popup);
 					}
 				});
 			}
@@ -4509,7 +4509,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			popup.add(m);
 		}
 		UIUtil.fit(popup);
-		popup.show(label, 0, label.getHeight());
+		showPopup(label, 0, label.getHeight(), popup);
 	}
 
 	/**
@@ -4883,6 +4883,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				ch.browserContentPane.sortChildren();
 			}
 		}
+	}
+
+	private void showPopup(final Component invoker, final int x, final int y, final JPopupMenu popup) {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				popup.show(invoker, x, y);
+			}
+		});
 	}
 
 	private static String readClob(Clob clob) throws SQLException, IOException {
