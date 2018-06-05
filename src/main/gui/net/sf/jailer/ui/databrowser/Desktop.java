@@ -1625,7 +1625,7 @@ public abstract class Desktop extends JDesktopPane {
 								}
 								lastY = -1;
 								int lastLastY = -1;
-								Map<Integer, List<Runnable>> renderTasks = new HashMap<Integer, List<Runnable>>();
+								Map<String, List<Runnable>> renderTasks = new HashMap<String, List<Runnable>>();
 								for (int i = 0; i < linksToRender.size(); ++i) {
 									final Link link = linksToRender.get(i);
 									int y = isToParentLink? link.y1 : link.y2;
@@ -1655,14 +1655,14 @@ public abstract class Desktop extends JDesktopPane {
 											paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe);
 										}
 									};
-									List<Runnable> tasks = renderTasks.get((int) start.getY());
+									List<Runnable> tasks = renderTasks.get(link.sourceRowID);
 									if (tasks == null) {
 										tasks = new LinkedList<Runnable>();
-										renderTasks.put((int) start.getY(), tasks); 
+										renderTasks.put(link.sourceRowID, tasks); 
 									}
 									tasks.add(task);
 								}
-								for (Entry<Integer, List<Runnable>> entry: renderTasks.entrySet()) {
+								for (Entry<String, List<Runnable>> entry: renderTasks.entrySet()) {
 									List<Runnable> tasks = entry.getValue();
 									Runnable mid = tasks.get(tasks.size() / 2);
 									mid.run();
@@ -1685,7 +1685,7 @@ public abstract class Desktop extends JDesktopPane {
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 3 : 2));
 		if (!dotted && light) {
-			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 8f, 4f },
+			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 1 },
 					1.0f));
 		} else {
 			g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
