@@ -63,6 +63,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -1453,7 +1454,7 @@ public abstract class Desktop extends JDesktopPane {
 	public synchronized void paint(Graphics graphics) {
 		super.paint(graphics);
 		if (graphics instanceof Graphics2D) {
-			Graphics2D g2d = (Graphics2D) graphics;
+			final Graphics2D g2d = (Graphics2D) graphics;
 			if (renderLinks) {
 				if (rbSourceToLinks == null) {
 					rbSourceToLinks = new HashMap<RowBrowser, Map<String, List<Link>>>();
@@ -1551,12 +1552,12 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 
-				for (boolean pbg : new Boolean[] { true, false }) {
+				for (final boolean pbg : new Boolean[] { true, false }) {
 					Set<Long> linesHash = new HashSet<Long>(200000);
-					for (RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
+					for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
 						if (!tableBrowser.isHidden()) {
 							Map<String, List<Link>> links = rbSourceToLinks.get(tableBrowser);
-							List<Link> linksToRender = new ArrayList<Link>(1000);
+							final List<Link> linksToRender = new ArrayList<Link>(1000);
 							for (Map.Entry<String, List<Link>> e : links.entrySet()) {
 								int dir = 0;
 								for (Link link : e.getValue()) {
@@ -1580,15 +1581,23 @@ public abstract class Desktop extends JDesktopPane {
 									@Override
 									public int compare(Link a, Link b) {
 										if (isToParentLink) {
-											return a.y1 - b.y1;
+											if (a.y1 != b.y1) {
+												return a.y1 - b.y1;
+											} else {
+												return a.y2 - b.y2;
+											}
 										} else {
-											return a.y2 - b.y2;
+											if (a.y2 != b.y2) {
+												return a.y2 - b.y2;
+											} else {
+												return a.y1 - b.y1;
+											}
 										}
 									}
 								});
 								boolean light = true;
 								int lastY = -1;
-								Set<Integer> noArrowIndexes = new HashSet<Integer>(linksToRender.size());
+								final Set<Integer> noArrowIndexes = new HashSet<Integer>(linksToRender.size());
 								if (isToParentLink) {
 									int beginBlock = -1;
 									for (int i = 0; i <= linksToRender.size(); ++i) {
@@ -1608,10 +1617,17 @@ public abstract class Desktop extends JDesktopPane {
 										lastY = y;
 									}
 								}
+								final Map<Integer, java.awt.geom.Point2D.Double> followMe;
+								if (!isToParentLink) {
+									followMe = new HashMap<Integer, java.awt.geom.Point2D.Double>();
+								} else {
+									followMe = null;
+								}
 								lastY = -1;
 								int lastLastY = -1;
+								Map<Integer, List<Runnable>> renderTasks = new HashMap<Integer, List<Runnable>>();
 								for (int i = 0; i < linksToRender.size(); ++i) {
-									Link link = linksToRender.get(i);
+									final Link link = linksToRender.get(i);
 									int y = isToParentLink? link.y1 : link.y2;
 									if (lastY != y) {
 										if (lastLastY == lastY) {
@@ -1627,11 +1643,34 @@ public abstract class Desktop extends JDesktopPane {
 									}
 									lastLastY = lastY;
 									lastY = y;
-									Color color = pbg ? Color.white : light? link.color1 : link.color2;
-									Point2D start = new Point2D.Double(link.x2, link.y2);
-									Point2D end = new Point2D.Double(link.x1, link.y1);
-									int ir = dir > 0? i : linksToRender.size() - 1 - i;
-									paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), light, noArrowIndexes.contains(i));
+									final Color color = pbg ? Color.white : light? link.color1 : link.color2;
+									final Point2D start = new Point2D.Double(link.x2, link.y2);
+									final Point2D end = new Point2D.Double(link.x1, link.y1);
+									final int ir = dir > 0? i : linksToRender.size() - 1 - i;
+									final boolean finalLight = light;
+									final int finalI = i;
+									Runnable task = new Runnable() {
+										@Override
+										public void run() {
+											paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe);
+										}
+									};
+									List<Runnable> tasks = renderTasks.get((int) start.getY());
+									if (tasks == null) {
+										tasks = new LinkedList<Runnable>();
+										renderTasks.put((int) start.getY(), tasks); 
+									}
+									tasks.add(task);
+								}
+								for (Entry<Integer, List<Runnable>> entry: renderTasks.entrySet()) {
+									List<Runnable> tasks = entry.getValue();
+									Runnable mid = tasks.get(tasks.size() / 2);
+									mid.run();
+									for (Runnable task: tasks) {
+										if (task != mid) {
+											task.run();
+										}
+									}
 								}
 							}
 						}
@@ -1641,7 +1680,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow) {
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow, Map<Integer, Point2D.Double> followMe) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 3 : 2));
@@ -1652,15 +1691,6 @@ public abstract class Desktop extends JDesktopPane {
 			g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
 				1.0f) : stroke);
 		}
-
-		AffineTransform t = new AffineTransform();
-		t.setToRotation(Math.PI / 4);
-		Point2D p = new Point2D.Double(), shift = new Point2D.Double();
-		double d = start.distance(end) / 3.0;
-		p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
-		t.transform(p, shift);
-		start.setLocation(start.getX() + shift.getX(), start.getY() + shift.getY());
-		end.setLocation(end.getX() + shift.getX(), end.getY() + shift.getY());
 
 		// compute the intersection with the target bounding box
 		if (intersect) {
@@ -1676,33 +1706,41 @@ public abstract class Desktop extends JDesktopPane {
 		double border = 0.25;
 		double f = midPos * (1.0 - 2.0 * border);
 		int midX = (int) (start.getX() + ((end.getX() - start.getX()) * (border + f)));
-//		midX = (int) (start.getX() + ((end.getX() - start.getX()) * (0.5)));
+		f = 0.25 * f * (end.getY() - start.getY());
+
+		if (followMe != null) {
+			java.awt.geom.Point2D.Double follow = followMe.get((int) start.getY());
+			if (follow != null) {
+				midX = (int) follow.getX();
+				f = follow.getY();
+			} else {
+				followMe.put((int) start.getY(), new Point2D.Double(midX, f));
+			}
+		}
 		
-		// g2d.drawLine((int) start.getX(), (int) start.getY(), midX, midY);
 		Path2D.Double path = new Path2D.Double();
 		path.moveTo(start.getX(), start.getY());
-		f = 0.25 * f * (end.getY() - start.getY());
-		path.curveTo(midX, start.getY() + f, midX, end.getY() - f, end.getX() - 5, end.getY());
+		path.curveTo(midX, start.getY() + f, midX, end.getY(), end.getX() - 5, end.getY());
 		g2d.draw(path);
 		
 		// create the arrow head shape
 		if (!noArrow) {
 			m_arrowHead = new Polygon();
-			double ws = 0.6;
+			double ws = 0.4;
 			double hs = 2.0 / 3.0;
-			double w = !intersect ? (pbg ? 3 : 3) : (pbg ? 3 : 3), h = w;
+			double w = 3, h = w;
 			m_arrowHead.addPoint(0, 0);
 			m_arrowHead.addPoint((int) (ws * -w), (int) (hs * (-h)));
 			// m_arrowHead.addPoint(0, (int) (hs * (-2 * h)));
 			m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
 			m_arrowHead.addPoint(0, 0);
 	
-			AffineTransform at = getArrowTrans(new Point2D.Double(midX, end.getY() - f), end, 10);
+			AffineTransform at = getArrowTrans(new Point2D.Double(midX, end.getY()), end, 9);
 			Shape m_curArrow = at.createTransformedShape(m_arrowHead);
 	
 			// g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g2d.setStroke(new BasicStroke(1));
+			g2d.setStroke(new BasicStroke(2));
 			g2d.fill(m_curArrow);
 			if (pbg) {
 				g2d.draw(m_curArrow);
