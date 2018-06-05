@@ -1537,11 +1537,10 @@ public abstract class Desktop extends JDesktopPane {
 
 									for (Link toJoin : toJoinList) {
 										toJoin.visible = false;
-										Color color = Color.black;
 										boolean intersect = link.intersect;
 										boolean dotted = link.dotted || toJoin.dotted;
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
-												color, color, dotted, intersect));
+												Color.yellow.darker().darker(), Color.yellow.darker(), dotted, intersect));
 									}
 								}
 							}
@@ -1685,13 +1684,8 @@ public abstract class Desktop extends JDesktopPane {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 3 : 2));
-		if (!dotted && light) {
-			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 1 },
-					1.0f));
-		} else {
-			g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
+		g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
 				1.0f) : stroke);
-		}
 
 		// compute the intersection with the target bounding box
 		if (intersect) {

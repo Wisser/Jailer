@@ -443,6 +443,8 @@ public class AssociationProposerView extends javax.swing.JPanel {
 					adjustTableColumnsWidth();
 					if (proposalsModel.getRowCount() == 0 && knownModel.getRowCount() == 0 && numErrors > 0) {
 						tabbedPane.setSelectedComponent(problemTabPanel);
+					} else if (proposalsModel.getRowCount() == 0 && knownModel.getRowCount() > 0) {
+						tabbedPane.setSelectedComponent(knownPanel);
 					}
 				}
 				
