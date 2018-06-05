@@ -1617,9 +1617,9 @@ public abstract class Desktop extends JDesktopPane {
 										lastY = y;
 									}
 								}
-								final Map<Integer, java.awt.geom.Point2D.Double> followMe;
+								final Map<String, java.awt.geom.Point2D.Double> followMe;
 								if (!isToParentLink) {
-									followMe = new HashMap<Integer, java.awt.geom.Point2D.Double>();
+									followMe = new HashMap<String, java.awt.geom.Point2D.Double>();
 								} else {
 									followMe = null;
 								}
@@ -1652,7 +1652,7 @@ public abstract class Desktop extends JDesktopPane {
 									Runnable task = new Runnable() {
 										@Override
 										public void run() {
-											paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe);
+											paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe, link.sourceRowID);
 										}
 									};
 									List<Runnable> tasks = renderTasks.get(link.sourceRowID);
@@ -1680,7 +1680,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow, Map<Integer, Point2D.Double> followMe) {
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow, Map<String, Point2D.Double> followMe, String sourceRowID) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 3 : 2));
@@ -1709,12 +1709,12 @@ public abstract class Desktop extends JDesktopPane {
 		f = 0.25 * f * (end.getY() - start.getY());
 
 		if (followMe != null) {
-			java.awt.geom.Point2D.Double follow = followMe.get((int) start.getY());
+			java.awt.geom.Point2D.Double follow = followMe.get(sourceRowID);
 			if (follow != null) {
 				midX = (int) follow.getX();
 				f = follow.getY();
 			} else {
-				followMe.put((int) start.getY(), new Point2D.Double(midX, f));
+				followMe.put(sourceRowID, new Point2D.Double(midX, f));
 			}
 		}
 		
