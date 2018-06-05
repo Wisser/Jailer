@@ -1558,8 +1558,8 @@ public abstract class Desktop extends JDesktopPane {
 						if (!tableBrowser.isHidden()) {
 							Map<String, List<Link>> links = rbSourceToLinks.get(tableBrowser);
 							final List<Link> linksToRender = new ArrayList<Link>(1000);
+							int dir = 0;
 							for (Map.Entry<String, List<Link>> e : links.entrySet()) {
-								int dir = 0;
 								for (Link link : e.getValue()) {
 									if (link.visible && !link.from.isHidden() && !link.to.isHidden()) {
 										Point2D start = new Point2D.Double(link.x2, link.y2);
@@ -1576,100 +1576,101 @@ public abstract class Desktop extends JDesktopPane {
 										}
 									}
 								}
-								final boolean isToParentLink = tableBrowser.association != null && tableBrowser.association.isInsertDestinationBeforeSource();
-								Collections.sort(linksToRender, new Comparator<Link>() {
-									@Override
-									public int compare(Link a, Link b) {
-										if (isToParentLink) {
-											if (a.y1 != b.y1) {
-												return a.y1 - b.y1;
-											} else {
-												return a.y2 - b.y2;
-											}
+							}
+							
+							final boolean isToParentLink = tableBrowser.association != null && tableBrowser.association.isInsertDestinationBeforeSource();
+							Collections.sort(linksToRender, new Comparator<Link>() {
+								@Override
+								public int compare(Link a, Link b) {
+									if (isToParentLink) {
+										if (a.y1 != b.y1) {
+											return a.y1 - b.y1;
 										} else {
-											if (a.y2 != b.y2) {
-												return a.y2 - b.y2;
-											} else {
-												return a.y1 - b.y1;
-											}
+											return a.y2 - b.y2;
+										}
+									} else {
+										if (a.y2 != b.y2) {
+											return a.y2 - b.y2;
+										} else {
+											return a.y1 - b.y1;
 										}
 									}
-								});
-								boolean light = true;
-								int lastY = -1;
-								final Set<Integer> noArrowIndexes = new HashSet<Integer>(linksToRender.size());
-								if (isToParentLink) {
-									int beginBlock = -1;
-									for (int i = 0; i <= linksToRender.size(); ++i) {
-										Link link = i < linksToRender.size()? linksToRender.get(i) : null;
-										int y = link != null? link.y1 : Integer.MAX_VALUE;
-										if (y != lastY) {
-											if (beginBlock >= 0) {
-												int mid = beginBlock + ((i - 1 - beginBlock) / 2);
-												for (int n = beginBlock; n < i; ++n) {
-													if (n != mid) {
-														noArrowIndexes.add(n);
-													}
-												}
-											}
-											beginBlock = i;
-										}
-										lastY = y;
-									}
 								}
-								final Map<String, java.awt.geom.Point2D.Double> followMe;
-								if (!isToParentLink) {
-									followMe = new HashMap<String, java.awt.geom.Point2D.Double>();
-								} else {
-									followMe = null;
-								}
-								lastY = -1;
-								int lastLastY = -1;
-								Map<String, List<Runnable>> renderTasks = new HashMap<String, List<Runnable>>();
-								for (int i = 0; i < linksToRender.size(); ++i) {
-									final Link link = linksToRender.get(i);
-									int y = isToParentLink? link.y1 : link.y2;
-									if (lastY != y) {
-										if (lastLastY == lastY) {
-											light = !light;
-										} else {
-											if (i < linksToRender.size() - 1) {
-												int nextY = isToParentLink? linksToRender.get(i + 1).y1 : linksToRender.get(i + 1).y2;
-												if (nextY == y) {
-													light = !light;
+							});
+							boolean light = true;
+							int lastY = -1;
+							final Set<Integer> noArrowIndexes = new HashSet<Integer>(linksToRender.size());
+							if (isToParentLink) {
+								int beginBlock = -1;
+								for (int i = 0; i <= linksToRender.size(); ++i) {
+									Link link = i < linksToRender.size()? linksToRender.get(i) : null;
+									int y = link != null? link.y1 : Integer.MAX_VALUE;
+									if (y != lastY) {
+										if (beginBlock >= 0) {
+											int mid = beginBlock + ((i - 1 - beginBlock) / 2);
+											for (int n = beginBlock; n < i; ++n) {
+												if (n != mid) {
+													noArrowIndexes.add(n);
 												}
 											}
 										}
+										beginBlock = i;
 									}
-									lastLastY = lastY;
 									lastY = y;
-									final Color color = pbg ? Color.white : light? link.color1 : link.color2;
-									final Point2D start = new Point2D.Double(link.x2, link.y2);
-									final Point2D end = new Point2D.Double(link.x1, link.y1);
-									final int ir = dir > 0? i : linksToRender.size() - 1 - i;
-									final boolean finalLight = light;
-									final int finalI = i;
-									Runnable task = new Runnable() {
-										@Override
-										public void run() {
-											paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe, link.sourceRowID);
-										}
-									};
-									List<Runnable> tasks = renderTasks.get(link.sourceRowID);
-									if (tasks == null) {
-										tasks = new LinkedList<Runnable>();
-										renderTasks.put(link.sourceRowID, tasks); 
-									}
-									tasks.add(task);
 								}
-								for (Entry<String, List<Runnable>> entry: renderTasks.entrySet()) {
-									List<Runnable> tasks = entry.getValue();
-									Runnable mid = tasks.get(tasks.size() / 2);
-									mid.run();
-									for (Runnable task: tasks) {
-										if (task != mid) {
-											task.run();
+							}
+							final Map<String, java.awt.geom.Point2D.Double> followMe;
+							if (!isToParentLink) {
+								followMe = new HashMap<String, java.awt.geom.Point2D.Double>();
+							} else {
+								followMe = null;
+							}
+							lastY = -1;
+							int lastLastY = -1;
+							Map<String, List<Runnable>> renderTasks = new HashMap<String, List<Runnable>>();
+							for (int i = 0; i < linksToRender.size(); ++i) {
+								final Link link = linksToRender.get(i);
+								int y = isToParentLink? link.y1 : link.y2;
+								if (lastY != y) {
+									if (lastLastY == lastY) {
+										light = !light;
+									} else {
+										if (i < linksToRender.size() - 1) {
+											int nextY = isToParentLink? linksToRender.get(i + 1).y1 : linksToRender.get(i + 1).y2;
+											if (nextY == y) {
+												light = !light;
+											}
 										}
+									}
+								}
+								lastLastY = lastY;
+								lastY = y;
+								final Color color = pbg ? Color.white : light? link.color1 : link.color2;
+								final Point2D start = new Point2D.Double(link.x2, link.y2);
+								final Point2D end = new Point2D.Double(link.x1, link.y1);
+								final int ir = dir > 0? i : linksToRender.size() - 1 - i;
+								final boolean finalLight = light;
+								final int finalI = i;
+								Runnable task = new Runnable() {
+									@Override
+									public void run() {
+										paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe, link.sourceRowID);
+									}
+								};
+								List<Runnable> tasks = renderTasks.get(link.sourceRowID);
+								if (tasks == null) {
+									tasks = new LinkedList<Runnable>();
+									renderTasks.put(link.sourceRowID, tasks); 
+								}
+								tasks.add(task);
+							}
+							for (Entry<String, List<Runnable>> entry: renderTasks.entrySet()) {
+								List<Runnable> tasks = entry.getValue();
+								Runnable mid = tasks.get(tasks.size() / 2);
+								mid.run();
+								for (Runnable task: tasks) {
+									if (task != mid) {
+										task.run();
 									}
 								}
 							}
