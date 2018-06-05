@@ -1,3 +1,6 @@
+7.9.4
+  - Increased rendering quality of row-link.
+
 7.9.3
   - Data browser: prevented that context menu automatically gets closed if the item doesn't have the focus.
 
