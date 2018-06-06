@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -2068,6 +2069,9 @@ public class DataBrowser extends javax.swing.JFrame {
                         if (new Integer(10).equals(dSize)) {
                         	UIManager.put("SplitPane.dividerSize", new Integer(14));
                         }
+                        
+                        UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
+                        
                     } catch (Exception x) {
                     }
 					ToolTipManager.sharedInstance().setInitialDelay(500);

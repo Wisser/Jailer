@@ -23,6 +23,7 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -138,7 +139,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Default width of a row-browser frame.
 	 */
 	public static final int BROWSERTABLE_DEFAULT_WIDTH = 476;
-	private final int BROWSERTABLE_DEFAULT_MIN = 0, BROWSERTABLE_DEFAULT_HEIGHT = 460, BROWSERTABLE_DEFAULT_DISTANCE = 90;
+	private final int BROWSERTABLE_DEFAULT_MIN_X = 0, BROWSERTABLE_DEFAULT_MIN_Y = 6, BROWSERTABLE_DEFAULT_HEIGHT = 460, BROWSERTABLE_DEFAULT_DISTANCE = 90;
 
 	/**
 	 * <code>true</code> while the desktop is visible.
@@ -454,6 +455,7 @@ public abstract class Desktop extends JDesktopPane {
 
 		final RowBrowser tableBrowser = new RowBrowser();
 		final JInternalFrame jInternalFrame = new JInternalFrame(table == null ? "SQL" : title);
+
 		jInternalFrame.setClosable(true);
 		jInternalFrame.setIconifiable(true);
 		jInternalFrame.setMaximizable(true);
@@ -968,6 +970,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		for (String l: labels) {
 			JLabel jl = new JLabel(l);
+			jl.setFont(jl.getFont().deriveFont(jl.getFont().getStyle() | Font.BOLD));
 			jLabels.add(jl);
 			thumbnailInner.add(jl);
 		}
@@ -983,7 +986,7 @@ public abstract class Desktop extends JDesktopPane {
 						}
 					} else {
 						for (JLabel l: jLabels) {
-							l.setForeground(Color.BLACK);
+							l.setForeground(Color.BLUE);
 						}
 					}
 				}
@@ -1072,8 +1075,8 @@ public abstract class Desktop extends JDesktopPane {
 
 	private Rectangle layout(final boolean fullSize, RowBrowser parent, Association association, BrowserContentPane browserContentPane,
 			Collection<RowBrowser> ignore, int maxH, int xPosition) {
-		int x = (int) (BROWSERTABLE_DEFAULT_MIN * layoutMode.factor);
-		int y = (int) (BROWSERTABLE_DEFAULT_MIN * layoutMode.factor);
+		int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor);
+		int y = (int) (BROWSERTABLE_DEFAULT_MIN_Y * layoutMode.factor);
 
 		while (parent != null && parent.isHidden()) {
 			parent = parent.parent;
@@ -1468,6 +1471,7 @@ public abstract class Desktop extends JDesktopPane {
 		super.paint(graphics);
 		if (graphics instanceof Graphics2D) {
 			final Graphics2D g2d = (Graphics2D) graphics;
+			renderActiveIFrameMarker(g2d);
 			if (renderLinks) {
 				if (rbSourceToLinks == null) {
 					rbSourceToLinks = new HashMap<RowBrowser, Map<String, List<Link>>>();
@@ -1696,6 +1700,43 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 		}
+	}
+
+	private void renderActiveIFrameMarker(Graphics2D g2d) {
+		for (RowBrowser tableBrowser : tableBrowsers) {
+			if (tableBrowser.internalFrame.isSelected() && !tableBrowser.internalFrame.isIcon() && (tableBrowser.parent == null || !tableBrowser.parent.internalFrame.isIcon())) {
+				int z = 20;
+				double alpha = (animationStep % z) / (double) z * 2 * Math.PI;
+				double f = Math.sin(alpha) / 2.0 + 0.5;
+				Color color = markerColor(f, z);
+				g2d.setColor(color);
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				BasicStroke stroke = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
+				g2d.setStroke(stroke);
+				final int W = 3;
+				int x1 = tableBrowser.internalFrame.getX() + W ;
+				int y1 = tableBrowser.internalFrame.getY() - 3;
+				int x2 = tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth() - 2 * W;
+				int y2 = y1;
+				g2d.drawLine(x1, y1, x2, y2);
+				f = Math.sin(alpha + Math.PI / 2) / 2.0 + 0.5;
+				color = markerColor(f, z);
+				g2d.setColor(color);
+				stroke = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
+				g2d.setStroke(stroke);
+				g2d.drawLine(x1 - 2, y1 + 2, x2 + 2, y2 + 2);
+			}
+		}
+	}
+
+	private Color markerColor(double f, int z) {
+		Color c1 = new Color(240, 130, 0);
+		Color c2 = new Color(225, 240, 0);
+		int r = (int) (c1.getRed() + f * (c2.getRed() - c1.getRed()));
+		int g = (int) (c1.getGreen() + f * (c2.getGreen() - c1.getGreen()));
+		int b = (int) (c1.getBlue() + f * (c2.getBlue() - c1.getBlue()));
+		Color color = new Color(r, g, b);
+		return color;
 	}
 
 	private long animationStep = 0;
@@ -2148,8 +2189,8 @@ public abstract class Desktop extends JDesktopPane {
 	private void arrangeNodes(Node<RowBrowser> root) {
 		if (root.getUserObject() != null) {
 			JInternalFrame iFrame = root.getUserObject().internalFrame;
-			int x = (int) (BROWSERTABLE_DEFAULT_MIN * layoutMode.factor);
-			int y = (int) (BROWSERTABLE_DEFAULT_MIN * layoutMode.factor);
+			int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor);
+			int y = (int) (BROWSERTABLE_DEFAULT_MIN_Y * layoutMode.factor);
 			x += (root.getLevel() - 1) * (int) ((BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor);
 			y += (int) (root.getPosition() * (BROWSERTABLE_DEFAULT_HEIGHT + 8) * layoutMode.factor);
 			int h = (int) (BROWSERTABLE_DEFAULT_HEIGHT * layoutMode.factor);
