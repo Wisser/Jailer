@@ -463,6 +463,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Set<Pair<BrowserContentPane, Row>> currentClosure = Collections.synchronizedSet(new HashSet<Pair<BrowserContentPane, Row>>());
 		Set<Pair<BrowserContentPane, String>> currentClosureRowIDs = new HashSet<Pair<BrowserContentPane, String>>();
 		String currentClosureRootID;
+		Set<BrowserContentPane> parentPath = new HashSet<BrowserContentPane>();
 	};
 	
 	private final RowsClosure rowsClosure;
@@ -2238,6 +2239,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (i >= 0) {
 			Row row = rows.get(rowsTable.getRowSorter().convertRowIndexToModel(i));
 			rowsClosure.currentClosure.clear();
+			rowsClosure.parentPath.clear();
 			rowsClosure.currentClosureRootID = row.rowId;
 			findClosure(row);
 			Rectangle visibleRect = rowsTable.getVisibleRect();

@@ -606,6 +606,11 @@ public abstract class Desktop extends JDesktopPane {
 				rows = new HashSet<Pair<BrowserContentPane, Row>>();
 				findClosure(row, rows, true);
 				rowsClosure.currentClosure.addAll(rows);
+				rowsClosure.parentPath.clear();
+				rowsClosure.parentPath.add(this);
+				for (RowBrowser p = parent; p != null; p = p.parent) {
+					rowsClosure.parentPath.add(p.browserContentPane);
+				}
 			}
 
 			@Override
@@ -1405,14 +1410,20 @@ public abstract class Desktop extends JDesktopPane {
 			changed = true;
 		}
 		renderLinks = true;
-		if (lastPTS + 500 < System.currentTimeMillis()) {
+		long currentTimeMillis = System.currentTimeMillis();
+		if (lastPTS + 500 < currentTimeMillis) {
 			changed = true;
 		}
 		if (changed) {
-			lastPTS = System.currentTimeMillis();
+			lastPTS = currentTimeMillis;
 		}
 		if (changed) {
 			rbSourceToLinks = null;
+		}
+		if (lastAnimationStepTime + STEP_DELAY < currentTimeMillis) {
+			changed = true;
+			++animationStep;
+			lastAnimationStepTime = currentTimeMillis;
 		}
 		return changed;
 	}
@@ -1427,9 +1438,10 @@ public abstract class Desktop extends JDesktopPane {
 		public final Color color1;
 		public final Color color2;
 		public final boolean dotted, intersect;
-
+		public final boolean inClosure;
+		
 		public Link(RowBrowser from, RowBrowser to, String sourceRowID, String destRowID, int x1, int y1, int x2, int y2, Color color1, Color color2, boolean dotted,
-				boolean intersect) {
+				boolean intersect, boolean inClosure) {
 			this.from = from;
 			this.to = to;
 			this.sourceRowID = sourceRowID;
@@ -1442,6 +1454,7 @@ public abstract class Desktop extends JDesktopPane {
 			this.color2 = color2;
 			this.dotted = dotted;
 			this.intersect = intersect;
+			this.inClosure = inClosure;
 		}
 	};
 
@@ -1473,7 +1486,7 @@ public abstract class Desktop extends JDesktopPane {
 									destRowID = tableBrowser.browserContentPane.parentRow.rowId;
 								}
 								Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
-										tableBrowser.x2, tableBrowser.y2, color1, color2, tableBrowser.parent == null || tableBrowser.rowIndex < 0, true);
+										tableBrowser.x2, tableBrowser.y2, color1, color2, tableBrowser.parent == null || tableBrowser.rowIndex < 0, true, false);
 								List<Link> l = links.get(sourceRowID);
 								if (l == null) {
 									l = new ArrayList<Link>();
@@ -1485,14 +1498,18 @@ public abstract class Desktop extends JDesktopPane {
 								if (rowToRowLink.visible && rowToRowLink.x1 >= 0) {
 									String sourceRowID = rowToRowLink.childRow.rowId;
 									String destRowID = rowToRowLink.parentRow.rowId;
-
-									if (!tableBrowser.isHidden() && (tableBrowser.parent == null || !tableBrowser.parent.isHidden())) {
-										// optimization
-										sourceRowID = "";
+									boolean inClosure = false;
+									
+									if (tableBrowser.parent != null) {
+										if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.browserContentPane, rowToRowLink.childRow))) {
+											if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.parent.browserContentPane, rowToRowLink.parentRow))) {
+												inClosure = true;
+											}
+										}
 									}
-
+									
 									Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, rowToRowLink.x1, rowToRowLink.y1,
-											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false);
+											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure);
 									List<Link> l = links.get(sourceRowID);
 									if (l == null) {
 										l = new ArrayList<Link>();
@@ -1540,7 +1557,7 @@ public abstract class Desktop extends JDesktopPane {
 										boolean intersect = link.intersect;
 										boolean dotted = link.dotted || toJoin.dotted;
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
-												Color.yellow.darker().darker(), Color.yellow.darker(), dotted, intersect));
+												Color.yellow.darker().darker(), Color.yellow.darker(), dotted, intersect, link.inClosure && toJoin.inClosure));
 									}
 								}
 							}
@@ -1555,6 +1572,7 @@ public abstract class Desktop extends JDesktopPane {
 					Set<Long> linesHash = new HashSet<Long>(200000);
 					for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
 						if (!tableBrowser.isHidden()) {
+							final boolean inClosureRootPath = rowsClosure.parentPath.contains(tableBrowser.browserContentPane);
 							Map<String, List<Link>> links = rbSourceToLinks.get(tableBrowser);
 							final List<Link> linksToRender = new ArrayList<Link>(1000);
 							int dir = 0;
@@ -1653,7 +1671,7 @@ public abstract class Desktop extends JDesktopPane {
 								Runnable task = new Runnable() {
 									@Override
 									public void run() {
-										paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe, link.sourceRowID);
+										paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe, link.sourceRowID, link.inClosure, inClosureRootPath);
 									}
 								};
 								List<Runnable> tasks = renderTasks.get(link.sourceRowID);
@@ -1680,12 +1698,22 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow, Map<String, Point2D.Double> followMe, String sourceRowID) {
+	private long animationStep = 0;
+	long lastAnimationStepTime = 0;
+	final long STEP_DELAY = 140;
+
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow, Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inClosureRootPath) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 3 : 2));
-		g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
-				1.0f) : stroke);
+		if (inClosure) {
+			final int LENGTH = 16;
+			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f },
+					2 * (inClosureRootPath? animationStep % LENGTH : (LENGTH - animationStep % LENGTH))));
+		} else {
+			g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
+					1.0f) : stroke);
+		}
 
 		// compute the intersection with the target bounding box
 		if (intersect) {
