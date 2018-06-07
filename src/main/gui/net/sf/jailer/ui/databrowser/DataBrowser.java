@@ -469,9 +469,9 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 			@Override
-			public void onLayoutChanged(boolean isLayouted) {
+			public void onLayoutChanged(boolean isLayouted, boolean scrollToCenter) {
 				if (!isLayouted && autoLayoutMenuItem.isSelected()) {
-					arrangeLayout();
+					arrangeLayout(scrollToCenter);
 				}
 			}
         };
@@ -1938,13 +1938,13 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
     private void layoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_layoutMenuItemActionPerformed
-        arrangeLayout();
+        arrangeLayout(true);
     }// GEN-LAST:event_layoutMenuItemActionPerformed
 
-    public void arrangeLayout() {
+    public void arrangeLayout(boolean scrollToCenter) {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            desktop.layoutBrowser(null);
+            desktop.layoutBrowser(null, scrollToCenter);
         } finally {
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }

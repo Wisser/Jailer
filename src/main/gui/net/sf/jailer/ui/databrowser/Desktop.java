@@ -884,7 +884,7 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.addInternalFrameListener(new InternalFrameListener() {
 			@Override
 			public void internalFrameOpened(InternalFrameEvent e) {
-				onLayoutChanged(false);
+				onLayoutChanged(false, true);
 			}
 
 			@Override
@@ -925,7 +925,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		browserContentPane.andCondition.grabFocus();
 		updateMenu();
-		onLayoutChanged(false);
+		onLayoutChanged(false, true);
 		return tableBrowser;
 	}
 
@@ -1028,7 +1028,7 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.addComponentListener(new ComponentListener() {
 			@Override
 			public void componentHidden(ComponentEvent e) {
-//				onLayoutChanged(false);
+				onLayoutChanged(false, false);
 			}
 
 			@Override
@@ -1044,7 +1044,7 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			public void componentShown(ComponentEvent e) {
-//				onLayoutChanged(false);
+				onLayoutChanged(false, true);
 			}
 		});
 	}
@@ -2111,7 +2111,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private boolean layouting = false;
 	
-	public void layoutBrowser(JInternalFrame selectedFrame) {
+	public void layoutBrowser(JInternalFrame selectedFrame, boolean scrollToCenter) {
 		if (layouting) {
 			return;
 		}
@@ -2144,7 +2144,9 @@ public abstract class Desktop extends JDesktopPane {
 				} catch (PropertyVetoException e) {
 					// ignore
 				}
-				this.scrollToCenter(selectedFrame);
+				if (scrollToCenter) {
+					this.scrollToCenter(selectedFrame);
+				}
 			}
 		} finally {
 			layouting = false;
@@ -2446,7 +2448,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	public abstract void openSchemaAnalyzer();
 	public abstract void onNewDataModel();
-	public abstract void onLayoutChanged(boolean isLayouted);
+	public abstract void onLayoutChanged(boolean isLayouted, boolean scrollToCenter);
 
 	public void openSchemaMappingDialog(boolean silent) {
 		try {
@@ -2737,7 +2739,7 @@ public abstract class Desktop extends JDesktopPane {
 			rb.browserContentPane.reloadRows();
 		}
 		
-		onLayoutChanged(true);		
+		onLayoutChanged(true, true);		
 		
 		if (toBeAppended != null && toBeLoaded.isEmpty()) {
 			JOptionPane.showMessageDialog(pFrame,
@@ -2929,7 +2931,7 @@ public abstract class Desktop extends JDesktopPane {
 
 			RowBrowser root = addTableBrowserSubTree(newDataBrowser, tableBrowser, null, null, cond.length() > 0? cond.toString() : null);
 			root.browserContentPane.reloadRows();
-			newDataBrowser.arrangeLayout();
+			newDataBrowser.arrangeLayout(true);
 			try {
 				JInternalFrame iFrame = root.internalFrame;
 				newDataBrowser.desktop.scrollToCenter(iFrame);

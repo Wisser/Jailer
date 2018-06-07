@@ -402,7 +402,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		});
 		final TableCellRenderer defaultTableCellRenderer = restrictionsTable.getDefaultRenderer(String.class);
 		final Color BG1 = new Color(255, 255, 255);
-		final Color BG2 = new Color(230, 255, 255);
+		final Color BG2 = new Color(242, 255, 242);
 		restrictionsTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table,

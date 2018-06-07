@@ -364,7 +364,7 @@ public class CyclesView extends javax.swing.JDialog {
 		
 		int distance = 0;
 		final Color BG1 = new Color(255, 255, 255);
-		final Color BG2 = new Color(230, 255, 255);
+		final Color BG2 = new Color(242, 255, 242);
 		bgColor.clear();
 		
 		for (CycleFinder.Path cycle: cycles) {

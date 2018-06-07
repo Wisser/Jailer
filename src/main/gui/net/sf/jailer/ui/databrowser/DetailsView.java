@@ -137,7 +137,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize()); 
 	private final Font italic = new Font(font.getName(), font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize()); 
 	private final Color BG1 = new Color(255, 255, 255);
-	private final Color BG2 = new Color(230, 255, 255);
+	private final Color BG2 = new Color(242, 255, 242);
 	private final Color FG1 = new Color(155, 0, 0);
 	
 	public void setBorderColor(Color color) {

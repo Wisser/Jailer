@@ -241,7 +241,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						if (render instanceof JLabel) {
 							if (!isSelected) {
 								final Color BG1 = new Color(255, 255, 255);
-								final Color BG2 = new Color(230, 255, 255);
+								final Color BG2 = new Color(242, 255, 242);
 								((JLabel) render)
 										.setBackground((row % 2 == 0) ? BG1
 												: BG2);

@@ -121,7 +121,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 			deleteButton.setVisible(false);
 		}
 		final Color BG1 = new Color(255, 255, 255);
-		final Color BG2 = new Color(230, 255, 255);
+		final Color BG2 = new Color(242, 255, 242);
 		final Color BGSEL = new Color(0, 200, 255);
 		TableCellRenderer renderer = new DefaultTableCellRenderer() {
 			@Override

@@ -782,11 +782,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 
 			final Color BG1 = new Color(255, 255, 255);
-			final Color BG2 = new Color(230, 255, 255);
+			final Color BG2 = new Color(242, 255, 242);
 			final Color BG1_EM = new Color(255, 255, 236);
 			final Color BG2_EM = new Color(230, 255, 236);
-			final Color BG3 = new Color(200, 228, 255);
-			final Color BG3_2 = new Color(186, 216, 255);
+			final Color BG3 = new Color(194, 228, 255);
+			final Color BG3_2 = new Color(180, 216, 255);
 			final Color BG4 = new Color(30, 200, 255);
 			final Color FG1 = new Color(155, 0, 0);
 			final Color FG2 = new Color(0, 0, 255);
