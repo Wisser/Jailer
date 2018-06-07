@@ -1,5 +1,7 @@
 7.9.4
+  - Animated row-links.
   - Increased rendering quality of row-link.
+  - Comprehensive usability improvements of the data browser.
 
 7.9.3
   - Data browser: prevented that context menu automatically gets closed if the item doesn't have the focus.
