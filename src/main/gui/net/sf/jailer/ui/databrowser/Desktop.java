@@ -1756,7 +1756,7 @@ public abstract class Desktop extends JDesktopPane {
 		int r = (int) (c1.getRed() + f * (c2.getRed() - c1.getRed()));
 		int g = (int) (c1.getGreen() + f * (c2.getGreen() - c1.getGreen()));
 		int b = (int) (c1.getBlue() + f * (c2.getBlue() - c1.getBlue()));
-		Color color = new Color(r, g, b);
+		Color color = new Color(r, g, b, 240);
 		return color;
 	}
 
