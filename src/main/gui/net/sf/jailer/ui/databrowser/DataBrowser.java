@@ -2069,9 +2069,11 @@ public class DataBrowser extends javax.swing.JFrame {
                         if (new Integer(10).equals(dSize)) {
                         	UIManager.put("SplitPane.dividerSize", new Integer(14));
                         }
-                        
-                        UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
-                        
+
+                        if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
+                        	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
+                        }
+
                     } catch (Exception x) {
                     }
 					ToolTipManager.sharedInstance().setInitialDelay(500);
@@ -2842,6 +2844,14 @@ public class DataBrowser extends javax.swing.JFrame {
                     collectVisibleTables(cb, level + 1);
                 }
             }
+            
+            @Override
+            protected void scrollToTable(Table table) {
+            	RowBrowser rb = visibleTables.get(table);
+            	if (rb != null) {
+            		desktop.scrollToCenter(rb.internalFrame);
+            	}
+        	}
 
             @Override
             protected void repaintClosureView() {

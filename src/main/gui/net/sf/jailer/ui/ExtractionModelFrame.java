@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -1797,6 +1798,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
                     if (new Integer(10).equals(dSize)) {
                     	UIManager.put("SplitPane.dividerSize", new Integer(14));
                     }
+
+                    if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
+                    	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
+                    }
+
                 } catch (Exception x) {
 				}
 				

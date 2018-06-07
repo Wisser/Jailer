@@ -70,6 +70,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -219,27 +220,33 @@ public abstract class Desktop extends JDesktopPane {
 			Thread updateUIThread = new Thread(new Runnable() {
 				@Override
 				public void run() {
+					final AtomicLong duration = new AtomicLong();
+					final AtomicBoolean inProgress = new AtomicBoolean(false);
+					long lastDuration = 0;
 					while (true) {
 						synchronized (Desktop.this) {
 							if (!running) {
 								return;
 							}
 						}
-						final AtomicBoolean inProgress = new AtomicBoolean(false);
+						inProgress.set(false);
 						try {
-							Thread.sleep(150);
+							Thread.sleep(Math.max(STEP_DELAY, lastDuration + paintDuration));
 							if (!inProgress.get()) {
 								inProgress.set(true);
+								duration.set(0);
 								SwingUtilities.invokeAndWait(new Runnable() {
 									@Override
 									public void run() {
+										long startTime = System.currentTimeMillis();
 										try {
 											boolean cl = calculateLinks();
 											if (cl) {
-												repaintDesktop();
+												repaintScrollPane();
 											}
 										} finally {
 											inProgress.set(false);
+											duration.set(System.currentTimeMillis() - startTime);
 										}
 									}
 								});
@@ -249,6 +256,7 @@ public abstract class Desktop extends JDesktopPane {
 						} catch (InvocationTargetException e) {
 							// ignore
 						}
+						lastDuration = duration.get();
 					}
 				}
 			});
@@ -617,34 +625,36 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward) {
-				Pair<BrowserContentPane, Row> thisRow = new Pair<BrowserContentPane, Row>(this, row);
-				if (!closure.contains(thisRow)) {
-					closure.add(thisRow);
-					if (forward) {
-						for (RowBrowser child : tableBrowsers) {
-							if (child.parent == tableBrowser) {
-								if (child.browserContentPane.parentRow != null) {
-									if (row.rowId.equals(child.browserContentPane.parentRow.rowId)) {
-										for (Row r : child.browserContentPane.rows) {
-											child.browserContentPane.findClosure(r, closure, forward);
+				synchronized (Desktop.this) {
+					Pair<BrowserContentPane, Row> thisRow = new Pair<BrowserContentPane, Row>(this, row);
+					if (!closure.contains(thisRow)) {
+						closure.add(thisRow);
+						if (forward) {
+							for (RowBrowser child : tableBrowsers) {
+								if (child.parent == tableBrowser) {
+									if (child.browserContentPane.parentRow != null) {
+										if (row.rowId.equals(child.browserContentPane.parentRow.rowId)) {
+											for (Row r : child.browserContentPane.rows) {
+												child.browserContentPane.findClosure(r, closure, forward);
+											}
+										}
+									}
+									for (RowToRowLink rowToRowLink : child.rowToRowLinks) {
+										if (row.rowId.equals(rowToRowLink.parentRow.rowId)) {
+											child.browserContentPane.findClosure(rowToRowLink.childRow, closure, forward);
 										}
 									}
 								}
-								for (RowToRowLink rowToRowLink : child.rowToRowLinks) {
-									if (row.rowId.equals(rowToRowLink.parentRow.rowId)) {
-										child.browserContentPane.findClosure(rowToRowLink.childRow, closure, forward);
-									}
+							}
+						} else {
+							if (tableBrowser.parent != null) {
+								if (tableBrowser.browserContentPane.parentRow != null) {
+									tableBrowser.parent.browserContentPane.findClosure(tableBrowser.browserContentPane.parentRow, closure, forward);
 								}
-							}
-						}
-					} else {
-						if (tableBrowser.parent != null) {
-							if (tableBrowser.browserContentPane.parentRow != null) {
-								tableBrowser.parent.browserContentPane.findClosure(tableBrowser.browserContentPane.parentRow, closure, forward);
-							}
-							for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
-								if (row.rowId.equals(rowToRowLink.childRow.rowId)) {
-									tableBrowser.parent.browserContentPane.findClosure(rowToRowLink.parentRow, closure, forward);
+								for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
+									if (row.rowId.equals(rowToRowLink.childRow.rowId)) {
+										tableBrowser.parent.browserContentPane.findClosure(rowToRowLink.parentRow, closure, forward);
+									}
 								}
 							}
 						}
@@ -1050,7 +1060,7 @@ public abstract class Desktop extends JDesktopPane {
 	private Color getAssociationColor1(Association association) {
 		Color color = new java.awt.Color(0, 120, 255);
 		if (association.isInsertDestinationBeforeSource()) {
-			color = new java.awt.Color(140, 40, 0);
+			color = new java.awt.Color(190, 30, 0);
 		}
 		if (association.isInsertSourceBeforeDestination()) {
 			color = new java.awt.Color(60, 132, 0);
@@ -1066,7 +1076,7 @@ public abstract class Desktop extends JDesktopPane {
 		if (association.isInsertSourceBeforeDestination()) {
 			color = new java.awt.Color(0, 180, 80);
 		} else if (association.isInsertDestinationBeforeSource()) {
-			color = new java.awt.Color(220, 0, 50);
+			color = new java.awt.Color(230, 0, 60);
 		} else if (association.isIgnored()) {
 			color = new java.awt.Color(133, 133, 153);
 		}
@@ -1215,6 +1225,10 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	private void repaintDesktop() {
 		calculateLinks();
+		repaintScrollPane();
+	}
+
+	private void repaintScrollPane() {
 		JScrollPane scrollPane = getScrollPane();
 		scrollPane.setSize(scrollPane.getWidth() + 1, scrollPane.getHeight() + 1);
 		scrollPane.setSize(scrollPane.getWidth() - 1, scrollPane.getHeight() - 1);
@@ -1462,12 +1476,14 @@ public abstract class Desktop extends JDesktopPane {
 	};
 
 	private Map<RowBrowser, Map<String, List<Link>>> rbSourceToLinks = null;
-
+	private long paintDuration = 0;
+	
 	/**
 	 * Paints all link-renders.
 	 */
 	@Override
 	public synchronized void paint(Graphics graphics) {
+		long startTime = System.currentTimeMillis();
 		super.paint(graphics);
 		if (graphics instanceof Graphics2D) {
 			final Graphics2D g2d = (Graphics2D) graphics;
@@ -1648,11 +1664,14 @@ public abstract class Desktop extends JDesktopPane {
 							}
 							lastY = -1;
 							int lastLastY = -1;
+							boolean lastInClosure = false;
 							Map<String, List<Runnable>> renderTasks = new HashMap<String, List<Runnable>>();
 							for (int i = 0; i < linksToRender.size(); ++i) {
 								final Link link = linksToRender.get(i);
 								int y = isToParentLink? link.y1 : link.y2;
-								if (lastY != y) {
+								if (lastInClosure != link.inClosure) {
+									light = !light;
+								} else if (lastY != y) {
 									if (lastLastY == lastY) {
 										light = !light;
 									} else {
@@ -1666,6 +1685,7 @@ public abstract class Desktop extends JDesktopPane {
 								}
 								lastLastY = lastY;
 								lastY = y;
+								lastInClosure = link.inClosure;
 								final Color color = pbg ? Color.white : light? link.color1 : link.color2;
 								final Point2D start = new Point2D.Double(link.x2, link.y2);
 								final Point2D end = new Point2D.Double(link.x1, link.y1);
@@ -1675,7 +1695,7 @@ public abstract class Desktop extends JDesktopPane {
 								Runnable task = new Runnable() {
 									@Override
 									public void run() {
-										paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe, link.sourceRowID, link.inClosure, inClosureRootPath);
+										paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe, link.sourceRowID, link.inClosure, inClosureRootPath, isToParentLink);
 									}
 								};
 								List<Runnable> tasks = renderTasks.get(link.sourceRowID);
@@ -1700,6 +1720,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 		}
+		paintDuration = System.currentTimeMillis() - startTime;
 	}
 
 	private void renderActiveIFrameMarker(Graphics2D g2d) {
@@ -1730,8 +1751,8 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private Color markerColor(double f, int z) {
-		Color c1 = new Color(240, 130, 0);
-		Color c2 = new Color(225, 240, 0);
+		Color c1 = new Color(240, 130, 80);
+		Color c2 = new Color(225, 240, 100);
 		int r = (int) (c1.getRed() + f * (c2.getRed() - c1.getRed()));
 		int g = (int) (c1.getGreen() + f * (c2.getGreen() - c1.getGreen()));
 		int b = (int) (c1.getBlue() + f * (c2.getBlue() - c1.getBlue()));
@@ -1741,16 +1762,16 @@ public abstract class Desktop extends JDesktopPane {
 
 	private long animationStep = 0;
 	long lastAnimationStepTime = 0;
-	final long STEP_DELAY = 140;
+	final long STEP_DELAY = 50;  // TODO
 
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow, Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inClosureRootPath) {
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow, Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inClosureRootPath, boolean isToParentLink) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 3 : 2));
 		if (inClosure) {
 			final int LENGTH = 16;
 			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f },
-					2 * (inClosureRootPath? animationStep % LENGTH : (LENGTH - animationStep % LENGTH))));
+					(inClosureRootPath ^ isToParentLink)? animationStep % LENGTH : (LENGTH - animationStep % LENGTH)));
 		} else {
 			g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
 					1.0f) : stroke);
@@ -1783,8 +1804,13 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		
 		Path2D.Double path = new Path2D.Double();
-		path.moveTo(start.getX(), start.getY());
-		path.curveTo(midX, start.getY() + f, midX, end.getY(), end.getX() - 5, end.getY());
+		if (isToParentLink) {
+			path.moveTo(end.getX() - 5, end.getY());
+			path.curveTo(midX, end.getY(), midX, start.getY() + f, start.getX(), start.getY());
+		} else {
+			path.moveTo(start.getX(), start.getY());
+			path.curveTo(midX, start.getY() + f, midX, end.getY(), end.getX() - 5, end.getY());
+		}
 		g2d.draw(path);
 		
 		// create the arrow head shape

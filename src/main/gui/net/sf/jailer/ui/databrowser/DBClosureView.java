@@ -391,6 +391,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                             } else if (!selectedCellInfo.selected) {
                                 manuallySelected.clear();
                                 selectTableCell(column, row);
+                            } else {
+                            	scrollToTable(table);
                             }
                         }
                         
@@ -1145,6 +1147,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     protected abstract Map<Table, RowBrowser> getVisibleTables();
     protected abstract void expandTablePath(List<Table> path);
     protected abstract void select(String selectedTable);
+	protected abstract void scrollToTable(Table table);
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable closureTable;
