@@ -237,6 +237,9 @@ public abstract class Desktop extends JDesktopPane {
 						try {
 							long now = System.currentTimeMillis();
 							long d = lastDuration + paintDuration;
+							if (d <= 0) {
+								d = 1;
+							}
 							Iterator<Entry<Long, Long>> i = durations.entrySet().iterator();
 							while (i.hasNext()) {
 								if (i.next().getKey() < now - AVG_INTERVALL_SIZE) {
@@ -251,7 +254,7 @@ public abstract class Desktop extends JDesktopPane {
 								dSum += e.getValue();
 							}
 							long avgD = dSum / durations.size();
-							Thread.sleep(Math.max(STEP_DELAY, avgD));
+							Thread.sleep(Math.min(Math.max(STEP_DELAY, avgD), 500));
 							if (!inProgress.get()) {
 								inProgress.set(true);
 								duration.set(0);
