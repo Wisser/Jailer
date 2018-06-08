@@ -51,7 +51,6 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -233,8 +232,8 @@ public abstract class Desktop extends JDesktopPane {
 								return;
 							}
 						}
-						inProgress.set(false);
 						try {
+							inProgress.set(false);
 							long now = System.currentTimeMillis();
 							long d = lastDuration + paintDuration;
 							if (d <= 0) {
@@ -274,9 +273,7 @@ public abstract class Desktop extends JDesktopPane {
 									}
 								});
 							}
-						} catch (InterruptedException e) {
-							// ignore
-						} catch (InvocationTargetException e) {
+						} catch (Throwable e) {
 							// ignore
 						}
 						lastDuration = duration.get();
