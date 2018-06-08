@@ -61,6 +61,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -222,7 +224,9 @@ public abstract class Desktop extends JDesktopPane {
 				public void run() {
 					final AtomicLong duration = new AtomicLong();
 					final AtomicBoolean inProgress = new AtomicBoolean(false);
+					Map<Long, Long> durations = new LinkedHashMap<Long, Long>();
 					long lastDuration = 0;
+					final long AVG_INTERVALL_SIZE = 1000;
 					while (true) {
 						synchronized (Desktop.this) {
 							if (!running) {
@@ -231,7 +235,23 @@ public abstract class Desktop extends JDesktopPane {
 						}
 						inProgress.set(false);
 						try {
-							Thread.sleep(Math.max(STEP_DELAY, lastDuration + paintDuration));
+							long now = System.currentTimeMillis();
+							long d = lastDuration + paintDuration;
+							Iterator<Entry<Long, Long>> i = durations.entrySet().iterator();
+							while (i.hasNext()) {
+								if (i.next().getKey() < now - AVG_INTERVALL_SIZE) {
+									i.remove();
+								} else {
+									break;
+								}
+							}
+							durations.put(now, d);
+							long dSum = 0;
+							for (Entry<Long, Long> e: durations.entrySet()) {
+								dSum += e.getValue();
+							}
+							long avgD = dSum / durations.size();
+							Thread.sleep(Math.max(STEP_DELAY, avgD));
 							if (!inProgress.get()) {
 								inProgress.set(true);
 								duration.set(0);
@@ -1762,7 +1782,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private long animationStep = 0;
 	long lastAnimationStepTime = 0;
-	final long STEP_DELAY = 50;  // TODO
+	final long STEP_DELAY = 70;  // TODO
 
 	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow, Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inClosureRootPath, boolean isToParentLink) {
 		g2d.setColor(color);
