@@ -338,6 +338,9 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					protected SQLConsole getSqlConsole(boolean switchToConsole) {
 						return null;
 					}
+					@Override
+					protected void deselectChildrenIfNeededWithoutReload() {
+					}
 				};
 		    	
 				final MemorizedResultSet[] metaDataDetails = new MemorizedResultSet[1];

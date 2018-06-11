@@ -876,16 +876,29 @@ public abstract class Desktop extends JDesktopPane {
 				return Desktop.this.getSqlConsole(switchToConsole);
 			}
 
+			@Override
+			protected void deselectChildrenIfNeededWithoutReload() {
+				for (RowBrowser rb : tableBrowsers) {
+					if (rb.parent == tableBrowser) {
+						rb.browserContentPane.deselectIfNeededWithoutReload();
+						rb.browserContentPane.deselectChildrenIfNeededWithoutReload();
+					}
+				}
+			}
 		};
 
 		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
-		browserContentPane.rowsTableScrollPane.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+		java.awt.event.MouseWheelListener mouseWheelListener = new java.awt.event.MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
 				onMouseWheelMoved(evt);
-				onMouseWheelMoved(evt, browserContentPane.rowsTableScrollPane);
+				if (evt.getSource() instanceof JScrollPane) {
+					onMouseWheelMoved(evt, (JScrollPane) evt.getSource());
+				}
 			}
-		});
+		};
+		browserContentPane.rowsTableScrollPane.addMouseWheelListener(mouseWheelListener);
+		browserContentPane.singleRowViewScrollPane.addMouseWheelListener(mouseWheelListener);
 
 		jInternalFrame.setBounds(r);
 
@@ -2919,7 +2932,10 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 		}
-
+		for (RowBrowser rb : tableBrowsers) {
+			rb.browserContentPane.updateSingleRowDetailsView();
+		}
+		
 		repaintDesktop();
 	}
 

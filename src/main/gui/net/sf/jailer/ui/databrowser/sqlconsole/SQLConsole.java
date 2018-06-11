@@ -1680,6 +1680,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         protected SQLConsole getSqlConsole(boolean switchToConsole) {
             return SQLConsole.this;
         }
+		@Override
+		protected void deselectChildrenIfNeededWithoutReload() {
+		}
     };
 
     private class TitelPanel extends JPanel {

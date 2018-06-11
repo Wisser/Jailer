@@ -91,6 +91,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
@@ -2073,7 +2074,7 @@ public class DataBrowser extends javax.swing.JFrame {
                         if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
                         	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
                         }
-
+                        
                     } catch (Exception x) {
                     }
 					ToolTipManager.sharedInstance().setInitialDelay(500);
@@ -2828,6 +2829,8 @@ public class DataBrowser extends javax.swing.JFrame {
                     visibleTables = new HashMap<Table, RowBrowser>();
                     levels = new HashMap<Table, Integer>();
                     if (rowBrowser != null) {
+                    	visibleTables.put(rowBrowser.browserContentPane.table, rowBrowser);
+                    	levels.put(rowBrowser.browserContentPane.table, Integer.MAX_VALUE);
                         collectVisibleTables(rowBrowser, 1);
                     }
                 }

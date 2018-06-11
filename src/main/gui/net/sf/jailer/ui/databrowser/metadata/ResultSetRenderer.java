@@ -59,7 +59,13 @@ public class ResultSetRenderer extends javax.swing.JPanel {
      */
     public ResultSetRenderer(ResultSet resultSet, String titel, DataModel datamodel, Session session, ExecutionContext executionContext) throws SQLException {
         initComponents();
-        titelLabel.setText(titel);
+        if (titel != null && titel.length() > 40) {
+            titelLabel.setText(titel.substring(0, 40) + "...");
+        	titelLabel.setToolTipText(titel);
+        } else {
+        	titelLabel.setText(titel);
+        	titelLabel.setToolTipText(null);
+        }
         
 		final BrowserContentPane rb = new ResultContentPane(datamodel, null, "", session, null, null,
                 null, null, new RowsClosure(), Integer.MAX_VALUE, false, false,
@@ -240,6 +246,9 @@ public class ResultSetRenderer extends javax.swing.JPanel {
         protected SQLConsole getSqlConsole(boolean switchToConsole) {
             return null;
         }
+		@Override
+		protected void deselectChildrenIfNeededWithoutReload() {
+		}
     };
 
 }

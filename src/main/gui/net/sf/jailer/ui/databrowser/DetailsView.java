@@ -65,14 +65,18 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	/** Creates new form DetailsView 
 	 * @param rowSorter 
 	 * @param showSelectButton 
+	 * @param deselect 
 	*/
-	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, boolean showSelectButton, RowIdSupport rowIdSupport) {
+	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, boolean showSelectButton, RowIdSupport rowIdSupport, boolean deselect) {
 		this.table = table;
 		this.rows = rows;
 		this.rowSorter = rowSorter;
 		this.rowIdSupport = rowIdSupport;
 		this.showSpinner = showSpinner;
 		initComponents();
+		if (deselect) {
+			selectButton.setText("Deselect Row");
+		}
 		if (rowSorter != null) {
 			rowIndex = rowSorter.convertRowIndexToView(rowIndex);
 		}
@@ -138,7 +142,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private final Font italic = new Font(font.getName(), font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize()); 
 	private final Color BG1 = new Color(255, 255, 255);
 	private final Color BG2 = new Color(242, 255, 242);
+	private final Color BG3 = new Color(194, 228, 255);
+	private final Color BG3_2 = new Color(180, 216, 255);
 	private final Color FG1 = new Color(155, 0, 0);
+	private List<JLabel> labels = new ArrayList<JLabel>();
+	private List<Color> labelColors = new ArrayList<Color>();
 	
 	public void setBorderColor(Color color) {
 		jScrollPane1.setBorder(BorderFactory.createEtchedBorder(color, Color.GRAY));
@@ -152,6 +160,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		currentRow = row;
 
 		java.awt.GridBagConstraints gridBagConstraints;
+		
+		labels.clear();
+		labelColors.clear();
 		
 		JPanel oldContent = content;
 		content = new JPanel(new GridBagLayout());
@@ -240,6 +251,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				} else {
 					l.setForeground(Color.BLUE);
 				}
+				labelColors.add(f.getBackground());
+				labels.add(f);
 			}
 			++i;
 		}
@@ -364,6 +377,22 @@ public abstract class DetailsView extends javax.swing.JPanel {
         onSelectRow(rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(currentRow) : currentRow));
     }//GEN-LAST:event_selectButtonActionPerformed
 
+	public void updateInClosureState(boolean inClosure) {
+		if (inClosure) {
+			int r = 0;
+			for (JLabel label: labels) {
+				label.setBackground(r++ % 2 == 0? BG3 : BG3_2);
+			}
+		} else {
+			for (int i = 0; i < labels.size(); ++i) {
+				labels.get(i).setBackground(labelColors.get(i));
+			}
+		}
+	}
+    
+    public JPanel getDetailsPanel() {
+    	return jPanel1;
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
