@@ -2829,8 +2829,6 @@ public class DataBrowser extends javax.swing.JFrame {
                     visibleTables = new HashMap<Table, RowBrowser>();
                     levels = new HashMap<Table, Integer>();
                     if (rowBrowser != null) {
-                    	visibleTables.put(rowBrowser.browserContentPane.table, rowBrowser);
-                    	levels.put(rowBrowser.browserContentPane.table, Integer.MAX_VALUE);
                         collectVisibleTables(rowBrowser, 1);
                     }
                 }
@@ -2839,7 +2837,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
             private void collectVisibleTables(RowBrowser rowBrowser, int level) {
                 Integer prevLevel = levels.get(rowBrowser.browserContentPane.table);
-                if (prevLevel == null || prevLevel < level) {
+                if (prevLevel == null || prevLevel > level) {
                 	visibleTables.put(rowBrowser.browserContentPane.table, rowBrowser);
                 	levels.put(rowBrowser.browserContentPane.table, level);
                 }
