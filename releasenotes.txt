@@ -1,3 +1,6 @@
+7.9.5
+  - Further usability improvements of the data browser.
+
 7.9.4
   - Comprehensive usability improvements of the data browser.
     - Animated row-to-row links.
