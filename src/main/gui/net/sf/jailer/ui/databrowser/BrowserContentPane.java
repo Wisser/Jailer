@@ -934,6 +934,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (source == rowsTable) {
 						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
 					} else if (source == rowsTableScrollPane) {
+						if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() <= 1) {
+							return;
+						}
 						ri = rowsTable.getRowSorter().getViewRowCount() - 1;
 						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
 					}
@@ -1526,42 +1529,45 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					popup.addSeparator();
 					JMenu script = new JMenu("Create Script");
 					popup.add(script);
-					script.add(insert);
-					script.add(update);
-					script.add(delete);
-					JMenuItem inserts = new JMenuItem("Inserts (all rows)");
-					script.add(inserts);
-					final String tableName = dataModel.getDisplayName(table);
-					inserts.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							openSQLDialog("Insert Into " + tableName, x, y, new Object() { @Override
-							public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), session); }});
-						}
-					});
-					JMenuItem updates = new JMenuItem("Updates (all rows)");
-					script.add(updates);
-					updates.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							openSQLDialog("Update " + tableName, x, y,  new Object() { @Override
-							public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(rows), session); }});
-						}
-					});
-					JMenuItem deletes = new JMenuItem("Deletes (all rows)");
-					script.add(deletes);
-					deletes.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							openSQLDialog("Delete from " + tableName, x, y,  new Object() { @Override
-							public String toString() { return SQLDMLBuilder.buildDelete(table, sortedAndFiltered(rows), session); }
-							});
-						}
-					});
-					inserts.setEnabled(rows.size() > 0);
-					updates.setEnabled(rows.size() > 0);
-					deletes.setEnabled(rows.size() > 0);
-
+					if (table.getName() == null) {
+						script.setEnabled(false);
+					} else {
+						script.add(insert);
+						script.add(update);
+						script.add(delete);
+						JMenuItem inserts = new JMenuItem("Inserts (all rows)");
+						script.add(inserts);
+						final String tableName = dataModel.getDisplayName(table);
+						inserts.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								openSQLDialog("Insert Into " + tableName, x, y, new Object() { @Override
+								public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), session); }});
+							}
+						});
+						JMenuItem updates = new JMenuItem("Updates (all rows)");
+						script.add(updates);
+						updates.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								openSQLDialog("Update " + tableName, x, y,  new Object() { @Override
+								public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(rows), session); }});
+							}
+						});
+						JMenuItem deletes = new JMenuItem("Deletes (all rows)");
+						script.add(deletes);
+						deletes.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								openSQLDialog("Delete from " + tableName, x, y,  new Object() { @Override
+								public String toString() { return SQLDMLBuilder.buildDelete(table, sortedAndFiltered(rows), session); }
+								});
+							}
+						});
+						inserts.setEnabled(rows.size() > 0);
+						updates.setEnabled(rows.size() > 0);
+						deletes.setEnabled(rows.size() > 0);
+					}
 				} else {
 					popup.add(sql);
 				}
