@@ -32,12 +32,25 @@ public class Row {
 		this.rowId = rowId;
 		this.values = v;
 		this.primaryKey = primaryKey;
+		if (rowId.isEmpty()) {
+			synchronized (this) {
+				this.nonEmptyRowId = Long.toString(nextUniqueId++);
+			}
+		} else {
+			nonEmptyRowId = rowId;
+		}
 	}
 
 	/**
 	 * Unique ID, also serves as SQL predicate which identifies this row.
+	 * Empty string if row has no key.
 	 */
 	public final String rowId;
+	
+	/**
+	 * Unique ID. Equals rowId if it's not empty.
+	 */
+	public final String nonEmptyRowId;
 	
 	/**
 	 * Column values.
@@ -68,4 +81,6 @@ public class Row {
 		this.parentModelIndex = parentModelIndex;
 	}
 
+	private static long nextUniqueId = 0;
+	
 }
