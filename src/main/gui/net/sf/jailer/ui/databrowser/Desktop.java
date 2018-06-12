@@ -1795,7 +1795,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private long animationStep = 0;
 	long lastAnimationStepTime = 0;
-	final long STEP_DELAY = 70;  // TODO
+	final long STEP_DELAY = 70;
 
 	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow, Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inClosureRootPath, boolean isToParentLink) {
 		g2d.setColor(color);
