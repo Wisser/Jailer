@@ -143,7 +143,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private final Color BG1 = new Color(255, 255, 255);
 	private final Color BG2 = new Color(242, 255, 242);
 	private final Color BG3 = new Color(194, 228, 255);
-	private final Color BG3_2 = new Color(180, 216, 255);
+	private final Color BG3_2 = new Color(184, 220, 255);
 	private final Color FG1 = new Color(155, 0, 0);
 	private List<JLabel> labels = new ArrayList<JLabel>();
 	private List<Color> labelColors = new ArrayList<Color>();
