@@ -733,15 +733,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 for (int i = 0; i < metaData.getColumnCount(); ++i) {
                 	columnLabels[i] = metaData.getColumnLabel(i + 1);
                 }
-                ResultSetRenderer theMetaDataRenderer = null;
+                ResultSet theMetaDataResultSet = null;
                 String resultSetType = null;
                 try {
                     resultSetType = TabContentPanel.toType(metaData, session, executionContext);
-                	theMetaDataRenderer = new ResultSetRenderer(TabContentPanel.toMetaDataResultSet(metaData, session, executionContext), null, datamodel.get(), session, executionContext);
+                	theMetaDataResultSet = TabContentPanel.toMetaDataResultSet(metaData, session, executionContext);
 				} catch (Throwable e1) {
 					logger.info("error", e1);
 				}
-                final ResultSetRenderer metaDataRenderer = theMetaDataRenderer;
+                final ResultSet metaDataResultSet = theMetaDataResultSet;
                 final String finalResultSetType = resultSetType;
 				final Integer limit = (Integer) limitComboBox.getSelectedItem();
                 final List<Table> resultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
@@ -815,6 +815,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         loadJob.run();
                         JComponent rTabContainer = rb.getRowsTableContainer();
                         metaDataDetails.reset();
+						JComponent metaDataRenderer = null;
+		                try {
+							metaDataRenderer = new ResultSetRenderer(metaDataResultSet, null, datamodel.get(), session, executionContext);
+						} catch (Throwable e1) {
+							logger.info("error", e1);
+						}
 						final TabContentPanel tabContentPanel = 
                         		new TabContentPanel(rb.rowsCount, 
                         				metaDataRenderer,

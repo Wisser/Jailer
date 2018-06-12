@@ -548,6 +548,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		
 		initComponents();
+		loadingCauseLabel.setVisible(false);
+		
 		andCondition = new JComboBox();
 		andCondition.setEditable(true);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -934,7 +936,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (source == rowsTable) {
 						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
 					} else if (source == rowsTableScrollPane) {
-						if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() <= 1) {
+						if (e.getButton() == MouseEvent.BUTTON1 && (e.getClickCount() <= 1 || getQueryBuilderDialog() == null /* SQL Console */)) {
 							return;
 						}
 						ri = rowsTable.getRowSorter().getViewRowCount() - 1;
@@ -4692,9 +4694,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		} else {
 			suffix = "";
 		}
+		loadingCauseLabel.setVisible(false);
 		if ("table".equals(mode)) {
 			loadingPanel.setVisible(false);
-			loadingCauseLabel.setVisible(false);
 			rowsTable.setEnabled(true);
 		} else if ("loading".equals(mode)) {
 			mode = "table";
