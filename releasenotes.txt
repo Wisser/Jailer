@@ -1,4 +1,5 @@
 7.9.5
+  - Using working-table-scope "LOCAL_DATABASE" led to concurrency problems and connection leaks.
   - Further usability improvements of the data browser.
 
 7.9.4

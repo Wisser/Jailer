@@ -1112,7 +1112,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						List<String> args = new ArrayList<String>();
 						args.add(tmpFileName != null? tmpFileName : extractionModelEditor.extractionModelFile);
 						dbConnectionDialog.addDbArgs(args);
-						Session.closeTemporaryTableSession();
 						BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs()); 
 						Session session = SessionForUI.createSession(dataSource, dataSource.dbms, this);
 
@@ -1132,7 +1131,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	
 							ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, executionContext);
 							session.shutDown();
-							Session.closeTemporaryTableSession();
 							if (exportDialog.isOk()) {
 								exportDialog.fillCLIArgs(args);
 								List<String> ddlArgs = new ArrayList<String>();

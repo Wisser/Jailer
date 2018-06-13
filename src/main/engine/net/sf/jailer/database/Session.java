@@ -66,12 +66,12 @@ public class Session {
 	/**
 	 * The session in which temporary tables lives, if any.
 	 */
-	private static Connection temporaryTableSession = null;
+	private Connection temporaryTableSession = null;
 		
 	/**
 	 * Shared scope of temporary tables.
 	 */
-	private static WorkingTableScope temporaryTableScope;
+	private WorkingTableScope temporaryTableScope;
 	
 	/**
 	 * Scope of temporary tables.
@@ -240,10 +240,8 @@ public class Session {
 		this.dbms = dbms;
 		this.dbUrl = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUrl : null;
 		this.schema = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUser : "";
-		if (scope != null) {
-			closeTemporaryTableSession();
-			temporaryTableScope = scope;
-		}
+		this.temporaryTableScope = scope;
+
 		connectionFactory = new ConnectionFactory() {
 			private Connection defaultConnection = null;
 			private Random random = new Random();
@@ -291,7 +289,7 @@ public class Session {
 					} catch (SQLException e) {
 						_log.info("can't set isolation level to UR. Reason: " + e.getMessage());
 					}
-					if (scope != null && scope != WorkingTableScope.GLOBAL) {
+					if (scope == WorkingTableScope.SESSION_LOCAL || scope == WorkingTableScope.TRANSACTION_LOCAL) {
 						temporaryTableSession = con;
 					} else {
 						connection.set(con);
@@ -793,6 +791,7 @@ public class Session {
 		for (Connection con: connections) {
 			con.close();
 		}
+		closeTemporaryTableSession();
 		_log.info("connection closed");
 	}
 	
@@ -849,7 +848,7 @@ public class Session {
 	/**
 	 * Closes the session in which temporary tables lives, if any.
 	 */
-	public static void closeTemporaryTableSession() {
+	private void closeTemporaryTableSession() {
 		try {
 			if (temporaryTableSession != null) {
 				if (temporaryTableScope == WorkingTableScope.TRANSACTION_LOCAL) {

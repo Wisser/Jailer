@@ -1530,7 +1530,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	@Override
 	public void shutDown() throws SQLException {
-		localSession.shutDown();
+		remoteSession.shutDown();
 	}
 
 	@Override

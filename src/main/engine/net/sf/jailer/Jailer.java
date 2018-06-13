@@ -131,7 +131,6 @@ public class Jailer {
 	 */
 	public static boolean jailerMain(String[] args, StringBuffer warnings, ProgressListener progressListener) throws Exception {
 		CancellationHandler.reset(null);
-		Session.closeTemporaryTableSession();
 
 		try {
 			CommandLine commandLine = CommandLineParser.parse(args, false);
@@ -268,8 +267,6 @@ public class Jailer {
 			String workingDirectory = System.getProperty("user.dir");
 			_log.error("working directory is " + workingDirectory);
 			throw e;
-		} finally {
-			Session.closeTemporaryTableSession();
 		}
 	}
 
