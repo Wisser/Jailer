@@ -91,7 +91,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
-import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
@@ -653,6 +652,7 @@ public class DataBrowser extends javax.swing.JFrame {
                     public void run() {
                         try {
                             rb.internalFrame.setSelected(true);
+                            desktop.getiFrameStateChangeRenderer().onIFrameSelected(rb.internalFrame);
                         } catch (PropertyVetoException e) {
                             // ignore
                         }
@@ -2665,6 +2665,7 @@ public class DataBrowser extends javax.swing.JFrame {
             if (currentSelection != null) {
                 try {
                     currentSelection.setSelected(true);
+                    desktop.getiFrameStateChangeRenderer().onIFrameSelected(currentSelection);
                 } catch (PropertyVetoException e) {
                     // ignore
                 }
@@ -2763,6 +2764,7 @@ public class DataBrowser extends javax.swing.JFrame {
                                 desktop.scrollToCenter(iFrame);
                                 iFrame.setSelected(true);
                                 iFrame.grabFocus();
+                                desktop.getiFrameStateChangeRenderer().onIFrameSelected(iFrame);
                             } catch (PropertyVetoException e1) {
                                 // ignore
                             }
@@ -2851,6 +2853,7 @@ public class DataBrowser extends javax.swing.JFrame {
             	RowBrowser rb = visibleTables.get(table);
             	if (rb != null) {
             		desktop.scrollToCenter(rb.internalFrame);
+            		desktop.getiFrameStateChangeRenderer().onIFrameSelected(rb.internalFrame);
             	}
         	}
 
@@ -2875,6 +2878,7 @@ public class DataBrowser extends javax.swing.JFrame {
         		Association[] associations = openAssociationPathPanel(path.subList(0, i + 1));
         		if (associations != null) {
         			try {
+        				desktop.getiFrameStateChangeRenderer().startAtomic();
         				disableBorderBrowserUpdates = true;
         	            suppressUpdateClosureBrowser = true;
 	            		while (i > 0) {
@@ -2897,6 +2901,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					} finally {
 						disableBorderBrowserUpdates = false;
 			            suppressUpdateClosureBrowser = false;
+        				desktop.getiFrameStateChangeRenderer().endAtomic();
 					}
 	            	closureView.find(getDataModel().getDisplayName(path.get(0)));
         		}
@@ -2912,6 +2917,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							 desktop.scrollToCenter(iFrame);
 							 iFrame.setSelected(true);
 							 iFrame.grabFocus();
+							 desktop.getiFrameStateChangeRenderer().onIFrameSelected(iFrame);
 						 }
 					 }
                 } catch (PropertyVetoException e1) {

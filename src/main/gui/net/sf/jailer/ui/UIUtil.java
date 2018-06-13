@@ -961,5 +961,19 @@ public class UIUtil {
 			return text;
 		}
 	}
+
+	public static void invokeLater(final int ticks, final Runnable runnable) {
+		SwingUtilities.invokeLater(new Runnable() {
+			int count = ticks;
+			@Override
+			public void run() {
+				if (--count <= 0) {
+					runnable.run();
+				} else {
+					SwingUtilities.invokeLater(this);			
+				}
+			}
+		});
+	}
 	
 }

@@ -173,6 +173,11 @@ public abstract class Desktop extends JDesktopPane {
 	private RowsClosure rowsClosure = new RowsClosure();
 
 	private final QueryBuilderDialog queryBuilderDialog;
+	private final DesktopIFrameStateChangeRenderer iFrameStateChangeRenderer = new DesktopIFrameStateChangeRenderer();
+	
+	public DesktopIFrameStateChangeRenderer getiFrameStateChangeRenderer() {
+		return iFrameStateChangeRenderer;
+	}
 
 	private Method getPreciseWheelRotation; 
 	
@@ -959,6 +964,9 @@ public abstract class Desktop extends JDesktopPane {
 		browserContentPane.andCondition.grabFocus();
 		updateMenu();
 		onLayoutChanged(false, true);
+		
+		iFrameStateChangeRenderer.onNewIFrame(jInternalFrame);
+		
 		return tableBrowser;
 	}
 
@@ -1751,6 +1759,7 @@ public abstract class Desktop extends JDesktopPane {
 						}
 					}
 				}
+				iFrameStateChangeRenderer.render(g2d);
 			}
 		}
 		paintDuration = System.currentTimeMillis() - startTime;
@@ -2677,112 +2686,118 @@ public abstract class Desktop extends JDesktopPane {
 	 * Restores browser session.
 	 */
 	private void restoreSession(RowBrowser toBeAppended, Component pFrame, String sFile) throws Exception {
-		String tbaPeerID = null;
-		Map<String, RowBrowser> rbByID = new HashMap<String, Desktop.RowBrowser>();
-		List<Line> lines = new CsvFile(new File(sFile)).getLines();
-		if (toBeAppended == null) {
-			closeAll();
-		}
-		Collection<RowBrowser> toBeLoaded = new ArrayList<Desktop.RowBrowser>();
-		List<String> unknownTables = new ArrayList<String>();
-		KnownIdentifierMap knownTablesMap = new KnownIdentifierMap();
-		for (Table table: datamodel.get().getTables()) {
-			knownTablesMap.putTableName(table.getName());
-		}
-		for (CsvFile.Line l : lines) {
-			if (l.cells.get(0).equals("Layout")) {
-				try {
-					if (toBeAppended == null) {
-						layoutMode = LayoutMode.valueOf(l.cells.get(1));
-						updateMenu(layoutMode);
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				continue;
-			}
+		try {
+			iFrameStateChangeRenderer.startAtomic();
 
-			String id = l.cells.get(0);
-			String parent = l.cells.get(1);
-			String where = l.cells.get(2);
-			Point loc = new Point(Integer.parseInt(l.cells.get(3)), Integer.parseInt(l.cells.get(4)));
-			Dimension size = new Dimension(Integer.parseInt(l.cells.get(5)), Integer.parseInt(l.cells.get(6)));
-			int limit = Integer.parseInt(l.cells.get(7));
-			boolean selectDistinct = Boolean.parseBoolean(l.cells.get(8));
-			RowBrowser rb = null;
-			if ("T".equals(l.cells.get(9))) {
-				Table table = datamodel.get().getTable(l.cells.get(10));
-				if (table == null) {
-					String kt = knownTablesMap.getTableName(l.cells.get(10));
-					if (kt != null) {
-						table = datamodel.get().getTable(kt);
+			String tbaPeerID = null;
+			Map<String, RowBrowser> rbByID = new HashMap<String, Desktop.RowBrowser>();
+			List<Line> lines = new CsvFile(new File(sFile)).getLines();
+			if (toBeAppended == null) {
+				closeAll();
+			}
+			Collection<RowBrowser> toBeLoaded = new ArrayList<Desktop.RowBrowser>();
+			List<String> unknownTables = new ArrayList<String>();
+			KnownIdentifierMap knownTablesMap = new KnownIdentifierMap();
+			for (Table table: datamodel.get().getTables()) {
+				knownTablesMap.putTableName(table.getName());
+			}
+			for (CsvFile.Line l : lines) {
+				if (l.cells.get(0).equals("Layout")) {
+					try {
+						if (toBeAppended == null) {
+							layoutMode = LayoutMode.valueOf(l.cells.get(1));
+							updateMenu(layoutMode);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
+					continue;
 				}
-				if (table == null) {
-					unknownTables.add(l.cells.get(10));
-				} else {
-					Association association = datamodel.get().namedAssociations.get(l.cells.get(11));
-					RowBrowser parentRB = rbByID.get(parent);
-					if (association == null) {
-						parentRB = null;
+	
+				String id = l.cells.get(0);
+				String parent = l.cells.get(1);
+				String where = l.cells.get(2);
+				Point loc = new Point(Integer.parseInt(l.cells.get(3)), Integer.parseInt(l.cells.get(4)));
+				Dimension size = new Dimension(Integer.parseInt(l.cells.get(5)), Integer.parseInt(l.cells.get(6)));
+				int limit = Integer.parseInt(l.cells.get(7));
+				boolean selectDistinct = Boolean.parseBoolean(l.cells.get(8));
+				RowBrowser rb = null;
+				if ("T".equals(l.cells.get(9))) {
+					Table table = datamodel.get().getTable(l.cells.get(10));
+					if (table == null) {
+						String kt = knownTablesMap.getTableName(l.cells.get(10));
+						if (kt != null) {
+							table = datamodel.get().getTable(kt);
+						}
 					}
-					boolean add = true;
-					if (toBeAppended != null) {
-						if (tbaPeerID == null) {
-							add = false;
-							if (parent.trim().length() == 0 && table.equals(toBeAppended.browserContentPane.table)) {
-								tbaPeerID = id;
-							}
-						} else {
-							if (tbaPeerID.equals(parent)) {
-								parentRB = toBeAppended;
-							} else if (!rbByID.containsKey(parent)) {
+					if (table == null) {
+						unknownTables.add(l.cells.get(10));
+					} else {
+						Association association = datamodel.get().namedAssociations.get(l.cells.get(11));
+						RowBrowser parentRB = rbByID.get(parent);
+						if (association == null) {
+							parentRB = null;
+						}
+						boolean add = true;
+						if (toBeAppended != null) {
+							if (tbaPeerID == null) {
 								add = false;
+								if (parent.trim().length() == 0 && table.equals(toBeAppended.browserContentPane.table)) {
+									tbaPeerID = id;
+								}
+							} else {
+								if (tbaPeerID.equals(parent)) {
+									parentRB = toBeAppended;
+								} else if (!rbByID.containsKey(parent)) {
+									add = false;
+								}
+							}
+						}
+						if (add) {
+							rb = addTableBrowser(parentRB, parentRB, -1, table, parentRB != null ? association : null, where, limit, selectDistinct, false);
+							if (id.length() > 0) {
+								rbByID.put(id, rb);
+							}
+							if (parentRB == null || parentRB == toBeAppended) {
+								toBeLoaded.add(rb);
 							}
 						}
 					}
-					if (add) {
-						rb = addTableBrowser(parentRB, parentRB, -1, table, parentRB != null ? association : null, where, limit, selectDistinct, false);
-						if (id.length() > 0) {
-							rbByID.put(id, rb);
-						}
-						if (parentRB == null || parentRB == toBeAppended) {
-							toBeLoaded.add(rb);
-						}
+				} else {
+					if (toBeAppended == null) {
+						rb = addTableBrowser(null, null, 0, null, null, where, limit, selectDistinct, false);
+						toBeLoaded.add(rb);
 					}
 				}
-			} else {
-				if (toBeAppended == null) {
-					rb = addTableBrowser(null, null, 0, null, null, where, limit, selectDistinct, false);
-					toBeLoaded.add(rb);
+				if (rb != null) {
+					rb.setHidden(Boolean.parseBoolean(l.cells.get(12)));
+					if (toBeAppended == null) {
+						rb.internalFrame.setLocation(loc);
+						rb.internalFrame.setSize(size);
+					}
 				}
 			}
-			if (rb != null) {
-				rb.setHidden(Boolean.parseBoolean(l.cells.get(12)));
-				if (toBeAppended == null) {
-					rb.internalFrame.setLocation(loc);
-					rb.internalFrame.setSize(size);
+			checkDesktopSize();
+			makePrimaryRootVisible();
+	
+			for (RowBrowser rb : toBeLoaded) {
+				rb.browserContentPane.reloadRows();
+			}
+			
+			onLayoutChanged(true, true);		
+			
+			if (toBeAppended != null && toBeLoaded.isEmpty()) {
+				JOptionPane.showMessageDialog(pFrame,
+						"Layout doesn't contain table \"" + datamodel.get().getDisplayName(toBeAppended.browserContentPane.table) + "\" as root.");
+			} else if (!unknownTables.isEmpty()) {
+				String pList = "";
+				for (String ut : unknownTables) {
+					pList += ut + "\n";
 				}
+				JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
 			}
-		}
-		checkDesktopSize();
-		makePrimaryRootVisible();
-
-		for (RowBrowser rb : toBeLoaded) {
-			rb.browserContentPane.reloadRows();
-		}
-		
-		onLayoutChanged(true, true);		
-		
-		if (toBeAppended != null && toBeLoaded.isEmpty()) {
-			JOptionPane.showMessageDialog(pFrame,
-					"Layout doesn't contain table \"" + datamodel.get().getDisplayName(toBeAppended.browserContentPane.table) + "\" as root.");
-		} else if (!unknownTables.isEmpty()) {
-			String pList = "";
-			for (String ut : unknownTables) {
-				pList += ut + "\n";
-			}
-			JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
+		} finally {
+			iFrameStateChangeRenderer.rollbackAtomic();
 		}
 	}
 
