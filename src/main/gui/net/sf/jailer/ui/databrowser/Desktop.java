@@ -965,8 +965,18 @@ public abstract class Desktop extends JDesktopPane {
 		updateMenu();
 		onLayoutChanged(false, true);
 		
-		iFrameStateChangeRenderer.onNewIFrame(jInternalFrame);
-		
+		if (tableBrowsers.size() > 1) {
+			iFrameStateChangeRenderer.onNewIFrame(jInternalFrame);
+		}
+		jInternalFrame.addPropertyChangeListener(JInternalFrame.IS_SELECTED_PROPERTY, new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (Boolean.TRUE.equals(evt.getNewValue())) {
+					iFrameStateChangeRenderer.onIFrameSelected(jInternalFrame, 0.7);
+				}
+			}
+		});
+
 		return tableBrowser;
 	}
 

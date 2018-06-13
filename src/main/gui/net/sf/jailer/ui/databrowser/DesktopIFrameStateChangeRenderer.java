@@ -39,13 +39,13 @@ import net.sf.jailer.ui.UIUtil;
  */
 public class DesktopIFrameStateChangeRenderer {
 	
-	private final double DURATION = 2000.0;
+	private final double DURATION = 1000.0;
 	private List<JInternalFrame> atomicBlock = null;
 	
 	private class StateChange {
 		JInternalFrame iFrame;
 		long startTime;
-		boolean fast = false;
+		double factorOffset = 0;
 	}
 	
 	private Map<JInternalFrame, StateChange> stateChanges = new LinkedHashMap<JInternalFrame, StateChange>();
@@ -65,27 +65,27 @@ public class DesktopIFrameStateChangeRenderer {
 			});
 		}
 	}
-
+ 
 	public void onIFrameSelected(JInternalFrame iFrame) {
+		onIFrameSelected(iFrame, 0);
+	}
+
+	public void onIFrameSelected(JInternalFrame iFrame, double factorOffset) {
 		if (atomicBlock == null) {
 			StateChange stateChange = new StateChange();
 			stateChange.iFrame = iFrame;
 			stateChange.startTime = System.currentTimeMillis();
-			stateChange.fast = true;
+			stateChange.factorOffset = factorOffset;
 			stateChanges.put(iFrame, stateChange);
 		}
 	}
 	
 	public void render(Graphics2D g2d) {
-		final double FF = 0.3;
-		
 		for (Iterator<Entry<JInternalFrame, StateChange>> iter = stateChanges.entrySet().iterator(); iter.hasNext(); ) {
 			StateChange stateChange = iter.next().getValue();
 			
 			double factor = (System.currentTimeMillis() - stateChange.startTime) / DURATION;
-			if (stateChange.fast) {
-				factor += FF;
-			}
+			factor += stateChange.factorOffset;
 			if (factor >= 1) {
 				iter.remove();
 				continue;
@@ -94,10 +94,10 @@ public class DesktopIFrameStateChangeRenderer {
 				factor = 0;
 			}
 			
-			Color color = new Color(0, 255, 255, (int) (255 * (1 - factor)));
+			Color color = new Color(255, 255, 0, (int) (200 * (1 - factor)));
 			g2d.setColor(color);
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			double width = stateChange.iFrame.getWidth() / 12 * ((stateChange.fast? (factor - FF) / (1 - FF) : factor) + 0.1);
+			double width = stateChange.iFrame.getWidth() / 12 * ((factor - stateChange.factorOffset) / (1 - stateChange.factorOffset) + 0.1);
 			BasicStroke stroke = new BasicStroke((float) width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 			g2d.setStroke(stroke);
 			
