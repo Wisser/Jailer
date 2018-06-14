@@ -983,7 +983,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (Boolean.TRUE.equals(evt.getNewValue())) {
-					iFrameStateChangeRenderer.onIFrameSelected(jInternalFrame, 0.8);
+					iFrameStateChangeRenderer.onIFrameSelected(jInternalFrame, 0.6);
 				}
 			}
 		});

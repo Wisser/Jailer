@@ -94,7 +94,7 @@ public class DesktopIFrameStateChangeRenderer {
 				factor = 0;
 			}
 			
-			Color color = new Color(255, 255, 0, (int) (200 * (1 - factor)));
+			Color color = new Color(255, 255, 0, (int) (170 * (1 - factor)));
 			g2d.setColor(color);
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			double width = stateChange.iFrame.getWidth() / 12 * ((factor - stateChange.factorOffset) / (1 - stateChange.factorOffset) + 0.1);
