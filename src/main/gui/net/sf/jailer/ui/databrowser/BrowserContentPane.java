@@ -1621,39 +1621,41 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		JMenu sqlDml = new JMenu("Create Script");
 		popup.add(sqlDml);
-		JMenuItem insertNewRow = new JMenuItem("Insert New Row");
+		JMenuItem insertNewRow = new JMenuItem("Insert new child");
 		insertNewRow.setEnabled(association != null);
 		sqlDml.add(insertNewRow);
 		final String tableName = dataModel.getDisplayName(table);
-		insertNewRow.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Row parent = null;
-				if (association.isInsertSourceBeforeDestination()) {
-					if (parentrow != null) {
-						parent = parentrow;
-					} else {
-						RowBrowser parentRowBrowser = getParentBrowser();
-						if (parentRowBrowser != null && parentRowBrowser.browserContentPane != null) {
-							BrowserContentPane parentContentPane = parentRowBrowser.browserContentPane;
-							if (parentContentPane.rows != null) {
-								if (parentContentPane.rows.size() == 1) {
-									parent = parentContentPane.rows.get(0);
-								} else {
-									if (parentContentPane.rowsClosure.currentClosureRowIDs != null) {
-										for (Row row: parentContentPane.rows) {
-											if (parentContentPane.rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(parentContentPane, row.nonEmptyRowId))) {
-												parent = row;
-												break;
-											}
-										}
+		Row parent = null;
+		if (association != null && association.isInsertSourceBeforeDestination()) {
+			if (parentrow != null) {
+				parent = parentrow;
+			} else {
+				RowBrowser parentRowBrowser = getParentBrowser();
+				if (parentRowBrowser != null && parentRowBrowser.browserContentPane != null) {
+					BrowserContentPane parentContentPane = parentRowBrowser.browserContentPane;
+					if (parentContentPane.rows != null) {
+						if (parentContentPane.rows.size() == 1) {
+							parent = parentContentPane.rows.get(0);
+						} else {
+							if (parentContentPane.rowsClosure.currentClosureRowIDs != null) {
+								for (Row row: parentContentPane.rows) {
+									if (parentContentPane.rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(parentContentPane, row.nonEmptyRowId))) {
+										parent = row;
+										break;
 									}
 								}
 							}
 						}
 					}
 				}
-				openSQLDialog("Insert New Row Into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, createNewRow(parent, table), true, session));
+			}
+		}
+		insertNewRow.setEnabled(parent != null);
+		final Row finalParent = parent;
+		insertNewRow.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				openSQLDialog("Insert new child into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, createNewRow(finalParent, table), true, session));
 			}
 		});
 		JMenuItem insert = new JMenuItem("Inserts");
@@ -1752,7 +1754,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		m.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				closeSubTree(BrowserContentPane.this);
+				Component parent = SwingUtilities.getWindowAncestor(BrowserContentPane.this);
+				if (parent == null) {
+					parent = BrowserContentPane.this;
+				}
+				parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				try {
+					closeSubTree(BrowserContentPane.this);
+				} finally {
+					parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				}
 			}
 			private void closeSubTree(BrowserContentPane cp) {
 				for (RowBrowser c: cp.getChildBrowsers()) {

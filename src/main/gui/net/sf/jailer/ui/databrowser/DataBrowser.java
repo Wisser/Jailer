@@ -1889,40 +1889,48 @@ public class DataBrowser extends javax.swing.JFrame {
     }// GEN-LAST:event_largeLayoutRadioButtonMenuItemActionPerformed
 
     private void navigationTreeMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_navigationTreeMouseClicked
-        if (evt.getButton() == MouseEvent.BUTTON3) {
-            if (evt.getClickCount() == 1) {
-                TreePath node = navigationTree.getPathForLocation(evt.getX(), evt.getY());
-                if (node == null) {
-                    for (int x = navigationTree.getWidth(); x > 0; x -= 32) {
-                        node = navigationTree.getPathForLocation(x, evt.getY());
-                        if (node != null) {
-                            break;
-                        }
-                    }
-                }
+        TreePath node = navigationTree.getPathForLocation(evt.getX(), evt.getY());
+        if (node == null) {
+            for (int x = navigationTree.getWidth(); x > 0; x -= 32) {
+                node = navigationTree.getPathForLocation(x, evt.getY());
                 if (node != null) {
-                    Object sel = node.getLastPathComponent();
-                    if (sel instanceof DefaultMutableTreeNode) {
-                        Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
-                        RowBrowser rowBrowser = null;
-                        int row = 0;
-                        if (selNode instanceof TreeNodeForRowBrowser) {
-                            rowBrowser = ((TreeNodeForRowBrowser) selNode).rowBrowser;
-                            row = ((TreeNodeForRowBrowser) selNode).rowIndex;
+                    break;
+                }
+            }
+        }
+        Object sel = null;
+        Object selNode = null; 
+        RowBrowser rowBrowser = null;
+        int row = 0;
+        if (node != null) {
+            sel = node.getLastPathComponent();
+            if (sel instanceof DefaultMutableTreeNode) {
+                selNode = ((DefaultMutableTreeNode) sel).getUserObject();
+                if (selNode instanceof TreeNodeForRowBrowser) {
+                    rowBrowser = ((TreeNodeForRowBrowser) selNode).rowBrowser;
+                    row = ((TreeNodeForRowBrowser) selNode).rowIndex;
+                }
+            }
+        }
+    	if (evt.getButton() == MouseEvent.BUTTON1) {
+    		if (rowBrowser != null) {
+    			desktop.scrollToCenter(rowBrowser.internalFrame);
+    			desktop.getiFrameStateChangeRenderer().onIFrameSelected(rowBrowser.internalFrame);
+    		}
+    	}
+    	if (evt.getButton() == MouseEvent.BUTTON3) {
+            if (evt.getClickCount() == 1) {
+                if (rowBrowser != null) {
+                    navigationTree.setSelectionRow(row);
+                    JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
+                    if (popup != null) {
+                        JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
+                        popup.add(new JSeparator());
+                        for (Component c : popup2.getComponents()) {
+                            popup.add(c);
                         }
-                        if (rowBrowser != null) {
-                            navigationTree.setSelectionRow(row);
-                            JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
-                            if (popup != null) {
-                                JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
-                                popup.add(new JSeparator());
-                                for (Component c : popup2.getComponents()) {
-                                    popup.add(c);
-                                }
-                                UIUtil.fit(popup);
-                                showPopup(evt.getComponent(), evt.getX(), evt.getY(), popup);
-                            }
-                        }
+                        UIUtil.fit(popup);
+                        showPopup(evt.getComponent(), evt.getX(), evt.getY(), popup);
                     }
                 }
             }
