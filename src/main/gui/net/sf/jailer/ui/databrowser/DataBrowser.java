@@ -2886,6 +2886,7 @@ public class DataBrowser extends javax.swing.JFrame {
         		Association[] associations = openAssociationPathPanel(path.subList(0, i + 1));
         		if (associations != null) {
         			try {
+						Desktop.noArrangeLayoutOnNewTableBrowser = true;
         				desktop.getiFrameStateChangeRenderer().startAtomic();
         				disableBorderBrowserUpdates = true;
         	            suppressUpdateClosureBrowser = true;
@@ -2907,9 +2908,11 @@ public class DataBrowser extends javax.swing.JFrame {
 					} catch (Exception e) {
 						// ignore
 					} finally {
+						Desktop.noArrangeLayoutOnNewTableBrowser = false;
 						disableBorderBrowserUpdates = false;
 			            suppressUpdateClosureBrowser = false;
         				desktop.getiFrameStateChangeRenderer().endAtomic();
+        				desktop.catchUpLastArrangeLayoutOnNewTableBrowser();
 					}
 	            	closureView.find(getDataModel().getDisplayName(path.get(0)));
         		}

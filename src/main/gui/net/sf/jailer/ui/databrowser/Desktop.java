@@ -466,6 +466,9 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, final RowBrowser origParent, int parentRowIndex, final Table table, final Association association,
 			String condition, Integer limit, Boolean selectDistinct, boolean reload) {
+		
+		long t = System.currentTimeMillis();
+		
 		Set<String> titles = new HashSet<String>();
 		for (RowBrowser rb : tableBrowsers) {
 			titles.add(rb.internalFrame.getTitle());
@@ -573,6 +576,7 @@ public abstract class Desktop extends JDesktopPane {
 		} else if (origParent != null) {
 			row = origParent.browserContentPane.rows.get(parentRowIndex);
 		}
+		
 		final BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, row, parent == null || parentRowIndex >= 0 ? null : parent.browserContentPane.rows,
 				association, parentFrame, rowsClosure, limit, selectDistinct, reload, executionContext) {
 
@@ -891,7 +895,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 		};
-
+		
 		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
 		java.awt.event.MouseWheelListener mouseWheelListener = new java.awt.event.MouseWheelListener() {
 			@Override
@@ -919,6 +923,7 @@ public abstract class Desktop extends JDesktopPane {
 		tableBrowsers.add(tableBrowser);
 
 		initIFrame(jInternalFrame, browserContentPane);
+		
 		jInternalFrame.addInternalFrameListener(new InternalFrameListener() {
 			@Override
 			public void internalFrameOpened(InternalFrameEvent e) {
@@ -955,16 +960,22 @@ public abstract class Desktop extends JDesktopPane {
 		});
 
 		checkDesktopSize();
-		this.scrollToCenter(jInternalFrame);
-		try {
-			jInternalFrame.setSelected(true);
-		} catch (PropertyVetoException e1) {
-			// ignore
-		}
-		browserContentPane.andCondition.grabFocus();
 		updateMenu();
-		onLayoutChanged(false, true);
 		
+		if (!noArrangeLayoutOnNewTableBrowser) {
+			this.scrollToCenter(jInternalFrame);
+			try {
+				jInternalFrame.setSelected(true);
+			} catch (PropertyVetoException e1) {
+				// ignore
+			}
+			browserContentPane.andCondition.grabFocus();
+			onLayoutChanged(false, true);
+		} else {
+			lastInternalFrame = jInternalFrame;
+			lastBrowserContentPane = browserContentPane;
+		}
+
 		if (tableBrowsers.size() > 1) {
 			iFrameStateChangeRenderer.onNewIFrame(jInternalFrame);
 		}
@@ -3102,6 +3113,26 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		});
 
+	static boolean noArrangeLayoutOnNewTableBrowser = false;
+	private JInternalFrame lastInternalFrame = null;
+	private BrowserContentPane lastBrowserContentPane = null;
+	public void catchUpLastArrangeLayoutOnNewTableBrowser() {
+		if (lastInternalFrame != null) {
+			this.scrollToCenter(lastInternalFrame);
+			try {
+				lastInternalFrame.setSelected(true);
+			} catch (PropertyVetoException e1) {
+				// ignore
+			}
+			if (lastBrowserContentPane != null) {
+				lastBrowserContentPane.andCondition.grabFocus();
+			}
+			onLayoutChanged(false, true);
+		}
+		lastInternalFrame = null;
+		lastBrowserContentPane = null;
+	}
+	
 	/**
 	 * Maximum number of concurrent DB connections.
 	 */

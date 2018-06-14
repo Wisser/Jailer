@@ -1269,10 +1269,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
-						for (ActionListener al: todoList) {
-							al.actionPerformed(e);
+						Desktop.noArrangeLayoutOnNewTableBrowser = true;
+						for (int i = 0; i < todoList.size(); ++i) {
+							if (i == todoList.size() - 1) {
+								Desktop.noArrangeLayoutOnNewTableBrowser = false;
+							}
+							todoList.get(i).actionPerformed(e);
 						}
 					} finally {
+						Desktop.noArrangeLayoutOnNewTableBrowser = false;
 						parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 					}
 				}
