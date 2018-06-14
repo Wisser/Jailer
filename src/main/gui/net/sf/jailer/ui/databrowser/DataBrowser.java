@@ -356,7 +356,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						}
 					} else {
 						if (((JLabel) render).getText().trim().length() > 0) {
-							icon = databaseIcon;
+							icon = navigationIcon;
 						}
 					}
 					((JLabel) render).setIcon(icon);
