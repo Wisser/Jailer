@@ -848,8 +848,8 @@
                             <Container class="javax.swing.JPanel" name="tablesPanel">
                               <Constraints>
                                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                                  <JTabbedPaneConstraints tabName="Tables">
-                                    <Property name="tabTitle" type="java.lang.String" value="Tables"/>
+                                  <JTabbedPaneConstraints tabName="Database">
+                                    <Property name="tabTitle" type="java.lang.String" value="Database"/>
                                   </JTabbedPaneConstraints>
                                 </Constraint>
                               </Constraints>

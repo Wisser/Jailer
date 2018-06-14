@@ -227,6 +227,10 @@ public class DataBrowser extends javax.swing.JFrame {
         autoLayoutMenuItem.setSelected(inAutoLayoutMode());
         workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
         workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.getTabCount() - 1, new JLabel(addSqlConsoleIcon));
+        
+        tableTreesTabbedPane.setTabComponentAt(0, new JLabel("Navigation", navigationIcon, JLabel.LEFT));
+        tableTreesTabbedPane.setTabComponentAt(1, new JLabel("Database", databaseIcon, JLabel.LEFT));
+
         initialized = true;
 
         tablesComboBox = new JComboBox<String>() {
@@ -1219,7 +1223,7 @@ public class DataBrowser extends javax.swing.JFrame {
         tableTreesTabbedPane.addTab("Navigation", navigationPanel);
 
         tablesPanel.setLayout(new java.awt.BorderLayout());
-        tableTreesTabbedPane.addTab("Tables", tablesPanel);
+        tableTreesTabbedPane.addTab("Database", tablesPanel);
 
         jSplitPane4.setLeftComponent(tableTreesTabbedPane);
 
@@ -3531,6 +3535,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private Icon closeIcon;
 	private ImageIcon sqlConsoleIcon;
 	private ImageIcon addSqlConsoleIcon;
+	private ImageIcon navigationIcon;
 	private ImageIcon desktopIcon;
 	{
         String dir = "/net/sf/jailer/ui/resource";
@@ -3546,6 +3551,7 @@ public class DataBrowser extends javax.swing.JFrame {
             sqlConsoleIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/runall.png"));
             desktopIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/tables.png"));
             addSqlConsoleIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/add.png"));
+            navigationIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/navigation.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
