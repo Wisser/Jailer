@@ -3114,8 +3114,8 @@ public abstract class Desktop extends JDesktopPane {
 		});
 
 	static boolean noArrangeLayoutOnNewTableBrowser = false;
-	private JInternalFrame lastInternalFrame = null;
-	private BrowserContentPane lastBrowserContentPane = null;
+	private static JInternalFrame lastInternalFrame = null;
+	private static BrowserContentPane lastBrowserContentPane = null;
 	public void catchUpLastArrangeLayoutOnNewTableBrowser() {
 		if (lastInternalFrame != null) {
 			this.scrollToCenter(lastInternalFrame);
@@ -3129,6 +3129,10 @@ public abstract class Desktop extends JDesktopPane {
 			}
 			onLayoutChanged(false, true);
 		}
+		resetLastArrangeLayoutOnNewTableBrowser();
+	}
+
+	public static void resetLastArrangeLayoutOnNewTableBrowser() {
 		lastInternalFrame = null;
 		lastBrowserContentPane = null;
 	}

@@ -1270,6 +1270,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
 						Desktop.noArrangeLayoutOnNewTableBrowser = true;
+						Desktop.resetLastArrangeLayoutOnNewTableBrowser();
 						for (int i = 0; i < todoList.size(); ++i) {
 							if (i == todoList.size() - 1) {
 								Desktop.noArrangeLayoutOnNewTableBrowser = false;
