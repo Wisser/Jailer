@@ -1567,8 +1567,16 @@ public abstract class Desktop extends JDesktopPane {
 								if (tableBrowser.browserContentPane.parentRow != null) {
 									destRowID = tableBrowser.browserContentPane.parentRow.nonEmptyRowId;
 								}
+								boolean inClosure = false;
+								
+								if (tableBrowser.parent != null && tableBrowser.browserContentPane.parentRow != null) {
+									if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.parent.browserContentPane, tableBrowser.browserContentPane.parentRow))) {
+										inClosure = true;
+									}
+								}
+								
 								Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
-										tableBrowser.x2, tableBrowser.y2, color1, color2, tableBrowser.parent == null || tableBrowser.rowIndex < 0, true, false);
+										tableBrowser.x2, tableBrowser.y2, color1, color2, tableBrowser.parent == null || tableBrowser.rowIndex < 0, true, inClosure);
 								List<Link> l = links.get(sourceRowID);
 								if (l == null) {
 									l = new ArrayList<Link>();
@@ -3094,9 +3102,6 @@ public abstract class Desktop extends JDesktopPane {
 				double y = rowBrowser.a.internalFrame.getY();
 				tablePos.put(table, new double[] { x * scaleX + scher * (2 * (rowBrowser.b.b % 2) - 1), y * scaleY + scher * (2 * (rowBrowser.b.a % 2) - 1),
 						1.0 });
-				// } else {
-				// double[] pos = tablePos.get(table);
-				// tablePos.put(table, new double[] { pos[0], pos[1], 0.0 });
 			}
 		}
 	}

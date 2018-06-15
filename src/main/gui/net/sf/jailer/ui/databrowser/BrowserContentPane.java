@@ -155,6 +155,7 @@ import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
+import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
@@ -1354,7 +1355,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				});
 			}
-			JMenu script = new JMenu("Create Script");
+			JMenu script = new JMenu("Create SQL");
 			script.setEnabled(false);
 			jPopupMenu.add(script);
 			jPopupMenu.addSeparator();
@@ -1502,7 +1503,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					});
 				}
 				
-				JMenu sql = new JMenu("Create Script");
+				JMenu sql = new JMenu("Create SQL");
 				final String rowName = !(table instanceof SqlStatementTable)? dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")" : "";
 				JMenuItem update = new JMenuItem("Update");
 				sql.add(update);
@@ -1510,14 +1511,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						openSQLDialog("Update Row " + rowName, x, y, SQLDMLBuilder.buildUpdate(table, row, true, session));
-					}
-				});
-				JMenuItem delete = new JMenuItem("Delete");
-				sql.add(delete);
-				delete.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						openSQLDialog("Delete Row " + rowName, x, y, SQLDMLBuilder.buildDelete(table, row, true, session));
 					}
 				});
 				JMenuItem insert = new JMenuItem("Insert");
@@ -1528,6 +1521,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						openSQLDialog("Insert Row " + rowName, x, y, SQLDMLBuilder.buildInsert(table, row, true, session));
 					}
 				});
+				JMenuItem insertNewRow = createInsertChildMenu(row, x, y);
+				sql.add(insertNewRow);
+				JMenuItem delete = new JMenuItem("Delete");
+				sql.add(delete);
+				delete.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						openSQLDialog("Delete Row " + rowName, x, y, SQLDMLBuilder.buildDelete(table, row, true, session));
+					}
+				});
 				insert.setEnabled(resultSetType == null);
 				update.setEnabled(resultSetType == null);
 				delete.setEnabled(resultSetType == null);
@@ -1535,24 +1538,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					popup.removeAll();
 					popup.add(det);
 					popup.addSeparator();
-					JMenu script = new JMenu("Create Script");
+					JMenu script = new JMenu("Create SQL");
 					popup.add(script);
 					if (table.getName() == null) {
 						script.setEnabled(false);
 					} else {
-						script.add(insert);
-						script.add(update);
-						script.add(delete);
-						JMenuItem inserts = new JMenuItem("Inserts (all rows)");
-						script.add(inserts);
 						final String tableName = dataModel.getDisplayName(table);
-						inserts.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								openSQLDialog("Insert Into " + tableName, x, y, new Object() { @Override
-								public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), session); }});
-							}
-						});
+						script.add(update);
+						script.add(insert);
+						script.add(insertNewRow);
+						script.add(delete);
+						script.addSeparator();
 						JMenuItem updates = new JMenuItem("Updates (all rows)");
 						script.add(updates);
 						updates.addActionListener(new ActionListener() {
@@ -1560,6 +1556,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							public void actionPerformed(ActionEvent e) {
 								openSQLDialog("Update " + tableName, x, y,  new Object() { @Override
 								public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(rows), session); }});
+							}
+						});
+						JMenuItem inserts = new JMenuItem("Inserts (all rows)");
+						script.add(inserts);
+						inserts.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								openSQLDialog("Insert Into " + tableName, x, y, new Object() { @Override
+								public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), session); }});
 							}
 						});
 						JMenuItem deletes = new JMenuItem("Deletes (all rows)");
@@ -1625,43 +1630,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				openQueryBuilder(true);
 			}
 		});
-		JMenu sqlDml = new JMenu("Create Script");
+		JMenu sqlDml = new JMenu("Create SQL");
 		popup.add(sqlDml);
-		JMenuItem insertNewRow = new JMenuItem("Insert new child");
-		insertNewRow.setEnabled(association != null);
-		sqlDml.add(insertNewRow);
 		final String tableName = dataModel.getDisplayName(table);
-		Row parent = null;
-		if (association != null && association.isInsertSourceBeforeDestination()) {
-			if (parentrow != null) {
-				parent = parentrow;
-			} else {
-				RowBrowser parentRowBrowser = getParentBrowser();
-				if (parentRowBrowser != null && parentRowBrowser.browserContentPane != null) {
-					BrowserContentPane parentContentPane = parentRowBrowser.browserContentPane;
-					if (parentContentPane.rows != null) {
-						if (parentContentPane.rows.size() == 1) {
-							parent = parentContentPane.rows.get(0);
-						} else {
-							if (parentContentPane.rowsClosure.currentClosureRowIDs != null) {
-								for (Row row: parentContentPane.rows) {
-									if (parentContentPane.rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(parentContentPane, row.nonEmptyRowId))) {
-										parent = row;
-										break;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		insertNewRow.setEnabled(parent != null);
-		final Row finalParent = parent;
-		insertNewRow.addActionListener(new ActionListener() {
+		JMenuItem update = new JMenuItem("Updates");
+		sqlDml.add(update);
+		update.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Insert new child into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, createNewRow(finalParent, table), true, session));
+				openSQLDialog("Update " + tableName, x, y,  new Object() { @Override
+				public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(rows), session); }});
 			}
 		});
 		JMenuItem insert = new JMenuItem("Inserts");
@@ -1671,15 +1649,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public void actionPerformed(ActionEvent e) {
 				openSQLDialog("Insert Into " + tableName, x, y, new Object() { @Override
 				public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), session); }});
-			}
-		});
-		JMenuItem update = new JMenuItem("Updates");
-		sqlDml.add(update);
-		update.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Update " + tableName, x, y,  new Object() { @Override
-				public String toString() { return SQLDMLBuilder.buildUpdate(table, sortedAndFiltered(rows), session); }});
 			}
 		});
 		JMenuItem delete = new JMenuItem("Deletes");
@@ -1806,6 +1775,69 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		popup.add(editMode);
 		return popup;
+	}
+
+	private JMenu createInsertChildMenu(Row row, final int x, final int y) {
+		JScrollMenu insertNewRow = new JScrollMenu("Insert Child");
+		if (table == null || table.getName() == null) {
+			insertNewRow.setEnabled(false);
+			return insertNewRow;
+		}
+		List<Association> tableAssociations = table.associations;
+		
+		if (tableAssociations == null || tableAssociations.isEmpty()) {
+			// artificial table from SQL Console?
+			Table t = dataModel.getTable(table.getName());
+			if (t == null) {
+				insertNewRow.setEnabled(false);
+				return insertNewRow;
+			}
+			tableAssociations = t.associations;
+		}
+
+		List<Association> assocs = new ArrayList<Association>();
+		Map<Association, Row> children = new HashMap<Association, Row>();
+
+		if (tableAssociations != null) {
+			for (Association association: tableAssociations) {
+				Row child = createNewRow(row, table, association);
+				if (child != null) {
+					assocs.add(association);
+					children.put(association, child);
+				}
+			}
+		}
+		Collections.sort(assocs, new Comparator<Association>() {
+			@Override
+			public int compare(Association a, Association b) {
+				String dNameA = dataModel.getDisplayName(a.destination);
+				String dNameB = dataModel.getDisplayName(b.destination);
+				return dNameA.compareTo(dNameB);
+			}
+		});
+		for (int i = 0; i < assocs.size(); ++i) {
+			final Association association = assocs.get(i);
+			Association pred = i > 0? assocs.get(i - 1) : null;
+			Association succ = i < assocs.size() - 1? assocs.get(i + 1) : null;
+			final String dName = dataModel.getDisplayName(association.destination);
+			JMenuItem item;
+			if (pred != null && pred.destination == association.destination || succ != null && succ.destination == association.destination) {
+				item = new JMenuItem(dName + " on " + association.getName());
+			} else {
+				item = new JMenuItem(dName);
+			}
+			final Row child = children.get(association); 
+			item.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					openSQLDialog("Insert Child into " + dName, x, y, SQLDMLBuilder.buildInsert(association.destination, child, true, session));
+				}
+			});
+			insertNewRow.add(item);
+		}
+		
+		insertNewRow.setEnabled(!assocs.isEmpty());
+		return insertNewRow;
 	}
 
 	void openExtractionModelEditor(boolean doExport) {
@@ -2225,7 +2257,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					return;
 				}
 			}
-			d = new JDialog(getOwner(), "Create Script - " + titel, true);
+			d = new JDialog(getOwner(), "Create SQL - " + titel, true);
 			d.getContentPane().add(new SQLDMLPanel(sqlString, getSqlConsole(false), session, getMetaDataSource(), 
 					new Runnable() {
 						@Override
@@ -4797,31 +4829,40 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param table the table of the new row
 	 * @return new row of table
 	 */
-	private Row createNewRow(Row parentrow, Table table) {
-		Row row = new Row("", null, new Object[table.getColumns().size()]);
-		if (parentrow != null && association != null) {
-			Map<Column, Column> sToDMap = association.createSourceToDestinationKeyMapping();
-			for (Map.Entry<Column, Column> e: sToDMap.entrySet()) {
-				int iS = -1;
-				for (int i = 0; i < association.source.getColumns().size(); ++i) {
-					if (e.getKey() == association.source.getColumns().get(i)) {
-						iS = i;
-						break;
+	private Row createNewRow(Row parentrow, Table table, Association association) {
+		try {
+			if (parentrow != null && association != null && association.isInsertSourceBeforeDestination()) {
+				Map<Column, Column> sToDMap = association.createSourceToDestinationKeyMapping();
+				if (!sToDMap.isEmpty()) {
+					Row row = new Row("", null, new Object[association.destination.getColumns().size()]);
+					for (Map.Entry<Column, Column> e: sToDMap.entrySet()) {
+						int iS = -1;
+						for (int i = 0; i < table.getColumns().size(); ++i) {
+							if (Quoting.equalsIgnoreQuotingAndCase(e.getKey().name, table.getColumns().get(i).name)) {
+								iS = i;
+								break;
+							}
+						}
+						int iD = -1;
+						for (int i = 0; i < association.destination.getColumns().size(); ++i) {
+							if (Quoting.equalsIgnoreQuotingAndCase(e.getValue().name, association.destination.getColumns().get(i).name)) {
+								iD = i;
+								break;
+							}
+						}
+						if (iS >= 0 && iD >= 0) {
+							row.values[iD] = parentrow.values[iS];
+						} else {
+							return null;
+						}
 					}
-				}
-				int iD = -1;
-				for (int i = 0; i < association.destination.getColumns().size(); ++i) {
-					if (e.getValue() == association.destination.getColumns().get(i)) {
-						iD = i;
-						break;
-					}
-				}
-				if (iS >= 0 && iD >= 0) {
-					row.values[iD] = parentrow.values[iS];
+					return row;
 				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		return row;
+		return null;
 	}
 
 	protected abstract void navigateTo(Association association, int rowIndex, Row row);
