@@ -4831,7 +4831,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	private Row createNewRow(Row parentrow, Table table, Association association) {
 		try {
-			if (parentrow != null && association != null && association.isInsertSourceBeforeDestination()) {
+			if (parentrow != null && association != null && !association.isInsertDestinationBeforeSource()) {
 				Map<Column, Column> sToDMap = association.createSourceToDestinationKeyMapping();
 				if (!sToDMap.isEmpty()) {
 					Row row = new Row("", null, new Object[association.destination.getColumns().size()]);
