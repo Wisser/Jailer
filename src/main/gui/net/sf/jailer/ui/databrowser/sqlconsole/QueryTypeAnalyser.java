@@ -424,7 +424,13 @@ public class QueryTypeAnalyser {
 			pkColumns.add(new net.sf.jailer.datamodel.Column(pk, "", 0, -1));
 		}
 		PrimaryKey primaryKey = new PrimaryKeyFactory().createPrimaryKey(pkColumns);
-		Table table = new Table((schemaName == null? "" : schemaName + ".") + tableName, primaryKey, false, false);
+		Table toTable = theTable.getMetaDataSource().toTable(theTable);
+		Table table;
+		if (toTable != null) {
+			table = new Table(toTable.getName(), primaryKey, false, false);
+		} else {
+			table = new Table((schemaName == null? "" : schemaName + ".") + tableName, primaryKey, false, false);
+		}
 		List<net.sf.jailer.datamodel.Column> columns = new ArrayList<net.sf.jailer.datamodel.Column>();
 		for (String pk: columnNames) {
 			columns.add(new net.sf.jailer.datamodel.Column(pk, "", 0, -1));
