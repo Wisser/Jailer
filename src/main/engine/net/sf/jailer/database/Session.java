@@ -967,4 +967,24 @@ public class Session {
 		}
 	}
 
+	/**
+	 * Checks SQL query.
+	 * 
+	 * @param sql 
+	 * @return <code>true</code> iff sql is executable without errors
+	 */
+	public boolean checkQuery(String sql) {
+		try {
+			executeQuery(sql, new AbstractResultSetReader() {
+				@Override
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					// nothing to do
+				}
+			});
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
+
 }

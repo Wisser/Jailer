@@ -200,6 +200,14 @@
             <Property name="text" type="java.lang.String" value="View"/>
           </Properties>
           <SubComponents>
+            <Menu class="javax.swing.JMenu" name="rowLimitMenu">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Row Limit"/>
+                <Property name="toolTipText" type="java.lang.String" value="Desktop Row Limit"/>
+              </Properties>
+            </Menu>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="columnOrderItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Column Ordering"/>

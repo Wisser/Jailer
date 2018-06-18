@@ -128,16 +128,25 @@ public class ResultSetRenderer extends javax.swing.JPanel {
     private javax.swing.JLabel titelLabel;
     // End of variables declaration//GEN-END:variables
     class ResultContentPane extends BrowserContentPane {
-        public ResultContentPane(DataModel dataModel, Table table, String condition, Session session, Row parentRow,
+    	private final Integer limit;
+    	public ResultContentPane(DataModel dataModel, Table table, String condition, Session session, Row parentRow,
                 List<Row> parentRows, Association association, Frame parentFrame,
                 RowsClosure rowsClosure, Integer limit, Boolean selectDistinct,
                 boolean reload, int maxColumnWidth, ExecutionContext executionContext) {
             super(dataModel, table, condition, session, parentRow, parentRows, association, parentFrame, 
-            		rowsClosure, limit, selectDistinct, reload, executionContext);
+            		rowsClosure, selectDistinct, reload, executionContext);
             singleRowDetailsViewTitel = "Details";
             this.maxColumnWidth = maxColumnWidth;
+            this.limit = limit;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
             rowsCount.setVisible(false);
+        }
+        @Override
+        protected int getReloadLimit() {
+        	if (limit == null) {
+        		return Integer.MAX_VALUE;
+        	}
+        	return limit;
         }
         @Override
         protected void unhide() {

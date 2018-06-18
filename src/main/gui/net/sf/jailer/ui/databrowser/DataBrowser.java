@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -197,7 +198,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	 * Allowed row limits.
 	 */
 	public static final Integer[] ROW_LIMITS = new Integer[] { 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 70000, 100000 };
-
+	public static final int ROW_LIMIT_DEFAULT = 500;
+	
     /**
      * Constructor.
      * 
@@ -224,6 +226,7 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
+        initRowLimitButtons();
         autoLayoutMenuItem.setSelected(inAutoLayoutMode());
         workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
         workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.getTabCount() - 1, new JLabel(addSqlConsoleIcon));
@@ -478,6 +481,16 @@ public class DataBrowser extends javax.swing.JFrame {
 					arrangeLayout(scrollToCenter);
 				}
 			}
+
+			@Override
+			protected int getRowLimit() {
+				for (Entry<JRadioButtonMenuItem, Integer> e: rowLimitButtonToLimit.entrySet()) {
+					if (e.getKey().isSelected()) {
+						return e.getValue();
+					}
+				}
+				return ROW_LIMIT_DEFAULT;
+			}
         };
 
         jScrollPane1.setViewportView(desktop);
@@ -649,7 +662,7 @@ public class DataBrowser extends javax.swing.JFrame {
         UIUtil.fit(this);
         
         if (root != null) {
-            final RowBrowser rb = desktop.addTableBrowser(null, null, 0, root, null, condition, null, null, true);
+            final RowBrowser rb = desktop.addTableBrowser(null, null, 0, root, null, condition, null, true);
             if (rb != null && rb.internalFrame != null) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -721,6 +734,40 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationTree.getSelectionModel().addTreeSelectionListener(treeListener);
         initDnD();
     }
+
+    private Map<JRadioButtonMenuItem, Integer> rowLimitButtonToLimit = new HashMap<JRadioButtonMenuItem, Integer>();
+    
+	private void initRowLimitButtons() {
+		ButtonGroup group = new ButtonGroup();
+		JRadioButtonMenuItem def = null;
+        for (final Integer limit: ROW_LIMITS) {
+        	JRadioButtonMenuItem item = new JRadioButtonMenuItem(limit.toString());
+        	group.add(item);
+        	rowLimitMenu.add(item);
+        	item.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+	        		try {
+	        			Component sc = workbenchTabbedPane.getSelectedComponent();
+	        			if (sc instanceof SQLConsole) {
+	        				SQLConsole sqlConsole = (SQLConsole) sc;
+	        				sqlConsole.setRowLimit(limit);
+	        			}
+						desktop.reloadRoots();
+					} catch (Exception e) {
+						UIUtil.showException(DataBrowser.this, "Error", e);
+					}
+				}
+			});
+        	rowLimitButtonToLimit.put(item, limit);
+        	if (limit == ROW_LIMIT_DEFAULT) {
+        		def = item;
+        	}
+		}
+        if (def != null) {
+        	def.setSelected(true);
+        }
+	}
 
 	@SuppressWarnings("unchecked")
 	public void updateNavigationCombobox() {
@@ -950,6 +997,8 @@ public class DataBrowser extends javax.swing.JFrame {
         showDataModelMenuItem = new javax.swing.JCheckBoxMenuItem();
         schemaMappingMenuItem = new javax.swing.JMenuItem();
         jviewMenu = new javax.swing.JMenu();
+        rowLimitMenu = new javax.swing.JMenu();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
         columnOrderItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         exportDataMenuItem = new javax.swing.JMenuItem();
@@ -1544,6 +1593,11 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jviewMenu.setText("View");
 
+        rowLimitMenu.setText("Row Limit");
+        rowLimitMenu.setToolTipText("Desktop Row Limit");
+        jviewMenu.add(rowLimitMenu);
+        jviewMenu.add(jSeparator2);
+
         columnOrderItem.setText("Column Ordering");
         columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1750,7 +1804,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private void openTableButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openTableButtonActionPerformed
     	if (tablesComboBox.getSelectedItem() != null) {
     		String tableName = tablesComboBox.getSelectedItem().toString();
-    		desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
+    		desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, true);
     		switchToDesktop();
     	}
     }//GEN-LAST:event_openTableButtonActionPerformed
@@ -1800,7 +1854,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected void openTableBrowser(Table source, String where) {
 				workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
-	    		desktop.addTableBrowser(null, null, 0, source, null, new BasicFormatterImpl().format(where), null, null, true);
+	    		desktop.addTableBrowser(null, null, 0, source, null, new BasicFormatterImpl().format(where), null, true);
 			}
 
 			@Override
@@ -1972,7 +2026,7 @@ public class DataBrowser extends javax.swing.JFrame {
         new NewTableBrowser(this, datamodel.get(), offerAlternatives) {
             @Override
             void openTableBrowser(String tableName) {
-                desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
+                desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, true);
         		switchToDesktop();
            }
 
@@ -2321,6 +2375,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JPopupMenu.Separator jSeparator11;
     private javax.swing.JPopupMenu.Separator jSeparator12;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -2354,6 +2409,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JButton openTableButton;
     private javax.swing.JMenuItem reconnectMenuItem;
     private javax.swing.JMenuItem restoreSessionItem;
+    private javax.swing.JMenu rowLimitMenu;
     private javax.swing.JMenuItem saveScriptAsMenuItem;
     private javax.swing.JMenuItem saveScriptMenuItem;
     private javax.swing.JMenuItem schemaMappingMenuItem;
@@ -2672,7 +2728,7 @@ public class DataBrowser extends javax.swing.JFrame {
             for (AssociationModel a : selection) {
                 BrowserAssociationModel associationModel = (BrowserAssociationModel) a;
                 desktop.addTableBrowser(associationModel.getRowBrowser(), associationModel.getRowBrowser(), -1, associationModel.getAssociation().destination, associationModel.getAssociation(),
-                        "", null, null, true);
+                        "", null, true);
             }
             if (currentSelection != null) {
                 try {
@@ -3033,7 +3089,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					protected void open(Table table) {
 						if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
 							if (workbenchTabbedPane.getSelectedComponent() != getCurrentSQLConsole()) {
-								desktop.addTableBrowser(null, null, 0, table, null, "", null, null, true);
+								desktop.addTableBrowser(null, null, 0, table, null, "", null, true);
 							}
 						}
 						try {

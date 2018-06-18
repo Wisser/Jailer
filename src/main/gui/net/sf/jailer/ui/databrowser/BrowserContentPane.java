@@ -187,6 +187,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		private boolean finished;
 		private final ResultSet inputResultSet;
 		private final RowBrowser parentBrowser;
+		public boolean closureLimitExceeded = false;
 		
 		public LoadJob(int limit, String andCond, RowBrowser parentBrowser, boolean selectDistinct) {
 			this.andCond = andCond;
@@ -283,7 +284,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						onContentChange(new ArrayList<Row>(), false);
 						BrowserContentPane.this.rows.clear();
 						BrowserContentPane.this.rows.addAll(rows);
-						updateTableModel(l, limitExceeded);
+						updateTableModel(l, limitExceeded, closureLimitExceeded);
 						Set<String> currentIDs = new TreeSet<String>();
 						long currentHash = 0;
 						if (rows != null) {
@@ -529,7 +530,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, List<Row> parentRows,
 			final Association association, Frame parentFrame, RowsClosure rowsClosure,
-			Integer limit, Boolean selectDistinct, boolean reload, ExecutionContext executionContext) {
+			Boolean selectDistinct, boolean reload, ExecutionContext executionContext) {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
@@ -1140,15 +1141,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						: javax.swing.border.BevelBorder.RAISED));
 			}
 		});
-		limitBox.setModel(new DefaultComboBoxModel(DataBrowser.ROW_LIMITS));
-		limitBox.setSelectedItem(association == null? 200 : 500);
-		if (limit != null) {
-			limitBox.setSelectedItem(limit);
-		}
 		if (selectDistinct != null) {
 			selectDistinctCheckBox.setSelected(selectDistinct);
 		}
-		updateTableModel(0, false);
+		updateTableModel(0, false, false);
 
 		suppressReload = false;
 		if (reload) {
@@ -1167,7 +1163,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (editor instanceof JComponent) {
 			registerAccelerator(ks, a, (JComponent) editor);
 		}
-		registerAccelerator(ks, a, limitBox);
 	}
 
 	private void registerAccelerator(KeyStroke ks, AbstractAction a, JComponent comp) {
@@ -2529,14 +2524,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 
-	protected int getReloadLimit() {
-		int limit = 100;
-		if (limitBox.getSelectedItem() instanceof Integer) {
-			limit = (Integer) limitBox.getSelectedItem();
-		}
-		return limit;
-	}
-
 	/**
 	 * Reload rows from {@link #table}.
 	 * 
@@ -2826,6 +2813,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					limit -= newRows.size();
 				}
 				if (limit <= 0) {
+					if (parentPane != null) {
+						if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(parentPane, pRow))) {
+							loadJob.closureLimitExceeded  = true;
+						}
+					}
 					break;
 				}
 			}
@@ -3313,6 +3305,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	private int lastLimit;
 	private boolean lastLimitExceeded;
+	private boolean lastClosureLimitExceeded;
 	
 	/**
 	 * Updates the model of the {@link #rowsTable}.
@@ -3322,7 +3315,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param limitExceeded 
 	 */
 	private void updateTableModel() {
-		updateTableModel(lastLimit, lastLimitExceeded);
+		updateTableModel(lastLimit, lastLimitExceeded, lastClosureLimitExceeded);
 	}
 	
 	/**
@@ -3332,9 +3325,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            row limit
 	 * @param limitExceeded 
 	 */
-	private void updateTableModel(int limit, boolean limitExceeded) {
+	private void updateTableModel(int limit, boolean limitExceeded, boolean closureLimitExceeded) {
 		lastLimit = limit;
 		lastLimitExceeded = limitExceeded;
+		lastClosureLimitExceeded = closureLimitExceeded;
 		pkColumns.clear();
 		List<Column> columns = rowIdSupport.getColumns(table);
 		String[] columnNames = new String[columns.size()];
@@ -3775,10 +3769,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		rowsCount.setText((limitExceeded ? " more than " : " ") + size + " row" + (size != 1 ? "s" : ""));
 		RowBrowser theParentWithExceededLimit = parentWithExceededLimit();
-		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? Color.RED : new JLabel().getForeground());
+		boolean cle = closureLimitExceeded;
+		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? (cle? Color.RED : new Color(100, 0, 0)) : new JLabel().getForeground());
 		
 		if (theParentWithExceededLimit == null) {
-			rowsCount.setToolTipText(null);
+			rowsCount.setToolTipText(cle? "row selection incomplete" : null);
 		} else {
 			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.internalFrame.getTitle() + " exceeded row limit");
 		}
@@ -4008,9 +4003,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         andLabel = new javax.swing.JLabel();
         openEditorLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        fetchLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        limitBox = new javax.swing.JComboBox();
         rrPanel = new javax.swing.JPanel();
         relatedRowsPanel = new javax.swing.JPanel();
         relatedRowsLabel = new javax.swing.JLabel();
@@ -4511,26 +4504,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel3, gridBagConstraints);
 
-        fetchLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
-        fetchLabel.setText(" Limit  ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(fetchLabel, gridBagConstraints);
-
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
-
-        limitBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        limitBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                limitBoxItemStateChanged(evt);
-            }
-        });
-        jPanel3.add(limitBox);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 9;
@@ -4562,7 +4536,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
         rrPanel.add(relatedRowsPanel, gridBagConstraints);
 
         sqlPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -4659,7 +4633,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JButton deselectButton;
     private javax.swing.JLabel dropA;
     private javax.swing.JLabel dropB;
-    private javax.swing.JLabel fetchLabel;
     private javax.swing.JLabel from;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -4689,7 +4662,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
-    javax.swing.JComboBox limitBox;
     public javax.swing.JButton loadButton;
     private javax.swing.JLabel loadingCauseLabel;
     private javax.swing.JLabel loadingLabel;
@@ -4914,6 +4886,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void reloadDataModel() throws Exception;
 	protected abstract MetaDataSource getMetaDataSource();
 	protected abstract void deselectChildrenIfNeededWithoutReload();
+	protected abstract int getReloadLimit();
 	
 	public interface RunnableWithPriority extends Runnable {
 		int getPriority();

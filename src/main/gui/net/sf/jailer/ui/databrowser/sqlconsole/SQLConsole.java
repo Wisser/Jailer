@@ -803,7 +803,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     @Override
                     public void run() {
                         final BrowserContentPane rb = new ResultContentPane(datamodel.get(), finalResultType, "", session, null, null,
-                                null, null, new RowsClosure(), limit, false, false, executionContext);
+                                null, null, new RowsClosure(), false, false, executionContext);
                         if (resultTypes != null && resultTypes.size() > 1) {
                             rb.setResultSetType(resultTypes);
                         }
@@ -1567,10 +1567,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     class ResultContentPane extends BrowserContentPane {
         public ResultContentPane(DataModel dataModel, Table table, String condition, Session session, Row parentRow,
                 List<Row> parentRows, Association association, Frame parentFrame,
-                RowsClosure rowsClosure, Integer limit, Boolean selectDistinct,
+                RowsClosure rowsClosure, Boolean selectDistinct,
                 boolean reload, ExecutionContext executionContext) {
             super(dataModel, table, condition, session, parentRow, parentRows, association, parentFrame, 
-            		rowsClosure, limit, selectDistinct, reload, executionContext);
+            		rowsClosure, selectDistinct, reload, executionContext);
             noSingleRowDetailsView = true;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
         }
@@ -2016,6 +2016,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	public boolean isEmpty() {
 		return editorPane.getDocument().getLength() == 0;
 	}
+	
+	/**
+	 * Sets the row limit.
+	 * 
+	 * @param limit the row limit
+	 */
+	public void setRowLimit(Integer limit) {
+		limitComboBox.setSelectedItem(limit);
+	}
 
 	private int initialContentSize;
 	private int initialContentHash;
@@ -2132,4 +2141,5 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             logger.info("error", e);
         }
     }
+
 }

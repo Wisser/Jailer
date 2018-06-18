@@ -226,11 +226,16 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		    	final int tableNameColumnIndex = 3;
 		    	final Set<String> pkNames = Collections.synchronizedSet(new HashSet<String>());
 		    	final BrowserContentPane rb = new BrowserContentPane(datamodel.get(), null, "", session, null, null,
-						null, null, new BrowserContentPane.RowsClosure(), 0, false, false, executionContext) {
+						null, null, new BrowserContentPane.RowsClosure(), false, false, executionContext) {
 		    		{
 		    			noSingleRowDetailsView = true;
 		    			rowsTableScrollPane.setWheelScrollingEnabled(true);
 		    		}
+		    		@Override
+		    		protected int getReloadLimit() {
+		    			return Integer.MAX_VALUE;
+		    		}
+
 		    		@Override
 					protected void unhide() {
 					}
