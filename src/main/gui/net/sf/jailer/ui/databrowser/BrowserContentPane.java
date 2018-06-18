@@ -2815,7 +2815,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (limit <= 0) {
 					if (parentPane != null) {
 						if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(parentPane, pRow))) {
-							loadJob.closureLimitExceeded  = true;
+							loadJob.closureLimitExceeded = true;
 						}
 					}
 					break;
@@ -3771,15 +3771,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsCount.setText((limitExceeded ? " more than " : " ") + size + " row" + (size != 1 ? "s" : ""));
 		RowBrowser theParentWithExceededLimit = parentWithExceededLimit();
 		boolean cle = closureLimitExceeded;
+		boolean cleRelevant = true;
 		if (theParentWithExceededLimit != null && theParentWithExceededLimit.browserContentPane.isClosureLimitExceeded) {
 			cle = true;
 		}
-		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? (cle? Color.RED : new Color(100, 0, 0)) : new JLabel().getForeground());
+		if (rowsClosure.parentPath.contains(this) || rowsClosure.currentClosureRowIDs.isEmpty()) {
+			cleRelevant = false;
+		}
+		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? (cle || !cleRelevant? Color.RED : new Color(100, 0, 0)) : new JLabel().getForeground());
 		
-		if (theParentWithExceededLimit == null) {
-			rowsCount.setToolTipText(cle? "row selection incomplete" : null);
-		} else {
+		if (cle && cleRelevant) {
+			rowsCount.setToolTipText("row selection incomplete");
+		} else if (!limitExceeded && theParentWithExceededLimit != null) {
 			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.internalFrame.getTitle() + " exceeded row limit");
+		} else {
+			rowsCount.setToolTipText(null);
 		}
 		
 		int nndr = noNonDistinctRows;
