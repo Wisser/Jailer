@@ -1042,6 +1042,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		relatedRowsLabel.setIcon(UIUtil.scaleIcon(this, relatedRowsIcon));
+		relatedRowsLabel.setFont(relatedRowsLabel.getFont().deriveFont(relatedRowsLabel.getFont().getSize() * 1.1f));
 		if (createPopupMenu(null, -1, 0, 0, false).getComponentCount() == 0) {
 			relatedRowsLabel.setEnabled(false);
 		} else {
@@ -4010,11 +4011,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         fetchLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         limitBox = new javax.swing.JComboBox();
+        rrPanel = new javax.swing.JPanel();
         relatedRowsPanel = new javax.swing.JPanel();
         relatedRowsLabel = new javax.swing.JLabel();
-        jPanel9 = new javax.swing.JPanel();
         sqlPanel = new javax.swing.JPanel();
         sqlLabel1 = new javax.swing.JLabel();
+        jPanel9 = new javax.swing.JPanel();
         dropA = new javax.swing.JLabel();
         dropB = new javax.swing.JLabel();
 
@@ -4053,7 +4055,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -4536,12 +4538,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jPanel3, gridBagConstraints);
 
+        rrPanel.setLayout(new java.awt.GridBagLayout());
+
         relatedRowsPanel.setBackground(new java.awt.Color(224, 240, 255));
         relatedRowsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         relatedRowsPanel.setLayout(new java.awt.GridBagLayout());
 
         relatedRowsLabel.setBackground(new java.awt.Color(224, 240, 255));
-        relatedRowsLabel.setText(" Related Rows   ");
+        relatedRowsLabel.setText(" Related Rows ");
         relatedRowsLabel.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -4552,22 +4556,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         relatedRowsPanel.add(relatedRowsLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridx = 7;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-        add(relatedRowsPanel, gridBagConstraints);
-
-        jPanel9.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-        add(jPanel9, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        rrPanel.add(relatedRowsPanel, gridBagConstraints);
 
         sqlPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         sqlPanel.setLayout(new javax.swing.BoxLayout(sqlPanel, javax.swing.BoxLayout.LINE_AXIS));
@@ -4577,11 +4573,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 8;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
-        add(sqlPanel, gridBagConstraints);
+        rrPanel.add(sqlPanel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 7;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        add(rrPanel, gridBagConstraints);
+
+        jPanel9.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        add(jPanel9, gridBagConstraints);
 
         dropA.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         dropA.setText("drop");
@@ -4694,6 +4706,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     public javax.swing.JTable rowsTable;
     private javax.swing.JPanel rowsTableContainerPanel;
     protected javax.swing.JScrollPane rowsTableScrollPane;
+    private javax.swing.JPanel rrPanel;
     javax.swing.JCheckBox selectDistinctCheckBox;
     private javax.swing.JPanel singleRowViewContainterPanel;
     private javax.swing.JPanel singleRowViewScrollContentPanel;
