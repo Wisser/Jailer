@@ -3013,7 +3013,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			boolean whereExists = false;
 			if (parentRows != null && !parentRows.isEmpty()) {
 				if (association != null && parentRows.get(0).rowId.length() == 0) {
-					throw new SqlException("Missing primary key for table: \"" + association.source.getName() + "\"   ", "", null);
+					throw new SqlException("Missing primary key for table: \"" + Quoting.staticUnquote(association.source.getName()) + "\"\n"
+							+ "Resolution: define the primary key manually using the data model editor.", "", null);
 				}
 				if (parentRows.size() == 1) {
 					sql += " Where (" + parentRows.get(0).rowId + ")";
