@@ -3792,7 +3792,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				cleRelevant = false;
 			}
 		}
-		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? (cle || !cleRelevant? Color.RED : new Color(140, 0, 0)) : new JLabel().getForeground());
+		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? (cle || !cleRelevant? Color.RED : new Color(120, 0, 0)) : new JLabel().getForeground());
 		
 		if (cle && cleRelevant) {
 			rowsCount.setToolTipText("row selection incomplete");
