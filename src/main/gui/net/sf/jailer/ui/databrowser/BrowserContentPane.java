@@ -551,6 +551,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		initComponents();
 		loadingCauseLabel.setVisible(false);
+		rowsCount.setFont(rowsCount.getFont().deriveFont(rowsCount.getFont().getStyle() | Font.BOLD));
 		
 		andCondition = new JComboBox();
 		andCondition.setEditable(true);
@@ -3772,13 +3773,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		RowBrowser theParentWithExceededLimit = parentWithExceededLimit();
 		boolean cle = closureLimitExceeded;
 		boolean cleRelevant = true;
-		if (theParentWithExceededLimit != null && theParentWithExceededLimit.browserContentPane.isClosureLimitExceeded) {
-			cle = true;
-		}
+//		if (theParentWithExceededLimit != null && theParentWithExceededLimit.browserContentPane.isClosureLimitExceeded) {
+//			cle = true;
+//		}
 		if (rowsClosure.parentPath.contains(this) || rowsClosure.currentClosureRowIDs.isEmpty()) {
 			cleRelevant = false;
+		} else if (getParentBrowser() != null) {
+		BrowserContentPane parent = getParentBrowser().browserContentPane;
+			boolean parentInClosure = false;
+			for (Pair<BrowserContentPane, String> rid: rowsClosure.currentClosureRowIDs) {
+				if (rid.a == parent) {
+					parentInClosure = true;
+					break;
+				}
+			}
+			if (!parentInClosure) {
+				cleRelevant = false;
+			}
 		}
-		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? (cle || !cleRelevant? Color.RED : new Color(100, 0, 0)) : new JLabel().getForeground());
+		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? (cle || !cleRelevant? Color.RED : new Color(140, 0, 0)) : new JLabel().getForeground());
 		
 		if (cle && cleRelevant) {
 			rowsCount.setToolTipText("row selection incomplete");
