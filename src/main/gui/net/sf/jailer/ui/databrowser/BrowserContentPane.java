@@ -3265,7 +3265,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * True if row-limit is exceeded.
 	 */
 	private boolean isLimitExceeded = false;
-
+	private boolean isClosureLimitExceeded = false;
+	
 	/**
 	 * Show single row in special view?
 	 */
@@ -3770,6 +3771,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsCount.setText((limitExceeded ? " more than " : " ") + size + " row" + (size != 1 ? "s" : ""));
 		RowBrowser theParentWithExceededLimit = parentWithExceededLimit();
 		boolean cle = closureLimitExceeded;
+		if (theParentWithExceededLimit != null && theParentWithExceededLimit.browserContentPane.isClosureLimitExceeded) {
+			cle = true;
+		}
 		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? (cle? Color.RED : new Color(100, 0, 0)) : new JLabel().getForeground());
 		
 		if (theParentWithExceededLimit == null) {
@@ -3843,6 +3847,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		isLimitExceeded = limitExceeded;
+		isClosureLimitExceeded = closureLimitExceeded;
 		appendClosure();
 	}
 
