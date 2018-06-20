@@ -1,7 +1,8 @@
 7.10
   - Comprehensive usability improvements of the data browser.
-    - Animated row-to-row links.
-    - Increased rendering quality of row-to-row link.
+  - Animated row-to-row links.
+  - Increased rendering quality of row-to-row link.
+  - Automatic layouting of data browser desktop.
   - Using working-table-scope "LOCAL_DATABASE" led to concurrency problems and connection leaks.
   - Update of SQL keyword catalog to SQL 2003 standard.
 
