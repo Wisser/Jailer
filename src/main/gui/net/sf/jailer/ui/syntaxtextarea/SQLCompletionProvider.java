@@ -908,7 +908,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 
                 if (wasSubselect && identifier != null) {
                 	if (outlineInfos != null) {
-                		if (inFrom && head.toString().trim().isEmpty() && !Quoting.UCSQL92KEYWORDS.contains(identifier.toUpperCase(Locale.ENGLISH))) {
+                		if (inFrom && head.toString().trim().isEmpty() && !Quoting.UCSQL2003KEYWORDS.contains(identifier.toUpperCase(Locale.ENGLISH))) {
 	                        int pos = matcher.start();
 	                        nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
 	                        OutlineInfo info = new OutlineInfo(null, identifier, level, pos, "");

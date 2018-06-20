@@ -551,7 +551,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		initComponents();
 		loadingCauseLabel.setVisible(false);
-		rowsCount.setFont(rowsCount.getFont().deriveFont(rowsCount.getFont().getStyle() | Font.BOLD));
 		
 		andCondition = new JComboBox();
 		andCondition.setEditable(true);
@@ -1451,7 +1450,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			});
 
 			if (!(table instanceof SqlStatementTable) || resultSetType != null) {
-				popup.add(new JSeparator());
+				if (popup.getComponentCount() > 0) {
+					popup.add(new JSeparator());
+				}
 
 				JMenuItem qb = new JMenuItem("Query Builder");
 				qb.setAccelerator(KS_QUERYBUILDER);
@@ -2634,7 +2635,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		noNonDistinctRows = 0;
 		noDistinctRows = 0;
 		
-		if (association != null && rowIdSupport.getPrimaryKey(association.source).getColumns().isEmpty()) {
+		if (association != null && rowIdSupport.getPrimaryKey(association.source, session).getColumns().isEmpty()) {
 			loadRowBlocks(inputResultSet, null, andCond, rows, loadJob, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
 		} else {
 			if (useInlineViewForResolvingAssociation(session)) {
@@ -2926,7 +2927,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (table instanceof SqlStatementTable || statementForReloading != null) {
 			sql = andCond;
 			if (!(table instanceof SqlStatementTable)) {
-				for (Column pk: rowIdSupport.getPrimaryKey(table).getColumns()) {
+				for (Column pk: rowIdSupport.getPrimaryKey(table, session).getColumns()) {
 					pkColumnNames.add(quoting.requote(pk.name));
 				}
 			} else {
@@ -2944,7 +2945,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			boolean f = true;
 			if (selectParentPK) {
 				int i = 0;
-				for (Column column: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
+				for (Column column: rowIdSupport.getPrimaryKey(association.source, session).getColumns()) {
 					String name = quoting.requote(column.name);
 					sql += (!f ? ", " : "") + "B." + name + " AS B" + i;
 					olapPrefix += (!f ? ", " : "") + "S.B" + i;
@@ -2956,7 +2957,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			int i = 0;
 			
-			for (Column column : rowIdSupport.getColumns(table)) {
+			for (Column column : rowIdSupport.getColumns(table, session)) {
 				String name = quoting.requote(column.name);
 				if (existingColumnsLowerCase != null && !rowIdSupport.isRowIdColumn(column) && !existingColumnsLowerCase.contains(quoting.unquote(name).toLowerCase())) {
 					sql += (!f ? ", " : "") + "'?' AS A" + i;
@@ -2974,7 +2975,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String olapOrderBy = "";
 			if (selectParentPK) {
 				int j = 0;
-				for (Column pk: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
+				for (Column pk: rowIdSupport.getPrimaryKey(association.source, session).getColumns()) {
 					parentPkColumnNames.add(quoting.requote(pk.name));
 					orderBy += (f ? "" : ", ") + "B." + quoting.requote(pk.name);
 					olapOrderBy += (f ? "" : ", ") + "S.B" + j;
@@ -2983,7 +2984,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			int j = 0;
-			for (Column pk: rowIdSupport.getPrimaryKey(table).getColumns()) {
+			for (Column pk: rowIdSupport.getPrimaryKey(table, session).getColumns()) {
 				pkColumnNames.add(quoting.requote(pk.name));
 				orderBy += (f ? "" : ", ") + "A." + quoting.requote(pk.name);
 				olapOrderBy += (f ? "" : ", ") + "S.A" + j;
@@ -3023,7 +3024,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (inlineViewStyle != null && association != null) {
 						sb.append(" join ");
 						List<String> columnNames = new ArrayList<String>();
-						for (Column pkColumn: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
+						for (Column pkColumn: rowIdSupport.getPrimaryKey(association.source, session).getColumns()) {
 							columnNames.add(pkColumn.name);
 						}
 						String[] columnNamesAsArray = columnNames.toArray(new String[columnNames.size()]);
@@ -3082,8 +3083,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (sql.length() > 0 || inputResultSet != null) {
 			final Map<Integer, Integer> pkPosToColumnPos = new HashMap<Integer, Integer>();
 			if (!(table instanceof SqlStatementTable) && statementForReloading == null) {
-				List<Column> pks = rowIdSupport.getPrimaryKey(table).getColumns();
-				List<Column> columns = rowIdSupport.getColumns(table);
+				List<Column> pks = rowIdSupport.getPrimaryKey(table, session).getColumns();
+				List<Column> columns = rowIdSupport.getColumns(table, session);
 				for (int i = 0; i < columns.size(); ++i) {
 					Column column = columns.get(i);
 					for (int j = 0; j < pks.size(); ++j) {
@@ -3124,8 +3125,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					int i = 1, vi = 0;
 					String parentRowId = "";
 					if (selectParentPK) {
-						Object v[] = new Object[rowIdSupport.getPrimaryKey(association.source).getColumns().size()];
-						for (Column column: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
+						Object v[] = new Object[rowIdSupport.getPrimaryKey(association.source, session).getColumns().size()];
+						for (Column column: rowIdSupport.getPrimaryKey(association.source, session).getColumns()) {
 							parentRowId = readRowFromResultSet(parentPkColumnNames, resultSet, i, vi, parentRowId, v, column, null, null, unknownColumnIndexes);
 							++i;
 							++vi;
@@ -3139,9 +3140,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Map<String, String> pkColumn = new HashMap<String, String>();
 					Map<String, String> pkColumnValue = new HashMap<String, String>();
 					
-					Object v[] = new Object[rowIdSupport.getColumns(table).size()];
+					Object v[] = new Object[rowIdSupport.getColumns(table, session).size()];
 					vi = 0;
-					for (Column column: rowIdSupport.getColumns(table)) {
+					for (Column column: rowIdSupport.getColumns(table, session)) {
 						readRowFromResultSet(pkColumnNames, resultSet, i, vi, "", v, column, pkColumn, pkColumnValue, unknownColumnIndexes);
 						++i;
 						++vi;
@@ -3149,7 +3150,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					
 					String rowId = "";
 					String[] primaryKey = null;
-					PrimaryKey primaryKeys = rowIdSupport.getPrimaryKey(table);
+					PrimaryKey primaryKeys = rowIdSupport.getPrimaryKey(table, session);
 					if (primaryKeys != null && resultSetType == null) {
 						int pkPos = 0;
 						primaryKey = new String[primaryKeys.getColumns().size()];
@@ -3333,11 +3334,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		lastLimitExceeded = limitExceeded;
 		lastClosureLimitExceeded = closureLimitExceeded;
 		pkColumns.clear();
-		List<Column> columns = rowIdSupport.getColumns(table);
+		List<Column> columns = rowIdSupport.getColumns(table, session);
 		String[] columnNames = new String[columns.size()];
 		final Set<String> pkColumnNames = new HashSet<String>();
-		if (rowIdSupport.getPrimaryKey(table) != null) {
-			for (Column pk : rowIdSupport.getPrimaryKey(table).getColumns()) {
+		if (rowIdSupport.getPrimaryKey(table, session) != null) {
+			for (Column pk : rowIdSupport.getPrimaryKey(table, session).getColumns()) {
 				pkColumnNames.add(pk.name);
 			}
 		}
@@ -3366,8 +3367,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		}
-		if (rowIdSupport.getPrimaryKey(table) != null) {
-			for (Column pk : rowIdSupport.getPrimaryKey(table).getColumns()) {
+		if (rowIdSupport.getPrimaryKey(table, session) != null) {
+			for (Column pk : rowIdSupport.getPrimaryKey(table, session).getColumns()) {
 				pkColumnNames.add(pk.name);
 			}
 		}
@@ -3708,7 +3709,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final boolean deselect = !currentSelectedRowCondition.equals("") 
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
-			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect) {
+			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, session) {
 				@Override
 				protected void onRowChanged(int row) {
 				}
@@ -3766,41 +3767,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		
 		rowsTable.setIntercellSpacing(new Dimension(0, 0));
-		int size = rows.size();
-		if (size > limit) {
-			size = limit;
+		Set<BrowserContentPane> browserInClosure = new HashSet<BrowserContentPane>();
+		for (Pair<BrowserContentPane, Row> rid: rowsClosure.currentClosure) {
+			browserInClosure.add(rid.a);
 		}
-		rowsCount.setText((limitExceeded ? " more than " : " ") + size + " row" + (size != 1 ? "s" : ""));
-		RowBrowser theParentWithExceededLimit = parentWithExceededLimit();
-		boolean cle = closureLimitExceeded;
-		boolean cleRelevant = true;
-//		if (theParentWithExceededLimit != null && theParentWithExceededLimit.browserContentPane.isClosureLimitExceeded) {
-//			cle = true;
-//		}
-		if (rowsClosure.parentPath.contains(this) || rowsClosure.currentClosureRowIDs.isEmpty()) {
-			cleRelevant = false;
-		} else if (getParentBrowser() != null) {
-		BrowserContentPane parent = getParentBrowser().browserContentPane;
-			boolean parentInClosure = false;
-			for (Pair<BrowserContentPane, String> rid: rowsClosure.currentClosureRowIDs) {
-				if (rid.a == parent) {
-					parentInClosure = true;
-					break;
-				}
-			}
-			if (!parentInClosure) {
-				cleRelevant = false;
-			}
-		}
-		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? (cle || !cleRelevant? Color.RED : new Color(120, 0, 0)) : new JLabel().getForeground());
-		
-		if (cle && cleRelevant) {
-			rowsCount.setToolTipText("row selection incomplete");
-		} else if (!limitExceeded && theParentWithExceededLimit != null) {
-			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.internalFrame.getTitle() + " exceeded row limit");
-		} else {
-			rowsCount.setToolTipText(null);
-		}
+		updateRowsCountLabel(browserInClosure);
 		
 		int nndr = noNonDistinctRows;
 		if (noDistinctRows + noNonDistinctRows >= limit) {
@@ -3869,6 +3840,56 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		isLimitExceeded = limitExceeded;
 		isClosureLimitExceeded = closureLimitExceeded;
 		appendClosure();
+	}
+
+	public void updateRowsCountLabel(Set<BrowserContentPane> browserInClosure) {
+		int limit = lastLimit;
+		boolean limitExceeded = lastLimitExceeded;
+		boolean closureLimitExceeded = lastClosureLimitExceeded;
+
+		int size = rows.size();
+		if (size > limit) {
+			size = limit;
+		}
+		rowsCount.setText((limitExceeded ? " more than " : " ") + size + " row" + (size != 1 ? "s" : ""));
+		RowBrowser theParentWithExceededLimit = parentWithExceededLimit();
+		boolean cle = closureLimitExceeded;
+		boolean cleRelevant = true;
+//		if (theParentWithExceededLimit != null && theParentWithExceededLimit.browserContentPane.isClosureLimitExceeded) {
+//			cle = true;
+//		}
+		if (rowsClosure.parentPath.contains(this) || rowsClosure.currentClosureRowIDs.isEmpty()) {
+			cleRelevant = false;
+		} else if (getParentBrowser() != null) {
+			BrowserContentPane parent = getParentBrowser().browserContentPane;
+			if (!browserInClosure.contains(parent)) {
+				cleRelevant = false;
+			}
+		}
+		boolean bold = false;
+		if (limitExceeded || theParentWithExceededLimit != null) {
+			if (cle || !cleRelevant) {
+				rowsCount.setForeground(Color.RED);
+				bold = true;
+			} else {
+				rowsCount.setForeground(new Color(140, 0, 0));
+			}
+		} else {
+			rowsCount.setForeground(new JLabel().getForeground());
+		}
+		if (bold) {
+			rowsCount.setFont(rowsCount.getFont().deriveFont(rowsCount.getFont().getStyle() | Font.BOLD));
+		} else {
+			rowsCount.setFont(rowsCount.getFont().deriveFont(rowsCount.getFont().getStyle() & ~Font.BOLD));
+		}
+		
+		if (cle && cleRelevant) {
+			rowsCount.setToolTipText("row selection incomplete");
+		} else if (!limitExceeded && theParentWithExceededLimit != null) {
+			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.internalFrame.getTitle() + " exceeded row limit");
+		} else {
+			rowsCount.setToolTipText(null);
+		}
 	}
 
 	private int getDefaultSortColumn() {
@@ -4932,7 +4953,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final boolean deselect = !currentSelectedRowCondition.equals("") 
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
-		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect) {
+		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, session) {
 			@Override
 			protected void onRowChanged(int row) {
 				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(row);
@@ -5004,7 +5025,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final boolean deselect = !currentSelectedRowCondition.equals("") 
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
-		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect) {
+		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, session) {
 			@Override
 			protected void onRowChanged(int row) {
 				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(row);

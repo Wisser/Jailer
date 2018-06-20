@@ -648,6 +648,19 @@ public abstract class Desktop extends JDesktopPane {
 				for (RowBrowser p = parent; p != null; p = p.parent) {
 					rowsClosure.parentPath.add(p.browserContentPane);
 				}
+				
+				try {
+					Set<BrowserContentPane> browserInClosure = new HashSet<BrowserContentPane>();
+					for (Pair<BrowserContentPane, Row> rid: rowsClosure.currentClosure) {
+						browserInClosure.add(rid.a);
+					}
+	
+					for (RowBrowser rb: tableBrowsers) {
+						rb.browserContentPane.updateRowsCountLabel(browserInClosure);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 
 			@Override

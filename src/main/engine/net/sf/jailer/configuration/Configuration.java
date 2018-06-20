@@ -113,6 +113,17 @@ public class Configuration {
 
 	private int columnsPerIFMTable = 8;
 
+
+	private String additionalSQLKeywords;
+
+	public String getAdditionalSQLKeywords() {
+		return additionalSQLKeywords;
+	}
+
+	public void setAdditionalSQLKeywords(String additionalSQLKeywords) {
+		this.additionalSQLKeywords = additionalSQLKeywords;
+	}
+
 	/**
 	 * Gets replacement for null in DBUnit datasets.
 	 * 
@@ -238,5 +249,4 @@ public class Configuration {
 	static {
 		DBMS.values(); // trigger static init
 	}
-
 }

@@ -40,6 +40,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableModel;
 
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
@@ -61,18 +62,20 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private final RowSorter<? extends TableModel> rowSorter;
 	private final RowIdSupport rowIdSupport;
 	private final boolean showSpinner;
-	
+	private final Session session;
+
 	/** Creates new form DetailsView 
 	 * @param rowSorter 
 	 * @param showSelectButton 
 	 * @param deselect 
 	*/
-	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, boolean showSelectButton, RowIdSupport rowIdSupport, boolean deselect) {
+	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, boolean showSelectButton, RowIdSupport rowIdSupport, boolean deselect, Session session) {
 		this.table = table;
 		this.rows = rows;
 		this.rowSorter = rowSorter;
 		this.rowIdSupport = rowIdSupport;
 		this.showSpinner = showSpinner;
+		this.session = session;
 		initComponents();
 		if (deselect) {
 			selectButton.setText("Deselect Row");
@@ -174,7 +177,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		gridBagConstraints.gridy = 0;
 		
 		int i = 0;
-		final List<Column> columns = rowIdSupport.getColumns(table);
+		final List<Column> columns = rowIdSupport.getColumns(table, session);
 		List<Integer> columnIndex = new ArrayList<Integer>();
 		for (int j = 0; j < columns.size(); ++j) {
 			columnIndex.add(j);

@@ -43,6 +43,9 @@
         <maxDepth>0</maxDepth>
         <outputFolder>render</outputFolder>
     </renderer>
+    
+    <!-- additional SQL keywords -->
+	<additionalSQLKeywords>sensitive, datetime</additionalSQLKeywords>
 
     <!-- for Oracle -->
     <dbms>

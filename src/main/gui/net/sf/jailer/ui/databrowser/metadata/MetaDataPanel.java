@@ -1290,11 +1290,16 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         if (mdSchema != null) {
             DefaultMutableTreeNode node = treeNodePerSchema.get(mdSchema);
             if (node != null) {
-            	TreePath path = new TreePath(node.getPath());
+            	final TreePath path = new TreePath(node.getPath());
                 metaDataTree.expandPath(path);
                 metaDataTree.getSelectionModel().setSelectionPath(path);
                 if (scrollToNode) {
-                    scrollToNode(path);
+                	SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							scrollToNode(path);
+						}
+                	});
                 }
             }
         }

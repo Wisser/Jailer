@@ -16,6 +16,7 @@
 
 package net.sf.jailer.datamodel;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.util.Quoting;
 
 
 /**
@@ -99,15 +101,27 @@ public class RowIdSupport {
 	 * @param table the table
 	 * @return the primary key of the table
 	 */
-	public PrimaryKey getPrimaryKey(Table table) {
+	public PrimaryKey getPrimaryKey(Table table, Session session) {
 		if (table.primaryKey != null) {
 			if (useRowIds && (!useRowIdsOnlyForTablesWithoutPK || table.primaryKey.getColumns().isEmpty())) {
-				return tablePK;
+				if (session == null || isRowIDApplicable(table, session)) {
+					return tablePK;
+				}
 			}
 		}
 		return table.primaryKey;
 	}
 	
+	/**
+	 * Gets the primary key of a table.
+	 * 
+	 * @param table the table
+	 * @return the primary key of the table
+	 */
+	public PrimaryKey getPrimaryKey(Table table) {
+		return getPrimaryKey(table, null);
+	}
+
 	/**
 	 * Gets the universal primary key.
 	 * 
@@ -147,13 +161,15 @@ public class RowIdSupport {
 	 * @param table the table
 	 * @return the columns of the table
 	 */
-	public List<Column> getColumns(Table table) {
+	public List<Column> getColumns(Table table, Session session) {
 		List<Column> columns = table.getColumns();
 		if (table.primaryKey != null) {
 			if (useRowIds && (!useRowIdsOnlyForTablesWithoutPK || table.primaryKey.getColumns().isEmpty())) {
-				columns = new ArrayList<Column>(columns);
-				columns.addAll(tablePK.getColumns());
-				return columns;
+				if (session == null || isRowIDApplicable(table, session)) {
+					columns = new ArrayList<Column>(columns);
+					columns.addAll(tablePK.getColumns());
+					return columns;
+				}
 			}
 		}
 		return columns;
@@ -163,4 +179,35 @@ public class RowIdSupport {
 		return rowIdColumn != null && rowIdColumn.name.equals(column.name);
 	}
 		
+	private boolean isRowIDApplicable(Table table, Session session) {
+		Boolean result = (Boolean) session.getSessionProperty(RowIdSupport.class, table.getName());
+		if (result != null) {
+			return result;
+		}
+		Quoting quoting;
+		result = false;
+		try {
+			quoting = new Quoting(session);
+			String schema = table.getSchema("");
+			String tableName;
+			if (schema.length() == 0) {
+				tableName = quoting.requote(table.getUnqualifiedName());
+			} else {
+				tableName = quoting.requote(schema) + "." + quoting.requote(table.getUnqualifiedName());
+			}
+			if (rowIdColumn != null) {
+				if (session.checkQuery("Select 1 from " + tableName + " Where 1=0")) {
+					result = session.checkQuery("Select 1 from " + tableName + " Where 1=0 and " + rowIdColumn.name + "=" + rowIdColumn.name);
+				} else {
+					return false;
+				}
+			}
+		} catch (SQLException e) {
+			result = true;
+		}
+		
+		session.setSessionProperty(RowIdSupport.class, table.getName(), result);
+		return result;
+	}
+
 }

@@ -145,6 +145,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.SmallButton;
+import net.sf.jailer.ui.util.UpdateInfoManager;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Quoting;
 
@@ -226,6 +227,7 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
+        UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel);
         initRowLimitButtons();
         autoLayoutMenuItem.setSelected(inAutoLayoutMode());
         workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
@@ -912,6 +914,7 @@ public class DataBrowser extends javax.swing.JFrame {
         dummy = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jLayeredPane2 = new javax.swing.JLayeredPane();
         jPanel1 = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
         legende1 = new javax.swing.JPanel();
@@ -972,6 +975,10 @@ public class DataBrowser extends javax.swing.JFrame {
         titleLabel = new javax.swing.JLabel();
         dataModelPanel = new javax.swing.JPanel();
         jLabel26 = new javax.swing.JLabel();
+        updateInfoPanel = new javax.swing.JPanel();
+        updateInfoLabel = new javax.swing.JLabel();
+        downloadButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -1039,6 +1046,8 @@ public class DataBrowser extends javax.swing.JFrame {
         jScrollPane3.setViewportView(jTable1);
 
         dummy.add(jScrollPane3);
+
+        jLayeredPane2.setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -1449,7 +1458,59 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(jPanel2, gridBagConstraints);
 
-        getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jLayeredPane2.add(jPanel1, gridBagConstraints);
+
+        updateInfoPanel.setBackground(new java.awt.Color(255, 255, 236));
+        updateInfoPanel.setLayout(new java.awt.GridBagLayout());
+
+        updateInfoLabel.setText("Release x available");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        updateInfoPanel.add(updateInfoLabel, gridBagConstraints);
+
+        downloadButton.setText("Download");
+        downloadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downloadButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
+        updateInfoPanel.add(downloadButton, gridBagConstraints);
+
+        jButton1.setText("Close");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 4, 4);
+        updateInfoPanel.add(jButton1, gridBagConstraints);
+
+        jLayeredPane2.setLayer(updateInfoPanel, javax.swing.JLayeredPane.MODAL_LAYER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 72, 24);
+        jLayeredPane2.add(updateInfoPanel, gridBagConstraints);
+
+        getContentPane().add(jLayeredPane2, java.awt.BorderLayout.CENTER);
 
         jMenu1.setText("File");
 
@@ -1983,7 +2044,9 @@ public class DataBrowser extends javax.swing.JFrame {
                     JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
                     if (popup != null) {
                         JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
-                        popup.add(new JSeparator());
+                        if (popup2.getComponentCount() > 0 && popup.getComponentCount() > 0) {
+	                        popup.add(new JSeparator());
+	                    }
                         for (Component c : popup2.getComponents()) {
                             popup.add(c);
                         }
@@ -2330,6 +2393,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel dependsOn;
     private javax.swing.JSplitPane desktopSplitPane;
     private javax.swing.JTabbedPane detailsAndBorderBrowserTabbedPane;
+    private javax.swing.JButton downloadButton;
     private javax.swing.JPanel dummy;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportDataMenuItem;
@@ -2338,6 +2402,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu helpMenu;
     private javax.swing.JPanel hiddenPanel;
     private javax.swing.JLabel ignored;
+    private javax.swing.JButton jButton1;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -2358,6 +2423,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JLayeredPane jLayeredPane1;
+    private javax.swing.JLayeredPane jLayeredPane2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuItem jMenuItem3;
@@ -2423,6 +2489,8 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JRadioButtonMenuItem thumbnailLayoutRadioButtonMenuItem;
     private javax.swing.JRadioButtonMenuItem tinyLayoutRadioButtonMenuItem;
     private javax.swing.JLabel titleLabel;
+    private javax.swing.JLabel updateInfoLabel;
+    private javax.swing.JPanel updateInfoPanel;
     private javax.swing.JMenu view;
     private javax.swing.JTabbedPane workbenchTabbedPane;
     // End of variables declaration//GEN-END:variables
@@ -3510,6 +3578,15 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void autoLayoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoLayoutMenuItemActionPerformed
         setAutoLayoutMode(autoLayoutMenuItem.isSelected());
     }//GEN-LAST:event_autoLayoutMenuItemActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        updateInfoPanel.setVisible(false);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
+        updateInfoPanel.setVisible(false);
+        UpdateInfoManager.download();
+    }//GEN-LAST:event_downloadButtonActionPerformed
 
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();

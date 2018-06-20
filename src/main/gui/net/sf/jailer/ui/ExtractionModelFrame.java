@@ -76,6 +76,7 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
+import net.sf.jailer.ui.util.UpdateInfoManager;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.PrintUtil;
 
@@ -141,7 +142,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		this.executionContext = executionContext;
 		initComponents();
 		initSandbox();
-		initAnimationSteptime();
+        UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel);
+        initAnimationSteptime();
 		isHorizontalLayout = isHorizonal;
 		horizontalLayoutMenuItem.setSelected(isHorizontalLayout);
 		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext), "editor");
@@ -281,7 +283,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         java.awt.GridBagConstraints gridBagConstraints;
 
         steptimeGroup = new javax.swing.ButtonGroup();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
         editorPanel = new javax.swing.JPanel();
+        updateInfoPanel = new javax.swing.JPanel();
+        updateInfoLabel = new javax.swing.JLabel();
+        downloadButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         jMenuBar2 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newModel = new javax.swing.JMenuItem();
@@ -366,12 +373,68 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
+        jLayeredPane1.setLayout(new java.awt.GridBagLayout());
+
         editorPanel.setLayout(new java.awt.CardLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        getContentPane().add(editorPanel, gridBagConstraints);
+        jLayeredPane1.add(editorPanel, gridBagConstraints);
+
+        updateInfoPanel.setBackground(new java.awt.Color(255, 255, 236));
+        updateInfoPanel.setLayout(new java.awt.GridBagLayout());
+
+        updateInfoLabel.setText("Release x available");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        updateInfoPanel.add(updateInfoLabel, gridBagConstraints);
+
+        downloadButton.setText("Download");
+        downloadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downloadButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
+        updateInfoPanel.add(downloadButton, gridBagConstraints);
+
+        jButton1.setText("Close");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 4, 4);
+        updateInfoPanel.add(jButton1, gridBagConstraints);
+
+        jLayeredPane1.setLayer(updateInfoPanel, javax.swing.JLayeredPane.MODAL_LAYER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 32, 24);
+        jLayeredPane1.add(updateInfoPanel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        getContentPane().add(jLayeredPane1, gridBagConstraints);
 
         fileMenu.setText("File");
         fileMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -1664,6 +1727,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
     }//GEN-LAST:event_columnOrderItemActionPerformed
 
+    private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
+        updateInfoPanel.setVisible(false);
+        UpdateInfoManager.download();
+    }//GEN-LAST:event_downloadButtonActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        updateInfoPanel.setVisible(false);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -1955,6 +2027,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem dataExport;
     private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem disconnectDb;
+    private javax.swing.JButton downloadButton;
     private javax.swing.JMenu editMenu;
     private javax.swing.JPanel editorPanel;
     private javax.swing.JMenuItem exit;
@@ -1966,6 +2039,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem helpForum;
     private javax.swing.JCheckBoxMenuItem horizontalLayoutMenuItem;
     private javax.swing.JMenuItem ignoreAll;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
@@ -2012,6 +2087,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.ButtonGroup steptimeGroup;
     private javax.swing.JMenuItem tutorial;
     private javax.swing.JMenuItem updateDataModel;
+    private javax.swing.JLabel updateInfoLabel;
+    private javax.swing.JPanel updateInfoPanel;
     private javax.swing.JMenu view;
     private javax.swing.JMenu viewMenu;
     private javax.swing.JMenuItem zoomToFit;
