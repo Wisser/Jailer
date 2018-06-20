@@ -1,11 +1,9 @@
-7.9.5
-  - Using working-table-scope "LOCAL_DATABASE" led to concurrency problems and connection leaks.
-  - Further usability improvements of the data browser.
-
-7.9.4
+7.10
   - Comprehensive usability improvements of the data browser.
     - Animated row-to-row links.
     - Increased rendering quality of row-to-row link.
+  - Using working-table-scope "LOCAL_DATABASE" led to concurrency problems and connection leaks.
+  - Update of SQL keyword catalog to SQL 2003 standard.
 
 7.9.3
   - Data browser: prevented that context menu automatically gets closed if the item doesn't have the focus.
