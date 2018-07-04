@@ -895,8 +895,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							tableSortAndFilterState =  tableSortAndFilterState + (tableSortAndFilterState.isEmpty()? "Sorted" : " and sorted")
 									+ " by \"" + rb.rowsTable.getColumnName(skeys.get(0).getColumn()) + "\"";
 						}
-						if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel) {
-							columnsTable = new ColumnsTable(rb.rowsTable);
+						if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel || tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.contentPanel) {
+							columnsTable = new ColumnsTable(rb);
 							tabContentPanel.columnsScrollPane.setViewportView(columnsTable);
 							tabContentPanel.columnsSortedStateLabel.setText("  " + tableSortAndFilterState);
 							tabContentPanel.columnsSortedStateLabel.setVisible(!tableSortAndFilterState.isEmpty());

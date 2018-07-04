@@ -80,7 +80,7 @@ public class BrowserContentCellEditor {
 
 			@Override
 			boolean isEditable(int columnType, Object content) {
-				return content == null || content instanceof String;
+				return content == null || (content instanceof String && !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0));
 			}
 		},
 		DATE {

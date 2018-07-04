@@ -40,12 +40,15 @@ import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.BrowserContentPane;
+import net.sf.jailer.ui.databrowser.Row;
 
 /**
  * "Column view" of a query result table.
@@ -56,10 +59,14 @@ public class ColumnsTable extends JTable {
 
 	private final int MAX_ROWS = 198;
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
+	final BrowserContentPane rb;
+	
+	public ColumnsTable(BrowserContentPane rb) {
+		this.rb = rb;
+		final JTable rowsTable = rb.rowsTable;
+		final TableModel rDm = rowsTable.getModel();
 
-	public ColumnsTable(final JTable rowsTable) {
-		TableModel rDm = rowsTable.getModel();
-		RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
+		final RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
 		Vector cNames = new Vector();
 		cNames.add("Column");
 		for (int i = 0; i < sorter.getViewRowCount(); ++i) {
@@ -69,23 +76,50 @@ public class ColumnsTable extends JTable {
 			}
 			cNames.add("Row " + (i + 1));
 		}
-		DefaultTableModel cDm = new DefaultTableModel(cNames, rDm.getColumnCount()) {
+		final TableColumnModel cm = rowsTable.getColumnModel();
+		TableModel cDm = new DefaultTableModel(cNames, rDm.getColumnCount()) {
+			
 			@Override
-			public boolean isCellEditable(int row, int column) {
-				return false;
+			public boolean isCellEditable(int rowIndex, int columnIndex) {
+				if (columnIndex == 0) {
+					return false;
+				}
+				int row = sorter.convertRowIndexToModel(columnIndex - 1);
+				int column = cm.getColumn(rowIndex).getModelIndex();
+				return rDm.isCellEditable(row, column);
+			}
+			
+			@Override
+			public Object getValueAt(int rowIndex, int columnIndex) {
+				int column = cm.getColumn(rowIndex).getModelIndex();
+				if (columnIndex == 0) {
+					return rDm.getColumnName(column);
+				}
+				int row = sorter.convertRowIndexToModel(columnIndex - 1);
+				return rDm.getValueAt(row, column);
+			}
+			
+			@Override
+			public void setValueAt(Object value, int rowIndex, int columnIndex) {
+				if (columnIndex == 0) {
+					return;
+				}
+				int row = sorter.convertRowIndexToModel(columnIndex - 1);
+				int column = cm.getColumn(rowIndex).getModelIndex();
+				rDm.setValueAt(value, row, column);
 			}
 		};
-		TableColumnModel cm = rowsTable.getColumnModel();
-		for (int x = 0; x < rDm.getColumnCount(); ++x) {
-			int mx = cm.getColumn(x).getModelIndex();
-			cDm.setValueAt(rDm.getColumnName(mx), x, 0);
-			for (int y = 0; y < sorter.getViewRowCount(); ++y) {
-				cDm.setValueAt(rDm.getValueAt(sorter.convertRowIndexToModel(y), mx), x, y + 1);
-				if (y > MAX_ROWS) {
-					break;
-				}
-			}
-		}
+
+//		for (int x = 0; x < rDm.getColumnCount(); ++x) {
+//			int mx = cm.getColumn(x).getModelIndex();
+//			cDm.setValueAt(rDm.getColumnName(mx), x, 0);
+//			for (int y = 0; y < sorter.getViewRowCount(); ++y) {
+//				cDm.setValueAt(rDm.getValueAt(sorter.convertRowIndexToModel(y), mx), x, y + 1);
+//				if (y > MAX_ROWS) {
+//					break;
+//				}
+//			}
+//		}
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		setRowSelectionAllowed(true);
 		setColumnSelectionAllowed(true);
@@ -94,6 +128,14 @@ public class ColumnsTable extends JTable {
 		setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		setModel(cDm);
 		
+		for (int i = 0; i < getColumnCount(); i++) {
+			TableCellEditor defaultEditor = rowsTable.getDefaultEditor(getColumnClass(i));
+			if (defaultEditor != null) {
+				defaultEditor.cancelCellEditing();
+			}
+			setDefaultEditor(getColumnClass(i), defaultEditor);
+		}
+
 		InputMap im = getInputMap();
 		Object key = "copyClipboard";
 		im.put(KS_COPY_TO_CLIPBOARD, key);
@@ -120,7 +162,7 @@ public class ColumnsTable extends JTable {
 						int y = (int) r.getMaxY() - 2;
 						if (e.getButton() != MouseEvent.BUTTON1) {
 							JPopupMenu popup;
-							popup = createPopupMenu();
+							popup = createPopupMenu(e);
 							if (popup != null) {
 								popup.show(ColumnsTable.this, x, y);
 						}
@@ -170,8 +212,16 @@ public class ColumnsTable extends JTable {
 
 	/**
 	 * Creates popup menu. 
+	 * @param e mouse event 
 	 */
-	public JPopupMenu createPopupMenu() {
+	private JPopupMenu createPopupMenu(MouseEvent e) {
+		int i = -1;
+		Row row = null;
+		int ri = columnAtPoint(e.getPoint()) - 1;
+		if (ri >= 0 && !rb.rows.isEmpty() && rb.rowsTable.getRowSorter().getViewRowCount() > 0) {
+			i = rb.rowsTable.getRowSorter().convertRowIndexToModel(ri);
+			row = rb.rows.get(i);
+		}
 		JMenuItem copyTCB = new JMenuItem("Copy to Clipboard");
 		copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
 		copyTCB.setEnabled(getSelectedColumnCount() > 0);
@@ -181,10 +231,18 @@ public class ColumnsTable extends JTable {
 				UIUtil.copyToClipboard(ColumnsTable.this, false);
 			}
 		});
-				
-		JPopupMenu popup = new JPopupMenu();
-		popup.add(copyTCB);
-		return popup;
+		return rb.createPopupMenu(row, i, 0, 0, false, copyTCB, new Runnable() {
+			@Override
+			public void run() {
+				repaint();
+				for (int i = 0; i < getColumnCount(); i++) {
+					TableCellEditor defaultEditor = getDefaultEditor(getColumnClass(i));
+					if (defaultEditor != null) {
+						defaultEditor.cancelCellEditing();
+					}
+				}
+			}
+		});
 	}
 
 	private void adjustTableColumnsWidth() {

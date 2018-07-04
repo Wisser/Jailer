@@ -1,3 +1,6 @@
+7.10.1
+  - Added context menu to columns view of results table.
+
 7.10
   - Comprehensive usability improvements of the data browser.
   - Animated row-to-row links.

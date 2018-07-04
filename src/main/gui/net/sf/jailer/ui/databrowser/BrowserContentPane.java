@@ -409,7 +409,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Rows to render.
 	 */
-	List<Row> rows = new ArrayList<Row>();
+	public List<Row> rows = new ArrayList<Row>();
 
 	/**
 	 * For in-place editing.
@@ -865,7 +865,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						} else {
 							Table type = getResultSetTypeForColumn(convertedColumnIndex);
-							if (isEditMode && table == rowsTable && r != null && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
+							if (isEditMode && r != null && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
 									&& isPKComplete(type, r)) {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1_EM : BG2_EM);
 							} else {
@@ -1307,12 +1307,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	};
 	
 	private String currentSelectedRowCondition = "";
-	
+
 	/**
 	 * Creates popup menu for navigation.
 	 * @param navigateFromAllRows 
+	 * @param copyTCB 
+	 * @param runnable 
+	 * @param runnable 
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows) {
+		return createPopupMenu(row, rowIndex, x, y, navigateFromAllRows, null, null);
+	}
+
+	/**
+	 * Creates popup menu for navigation.
+	 * @param navigateFromAllRows 
+	 * @param runnable 
+	 */
+	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		tableFilter.setAccelerator(KS_FILTER);
 		tableFilter.setSelected(isTableFilterEnabled);
@@ -1327,16 +1339,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				updateTableModel();
 			}
 		});
-		JMenuItem copyTCB = new JMenuItem("Copy to Clipboard");
-		copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
-		copyTCB.setEnabled(rowsTable.getSelectedColumnCount() > 0);
-		copyTCB.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				UIUtil.copyToClipboard(rowsTable, true);
-			}
-		});
-		
+		JMenuItem copyTCB;
+		if (altCopyTCB != null) {
+			copyTCB = altCopyTCB;
+		} else {
+			copyTCB = new JMenuItem("Copy to Clipboard");
+			copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
+			copyTCB.setEnabled(rowsTable.getSelectedColumnCount() > 0);
+			copyTCB.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					UIUtil.copyToClipboard(rowsTable, true);
+				}
+			});
+		}
+
 		if (table instanceof SqlStatementTable && resultSetType == null) {
 			JPopupMenu jPopupMenu = new JPopupMenu();
 			if (row != null) {
@@ -1595,6 +1612,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				public void actionPerformed(ActionEvent e) {
 					setEditMode(!isEditMode);
 					updateTableModel();
+					if (repaint != null) {
+						repaint.run();
+					}
 				}
 			});
 			popup.add(editMode);
@@ -3531,6 +3551,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			DefaultCellEditor anEditor = new DefaultCellEditor(textField) {
 				@Override
 				public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+					if (table != rowsTable) {
+						if (column == 0) {
+							return null;
+						}
+						int h = row;
+						row = column - 1;
+						column = h;
+					}
 					if (row < rows.size()) {
 						Row r = rows.get(rowsTable.getRowSorter().convertRowIndexToModel(row));
 						int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
