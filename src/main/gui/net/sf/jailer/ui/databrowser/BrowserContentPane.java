@@ -1613,7 +1613,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					setEditMode(!isEditMode);
 					updateTableModel();
 					if (repaint != null) {
-						repaint.run();
+						SwingUtilities.invokeLater(repaint);
 					}
 				}
 			});
@@ -5048,7 +5048,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		reloadRows();
 	}
 
-	private void openDetailsView(int rowIndex, int x, int y) {
+	public void openDetailsView(int rowIndex, int x, int y) {
 		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
 		final boolean deselect = !currentSelectedRowCondition.equals("") 
 				&& currentSelectedRowCondition.equals(getAndConditionText())

@@ -892,8 +892,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						}
 						List<? extends SortKey> skeys = sorter.getSortKeys();
 						if (!skeys.isEmpty()) {
-							tableSortAndFilterState =  tableSortAndFilterState + (tableSortAndFilterState.isEmpty()? "Sorted" : " and sorted")
-									+ " by \"" + rb.rowsTable.getColumnName(skeys.get(0).getColumn()) + "\"";
+							for (int i = 0; i < rb.rowsTable.getColumnCount(); ++i) {
+								if (rb.rowsTable.getColumnModel().getColumn(i).getModelIndex() == skeys.get(0).getColumn()) {
+									tableSortAndFilterState = tableSortAndFilterState + (tableSortAndFilterState.isEmpty()? "Sorted" : " and sorted")
+											+ " by \"" + rb.rowsTable.getColumnName(i) + "\"";
+									break;
+								}
+							}
 						}
 						if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel || tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.contentPanel) {
 							columnsTable = new ColumnsTable(rb);
