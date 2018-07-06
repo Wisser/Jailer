@@ -38,6 +38,7 @@ public class UpdateInfoManager {
 		Runnable check = new Runnable() {
 			@Override
 			public void run() {
+				String useSystemProxies = System.getProperty("java.net.useSystemProxies");
 				try {
 					File lastTSFile = Environment.newFile(LAST_TS_FILE);
 					if (lastTSFile.exists()) {
@@ -77,6 +78,12 @@ public class UpdateInfoManager {
 			        }
 				} catch (Throwable t) {
 					// ignore
+				} finally {
+					if (useSystemProxies == null) {
+						System.clearProperty("java.net.useSystemProxies");
+					} else {
+						System.setProperty("java.net.useSystemProxies", useSystemProxies);
+					}
 				}
 			}
 		};
