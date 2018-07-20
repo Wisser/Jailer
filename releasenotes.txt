@@ -1,4 +1,4 @@
-7.10.2
+7.10.3
   - Fix for "Can't connect to SOCKS proxy:http" https://github.com/Wisser/Jailer/issues/8
   - Added context menu to columns view of results table.
 

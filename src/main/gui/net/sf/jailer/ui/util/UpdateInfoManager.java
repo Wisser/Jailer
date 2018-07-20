@@ -62,17 +62,19 @@ public class UpdateInfoManager {
 			        			return;
 			        		}
 			        	}
-		        		Thread.sleep(DELAY);
-						ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(lastTSFile));
-						out.writeLong(System.currentTimeMillis());
-						out.close();
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								infoLabel.setText("Release " + versions[0].trim() + " available");
-								ui.setVisible(true);
-							}
-						});
+			        	if (isValid(versions[0].trim())) {
+			        		Thread.sleep(DELAY);
+							ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(lastTSFile));
+							out.writeLong(System.currentTimeMillis());
+							out.close();
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									infoLabel.setText("Release " + versions[0].trim() + " available");
+									ui.setVisible(true);
+								}
+							});
+			        	}
 			        }
 				} catch (Throwable t) {
 					// ignore
@@ -84,6 +86,10 @@ public class UpdateInfoManager {
 		checkThread.start();
 	}
 
+	private static boolean isValid(String version) {
+		return version.matches("\\d+\\.\\d+(\\.\\d+)?");
+	}
+
 	public static void download() {
 		try {
 			URI uri = new URI(downloadURL);
@@ -92,4 +98,5 @@ public class UpdateInfoManager {
 			e.printStackTrace();
 		}
 	}
+
 }
