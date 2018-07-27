@@ -1,6 +1,7 @@
 7.10.4
-  - Limited fetch size of statements to prevent an OOM exception when the default fetch size is too large.
   - The estimated number of rows of the tables is displayed.
+  - Limited fetch size of statements to prevent an OOM exception when the default fetch size is too large.
+  - Updated H2 DBMS from version 1.3.160 to 1.3.175
 
 7.10.3
   - Fix for "Can't connect to SOCKS proxy:http" https://github.com/Wisser/Jailer/issues/8
