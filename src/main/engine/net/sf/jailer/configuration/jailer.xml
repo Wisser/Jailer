@@ -111,6 +111,7 @@
         <rowidName>ROWID</rowidName>
         <rowidType>ROWID</rowidType>
         <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
+        <estimatedRowCountQuery>select TABLE_NAME, NUM_ROWS from all_tables where OWNER = '%s'</estimatedRowCountQuery>
         <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME FROM ALL_TAB_COLS WHERE OWNER = '${SCHEMA}' AND VIRTUAL_COLUMN = 'YES' AND NOT DATA_TYPE = 'XMLTYPE'</virtualColumnsQuery>
         <importedKeysQuery>SELECT null, c_dest.OWNER, c_dest.TABLE_NAME, c_dest.COLUMN_NAME, null, c_src.OWNER, c_src.TABLE_NAME, c_src.COLUMN_NAME, c_src.POSITION,        null, null, c_list.CONSTRAINT_NAME, c_list.R_CONSTRAINT_NAME, null FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src, ALL_CONS_COLUMNS c_dest WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME  AND  c_list.OWNER = c_src.OWNER  AND  c_list.R_CONSTRAINT_NAME = c_dest.CONSTRAINT_NAME  AND  c_list.R_OWNER = c_dest.OWNER  AND  c_list.CONSTRAINT_TYPE = 'R'  AND  c_src.POSITION = c_dest.POSITION  AND  c_src.OWNER = '${SCHEMA}'  ORDER BY c_src.POSITION</importedKeysQuery>
         <primaryKeysQuery>SELECT null, c_src.OWNER, c_src.TABLE_NAME, c_src.COLUMN_NAME, c_src.POSITION, c_list.CONSTRAINT_NAME FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME  AND  c_list.OWNER             = c_src.OWNER  AND  c_list.CONSTRAINT_TYPE = 'P'  AND  c_list.CONSTRAINT_NAME not like 'BIN$%'  AND  c_src.OWNER      = '${SCHEMA}'  ORDER BY c_src.POSITION</primaryKeysQuery>
@@ -260,6 +261,14 @@ union all
         <avoidLeftJoin>false</avoidLeftJoin>
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <estimatedRowCountQuery>
+SELECT tbl.name, p.rows
+FROM sys.tables AS tbl
+INNER JOIN sys.indexes AS idx ON idx.object_id = tbl.object_id and idx.index_id &lt; 2
+INNER JOIN sys.partitions AS p ON p.object_id=CAST(tbl.object_id AS int)
+AND p.index_id=idx.index_id
+WHERE SCHEMA_NAME(tbl.schema_id)='%s'
+		</estimatedRowCountQuery>
         <virtualColumnsQuery>SELECT sysobjects.name AS TableName, syscolumns.name AS ColumnName FROM syscolumns JOIN sysobjects ON syscolumns.id = sysobjects.id AND sysobjects.xtype = 'U' WHERE syscolumns.iscomputed = 1</virtualColumnsQuery>
 		<userDefinedColumnsQuery>SELECT distinct DOMAIN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '%s' AND DOMAIN_NAME is not null</userDefinedColumnsQuery>
 <!-- 
@@ -435,6 +444,7 @@ union all
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+		<estimatedRowCountQuery>select TABLE_NAME, CARDINALITY from INFORMATION_SCHEMA.STATISTICS where TABLE_SCHEMA = '%s'</estimatedRowCountQuery>
         <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'</virtualColumnsQuery>
 <!--
         <importedKeysQuery>SELECT PKCU.TABLE_SCHEMA, null, PKCU.TABLE_NAME, PKCU.COLUMN_NAME, KCU.TABLE_SCHEMA, null, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,        null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU    ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU    ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG        AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA       AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME AND PKCU.TABLE_NAME = RC.REFERENCED_TABLE_NAME AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION  WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'  ORDER BY KCU.ORDINAL_POSITION</importedKeysQuery>
@@ -548,6 +558,7 @@ union all
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <estimatedRowCountQuery>SELECT TABNAME, CARD FROM SYSSTAT.TABLES WHERE TABSCHEMA = '%s'</estimatedRowCountQuery>
         <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
         <importedKeysQuery> SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME,        null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ,        null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}'   ORDER BY FKCOL.COLSEQ</importedKeysQuery>
         <primaryKeysQuery>   SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
@@ -664,6 +675,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <estimatedRowCountQuery>SELECT TABNAME, CARD FROM SYSSTAT.TABLES WHERE TABSCHEMA = '%s'</estimatedRowCountQuery>
         <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
         <importedKeysQuery>SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME, null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ, null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}' ORDER BY FKCOL.COLSEQ</importedKeysQuery>
         <primaryKeysQuery>SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
@@ -792,6 +804,12 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
+		<estimatedRowCountQuery>
+SELECT c.relname, c.reltuples::bigint AS estimate
+FROM   pg_class c
+JOIN   pg_namespace n ON n.oid = c.relnamespace
+WHERE  n.nspname = '%s'
+		</estimatedRowCountQuery>
         <explainPrepare></explainPrepare>
         <explainQuery>explain %1$s</explainQuery>
         <explainCleanup></explainCleanup>

@@ -688,6 +688,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             localStatus.numStatements++;
             status.updateView(false);
             statement = session.getConnection().createStatement();
+//            SqlUtil.limitFetchSize(statement, session);
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
             sqlStatement = 
@@ -723,7 +724,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             		hasUpdateCount = false;
             		hasResultSet = false;
             	} else {
-            		hasResultSet = statement.execute(sqlStatement);
+            		hasResultSet = executeStatementWithLimit(statement, sqlStatement, session);
             	}
             }
             if (hasResultSet) {
@@ -999,6 +1000,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
         }
     }
+
+	private boolean executeStatementWithLimit(Statement statement, String sqlStatement, Session session) throws SQLException {
+		if (DBMS.MySQL.equals(session.dbms)) {
+			try {
+				return statement.execute("(" + sqlStatement + "\n) limit " + (1 + (Integer) limitComboBox.getSelectedItem()));
+			} catch (Throwable e) {
+				return statement.execute(sqlStatement);
+			}
+		}
+		return statement.execute(sqlStatement);
+	}
 
 	public void setCaretPosition(int position) {
     	if (editorPane.getDocument().getLength() >= position) {

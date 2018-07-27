@@ -67,6 +67,8 @@ public class MDTable extends MDObject {
     private final boolean isView;
     private final boolean isSynonym;
 
+    public final Long estimatedRowCount;
+
     // DDL of the table or <code>null</code>, if no DDL is available
     private String ddl;
     
@@ -76,11 +78,12 @@ public class MDTable extends MDObject {
      * @param name table name
      * @param schema the tables schema
      */
-    public MDTable(String name, MDSchema schema, boolean isView, boolean isSynonym) {
+    public MDTable(String name, MDSchema schema, boolean isView, boolean isSynonym, Long estimatedRowCount) {
         super(name, schema.getMetaDataSource());
         this.isView = isView;
         this.isSynonym = isSynonym;
         this.schema = schema;
+        this.estimatedRowCount = estimatedRowCount;
     }
 
     /**

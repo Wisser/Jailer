@@ -815,6 +815,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 boolean isSynonym = false;
                 Boolean isDirty = false;
                 Icon image = null;
+        		Long estRowCount = null;
                 if (value instanceof DefaultMutableTreeNode) {
                     Object uo = ((DefaultMutableTreeNode) value).getUserObject();
                     if (uo instanceof JLabel) {
@@ -851,17 +852,19 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                                 }
                             }
                         }
-                        if (ModelBuilder.isJailerTable(((MDTable) uo).getUnquotedName())) {
-                            isJailerTable = true;
-                        }
                         isView = ((MDTable) uo).isView();
                         isSynonym = ((MDTable) uo).isSynonym();
+                		estRowCount = ((MDTable) uo).estimatedRowCount;
                         if (isView) {
                         	image = viewIcon;
                         } else if (isSynonym) {
                         	image = synonymIcon;
                         } else {
                         	image = tableIcon;
+                        }
+                        if (ModelBuilder.isJailerTable(((MDTable) uo).getUnquotedName())) {
+                            isJailerTable = true;
+                            estRowCount = null;
                         }
                     }
                 }
@@ -874,13 +877,29 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             			// TODO tooltips dont work with tree nodes
             			tooltip = text;
             		}
+            		if (estRowCount != null) {
+            			Color fg = ((JLabel) comp).getForeground();
+            			String estRowCountFormatted;
+            			if (estRowCount >= 1000000) {
+            				estRowCountFormatted = String.format("%1.1f M", (double) estRowCount / 1000000.0);
+            			} else if (estRowCount >= 1000) {
+            				estRowCountFormatted = String.format("%1.1f K", (double) estRowCount / 1000.0);
+            			} else {
+            				estRowCountFormatted = estRowCount.toString();
+            			}
+						if (fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
+            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#6666ff\">~</font><font color=\"#4444ff\">" + estRowCountFormatted + "</i>");
+            			} else {
+            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#9999dd\">~</font><font color=\"#ddddff\">" + estRowCountFormatted + "</i>");
+            			}
+            		}
             	}	
                 Font font = comp.getFont();
                 if (font != null) {
                     Font bold = new Font(font.getName(), unknownTable || isDirty? (font.getStyle() | Font.ITALIC) : (font.getStyle() & ~Font.ITALIC), font.getSize());
                     comp.setFont(bold);
                 }
-                if (isJailerTable) {
+                if (isJailerTable && !sel) {
                     comp.setEnabled(false);
                 }
                 if (image != null) {

@@ -36,6 +36,7 @@ import javax.swing.ImageIcon;
 
 import org.apache.log4j.Logger;
 
+import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.Quoting;
@@ -148,6 +149,7 @@ public class MDSchema extends MDObject {
 			if (tables == null) {
 				try {
 					tables = new ArrayList<MDTable>();
+					Map<String, Long> estimatedRowCounts = readEstimatedRowCounts();
 					MetaDataSource metaDataSource = getMetaDataSource();
 					synchronized (metaDataSource.getSession().getMetaData()) {
 						ResultSet rs = metaDataSource.readTables(getName());
@@ -156,7 +158,8 @@ public class MDSchema extends MDObject {
 							String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
 							final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)),
 									"SYNONYM".equalsIgnoreCase(rs.getString(4))
-											|| "ALIAS".equalsIgnoreCase(rs.getString(4)));
+								 || "ALIAS".equalsIgnoreCase(rs.getString(4)), 
+								 	estimatedRowCounts.get(rs.getString(3)));
 							tables.add(table);
 							if (loadTableColumns) {
 								loadJobs.put(tableName, new Runnable() {
@@ -192,6 +195,30 @@ public class MDSchema extends MDObject {
 			}
 			return tables;
 		}
+	}
+
+	private Map<String, Long> readEstimatedRowCounts() {
+		final Map<String, Long> result = new HashMap<String, Long>();
+		
+		String query = getMetaDataSource().getSession().dbms.getEstimatedRowCountQuery();
+		if (query != null) {
+			try {
+				getMetaDataSource().getSession().executeQuery(String.format(query, getUnquotedName()), new AbstractResultSetReader() {
+					@Override
+					public void readCurrentRow(ResultSet resultSet) throws SQLException {
+						String tableName = resultSet.getString(1);
+						long rowCount = resultSet.getLong(2);
+						if (!resultSet.wasNull() && rowCount >= 0) {
+							result.put(tableName, rowCount);
+						}
+					}
+				});
+			} catch (SQLException e) {
+				// ignore
+			}
+		}
+		
+		return result;
 	}
 
 	/**

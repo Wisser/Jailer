@@ -104,6 +104,7 @@ public class DBMS {
 		this.rowidName = other.rowidName;
 		this.supportsSchemasInIndexDefinitions = other.supportsSchemasInIndexDefinitions;
 		this.useInlineViewsInDataBrowser = other.useInlineViewsInDataBrowser;
+		this.estimatedRowCountQuery = estimatedRowCountQuery;
 		this.virtualColumnsQuery = other.virtualColumnsQuery;
 		this.userDefinedColumnsQuery = other.userDefinedColumnsQuery;
 		this.importedKeysQuery = other.importedKeysQuery;
@@ -291,6 +292,8 @@ public class DBMS {
 	private Boolean supportsSchemasInIndexDefinitions = null;
 	private boolean useInlineViewsInDataBrowser = true;
 	private String virtualColumnsQuery = null;
+	private String estimatedRowCountQuery = null;
+
 	private String userDefinedColumnsQuery = null;
 	
 	private String importedKeysQuery = null;
@@ -1005,6 +1008,20 @@ public class DBMS {
 	 */
 	public void setConstraintsQuery(String constraintsQuery) {
 		this.constraintsQuery = constraintsQuery;
+	}
+
+	/**
+	 * Gets query to get row count.
+	 */
+	public String getEstimatedRowCountQuery() {
+		return estimatedRowCountQuery;
+	}
+
+	/**
+	 * Sets query to get row count.
+	 */
+	public void setEstimatedRowCountQuery(String estimatedRowCountQuery) {
+		this.estimatedRowCountQuery = estimatedRowCountQuery;
 	}
 
 	/* (non-Javadoc)

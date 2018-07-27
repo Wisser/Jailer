@@ -2991,14 +2991,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				f = false;
 			}
 			f = true;
-			String orderBy = "";
-			String olapOrderBy = "";
 			if (selectParentPK) {
 				int j = 0;
 				for (Column pk: rowIdSupport.getPrimaryKey(association.source, session).getColumns()) {
 					parentPkColumnNames.add(quoting.requote(pk.name));
-					orderBy += (f ? "" : ", ") + "B." + quoting.requote(pk.name);
-					olapOrderBy += (f ? "" : ", ") + "S.B" + j;
 					++j;
 					f = false;
 				}
@@ -3006,8 +3002,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			int j = 0;
 			for (Column pk: rowIdSupport.getPrimaryKey(table, session).getColumns()) {
 				pkColumnNames.add(quoting.requote(pk.name));
-				orderBy += (f ? "" : ", ") + "A." + quoting.requote(pk.name);
-				olapOrderBy += (f ? "" : ", ") + "S.A" + j;
 				++j;
 				f = false;
 			}
@@ -3086,14 +3080,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (andCond.trim().length() > 0) {
 				sql += (whereExists ? " and" : " Where") + " (" + ConditionEditor.toMultiLine(andCond) + ")";
 			}
-			if (orderBy.length() > 0) {
-				if (sqlLimitSuffix != null && !useOLAPLimitation) {
-					sql += " order by " + orderBy;
-				}
-			}
 			olapPrefix += " From (";
 			if (useOLAPLimitation) {
-				sql = olapPrefix + sql + olapSuffix + " Order by " + olapOrderBy;
+				sql = olapPrefix + sql + olapSuffix;
 			}
 			if (sqlLimitSuffix != null && !limitSuffixInSelectClause) {
 				sql += " " + (sqlLimitSuffix.replace("%s", Integer.toString(limit)));
