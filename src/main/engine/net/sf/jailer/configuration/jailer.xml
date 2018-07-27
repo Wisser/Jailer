@@ -4,7 +4,7 @@
     <!-- Configuration of the local database -->
     <localDatabase>
         <databaseFolder>local</databaseFolder>
-        <lib>lib/h2-1.3.160.jar</lib>
+        <lib>lib/h2-1.3.175.jar</lib>
         <driver>org.h2.Driver</driver>
         <urlPattern>jdbc:h2:%s;LOG=0;UNDO_LOG=0</urlPattern>
         <localPKType>VARCHAR</localPKType>
@@ -1127,6 +1127,7 @@ union all
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
+		<estimatedRowCountQuery>select TABLE_NAME, ROW_COUNT_ESTIMATE from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA = '%s'</estimatedRowCountQuery>
         <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='${SCHEMA}' AND IS_COMPUTED</virtualColumnsQuery>
         <identifierQuoteString>"</identifierQuoteString>
         <explainPrepare></explainPrepare>
