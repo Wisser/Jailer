@@ -864,7 +864,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                         if (ModelBuilder.isJailerTable(((MDTable) uo).getUnquotedName())) {
                             isJailerTable = true;
-                            estRowCount = null;
                         }
                     }
                 }
@@ -888,9 +887,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             				estRowCountFormatted = estRowCount.toString();
             			}
 						if (fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
-            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#6666ff\">~</font><font color=\"#4444ff\">" + estRowCountFormatted + "</i>");
+            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#7777ff\">(~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\">)</font>");
             			} else {
-            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#9999dd\">~</font><font color=\"#ddddff\">" + estRowCountFormatted + "</i>");
+            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#aaaaff\">(~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\">)</font>");
             			}
             		}
             	}	
