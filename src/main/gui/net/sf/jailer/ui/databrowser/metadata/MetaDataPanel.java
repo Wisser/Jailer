@@ -854,7 +854,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                         isView = ((MDTable) uo).isView();
                         isSynonym = ((MDTable) uo).isSynonym();
-                		estRowCount = ((MDTable) uo).estimatedRowCount;
+                        if (!isView) {
+                        	estRowCount = ((MDTable) uo).estimatedRowCount;
+                        }
                         if (isView) {
                         	image = viewIcon;
                         } else if (isSynonym) {
