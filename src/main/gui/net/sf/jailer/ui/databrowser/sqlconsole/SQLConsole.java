@@ -1559,6 +1559,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         statusLabel.setText("Canceling...");
         statusLabel.setForeground(Color.RED);
     	CancellationHandler.cancel(this);
+    	cancelButton.setEnabled(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
