@@ -973,7 +973,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void internalFrameClosed(InternalFrameEvent e) {
 				close(tableBrowser, true);
-				// onLayoutChanged(false);
+				onLayoutChanged(false, false);
 			}
 
 			@Override
