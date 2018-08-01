@@ -65,6 +65,8 @@ public class DesktopAnimation {
 	class ScrollTo extends Animation {
 		private final Point scrollFrom;
 		private final Rectangle scrollTo;
+		private Point lastViewPosition;
+		private boolean stopped = false;
 	
 		public ScrollTo(Rectangle scrollTo, Point scrollFrom) {
 			this.scrollFrom = scrollFrom;
@@ -72,13 +74,17 @@ public class DesktopAnimation {
 		}
 
 		public void animate(double f) {
-			if (scrollTo != null) {
+			if (lastViewPosition != null && !lastViewPosition.equals(desktop.getScrollPane().getViewport().getViewPosition())) {
+				stopped = true;
+			}
+			if (scrollTo != null && !stopped) {
 				int w = (int) (f * scrollTo.width);
 				int h = (int) (f * scrollTo.height);
 				int x = (int) (scrollFrom.x + f * (scrollTo.x + scrollTo.width / 2 - scrollFrom.x)) - w / 2;
 				int y = (int) (scrollFrom.y + f * (scrollTo.y + scrollTo.height / 2 - scrollFrom.y)) - h / 2;
 				desktop.scrollRectToVisible(new Rectangle(x, y, w, h));
 			}
+			lastViewPosition = desktop.getScrollPane().getViewport().getViewPosition();
 		}
 	}
 
