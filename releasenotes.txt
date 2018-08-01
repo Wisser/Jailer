@@ -1,3 +1,6 @@
+7.10.5
+  - Animated desktop layout in the data browser.
+
 7.10.4
   - The estimated number of rows of the tables is displayed.
   - Limited fetch size of statements to prevent an OOM exception when the default fetch size is too large (MySQL).

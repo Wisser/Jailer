@@ -31,7 +31,7 @@ import javax.swing.JInternalFrame;
  */
 public class DesktopAnimation {
 	
-	private final double DURATION = 1000;
+	private final double DURATION = 750;
 	
 	private final Desktop desktop;
 	
@@ -73,9 +73,11 @@ public class DesktopAnimation {
 		private final JInternalFrame iFrame;
 		private final Rectangle moveTo;
 		private final Rectangle moveFrom;
+		private final BrowserContentPane browserContentPane;
 	
-		public MoveIFrame(JInternalFrame iFrame, Rectangle moveTo) {
+		public MoveIFrame(JInternalFrame iFrame, BrowserContentPane browserContentPane, Rectangle moveTo) {
 			this.iFrame = iFrame;
+			this.browserContentPane = browserContentPane;
 			this.moveTo = moveTo;
 			this.moveFrom = iFrame.getBounds();
 		}
@@ -90,32 +92,34 @@ public class DesktopAnimation {
 					wAvg(f, moveFrom.y, moveTo.y),
 					wAvg(f, moveFrom.width, moveTo.width),
 					wAvg(f, moveFrom.height, moveTo.height));
+			if (f == 1.0) {
+				browserContentPane.adjustRowTableColumnsWidth();
+			}
 		}
 	}
 
-	public void animate() {
+	public boolean animate() {
+		boolean result = false;
 		for (Iterator<Entry<Object, Animation>> i = animations.entrySet().iterator(); i.hasNext(); ) {
 			Animation animation = i.next().getValue();
 			double f = (System.currentTimeMillis() - animation.startTime) / DURATION;
 			if (f > 1.0) {
 				f = 1.0;
 			}
-			
-			double fs = Math.pow(f, 0.5);
-			
+
+			double fs = Math.pow(f, 0.4);
+
 			animation.animate(fs);
-			
+			result = true;
+
 			if (f == 1.0) {
 				i.remove();
 			}
 		}
+		return result;
 	}
 
 	public void scrollRectToVisible(Rectangle vr) {
-		// desktop.scrollRectToVisible(vr);
-		// TODO
-		if (1 == 0) return;
-		
 		Rectangle svr = desktop.getScrollPane().getViewport().getViewRect();
 		int mx = vr.x + vr.width / 2;
 		int my = vr.y + vr.height / 2;
@@ -134,8 +138,27 @@ public class DesktopAnimation {
 		animations.put(desktop, new ScrollTo(vr, new Point(mx, my)));
 	}
 
-	public void setIFrameBounds(JInternalFrame iFrame, Rectangle r) {
-		animations.put(iFrame, new MoveIFrame(iFrame, r));
+	public void scrollRectToVisibleImmediatelly(Rectangle vr) {
+		desktop.scrollRectToVisible(vr);
+		animations.remove(desktop);
 	}
-	
+
+	public void setIFrameBounds(JInternalFrame iFrame, BrowserContentPane browserContentPane, Rectangle r) {
+		animations.put(iFrame, new MoveIFrame(iFrame, browserContentPane, r));
+	}
+
+	public Rectangle getIFrameBounds(JInternalFrame iFrame) {
+		Animation animation = animations.get(iFrame);
+		if (animation instanceof MoveIFrame) {
+			return ((MoveIFrame) animation).moveTo;
+		}
+		return iFrame.getBounds();
+	}
+
+	public void setIFrameBoundsImmediatelly(JInternalFrame internalFrame, BrowserContentPane browserContentPane, Rectangle newBounds) {
+		internalFrame.setBounds(newBounds);
+		browserContentPane.adjustRowTableColumnsWidth();
+		animations.remove(internalFrame);
+	}
+
 }

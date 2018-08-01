@@ -2138,15 +2138,16 @@ public abstract class Desktop extends JDesktopPane {
 				boolean isMaximized = false;
 				JInternalFrame allFrames[] = desktop.getAllFrames();
 				for (int i = 0; i < allFrames.length; i++) {
+					Rectangle bounds = desktopAnimation.getIFrameBounds(allFrames[i]);
 					if (allFrames[i].isVisible()) {
 						if (allFrames[i].isMaximum()) {
 							isMaximized = true;
 						}
-						if (allFrames[i].getX() + allFrames[i].getWidth() > x) {
-							x = allFrames[i].getX() + allFrames[i].getWidth();
+						if (bounds.getX() + bounds.getWidth() > x) {
+							x = (int) (bounds.getX() + bounds.getWidth());
 						}
-						if (allFrames[i].getY() + allFrames[i].getHeight() > y) {
-							y = allFrames[i].getY() + allFrames[i].getHeight();
+						if (bounds.getY() + bounds.getHeight() > y) {
+							y = (int) (bounds.getY() + bounds.getHeight());
 						}
 					}
 				}
@@ -2319,7 +2320,7 @@ public abstract class Desktop extends JDesktopPane {
 			int h = (int) (BROWSERTABLE_DEFAULT_HEIGHT * layoutMode.factor);
 			Rectangle r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
 			// iFrame.setBounds(r);
-			desktopAnimation.setIFrameBounds(iFrame, r);
+			desktopAnimation.setIFrameBounds(iFrame, root.getUserObject().browserContentPane, r);
 		}
 		for (Node<RowBrowser> child : root.getChildren()) {
 			arrangeNodes(child);
@@ -2350,7 +2351,7 @@ public abstract class Desktop extends JDesktopPane {
 						// ignore
 					}
 				}
-				Rectangle bounds = rb.internalFrame.getBounds();
+				Rectangle bounds = desktopAnimation.getIFrameBounds(rb.internalFrame);
 				Rectangle newBounds;
 				double[] pBounds = precBounds.get(bounds);
 				if (pBounds == null) {
@@ -2359,8 +2360,9 @@ public abstract class Desktop extends JDesktopPane {
 					pBounds = new double[] { pBounds[0] * scale, pBounds[1] * scale, pBounds[2] * scale, pBounds[3] * scale };
 				}
 				newBounds = new Rectangle((int) pBounds[0], (int) pBounds[1], (int) pBounds[2], (int) pBounds[3]);
-				rb.internalFrame.setBounds(newBounds);
-				rb.browserContentPane.adjustRowTableColumnsWidth();
+				desktopAnimation.setIFrameBoundsImmediatelly(rb.internalFrame, rb.browserContentPane, newBounds);
+				// rb.internalFrame.setBounds(newBounds);
+				// rb.browserContentPane.adjustRowTableColumnsWidth();
 				rb.browserContentPane.sortColumnsCheckBox.setVisible(!LayoutMode.TINY.equals(layoutMode));
 				newPrecBounds.put(newBounds, pBounds);
 			}
@@ -2369,7 +2371,7 @@ public abstract class Desktop extends JDesktopPane {
 	
 			Rectangle vr = new Rectangle(Math.max(0, (int) (fixed.x * scale - getVisibleRect().width / 2)), Math.max(0,
 					(int) (fixed.y * scale - getVisibleRect().height / 2)), getVisibleRect().width, getVisibleRect().height);
-			desktopAnimation.scrollRectToVisible(vr);
+			desktopAnimation.scrollRectToVisibleImmediatelly(vr);
 			updateMenu(layoutMode);
 			adjustClosure(null, null);
 		} finally {
@@ -3076,8 +3078,9 @@ public abstract class Desktop extends JDesktopPane {
 		demaximize();
 		int w = getVisibleRect().width;
 		int h = getVisibleRect().height;
-		int x = iFrame.getBounds().x + iFrame.getBounds().width / 2 - getVisibleRect().width / 2;
-		int y = iFrame.getBounds().y + iFrame.getBounds().height / 2 - getVisibleRect().height / 2;
+		Rectangle bounds = desktopAnimation.getIFrameBounds(iFrame);
+		int x = bounds.x + bounds.width / 2 - getVisibleRect().width / 2;
+		int y = bounds.y + bounds.height / 2 - getVisibleRect().height / 2;
 		if (x < 0) {
 			w += x;
 			x = 0;
