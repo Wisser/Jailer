@@ -172,6 +172,8 @@ public abstract class Desktop extends JDesktopPane {
 	
 	private RowsClosure rowsClosure = new RowsClosure();
 
+	private final DesktopAnimation desktopAnimation;
+	
 	private final QueryBuilderDialog queryBuilderDialog;
 	private final DesktopIFrameStateChangeRenderer iFrameStateChangeRenderer = new DesktopIFrameStateChangeRenderer();
 	
@@ -199,6 +201,8 @@ public abstract class Desktop extends JDesktopPane {
 		this.queryBuilderDialog = new QueryBuilderDialog(parentFrame);
 		this.dbConnectionDialog = dbConnectionDialog;
 
+		this.desktopAnimation = new DesktopAnimation(this);
+		
 		this.queryBuilderDialog.sqlEditButton.setVisible(true);
 		this.queryBuilderDialog.sqlEditButton.addActionListener(new ActionListener() {
 			@Override
@@ -271,6 +275,7 @@ public abstract class Desktop extends JDesktopPane {
 											if (cl) {
 												repaintScrollPane();
 											}
+											desktopAnimation.animate();
 										} finally {
 											inProgress.set(false);
 											duration.set(System.currentTimeMillis() - startTime);
@@ -408,7 +413,7 @@ public abstract class Desktop extends JDesktopPane {
 				internalFrame.setVisible(true);
 				Rectangle r = layout(rowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
 				internalFrame.setBounds(r);
-				scrollRectToVisible(internalFrame.getBounds());
+				desktopAnimation.scrollRectToVisible(internalFrame.getBounds());
 				try {
 					internalFrame.setSelected(true);
 				} catch (PropertyVetoException e) {
@@ -2055,7 +2060,7 @@ public abstract class Desktop extends JDesktopPane {
 			manager.resizeDesktop();
 	}
 
-	private JScrollPane getScrollPane() {
+	public JScrollPane getScrollPane() {
 		if (getParent() instanceof JViewport) {
 			JViewport viewPort = (JViewport) getParent();
 			if (viewPort.getParent() instanceof JScrollPane)
@@ -2212,7 +2217,7 @@ public abstract class Desktop extends JDesktopPane {
 				selectedFrame = getSelectedFrame();
 			}
 			List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
-			layout(all, 0);
+			// layout(all, 0);
 	
 			optimizeLayout();
 	
@@ -2313,7 +2318,8 @@ public abstract class Desktop extends JDesktopPane {
 			y += (int) (root.getPosition() * (BROWSERTABLE_DEFAULT_HEIGHT + 8) * layoutMode.factor);
 			int h = (int) (BROWSERTABLE_DEFAULT_HEIGHT * layoutMode.factor);
 			Rectangle r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
-			iFrame.setBounds(r);
+			// iFrame.setBounds(r);
+			desktopAnimation.setIFrameBounds(iFrame, r);
 		}
 		for (Node<RowBrowser> child : root.getChildren()) {
 			arrangeNodes(child);
@@ -2363,7 +2369,7 @@ public abstract class Desktop extends JDesktopPane {
 	
 			Rectangle vr = new Rectangle(Math.max(0, (int) (fixed.x * scale - getVisibleRect().width / 2)), Math.max(0,
 					(int) (fixed.y * scale - getVisibleRect().height / 2)), getVisibleRect().width, getVisibleRect().height);
-			scrollRectToVisible(vr);
+			desktopAnimation.scrollRectToVisible(vr);
 			updateMenu(layoutMode);
 			adjustClosure(null, null);
 		} finally {
@@ -2866,7 +2872,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 			this.scrollToCenter(root.internalFrame);
 		} else {
-			this.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
+			this.desktopAnimation.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
 		}
 	}
 
@@ -3081,7 +3087,7 @@ public abstract class Desktop extends JDesktopPane {
 			y = 0;
 		}
 		Rectangle r = new Rectangle(x, y, Math.max(1, w), Math.max(1, h));
-		scrollRectToVisible(r);
+		desktopAnimation.scrollRectToVisible(r);
 	}
 
 	/**
