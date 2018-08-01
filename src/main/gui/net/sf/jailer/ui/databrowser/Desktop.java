@@ -271,12 +271,14 @@ public abstract class Desktop extends JDesktopPane {
 									public void run() {
 										long startTime = System.currentTimeMillis();
 										try {
+											suppressRepaintDesktop = true;
+											desktopAnimation.animate();
 											boolean cl = calculateLinks();
 											if (cl) {
 												repaintScrollPane();
 											}
-											desktopAnimation.animate();
 										} finally {
+											suppressRepaintDesktop = false;
 											inProgress.set(false);
 											duration.set(System.currentTimeMillis() - startTime);
 										}
@@ -1306,12 +1308,16 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	private boolean suppressRepaintDesktop = false;
+	
 	/**
 	 * Repaints the desktop.
 	 */
 	private void repaintDesktop() {
-		calculateLinks();
-		repaintScrollPane();
+		if (!suppressRepaintDesktop) {
+			calculateLinks();
+			repaintScrollPane();
+		}
 	}
 
 	private void repaintScrollPane() {
@@ -2149,6 +2155,13 @@ public abstract class Desktop extends JDesktopPane {
 						if (bounds.getY() + bounds.getHeight() > y) {
 							y = (int) (bounds.getY() + bounds.getHeight());
 						}
+						bounds = allFrames[i].getBounds();
+						if (bounds.getX() + bounds.getWidth() > x) {
+							x = (int) (bounds.getX() + bounds.getWidth());
+						}
+						if (bounds.getY() + bounds.getHeight() > y) {
+							y = (int) (bounds.getY() + bounds.getHeight());
+						}
 					}
 				}
 				Dimension d = scrollPane.getVisibleRect().getSize();
@@ -2360,7 +2373,7 @@ public abstract class Desktop extends JDesktopPane {
 					pBounds = new double[] { pBounds[0] * scale, pBounds[1] * scale, pBounds[2] * scale, pBounds[3] * scale };
 				}
 				newBounds = new Rectangle((int) pBounds[0], (int) pBounds[1], (int) pBounds[2], (int) pBounds[3]);
-				desktopAnimation.setIFrameBoundsImmediately(rb.internalFrame, rb.browserContentPane, newBounds);
+				desktopAnimation.setIFrameBounds(rb.internalFrame, rb.browserContentPane, newBounds);
 				// rb.internalFrame.setBounds(newBounds);
 				// rb.browserContentPane.adjustRowTableColumnsWidth();
 				rb.browserContentPane.sortColumnsCheckBox.setVisible(!LayoutMode.TINY.equals(layoutMode));
@@ -2371,7 +2384,7 @@ public abstract class Desktop extends JDesktopPane {
 	
 			Rectangle vr = new Rectangle(Math.max(0, (int) (fixed.x * scale - getVisibleRect().width / 2)), Math.max(0,
 					(int) (fixed.y * scale - getVisibleRect().height / 2)), getVisibleRect().width, getVisibleRect().height);
-			desktopAnimation.scrollRectToVisibleImmediately(vr);
+			desktopAnimation.scrollRectToVisible(vr);
 			updateMenu(layoutMode);
 			adjustClosure(null, null);
 		} finally {
