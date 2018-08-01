@@ -32,9 +32,11 @@ import javax.swing.JInternalFrame;
 public class DesktopAnimation {
 	
 	private final double DURATION = 750;
-	
 	private final Desktop desktop;
 	
+	/**
+	 * Animation.
+	 */
 	abstract class Animation {
 		private final long startTime;
 		Animation() {
@@ -43,12 +45,23 @@ public class DesktopAnimation {
 		abstract void animate(double f);
 	};
 
+	/**
+	 * Animation per subject.
+	 */
 	private Map<Object, Animation> animations = new HashMap<Object, Animation>();
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param desktop the desktop
+	 */
 	public DesktopAnimation(Desktop desktop) {
 		this.desktop = desktop;
 	}
 	
+	/**
+	 * Scrolls desktop to a given location.
+	 */
 	class ScrollTo extends Animation {
 		private final Point scrollFrom;
 		private final Rectangle scrollTo;
@@ -69,6 +82,9 @@ public class DesktopAnimation {
 		}
 	}
 
+	/**
+	 * Moves an internal frame of the desktop.
+	 */
 	class MoveIFrame extends Animation {
 		private final JInternalFrame iFrame;
 		private final Rectangle moveTo;
@@ -98,6 +114,9 @@ public class DesktopAnimation {
 		}
 	}
 
+	/**
+	 * Performs an animation step for each animation. 
+	 */
 	public boolean animate() {
 		boolean result = false;
 		for (Iterator<Entry<Object, Animation>> i = animations.entrySet().iterator(); i.hasNext(); ) {
@@ -119,6 +138,11 @@ public class DesktopAnimation {
 		return result;
 	}
 
+	/**
+	 * Scrolls desktop to a given location (animated).
+	 * 
+	 * @param vr the location
+	 */
 	public void scrollRectToVisible(Rectangle vr) {
 		Rectangle svr = desktop.getScrollPane().getViewport().getViewRect();
 		int mx = vr.x + vr.width / 2;
@@ -138,13 +162,38 @@ public class DesktopAnimation {
 		animations.put(desktop, new ScrollTo(vr, new Point(mx, my)));
 	}
 
-	public void scrollRectToVisibleImmediatelly(Rectangle vr) {
+	/**
+	 * Scrolls desktop to a given location (immediately).
+	 * 
+	 * @param vr the location
+	 */
+	public void scrollRectToVisibleImmediately(Rectangle vr) {
 		desktop.scrollRectToVisible(vr);
 		animations.remove(desktop);
 	}
 
+	/**
+	 * Sets the bounds of an internal frame (animated).
+	 * 
+	 * @param iFrame the frame
+	 * @param browserContentPane the content pane
+	 * @param r new bounds
+	 */
 	public void setIFrameBounds(JInternalFrame iFrame, BrowserContentPane browserContentPane, Rectangle r) {
 		animations.put(iFrame, new MoveIFrame(iFrame, browserContentPane, r));
+	}
+
+	/**
+	 * Sets the bounds of an internal frame (immediately).
+	 * 
+	 * @param iFrame the frame
+	 * @param browserContentPane the content pane
+	 * @param r new bounds
+	 */
+	public void setIFrameBoundsImmediately(JInternalFrame internalFrame, BrowserContentPane browserContentPane, Rectangle newBounds) {
+		internalFrame.setBounds(newBounds);
+		browserContentPane.adjustRowTableColumnsWidth();
+		animations.remove(internalFrame);
 	}
 
 	public Rectangle getIFrameBounds(JInternalFrame iFrame) {
@@ -153,12 +202,6 @@ public class DesktopAnimation {
 			return ((MoveIFrame) animation).moveTo;
 		}
 		return iFrame.getBounds();
-	}
-
-	public void setIFrameBoundsImmediatelly(JInternalFrame internalFrame, BrowserContentPane browserContentPane, Rectangle newBounds) {
-		internalFrame.setBounds(newBounds);
-		browserContentPane.adjustRowTableColumnsWidth();
-		animations.remove(internalFrame);
 	}
 
 }
