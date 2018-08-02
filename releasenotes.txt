@@ -1,5 +1,6 @@
 7.10.5
   - Animated desktop design in the data browser.
+  - Improved row-link rendering and performance.
 
 7.10.4
   - The estimated number of rows of the tables is displayed.
