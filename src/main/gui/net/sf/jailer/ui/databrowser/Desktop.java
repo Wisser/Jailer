@@ -1358,7 +1358,7 @@ public abstract class Desktop extends JDesktopPane {
 				if (visParent == null) {
 					visParent = tableBrowser.parent;
 				}
-				
+
 				Rectangle cellRect = new Rectangle();
 				boolean ignoreScrolling = false;
 				int i = 0;
@@ -1409,20 +1409,32 @@ public abstract class Desktop extends JDesktopPane {
 					tableBrowser.y2 = y2;
 				}
 
+				Rectangle visibleRect = getScrollPane().getViewport().getViewRect();
+				int linkAreaXMin = Math.min(visParent.internalFrame.getX() + visParent.internalFrame.getWidth(), internalFrame.getX());
+				int linkAreaYMin = Math.min(visParent.internalFrame.getY(), internalFrame.getY());
+				int linkAreaXMax = Math.max(visParent.internalFrame.getX() + visParent.internalFrame.getWidth(), internalFrame.getX());
+				int linkAreaYMax = Math.max(visParent.internalFrame.getY() + visParent.internalFrame.getHeight(), internalFrame.getY() + internalFrame.getHeight());
+				boolean allInvisible = false;
+				if (linkAreaXMin > visibleRect.getX() + visibleRect.getWidth()) {
+					allInvisible = true;
+				} else if (linkAreaYMin > visibleRect.getY() + visibleRect.getHeight()) {
+					allInvisible = true;
+				} else if (linkAreaXMax < visibleRect.getX()) {
+					allInvisible = true;
+				} else if (linkAreaYMax < visibleRect.getY()) {
+					allInvisible = true;
+				}
+
 				for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
-					rowToRowLink.visible = true;
+					rowToRowLink.visible = !allInvisible;
+					if (!rowToRowLink.visible) {
+						continue;
+					}
 					x1 = y1 = x2 = y2 = -1;
 					try {
 						if (rowToRowLink.childRowIndex >= 0 && rowToRowLink.parentRowIndex >= 0) {
 							cellRect = new Rectangle();
 							i = 0;
-							visParent = tableBrowser.parent;
-							while (visParent != null && visParent.isHidden()) {
-								visParent = visParent.parent;
-							}
-							if (visParent == null) {
-								visParent = tableBrowser.parent;
-							}
 							ignoreScrolling = false;
 							if (rowToRowLink.childRowIndex >= 0) {
 								i = tableBrowser.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.childRowIndex);
@@ -1515,12 +1527,13 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 		}
+
 		if (!renderLinks) {
 			changed = true;
 		}
 		renderLinks = true;
 		long currentTimeMillis = System.currentTimeMillis();
-		if (lastPTS + 500 < currentTimeMillis) {
+		if (lastPTS + 100 < currentTimeMillis) {
 			changed = true;
 		}
 		if (changed) {
@@ -1688,130 +1701,141 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 
-				for (final boolean pbg : new Boolean[] { true, false }) {
-					Set<Long> linesHash = new HashSet<Long>(200000);
-					for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
-						if (!tableBrowser.isHidden()) {
-							final boolean inClosureRootPath = rowsClosure.parentPath.contains(tableBrowser.browserContentPane);
-							Map<String, List<Link>> links = rbSourceToLinks.get(tableBrowser);
-							final List<Link> linksToRender = new ArrayList<Link>(1000);
-							int dir = 0;
-							for (Map.Entry<String, List<Link>> e : links.entrySet()) {
-								for (Link link : e.getValue()) {
-									if (link.visible && !link.from.isHidden() && !link.to.isHidden()) {
-										Point2D start = new Point2D.Double(link.x2, link.y2);
-										Point2D end = new Point2D.Double(link.x1, link.y1);
-										long lineHash = (start.hashCode()) + (((long) Integer.MAX_VALUE) + 1) * (end.hashCode());
-										if (!linesHash.contains(lineHash)) {
-											linksToRender.add(link);
-											linesHash.add(lineHash);
-											if (link.y1 < link.y2) {
-												++dir;
-											} else {
-												--dir;
-											}
-										}
-									}
-								}
-							}
-							
-							final boolean isToParentLink = tableBrowser.association != null && tableBrowser.association.isInsertDestinationBeforeSource();
-							Collections.sort(linksToRender, new Comparator<Link>() {
-								@Override
-								public int compare(Link a, Link b) {
-									if (isToParentLink) {
-										if (a.y1 != b.y1) {
-											return a.y1 - b.y1;
-										} else {
-											return a.y2 - b.y2;
-										}
-									} else {
-										if (a.y2 != b.y2) {
-											return a.y2 - b.y2;
-										} else {
-											return a.y1 - b.y1;
-										}
-									}
-								}
-							});
-							boolean light = true;
-							int lastY = -1;
-							final Set<Integer> noArrowIndexes = new HashSet<Integer>(linksToRender.size());
-							if (isToParentLink) {
-								int beginBlock = -1;
-								for (int i = 0; i <= linksToRender.size(); ++i) {
-									Link link = i < linksToRender.size()? linksToRender.get(i) : null;
-									int y = link != null? link.y1 : Integer.MAX_VALUE;
-									if (y != lastY) {
-										if (beginBlock >= 0) {
-											int mid = beginBlock + ((i - 1 - beginBlock) / 2);
-											for (int n = beginBlock; n < i; ++n) {
-												if (n != mid) {
-													noArrowIndexes.add(n);
+				Set<RowBrowser> pathToSelectedRowBrowser = new HashSet<RowBrowser>();
+				for (RowBrowser rb: getBrowsers()) {
+					if (rb.internalFrame.isSelected()) {
+						for (RowBrowser parent = rb; parent != null; parent = parent.parent) {
+							pathToSelectedRowBrowser.add(parent);
+						}
+						break;
+					}
+				}
+				
+				final int MAX_PRIO = 3;
+				boolean fastMode = desktopAnimation.isActive();
+				for (int prio = 0; prio <= MAX_PRIO; ++prio) {
+					if (prio > 0 && fastMode) {
+						break;
+					}
+					for (final boolean pbg : new Boolean[] { true, false }) {
+						Set<Long> linesHash = new HashSet<Long>(200000);
+						for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
+							if (!tableBrowser.isHidden()) {
+								final boolean inClosureRootPath = rowsClosure.parentPath.contains(tableBrowser.browserContentPane);
+								Map<String, List<Link>> links = rbSourceToLinks.get(tableBrowser);
+								final List<Link> linksToRender = new ArrayList<Link>(1000);
+								int dir = 0;
+								for (Map.Entry<String, List<Link>> e : links.entrySet()) {
+									for (Link link : e.getValue()) {
+										if (link.visible && !link.from.isHidden() && !link.to.isHidden()) {
+											Point2D start = new Point2D.Double(link.x2, link.y2);
+											Point2D end = new Point2D.Double(link.x1, link.y1);
+											long lineHash = (start.hashCode()) + (((long) Integer.MAX_VALUE) + 1) * (end.hashCode());
+											if (!linesHash.contains(lineHash)) {
+												linksToRender.add(link);
+												linesHash.add(lineHash);
+												if (link.y1 < link.y2) {
+													++dir;
+												} else {
+													--dir;
 												}
 											}
 										}
-										beginBlock = i;
 									}
-									lastY = y;
 								}
-							}
-							final Map<String, java.awt.geom.Point2D.Double> followMe;
-							if (!isToParentLink) {
-								followMe = new HashMap<String, java.awt.geom.Point2D.Double>();
-							} else {
-								followMe = null;
-							}
-							lastY = -1;
-							int lastLastY = -1;
-							boolean lastInClosure = false;
-							Map<String, List<Runnable>> renderTasks = new HashMap<String, List<Runnable>>();
-							for (int i = 0; i < linksToRender.size(); ++i) {
-								final Link link = linksToRender.get(i);
-								int y = isToParentLink? link.y1 : link.y2;
-								if (lastInClosure != link.inClosure) {
-									light = !light;
-								} else if (lastY != y) {
-									if (lastLastY == lastY) {
-										light = !light;
-									} else {
-										if (i < linksToRender.size() - 1) {
-											int nextY = isToParentLink? linksToRender.get(i + 1).y1 : linksToRender.get(i + 1).y2;
-											if (nextY == y) {
-												light = !light;
+								
+								final boolean isToParentLink = tableBrowser.association != null && tableBrowser.association.isInsertDestinationBeforeSource();
+								Collections.sort(linksToRender, new Comparator<Link>() {
+									@Override
+									public int compare(Link a, Link b) {
+										if (isToParentLink) {
+											if (a.y1 != b.y1) {
+												return a.y1 - b.y1;
+											} else {
+												return a.y2 - b.y2;
+											}
+										} else {
+											if (a.y2 != b.y2) {
+												return a.y2 - b.y2;
+											} else {
+												return a.y1 - b.y1;
 											}
 										}
 									}
+								});
+								boolean light = true;
+								final Map<String, java.awt.geom.Point2D.Double> followMe;
+								if (!isToParentLink) {
+									followMe = new HashMap<String, java.awt.geom.Point2D.Double>();
+								} else {
+									followMe = null;
 								}
-								lastLastY = lastY;
-								lastY = y;
-								lastInClosure = link.inClosure;
-								final Color color = pbg ? Color.white : light? link.color1 : link.color2;
-								final Point2D start = new Point2D.Double(link.x2, link.y2);
-								final Point2D end = new Point2D.Double(link.x1, link.y1);
-								final int ir = dir > 0? i : linksToRender.size() - 1 - i;
-								final boolean finalLight = light;
-								final int finalI = i;
-								Runnable task = new Runnable() {
-									@Override
-									public void run() {
-										paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect, link.dotted, linksToRender.size() == 1? 0.5 : (ir + 1) * 1.0 / linksToRender.size(), finalLight, noArrowIndexes.contains(finalI), followMe, link.sourceRowID, link.inClosure, inClosureRootPath, isToParentLink);
+								int lastY = -1;
+								int lastLastY = -1;
+								boolean lastInClosure = false;
+								Map<String, List<Runnable>> renderTasks = new HashMap<String, List<Runnable>>();
+								for (int i = 0; i < linksToRender.size(); ++i) {
+									final Link link = linksToRender.get(i);
+									int y = isToParentLink? link.y1 : link.y2;
+									if (lastInClosure != link.inClosure) {
+										light = !light;
+									} else if (lastY != y) {
+										if (lastLastY == lastY) {
+											light = !light;
+										} else {
+											if (i < linksToRender.size() - 1) {
+												int nextY = isToParentLink? linksToRender.get(i + 1).y1 : linksToRender.get(i + 1).y2;
+												if (nextY == y) {
+													light = !light;
+												}
+											}
+										}
 									}
-								};
-								List<Runnable> tasks = renderTasks.get(link.sourceRowID);
-								if (tasks == null) {
-									tasks = new LinkedList<Runnable>();
-									renderTasks.put(link.sourceRowID, tasks); 
+									lastLastY = lastY;
+									lastY = y;
+									lastInClosure = link.inClosure;
+									final Color color = pbg ? Color.white : light? link.color1 : link.color2;
+									final Point2D start = new Point2D.Double(link.x2, link.y2);
+									final Point2D end = new Point2D.Double(link.x1, link.y1);
+									final int ir = dir > 0? i : linksToRender.size() - 1 - i;
+									final boolean finalLight = light;
+									int linkPrio = 0;
+									if (!fastMode) {
+										if (pathToSelectedRowBrowser != null && pathToSelectedRowBrowser.contains(tableBrowser)) {
+											linkPrio += 2;
+										}
+										if (link.inClosure) {
+											linkPrio += 1;
+										}
+									}
+									final boolean doPaint = linkPrio == prio;
+									Runnable task = new Runnable() {
+										@Override
+										public void run() {
+											paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect,
+													link.dotted,
+													linksToRender.size() == 1 ? 0.5 : (ir + 1) * 1.0 / linksToRender.size(),
+													finalLight, followMe,
+													link.sourceRowID, link.inClosure, inClosureRootPath,
+													isToParentLink,
+													doPaint);
+										}
+									};
+									List<Runnable> tasks = renderTasks.get(link.sourceRowID);
+									if (tasks == null) {
+										tasks = new LinkedList<Runnable>();
+										renderTasks.put(link.sourceRowID, tasks); 
+									}
+									tasks.add(task);
 								}
-								tasks.add(task);
-							}
-							for (Entry<String, List<Runnable>> entry: renderTasks.entrySet()) {
-								List<Runnable> tasks = entry.getValue();
-								Runnable mid = tasks.get(tasks.size() / 2);
-								mid.run();
-								for (Runnable task: tasks) {
-									if (task != mid) {
-										task.run();
+								for (Entry<String, List<Runnable>> entry: renderTasks.entrySet()) {
+									List<Runnable> tasks = entry.getValue();
+									Runnable mid = tasks.get(tasks.size() / 2);
+									mid.run();
+									for (Runnable task: tasks) {
+										if (task != mid) {
+											task.run();
+										}
 									}
 								}
 							}
@@ -1865,17 +1889,22 @@ public abstract class Desktop extends JDesktopPane {
 	long lastAnimationStepTime = 0;
 	final long STEP_DELAY = 70;
 
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light, boolean noArrow, Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inClosureRootPath, boolean isToParentLink) {
-		g2d.setColor(color);
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		BasicStroke stroke = new BasicStroke(!intersect ? (pbg ? 2 : 1) : (pbg ? 3 : 2));
-		if (inClosure) {
-			final int LENGTH = 16;
-			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f },
-					(inClosureRootPath ^ isToParentLink)? animationStep % LENGTH : (LENGTH - animationStep % LENGTH)));
-		} else {
-			g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
-					1.0f) : stroke);
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser,
+			boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light,
+			Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inClosureRootPath,
+			boolean isToParentLink, boolean doPaint) {
+		if (doPaint) {
+			g2d.setColor(color);
+			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			BasicStroke stroke = new BasicStroke((!intersect ? (pbg ? inClosure? 3 : 2 : 1) : (pbg ? 3 : 2)));
+			if (inClosure) {
+				final int LENGTH = 16;
+				g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f },
+						(inClosureRootPath ^ isToParentLink)? animationStep % LENGTH : (LENGTH - animationStep % LENGTH)));
+			} else {
+				g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
+						1.0f) : stroke);
+			}
 		}
 
 		// compute the intersection with the target bounding box
@@ -1904,6 +1933,10 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		}
 		
+		if (!doPaint) {
+			return;
+		}
+		
 		Path2D.Double path = new Path2D.Double();
 		if (isToParentLink) {
 			path.moveTo(end.getX() - 5, end.getY());
@@ -1915,27 +1948,25 @@ public abstract class Desktop extends JDesktopPane {
 		g2d.draw(path);
 		
 		// create the arrow head shape
-		if (!noArrow) {
-			m_arrowHead = new Polygon();
-			double ws = 0.4;
-			double hs = 2.0 / 3.0;
-			double w = 3, h = w;
-			m_arrowHead.addPoint(0, 0);
-			m_arrowHead.addPoint((int) (ws * -w), (int) (hs * (-h)));
-			// m_arrowHead.addPoint(0, (int) (hs * (-2 * h)));
-			m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
-			m_arrowHead.addPoint(0, 0);
-	
-			AffineTransform at = getArrowTrans(new Point2D.Double(midX, end.getY()), end, 9);
-			Shape m_curArrow = at.createTransformedShape(m_arrowHead);
-	
-			// g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
-			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g2d.setStroke(new BasicStroke(2));
-			g2d.fill(m_curArrow);
-			if (pbg) {
-				g2d.draw(m_curArrow);
-			}
+		m_arrowHead = new Polygon();
+		double ws = 0.4;
+		double hs = 2.0 / 3.0;
+		double w = 3, h = w;
+		m_arrowHead.addPoint(0, 0);
+		m_arrowHead.addPoint((int) (ws * -w), (int) (hs * (-h)));
+		// m_arrowHead.addPoint(0, (int) (hs * (-2 * h)));
+		m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
+		m_arrowHead.addPoint(0, 0);
+
+		AffineTransform at = getArrowTrans(new Point2D.Double(midX, end.getY()), end, 9);
+		Shape m_curArrow = at.createTransformedShape(m_arrowHead);
+
+		// g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setStroke(new BasicStroke(2));
+		g2d.fill(m_curArrow);
+		if (pbg) {
+			g2d.draw(m_curArrow);
 		}
 	}
 
@@ -2373,7 +2404,7 @@ public abstract class Desktop extends JDesktopPane {
 					pBounds = new double[] { pBounds[0] * scale, pBounds[1] * scale, pBounds[2] * scale, pBounds[3] * scale };
 				}
 				newBounds = new Rectangle((int) pBounds[0], (int) pBounds[1], (int) pBounds[2], (int) pBounds[3]);
-				desktopAnimation.setIFrameBounds(rb.internalFrame, rb.browserContentPane, newBounds);
+				desktopAnimation.setIFrameBoundsImmediately(rb.internalFrame, rb.browserContentPane, newBounds);
 				// rb.internalFrame.setBounds(newBounds);
 				// rb.browserContentPane.adjustRowTableColumnsWidth();
 				rb.browserContentPane.sortColumnsCheckBox.setVisible(!LayoutMode.TINY.equals(layoutMode));
@@ -2384,7 +2415,7 @@ public abstract class Desktop extends JDesktopPane {
 	
 			Rectangle vr = new Rectangle(Math.max(0, (int) (fixed.x * scale - getVisibleRect().width / 2)), Math.max(0,
 					(int) (fixed.y * scale - getVisibleRect().height / 2)), getVisibleRect().width, getVisibleRect().height);
-			desktopAnimation.scrollRectToVisible(vr);
+			desktopAnimation.scrollRectToVisibleImmediately(vr);
 			updateMenu(layoutMode);
 			adjustClosure(null, null);
 		} finally {

@@ -31,7 +31,7 @@ import javax.swing.JInternalFrame;
  */
 public class DesktopAnimation {
 	
-	private final double DURATION = 750;
+	private final double DURATION = 1000;
 	private final Desktop desktop;
 	
 	/**
@@ -42,7 +42,7 @@ public class DesktopAnimation {
 		Animation() {
 			startTime = System.currentTimeMillis();
 		}
-		abstract void animate(double f);
+		abstract boolean animate(double f);
 	};
 
 	/**
@@ -66,18 +66,18 @@ public class DesktopAnimation {
 		private final Point scrollFrom;
 		private final Rectangle scrollTo;
 		private Point lastViewPosition;
-		private boolean stopped = false;
 	
 		public ScrollTo(Rectangle scrollTo, Point scrollFrom) {
 			this.scrollFrom = scrollFrom;
 			this.scrollTo = scrollTo;
 		}
 
-		public void animate(double f) {
+		public boolean animate(double f) {
 			if (lastViewPosition != null && !lastViewPosition.equals(desktop.getScrollPane().getViewport().getViewPosition())) {
-				stopped = true;
+				return false;
 			}
-			if (scrollTo != null && !stopped) {
+			Point currentViewPosition = desktop.getScrollPane().getViewport().getViewPosition();
+			if (scrollTo != null) {
 				int w = (int) (f * scrollTo.width);
 				int h = (int) (f * scrollTo.height);
 				int x = (int) (scrollFrom.x + f * (scrollTo.x + scrollTo.width / 2 - scrollFrom.x)) - w / 2;
@@ -85,6 +85,10 @@ public class DesktopAnimation {
 				desktop.scrollRectToVisible(new Rectangle(x, y, w, h));
 			}
 			lastViewPosition = desktop.getScrollPane().getViewport().getViewPosition();
+			if (lastViewPosition.equals(currentViewPosition)) {
+				return false;
+			}
+			return true;
 		}
 	}
 
@@ -108,15 +112,20 @@ public class DesktopAnimation {
 			return (int) (a + f * (b - a));
 		}
 		
-		public void animate(double f) {
-			iFrame.setBounds(
-					wAvg(f, moveFrom.x, moveTo.x),
-					wAvg(f, moveFrom.y, moveTo.y),
-					wAvg(f, moveFrom.width, moveTo.width),
-					wAvg(f, moveFrom.height, moveTo.height));
+		public boolean animate(double f) {
+			int wx = wAvg(f, moveFrom.x, moveTo.x);
+			int wy = wAvg(f, moveFrom.y, moveTo.y);
+			int ww = wAvg(f, moveFrom.width, moveTo.width);
+			int wh = wAvg(f, moveFrom.height, moveTo.height);
+			if (f < 1.0 && Math.abs(ww - iFrame.getWidth()) < 4 && Math.abs(wh - iFrame.getHeight()) < 4) {
+				iFrame.setLocation(wx, wy);
+			} else {
+				iFrame.setBounds(wx, wy, ww, wh);
+			}
 			if (f == 1.0) {
 				browserContentPane.adjustRowTableColumnsWidth();
 			}
+			return !(wx == moveTo.x && wy == moveTo.y && ww == moveTo.width && wh == moveTo.height);
 		}
 	}
 
@@ -128,13 +137,19 @@ public class DesktopAnimation {
 		for (Iterator<Entry<Object, Animation>> i = animations.entrySet().iterator(); i.hasNext(); ) {
 			Animation animation = i.next().getValue();
 			double f = (System.currentTimeMillis() - animation.startTime) / DURATION;
+			double fs;
+
 			if (f > 1.0) {
 				f = 1.0;
+				fs = 1.0;
+			} else {
+				fs = Math.pow(f, 0.5);
 			}
 
-			double fs = Math.pow(f, 0.4);
-
-			animation.animate(fs);
+			if (!animation.animate(fs)) {
+				i.remove();
+				continue;
+			}
 			result = true;
 
 			if (f == 1.0) {
@@ -208,6 +223,10 @@ public class DesktopAnimation {
 			return ((MoveIFrame) animation).moveTo;
 		}
 		return iFrame.getBounds();
+	}
+
+	public boolean isActive() {
+		return !animations.isEmpty();
 	}
 
 }
