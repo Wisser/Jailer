@@ -94,25 +94,27 @@ public class DesktopIFrameStateChangeRenderer {
 				factor = 0;
 			}
 			
-			Color color = new Color(255, 255, 0, (int) (170 * (1 - factor)));
-			g2d.setColor(color);
-			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			double width = stateChange.iFrame.getWidth() / 12 * ((factor - stateChange.factorOffset) / (1 - stateChange.factorOffset) + 0.1);
-			BasicStroke stroke = new BasicStroke((float) width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-			g2d.setStroke(stroke);
-			
-			Rectangle rect = stateChange.iFrame.getBounds();
-			int w = (int) (0.5 * width);
-			rect = new Rectangle(rect.x + w / 2, rect.y + w / 2, rect.width - w, rect.height - w);
-			
-			Path2D.Double path = new Path2D.Double();
-			path.moveTo(rect.getX(), rect.getY());
-			path.lineTo(rect.getX() + rect.getWidth(), rect.getY());
-			path.lineTo(rect.getX() + rect.getWidth(), rect.getY() + rect.getHeight());
-			path.lineTo(rect.getX(), rect.getY() + rect.getHeight());
-			path.lineTo(rect.getX(), rect.getY());
-			
-			g2d.draw(path);
+			if (stateChange.iFrame.isVisible()) {
+				Color color = new Color(255, 255, 0, (int) (170 * (1 - factor)));
+				g2d.setColor(color);
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				double width = stateChange.iFrame.getWidth() / 12 * ((factor - stateChange.factorOffset) / (1 - stateChange.factorOffset) + 0.1);
+				BasicStroke stroke = new BasicStroke((float) width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
+				g2d.setStroke(stroke);
+				
+				Rectangle rect = stateChange.iFrame.getBounds();
+				int w = (int) (0.5 * width);
+				rect = new Rectangle(rect.x + w / 2, rect.y + w / 2, rect.width - w, rect.height - w);
+				
+				Path2D.Double path = new Path2D.Double();
+				path.moveTo(rect.getX(), rect.getY());
+				path.lineTo(rect.getX() + rect.getWidth(), rect.getY());
+				path.lineTo(rect.getX() + rect.getWidth(), rect.getY() + rect.getHeight());
+				path.lineTo(rect.getX(), rect.getY() + rect.getHeight());
+				path.lineTo(rect.getX(), rect.getY());
+				
+				g2d.draw(path);
+			}
 		}		
 	}
 

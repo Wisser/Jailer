@@ -1594,6 +1594,8 @@ public abstract class Desktop extends JDesktopPane {
 			final Graphics2D g2d = (Graphics2D) graphics;
 			renderActiveIFrameMarker(g2d);
 			if (renderLinks) {
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 				if (rbSourceToLinks == null) {
 					rbSourceToLinks = new HashMap<RowBrowser, Map<String, List<Link>>>();
 					final String ALL = "-";
@@ -1895,7 +1897,6 @@ public abstract class Desktop extends JDesktopPane {
 			boolean isToParentLink, boolean doPaint) {
 		if (doPaint) {
 			g2d.setColor(color);
-			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			BasicStroke stroke = new BasicStroke((!intersect ? (pbg ? inClosure? 3 : 2 : 1) : (pbg ? 3 : 2)));
 			if (inClosure) {
 				final int LENGTH = 16;
@@ -1961,8 +1962,6 @@ public abstract class Desktop extends JDesktopPane {
 		AffineTransform at = getArrowTrans(new Point2D.Double(midX, end.getY()), end, 9);
 		Shape m_curArrow = at.createTransformedShape(m_arrowHead);
 
-		// g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setStroke(new BasicStroke(2));
 		g2d.fill(m_curArrow);
 		if (pbg) {
@@ -2092,7 +2091,7 @@ public abstract class Desktop extends JDesktopPane {
 		setAllSize(new Dimension(width, height));
 	}
 
-	private void checkDesktopSize() {
+	void checkDesktopSize() {
 		if (getParent() != null && isVisible())
 			manager.resizeDesktop();
 	}
@@ -3134,7 +3133,8 @@ public abstract class Desktop extends JDesktopPane {
 			y = 0;
 		}
 		Rectangle r = new Rectangle(x, y, Math.max(1, w), Math.max(1, h));
-		desktopAnimation.scrollRectToVisible(r);
+		Rectangle vr = new Rectangle(getScrollPane().getViewport().getPreferredSize());
+		desktopAnimation.scrollRectToVisible(r.intersection(vr));
 	}
 
 	/**

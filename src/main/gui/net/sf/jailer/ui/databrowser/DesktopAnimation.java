@@ -24,6 +24,8 @@ import java.util.Map.Entry;
 
 import javax.swing.JInternalFrame;
 
+import net.sf.jailer.ui.UIUtil;
+
 /**
  * Animates layout changes of {@link Desktop}.
  * 
@@ -38,18 +40,23 @@ public class DesktopAnimation {
 	 * Animation.
 	 */
 	abstract class Animation {
-		private final long startTime;
-		Animation() {
+		private long startTime;
+		public void start() {
 			startTime = System.currentTimeMillis();
 		}
 		abstract boolean animate(double f);
 	};
 
 	/**
-	 * Animation per subject.
+	 * Animation per subject (started).
 	 */
 	private Map<Object, Animation> animations = new HashMap<Object, Animation>();
-	
+
+	/**
+	 * Animation per subject (waiting).
+	 */
+	private Map<Object, Animation> waiting = new HashMap<Object, Animation>();
+
 	/**
 	 * Constructor.
 	 * 
@@ -64,11 +71,15 @@ public class DesktopAnimation {
 	 */
 	class ScrollTo extends Animation {
 		private final Point scrollFrom;
+		private final int initialWidth;
+		private final int initialHeight;
 		private final Rectangle scrollTo;
 		private Point lastViewPosition;
 	
-		public ScrollTo(Rectangle scrollTo, Point scrollFrom) {
+		public ScrollTo(Rectangle scrollTo, Point scrollFrom, int initialWidth, int initialHeight) {
 			this.scrollFrom = scrollFrom;
+			this.initialWidth = initialWidth;
+			this.initialHeight = initialHeight;
 			this.scrollTo = scrollTo;
 		}
 
@@ -76,22 +87,18 @@ public class DesktopAnimation {
 			if (lastViewPosition != null && !lastViewPosition.equals(desktop.getScrollPane().getViewport().getViewPosition())) {
 				return false;
 			}
-			Point currentViewPosition = desktop.getScrollPane().getViewport().getViewPosition();
 			if (scrollTo != null) {
-				int w = (int) (f * scrollTo.width);
-				int h = (int) (f * scrollTo.height);
+				int w = wAvg(f, initialWidth, scrollTo.width);
+				int h = wAvg(f, initialHeight, scrollTo.height);
 				int x = (int) (scrollFrom.x + f * (scrollTo.x + scrollTo.width / 2 - scrollFrom.x)) - w / 2;
 				int y = (int) (scrollFrom.y + f * (scrollTo.y + scrollTo.height / 2 - scrollFrom.y)) - h / 2;
 				desktop.scrollRectToVisible(new Rectangle(x, y, w, h));
 			}
 			lastViewPosition = desktop.getScrollPane().getViewport().getViewPosition();
-			if (lastViewPosition.equals(currentViewPosition)) {
-				return false;
-			}
 			return true;
 		}
 	}
-
+ 
 	/**
 	 * Moves an internal frame of the desktop.
 	 */
@@ -108,10 +115,6 @@ public class DesktopAnimation {
 			this.moveFrom = iFrame.getBounds();
 		}
 
-		private int wAvg(double f, int a, int b) {
-			return (int) (a + f * (b - a));
-		}
-		
 		public boolean animate(double f) {
 			int wx = wAvg(f, moveFrom.x, moveTo.x);
 			int wy = wAvg(f, moveFrom.y, moveTo.y);
@@ -134,6 +137,7 @@ public class DesktopAnimation {
 	 */
 	public boolean animate() {
 		boolean result = false;
+		boolean wasActive = isActive();
 		for (Iterator<Entry<Object, Animation>> i = animations.entrySet().iterator(); i.hasNext(); ) {
 			Animation animation = i.next().getValue();
 			double f = (System.currentTimeMillis() - animation.startTime) / DURATION;
@@ -143,7 +147,7 @@ public class DesktopAnimation {
 				f = 1.0;
 				fs = 1.0;
 			} else {
-				fs = Math.pow(f, 0.5);
+				fs = Math.pow(f, 0.3);
 			}
 
 			if (!animation.animate(fs)) {
@@ -156,6 +160,9 @@ public class DesktopAnimation {
 				i.remove();
 			}
 		}
+		if (wasActive && !isActive()) {
+			desktop.checkDesktopSize();
+		}
 		return result;
 	}
 
@@ -166,21 +173,23 @@ public class DesktopAnimation {
 	 */
 	public void scrollRectToVisible(Rectangle vr) {
 		Rectangle svr = desktop.getScrollPane().getViewport().getViewRect();
-		int mx = vr.x + vr.width / 2;
-		int my = vr.y + vr.height / 2;
-		if (mx < svr.x) {
-			mx = svr.x;
+		if (!svr.contains(vr)) {
+			int mx = vr.x + vr.width / 2;
+			int my = vr.y + vr.height / 2;
+			if (mx < svr.x) {
+				mx = svr.x;
+			}
+			if (my < svr.y) {
+				my = svr.y;
+			}
+			if (mx > svr.x + svr.width) {
+				mx = svr.x + svr.width;
+			}
+			if (my > svr.y + svr.height) {
+				my = svr.y + svr.height;
+			}
+			startAnimation(desktop, new ScrollTo(vr, new Point(mx, my), 2 * Math.min(mx - svr.x, svr.x + svr.width - mx), 2 * Math.min(my - svr.y, svr.y + svr.height - my)));
 		}
-		if (my < svr.y) {
-			my = svr.y;
-		}
-		if (mx > svr.x + svr.width) {
-			mx = svr.x + svr.width;
-		}
-		if (my > svr.y + svr.height) {
-			my = svr.y + svr.height;
-		}
-		animations.put(desktop, new ScrollTo(vr, new Point(mx, my)));
 	}
 
 	/**
@@ -201,7 +210,7 @@ public class DesktopAnimation {
 	 * @param r new bounds
 	 */
 	public void setIFrameBounds(JInternalFrame iFrame, BrowserContentPane browserContentPane, Rectangle r) {
-		animations.put(iFrame, new MoveIFrame(iFrame, browserContentPane, r));
+		startAnimation(iFrame, new MoveIFrame(iFrame, browserContentPane, r));
 	}
 
 	/**
@@ -222,7 +231,27 @@ public class DesktopAnimation {
 		if (animation instanceof MoveIFrame) {
 			return ((MoveIFrame) animation).moveTo;
 		}
+		animation = waiting.get(iFrame);
+		if (animation instanceof MoveIFrame) {
+			return ((MoveIFrame) animation).moveTo;
+		}
 		return iFrame.getBounds();
+	}
+
+	private int wAvg(double f, int a, int b) {
+		return (int) (a + f * (b - a));
+	}
+	
+	private void startAnimation(final Object key, final Animation animation) {
+		waiting.put(key, animation);
+		UIUtil.invokeLater(12, new Runnable() {
+			@Override
+			public void run() {
+				animation.start();
+				waiting.remove(key);
+				animations.put(key, animation);
+			}
+		});
 	}
 
 	public boolean isActive() {
