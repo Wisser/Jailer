@@ -2073,11 +2073,14 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	private Dimension currentDesktopnSize;
+	
 	/**
 	 * Sets all component size properties ( maximum, minimum, preferred) to the
 	 * given dimension.
 	 */
 	public void setAllSize(Dimension d) {
+		currentDesktopnSize = d;
 		setMinimumSize(d);
 		setMaximumSize(d);
 		setPreferredSize(d);
@@ -3133,7 +3136,7 @@ public abstract class Desktop extends JDesktopPane {
 			y = 0;
 		}
 		Rectangle r = new Rectangle(x, y, Math.max(1, w), Math.max(1, h));
-		Rectangle vr = new Rectangle(getScrollPane().getViewport().getPreferredSize());
+		Rectangle vr = new Rectangle(currentDesktopnSize == null? getScrollPane().getViewport().getPreferredSize() : currentDesktopnSize);
 		desktopAnimation.scrollRectToVisible(r.intersection(vr));
 	}
 
