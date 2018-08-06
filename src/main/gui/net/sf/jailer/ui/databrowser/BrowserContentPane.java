@@ -3913,6 +3913,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (table == null || table instanceof SqlStatementTable || getQueryBuilderDialog() == null /* SQL Console */) {
 			return -1;
 		}
+		if (association != null && association.isInsertDestinationBeforeSource()) {
+			return table.getColumns().size() - 1;
+		}
 		if (table.primaryKey.getColumns() != null && table.primaryKey.getColumns().size() > 0) {
 			Column pk = table.primaryKey.getColumns().get(0);
 			for (int i = 0; i < table.getColumns().size(); ++i) {
