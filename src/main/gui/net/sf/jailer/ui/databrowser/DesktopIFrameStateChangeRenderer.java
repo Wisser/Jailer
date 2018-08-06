@@ -39,7 +39,7 @@ import net.sf.jailer.ui.UIUtil;
  */
 public class DesktopIFrameStateChangeRenderer {
 	
-	private final double DURATION = 700.0;
+	private final double DURATION = 1500.0;
 	private List<JInternalFrame> atomicBlock = null;
 	
 	private class StateChange {
@@ -75,11 +75,13 @@ public class DesktopIFrameStateChangeRenderer {
 			UIUtil.invokeLater(12, new Runnable() {
 				@Override
 				public void run() {
-					StateChange stateChange = new StateChange();
-					stateChange.iFrame = iFrame;
-					stateChange.startTime = System.currentTimeMillis();
-					stateChange.factorOffset = factorOffset;
-					stateChanges.put(iFrame, stateChange);
+					if (!stateChanges.containsKey(iFrame)) {
+						StateChange stateChange = new StateChange();
+						stateChange.iFrame = iFrame;
+						stateChange.startTime = System.currentTimeMillis();
+						stateChange.factorOffset = factorOffset;
+						stateChanges.put(iFrame, stateChange);
+					}
 				}
 			});
 		}
