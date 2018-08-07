@@ -147,7 +147,9 @@ public class DesktopAnimation {
 				f = 1.0;
 				fs = 1.0;
 			} else {
-				fs = Math.pow(f, 0.3);
+				final double M1 = -3;
+				final double M2 = 5;
+				fs = sig(f * (-M1 + M2) + M1);
 			}
 
 			if (!animation.animate(fs)) {
@@ -166,6 +168,10 @@ public class DesktopAnimation {
 		return result;
 	}
 
+	private double sig(double x) {
+		return 1.0 / (1.0 + Math.exp(-x));
+	}
+	
 	/**
 	 * Scrolls desktop to a given location (animated).
 	 * 
