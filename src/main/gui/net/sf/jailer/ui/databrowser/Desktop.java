@@ -264,7 +264,9 @@ public abstract class Desktop extends JDesktopPane {
 							long avgD = dSum / durations.size();
 							if (UIUtil.isPopupActive() && !desktopAnimation.isActive()) {
 								avgD *= 2;
-							}	
+							} else {
+								avgD *= 1.05;
+							}
 							
 //							long k = durations.keySet().iterator().next();
 //							if (k != now) {
@@ -1900,7 +1902,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private long animationStep = 0;
 	long lastAnimationStepTime = 0;
-	final long STEP_DELAY = 70;
+	final long STEP_DELAY = 50;
 
 	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser,
 			boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light,

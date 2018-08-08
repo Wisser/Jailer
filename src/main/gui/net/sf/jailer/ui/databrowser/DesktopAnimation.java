@@ -196,6 +196,9 @@ public class DesktopAnimation {
 				my = svr.y + svr.height;
 			}
 			startAnimation(desktop, new ScrollTo(vr, new Point(mx, my), 2 * Math.min(mx - svr.x, svr.x + svr.width - mx), 2 * Math.min(my - svr.y, svr.y + svr.height - my)));
+		} else {
+			waiting.remove(desktop);
+			animations.remove(desktop);
 		}
 	}
 
@@ -206,6 +209,7 @@ public class DesktopAnimation {
 	 */
 	public void scrollRectToVisibleImmediately(Rectangle vr) {
 		desktop.scrollRectToVisible(vr);
+		waiting.remove(desktop);
 		animations.remove(desktop);
 	}
 
@@ -230,6 +234,7 @@ public class DesktopAnimation {
 	public void setIFrameBoundsImmediately(JInternalFrame internalFrame, BrowserContentPane browserContentPane, Rectangle newBounds) {
 		internalFrame.setBounds(newBounds);
 		browserContentPane.adjustRowTableColumnsWidth();
+		waiting.remove(internalFrame);
 		animations.remove(internalFrame);
 	}
 
@@ -249,14 +254,16 @@ public class DesktopAnimation {
 		return (int) (a + f * (b - a));
 	}
 	
-	private void startAnimation(final Object key, final Animation animation) {
+	private void startAnimation(Object key, Animation animation) {
 		waiting.put(key, animation);
 		UIUtil.invokeLater(12, new Runnable() {
 			@Override
 			public void run() {
-				animation.start();
-				waiting.remove(key);
-				animations.put(key, animation);
+				for (Entry<Object, Animation> e: waiting.entrySet()) {
+					e.getValue().start();
+					animations.put(e.getKey(), e.getValue());
+				}
+				waiting.clear();
 			}
 		});
 	}
