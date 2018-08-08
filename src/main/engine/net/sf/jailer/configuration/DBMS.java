@@ -104,7 +104,7 @@ public class DBMS {
 		this.rowidName = other.rowidName;
 		this.supportsSchemasInIndexDefinitions = other.supportsSchemasInIndexDefinitions;
 		this.useInlineViewsInDataBrowser = other.useInlineViewsInDataBrowser;
-		this.estimatedRowCountQuery = estimatedRowCountQuery;
+		this.estimatedRowCountQuery = other.estimatedRowCountQuery;
 		this.virtualColumnsQuery = other.virtualColumnsQuery;
 		this.userDefinedColumnsQuery = other.userDefinedColumnsQuery;
 		this.importedKeysQuery = other.importedKeysQuery;
