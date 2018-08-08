@@ -249,24 +249,23 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         closureTable.addMouseListener(new MouseListener() {
             
-            private Map<Integer, String> manuallySelected = new TreeMap<Integer, String>();
+        	private Map<Integer, String> manuallySelected = new TreeMap<Integer, String>();
 
-                private void expandPath() {
-                    List<Table> path = new ArrayList<Table>();
-                    for (CellInfo ci: mainPath) {
-                        path.add(ci.table);
-                    }
-                    expandTablePath(path);
+            private void expandPath() {
+                List<Table> path = new ArrayList<Table>();
+                for (CellInfo ci: mainPath) {
+                    path.add(ci.table);
                 }
-                
-                @Override
-				public void mouseClicked(final MouseEvent e) {
-                    mouseReleased(e);
-                }
-                
-                @Override
-				public void mouseReleased(MouseEvent e) {
-                // context menu
+                expandTablePath(path);
+            }
+            
+            @Override
+			public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+			public void mouseClicked(final MouseEvent e) {
+                 // context menu
                 if (SwingUtilities.isRightMouseButton(e)) {
                     int row = closureTable.rowAtPoint(e.getPoint());
                     int column = closureTable.columnAtPoint(e.getPoint());
@@ -338,7 +337,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                                 menu.add(new JSeparator());
                                 menu.add(exclude);
                                 menu.add(deselect);
-                                menu.show(e.getComponent(), e.getX(), e.getY());
+                                UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
                             }
                         } else {
                             JPopupMenu menu = new JPopupMenu();
@@ -366,8 +365,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                             	menu.addSeparator();
                             	menu.add(deselect);
                             }
-                            UIUtil.fit(popup);
-                            menu.show(e.getComponent(), e.getX(), e.getY());
+                            UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
                         }
                     }
                 }

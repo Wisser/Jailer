@@ -17,6 +17,7 @@ package net.sf.jailer.ui.databrowser;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class DesktopAnimation {
 	/**
 	 * Animation per subject (started).
 	 */
-	private Map<Object, Animation> animations = new HashMap<Object, Animation>();
+	private Map<Object, Animation> animations = Collections.synchronizedMap(new HashMap<Object, Animation>());
 
 	/**
 	 * Animation per subject (waiting).

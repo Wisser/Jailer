@@ -262,7 +262,16 @@ public abstract class Desktop extends JDesktopPane {
 								dSum += e.getValue();
 							}
 							long avgD = dSum / durations.size();
-							Thread.sleep(Math.min(Math.max(STEP_DELAY, avgD), 500));
+							if (UIUtil.isPopupActive() && !desktopAnimation.isActive()) {
+								avgD *= 2;
+							}	
+							
+//							long k = durations.keySet().iterator().next();
+//							if (k != now) {
+//								System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
+//							}
+							
+							Thread.sleep(Math.min(desktopAnimation.isActive()? STEP_DELAY / 2 : Math.max(STEP_DELAY, avgD), 500));
 							if (!inProgress.get()) {
 								inProgress.set(true);
 								duration.set(0);
@@ -271,11 +280,13 @@ public abstract class Desktop extends JDesktopPane {
 									public void run() {
 										long startTime = System.currentTimeMillis();
 										try {
-											suppressRepaintDesktop = true;
-											desktopAnimation.animate();
-											boolean cl = calculateLinks();
-											if (cl) {
-												repaintScrollPane();
+											if (isDesktopVisible()) {
+												suppressRepaintDesktop = true;
+												desktopAnimation.animate();
+												boolean cl = calculateLinks();
+												if (cl) {
+													repaintScrollPane();
+												}
 											}
 										} finally {
 											suppressRepaintDesktop = false;
@@ -3116,6 +3127,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	protected abstract DataBrowser openNewDataBrowser();
 	protected abstract SQLConsole getSqlConsole(boolean switchToConsole);
+	protected abstract boolean isDesktopVisible();
 
 	/**
 	 * Scrolls an iFrame to the center of the desktop.

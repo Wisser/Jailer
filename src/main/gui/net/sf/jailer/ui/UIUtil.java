@@ -34,6 +34,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -962,7 +964,35 @@ public class UIUtil {
 		}
 	}
 
-	public static void invokeLater(final int ticks, final Runnable runnable) {
+	private static boolean isPopupActive = false;
+	
+	public static synchronized boolean isPopupActive() {
+		return isPopupActive;
+	}
+
+	private static synchronized void setPopupActive(boolean b) {
+		isPopupActive = b;
+	}
+	
+    public static void showPopup(final Component invoker, final int x, final int y, final JPopupMenu popup) {
+    	popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+    		@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+    			if (Boolean.FALSE.equals(evt.getNewValue())) {
+    				setPopupActive(false);
+    			}
+    		}
+		});
+    	SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				setPopupActive(true);
+				popup.show(invoker, x, y);
+			}
+		});
+	}
+
+    public static void invokeLater(final int ticks, final Runnable runnable) {
 		SwingUtilities.invokeLater(new Runnable() {
 			int count = ticks;
 			@Override

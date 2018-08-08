@@ -493,6 +493,11 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 				return ROW_LIMIT_DEFAULT;
 			}
+
+			@Override
+			protected boolean isDesktopVisible() {
+				return workbenchTabbedPane.getSelectedComponent() == desktopSplitPane;
+			}
         };
 
         jScrollPane1.setViewportView(desktop);
@@ -644,7 +649,7 @@ public class DataBrowser extends javax.swing.JFrame {
                         largeLayoutRadioButtonMenuItemActionPerformed(e);
                     }
                 });
-                showPopup(desktop, e.getX(), e.getY(), popup);
+                UIUtil.showPopup(desktop, e.getX(), e.getY(), popup);
             }
         };
 
@@ -2035,6 +2040,7 @@ public class DataBrowser extends javax.swing.JFrame {
     		if (rowBrowser != null) {
     			desktop.scrollToCenter(rowBrowser.internalFrame);
     			desktop.getiFrameStateChangeRenderer().onIFrameSelected(rowBrowser.internalFrame);
+    			navigationTree.setSelectionPath(node);
     		}
     	}
     	if (evt.getButton() == MouseEvent.BUTTON3) {
@@ -2051,21 +2057,12 @@ public class DataBrowser extends javax.swing.JFrame {
                             popup.add(c);
                         }
                         UIUtil.fit(popup);
-                        showPopup(evt.getComponent(), evt.getX(), evt.getY(), popup);
+                        UIUtil.showPopup(evt.getComponent(), evt.getX(), evt.getY(), popup);
                     }
                 }
             }
         }
     }// GEN-LAST:event_navigationTreeMouseClicked
-
-    private void showPopup(final Component invoker, final int x, final int y, final JPopupMenu popup) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				popup.show(invoker, x, y);
-			}
-		});
-	}
 
     private void layoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_layoutMenuItemActionPerformed
         arrangeLayout(true);
@@ -2898,9 +2895,9 @@ public class DataBrowser extends javax.swing.JFrame {
                             try {
                                 JInternalFrame iFrame = ((TreeNodeForRowBrowser) userObject).rowBrowser.internalFrame;
                                 desktop.scrollToCenter(iFrame);
+                                desktop.getiFrameStateChangeRenderer().onIFrameSelected(iFrame);
                                 iFrame.setSelected(true);
                                 iFrame.grabFocus();
-                                desktop.getiFrameStateChangeRenderer().onIFrameSelected(iFrame);
                             } catch (PropertyVetoException e1) {
                                 // ignore
                             }

@@ -965,7 +965,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							JPopupMenu popup;
 							popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1);
 							if (popup != null) {
-								showPopup(source, x, y, popup);
+								UIUtil.showPopup(source, x, y, popup);
 								popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 	
 									@Override
@@ -1057,11 +1057,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
-			//				if (rows.size() == 1) {
-			//					popup = createPopupMenu(rows.get(0), 0, 0, 0);
-			//				} else {
-								popup = createPopupMenu(null, -1, 0, 0, false);
-			//				}
+							popup = createPopupMenu(null, -1, 0, 0, false);
 							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-2);
 							popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 								@Override
@@ -1073,7 +1069,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									}
 								}
 							});
-							showPopup(relatedRowsPanel, 0, relatedRowsPanel.getHeight(), popup);
+							UIUtil.showPopup(relatedRowsPanel, 0, relatedRowsPanel.getHeight(), popup);
 						}
 					});
 				}
@@ -1119,7 +1115,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							}
 						});
-						showPopup(sqlPanel, 0, sqlPanel.getHeight(), popup);
+						UIUtil.showPopup(sqlPanel, 0, sqlPanel.getHeight(), popup);
 					}
 				});
 			}
@@ -4870,7 +4866,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			popup.add(m);
 		}
 		UIUtil.fit(popup);
-		showPopup(label, 0, label.getHeight(), popup);
+		UIUtil.showPopup(label, 0, label.getHeight(), popup);
 	}
 
 	/**
@@ -5311,15 +5307,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				ch.browserContentPane.sortChildren();
 			}
 		}
-	}
-
-	private void showPopup(final Component invoker, final int x, final int y, final JPopupMenu popup) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				popup.show(invoker, x, y);
-			}
-		});
 	}
 
 	private static String readClob(Clob clob) throws SQLException, IOException {
