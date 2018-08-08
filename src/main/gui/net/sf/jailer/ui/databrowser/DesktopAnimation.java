@@ -138,7 +138,6 @@ public class DesktopAnimation {
 	 */
 	public boolean animate() {
 		boolean result = false;
-		boolean wasActive = isActive();
 		for (Iterator<Entry<Object, Animation>> i = animations.entrySet().iterator(); i.hasNext(); ) {
 			Animation animation = i.next().getValue();
 			double f = (System.currentTimeMillis() - animation.startTime) / DURATION;
@@ -163,9 +162,7 @@ public class DesktopAnimation {
 				i.remove();
 			}
 		}
-		if (wasActive && !isActive()) {
-			desktop.checkDesktopSize();
-		}
+		desktop.checkDesktopSize();
 		return result;
 	}
 

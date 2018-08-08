@@ -267,12 +267,12 @@ public abstract class Desktop extends JDesktopPane {
 							} else {
 								avgD *= 1.05;
 							}
-							
+
 //							long k = durations.keySet().iterator().next();
-//							if (k != now) {
+//							if (k != now && desktopAnimation.isActive()) {
 //								System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
 //							}
-							
+
 							Thread.sleep(Math.min(desktopAnimation.isActive()? STEP_DELAY / 2 : Math.max(STEP_DELAY, avgD), 500));
 							if (!inProgress.get()) {
 								inProgress.set(true);
@@ -2087,24 +2087,29 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private Dimension currentDesktopnSize;
-	
+	private Dimension postAnimationDesktopnSize;
+
 	/**
 	 * Sets all component size properties ( maximum, minimum, preferred) to the
 	 * given dimension.
 	 */
-	public void setAllSize(Dimension d) {
+	public boolean setAllSize(Dimension d) {
+		if (currentDesktopnSize != null && currentDesktopnSize.equals(d)) {
+			return false;
+		}
 		currentDesktopnSize = d;
 		setMinimumSize(d);
 		setMaximumSize(d);
 		setPreferredSize(d);
+		return true;
 	}
 
 	/**
 	 * Sets all component size properties ( maximum, minimum, preferred) to the
 	 * given width and height.
 	 */
-	public void setAllSize(int width, int height) {
-		setAllSize(new Dimension(width, height));
+	public boolean setAllSize(int width, int height) {
+		return setAllSize(new Dimension(width, height));
 	}
 
 	void checkDesktopSize() {
@@ -2183,6 +2188,8 @@ public abstract class Desktop extends JDesktopPane {
 		public void resizeDesktop() {
 			int x = 0;
 			int y = 0;
+			int paX = 0;
+			int paY = 0;
 			JScrollPane scrollPane = getScrollPane();
 			Insets scrollInsets = getScrollPaneInsets();
 
@@ -2190,23 +2197,29 @@ public abstract class Desktop extends JDesktopPane {
 				boolean isMaximized = false;
 				JInternalFrame allFrames[] = desktop.getAllFrames();
 				for (int i = 0; i < allFrames.length; i++) {
-					Rectangle bounds = desktopAnimation.getIFrameBounds(allFrames[i]);
 					if (allFrames[i].isVisible()) {
 						if (allFrames[i].isMaximum()) {
 							isMaximized = true;
 						}
+						Rectangle bounds = allFrames[i].getBounds();
 						if (bounds.getX() + bounds.getWidth() > x) {
 							x = (int) (bounds.getX() + bounds.getWidth());
 						}
 						if (bounds.getY() + bounds.getHeight() > y) {
 							y = (int) (bounds.getY() + bounds.getHeight());
 						}
-						bounds = allFrames[i].getBounds();
-						if (bounds.getX() + bounds.getWidth() > x) {
-							x = (int) (bounds.getX() + bounds.getWidth());
+						if (bounds.getX() + bounds.getWidth() > paX) {
+							paX = (int) (bounds.getX() + bounds.getWidth());
 						}
-						if (bounds.getY() + bounds.getHeight() > y) {
-							y = (int) (bounds.getY() + bounds.getHeight());
+						if (bounds.getY() + bounds.getHeight() > paY) {
+							paY = (int) (bounds.getY() + bounds.getHeight());
+						}
+						bounds = desktopAnimation.getIFrameBounds(allFrames[i]);
+						if (bounds.getX() + bounds.getWidth() > paX) {
+							paX = (int) (bounds.getX() + bounds.getWidth());
+						}
+						if (bounds.getY() + bounds.getHeight() > paY) {
+							paY = (int) (bounds.getY() + bounds.getHeight());
 						}
 					}
 				}
@@ -2219,9 +2232,11 @@ public abstract class Desktop extends JDesktopPane {
 					x = ((int) d.getWidth()) - 20;
 				if (y <= d.getHeight() || isMaximized)
 					y = ((int) d.getHeight()) - 20;
-				desktop.setAllSize(x, y);
-				scrollPane.invalidate();
-				scrollPane.validate();
+				postAnimationDesktopnSize = new Dimension(paX, paY);
+				if (desktop.setAllSize(x, y) && !desktopAnimation.isActive()) {
+					scrollPane.invalidate();
+					scrollPane.validate();
+				}
 			}
 		}
 	}
@@ -3150,7 +3165,7 @@ public abstract class Desktop extends JDesktopPane {
 			y = 0;
 		}
 		Rectangle r = new Rectangle(x, y, Math.max(1, w), Math.max(1, h));
-		Rectangle vr = new Rectangle(currentDesktopnSize == null? getScrollPane().getViewport().getPreferredSize() : currentDesktopnSize);
+		Rectangle vr = new Rectangle(postAnimationDesktopnSize != null? postAnimationDesktopnSize : currentDesktopnSize == null? getScrollPane().getViewport().getPreferredSize() : currentDesktopnSize);
 		desktopAnimation.scrollRectToVisible(r.intersection(vr));
 	}
 

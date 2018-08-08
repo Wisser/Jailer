@@ -1028,6 +1028,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
     private void updateOutline(String sql, int startPosition) {
+    	sql = sql.replaceFirst(";\\s*$", "");
         final int MAX_CONTEXT_LENGTH = 80;
         final int MAX_TOOLTIP_LENGTH = 100;
         List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
