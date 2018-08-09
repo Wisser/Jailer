@@ -2390,6 +2390,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			++l;
 
 			final JMenuItem item = new JMenuItem("  " + (name.substring(1)) + "   ");
+			item.setToolTipText(association.getUnrestrictedJoinCondition());
 			final JLabel countLabel = new JLabel(". >99999 ") {
 				@Override
 				public void paint(Graphics g) {
@@ -2469,7 +2470,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
-								String cs = " " + (count.count < 0? "?" : (count.count > MAX_RC)? (">" + MAX_RC) : count.isExact? count.count : (">=" + count.count)) + " ";
+								String cs = " " + (count.count < 0? "?" : (count.count > MAX_RC)? (">" + MAX_RC) : count.isExact? count.count : (">" + count.count)) + " ";
 								countLabel.setText(cs);
 								if (count.count == 0) {
 									countLabel.setForeground(Color.lightGray);
