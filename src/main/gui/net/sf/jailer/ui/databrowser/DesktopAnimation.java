@@ -44,6 +44,7 @@ public class DesktopAnimation {
 		private long startTime;
 		public void start() {
 			startTime = System.currentTimeMillis();
+			stopScrolling = false;
 		}
 		abstract boolean animate(double f);
 	};
@@ -84,6 +85,9 @@ public class DesktopAnimation {
 		}
 
 		public boolean animate(double f) {
+			if (stopScrolling) {
+				return false;
+			}
 			if (scrollTo != null) {
 				int w = wAvg(f, initialWidth, scrollTo.width);
 				int h = wAvg(f, initialHeight, scrollTo.height);
@@ -261,6 +265,8 @@ public class DesktopAnimation {
 		});
 	}
 
+	public static boolean stopScrolling = false;
+	
 	public boolean isActive() {
 		return !animations.isEmpty();
 	}

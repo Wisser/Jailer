@@ -562,6 +562,7 @@ public class DataBrowser extends javax.swing.JFrame {
                     if (newY > maxY)
                         newY = maxY;
                     jv.setViewPosition(new Point(newX, newY));
+                    DesktopAnimation.stopScrolling = true;
                 }
             }
 
