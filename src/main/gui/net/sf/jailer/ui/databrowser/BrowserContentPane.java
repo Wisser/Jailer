@@ -1730,7 +1730,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		
 		popup.addSeparator();
-		JMenuItem m = new JMenuItem("Minimize");
+		JMenuItem m = new JMenuItem("Hide (Minimize)");
 		popup.add(m);
 		m.addActionListener(new ActionListener() {
 			@Override

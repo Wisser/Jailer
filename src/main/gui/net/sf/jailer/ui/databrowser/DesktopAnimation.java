@@ -18,8 +18,8 @@ package net.sf.jailer.ui.databrowser;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -51,12 +51,12 @@ public class DesktopAnimation {
 	/**
 	 * Animation per subject (started).
 	 */
-	private Map<Object, Animation> animations = Collections.synchronizedMap(new HashMap<Object, Animation>());
+	private Map<Object, Animation> animations = Collections.synchronizedMap(new LinkedHashMap<Object, Animation>());
 
 	/**
 	 * Animation per subject (waiting).
 	 */
-	private Map<Object, Animation> waiting = new HashMap<Object, Animation>();
+	private Map<Object, Animation> waiting = new LinkedHashMap<Object, Animation>();
 
 	/**
 	 * Constructor.
@@ -75,8 +75,7 @@ public class DesktopAnimation {
 		private final int initialWidth;
 		private final int initialHeight;
 		private final Rectangle scrollTo;
-		private Point lastViewPosition;
-	
+
 		public ScrollTo(Rectangle scrollTo, Point scrollFrom, int initialWidth, int initialHeight) {
 			this.scrollFrom = scrollFrom;
 			this.initialWidth = initialWidth;
@@ -85,17 +84,14 @@ public class DesktopAnimation {
 		}
 
 		public boolean animate(double f) {
-			if (lastViewPosition != null && !lastViewPosition.equals(desktop.getScrollPane().getViewport().getViewPosition())) {
-				return false;
-			}
 			if (scrollTo != null) {
 				int w = wAvg(f, initialWidth, scrollTo.width);
 				int h = wAvg(f, initialHeight, scrollTo.height);
 				int x = (int) (scrollFrom.x + f * (scrollTo.x + scrollTo.width / 2 - scrollFrom.x)) - w / 2;
 				int y = (int) (scrollFrom.y + f * (scrollTo.y + scrollTo.height / 2 - scrollFrom.y)) - h / 2;
+				desktop.checkDesktopSize();
 				desktop.scrollRectToVisible(new Rectangle(x, y, w, h));
 			}
-			lastViewPosition = desktop.getScrollPane().getViewport().getViewPosition();
 			return true;
 		}
 	}

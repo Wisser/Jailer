@@ -2223,7 +2223,7 @@ public abstract class Desktop extends JDesktopPane {
 					x = ((int) d.getWidth()) - 20;
 				if (y <= d.getHeight() || isMaximized)
 					y = ((int) d.getHeight()) - 20;
-				postAnimationDesktopnSize = new Dimension(paX, paY);
+				postAnimationDesktopnSize = new Dimension(Math.max(paX, x), Math.max(paY, y));
 				if (desktop.setAllSize(x, y) && !desktopAnimation.isActive()) {
 					scrollPane.invalidate();
 					scrollPane.validate();

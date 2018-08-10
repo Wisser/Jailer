@@ -3062,6 +3062,9 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 			private Association[] openAssociationPathPanel(List<Table> path) {
+				if (path.isEmpty()) {
+					return null;
+				}
 				final AssociationPathPanel assocPanel = new AssociationPathPanel(getDataModel(), path, dependsOn.getForeground(), hasDependent.getForeground(), associatedWith.getForeground(), ignored.getForeground());
 				if (!assocPanel.needToAsk) {
 					return assocPanel.selectedAssociations;
