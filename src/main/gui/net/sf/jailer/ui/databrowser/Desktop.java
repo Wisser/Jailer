@@ -675,8 +675,6 @@ public abstract class Desktop extends JDesktopPane {
 					for (RowBrowser rb: tableBrowsers) {
 						rb.browserContentPane.updateRowsCountLabel(browserInClosure);
 					}
-					
-					repaintDesktop();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -1726,11 +1724,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				
 				final int MAX_PRIO = 3;
-				boolean fastMode = false; // desktopAnimation.isActive();
 				for (int prio = 0; prio <= MAX_PRIO; ++prio) {
-					if (prio > 0 && fastMode) {
-						break;
-					}
 					for (final boolean pbg : new Boolean[] { true, false }) {
 						Set<Long> linesHash = new HashSet<Long>(200000);
 						for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
@@ -1814,25 +1808,23 @@ public abstract class Desktop extends JDesktopPane {
 									final int ir = dir > 0? i : linksToRender.size() - 1 - i;
 									final boolean finalLight = light;
 									int linkPrio = 0;
-									if (!fastMode) {
-										if (pathToSelectedRowBrowser != null && pathToSelectedRowBrowser.contains(tableBrowser)) {
-											linkPrio += 2;
-										}
-										if (link.inClosure) {
-											linkPrio += 1;
-										}
+									if (pathToSelectedRowBrowser != null && pathToSelectedRowBrowser.contains(tableBrowser)) {
+										linkPrio += 2;
+									}
+									if (link.inClosure) {
+										linkPrio += 1;
 									}
 									final boolean doPaint = linkPrio == prio;
 									Runnable task = new Runnable() {
 										@Override
 										public void run() {
 											paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect,
-													link.dotted,
-													linksToRender.size() == 1 ? 0.5 : (ir + 1) * 1.0 / linksToRender.size(),
-													finalLight, followMe,
-													link.sourceRowID, link.inClosure, inClosureRootPath,
-													isToParentLink,
-													doPaint);
+												link.dotted,
+												linksToRender.size() == 1 ? 0.5 : (ir + 1) * 1.0 / linksToRender.size(),
+												finalLight, followMe,
+												link.sourceRowID, link.inClosure, inClosureRootPath,
+												isToParentLink,
+												doPaint);
 										}
 									};
 									List<Runnable> tasks = renderTasks.get(link.sourceRowID);
@@ -3079,6 +3071,7 @@ public abstract class Desktop extends JDesktopPane {
 			rb.browserContentPane.updateSingleRowDetailsView();
 		}
 		
+		rbSourceToLinks = null;
 		repaintDesktop();
 	}
 
