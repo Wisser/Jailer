@@ -268,10 +268,7 @@ public abstract class Desktop extends JDesktopPane {
 								avgD *= 1.05;
 							}
 
-//							long k = durations.keySet().iterator().next();
-//							if (k != now && desktopAnimation.isActive()) {
-//								System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
-//							}
+							logFPS(durations, now, avgD);
 
 							Thread.sleep(Math.min(desktopAnimation.isActive()? STEP_DELAY / 2 : Math.max(STEP_DELAY, avgD), 500));
 							if (!inProgress.get()) {
@@ -678,6 +675,8 @@ public abstract class Desktop extends JDesktopPane {
 					for (RowBrowser rb: tableBrowsers) {
 						rb.browserContentPane.updateRowsCountLabel(browserInClosure);
 					}
+					
+					repaintDesktop();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -1727,7 +1726,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				
 				final int MAX_PRIO = 3;
-				boolean fastMode = desktopAnimation.isActive();
+				boolean fastMode = false; // desktopAnimation.isActive();
 				for (int prio = 0; prio <= MAX_PRIO; ++prio) {
 					if (prio > 0 && fastMode) {
 						break;
@@ -3239,7 +3238,14 @@ public abstract class Desktop extends JDesktopPane {
 		lastInternalFrame = null;
 		lastBrowserContentPane = null;
 	}
-	
+
+	private void logFPS(Map<Long, Long> durations, long now, long avgD) {
+//		long k = durations.keySet().iterator().next();
+//		if (k != now && desktopAnimation.isActive()) {
+//			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
+//		}
+	}
+
 	/**
 	 * Maximum number of concurrent DB connections.
 	 */
