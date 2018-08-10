@@ -1,3 +1,6 @@
+7.10.6
+  - Minor bug fixes.
+
 7.10.5
   - Animated desktop layout in the data browser.
   - Improved row-link rendering quality and performance.
