@@ -2520,6 +2520,7 @@ public abstract class Desktop extends JDesktopPane {
 				if (d >= 0 && d < LayoutMode.values().length) {
 					Point fixed = SwingUtilities.convertPoint(e.getComponent(), e.getPoint().x, e.getPoint().y, Desktop.this);
 					rescaleLayout(LayoutMode.values()[d], fixed);
+					rescaleFactorHasChanged = true;
 				}
 			}
 		}
@@ -3247,6 +3248,7 @@ public abstract class Desktop extends JDesktopPane {
 	private final int RESCALE_DURATION = 500;
 	private Long rescaleModeEnd;
 	private Point rescaleStartPosition;
+	private boolean rescaleFactorHasChanged = false;
 	
 	public void startRescaleMode(long currentTime, MouseWheelEvent evt) {
 		rescaleModeEnd = currentTime + RESCALE_DURATION;
@@ -3271,10 +3273,11 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private void deferRescaleMode(long startTime) {
-		if (inRescaleMode(startTime)) {
+		if (inRescaleMode(startTime) && rescaleFactorHasChanged) {
 			long duration = System.currentTimeMillis() - startTime;
 			rescaleModeEnd += duration;
 		}
+		rescaleFactorHasChanged = false;
 	}
 
 	/**
