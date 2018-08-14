@@ -574,6 +574,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
                 m_XDifference = e.getX();
                 m_YDifference = e.getY();
+                DesktopAnimation.stopScrolling = true;
             }
 
             @Override
@@ -1995,7 +1996,7 @@ public class DataBrowser extends javax.swing.JFrame {
     }// GEN-LAST:event_tinyLayoutRadioButtonMenuItemActionPerformed
 
     private void wheelzoomTip() {
-        TipDialog.showTip(this, "WHEELZOOM", "While holding down the Ctrl-key you can use the mouse-wheel to zoom in or out.");
+        TipDialog.showTip(this, "WHEELZOOM", "You can use the mouse-wheel to zoom in or out.");
     }
 
     private void smallLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_smallLayoutRadioButtonMenuItemActionPerformed
@@ -2079,8 +2080,10 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     private void jScrollPane1MouseWheelMoved(java.awt.event.MouseWheelEvent evt) {// GEN-FIRST:event_jScrollPane1MouseWheelMoved
-        desktop.onMouseWheelMoved(evt);
-        desktop.onMouseWheelMoved(evt, jScrollPane1);
+		long currentTime = System.currentTimeMillis();
+		desktop.startRescaleMode(currentTime, evt);
+		desktop.onMouseWheelMoved(evt, currentTime);
+        desktop.onMouseWheelMoved(evt, jScrollPane1, currentTime);
     }// GEN-LAST:event_jScrollPane1MouseWheelMoved
 
     private void openNewTableBrowser(boolean offerAlternatives) {

@@ -1,3 +1,6 @@
+7.10.7
+  - Zoom in / out using the mouse wheel in the data browser
+
 7.10.6
   - Minor bug fixes.
 

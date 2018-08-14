@@ -270,7 +270,7 @@ public abstract class Desktop extends JDesktopPane {
 
 							logFPS(durations, now, avgD);
 
-							Thread.sleep(Math.min(desktopAnimation.isActive()? STEP_DELAY / 2 : Math.max(STEP_DELAY, avgD), 500));
+							Thread.sleep(Math.min(desktopAnimation.isActive()? 10 : Math.max(STEP_DELAY, avgD), 500));
 							if (!inProgress.get()) {
 								inProgress.set(true);
 								duration.set(0);
@@ -514,8 +514,10 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
-				onMouseWheelMoved(evt);
-				onMouseWheelMoved(evt, parentFrame.getDesktopScrollPane());
+				long currentTime = System.currentTimeMillis();
+				startRescaleMode(currentTime, evt);
+				onMouseWheelMoved(evt, currentTime);
+				onMouseWheelMoved(evt, parentFrame.getDesktopScrollPane(), currentTime);
 			}
 		});
 		javax.swing.GroupLayout jInternalFrame1Layout = new javax.swing.GroupLayout(jInternalFrame.getContentPane());
@@ -934,9 +936,11 @@ public abstract class Desktop extends JDesktopPane {
 		java.awt.event.MouseWheelListener mouseWheelListener = new java.awt.event.MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
-				onMouseWheelMoved(evt);
+				long currentTime = System.currentTimeMillis();
+				checkRescaleMode(evt, currentTime);
+				onMouseWheelMoved(evt, currentTime);
 				if (evt.getSource() instanceof JScrollPane) {
-					onMouseWheelMoved(evt, (JScrollPane) evt.getSource());
+					onMouseWheelMoved(evt, (JScrollPane) evt.getSource(), currentTime);
 				}
 			}
 		};
@@ -1852,6 +1856,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		}
 		paintDuration = System.currentTimeMillis() - startTime;
+		deferRescaleMode(startTime);
 	}
 
 	private void renderActiveIFrameMarker(Graphics2D g2d) {
@@ -2444,8 +2449,8 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	void onMouseWheelMoved(java.awt.event.MouseWheelEvent e, JScrollPane scrollPane) {
-		if (!e.isControlDown()) {
+	void onMouseWheelMoved(java.awt.event.MouseWheelEvent e, JScrollPane scrollPane, long currentTime) {
+		if (!inRescaleMode(currentTime)) {
 			if ((e.getScrollAmount() != 0) && (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL)) {
 				JScrollBar toScroll = scrollPane.getVerticalScrollBar();
 				int direction = 0;
@@ -2496,8 +2501,8 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	void onMouseWheelMoved(java.awt.event.MouseWheelEvent e) {
-		if (e.isControlDown()) {
+	void onMouseWheelMoved(java.awt.event.MouseWheelEvent e, long currentTime) {
+		if (inRescaleMode(currentTime)) {
 			int d = 0;
 			if (e.getWheelRotation() < 0) {
 				d = -1;
@@ -3237,6 +3242,39 @@ public abstract class Desktop extends JDesktopPane {
 //		if (k != now && desktopAnimation.isActive()) {
 //			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
 //		}
+	}
+
+	private final int RESCALE_DURATION = 300;
+	private Long rescaleModeEnd;
+	private Point rescaleStartPosition;
+	
+	public void startRescaleMode(long currentTime, MouseWheelEvent evt) {
+		rescaleModeEnd = currentTime + RESCALE_DURATION;
+		rescaleStartPosition = new Point(evt.getX(),  evt.getY());
+		SwingUtilities.convertPointToScreen(rescaleStartPosition, evt.getComponent());
+	}
+	
+	public void checkRescaleMode(MouseWheelEvent evt, long currentTime) {
+//		if (inRescaleMode(currentTime)) {
+//			if (rescaleStartPosition != null) {
+//				Point position = new Point(evt.getX(),  evt.getY());
+//				SwingUtilities.convertPointToScreen(position, evt.getComponent());
+//				if (position.distance(rescaleStartPosition) > 1000) {
+//					rescaleModeEnd = null;
+//				}
+//			}
+//		}
+	}
+
+	private boolean inRescaleMode(long currentTime) {
+		return rescaleModeEnd != null && currentTime < rescaleModeEnd;
+	}
+
+	private void deferRescaleMode(long startTime) {
+		if (inRescaleMode(startTime)) {
+			long duration = System.currentTimeMillis() - startTime;
+			rescaleModeEnd += duration;
+		}
 	}
 
 	/**
