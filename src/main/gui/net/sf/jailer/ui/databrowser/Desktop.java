@@ -3244,7 +3244,7 @@ public abstract class Desktop extends JDesktopPane {
 //		}
 	}
 
-	private final int RESCALE_DURATION = 300;
+	private final int RESCALE_DURATION = 500;
 	private Long rescaleModeEnd;
 	private Point rescaleStartPosition;
 	
