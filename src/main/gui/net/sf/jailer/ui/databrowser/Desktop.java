@@ -51,7 +51,6 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -181,8 +180,6 @@ public abstract class Desktop extends JDesktopPane {
 		return iFrameStateChangeRenderer;
 	}
 
-	private Method getPreciseWheelRotation; 
-	
 	/**
 	 * Constructor.
 	 * 
@@ -212,12 +209,6 @@ public abstract class Desktop extends JDesktopPane {
 				queryBuilderDialog.setVisible(false);
 			}
 		});
-
-		try {
-			getPreciseWheelRotation = MouseWheelEvent.class.getMethod("getPreciseWheelRotation");
-		} catch (Exception exc) {
-			// ignored
-		}
 
 		try {
 			this.session = session;
@@ -2470,14 +2461,10 @@ public abstract class Desktop extends JDesktopPane {
 			
 				double f = 1.0;
 				
-				if (getPreciseWheelRotation != null) {
-					try {
-						double pwr = (Double) getPreciseWheelRotation.invoke(e);					
-						direction = pwr == 0? 0 : (pwr < 0) ? (-1) : 1;
-						f = Math.abs(pwr);
-					} catch (Exception exc) {
-						// ignored
-					}
+				double pwr = e.getPreciseWheelRotation();
+				if (pwr != 0.0) {
+					direction = pwr == 0? 0 : (pwr < 0) ? (-1) : 1;
+					f = Math.abs(pwr);
 				}
 
 				if (direction != 0) {
