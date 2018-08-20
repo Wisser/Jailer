@@ -1,3 +1,7 @@
+7.10.8
+  - Improved layout strategy in the data browser.
+  - New layout feature: "align horizontally with predecessor"
+
 7.10.7
   - Zoom in / out using the mouse wheel in the data browser
 
