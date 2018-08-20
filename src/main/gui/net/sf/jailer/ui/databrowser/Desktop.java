@@ -171,10 +171,11 @@ public abstract class Desktop extends JDesktopPane {
 	
 	private RowsClosure rowsClosure = new RowsClosure();
 
-	private final DesktopAnimation desktopAnimation;
+	final DesktopAnimation desktopAnimation;
 	
 	private final QueryBuilderDialog queryBuilderDialog;
 	private final DesktopIFrameStateChangeRenderer iFrameStateChangeRenderer = new DesktopIFrameStateChangeRenderer();
+	private final DesktopAnchorManager anchorManager;
 	
 	public DesktopIFrameStateChangeRenderer getiFrameStateChangeRenderer() {
 		return iFrameStateChangeRenderer;
@@ -189,9 +190,11 @@ public abstract class Desktop extends JDesktopPane {
 	 *            icon for the frames
 	 * @param session
 	 *            DB-session
+	 * @param anchorManager 
 	 */
-	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, DataBrowser parentFrame, DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext) {
+	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, DataBrowser parentFrame, DbConnectionDialog dbConnectionDialog, DesktopAnchorManager anchorManager, ExecutionContext executionContext) {
 		this.executionContext = executionContext;
+		this.anchorManager = anchorManager;
 		this.parentFrame = parentFrame;
 		this.datamodel = datamodel;
 		this.jailerIcon = jailerIcon;
@@ -270,6 +273,7 @@ public abstract class Desktop extends JDesktopPane {
 									public void run() {
 										long startTime = System.currentTimeMillis();
 										try {
+											checkAnchorRetension();
 											if (isDesktopVisible()) {
 												suppressRepaintDesktop = true;
 												desktopAnimation.animate();
@@ -953,6 +957,8 @@ public abstract class Desktop extends JDesktopPane {
 
 		initIFrame(jInternalFrame, browserContentPane);
 		
+		anchorManager.onNewTableBrowser(tableBrowser);
+		
 		jInternalFrame.addInternalFrameListener(new InternalFrameListener() {
 			@Override
 			public void internalFrameOpened(InternalFrameEvent e) {
@@ -1036,9 +1042,9 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private void initIFrame(final JInternalFrame jInternalFrame, final BrowserContentPane browserContentPane) {
-		final JPanel thumbnail = new JPanel();
+		browserContentPane.thumbnail = new JPanel();
 		final JPanel thumbnailInner = new JPanel();
-		thumbnail.setLayout(new GridBagLayout());
+		browserContentPane.thumbnail.setLayout(new GridBagLayout());
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 1;
 		gridBagConstraints.gridy = 1;
@@ -1048,7 +1054,7 @@ public abstract class Desktop extends JDesktopPane {
 		gridBagConstraints.weighty = 1;
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		gridBagConstraints.insets = new Insets(8, 8, 8, 8);
-		thumbnail.add(thumbnailInner, gridBagConstraints);
+		browserContentPane.thumbnail.add(thumbnailInner, gridBagConstraints);
 
 		thumbnailInner.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		String title = jInternalFrame.getTitle();
@@ -1099,9 +1105,9 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.getContentPane().setLayout(new CardLayout());
 
 		jInternalFrame.getContentPane().add(browserContentPane, "C");
-		jInternalFrame.getContentPane().add(thumbnail, "T");
+		jInternalFrame.getContentPane().add(browserContentPane.thumbnail, "T");
 
-		thumbnail.addMouseListener(new MouseAdapter() {
+		browserContentPane.thumbnail.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getButton() != MouseEvent.BUTTON1 && !(browserContentPane.table instanceof SqlStatementTable)) {
@@ -1117,7 +1123,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		});
 
-		initIFrameContent(jInternalFrame, browserContentPane, thumbnail);
+		initIFrameContent(jInternalFrame, browserContentPane, browserContentPane.thumbnail);
 		jInternalFrame.addComponentListener(new ComponentListener() {
 			@Override
 			public void componentHidden(ComponentEvent e) {
@@ -1132,7 +1138,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void componentResized(ComponentEvent e) {
 //				onLayoutChanged(jInternalFrame.isMaximum());
-				initIFrameContent(jInternalFrame, browserContentPane, thumbnail);
+				initIFrameContent(jInternalFrame, browserContentPane, browserContentPane.thumbnail);
 			}
 
 			@Override
@@ -1470,7 +1476,7 @@ public abstract class Desktop extends JDesktopPane {
 								y1 += p.getY();
 								p = p.getParent();
 							}
-							min = internalFrame.getY() + cellRect.height;
+							min = internalFrame.getY() + cellRect.height * 2;
 							if (y1 < min) {
 								y1 = min;
 							}
@@ -1721,7 +1727,7 @@ public abstract class Desktop extends JDesktopPane {
 				final int MAX_PRIO = 3;
 				for (int prio = 0; prio <= MAX_PRIO; ++prio) {
 					for (final boolean pbg : new Boolean[] { true, false }) {
-						Set<Long> linesHash = new HashSet<Long>(200000);
+						Set<Long> linesHash = new HashSet<Long>(20000);
 						for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
 							if (!tableBrowser.isHidden()) {
 								final boolean inClosureRootPath = rowsClosure.parentPath.contains(tableBrowser.browserContentPane);
@@ -2268,7 +2274,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private boolean layouting = false;
 	
-	public void layoutBrowser(JInternalFrame selectedFrame, boolean scrollToCenter) {
+	public void layoutBrowser(JInternalFrame selectedFrame, boolean scrollToCenter, RowBrowser anchor) {
 		if (layouting) {
 			return;
 		}
@@ -2281,7 +2287,7 @@ public abstract class Desktop extends JDesktopPane {
 			List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
 			// layout(all, 0);
 	
-			optimizeLayout();
+			optimizeLayout(anchor);
 	
 			all.clear();
 			int maxH = 0;
@@ -2346,15 +2352,21 @@ public abstract class Desktop extends JDesktopPane {
 
 	/**
 	 * Experimental layout optimization.
+	 * @param anchor 
 	 */
-	private void optimizeLayout() {
-		TreeLayoutOptimizer.Node<RowBrowser> root = new TreeLayoutOptimizer.Node<RowBrowser>(null);
-		collectChildren(root);
+	private void optimizeLayout(RowBrowser anchor) {
+		Set<RowBrowser> anchors = new HashSet<RowBrowser>();
+		while (anchor != null) {
+			anchors.add(anchor);
+			anchor = anchor.parent;
+		}
+		TreeLayoutOptimizer.Node<RowBrowser> root = new TreeLayoutOptimizer.Node<RowBrowser>(null, false);
+		collectChildren(root, anchors);
 		TreeLayoutOptimizer.optimizeTreeLayout(root);
 		arrangeNodes(root);
 	}
 
-	private void collectChildren(Node<RowBrowser> root) {
+	private void collectChildren(Node<RowBrowser> root, Set<RowBrowser> anchors) {
 		List<RowBrowser> children;
 		if (root.getUserObject() == null) {
 			children = getRootBrowsers(true);
@@ -2365,9 +2377,9 @@ public abstract class Desktop extends JDesktopPane {
 			if (rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable) {
 				continue;
 			}
-			TreeLayoutOptimizer.Node<RowBrowser> childNode = new TreeLayoutOptimizer.Node<RowBrowser>(rb);
+			TreeLayoutOptimizer.Node<RowBrowser> childNode = new TreeLayoutOptimizer.Node<RowBrowser>(rb, anchors.contains(rb));
 			root.addChild(childNode);
-			collectChildren(childNode);
+			collectChildren(childNode, anchors);
 		}
 	}
 
@@ -3130,6 +3142,7 @@ public abstract class Desktop extends JDesktopPane {
 	protected abstract DataBrowser openNewDataBrowser();
 	protected abstract SQLConsole getSqlConsole(boolean switchToConsole);
 	protected abstract boolean isDesktopVisible();
+	protected abstract void checkAnchorRetension();
 
 	/**
 	 * Scrolls an iFrame to the center of the desktop.
@@ -3202,6 +3215,7 @@ public abstract class Desktop extends JDesktopPane {
 		});
 
 	static boolean noArrangeLayoutOnNewTableBrowser = false;
+	static boolean noArrangeLayoutOnNewTableBrowserWithAnchor = false;
 	private static JInternalFrame lastInternalFrame = null;
 	private static BrowserContentPane lastBrowserContentPane = null;
 	public void catchUpLastArrangeLayoutOnNewTableBrowser() {
@@ -3236,7 +3250,7 @@ public abstract class Desktop extends JDesktopPane {
 	private Long rescaleModeEnd;
 	private Point rescaleStartPosition;
 	private boolean rescaleFactorHasChanged = false;
-	
+
 	public void startRescaleMode(long currentTime, MouseWheelEvent evt) {
 		rescaleModeEnd = currentTime + RESCALE_DURATION;
 		rescaleStartPosition = new Point(evt.getX(),  evt.getY());

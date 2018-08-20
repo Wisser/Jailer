@@ -34,7 +34,7 @@ import net.sf.jailer.ui.UIUtil;
  */
 public class DesktopAnimation {
 	
-	private final double DURATION = 1000;
+	private final double DURATION = 750;
 	private final Desktop desktop;
 	
 	/**

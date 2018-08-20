@@ -1263,6 +1263,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
 						Desktop.noArrangeLayoutOnNewTableBrowser = true;
+						Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = todoList.size() > 1;
 						Desktop.resetLastArrangeLayoutOnNewTableBrowser();
 						for (int i = 0; i < todoList.size(); ++i) {
 							if (i == todoList.size() - 1) {
@@ -1272,6 +1273,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					} finally {
 						Desktop.noArrangeLayoutOnNewTableBrowser = false;
+						Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = false;
 						parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 					}
 				}
@@ -4014,16 +4016,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         andCondition = new javax.swing.JComboBox();
-        jPanel7 = new javax.swing.JPanel();
-        loadButton = new javax.swing.JButton();
-        onPanel = new javax.swing.JPanel();
-        on = new javax.swing.JLabel();
-        joinPanel = new javax.swing.JPanel();
-        join = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jPanel10 = new javax.swing.JPanel();
-        from = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
         pendingNonpendingPanel = new javax.swing.JPanel();
         cardPanel = new javax.swing.JPanel();
         tablePanel = new javax.swing.JPanel();
@@ -4061,6 +4053,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
         jLabel11 = new javax.swing.JLabel();
+        menuPanel = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
+        loadButton = new javax.swing.JButton();
+        onPanel = new javax.swing.JPanel();
+        on = new javax.swing.JLabel();
+        joinPanel = new javax.swing.JPanel();
+        join = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jPanel10 = new javax.swing.JPanel();
+        from = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         andLabel = new javax.swing.JLabel();
@@ -4080,97 +4083,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         setLayout(new java.awt.GridBagLayout());
-
-        jPanel7.setLayout(new java.awt.GridBagLayout());
-
-        loadButton.setText(" Reload ");
-        loadButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        jPanel7.add(loadButton, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        add(jPanel7, gridBagConstraints);
-
-        onPanel.setMinimumSize(new java.awt.Dimension(66, 17));
-        onPanel.setLayout(new java.awt.BorderLayout());
-
-        on.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
-        on.setText("jLabel3");
-        onPanel.add(on, java.awt.BorderLayout.CENTER);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        add(onPanel, gridBagConstraints);
-
-        joinPanel.setMinimumSize(new java.awt.Dimension(66, 17));
-        joinPanel.setLayout(new java.awt.GridBagLayout());
-
-        join.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
-        join.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        joinPanel.add(join, gridBagConstraints);
-
-        jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
-        jLabel6.setText(" as B  ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        joinPanel.add(jLabel6, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        add(joinPanel, gridBagConstraints);
-
-        jPanel10.setMinimumSize(new java.awt.Dimension(66, 17));
-        jPanel10.setLayout(new java.awt.GridBagLayout());
-
-        from.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
-        from.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        jPanel10.add(from, gridBagConstraints);
-
-        jLabel5.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
-        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel5.setText(" as A");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel10.add(jLabel5, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        add(jPanel10, gridBagConstraints);
 
         pendingNonpendingPanel.setLayout(new java.awt.CardLayout());
 
@@ -4519,13 +4431,105 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         pendingNonpendingPanel.add(jPanel8, "pending");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.gridwidth = 7;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(pendingNonpendingPanel, gridBagConstraints);
+
+        menuPanel.setLayout(new java.awt.GridBagLayout());
+
+        jPanel7.setLayout(new java.awt.GridBagLayout());
+
+        loadButton.setText(" Reload ");
+        loadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        jPanel7.add(loadButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        menuPanel.add(jPanel7, gridBagConstraints);
+
+        onPanel.setMinimumSize(new java.awt.Dimension(66, 17));
+        onPanel.setLayout(new java.awt.BorderLayout());
+
+        on.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
+        on.setText("jLabel3");
+        onPanel.add(on, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        menuPanel.add(onPanel, gridBagConstraints);
+
+        joinPanel.setMinimumSize(new java.awt.Dimension(66, 17));
+        joinPanel.setLayout(new java.awt.GridBagLayout());
+
+        join.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
+        join.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        joinPanel.add(join, gridBagConstraints);
+
+        jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
+        jLabel6.setText(" as B  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        joinPanel.add(jLabel6, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        menuPanel.add(joinPanel, gridBagConstraints);
+
+        jPanel10.setMinimumSize(new java.awt.Dimension(66, 17));
+        jPanel10.setLayout(new java.awt.GridBagLayout());
+
+        from.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
+        from.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        jPanel10.add(from, gridBagConstraints);
+
+        jLabel5.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
+        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel5.setText(" as A");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel10.add(jLabel5, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        menuPanel.add(jPanel10, gridBagConstraints);
 
         jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel1.setText(" Join ");
@@ -4533,7 +4537,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel1, gridBagConstraints);
+        menuPanel.add(jLabel1, gridBagConstraints);
 
         jLabel4.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel4.setText(" On ");
@@ -4542,7 +4546,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel4, gridBagConstraints);
+        menuPanel.add(jLabel4, gridBagConstraints);
 
         andLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         andLabel.setText(" Where ");
@@ -4550,14 +4554,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(andLabel, gridBagConstraints);
+        menuPanel.add(andLabel, gridBagConstraints);
 
         openEditorLabel.setText(" And  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(openEditorLabel, gridBagConstraints);
+        menuPanel.add(openEditorLabel, gridBagConstraints);
 
         jLabel3.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel3.setText(" From ");
@@ -4565,7 +4569,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel3, gridBagConstraints);
+        menuPanel.add(jLabel3, gridBagConstraints);
 
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4573,7 +4577,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jPanel3, gridBagConstraints);
+        menuPanel.add(jPanel3, gridBagConstraints);
 
         rrPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -4621,7 +4625,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-        add(rrPanel, gridBagConstraints);
+        menuPanel.add(rrPanel, gridBagConstraints);
 
         jPanel9.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4630,21 +4634,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-        add(jPanel9, gridBagConstraints);
+        menuPanel.add(jPanel9, gridBagConstraints);
 
         dropA.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         dropA.setText("drop");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
-        add(dropA, gridBagConstraints);
+        menuPanel.add(dropA, gridBagConstraints);
 
         dropB.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         dropB.setText("drop");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 5;
-        add(dropB, gridBagConstraints);
+        menuPanel.add(dropB, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        add(menuPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 		private void cancelLoadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelLoadButtonActionPerformed
@@ -4690,7 +4700,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JComboBox andCondition;
-    private javax.swing.JLabel andLabel;
+    javax.swing.JLabel andLabel;
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
     private javax.swing.JButton deselectButton;
@@ -4729,13 +4739,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel loadingCauseLabel;
     private javax.swing.JLabel loadingLabel;
     private javax.swing.JPanel loadingPanel;
+    javax.swing.JPanel menuPanel;
     private javax.swing.JPanel noRowsFoundPanel;
     private javax.swing.JLabel on;
     private javax.swing.JPanel onPanel;
     private javax.swing.JLabel openEditorLabel;
     private javax.swing.JPanel pendingNonpendingPanel;
     private javax.swing.JLabel relatedRowsLabel;
-    private javax.swing.JPanel relatedRowsPanel;
+    javax.swing.JPanel relatedRowsPanel;
     private javax.swing.JButton removeConditionButton;
     public javax.swing.JLabel rowsCount;
     public javax.swing.JTable rowsTable;
@@ -4749,10 +4760,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel singleRowViewScrollPaneContainer;
     public javax.swing.JCheckBox sortColumnsCheckBox;
     private javax.swing.JLabel sqlLabel1;
-    private javax.swing.JPanel sqlPanel;
+    javax.swing.JPanel sqlPanel;
     private javax.swing.JPanel tablePanel;
     // End of variables declaration//GEN-END:variables
 
+	JPanel thumbnail;
 	private ConditionEditor andConditionEditor;
 	private Icon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;
@@ -5221,7 +5233,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private Map<Table, int[]> pkColumnIndexes = new HashMap<Table, int[]>();
 
 	private String[] alternativeColumnLabels;
-	
+
 	public void setAlternativeColumnLabels(String[] columnLabels) {
 		this.alternativeColumnLabels = columnLabels;
 	}

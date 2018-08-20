@@ -29,6 +29,7 @@ public class TreeLayoutOptimizer<T> {
 	public static class Node<T> {
 		private final T userObject;
 		private final List<Node<T>> children = new ArrayList<Node<T>>();
+		private final boolean isAnchor;
 		int level = 0;
 		Node<T> parent = null;
 		double position = 0;
@@ -37,8 +38,9 @@ public class TreeLayoutOptimizer<T> {
 			return userObject;
 		}
 		
-		public Node(T userObject) {
+		public Node(T userObject, boolean isAnchor) {
 			this.userObject = userObject;
+			this.isAnchor = isAnchor;
 		}
 		
 		public void addChild(Node<T> child) {
@@ -67,6 +69,21 @@ public class TreeLayoutOptimizer<T> {
 			return 1 + maxChildDepth;
 		}
 
+		public double getMinPosition() {
+			double minPos = position;
+			for (Node<T> child: children) {
+				minPos = Math.min(minPos, child.getMinPosition());
+			}
+			return minPos;
+		}
+
+		public void adjustPosition(double delta) {
+			position -= delta;
+			for (Node<T> child: children) {
+				child.adjustPosition(delta);
+			}
+		}
+
 		public int getNodesCount() {
 			int count = 1;
 			for (Node<T> child: children) {
@@ -77,14 +94,35 @@ public class TreeLayoutOptimizer<T> {
 
 		public double getCompactness() {
 			double compactness = 0;
-			if (children.size() > 1) {
+			if (children.size() > 0) {
 				compactness = children.get(children.size() - 1).position - children.get(0).position;
 				compactness *= compactness;
+				Node<T> pre = null;
 				for (Node<T> child: children) {
 					compactness += child.getCompactness();
+					if (pre != null) {
+						if (pre.position + 1 > child.position) {
+							double w = pre.position + 1 - child.position;
+							compactness += w * w * 1000;
+						}
+					}
+					pre = child;
 				}
 			}
 			return compactness;
+		}
+
+		public double getAnchorQuality() {
+			double quality = 0;
+			for (Node<T> child: children) {
+				quality += child.getAnchorQuality();
+			}
+
+			if (isAnchor && parent != null) {
+				double d = parent.position - position;
+				quality += d * d;
+			}
+			return quality;
 		}
 	};
 
@@ -93,6 +131,7 @@ public class TreeLayoutOptimizer<T> {
 		optimizeChildrenOrder(root, System.currentTimeMillis(), MAX_OPTIM_TIME_MS, numNodes);
 		layoutTree(root, numNodes);
 		optimizeLeafs(root);
+		root.adjustPosition(root.getMinPosition());
 	}
 	
 	private static long MAX_OPTIM_TIME_MS = 1000;
@@ -111,7 +150,7 @@ public class TreeLayoutOptimizer<T> {
 				sumMaxPositionSqr += maxPositionPerLevel[i] * maxPositionPerLevel[i];
 			}
 		}
-		return sumMaxPositionSqr / numNodes + root.getCompactness();
+		return sumMaxPositionSqr / numNodes + root.getCompactness() + root.getAnchorQuality();
 	}
 	
 	private static <T> void layoutNode(Node<T> node, double[] maxPositionPerLevel) {
@@ -125,18 +164,31 @@ public class TreeLayoutOptimizer<T> {
 	
 	private static <T> void adjustParentPosition(Node<T> node, double[] maxPositionPerLevel) {
 		while (node != null) {
-			double parentPos = node.children.get(0).position + (maxPositionPerLevel[node.level + 1] - node.children.get(0).position) / 2.0;
-			if (node.position < parentPos) {
-				node.position = parentPos;
-				// node.position = (node.position + parentPos) / 2.0;
-				maxPositionPerLevel[node.level] = parentPos;
+			Node<T> anchorChild = null;
+			if (node.isAnchor) {
+				for (Node<T> child: node.children) {
+					if (child.isAnchor) {
+						anchorChild = child;
+						break;
+					}
+				}
+			}
+			if (anchorChild != null) {
+				node.position = anchorChild.position;
 			} else {
-				break;
+				double parentPos = node.children.get(0).position + (maxPositionPerLevel[node.level + 1] - node.children.get(0).position) / 2.0;
+				if (node.position < parentPos) {
+					node.position = parentPos;
+					// node.position = (node.position + parentPos) / 2.0;
+					maxPositionPerLevel[node.level] = parentPos;
+				} else {
+					break;
+				}
 			}
 			node = node.parent;
 		}
 	}
-	
+
 	private static <T> void optimizeLeafs(Node<T> node) {
 		if (node.children.isEmpty() && node.parent != null && node.position < node.parent.position) {
 			int i = node.parent.children.indexOf(node);

@@ -37,6 +37,8 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -299,13 +301,61 @@ public class DataBrowser extends javax.swing.JFrame {
         jLayeredPane1.add(layeredPaneContent, gridBagConstraints);
         jLayeredPane1.add(dummy, gridBagConstraints);
 
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1;
+        gridBagConstraints.weighty = 1;
+        JPanel anchorPanel = new JPanel(null);
+        anchorPanel.setOpaque(false);
+        jLayeredPane1.setLayer(anchorPanel, JLayeredPane.POPUP_LAYER);
+        jLayeredPane1.add(anchorPanel, gridBagConstraints);
+
+        anchorManager = new DesktopAnchorManager(anchorPanel) {
+			@Override
+			protected void layout(RowBrowser anchor) {
+				try {
+					anchor.internalFrame.setSelected(true);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+				arrangeLayout(true, anchor);
+			}
+			@Override
+			protected boolean isApplicable(RowBrowser tableBrowser) {
+				if (tableBrowser.parent == null) {
+					return false;
+				}
+				if (desktop.getChildBrowsers(tableBrowser.parent, true).size() <= 1) {
+					return false;
+				}
+				if (desktop.desktopAnimation != null && desktop.desktopAnimation.isActive()) {
+					return false;
+				}
+				return Math.abs(tableBrowser.internalFrame.getY() - tableBrowser.parent.internalFrame.getY()) > 2;
+			}
+        };
+
         if (jScrollPane1.getVerticalScrollBar() != null) {
             jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
+            jScrollPane1.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+				@Override
+				public void adjustmentValueChanged(AdjustmentEvent e) {
+					anchorManager.reset();
+				}
+			});
         }
         if (jScrollPane1.getHorizontalScrollBar() != null) {
             jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
+            jScrollPane1.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+				@Override
+				public void adjustmentValueChanged(AdjustmentEvent e) {
+					anchorManager.reset();
+				}
+			});
         }
-        
+
         hiddenPanel.setVisible(false);
         borderBrowserPanel.add(borderBrowser, java.awt.BorderLayout.CENTER);
 
@@ -424,7 +474,7 @@ public class DataBrowser extends javax.swing.JFrame {
         if (dbConnectionDialog != null) {
             createSession(dbConnectionDialog);
         }
-        desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog, executionContext) {
+        desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog, anchorManager, executionContext) {
             @Override
             public void openSchemaAnalyzer() {
                 updateDataModel();
@@ -497,6 +547,13 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected boolean isDesktopVisible() {
 				return workbenchTabbedPane.getSelectedComponent() == desktopSplitPane;
+			}
+
+			@Override
+			protected void checkAnchorRetension() {
+				if (anchorManager != null) {
+					anchorManager.checkRetention();
+				}
 			}
         };
 
@@ -2071,9 +2128,14 @@ public class DataBrowser extends javax.swing.JFrame {
     }// GEN-LAST:event_layoutMenuItemActionPerformed
 
     public void arrangeLayout(boolean scrollToCenter) {
+    	arrangeLayout(scrollToCenter, Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor? null : anchorManager.getNewestBrowser());
+    	anchorManager.setNewestBrowser(null);
+    }
+
+    public void arrangeLayout(boolean scrollToCenter, RowBrowser anchor) {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            desktop.layoutBrowser(null, scrollToCenter);
+            desktop.layoutBrowser(null, scrollToCenter, anchor);
         } finally {
             setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
@@ -3663,7 +3725,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		});
 	}
-
+	
+	private DesktopAnchorManager anchorManager; 
+	
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;
 	private ImageIcon redIcon;
