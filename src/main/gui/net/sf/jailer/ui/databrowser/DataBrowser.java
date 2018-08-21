@@ -333,7 +333,11 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (desktop.desktopAnimation != null && desktop.desktopAnimation.isActive()) {
 					return false;
 				}
-				return Math.abs(tableBrowser.internalFrame.getY() - tableBrowser.parent.internalFrame.getY()) > 2;
+				RowBrowser visParent = tableBrowser.parent;
+				while (visParent != null && !visParent.internalFrame.isVisible()) {
+					visParent = visParent.parent;
+				}
+				return visParent != null && Math.abs(tableBrowser.internalFrame.getY() - visParent.internalFrame.getY()) > 2;
 			}
         };
 
@@ -639,7 +643,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 if (e.getButton() == MouseEvent.BUTTON3) {
                     return;
                 }
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                setCursor(null);
             }
 
             @Override
@@ -2133,11 +2137,11 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     public void arrangeLayout(boolean scrollToCenter, RowBrowser anchor) {
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		UIUtil.setWaitCursor(this);
         try {
             desktop.layoutBrowser(null, scrollToCenter, anchor);
         } finally {
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        	UIUtil.resetWaitCursor(this);
         }
     }
 
@@ -2391,12 +2395,12 @@ public class DataBrowser extends javax.swing.JFrame {
             boolean[] isDefaultSchema = new boolean[1];
             String[] defaultSchema = new String[1];
             List<String> schemas;
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            UIUtil.setWaitCursor(this);
             try {
 				CancellationHandler.reset(null);
                 schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
             } finally {
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            	UIUtil.resetWaitCursor(this);
             }
             if (analyseOptionsDialog.edit(schemas, defaultSchema[0], schemaName == null? null : Quoting.staticUnquote(schemaName), isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
                 String schema = analyseOptionsDialog.getSelectedSchema();
@@ -2753,7 +2757,7 @@ public class DataBrowser extends javax.swing.JFrame {
             return;
         }
         try {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        	UIUtil.setWaitCursor(this);
             
             Collection<AssociationModel> model = new ArrayList<AssociationModel>();
             if (desktop != null) {
@@ -2789,7 +2793,7 @@ public class DataBrowser extends javax.swing.JFrame {
     
             borderBrowser.setModel(model);
         } finally {
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        	UIUtil.resetWaitCursor(this);
         }
     }
 
@@ -2808,7 +2812,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			public void run() {
 				try {
-					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					UIUtil.setWaitCursor(DataBrowser.this);
 					if (dataModelViewFrame == null) {
 						dataModelViewFrame = ExtractionModelFrame.createFrame(null, false, false, null, executionContext);
 						JComponent graphViewContainer = dataModelViewFrame.tearOutGraphViewContainer();
@@ -2844,7 +2848,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	                    }
                     }
 				} finally {
-					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					UIUtil.resetWaitCursor(DataBrowser.this);
 				}
 			}
 		});
@@ -2852,7 +2856,7 @@ public class DataBrowser extends javax.swing.JFrame {
     
     protected void resolveSelection(Collection<AssociationModel> selection) {
         try {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        	UIUtil.setWaitCursor(this);
             
             disableBorderBrowserUpdates = true;
             JInternalFrame currentSelection = desktop.getSelectedFrame();
@@ -2870,7 +2874,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 }
             }
         } finally {
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        	UIUtil.resetWaitCursor(this);
             disableBorderBrowserUpdates = false;
             updateBorderBrowser();
         }
@@ -3194,7 +3198,7 @@ public class DataBrowser extends javax.swing.JFrame {
     	ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
     	String alias = connection != null ? " " + connection.alias : " ";
     	
-    	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    	UIUtil.setWaitCursor(this);
     	try {
 	    	updateNavigationCombobox();
 	    	
@@ -3374,7 +3378,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
     	}
 		finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(this);
 		}
 	}
 
@@ -3540,12 +3544,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		}
 		try {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			UIUtil.setWaitCursor(this);
 			createNewSQLConsole(getMetaDataSource()).loadFromFile(file);
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e, session);
 		} finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(this);
 		}
 	}
 
@@ -3556,12 +3560,12 @@ public class DataBrowser extends javax.swing.JFrame {
 				saveScriptAsMenuItemActionPerformed(evt);
 			} else {
 				try {
-					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					UIUtil.setWaitCursor(this);
 					sqlConsole.storeToFile(null);
 				} catch (Throwable e) {
 					UIUtil.showException(this, "Error", e, session);
 				} finally {
-					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					UIUtil.resetWaitCursor(this);
 				}
 			}
 		}
@@ -3574,12 +3578,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			if (fName != null) {
 				File file = new File(fName);
 		    	try {
-					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		    		UIUtil.setWaitCursor(this);
 					sqlConsole.storeToFile(file);
 				} catch (Throwable e) {
 					UIUtil.showException(this, "Error", e, session);
 				} finally {
-					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					UIUtil.resetWaitCursor(this);
 				}
 			}
 		}

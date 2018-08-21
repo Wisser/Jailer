@@ -30,6 +30,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -1260,7 +1261,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (parent == null) {
 						parent = BrowserContentPane.this;
 					}
-					parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					UIUtil.setWaitCursor(parent);
 					try {
 						Desktop.noArrangeLayoutOnNewTableBrowser = true;
 						Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = todoList.size() > 1;
@@ -1274,7 +1275,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					} finally {
 						Desktop.noArrangeLayoutOnNewTableBrowser = false;
 						Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = false;
-						parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+						UIUtil.resetWaitCursor(parent);
 					}
 				}
 			});
@@ -1740,27 +1741,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				onHide();
 			}
 		});
-		m = new JMenuItem("Close" + (getChildBrowsers().isEmpty()? "" : " Subtree"));
+		m = new JMenuItem("Close");
 		popup.add(m);
 		m.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Component parent = SwingUtilities.getWindowAncestor(BrowserContentPane.this);
-				if (parent == null) {
-					parent = BrowserContentPane.this;
-				}
-				parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				try {
-					closeSubTree(BrowserContentPane.this);
-				} finally {
-					parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				}
-			}
-			private void closeSubTree(BrowserContentPane cp) {
-				for (RowBrowser c: cp.getChildBrowsers()) {
-					closeSubTree(c.browserContentPane);
-				}
-				cp.close();
+				closeWithChildren();
 			}
 		});
 		popup.add(new JSeparator());
@@ -1791,6 +1777,41 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		popup.add(editMode);
 		return popup;
+	}
+
+	public boolean closeWithChildren() {
+		int count = countSubNodes(this);
+		Component parent = SwingUtilities.getWindowAncestor(this);
+		if (parent == null) {
+			parent = BrowserContentPane.this;
+		}
+		if (count > 1) {
+			if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(parent, "Close this table and " + (count - 1) + " more?", "Close", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+				return false;
+			}
+		}
+		UIUtil.setWaitCursor(parent);
+		try {
+			closeSubTree(BrowserContentPane.this);
+		} finally {
+			UIUtil.resetWaitCursor(parent);
+		}
+		return true;
+	}
+
+	private int countSubNodes(BrowserContentPane cp) {
+		int count = 0;
+		for (RowBrowser c: cp.getChildBrowsers()) {
+			count += countSubNodes(c.browserContentPane);
+		}
+		return count + 1;
+	}
+
+	private void closeSubTree(BrowserContentPane cp) {
+		for (RowBrowser c: cp.getChildBrowsers()) {
+			closeSubTree(c.browserContentPane);
+		}
+		cp.close();
 	}
 
 	private JMenu createInsertChildMenu(Row row, final int x, final int y) {
@@ -1861,7 +1882,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (parent == null) {
 			parent = this;
 		}
-		parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		UIUtil.setWaitCursor(parent);
 		try {
 			String file;
 			String ts = new SimpleDateFormat("HH-mm-ss-SSS").format(new Date());
@@ -2035,10 +2056,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			newFile.delete();
 		} catch (Throwable e) {
-			parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			UIUtil.showException(this, "Error", e, session);
 		} finally {
-			parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(parent);
 		}
 	}
 
@@ -2250,7 +2270,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private void openSQLDialog(String titel, int x, int y, Object sql) {
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		UIUtil.setWaitCursor(this);
 		JDialog d;
 		try {
 			String LF = System.getProperty("line.separator", "\n");
@@ -2297,7 +2317,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			UIUtil.showException(this, "Error", e);
 			return;
 		} finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(this);
 		}
 		d.setVisible(true);
 	}

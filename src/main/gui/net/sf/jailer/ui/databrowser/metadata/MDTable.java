@@ -42,6 +42,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -114,7 +115,7 @@ public class MDTable extends MDObject {
         if (isLoaded()) {
             return getColumns();
         }
-        waitCursorSubject.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        UIUtil.setWaitCursor(waitCursorSubject);
         try {
             loading.set(true);
             queue.add(new Runnable() {
@@ -135,7 +136,7 @@ public class MDTable extends MDObject {
                 }
             }
         } finally {
-            waitCursorSubject.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        	UIUtil.resetWaitCursor(waitCursorSubject);
         }
         if (loading.get()) {
             return new ArrayList<String>();

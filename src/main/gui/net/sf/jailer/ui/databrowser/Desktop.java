@@ -89,6 +89,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
@@ -959,6 +960,7 @@ public abstract class Desktop extends JDesktopPane {
 		
 		anchorManager.onNewTableBrowser(tableBrowser);
 		
+		jInternalFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		jInternalFrame.addInternalFrameListener(new InternalFrameListener() {
 			@Override
 			public void internalFrameOpened(InternalFrameEvent e) {
@@ -981,12 +983,14 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			public void internalFrameClosing(InternalFrameEvent e) {
+				if (tableBrowser.browserContentPane.closeWithChildren()) {
+					onLayoutChanged(false, false);
+				}
 			}
 
 			@Override
 			public void internalFrameClosed(InternalFrameEvent e) {
 				close(tableBrowser, true);
-				onLayoutChanged(false, false);
 			}
 
 			@Override
@@ -2412,7 +2416,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 
 		try {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			UIUtil.setWaitCursor(this);
 			
 			this.layoutMode = layoutMode;
 			Map<Rectangle, double[]> newPrecBounds = new HashMap<Rectangle, double[]>();
@@ -2448,7 +2452,7 @@ public abstract class Desktop extends JDesktopPane {
 			updateMenu(layoutMode);
 			adjustClosure(null, null);
 		} finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(this);
 		}
 	}
 
@@ -2532,7 +2536,8 @@ public abstract class Desktop extends JDesktopPane {
 	public void closeAll(Collection<RowBrowser> toClose) {
 		for (RowBrowser rb : toClose) {
 			close(rb, false);
-			getDesktopManager().closeFrame(rb.internalFrame);
+			// getDesktopManager().closeFrame(rb.internalFrame);
+			rb.internalFrame.dispose();
 		}
 		updateMenu();
 	}
@@ -2795,7 +2800,8 @@ public abstract class Desktop extends JDesktopPane {
 		
 		if (sFile != null) {
 			try {
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				UIUtil.setWaitCursor(pFrame);
+				noArrangeLayoutOnNewTableBrowser = true;
 				restoreSession(toBeAppended, pFrame, sFile);
 				if (toBeAppended == null) {
 					currentSessionFileName = sFile;
@@ -2803,7 +2809,8 @@ public abstract class Desktop extends JDesktopPane {
 			} catch (Throwable e) {
 				UIUtil.showException(this, "Error", e, session);
 			} finally {
-				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				noArrangeLayoutOnNewTableBrowser = false;
+				UIUtil.resetWaitCursor(pFrame);
 			}
 		}
 	}
@@ -2813,8 +2820,10 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	private void restoreSession(RowBrowser toBeAppended, Component pFrame, String sFile) throws Exception {
 		try {
+			UIUtil.setWaitCursor(pFrame);
 			iFrameStateChangeRenderer.startAtomic();
-
+			noArrangeLayoutOnNewTableBrowser = true;
+			
 			String tbaPeerID = null;
 			Map<String, RowBrowser> rbByID = new HashMap<String, Desktop.RowBrowser>();
 			List<Line> lines = new CsvFile(new File(sFile)).getLines();
@@ -2908,9 +2917,7 @@ public abstract class Desktop extends JDesktopPane {
 			for (RowBrowser rb : toBeLoaded) {
 				rb.browserContentPane.reloadRows();
 			}
-			
-			onLayoutChanged(true, true);		
-			
+
 			if (toBeAppended != null && toBeLoaded.isEmpty()) {
 				JOptionPane.showMessageDialog(pFrame,
 						"Layout doesn't contain table \"" + datamodel.get().getDisplayName(toBeAppended.browserContentPane.table) + "\" as root.");
@@ -2922,7 +2929,9 @@ public abstract class Desktop extends JDesktopPane {
 				JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
 			}
 		} finally {
+			noArrangeLayoutOnNewTableBrowser = false;
 			iFrameStateChangeRenderer.rollbackAtomic();
+			UIUtil.resetWaitCursor(pFrame);
 		}
 	}
 

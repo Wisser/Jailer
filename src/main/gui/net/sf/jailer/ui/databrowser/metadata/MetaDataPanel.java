@@ -961,7 +961,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override
                                             public void run() {
-                                            	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                                            	UIUtil.setWaitCursor(MetaDataPanel.this);
                                         	    try {
 					                                if (metaDataTree.getSelectionPath() != null && metaDataTree.getSelectionPath().getLastPathComponent() == last) {
 					                                    if (uo instanceof MDSchema) {
@@ -981,7 +981,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					                                    }
 					                                }
                                         	    } finally {
-                                        	    	setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                                        	    	UIUtil.resetWaitCursor(MetaDataPanel.this);
                                         	    }
                                             }
                                         });
@@ -1060,7 +1060,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
 
     public void reset() {
-        refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    	UIUtil.setWaitCursor(refreshButton);
         JDBCMetaDataBasedModelElementFinder.resetCaches(metaDataSource.getSession());
         setOutline(new ArrayList<OutlineInfo>(), -1);
         proceduresPerSchema.clear();
@@ -1091,7 +1091,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                     }
                 } finally {
-                    refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                	UIUtil.resetWaitCursor(refreshButton);
                 }
             }
         });
@@ -1282,10 +1282,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 								            @Override
 								            public void run() {
 								                try {
-								                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+								                	UIUtil.setWaitCursor(MetaDataPanel.this);
 								                    expandImmediatelly();
 								                } finally {
-								                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+								                	UIUtil.resetWaitCursor(MetaDataPanel.this);
 								                }
 								            }
 								        });

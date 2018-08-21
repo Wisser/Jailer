@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.JInternalFrame;
+import javax.swing.SwingUtilities;
 
 import net.sf.jailer.ui.UIUtil;
 
@@ -36,7 +38,7 @@ public class DesktopAnimation {
 	
 	private final double DURATION = 750;
 	private final Desktop desktop;
-	
+
 	/**
 	 * Animation.
 	 */
@@ -252,10 +254,17 @@ public class DesktopAnimation {
 	}
 	
 	private void startAnimation(Object key, Animation animation) {
+		Component desktopAncestor = SwingUtilities.getWindowAncestor(desktop);
+		if (desktopAncestor == null) {
+			desktopAncestor = desktop;
+		}
+		final Component fDesktopAncestor = desktopAncestor;
+		UIUtil.setWaitCursor(desktopAncestor);
 		waiting.put(key, animation);
 		UIUtil.invokeLater(12, new Runnable() {
 			@Override
 			public void run() {
+				UIUtil.resetWaitCursor(fDesktopAncestor);
 				for (Entry<Object, Animation> e: waiting.entrySet()) {
 					e.getValue().start();
 					animations.put(e.getKey(), e.getValue());
