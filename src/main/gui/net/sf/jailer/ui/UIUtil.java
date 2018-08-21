@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FileDialog;
@@ -51,6 +52,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1005,5 +1007,33 @@ public class UIUtil {
 			}
 		});
 	}
-	
+
+    private static Map<Component, Integer> waitLevel = new WeakHashMap<Component, Integer>();
+    
+	public static void setWaitCursor(Component component) {
+		if (component != null) {
+			Integer level = waitLevel.get(component);
+			if (level != null) {
+				waitLevel.put(component, level + 1);
+			} else {
+				waitLevel.put(component, 1);
+				component.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));	
+			}
+		}
+	}
+
+	public static void resetWaitCursor(Component component) {
+		if (component != null) {
+			Integer level = waitLevel.get(component);
+			if (level != null) {
+				if (level == 1) {
+					component.setCursor(null);
+					waitLevel.remove(component);
+				} else {
+					waitLevel.put(component, level - 1);
+				}
+			}
+		}
+	}
+
 }
