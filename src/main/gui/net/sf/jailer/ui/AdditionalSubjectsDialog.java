@@ -430,7 +430,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
 	private void addAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllButtonActionPerformed
 		try {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			UIUtil.setWaitCursor(this);
 			
 			List<Table> tables = new ArrayList<Table>(remaining);
 			Collections.sort(tables);
@@ -443,7 +443,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			additionalSubjectListEditor.setModel(subjects);
 			collectRemaining();
 		} finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(this);
 		}
 	}//GEN-LAST:event_addAllButtonActionPerformed
 

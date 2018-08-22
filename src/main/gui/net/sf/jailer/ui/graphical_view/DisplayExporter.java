@@ -16,6 +16,7 @@ import java.util.HashSet;
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 
+import net.sf.jailer.ui.UIUtil;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.util.GraphicsLib;
@@ -113,7 +114,7 @@ public class DisplayExporter {
 		String m_group = Visualization.ALL_ITEMS;
 
 		try {
-			display.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			UIUtil.setWaitCursor(display);
 			
 			// Now comes the nice part
 
@@ -165,7 +166,7 @@ public class DisplayExporter {
 
 			return true;
 		} finally {
-			display.setCursor(Cursor.getDefaultCursor());
+			UIUtil.resetWaitCursor(display);
 		}
 	}
 

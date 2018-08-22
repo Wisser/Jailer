@@ -2048,10 +2048,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private void additionalSubjectsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_additionalSubjectsButtonActionPerformed
 		AdditionalSubjectsDialog additionalSubjectsDialog;
 		try {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			UIUtil.setWaitCursor(this);
 			additionalSubjectsDialog = new AdditionalSubjectsDialog(extractionModelFrame, extractionModel, subject, condition.getText());
 		} finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(this);
 		}
 		if (additionalSubjectsDialog.edit()) {
 			needsSave = true;

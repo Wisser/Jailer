@@ -179,7 +179,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 		};
 		
 		try {
-			owner.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			UIUtil.setWaitCursor(owner);
 	        
 			Set<String> pks = new HashSet<String>();
 			Set<String> fks = new HashSet<String>();
@@ -236,7 +236,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 			columnOrderTable.getRowSorter().setSortKeys(keys);
 			adjustTableColumnsWidth();
 		} finally {
-			owner.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(owner);
 		}
         dialog = new EscapableDialog(owner, "Column Ordering") {
         };

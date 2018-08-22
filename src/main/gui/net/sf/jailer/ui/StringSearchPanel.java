@@ -96,7 +96,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				button.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				UIUtil.setWaitCursor(button);
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
@@ -111,7 +111,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 								}
 							}
 				        } finally {
-				        	button.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				        	UIUtil.resetWaitCursor(button);
 				        }
 					}
 				});

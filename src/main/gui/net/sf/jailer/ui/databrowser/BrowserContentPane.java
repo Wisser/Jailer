@@ -1785,14 +1785,36 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (parent == null) {
 			parent = BrowserContentPane.this;
 		}
+		boolean closeThisToo = true;
 		if (count > 1) {
-			if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(parent, "Close this table and " + (count - 1) + " more?", "Close", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+			int o = JOptionPane.showOptionDialog(this, "Which tables do you want to close?", "Close",
+					JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
+					new Object[] { 
+							"Only this table", 
+							"This and related tables (" + (count) + ")", 
+							"Related tables (" + (count - 1) + ")",
+							"Cancel" },
+					null);
+			if (o == 0) {
+				UIUtil.setWaitCursor(parent);
+				try {
+					close();
+				} finally {
+					UIUtil.resetWaitCursor(parent);
+				}
+				return true;
+			}
+			if (o == 1) {
+				closeThisToo = true;
+			} else if (o == 2) {
+				closeThisToo = false;
+			} else {
 				return false;
 			}
 		}
 		UIUtil.setWaitCursor(parent);
 		try {
-			closeSubTree(BrowserContentPane.this);
+			closeSubTree(BrowserContentPane.this, closeThisToo);
 		} finally {
 			UIUtil.resetWaitCursor(parent);
 		}
@@ -1807,11 +1829,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return count + 1;
 	}
 
-	private void closeSubTree(BrowserContentPane cp) {
+	private void closeSubTree(BrowserContentPane cp, boolean closeThisToo) {
 		for (RowBrowser c: cp.getChildBrowsers()) {
-			closeSubTree(c.browserContentPane);
+			closeSubTree(c.browserContentPane, true);
 		}
-		cp.close();
+		if (closeThisToo) {
+			cp.close();
+		}
 	}
 
 	private JMenu createInsertChildMenu(Row row, final int x, final int y) {

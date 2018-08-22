@@ -1080,13 +1080,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(ExtractionModelFrame.this, extractionModelEditor.dataModel, executionContext);
 						boolean[] isDefaultSchema = new boolean[1];
 						String[] defaultSchema = new String[1];
-						setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+						UIUtil.setWaitCursor(ExtractionModelFrame.this);
 						List<String> schemas;
 						try {
 							CancellationHandler.reset(null);
 							schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
 						} finally {
-							setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+							UIUtil.resetWaitCursor(ExtractionModelFrame.this);
 						}
 						if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
 							String schema = analyseOptionsDialog.getSelectedSchema();
@@ -1388,10 +1388,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					load(modelFile);
 				} else {
 					try {
-						setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+						UIUtil.setWaitCursor(this);
 						createFrame(modelFile, false);
 					} finally {
-						setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+						UIUtil.resetWaitCursor(this);
 					}
 				}
 			}
@@ -1427,7 +1427,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				JOptionPane.showMessageDialog(this, "Unable to load \"" + new File(modelFile).getName() + "\"\nExtraction model is assigned to data model \"" + DataModelManager.getModelDetails(dmf, executionContext).a + "\"", "Wrong Data Model", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			UIUtil.setWaitCursor(this);
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
 			extractionModelEditor = null;
@@ -1440,7 +1440,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(this);
 		}
 	}
 
@@ -1455,7 +1455,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void reload() {
 		try {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			UIUtil.setWaitCursor(this);
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
 			editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext), "editor");
@@ -1467,7 +1467,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(this);
 		}
 	}
 
