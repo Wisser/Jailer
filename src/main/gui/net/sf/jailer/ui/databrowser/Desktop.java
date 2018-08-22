@@ -20,7 +20,6 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -1727,57 +1726,71 @@ public abstract class Desktop extends JDesktopPane {
 						break;
 					}
 				}
-				
-				final int MAX_PRIO = 3;
-				for (int prio = 0; prio <= MAX_PRIO; ++prio) {
-					for (final boolean pbg : new Boolean[] { true, false }) {
-						Set<Long> linesHash = new HashSet<Long>(20000);
-						for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
-							if (!tableBrowser.isHidden()) {
-								final boolean inClosureRootPath = rowsClosure.parentPath.contains(tableBrowser.browserContentPane);
-								Map<String, List<Link>> links = rbSourceToLinks.get(tableBrowser);
-								final List<Link> linksToRender = new ArrayList<Link>(1000);
-								int dir = 0;
-								for (Map.Entry<String, List<Link>> e : links.entrySet()) {
-									for (Link link : e.getValue()) {
-										if (link.visible && !link.from.isHidden() && !link.to.isHidden()) {
-											Point2D start = new Point2D.Double(link.x2, link.y2);
-											Point2D end = new Point2D.Double(link.x1, link.y1);
-											long lineHash = (start.hashCode()) + (((long) Integer.MAX_VALUE) + 1) * (end.hashCode());
-											if (!linesHash.contains(lineHash)) {
-												linksToRender.add(link);
-												linesHash.add(lineHash);
-												if (link.y1 < link.y2) {
-													++dir;
-												} else {
-													--dir;
-												}
-											}
+
+				Set<Long> linesHash = new HashSet<Long>(20000);
+				Map<RowBrowser, List<Link>> linksToRenderPerTableBrowser = new HashMap<RowBrowser, List<Link>>();
+				Map<RowBrowser, Integer> dirPerTableBrowser = new HashMap<RowBrowser, Integer>();
+
+				for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
+					if (!tableBrowser.isHidden()) {
+						Map<String, List<Link>> links = rbSourceToLinks.get(tableBrowser);
+						final List<Link> linksToRender = new ArrayList<Link>(1000);
+						int dir = 0;
+						long t = System.currentTimeMillis();
+						
+						for (Map.Entry<String, List<Link>> e : links.entrySet()) {
+							for (Link link : e.getValue()) {
+								if (link.visible && !link.from.isHidden() && !link.to.isHidden()) {
+									long shift = Integer.MAX_VALUE + 1;
+									long start = link.x2 * shift / 2 + link.y2 * shift / 4;
+									long end = link.x1 * shift / 8 + link.y1 * shift / 16;
+									long lineHash = start + end;
+									if (!linesHash.contains(lineHash)) {
+										linksToRender.add(link);
+										linesHash.add(lineHash);
+										if (link.y1 < link.y2) {
+											++dir;
+										} else {
+											--dir;
 										}
 									}
 								}
-								
-								final boolean isToParentLink = tableBrowser.association != null && tableBrowser.association.isInsertDestinationBeforeSource();
-								Collections.sort(linksToRender, new Comparator<Link>() {
-									@Override
-									public int compare(Link a, Link b) {
-										if (isToParentLink) {
-											if (a.y1 != b.y1) {
-												return a.y1 - b.y1;
-											} else {
-												return a.y2 - b.y2;
-											}
-										} else {
-											if (a.y2 != b.y2) {
-												return a.y2 - b.y2;
-											} else {
-												return a.y1 - b.y1;
-											}
-										}
+							}
+						}
+						
+						final boolean isToParentLink = tableBrowser.association != null && tableBrowser.association.isInsertDestinationBeforeSource();
+						Collections.sort(linksToRender, new Comparator<Link>() {
+							@Override
+							public int compare(Link a, Link b) {
+								if (isToParentLink) {
+									if (a.y1 != b.y1) {
+										return a.y1 - b.y1;
+									} else {
+										return a.y2 - b.y2;
 									}
-								});
+								} else {
+									if (a.y2 != b.y2) {
+										return a.y2 - b.y2;
+									} else {
+										return a.y1 - b.y1;
+									}
+								}
+							}
+						});
+						linksToRenderPerTableBrowser.put(tableBrowser, linksToRender);
+						dirPerTableBrowser.put(tableBrowser, dir);
+					}
+				}
+
+				final int MAX_PRIO = 3;
+				for (int prio = 0; prio <= MAX_PRIO; ++prio) {
+					for (final boolean pbg : new Boolean[] { true, false }) {
+						for (final RowBrowser tableBrowser : rbSourceToLinks.keySet()) {
+							if (!tableBrowser.isHidden()) {
+								final boolean inClosureRootPath = rowsClosure.parentPath.contains(tableBrowser.browserContentPane);
 								boolean light = true;
 								final Map<String, java.awt.geom.Point2D.Double> followMe;
+								final boolean isToParentLink = tableBrowser.association != null && tableBrowser.association.isInsertDestinationBeforeSource();
 								if (!isToParentLink) {
 									followMe = new HashMap<String, java.awt.geom.Point2D.Double>();
 								} else {
@@ -1787,6 +1800,12 @@ public abstract class Desktop extends JDesktopPane {
 								int lastLastY = -1;
 								boolean lastInClosure = false;
 								Map<String, List<Runnable>> renderTasks = new HashMap<String, List<Runnable>>();
+								final List<Link> linksToRender = linksToRenderPerTableBrowser.get(tableBrowser);
+								if (linksToRender == null) {
+									continue;
+								}
+								Integer dv = dirPerTableBrowser.get(tableBrowser);
+								int dir = dv == null? 0 : dv;
 								for (int i = 0; i < linksToRender.size(); ++i) {
 									final Link link = linksToRender.get(i);
 									int y = isToParentLink? link.y1 : link.y2;
