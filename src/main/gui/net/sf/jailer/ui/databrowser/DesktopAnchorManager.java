@@ -50,11 +50,13 @@ public abstract class DesktopAnchorManager {
 	private Long showedAt;
 	private RowBrowser currentBrowser;
 	private RowBrowser newestBrowser;
-	private final static int MAX_RETENDION = 5000;
+	private final static int MAX_RETENDION = 2000;
 
 	public DesktopAnchorManager(JPanel anchorPanel) {
 		this.anchorPanel = anchorPanel;
 		this.anchorButton = new JButton(anchorIcon);
+		
+		this.anchorPanel.setVisible(false);
 		
 		anchorPanel.add(anchorButton);
 		anchorButton.setToolTipText("align horizontally with predecessors");
@@ -218,6 +220,7 @@ public abstract class DesktopAnchorManager {
 		loc = SwingUtilities.convertPoint(tableBrowser.internalFrame.getParent(), loc, anchorPanel);
 		anchorButton.setLocation(loc);
 		anchorButton.setVisible(true);
+		anchorPanel.setVisible(true);
 		showedAt = System.currentTimeMillis();
 	}
 
@@ -227,6 +230,7 @@ public abstract class DesktopAnchorManager {
 
 	void reset(int delay) {
 		anchorButton.setVisible(false);
+		anchorPanel.setVisible(false);
 		if (delay > 0) {
 			disabledUntil = System.currentTimeMillis() + delay;
 		}
