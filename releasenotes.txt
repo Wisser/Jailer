@@ -1,7 +1,7 @@
 7.10.8
   - Data browser improvements
-    - Improved layout strategy in the data browser.
     - New layout feature: "align table horizontally with predecessor"
+    - Improved layout strategy in the data browser.
     - Improved row-to-row-link rendering performance.
   - Feature Request "Improve the usability of the Data Model Editor" (partially). see https://sourceforge.net/p/jailer/feature-requests/43/
 
