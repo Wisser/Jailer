@@ -39,6 +39,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -289,7 +291,7 @@ public class DataBrowser extends javax.swing.JFrame {
         metaDataViewPanel.add(metaDataDetailsPanel);
         
         jLayeredPane1.removeAll();
-        jLayeredPane1.setLayout(new GridBagLayout());
+        jLayeredPane1.setLayout(null);
         jLayeredPane1.setLayer(layeredPaneContent, JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.setLayer(dummy, JLayeredPane.DEFAULT_LAYER);
         gridBagConstraints = new GridBagConstraints();
@@ -298,9 +300,50 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1;
         gridBagConstraints.weighty = 1;
-        jLayeredPane1.add(layeredPaneContent, gridBagConstraints);
-        jLayeredPane1.add(dummy, gridBagConstraints);
+        jLayeredPane1.add(layeredPaneContent /*, gridBagConstraints */);
+        layeredPaneContent.setLocation(0, 0);
+//        jLayeredPane1.add(dummy /*, gridBagConstraints */);
+        
+        addComponentListener(new ComponentListener() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				layeredPaneContent.setSize(jLayeredPane1.getSize());
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						desktopSplitPane.setDividerLocation(0.75);
+					}
+				});
+			}
+			@Override
+			public void componentResized(ComponentEvent e) {
+			}
+			@Override
+			public void componentMoved(ComponentEvent e) {
+			}
+			@Override
+			public void componentHidden(ComponentEvent e) {
+			}
+		});
 
+        jLayeredPane1.addComponentListener(new ComponentListener() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				layeredPaneContent.setSize(jLayeredPane1.getSize());
+			}
+			@Override
+			public void componentResized(ComponentEvent e) {
+				layeredPaneContent.setSize(jLayeredPane1.getSize());
+			}
+			@Override
+			public void componentMoved(ComponentEvent e) {
+				layeredPaneContent.setSize(jLayeredPane1.getSize());
+			}
+			@Override
+			public void componentHidden(ComponentEvent e) {
+			}
+		});
+        
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -310,7 +353,7 @@ public class DataBrowser extends javax.swing.JFrame {
         JPanel anchorPanel = new JPanel(null);
         anchorPanel.setOpaque(false);
         jLayeredPane1.setLayer(anchorPanel, JLayeredPane.POPUP_LAYER);
-        jLayeredPane1.add(anchorPanel, gridBagConstraints);
+        jLayeredPane1.add(anchorPanel/* , gridBagConstraints */);
 
         anchorManager = new DesktopAnchorManager(anchorPanel) {
 			@Override
@@ -325,9 +368,6 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected boolean isApplicable(RowBrowser tableBrowser) {
 				if (tableBrowser.parent == null) {
-					return false;
-				}
-				if (desktop.getChildBrowsers(tableBrowser.parent, true).size() <= 1) {
 					return false;
 				}
 				if (desktop.desktopAnimation != null && desktop.desktopAnimation.isActive()) {

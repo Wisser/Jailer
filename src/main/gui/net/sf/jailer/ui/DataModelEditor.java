@@ -17,6 +17,8 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -41,6 +43,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -53,6 +56,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import net.coderazzi.filters.gui.AutoChoices;
+import net.coderazzi.filters.gui.TableFilterHeader;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.datamodel.DataModel;
@@ -243,7 +248,17 @@ public class DataModelEditor extends javax.swing.JDialog {
 		
 		sortLineList(associations, false);
 		initComponents();
-		
+
+		TableFilterHeader filterHeader = new TableFilterHeader();
+		filterHeader.setAutoChoices(AutoChoices.ENABLED);
+		filterHeader.setTable(tablesTable);
+		filterHeader.setMaxVisibleRows(20);
+
+		filterHeader = new TableFilterHeader();
+		filterHeader.setAutoChoices(AutoChoices.ENABLED);
+		filterHeader.setTable(associationsTable);
+		filterHeader.setMaxVisibleRows(20);
+
 		String modelpath = executionContext.getQualifiedDatamodelFolder();
 		try {
 			modelpath = new File(modelpath).getAbsolutePath();
@@ -278,8 +293,13 @@ public class DataModelEditor extends javax.swing.JDialog {
 		UIUtil.wireComponentWithButton(tablesTable, editTable);
 		UIUtil.wireComponentWithButton(associationsTable, editAssociation);
 		
-		setSize(1000, 700);
 		setLocation(100, 32);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		if (screenSize == null || screenSize.width < 1200) {
+			setSize(1000, 700);
+		} else {
+			setSize(Math.min(screenSize.width - 2 * getX(), 2000), Math.min(screenSize.height - 2 * getY(), 800));
+		}
 
 		File modelFinderColumnFile = new File(ModelBuilder.getModelBuilderColumnsFilename(executionContext));
 		if (merge && modelFinderColumnFile.exists()) {
@@ -310,73 +330,47 @@ public class DataModelEditor extends javax.swing.JDialog {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value,
                     boolean isSelected, boolean hasFocus, int row, int column) {
-				boolean fromModelFinder = linesFromModelFinder.contains(value);
-				if (!(value instanceof CsvFile.Line)) {
-					return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (value == null) {
+					value = "";
 				}
-				CsvFile.Line line = (CsvFile.Line) value;
-				String tableName = line.cells.get(0);
-				String pk = "";
-				for (int i = 2; i < line.length; ++i) {
-					if (line.cells.get(i).length() == 0) {
-						break;
-					}
-					if (pk.length() > 0) {
-						pk += ", ";
-					}
-					pk += line.cells.get(i);
-				}
-				value = column == 0? line.cells.get(0) : (pk.isEmpty()? "" : pk);
+				boolean fromModelFinder = tableTableRowsFromModelFinder.contains(tablesTable.getRowSorter().convertRowIndexToModel(row));
 				Component render = super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
 				render.setForeground(Color.BLACK);
-				if (pk.equals("")) {
-					render.setForeground(Color.RED);
-				}
-				if (fromModelFinder || modifiedColumnTables.contains(tableName)) {
+				if (fromModelFinder || modifiedColumnTables.contains(value) && column == 0) {
 					render.setBackground(isSelected? BG_SELCOLOR : BG_COLOR);
 				} else {
 					render.setBackground(isSelected? BG_SELCOLOR : (row % 2 == 0) ? BG1 : BG2);
 				}
+				if (tableTableRowsWithoutPK.contains(tablesTable.getRowSorter().convertRowIndexToModel(row))) {
+					render.setForeground(Color.RED);
+				}
 				if (render instanceof JLabel) {
-					((JLabel) render).setToolTipText(UIUtil.toHTML(String.valueOf(value), 100));
+					if (!"".equals(value)) {
+						((JLabel) render).setToolTipText(UIUtil.toHTML(String.valueOf(value), 100));
+					} else {
+						((JLabel) render).setToolTipText(null);
+					}
 				}
 				return render;
 			}
 			private static final long serialVersionUID = -8591324056536900244L;
 		};
-		
+
 		DefaultTableCellRenderer associationsListItemRenderer = new DefaultTableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value,
                     boolean isSelected, boolean hasFocus, int row, int column) {
-				boolean fromModelFinder = linesFromModelFinder.contains(value);
-				if (!(value instanceof CsvFile.Line)) {
-					return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				boolean fromModelFinder = associationTableRowsFromModelFinder.contains(associationsTable.getRowSorter().convertRowIndexToModel(row));
+				if (value == null) {
+					value = "";
 				}
-				CsvFile.Line line = (CsvFile.Line) value;
-				String type = "associates";
 				String typeTT = "associates";
-				if ("B".equalsIgnoreCase(line.cells.get(2))) {
-					type = "depends on";
+				if (value.equals("depends on")) {
 					typeTT = "depends on (has parent)";
 				}
-				if ("A".equalsIgnoreCase(line.cells.get(2))) {
-					type = "has dependent (has child)";
-					typeTT = "has dependent";
+				if (value.equals("has dependent")) {
+					typeTT = "has dependent (has child)";
 				}
-				String name = "";
-				if (line.cells.get(5).length() > 0) {
-					name = line.cells.get(5);
-				}
-				switch (column) {
-				case 0: value = line.cells.get(0); break;
-				case 1: value = line.cells.get(1); break;
-				case 2: value = line.cells.get(4); break;
-				case 3: value = type; break;
-				case 4: value = line.cells.get(3); break;
-				case 5: value = name; break;
-				}
-				// value = line.cells.get(0) + " " + type + " " + line.cells.get(1) + " " + name + line.cells.get(3) + " on " + line.cells.get(4);
 				Component render = super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
 				if (fromModelFinder) {
 					render.setBackground(isSelected? BG_SELCOLOR: BG_COLOR);
@@ -399,7 +393,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		tablesTable.setAutoCreateRowSorter(true);
 		
 		tablesTable.setDefaultRenderer(Object.class, tablesListItemRenderer);
-		tablesTable.setModel(createTablesListModel());
+		resetTableTableModel();
 
 		// tablesTable.setRowSelectionAllowed(false);
 		tablesTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -409,17 +403,13 @@ public class DataModelEditor extends javax.swing.JDialog {
 				updateButtons();
 			}
 		});
-		initRowSorter(tablesTable, new int[] { 0, 2 });
+		initRowSorter(tablesTable);
 		adjustTableColumnsWidth(tablesTable);
 
 		associationsTable.setDefaultRenderer(Object.class, associationsListItemRenderer);
 		
 		associationsTable.setAutoCreateRowSorter(true);
-//		List<SortKey> keys = new ArrayList<SortKey>();
-//		keys.add(new SortKey(1, SortOrder.ASCENDING));
-//		keys.add(new SortKey(3, SortOrder.ASCENDING));
-//		associationsTable.getRowSorter().setSortKeys(keys);
-		associationsTable.setModel(createAssociationsListModel());
+		resetAssociationTableModel();
 		adjustTableColumnsWidth(associationsTable);
 
 		associationsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -428,7 +418,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				updateButtons();
 			}
 		});
-		initRowSorter(associationsTable, new int[] { 0, 1, 4, 2, 3, 5 });
+		initRowSorter(associationsTable);
 
 		invalidate();
 		if (initiallyDirty) {
@@ -477,7 +467,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		}
 	}
 
-	private void initRowSorter(JTable table, final int[] mapping) {
+	private void initRowSorter(JTable table) {
 		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel()) {
 			@Override
 			protected boolean useToString(int column) {
@@ -495,22 +485,6 @@ public class DataModelEditor extends javax.swing.JDialog {
 		        }
 		        super.toggleSortOrder(column);
 		    }
-
-			@Override
-			public Comparator<?> getComparator(final int n) {
-				return new Comparator<Object>() {
-					@SuppressWarnings("unchecked")
-					@Override
-					public int compare(Object o1, Object o2) {
-						if (o1 instanceof Line) {
-							if (o2 instanceof Line) {
-								return ((Line) o1).cells.get(mapping[n]).compareTo(((Line) o2).cells.get(mapping[n]));
-							}
-						}
-						return String.valueOf(o1).compareTo(String.valueOf(o2));
-					}
-				};
-			}
 		};
 		table.setRowSorter(sorter);
 	}
@@ -529,9 +503,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 				comp = table.getCellRenderer(line, i).getTableCellRendererComponent(table, dtm.getValueAt(line, i), false, false, line, i);
 				width = Math.max(width, comp.getPreferredSize().width);
 			}
-			column.setPreferredWidth(Math.min(width, 200));
+			column.setPreferredWidth(Math.min(width, 400));
 		}
-		table.getColumnModel().getColumn(table.getColumnModel().getColumnCount() - 1).setPreferredWidth(80);
+		table.getColumnModel().getColumn(table.getColumnModel().getColumnCount() - 1).setPreferredWidth(120);
 	}
 
 	private KnownIdentifierMap createKnownIdentifierMap() throws IOException {
@@ -853,7 +827,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		CsvFile.Line line = new CsvFile.Line("?", cells);
 		if (new AssociationEditor(this, tables, associations, columns).edit(line)) {
 			associations.add(0, line);
-			associationsTable.setModel(createAssociationsListModel());
+			resetAssociationTableModel();
 			repaint();
 			markDirty();
 		}
@@ -866,11 +840,28 @@ public class DataModelEditor extends javax.swing.JDialog {
 		}
 		if (line != null) {
 			if (new AssociationEditor(this, tables, associations, columns).edit(line)) {
+				resetAssociationTableModel();
 				markDirty();
 				repaint();
 			}
 		}
 	}//GEN-LAST:event_editAssociationActionPerformed
+
+	private void resetAssociationTableModel() {
+		List<? extends SortKey> keys = associationsTable.getRowSorter().getSortKeys();
+		associationsTable.setModel(createAssociationsListModel());
+		initRowSorter(associationsTable);
+		adjustTableColumnsWidth(associationsTable);
+		associationsTable.getRowSorter().setSortKeys(keys);
+	}
+
+	private void resetTableTableModel() {
+		List<? extends SortKey> keys = tablesTable.getRowSorter().getSortKeys();
+		tablesTable.setModel(createTablesListModel());
+		initRowSorter(tablesTable);
+		adjustTableColumnsWidth(tablesTable);
+		tablesTable.getRowSorter().setSortKeys(keys);
+	}
 
 	private void newTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newTableActionPerformed
 		List<String> cells = new ArrayList<String>();
@@ -884,7 +875,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		CsvFile.Line line = new CsvFile.Line("?", cells);
 		if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion).edit(line, columns)) {
 			tables.add(0, line);
-			tablesTable.setModel(createTablesListModel());
+			resetTableTableModel();
 			markDirty();
 			repaint();
 		}
@@ -895,6 +886,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 			CsvFile.Line line = tables.get(tablesTable.getRowSorter().convertRowIndexToModel(tablesTable.getSelectedRow()));
 			if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion).edit(line, columns)) {
 				markDirty();
+				resetTableTableModel();
 				repaint();
 			}
 		}
@@ -931,9 +923,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 				displayNames.remove(k);
 			}
 			excludeFromDeletion.removeAll(namesOfTablesToDelete);
-			tablesTable.setModel(createTablesListModel());
+			resetTableTableModel();
 			associations.removeAll(assToDelete);
-			associationsTable.setModel(createAssociationsListModel());
+			resetAssociationTableModel();
 			for (Line l: toDelete) {
 				columns.remove(l.cells.get(0));
 			}
@@ -947,10 +939,14 @@ public class DataModelEditor extends javax.swing.JDialog {
 			toDelete.add(associations.get(associationsTable.getRowSorter().convertRowIndexToModel(i)));
 		}
 		associations.removeAll(toDelete);
-		associationsTable.setModel(createAssociationsListModel());
+		resetAssociationTableModel();
 		markDirty();
 	}//GEN-LAST:event_deleteAssociationsActionPerformed
 
+	private Set<Integer> tableTableRowsFromModelFinder = new HashSet<Integer>();
+	private Set<Integer> tableTableRowsWithoutPK = new HashSet<Integer>();
+	private Set<Integer> associationTableRowsFromModelFinder = new HashSet<Integer>();
+	
 	/**
 	 * Creates model for tables-list component.
 	 * 
@@ -963,8 +959,28 @@ public class DataModelEditor extends javax.swing.JDialog {
 				return false;
 			}
 		};
+		tableTableRowsFromModelFinder.clear();
+		tableTableRowsWithoutPK.clear();
+		int row = 0;
 		for (CsvFile.Line line: tables) {
-			tablesTableModel.addRow(new Object[] { line, line });
+			String pk = "";
+			for (int i = 2; i < line.length; ++i) {
+				if (line.cells.get(i).length() == 0) {
+					break;
+				}
+				if (pk.length() > 0) {
+					pk += ", ";
+				}
+				pk += line.cells.get(i);
+			}
+			if (linesFromModelFinder.contains(line)) {
+				tableTableRowsFromModelFinder.add(row);	
+			}
+			if (pk.isEmpty()) {
+				tableTableRowsWithoutPK.add(row);
+			}
+			tablesTableModel.addRow(new Object[] { line.cells.get(0), pk });
+			++row;
 		}
 		return tablesTableModel;
 	}
@@ -981,8 +997,25 @@ public class DataModelEditor extends javax.swing.JDialog {
 				return false;
 			}
 		};
+		associationTableRowsFromModelFinder.clear();
+		int row = 0;
 		for (CsvFile.Line line: associations) {
-			associationsTableModel.addRow(new Object[] { line, line, line, line, line, line });
+			String type = "associates";
+			if ("B".equalsIgnoreCase(line.cells.get(2))) {
+				type = "depends on";
+			}
+			if ("A".equalsIgnoreCase(line.cells.get(2))) {
+				type = "has dependent";
+			}
+			String name = "";
+			if (line.cells.get(5).length() > 0) {
+				name = line.cells.get(5);
+			}
+			if (linesFromModelFinder.contains(line)) {
+				associationTableRowsFromModelFinder.add(row);	
+			}
+			associationsTableModel.addRow(new Object[] { line.cells.get(0), line.cells.get(1), line.cells.get(4), type, line.cells.get(3), name });
+			++row;
 		}
 		return associationsTableModel;
 	}

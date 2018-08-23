@@ -214,11 +214,13 @@ public abstract class DesktopAnchorManager {
 		}
 		currentBrowser = tableBrowser;
 		anchorButton.setSize(anchorButton.getPreferredSize());
+		anchorPanel.setSize(anchorButton.getPreferredSize());
 		Point loc;
 		loc = tableBrowser.internalFrame.getLocation();
 		loc.translate(-anchorButton.getWidth(), 0);
+		anchorPanel.setLocation(0, 0);
 		loc = SwingUtilities.convertPoint(tableBrowser.internalFrame.getParent(), loc, anchorPanel);
-		anchorButton.setLocation(loc);
+		anchorPanel.setLocation(loc);
 		anchorButton.setVisible(true);
 		anchorPanel.setVisible(true);
 		showedAt = System.currentTimeMillis();

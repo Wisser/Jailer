@@ -1349,6 +1349,7 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	private synchronized boolean calculateLinks() {
 		boolean changed = false;
+		Set<Long> linesHash = new HashSet<Long>(20000);
 		for (RowBrowser tableBrowser : tableBrowsers) {
 			JInternalFrame internalFrame = tableBrowser.internalFrame;
 			if (internalFrame.isMaximum()) {
@@ -1528,6 +1529,20 @@ public abstract class Desktop extends JDesktopPane {
 								y2 = max;
 							}
 						}
+
+						if (tableBrowser.parent != null && tableBrowser.parent.internalFrame.isVisible() && tableBrowser.internalFrame.isVisible()) {
+							long shift = 32768;
+							long start = (long) x2 + shift * (long) y2;
+							long end = (long) x1 + shift * (long) y1;
+							long lineHash = start + shift * shift * end;
+							if (linesHash.contains(lineHash)) {
+								rowToRowLink.visible = false;
+								continue;
+							} else {
+								linesHash.add(lineHash);
+							}
+						}
+
 						if (x1 != rowToRowLink.x1 || y1 != rowToRowLink.y1 || x2 != rowToRowLink.x2 || y2 != rowToRowLink.y2) {
 							changed = true;
 							rowToRowLink.x1 = x1;
@@ -1736,15 +1751,13 @@ public abstract class Desktop extends JDesktopPane {
 						Map<String, List<Link>> links = rbSourceToLinks.get(tableBrowser);
 						final List<Link> linksToRender = new ArrayList<Link>(1000);
 						int dir = 0;
-						long t = System.currentTimeMillis();
-						
 						for (Map.Entry<String, List<Link>> e : links.entrySet()) {
 							for (Link link : e.getValue()) {
 								if (link.visible && !link.from.isHidden() && !link.to.isHidden()) {
-									long shift = Integer.MAX_VALUE + 1;
-									long start = link.x2 * shift / 2 + link.y2 * shift / 4;
-									long end = link.x1 * shift / 8 + link.y1 * shift / 16;
-									long lineHash = start + end;
+									long shift = 32768;
+									long start = (long) link.x2 + shift * (long) link.y2;
+									long end = (long) link.x1 + shift * (long) link.y1;
+									long lineHash = start + shift * shift * end;
 									if (!linesHash.contains(lineHash)) {
 										linksToRender.add(link);
 										linesHash.add(lineHash);
@@ -3268,10 +3281,10 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private void logFPS(Map<Long, Long> durations, long now, long avgD) {
-//		long k = durations.keySet().iterator().next();
-//		if (k != now && desktopAnimation.isActive()) {
-//			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
-//		}
+		long k = durations.keySet().iterator().next();
+		if (k != now && desktopAnimation.isActive()) {
+			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
+		}
 	}
 
 	private final int RESCALE_DURATION = 500;
