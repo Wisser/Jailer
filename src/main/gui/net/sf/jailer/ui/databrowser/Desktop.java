@@ -3281,10 +3281,10 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private void logFPS(Map<Long, Long> durations, long now, long avgD) {
-		long k = durations.keySet().iterator().next();
-		if (k != now && desktopAnimation.isActive()) {
-			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
-		}
+//		long k = durations.keySet().iterator().next();
+//		if (k != now && desktopAnimation.isActive()) {
+//			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
+//		}
 	}
 
 	private final int RESCALE_DURATION = 500;
