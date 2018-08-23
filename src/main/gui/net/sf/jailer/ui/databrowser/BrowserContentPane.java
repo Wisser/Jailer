@@ -1788,7 +1788,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		boolean closeThisToo = true;
 		if (count > 1) {
 			int o = JOptionPane.showOptionDialog(this, "Which tables do you want to close?", "Close",
-					JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
+					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null,
 					new Object[] { 
 							"Only this table", 
 							"This and related tables (" + (count) + ")", 
