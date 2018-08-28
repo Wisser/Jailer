@@ -184,9 +184,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			Map<String, Association> fkMap = new HashMap<String, Association>();
 			Map<String, Integer> unknownFKCounter = new HashMap<String, Integer>();
 			while (resultSet.next()) {
-//				String qualifiedPKTableName = toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 1 : 2)), quoting.quote(resultSet.getString(3)));
-//				Table pkTable = dataModel.getTable(qualifiedPKTableName);
-				Table pkTable = table;
+				String qualifiedPKTableName = toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 1 : 2)), quoting.quote(resultSet.getString(3)));
+				Table defaultPkTable = dataModel.getTable(qualifiedPKTableName);
 				
 				String pkColumn = quoting.quote(resultSet.getString(4));
 				if (uti != null) {
@@ -195,21 +194,22 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				
 				String qualifiedFKTableName = toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 5 : 6)), quoting.quote(resultSet.getString(7)));
 				
-				// collect all FKTables
-				Table defaultFkTable = dataModel.getTable(qualifiedFKTableName);
+				// collect all PKTables
+				Table fkTable = table;
+				
 				Map<Table, UnderlyingTableInfo> infos = new HashMap<Table, UnderlyingTableInfo>();
-				if (defaultFkTable != null) {
-					infos.put(defaultFkTable, null);
+				if (defaultPkTable != null) {
+					infos.put(defaultPkTable, null);
 				}
 				for (Entry<String, UnderlyingTableInfo> e: underlyingTableInfos.entrySet()) {
 					Table view = dataModel.getTable(e.getKey());
-					if (view != null && qualifiedFKTableName.equals(e.getValue().underlyingTable.getName())) {
+					if (view != null && qualifiedPKTableName.equals(e.getValue().underlyingTable.getName())) {
 						infos.put(view, e.getValue());
 					}
 				}
 
 				for (Entry<Table, UnderlyingTableInfo> e: infos.entrySet()) {
-					Table fkTable = e.getKey();
+					Table pkTable = e.getKey();
 					String fkColumn = quoting.quote(resultSet.getString(8));
 					String foreignKey = resultSet.getString(12);
 					

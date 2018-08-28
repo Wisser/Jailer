@@ -76,7 +76,7 @@ public class MetaDataCache {
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(5));
-			readMetaData(metaDataCache, session, primaryKeysQuery.replace("${SCHEMA}", schema), intIndex);
+			readMetaData(metaDataCache, session, primaryKeysQuery.replace("${SCHEMA}", schema), intIndex, 2);
 			return metaDataCache;
 		} catch (Exception e) {
 			_log.info(e.getMessage());
@@ -104,7 +104,7 @@ public class MetaDataCache {
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(4));
-			readMetaData(metaDataCache, session, indexInfoQuery.replace("${SCHEMA}", schema), intIndex);
+			readMetaData(metaDataCache, session, indexInfoQuery.replace("${SCHEMA}", schema), intIndex, 2);
 			return metaDataCache;
 		} catch (Exception e) {
 			_log.info(e.getMessage());
@@ -132,7 +132,7 @@ public class MetaDataCache {
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(9, 10, 11, 14));
-			readMetaData(metaDataCache, session, importedKeysQuery.replace("${SCHEMA}", schema), intIndex);
+			readMetaData(metaDataCache, session, importedKeysQuery.replace("${SCHEMA}", schema), intIndex, 6);
 			return metaDataCache;
 		} catch (Exception e) {
 			_log.info(e.getMessage());
@@ -226,7 +226,7 @@ public class MetaDataCache {
 	 * Reads meta data.
 	 */
 	private static void readMetaData(final MetaDataCache metaDataCache, Session session, String query,
-			final Set<Integer> intIndex) throws SQLException {
+			final Set<Integer> intIndex, final int tableIndex) throws SQLException {
 		metaDataCache.cache = new HashMap<String, List<Object[]>>();
 		boolean wasSilent = session.getSilent();
 		session.setSilent(true);
@@ -243,7 +243,7 @@ public class MetaDataCache {
 							row[i - 1] = resultSet.getString(i);
 						}
 					}
-					String table = (String) row[2];
+					String table = (String) row[tableIndex];
 					List<Object[]> rowList = metaDataCache.cache.get(table);
 					if (rowList == null) {
 						rowList = new LinkedList<Object[]>();
