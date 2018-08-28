@@ -1,3 +1,7 @@
+7.10.9
+  - Database analysis not only finds primary keys and foreign keys for tables,
+    but also for views and synonyms by analyzing the underlying tables.
+
 7.10.8
   - Data browser improvements
     - New layout feature: "align table horizontally with predecessor"
