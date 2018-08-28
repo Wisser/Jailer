@@ -116,7 +116,7 @@
         <explainQuery>select * from table(dbms_xplan.display(NULL, '%2$s'))</explainQuery>
         <explainCleanup></explainCleanup>
         <synonymTableQuery>select '"' || TABLE_OWNER || '"."' || TABLE_NAME || '"' from ALL_SYNONYMS where OWNER = '%1$s' and SYNONYM_NAME = '%2$s'</synonymTableQuery>
-        <viewTextQuery>select TEXT from all_views where OWNER = '%1$s' and VIEW_NAME = '%2$s'</viewTextQuery>
+        <viewTextOrDDLQuery>select TEXT from all_views where OWNER = '%1$s' and VIEW_NAME = '%2$s'</viewTextOrDDLQuery>
         <functionSourceQuery>SELECT 'Source', text FROM all_source WHERE type = 'FUNCTION' and name = '%2$s' AND owner = '%1$s' ORDER BY line</functionSourceQuery>
         <procedureSourceQuery>SELECT 'Source', text FROM all_source WHERE type = 'PROCEDURE' and name = '%2$s' AND owner = '%1$s' ORDER BY line</procedureSourceQuery>
         <packageNamesQuery>SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OBJECT_TYPE = 'PACKAGE' AND OWNER = '%1$s'</packageNamesQuery>
@@ -441,7 +441,7 @@ union all
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
 		<estimatedRowCountQuery>select TABLE_NAME, CARDINALITY from INFORMATION_SCHEMA.STATISTICS where TABLE_SCHEMA = '%s'</estimatedRowCountQuery>
-		<viewTextQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextQuery>
+		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
         
 		<virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'</virtualColumnsQuery>
 <!--
@@ -557,6 +557,7 @@ union all
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <estimatedRowCountQuery>SELECT TABNAME, CARD FROM SYSSTAT.TABLES WHERE TABSCHEMA = '%s'</estimatedRowCountQuery>
+        <viewTextOrDDLQuery>SELECT TEXT FROM SYSCAT.VIEWS WHERE VIEWSCHEMA = '%1$s' and VIEWNAME = '%2$s'</viewTextOrDDLQuery> 
         <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
         <importedKeysQuery> SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME,        null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ,        null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}'   ORDER BY FKCOL.COLSEQ</importedKeysQuery>
         <primaryKeysQuery>   SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>

@@ -192,7 +192,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					pkColumn = uti.columnMapping.get(pkColumn);
 				}
 				
-				String qualifiedFKTableName = toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 5 : 6)), quoting.quote(resultSet.getString(7)));
+//				String qualifiedFKTableName = toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 5 : 6)), quoting.quote(resultSet.getString(7)));
 				
 				// collect all PKTables
 				Table fkTable = table;
@@ -494,8 +494,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 		for (Table table: tables) {
 			String viewText = null;
-			if ("VIEW".equals(tableTypes.get(table.getName()))) {
-				String viewTextQuery = String.format(session.dbms.getViewTextQuery(), introspectionSchema, table.getUnqualifiedName());
+			String viewTextOrDDLQuery = session.dbms.getViewTextOrDDLQuery();
+			if ("VIEW".equals(tableTypes.get(table.getName())) && viewTextOrDDLQuery != null) {
+				String viewTextQuery = String.format(viewTextOrDDLQuery, introspectionSchema, table.getUnqualifiedName());
 				final String[] viewTextContainer = new String[1];
 				try {
 					session.executeQuery(viewTextQuery, new Session.AbstractResultSetReader() {
@@ -505,24 +506,30 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 						}
 					});
 					viewText = viewTextContainer[0];
+					if (viewText != null) {
+						viewText = viewText.trim();
+						viewText = viewText.replaceFirst("(?is)^create.*as\\b(.*)$", "$1");
+					}
 				} catch (Exception e) {
 					_log.info("can't get view text: " + viewTextQuery);
 					_log.info(e.getMessage());
 				}
 			} else if ("SYNONYM".equals(tableTypes.get(table.getName())) || "ALIAS".equals(tableTypes.get(table.getName()))) {
-				String synonymTableQuery = String.format(session.dbms.getSynonymTableQuery(), introspectionSchema, table.getUnqualifiedName());
-				final String[] synonymTableQueryContainer = new String[1];
-				try {
-					session.executeQuery(synonymTableQuery, new Session.AbstractResultSetReader() {
-						@Override
-						public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							synonymTableQueryContainer[0] = "Select * from " + resultSet.getString(1);
-						}
-					});
-					viewText = synonymTableQueryContainer[0];
-				} catch (Exception e) {
-					_log.info("can't get synonym table: " + synonymTableQuery);
-					_log.info(e.getMessage());
+				if (session.dbms.getSynonymTableQuery() != null) {
+					String synonymTableQuery = String.format(session.dbms.getSynonymTableQuery(), introspectionSchema, table.getUnqualifiedName());
+					final String[] synonymTableQueryContainer = new String[1];
+					try {
+						session.executeQuery(synonymTableQuery, new Session.AbstractResultSetReader() {
+							@Override
+							public void readCurrentRow(ResultSet resultSet) throws SQLException {
+								synonymTableQueryContainer[0] = "Select * from " + resultSet.getString(1);
+							}
+						});
+						viewText = synonymTableQueryContainer[0];
+					} catch (Exception e) {
+						_log.info("can't get synonym table: " + synonymTableQuery);
+						_log.info(e.getMessage());
+					}
 				}
 			} else {
 				continue;

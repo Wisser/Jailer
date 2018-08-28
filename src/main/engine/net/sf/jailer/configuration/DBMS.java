@@ -104,7 +104,7 @@ public class DBMS {
 		this.rowidName = other.rowidName;
 		this.supportsSchemasInIndexDefinitions = other.supportsSchemasInIndexDefinitions;
 		this.useInlineViewsInDataBrowser = other.useInlineViewsInDataBrowser;
-		this.viewTextQuery = other.viewTextQuery;
+		this.viewTextOrDDLQuery = other.viewTextOrDDLQuery;
 		this.synonymTableQuery = other.synonymTableQuery;
 		this.estimatedRowCountQuery = other.estimatedRowCountQuery;
 		this.virtualColumnsQuery = other.virtualColumnsQuery;
@@ -295,7 +295,7 @@ public class DBMS {
 	private boolean useInlineViewsInDataBrowser = true;
 	private String virtualColumnsQuery = null;
 	private String synonymTableQuery;
-	private String viewTextQuery;
+	private String viewTextOrDDLQuery;
 	private String estimatedRowCountQuery = null;
 	private String userDefinedColumnsQuery = null;
 	private String importedKeysQuery = null;
@@ -1027,12 +1027,12 @@ public class DBMS {
 	/**
 	 * Gets query to get view text.
 	 */
-	public String getViewTextQuery() {
-		return viewTextQuery;
+	public String getViewTextOrDDLQuery() {
+		return viewTextOrDDLQuery;
 	}
 
-	public void setViewTextQuery(String viewTextQuery) {
-		this.viewTextQuery = viewTextQuery;
+	public void setViewTextOrDDLQuery(String viewTextOrDDLQuery) {
+		this.viewTextOrDDLQuery = viewTextOrDDLQuery;
 	}
 
 	/**
