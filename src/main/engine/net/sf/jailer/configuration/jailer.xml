@@ -63,12 +63,6 @@
                 <key>CatalogOptions</key>
                 <value>0</value>
             </entry>
-<!--
-            <entry>
-                <key>includeSynonyms</key>
-                <value>true</value>
-            </entry>
--->
         </jdbcProperties>
         <statisticRenovator>
             <scriptFileName>script/oracle/gatherStatistics.sql</scriptFileName>
@@ -121,6 +115,8 @@
         <explainPrepare>explain plan set statement_id = '%2$s' for %1$s</explainPrepare>
         <explainQuery>select * from table(dbms_xplan.display(NULL, '%2$s'))</explainQuery>
         <explainCleanup></explainCleanup>
+        <synonymTableQuery>select '"' || TABLE_OWNER || '"."' || TABLE_NAME || '"' from ALL_SYNONYMS where OWNER = '%1$s' and SYNONYM_NAME = '%2$s'</synonymTableQuery>
+        <viewTextQuery>select TEXT from all_views where OWNER = '%1$s' and VIEW_NAME = '%2$s'</viewTextQuery>
         <functionSourceQuery>SELECT 'Source', text FROM all_source WHERE type = 'FUNCTION' and name = '%2$s' AND owner = '%1$s' ORDER BY line</functionSourceQuery>
         <procedureSourceQuery>SELECT 'Source', text FROM all_source WHERE type = 'PROCEDURE' and name = '%2$s' AND owner = '%1$s' ORDER BY line</procedureSourceQuery>
         <packageNamesQuery>SELECT OBJECT_NAME FROM ALL_OBJECTS WHERE OBJECT_TYPE = 'PACKAGE' AND OWNER = '%1$s'</packageNamesQuery>

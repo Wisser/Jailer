@@ -365,7 +365,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					    		rs.close();
 				    		}
 						} catch (SQLException e) {
-							logger.info("error", e);
+							// ignore
 						}
 			    		SwingUtilities.invokeLater(new Runnable() {
 							@Override

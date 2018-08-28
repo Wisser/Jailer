@@ -699,7 +699,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                             popup.add(menu);
                             ++itemCount;
                             menu.add(createScriptMenuItem("Delete Script", "Delete from %1$s;", "", mdTables, false));
-                            menu.add(createScriptMenuItem("Drop Table Script", "Drop Table %1$s;", "", mdTables, false));
+                            menu.add(createScriptMenuItem("Drop Table Script", "Drop %2$s %1$s;", "", mdTables, false));
                             menu.addSeparator();
                             menu.add(createScriptMenuItem("Count Rows Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true));
                         }
@@ -725,12 +725,19 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     			script.append(separator + "\n");
                     		}
                     		String tableName;
+                    		String tableType = "Table";
+                    		if (mdTable.isView()) {
+                    			tableType = "View";
+                    		}
+                    		if (mdTable.isSynonym()) {
+                    			tableType = "Synonym";
+                    		}
                     		if (mdTable.getSchema().isDefaultSchema) {
                     			tableName = mdTable.getName();
                     		} else {
                     			tableName = mdTable.getSchema() + "." + mdTable.getName();
                     		}
-                    		script.append(String.format(template, tableName));
+							script.append(String.format(template, tableName, tableType));
                     	}
             			script.append("\n");
 						appendScript(script.toString(), execute);

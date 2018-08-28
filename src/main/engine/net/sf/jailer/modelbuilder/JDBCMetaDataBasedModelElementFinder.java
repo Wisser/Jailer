@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.modelbuilder;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -26,8 +27,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -48,6 +51,42 @@ import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.StatementVisitor;
+import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.view.AlterView;
+import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.drop.Drop;
+import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.merge.Merge;
+import net.sf.jsqlparser.statement.replace.Replace;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SelectItemVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.SubJoin;
+import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.TableFunction;
+import net.sf.jsqlparser.statement.select.ValuesList;
+import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.truncate.Truncate;
+import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.upsert.Upsert;
 
 /**
  * Finds associations and tables by analyzing the JDBC meta data.
@@ -123,11 +162,21 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		Quoting quoting = new Quoting(session);
 		ResultSet resultSet;
 		String defaultSchema = getDefaultSchema(session, session.getSchema());
-		 
-		for (Table table: dataModel.getTables()) {
+		Set<Association> toRemove = new HashSet<Association>();
+
+		for (Table viewOrTable: dataModel.getTables()) {
+			Table table;
+			Table underlyingTable = null;
+			UnderlyingTableInfo uti = null;
+			uti = underlyingTableInfos.get(viewOrTable.getName());
+			if (uti != null) {
+				underlyingTable = uti.underlyingTable;
+			}
+			table = viewOrTable;
 			_log.info("find associations with " + table.getName());
 			try {
-				resultSet = getImportedKeys(session, metaData, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()), true);
+				Table child = underlyingTable != null? underlyingTable : table;
+				resultSet = getImportedKeys(session, metaData, quoting.unquote(child.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(child.getUnqualifiedName()), true);
 			} catch (Exception e) {
 				_log.info("failed. " + e.getMessage());
 				continue;
@@ -135,38 +184,83 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			Map<String, Association> fkMap = new HashMap<String, Association>();
 			Map<String, Integer> unknownFKCounter = new HashMap<String, Integer>();
 			while (resultSet.next()) {
-				Table pkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 1 : 2)), quoting.quote(resultSet.getString(3))));
+//				String qualifiedPKTableName = toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 1 : 2)), quoting.quote(resultSet.getString(3)));
+//				Table pkTable = dataModel.getTable(qualifiedPKTableName);
+				Table pkTable = table;
+				
 				String pkColumn = quoting.quote(resultSet.getString(4));
-				Table fkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 5 : 6)), quoting.quote(resultSet.getString(7))));
-				String fkColumn = quoting.quote(resultSet.getString(8));
-				String foreignKey = resultSet.getString(12);
-				if (fkTable != null) {
-					if (foreignKey == null || foreignKey.trim().length() == 0) {
-						foreignKey = pkTable.getName();
-						int seq = resultSet.getInt(9);
-						String fkKey = fkTable.getName() + "." + foreignKey;
-						if (seq == 1) {
-							Integer count = unknownFKCounter.get(fkKey);
-							if (count == null) {
-								count = 1;
-							} else {
-								count++;
-							}
-							unknownFKCounter.put(fkKey, count);
-						}
-						foreignKey += "." + unknownFKCounter.get(fkKey);
+				if (uti != null) {
+					pkColumn = uti.columnMapping.get(pkColumn);
+				}
+				
+				String qualifiedFKTableName = toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 5 : 6)), quoting.quote(resultSet.getString(7)));
+				
+				// collect all FKTables
+				Table defaultFkTable = dataModel.getTable(qualifiedFKTableName);
+				Map<Table, UnderlyingTableInfo> infos = new HashMap<Table, UnderlyingTableInfo>();
+				if (defaultFkTable != null) {
+					infos.put(defaultFkTable, null);
+				}
+				for (Entry<String, UnderlyingTableInfo> e: underlyingTableInfos.entrySet()) {
+					Table view = dataModel.getTable(e.getKey());
+					if (view != null && qualifiedFKTableName.equals(e.getValue().underlyingTable.getName())) {
+						infos.put(view, e.getValue());
 					}
-					String fkName = fkTable.getName() + "." + foreignKey;
-					if (foreignKey != null && fkMap.containsKey(fkName)) {
-						fkMap.get(fkName).appendCondition("A." + fkColumn + "=B." + pkColumn);
-					} else {
-						if (pkTable != null && fkTable != null) {
-							Association association = new Association(fkTable, pkTable, false, true, "A." + fkColumn + "=B." + pkColumn, dataModel, false, Cardinality.MANY_TO_ONE);
-							association.setAuthor(metaData.getDriverName());
-							associations.add(association);
-							fkMap.put(fkName, association);
-							if (foreignKey != null) {
-								namingSuggestion.put(association, new String[] { foreignKey, fkTable.getUnqualifiedName() + "." + foreignKey });
+				}
+
+				for (Entry<Table, UnderlyingTableInfo> e: infos.entrySet()) {
+					Table fkTable = e.getKey();
+					String fkColumn = quoting.quote(resultSet.getString(8));
+					String foreignKey = resultSet.getString(12);
+					
+					UnderlyingTableInfo info = e.getValue();
+					if (info != null) {
+						fkColumn = info.columnMapping.get(fkColumn);
+					}
+
+					if (fkTable != null) {
+						if (foreignKey == null || foreignKey.trim().length() == 0) {
+							foreignKey = pkTable.getName();
+							if (info != null) {
+								foreignKey += "." + quoting.unquote(fkTable.getUnqualifiedName());
+							}
+							int seq = resultSet.getInt(9);
+							String fkKey = fkTable.getName() + "." + foreignKey;
+							if (seq == 1) {
+								Integer count = unknownFKCounter.get(fkKey);
+								if (count == null) {
+									count = 1;
+								} else {
+									count++;
+								}
+								unknownFKCounter.put(fkKey, count);
+							}
+							foreignKey += "." + unknownFKCounter.get(fkKey);
+						} else {
+							if (info != null) {
+								foreignKey += "." + quoting.unquote(fkTable.getUnqualifiedName());
+							}
+						}
+						String fkName = fkTable.getName() + "." + foreignKey;
+						
+						if (foreignKey != null && fkMap.containsKey(fkName)) {
+							if (fkColumn == null || pkColumn == null) {
+								toRemove.add(fkMap.get(fkName));
+							} else {
+								fkMap.get(fkName).appendCondition("A." + fkColumn + "=B." + pkColumn);
+							}
+						} else {
+							if (pkTable != null && fkTable != null) {
+								Association association = new Association(fkTable, pkTable, false, true, "A." + fkColumn + "=B." + pkColumn, dataModel, false, Cardinality.MANY_TO_ONE);
+								association.setAuthor(metaData.getDriverName());
+								associations.add(association);
+								fkMap.put(fkName, association);
+								if (foreignKey != null) {
+									namingSuggestion.put(association, new String[] { foreignKey, fkTable.getUnqualifiedName() + "." + foreignKey });
+								}
+								if (fkColumn == null || pkColumn == null) {
+									toRemove.add(association);
+								}
 							}
 						}
 					}
@@ -175,6 +269,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			resultSet.close();
 			CancellationHandler.checkForCancellation(null);
 		}
+		associations.removeAll(toRemove);
 		return associations;
 	}
 
@@ -219,6 +314,31 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return table;
 	}
 	
+	private class UnderlyingTableInfo {
+		Table underlyingTable;
+		Map<String, String> columnMapping = new LinkedHashMap<String, String>();
+
+		@Override
+		public String toString() {
+			return "UnderlyingTableInfo [underlyingTable=" + underlyingTable + ", columnMapping=" + columnMapping + "]";
+		}
+
+		public void join() {
+			UnderlyingTableInfo u2TableInfo = underlyingTableInfos.get(underlyingTable.getName());
+			if (u2TableInfo != null) {
+				Map<String, String> newColumnMapping = new HashMap<String, String>();
+				for (Entry<String, String> e: u2TableInfo.columnMapping.entrySet()) {
+					String cMapped = columnMapping.get(e.getValue());
+					if (cMapped != null) {
+						newColumnMapping.put(e.getKey(), cMapped);
+					}
+				}
+				columnMapping = newColumnMapping;
+				underlyingTable = u2TableInfo.underlyingTable;
+			}
+		}
+	};
+
 	/**
 	 * Finds all tables in DB schema.
 	 * 
@@ -226,6 +346,28 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 */
 	@Override
 	public Set<Table> findTables(Session session, ExecutionContext executionContext) throws Exception {
+		String introspectionSchema = session.getIntrospectionSchema();
+		String tableNamePattern = "%";
+
+		return findTables(session, executionContext, introspectionSchema, tableNamePattern, 0);
+	}
+
+	private Map<String, UnderlyingTableInfo> underlyingTableInfos = new HashMap<String, UnderlyingTableInfo>();
+	private Map<String, String> tableTypes = new HashMap<String, String>();
+
+	/**
+	 * Finds all tables in DB schema.
+	 * 
+	 * @param session the statement executor for executing SQL-statements
+	 * @param introspectionSchema the schema
+	 * @param tableNamePattern table name pattern 
+	 */
+	private Set<Table> findTables(Session session, ExecutionContext executionContext, String introspectionSchema,
+			String tableNamePattern, int depth) throws SQLException {
+		final int MAX_DEPTH = 100;
+		if (depth > MAX_DEPTH) {
+			return new HashSet<Table>();
+		}
 		PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
 		
 		Set<Table> tables = new HashSet<Table>();
@@ -233,14 +375,14 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		Quoting quoting = new Quoting(session);
 		ResultSet resultSet;
 		List<String> types = getTypes(executionContext);
-		resultSet = getTables(session, metaData, session.getIntrospectionSchema(), "%", types.toArray(new String[0]));
+		resultSet = getTables(session, metaData, introspectionSchema, tableNamePattern, types.toArray(new String[0]));
 		List<String> tableNames = new ArrayList<String>();
 		while (resultSet.next()) {
 			String tableName = resultSet.getString(3);
 			if (resultSet.getString(4) != null && types.contains(resultSet.getString(4).toUpperCase())) {
 				if (isValidName(tableName, session)) {
 					tableName = quoting.quote(tableName);
-					if (executionContext.getQualifyNames()) {
+					if (executionContext.getQualifyNames() || (depth > 0 && introspectionSchema != null && !introspectionSchema.equals(session.getIntrospectionSchema()))) {
 						String schemaName = resultSet.getString(DBMS.MySQL.equals(session.dbms)? 1 : 2);
 						if (schemaName != null) {
 							schemaName = quoting.quote(schemaName.trim());
@@ -250,6 +392,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 						}
 					}
 					tableNames.add(tableName);
+					tableTypes.put(tableName, resultSet.getString(4).toUpperCase());
 					_log.info("found table " + tableName);
 				} else {
 					_log.info("skip table " + tableName);
@@ -261,7 +404,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
 		for (String tableName: tableNames) {
 			Table tmp = new Table(tableName, null, false, false);
-			resultSet = getPrimaryKeys(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), true);
+			resultSet = getPrimaryKeys(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))), quoting.unquote(tmp.getUnqualifiedName()), true);
 			Map<Integer, Column> pk = pkColumns.get(tableName);
 			if (pk == null) {
 				pk = new HashMap<Integer, Column>();
@@ -280,7 +423,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 			if (!hasPK) {
 				_log.info("find unique index of table " + tableName);
-				hasPK = findUniqueIndexBasedKey(metaData, quoting, session, tmp, pk);
+				hasPK = findUniqueIndexBasedKey(metaData, quoting, session, tmp, pk, tableTypes.get(tableName));
 			}
 			_log.info((hasPK? "" : "no ") + "primary key found for table " + tableName);
 			resultSet.close();
@@ -288,8 +431,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		}
 		for (String tableName: tableNames) {
 			Table tmp = new Table(tableName, null, false, false);
-			_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
-			resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%", true);
+			_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
+			resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))), quoting.unquote(tmp.getUnqualifiedName()), tableNamePattern, true, tableTypes.get(tableName));
 			_log.info("done");
 			Map<Integer, Column> pk = pkColumns.get(tableName);
 			while (resultSet.next()) {
@@ -349,7 +492,260 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			CancellationHandler.checkForCancellation(null);
 		}
 
+		for (Table table: tables) {
+			String viewText = null;
+			if ("VIEW".equals(tableTypes.get(table.getName()))) {
+				String viewTextQuery = String.format(session.dbms.getViewTextQuery(), introspectionSchema, table.getUnqualifiedName());
+				final String[] viewTextContainer = new String[1];
+				try {
+					session.executeQuery(viewTextQuery, new Session.AbstractResultSetReader() {
+						@Override
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							viewTextContainer[0] = resultSet.getString(1);
+						}
+					});
+					viewText = viewTextContainer[0];
+				} catch (Exception e) {
+					_log.info("can't get view text: " + viewTextQuery);
+					_log.info(e.getMessage());
+				}
+			} else if ("SYNONYM".equals(tableTypes.get(table.getName())) || "ALIAS".equals(tableTypes.get(table.getName()))) {
+				String synonymTableQuery = String.format(session.dbms.getSynonymTableQuery(), introspectionSchema, table.getUnqualifiedName());
+				final String[] synonymTableQueryContainer = new String[1];
+				try {
+					session.executeQuery(synonymTableQuery, new Session.AbstractResultSetReader() {
+						@Override
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							synonymTableQueryContainer[0] = "Select * from " + resultSet.getString(1);
+						}
+					});
+					viewText = synonymTableQueryContainer[0];
+				} catch (Exception e) {
+					_log.info("can't get synonym table: " + synonymTableQuery);
+					_log.info(e.getMessage());
+				}
+			} else {
+				continue;
+			}
+			
+			if (viewText != null) {
+				UnderlyingTableInfo uti = parseViewText(session, executionContext, quoting, depth, viewText, introspectionSchema, table);
+				if (uti != null) {
+					List<Column> columns = findColumns(table, session, executionContext);
+					uti.join();
+					if (table.primaryKey.getColumns().isEmpty()) {
+						if (uti.underlyingTable.primaryKey != null && !uti.underlyingTable.primaryKey.getColumns().isEmpty()) {
+							List<Column> newPK = new ArrayList<Column>();
+							for (Column pkc: uti.underlyingTable.primaryKey.getColumns()) {
+								String newPkc = uti.columnMapping.get(quoting.normalizeCase(Quoting.staticUnquote(pkc.name)));
+								if (newPkc != null) {
+									Column newC = null;
+									for (Column c: columns) {
+										if (Quoting.equalsIgnoreQuotingAndCase(c.name, newPkc)) {
+											newC = c;
+											break;
+										}
+									}
+									if (newC != null) {
+										newPK.add(newC);
+									} else {
+										newPK = null;
+									}
+								} else {
+									newPK = null;
+									break;
+								}
+							}
+							if (newPK != null) {
+								table.primaryKey.assign(newPK);
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		return tables;
+	}
+
+	private UnderlyingTableInfo parseViewText(final Session session, final ExecutionContext executionContext, final Quoting quoting, final int depth, String viewText, final String defaultSchema, final Table view) {
+		net.sf.jsqlparser.statement.Statement st;
+		try {
+			final List<Column> columns = findColumns(view, session, executionContext);
+			final boolean[] isValid = new boolean[] { true };
+			final boolean[] selectExists = new boolean[] { false };
+			final UnderlyingTableInfo underlyingTableInfo = new UnderlyingTableInfo();
+			st = CCJSqlParserUtil.parse(viewText);
+			st.accept(new StatementVisitor() {
+				@Override
+				public void visit(Upsert arg0) {
+				}
+				@Override
+				public void visit(Select select) {
+					select.getSelectBody().accept(new SelectVisitor() {
+						@Override
+						public void visit(WithItem withItem) {
+							isValid[0] = false;
+						}
+						@Override
+						public void visit(SetOperationList setOpList) {
+							isValid[0] = false;
+						}
+						@Override
+						public void visit(PlainSelect plainSelect) {
+							if (plainSelect.getFromItem() != null && plainSelect.getJoins() == null) {
+								selectExists[0] = true;
+								for (SelectItem sItem: plainSelect.getSelectItems()) {
+									sItem.accept(new SelectItemVisitor() {
+										@Override
+										public void visit(SelectExpressionItem eItem) {
+											Expression expression = eItem.getExpression();
+											if (expression instanceof net.sf.jsqlparser.schema.Column) {
+												String column = ((net.sf.jsqlparser.schema.Column) expression).getColumnName();
+												column = Quoting.staticUnquote(column);
+												String alias = column;
+												if (eItem.getAlias() != null) {
+													if (eItem.getAlias().getName() != null) {
+														alias = Quoting.staticUnquote(eItem.getAlias().getName());
+													}
+												}
+												underlyingTableInfo.columnMapping.put(quoting.normalizeCase(Quoting.staticUnquote(column)), quoting.normalizeCase(Quoting.staticUnquote(alias)));
+											}
+										}
+										@Override
+										public void visit(AllTableColumns arg0) {
+											for (Column column: columns) {
+												underlyingTableInfo.columnMapping.put(quoting.normalizeCase(Quoting.staticUnquote(column.name)), quoting.normalizeCase(Quoting.staticUnquote(column.name)));
+											}
+										}
+										@Override
+										public void visit(AllColumns arg0) {
+											for (Column column: columns) {
+												underlyingTableInfo.columnMapping.put(quoting.normalizeCase(Quoting.staticUnquote(column.name)), quoting.normalizeCase(Quoting.staticUnquote(column.name)));
+											}
+										}
+									});
+								}
+								FromItemVisitor fromItemVisitor = new FromItemVisitor() {
+									private void unknownTable() {
+										isValid[0] = false;
+										selectExists[0] = false;
+									}
+									@Override
+									public void visit(TableFunction tableFunction) {
+										unknownTable();
+									}
+									
+									@Override
+									public void visit(ValuesList valuesList) {
+										unknownTable();
+									}
+									
+									@Override
+									public void visit(LateralSubSelect lateralSubSelect) {
+										unknownTable();
+									}
+									
+									@Override
+									public void visit(SubJoin subjoin) {
+										unknownTable();
+									}
+									
+									@Override
+									public void visit(SubSelect subSelect) {
+										unknownTable();
+									}
+									
+									@Override
+									public void visit(net.sf.jsqlparser.schema.Table tableName) {
+										String schema = Quoting.staticUnquote(tableName.getSchemaName());
+										if (schema == null) {
+											schema = defaultSchema;
+										}
+										String name = Quoting.staticUnquote(tableName.getName());
+										if (tableName.getPivot() != null) {
+											unknownTable();
+										} else {
+											try {
+												Quoting quoting = new Quoting(session);
+												Set<Table> tables = findTables(session, executionContext, quoting.normalizeCase(schema), quoting.normalizeCase(name), depth + 1);
+												if (tables.size() < 1) {
+													tables = findTables(session, executionContext, schema, name, depth + 1);
+												}
+												if (tables.size() >= 1) {
+													underlyingTableInfo.underlyingTable = tables.iterator().next();
+												} else {
+													_log.warn("View or Synonym \"" + view.getName() + "\": can't find underlying table \"" + schema + "." + name + "\"");
+												}
+											} catch (SQLException e) {
+												_log.error("paring failed", e);
+											}
+										}
+									}
+								};
+								plainSelect.getFromItem().accept(fromItemVisitor);
+							}
+						}
+					});
+				}
+				@Override
+				public void visit(Merge arg0) {
+				}
+				@Override
+				public void visit(SetStatement arg0) {
+				}
+				@Override
+				public void visit(Execute arg0) {
+				}
+				@Override
+				public void visit(Statements arg0) {
+				}
+				@Override
+				public void visit(Alter arg0) {
+				}
+				@Override
+				public void visit(AlterView arg0) {
+				}
+				@Override
+				public void visit(CreateView arg0) {
+				}
+				@Override
+				public void visit(CreateTable arg0) {
+				}
+				@Override
+				public void visit(CreateIndex arg0) {
+				}
+				@Override
+				public void visit(Truncate arg0) {
+				}
+				@Override
+				public void visit(Drop arg0) {
+				}
+				@Override
+				public void visit(Replace arg0) {
+				}
+				@Override
+				public void visit(Insert arg0) {
+				}
+				@Override
+				public void visit(Update arg0) {
+				}
+				@Override
+				public void visit(Delete arg0) {
+				}
+				@Override
+				public void visit(Commit arg0) {
+				}
+			});
+			if (isValid[0] && selectExists[0] && underlyingTableInfo.underlyingTable != null) {
+				underlyingTableInfos.put(view.getName(), underlyingTableInfo);
+				return underlyingTableInfo;
+			}
+		} catch (Exception e) {
+			_log.info("can't parse view text: " + viewText);
+			_log.info(e.getMessage());
+		}
+		return null;
 	}
 
 	private List<String> getTypes(ExecutionContext executionContext) {
@@ -395,10 +791,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 	/**
 	 * Find a key of a table based on an unique index on non-nullable columns.
+	 * @param string 
 	 */
-	private boolean findUniqueIndexBasedKey(DatabaseMetaData metaData, Quoting quoting, Session session, Table tmp, Map<Integer, Column> pk) {
+	private boolean findUniqueIndexBasedKey(DatabaseMetaData metaData, Quoting quoting, Session session, Table tmp, Map<Integer, Column> pk, String tableType) {
 		try {
-			ResultSet resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%", true);
+			ResultSet resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%", true, tableType);
 			
 			List<String> nonNullColumns = new ArrayList<String>();
 			boolean hasNullable = false;
@@ -470,22 +867,22 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				}
 			}
 			
-			if (!hasNullable) {
-				if (nonNullColumns.size() <= 6) {
-					for (int i = 1; i <= nonNullColumns.size(); ++i) {
-						pk.put(i, new Column(quoting.quote(nonNullColumns.get(i - 1)), "", 0, -1));
-					}
-					return true;
-				}
-			}
-			
+//			if (!hasNullable && "TABLE".equalsIgnoreCase(tableType)) {
+//				if (nonNullColumns.size() <= 6) {
+//					for (int i = 1; i <= nonNullColumns.size(); ++i) {
+//						pk.put(i, new Column(quoting.quote(nonNullColumns.get(i - 1)), "", 0, -1));
+//					}
+//					return true;
+//				}
+//			}
+//			
 			return false;
 		} catch (Exception e) {
 			_log.error(e.getMessage(), e);
 			return false;
 		}
 	}
-	
+
 	private ResultSet getIndexInfo(Session session, DatabaseMetaData metaData, String schema, String table, boolean unique, boolean approximate) throws SQLException {
 		final String NAME = "getIndexInfo " + schema;
 		MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
@@ -518,38 +915,63 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * Calls {@link DatabaseMetaData#getColumns(String, String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
 	 * @param withCaching 
 	 */
-	public static ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern, boolean withCaching) throws SQLException {
-		if (withCaching) {
-			synchronized (session) {
-				final String NAME = "getColumns " + schemaPattern;
-				MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
-				if (metaDataCache == null) {
-					metaDataCache = MetaDataCache.readColumns(session, metaData, schemaPattern);
-					session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
-				}
-				ResultSet resultSet = metaDataCache.forTable(tableNamePattern);
-				if (resultSet != null) {
-					return resultSet;
-				}
+	public static ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern, boolean withCaching, String tableType) throws SQLException {
+		boolean includeSynonym = false;
+		if (DBMS.ORACLE.equals(session.dbms)) {
+			if ("ALIAS".equalsIgnoreCase(tableType) || "SYNONYM".equalsIgnoreCase(tableType)) {
+				includeSynonym = true;
 			}
-		}
-		if (DBMS.MySQL.equals(session.dbms)) {
-			return metaData.getColumns(schemaPattern, null, tableNamePattern, columnNamePattern);
+			includeSynonym = setIncludeSynonyms(includeSynonym, session);
 		}
 		try {
-			return metaData.getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
-		} catch (Exception e) {
-			String catalogs = "";
-			try {
-				ResultSet r = metaData.getCatalogs();
-				while (r.next()) {
-					catalogs += r.getString(1) + "  ";
+			if (withCaching) {
+				synchronized (session) {
+					final String NAME = "getColumns " + includeSynonym + " " + schemaPattern;
+					MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
+					if (metaDataCache == null) {
+						metaDataCache = MetaDataCache.readColumns(session, metaData, schemaPattern);
+						session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
+					}
+					ResultSet resultSet = metaDataCache.forTable(tableNamePattern);
+					if (resultSet != null) {
+						return resultSet;
+					}
 				}
-				r.close();
-			} catch (Exception e2) {
-				catalogs += "?";
 			}
-			throw new RuntimeException("Error in getColumns(): catalogs= " + catalogs + ", schemaPattern=" + schemaPattern + ", tableNamePattern=" + tableNamePattern + ", columnNamePattern=" + columnNamePattern, e);
+			if (DBMS.MySQL.equals(session.dbms)) {
+				return metaData.getColumns(schemaPattern, null, tableNamePattern, columnNamePattern);
+			}
+			try {
+				return metaData.getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
+			} catch (Exception e) {
+				String catalogs = "";
+				try {
+					ResultSet r = metaData.getCatalogs();
+					while (r.next()) {
+						catalogs += r.getString(1) + "  ";
+					}
+					r.close();
+				} catch (Exception e2) {
+					catalogs += "?";
+				}
+				throw new RuntimeException("Error in getColumns(): catalogs= " + catalogs + ", schemaPattern=" + schemaPattern + ", tableNamePattern=" + tableNamePattern + ", columnNamePattern=" + columnNamePattern, e);
+			}
+		} finally {
+			if (DBMS.ORACLE.equals(session.dbms)) {
+				if (includeSynonym) {
+					setIncludeSynonyms(false, session);
+				}
+			}
+		}
+	}
+
+	private static boolean setIncludeSynonyms(boolean includeSynonyms, Session session) {
+		try {
+			Connection con = session.getConnection();
+			con.getClass().getClassLoader().loadClass("oracle.jdbc.OracleConnection").getMethod("setIncludeSynonyms", new Class[] { boolean.class }).invoke(con, includeSynonyms);
+			return includeSynonyms;
+		} catch (Throwable t) {
+			return false;
 		}
 	}
 
@@ -672,7 +1094,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * @throws Exception on each error
 	 */
 	@Override
-	public List<Column> findColumns(Table table, Session session, ExecutionContext executionContext) throws Exception {
+	public List<Column> findColumns(Table table, Session session, ExecutionContext executionContext) throws SQLException {
 		List<Column> columns = new ArrayList<Column>();
 		DatabaseMetaData metaData = session.getMetaData();
 		Quoting quoting = new Quoting(session);
@@ -685,7 +1107,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		String schemaName = quoting.unquote(table.getOriginalSchema(defaultSchema));
 		String tableName = quoting.unquote(table.getUnqualifiedName());
 		_log.info("getting columns for " + table.getOriginalSchema(defaultSchema) + "." + tableName);
-		ResultSet resultSet = getColumns(session, metaData, schemaName, tableName, "%", true);
+		ResultSet resultSet = getColumns(session, metaData, schemaName, tableName, "%", true, tableTypes.get(table.getName()));
 		_log.info("done");
 		while (resultSet.next()) {
 			String colName = quoting.quote(resultSet.getString(4));

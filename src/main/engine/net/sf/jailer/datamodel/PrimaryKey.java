@@ -200,6 +200,11 @@ public class PrimaryKey {
 		return toSQL(null);
 	}
 
+	public void assign(List<Column> primaryKeyColumns) {
+		columns.clear();
+		columns.addAll(primaryKeyColumns);
+	}
+
 	public static boolean isIncreasable(Column uPKColumn, Column column) {
 		if(!uPKColumn.type.equals(column.type)) {
 			return false;
@@ -228,4 +233,5 @@ public class PrimaryKey {
 		// never should get THIS far !
 		return false;
 	}
+
 }

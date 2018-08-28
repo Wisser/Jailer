@@ -287,6 +287,19 @@ public class Quoting {
 		return staticUnquote(identifier).toUpperCase(Locale.ENGLISH);
 	}
 
+	public String normalizeCase(String identifier) {
+		if (identifier == null) {
+			return null;
+		}
+		if (unquotedIdentifierInMixedCase) {
+			return identifier;
+		}
+		if (unquotedIdentifierInUpperCase) {
+			return identifier.toUpperCase();
+		}
+		return identifier.toLowerCase();
+	}
+	
 	/**
 	 * Compares a String to another String, ignoring case considerations and quoting.
 	 * 

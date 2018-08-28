@@ -104,6 +104,8 @@ public class DBMS {
 		this.rowidName = other.rowidName;
 		this.supportsSchemasInIndexDefinitions = other.supportsSchemasInIndexDefinitions;
 		this.useInlineViewsInDataBrowser = other.useInlineViewsInDataBrowser;
+		this.viewTextQuery = other.viewTextQuery;
+		this.synonymTableQuery = other.synonymTableQuery;
 		this.estimatedRowCountQuery = other.estimatedRowCountQuery;
 		this.virtualColumnsQuery = other.virtualColumnsQuery;
 		this.userDefinedColumnsQuery = other.userDefinedColumnsQuery;
@@ -292,14 +294,12 @@ public class DBMS {
 	private Boolean supportsSchemasInIndexDefinitions = null;
 	private boolean useInlineViewsInDataBrowser = true;
 	private String virtualColumnsQuery = null;
+	private String synonymTableQuery;
+	private String viewTextQuery;
 	private String estimatedRowCountQuery = null;
-
 	private String userDefinedColumnsQuery = null;
-	
 	private String importedKeysQuery = null;
-	
 	private String primaryKeysQuery = null;
-	
 	private String indexInfoQuery = null;
 	private String identifierQuoteString = "\"";
 
@@ -1022,6 +1022,28 @@ public class DBMS {
 	 */
 	public void setEstimatedRowCountQuery(String estimatedRowCountQuery) {
 		this.estimatedRowCountQuery = estimatedRowCountQuery;
+	}
+
+	/**
+	 * Gets query to get view text.
+	 */
+	public String getViewTextQuery() {
+		return viewTextQuery;
+	}
+
+	public void setViewTextQuery(String viewTextQuery) {
+		this.viewTextQuery = viewTextQuery;
+	}
+
+	/**
+	 * Gets query to get underlying table of a synonym.
+	 */
+	public String getSynonymTableQuery() {
+		return synonymTableQuery;
+	}
+
+	public void setSynonymTableQuery(String synonymTableQuery) {
+		this.synonymTableQuery = synonymTableQuery;
 	}
 
 	/* (non-Javadoc)

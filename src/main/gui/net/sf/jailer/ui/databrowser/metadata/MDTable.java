@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
-import java.awt.Cursor;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -163,7 +162,8 @@ public class MDTable extends MDObject {
                 MetaDataSource metaDataSource = getMetaDataSource();
                 synchronized (metaDataSource.getSession().getMetaData()) {
                     ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%", 
-                    		true);
+                    		true, isSynonym? "SYNONYM" : null);
+                    // TODO test
                     while (resultSet.next()) {
                         String colName = metaDataSource.getQuoting().quote(resultSet.getString(4));
                         columns.add(colName);
@@ -212,7 +212,23 @@ public class MDTable extends MDObject {
                         }
                         pk.put(keySeq, metaDataSource.getQuoting().quote(resultSet.getString(4)));
                     }
-                    primaryKey.addAll(pk.values());
+                    if (pk.isEmpty()) {
+                    	Table table = metaDataSource.toTable(this);
+                    	if (table != null) {
+                    		if (table.primaryKey != null) {
+                    			for (Column c: table.primaryKey.getColumns()) {
+                    				for (String mc: columns) {
+                    					if (Quoting.equalsIgnoreQuotingAndCase(c.name, mc)) {
+                    						primaryKey.add(mc);
+                    						break;
+                    					}
+                    				}
+                    			}
+                    		}
+                    	}
+                    } else {
+                    	primaryKey.addAll(pk.values());
+                    }
                     resultSet.close();
                 }
             } finally {
