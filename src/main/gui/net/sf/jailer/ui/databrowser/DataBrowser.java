@@ -2315,9 +2315,6 @@ public class DataBrowser extends javax.swing.JFrame {
                         
                     } catch (Exception x) {
                     }
-					ToolTipManager.sharedInstance().setInitialDelay(500);
-                    ToolTipManager.sharedInstance().setDismissDelay(7000);
-
                     createFrame();
                 } catch (Exception e) {
                     e.printStackTrace();
