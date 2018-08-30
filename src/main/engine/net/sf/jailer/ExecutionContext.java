@@ -639,7 +639,7 @@ public class ExecutionContext {
 	}
 
 	private URL datamodelURL;
-	
+
 	/**
 	 * Gets URL of the current data model (the datamodels base folder)
 	 */
@@ -652,14 +652,14 @@ public class ExecutionContext {
 				fn = datamodelFolder + File.separator + currentModelSubfolder;
 			}
 			try {
-				datamodelURL = new File(fn).toURI().toURL();
+				return new File(fn).toURI().toURL();
 			} catch (MalformedURLException e) {
 				throw new RuntimeException(e);
 			}
 		}
 		return datamodelURL;
 	}
-	
+
 	/**
 	 * Sets URL of the current data model (the datamodels base folder)
 	 */

@@ -353,7 +353,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                             menu.add(exclude);
                             menu.addSeparator();
                             JPopupMenu popup = rb.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
-                            JPopupMenu popup2 = rb.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
+                            JPopupMenu popup2 = rb.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true, closureTable);
                             popup.add(new JSeparator());
                             for (Component c : popup.getComponents()) {
                                 menu.add(c);

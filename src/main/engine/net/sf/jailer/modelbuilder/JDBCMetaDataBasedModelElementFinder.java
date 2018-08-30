@@ -178,8 +178,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				Table child = underlyingTable != null? underlyingTable : table;
 				String ikSchema = quoting.unquote(child.getOriginalSchema(quoting.quote(defaultSchema)));
 				Session ikSession = session;
-				if (sessionWithPermissionToReadSchema.containsKey(ikSchema)) {
-					ikSession = sessionWithPermissionToReadSchema.get(ikSchema);
+				if (sessionWithPermissionToReadSchema.containsKey(Quoting.normalizeIdentifier(ikSchema))) {
+					ikSession = sessionWithPermissionToReadSchema.get(Quoting.normalizeIdentifier(ikSchema));
 				}
 				resultSet = getImportedKeys(ikSession, metaData, ikSchema, quoting.unquote(child.getUnqualifiedName()), true);
 			} catch (Exception e) {
@@ -698,11 +698,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 																_log.warn("View or Synonym \"" + view.getName() + "\": can't find underlying table \"" + schema + "." + name + "\"");
 																break;
 														} else {
-															Session newSession = sessionWithPermissionToReadSchema.get(quoting.normalizeCase(schema));
+															Session newSession = sessionWithPermissionToReadSchema.get(Quoting.normalizeIdentifier(schema));
 															if (newSession != null && newSession != theSession) {
 																theSession = newSession;
 															} else {
-																theSession = askForSessionWithPermissionToReadSchema(session, view, quoting.normalizeCase(schema), quoting.normalizeCase(name), executionContext);
+																theSession = askForSessionWithPermissionToReadSchema(session, view, Quoting.normalizeIdentifier(schema), quoting.normalizeCase(schema), quoting.normalizeCase(name), executionContext);
 																if (theSession == null) {
 																	_log.warn("Insufficient privileges to analyze table \"" + schema + "." + name + "\"");
 																}
@@ -1380,7 +1380,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	
 	public static PrivilegedSessionProvider privilegedSessionProvider;
 	
-	private Session askForSessionWithPermissionToReadSchema(Session session, Table view, String schema, String tableName, ExecutionContext executionContext) {
+	private Session askForSessionWithPermissionToReadSchema(Session session, Table view, String schemaID, String schema, String tableName, ExecutionContext executionContext) {
 		if (privilegedSessionProvider == null) {
 			return null;
 		}
@@ -1392,16 +1392,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		Session newSession = privilegedSessionProvider.askForSessionWithPermissionToReadSchema(session, view, schema, tableName, executionContext);
 		
 		if (newSession != null) {
-			Session s = sessionWithPermissionToReadSchema.get(schema);
+			Session s = sessionWithPermissionToReadSchema.get(schemaID);
 			if (s != null) {
 				try {
 					s.shutDown();
 				} catch (SQLException e) {
 					// ignore
 				}
-				sessionWithPermissionToReadSchema.remove(schema);
+				sessionWithPermissionToReadSchema.remove(schemaID);
 			}
-			sessionWithPermissionToReadSchema.put(schema, newSession);
+			sessionWithPermissionToReadSchema.put(schemaID, newSession);
 		}
 		
 		return newSession;

@@ -982,7 +982,7 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			public void internalFrameClosing(InternalFrameEvent e) {
-				if (tableBrowser.browserContentPane.closeWithChildren()) {
+				if (tableBrowser.browserContentPane.closeWithChildren(jInternalFrame)) {
 					onLayoutChanged(false, false);
 				}
 			}
@@ -1115,7 +1115,7 @@ public abstract class Desktop extends JDesktopPane {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getButton() != MouseEvent.BUTTON1 && !(browserContentPane.table instanceof SqlStatementTable)) {
 					JPopupMenu popup = browserContentPane.createPopupMenu(null, -1, 0, 0, false);
-					JPopupMenu popup2 = browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
+					JPopupMenu popup2 = browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true, jInternalFrame);
 					popup.add(new JSeparator());
 					for (Component c : popup2.getComponents()) {
 						popup.add(c);
