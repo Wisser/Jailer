@@ -61,6 +61,7 @@ import javax.swing.table.TableColumn;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Pair;
@@ -788,6 +789,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		activateCurrentModel();
 		
 		try {
+			JDBCMetaDataBasedModelElementFinder.privilegedSessionProvider = new PrivilegedSessionProviderDialog.Provider(this);
 			DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this, applicationName,
 					new InfoBar("Connect with Database", 
 							"Select a connection to the database to be analyzed, or create a new connection.\n" +
@@ -837,6 +839,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			UIUtil.showException(this, "Error", e);
 		} finally {
 			ModelBuilder.assocFilter = null;
+			JDBCMetaDataBasedModelElementFinder.privilegedSessionProvider = null;
 		}
 
 	}//GEN-LAST:event_analyzeButtonActionPerformed

@@ -17,7 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -70,6 +69,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.subsetting.ScriptFormat;
@@ -1072,6 +1072,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			@Override
 			public Boolean call() {
 				try {
+					JDBCMetaDataBasedModelElementFinder.privilegedSessionProvider = new PrivilegedSessionProviderDialog.Provider(ExtractionModelFrame.this);
 					if (connectToDBIfNeeded("Analyze Database")) {
 						List<String> args = new ArrayList<String>();
 						args.add("build-model-wo-merge");
@@ -1113,6 +1114,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					UIUtil.showException(ExtractionModelFrame.this, "Error", e);
 				} finally {
 					ModelBuilder.assocFilter = null;
+					JDBCMetaDataBasedModelElementFinder.privilegedSessionProvider = null;
 				}
 				return true;
 			}

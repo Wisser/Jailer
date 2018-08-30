@@ -347,6 +347,22 @@ public class MDTable extends MDObject {
                     }
                 }
             }
+            if (ddl == null && isView) {
+            	String viewTextOrDDLQuery = session.dbms.getViewTextOrDDLQuery();
+    			if (viewTextOrDDLQuery != null) {
+    				String viewTextQuery = String.format(viewTextOrDDLQuery, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()));
+    				try {
+    					session.executeQuery(viewTextQuery, new Session.AbstractResultSetReader() {
+    						@Override
+    						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+    							ddl = resultSet.getString(1);
+    						}
+    					});
+    				} catch (Exception e) {
+    					// ignore
+    				}
+    			}
+            }
             if (ddl == null) {
                 try {
                 	ddl = createDDL();

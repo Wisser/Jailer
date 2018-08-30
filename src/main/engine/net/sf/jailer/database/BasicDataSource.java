@@ -19,10 +19,12 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -48,7 +50,7 @@ public class BasicDataSource implements DataSource {
 	/**
 	 * Name of JDBC-driver class.
 	 */
-	private final String driverClassName;
+	final String driverClassName;
 	
 	/**
 	 * The DB URL.
@@ -196,6 +198,8 @@ public class BasicDataSource implements DataSource {
 		}
 	}
 
+	private static Set<String> registeredDriverClassNames = new HashSet<String>();
+	
 	private void loadDriver(URL[] jdbcDriverURL) {
 		ClassLoader classLoaderForJdbcDriver = addJarToClasspath(jdbcDriverURL);
 		try {
@@ -204,6 +208,7 @@ public class BasicDataSource implements DataSource {
 				try {
 					d = (Driver) Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();
 					DriverManager.registerDriver(new DriverShim(d));
+					registeredDriverClassNames.add(driverClassName);
 				} catch (InstantiationException e) {
 					throw new RuntimeException(e);
 				} catch (IllegalAccessException e) {
@@ -215,7 +220,9 @@ public class BasicDataSource implements DataSource {
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+			if (!registeredDriverClassNames.contains(driverClassName)) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 

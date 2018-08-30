@@ -202,6 +202,11 @@ public class Session {
 	public final DBMS dbms;
 	
 	/**
+	 * The DBMS.
+	 */
+	public final String driverClassName;
+	
+	/**
 	 * The dbUrl (<code>null</code> if unknown)
 	 */
 	public final String dbUrl;
@@ -238,6 +243,7 @@ public class Session {
 		this.local = local;
 		this.scope = scope;
 		this.dbms = dbms;
+		this.driverClassName = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).driverClassName : null;
 		this.dbUrl = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUrl : null;
 		this.schema = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUser : "";
 		this.temporaryTableScope = scope;

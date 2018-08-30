@@ -112,6 +112,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.About;
 import net.sf.jailer.ui.AnalyseOptionsDialog;
@@ -131,6 +132,7 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.PrivilegedSessionProviderDialog;
 import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
@@ -2425,6 +2427,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private void updateDataModel(String schemaName, boolean withViews, boolean withSynonyms) {
         try {
+			JDBCMetaDataBasedModelElementFinder.privilegedSessionProvider = new PrivilegedSessionProviderDialog.Provider(this);
+
             List<String> args = new ArrayList<String>();
             args.add("build-model-wo-merge");
             dbConnectionDialog.addDbArgs(args);
@@ -2476,6 +2480,7 @@ public class DataBrowser extends javax.swing.JFrame {
             UIUtil.showException(this, "Error", e, session);
         } finally {
             ModelBuilder.assocFilter = null;
+            JDBCMetaDataBasedModelElementFinder.privilegedSessionProvider = null;
         }
     }
 

@@ -295,7 +295,7 @@ public class DBMS {
 	private boolean useInlineViewsInDataBrowser = true;
 	private String virtualColumnsQuery = null;
 	private String synonymTableQuery;
-	private String viewTextOrDDLQuery;
+	private String viewTextOrDDLQuery = "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'";
 	private String estimatedRowCountQuery = null;
 	private String userDefinedColumnsQuery = null;
 	private String importedKeysQuery = null;
@@ -523,7 +523,11 @@ public class DBMS {
 	public Map<String, String> getTypeReplacement() {
 		if (!this.equals(DBMS.ORACLE)) {
 			if (typeReplacement == null || !typeReplacement.containsKey("VARCHAR2")) {
-				typeReplacement = new HashMap<String, String>(typeReplacement);
+				if (typeReplacement == null) {
+					typeReplacement = new HashMap<String, String>();
+				} else {
+					typeReplacement = new HashMap<String, String>(typeReplacement);
+				}
 				typeReplacement.put("VARCHAR2", "VARCHAR");
 			}
 		}

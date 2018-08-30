@@ -265,6 +265,7 @@ INNER JOIN sys.partitions AS p ON p.object_id=CAST(tbl.object_id AS int)
 AND p.index_id=idx.index_id
 WHERE SCHEMA_NAME(tbl.schema_id)='%s'
 		</estimatedRowCountQuery>
+		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
         <virtualColumnsQuery>SELECT sysobjects.name AS TableName, syscolumns.name AS ColumnName FROM syscolumns JOIN sysobjects ON syscolumns.id = sysobjects.id AND sysobjects.xtype = 'U' WHERE syscolumns.iscomputed = 1</virtualColumnsQuery>
 		<userDefinedColumnsQuery>SELECT distinct DOMAIN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '%s' AND DOMAIN_NAME is not null</userDefinedColumnsQuery>
 <!-- 
@@ -674,6 +675,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <viewTextOrDDLQuery>SELECT TEXT FROM SYSCAT.VIEWS WHERE VIEWSCHEMA = '%1$s' and VIEWNAME = '%2$s'</viewTextOrDDLQuery> 
         <estimatedRowCountQuery>SELECT TABNAME, CARD FROM SYSSTAT.TABLES WHERE TABSCHEMA = '%s'</estimatedRowCountQuery>
         <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
         <importedKeysQuery>SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME, null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ, null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}' ORDER BY FKCOL.COLSEQ</importedKeysQuery>
@@ -803,6 +805,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
+		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
 		<estimatedRowCountQuery>
 SELECT c.relname, c.reltuples::bigint AS estimate
 FROM   pg_class c

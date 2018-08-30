@@ -354,11 +354,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 	private boolean inRefresh = false;
 
-	private String jdbcHelpURL = "http://jailer.sourceforge.net/doc/jdbc.html?src=app";
-
-	public synchronized void setJdbcHelpURL(String jdbcHelpURL) {
-		this.jdbcHelpURL = jdbcHelpURL;
-	}
+	public static final String jdbcHelpURL = "http://jailer.sourceforge.net/doc/jdbc.html?src=app";
 
 	/**
 	 * Refreshes the dialog after model changes.

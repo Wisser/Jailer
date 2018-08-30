@@ -176,7 +176,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			_log.info("find associations with " + table.getName());
 			try {
 				Table child = underlyingTable != null? underlyingTable : table;
-				resultSet = getImportedKeys(session, metaData, quoting.unquote(child.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(child.getUnqualifiedName()), true);
+				String ikSchema = quoting.unquote(child.getOriginalSchema(quoting.quote(defaultSchema)));
+				Session ikSession = session;
+				if (sessionWithPermissionToReadSchema.containsKey(ikSchema)) {
+					ikSession = sessionWithPermissionToReadSchema.get(ikSchema);
+				}
+				resultSet = getImportedKeys(ikSession, metaData, ikSchema, quoting.unquote(child.getUnqualifiedName()), true);
 			} catch (Exception e) {
 				_log.info("failed. " + e.getMessage());
 				continue;
@@ -185,19 +190,18 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			Map<String, Integer> unknownFKCounter = new HashMap<String, Integer>();
 			while (resultSet.next()) {
 				String qualifiedPKTableName = toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 1 : 2)), quoting.quote(resultSet.getString(3)));
-				Table defaultPkTable = dataModel.getTable(qualifiedPKTableName);
-				
-				String pkColumn = quoting.quote(resultSet.getString(4));
-				if (uti != null) {
-					pkColumn = uti.columnMapping.get(pkColumn);
-				}
-				
 //				String qualifiedFKTableName = toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 5 : 6)), quoting.quote(resultSet.getString(7)));
-				
-				// collect all PKTables
+				Table defaultPkTable = dataModel.getTable(qualifiedPKTableName);
+
 				Table fkTable = table;
 				
-				Map<Table, UnderlyingTableInfo> infos = new HashMap<Table, UnderlyingTableInfo>();
+				String fkColumn = quoting.quote(resultSet.getString(8));
+				if (uti != null) {
+					fkColumn = uti.columnMapping.get(fkColumn);
+				}
+
+				// collect all PKTables
+				Map<Table, UnderlyingTableInfo> infos = new LinkedHashMap<Table, UnderlyingTableInfo>();
 				if (defaultPkTable != null) {
 					infos.put(defaultPkTable, null);
 				}
@@ -210,22 +214,22 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 				for (Entry<Table, UnderlyingTableInfo> e: infos.entrySet()) {
 					Table pkTable = e.getKey();
-					String fkColumn = quoting.quote(resultSet.getString(8));
+					String pkColumn = quoting.quote(resultSet.getString(4));
 					String foreignKey = resultSet.getString(12);
 					
 					UnderlyingTableInfo info = e.getValue();
 					if (info != null) {
-						fkColumn = info.columnMapping.get(fkColumn);
+						pkColumn = info.columnMapping.get(pkColumn);
 					}
 
-					if (fkTable != null) {
+					if (pkTable != null) {
 						if (foreignKey == null || foreignKey.trim().length() == 0) {
 							foreignKey = pkTable.getName();
 							if (info != null) {
-								foreignKey += "." + quoting.unquote(fkTable.getUnqualifiedName());
+								foreignKey += "." + quoting.unquote(pkTable.getUnqualifiedName());
 							}
 							int seq = resultSet.getInt(9);
-							String fkKey = fkTable.getName() + "." + foreignKey;
+							String fkKey = pkTable.getName() + "." + foreignKey;
 							if (seq == 1) {
 								Integer count = unknownFKCounter.get(fkKey);
 								if (count == null) {
@@ -238,10 +242,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 							foreignKey += "." + unknownFKCounter.get(fkKey);
 						} else {
 							if (info != null) {
-								foreignKey += "." + quoting.unquote(fkTable.getUnqualifiedName());
+								foreignKey += "." + quoting.unquote(pkTable.getUnqualifiedName());
 							}
 						}
-						String fkName = fkTable.getName() + "." + foreignKey;
+						String fkName = pkTable.getName() + "." + foreignKey;
 						
 						if (foreignKey != null && fkMap.containsKey(fkName)) {
 							if (fkColumn == null || pkColumn == null) {
@@ -270,6 +274,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			CancellationHandler.checkForCancellation(null);
 		}
 		associations.removeAll(toRemove);
+		shutDownSessionsWithPermissionToReadSchema();
 		return associations;
 	}
 
@@ -352,7 +357,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return findTables(session, executionContext, introspectionSchema, tableNamePattern, 0);
 	}
 
-	private Map<String, UnderlyingTableInfo> underlyingTableInfos = new HashMap<String, UnderlyingTableInfo>();
+	private Map<String, UnderlyingTableInfo> underlyingTableInfos = new LinkedHashMap<String, UnderlyingTableInfo>();
 	private Map<String, String> tableTypes = new HashMap<String, String>();
 
 	/**
@@ -508,7 +513,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					viewText = viewTextContainer[0];
 					if (viewText != null) {
 						viewText = viewText.trim();
-						viewText = viewText.replaceFirst("(?is)^create.*as\\b(.*)$", "$1");
+						viewText = viewText.replaceFirst("(?is)^create.*as\\b(\\W*select\\b)(.*)$", "$1$2").trim();
 					}
 				} catch (Exception e) {
 					_log.info("can't get view text: " + viewTextQuery);
@@ -578,6 +583,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	private UnderlyingTableInfo parseViewText(final Session session, final ExecutionContext executionContext, final Quoting quoting, final int depth, String viewText, final String defaultSchema, final Table view) {
 		net.sf.jsqlparser.statement.Statement st;
 		try {
+			_log.info("analyzing view \"" + view.getName() + "\": " + viewText.replaceAll("\\s+", " "));
 			final List<Column> columns = findColumns(view, session, executionContext);
 			final boolean[] isValid = new boolean[] { true };
 			final boolean[] selectExists = new boolean[] { false };
@@ -674,15 +680,35 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 											unknownTable();
 										} else {
 											try {
-												Quoting quoting = new Quoting(session);
-												Set<Table> tables = findTables(session, executionContext, quoting.normalizeCase(schema), quoting.normalizeCase(name), depth + 1);
-												if (tables.size() < 1) {
-													tables = findTables(session, executionContext, schema, name, depth + 1);
-												}
-												if (tables.size() >= 1) {
-													underlyingTableInfo.underlyingTable = tables.iterator().next();
-												} else {
-													_log.warn("View or Synonym \"" + view.getName() + "\": can't find underlying table \"" + schema + "." + name + "\"");
+												Session theSession = session;
+												while (theSession != null) {
+													Quoting quoting = new Quoting(theSession);
+													Set<Table> tables = findTables(theSession, executionContext, quoting.normalizeCase(schema), quoting.normalizeCase(name), depth + 1);
+													if (tables.size() < 1) {
+														tables = findTables(theSession, executionContext, schema, name, depth + 1);
+													}
+													if (tables.size() >= 1) {
+														underlyingTableInfo.underlyingTable = tables.iterator().next();
+														break;
+													} else {
+														if (session == theSession && Quoting.equalsIgnoreQuotingAndCase(theSession.getIntrospectionSchema(), schema)
+															||
+															checkReadPermission(theSession, schema)
+															|| checkReadPermission(theSession, quoting.normalizeCase(schema))) {
+																_log.warn("View or Synonym \"" + view.getName() + "\": can't find underlying table \"" + schema + "." + name + "\"");
+																break;
+														} else {
+															Session newSession = sessionWithPermissionToReadSchema.get(quoting.normalizeCase(schema));
+															if (newSession != null && newSession != theSession) {
+																theSession = newSession;
+															} else {
+																theSession = askForSessionWithPermissionToReadSchema(session, view, quoting.normalizeCase(schema), quoting.normalizeCase(name), executionContext);
+																if (theSession == null) {
+																	_log.warn("Insufficient privileges to analyze table \"" + schema + "." + name + "\"");
+																}
+															}
+														}
+													}
 												}
 											} catch (SQLException e) {
 												_log.error("paring failed", e);
@@ -749,7 +775,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				return underlyingTableInfo;
 			}
 		} catch (Exception e) {
-			_log.info("can't parse view text: " + viewText);
+			_log.info("can't parse view definition");
 			_log.info(e.getMessage());
 		}
 		return null;
@@ -1333,6 +1359,56 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	
 	public static void resetCaches(Session session) {
 		session.removeSessionProperties(JDBCMetaDataBasedModelElementFinder.class);
+	}
+
+	private Map<String, Session> sessionWithPermissionToReadSchema = new HashMap<String, Session>();
+	
+	private void shutDownSessionsWithPermissionToReadSchema() {
+		for (Session s: sessionWithPermissionToReadSchema.values()) {
+			try {
+				s.shutDown();
+			} catch (SQLException e) {
+				_log.warn(e.getMessage());
+			}
+		}
+		sessionWithPermissionToReadSchema.clear();
+	}
+	
+	public static interface PrivilegedSessionProvider {
+		Session askForSessionWithPermissionToReadSchema(Session session, Table view, String schema, String tableName, ExecutionContext executionContext);
+	};
+	
+	public static PrivilegedSessionProvider privilegedSessionProvider;
+	
+	private Session askForSessionWithPermissionToReadSchema(Session session, Table view, String schema, String tableName, ExecutionContext executionContext) {
+		if (privilegedSessionProvider == null) {
+			return null;
+		}
+		
+		if (Quoting.equalsIgnoreQuotingAndCase(session.getIntrospectionSchema(), schema)) {
+			return null;
+		}
+		
+		Session newSession = privilegedSessionProvider.askForSessionWithPermissionToReadSchema(session, view, schema, tableName, executionContext);
+		
+		if (newSession != null) {
+			Session s = sessionWithPermissionToReadSchema.get(schema);
+			if (s != null) {
+				try {
+					s.shutDown();
+				} catch (SQLException e) {
+					// ignore
+				}
+				sessionWithPermissionToReadSchema.remove(schema);
+			}
+			sessionWithPermissionToReadSchema.put(schema, newSession);
+		}
+		
+		return newSession;
+	}
+
+	private boolean checkReadPermission(Session theSession, String schema) {
+		return false;
 	}
 
 	/**
