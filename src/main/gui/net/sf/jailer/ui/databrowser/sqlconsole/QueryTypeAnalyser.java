@@ -67,11 +67,13 @@ import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
+import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.WhenClause;
-import net.sf.jsqlparser.expression.WithinGroupExpression;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
@@ -102,6 +104,7 @@ import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -118,6 +121,7 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -310,9 +314,9 @@ public class QueryTypeAnalyser {
 					
 					@Override
 					public void visit(PlainSelect plainSelect) {
-						ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer(result);
+						final ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer(result);
 						if (plainSelect.getFromItem() != null) {
-							FromItemVisitor fromItemVisitor = new FromItemVisitor() {
+							final FromItemVisitor fromItemVisitor = new FromItemVisitor() {
 								private void unknownTable() {
 									result.put("-unknown-" + (unknownTableCounter++), null);
 								}
@@ -333,7 +337,18 @@ public class QueryTypeAnalyser {
 								
 								@Override
 								public void visit(SubJoin subjoin) {
-									unknownTable();
+									subjoin.getLeft().accept(this);
+									if (subjoin.getJoinList() != null) {
+										for (Join join: subjoin.getJoinList()) {
+											join.getRightItem().accept(this);
+										}
+										for (Join join: subjoin.getJoinList()) {
+											expressionAnalyzer.setOuterJoinExpression(join.isOuter() || join.isLeft() || join.isRight());
+											if (join.getOnExpression() != null) {
+												join.getOnExpression().accept(expressionAnalyzer);
+											}
+										}
+									}
 								}
 								
 								@Override
@@ -362,6 +377,12 @@ public class QueryTypeAnalyser {
 												unknownTable();
 											}
 										}
+									}
+								}
+								@Override
+								public void visit(ParenthesisFromItem parenthesisFromItem) {
+									if (parenthesisFromItem.getFromItem() != null) {
+										parenthesisFromItem.getFromItem().accept(this);
 									}
 								}
 							};
@@ -559,11 +580,6 @@ public class QueryTypeAnalyser {
 			
 			@Override
 			public void visit(ExtractExpression eexpr) {
-				noSubexpression[0] = false;
-			}
-			
-			@Override
-			public void visit(WithinGroupExpression wgexpr) {
 				noSubexpression[0] = false;
 			}
 			
@@ -781,6 +797,21 @@ public class QueryTypeAnalyser {
 			public void visit(NullValue nullValue) {
 				noSubexpression[0] = false;
 			}
+
+			@Override
+			public void visit(BitwiseRightShift aThis) {
+				noSubexpression[0] = false;
+			}
+
+			@Override
+			public void visit(BitwiseLeftShift aThis) {
+				noSubexpression[0] = false;
+			}
+
+			@Override
+			public void visit(ValueListExpression valueList) {
+				noSubexpression[0] = false;
+			}
 		};
 	}
 
@@ -873,6 +904,11 @@ public class QueryTypeAnalyser {
 
 		@Override
 		public void visit(Upsert upsert) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(UseStatement use) {
 			throw new QueryTooComplexException();
 		}
 		

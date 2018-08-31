@@ -54,6 +54,7 @@ import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -70,6 +71,7 @@ import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
@@ -405,12 +407,16 @@ public class AssociationProposer {
 					if (subjoin.getLeft() != null) {
 						subjoin.getLeft().accept(this);
 					}
-					if (subjoin.getJoin() != null) {
-						if (subjoin.getJoin().getRightItem() != null) {
-							subjoin.getJoin().getRightItem().accept(this);
-						}
-						if (subjoin.getJoin().getOnExpression() != null) {
-							scopes.peek().expressions.add(subjoin.getJoin().getOnExpression());
+					if (subjoin.getJoinList() != null) {
+						for (Join join: subjoin.getJoinList()) {
+							if (join != null) {
+								if (join.getRightItem() != null) {
+									join.getRightItem().accept(this);
+								}
+								if (join.getOnExpression() != null) {
+									scopes.peek().expressions.add(join.getOnExpression());
+								}
+							}
 						}
 					}
 				}
@@ -436,6 +442,13 @@ public class AssociationProposer {
 					}
 					fn += Quoting.normalizeIdentifier(tableName.getName());
 					scopes.peek().aliasToTable.put(Quoting.normalizeIdentifier(alias), fn);
+				}
+
+				@Override
+				public void visit(ParenthesisFromItem aThis) {
+					if (aThis.getFromItem() != null) {
+						aThis.getFromItem().accept(this);
+					}
 				}
 			};
 			if (plainSelect.getFromItem() != null) {
@@ -506,6 +519,10 @@ public class AssociationProposer {
 
 		@Override
 	    public void visit(AnalyticExpression expr) {
+		}
+
+		@Override
+		public void visit(UseStatement use) {
 		}
 
 		private void analyseTopScope() {

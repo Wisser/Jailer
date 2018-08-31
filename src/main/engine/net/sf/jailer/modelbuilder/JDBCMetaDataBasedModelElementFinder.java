@@ -57,6 +57,7 @@ import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
+import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
@@ -72,6 +73,7 @@ import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
+import net.sf.jsqlparser.statement.select.ParenthesisFromItem;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -715,6 +717,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 											}
 										}
 									}
+									@Override
+									public void visit(ParenthesisFromItem aThis) {
+										if (aThis.getFromItem() != null) {
+											aThis.getFromItem().accept(this);
+										}
+									}
 								};
 								plainSelect.getFromItem().accept(fromItemVisitor);
 							}
@@ -768,6 +776,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				}
 				@Override
 				public void visit(Commit arg0) {
+				}
+				@Override
+				public void visit(UseStatement use) {
 				}
 			});
 			if (isValid[0] && selectExists[0] && underlyingTableInfo.underlyingTable != null) {

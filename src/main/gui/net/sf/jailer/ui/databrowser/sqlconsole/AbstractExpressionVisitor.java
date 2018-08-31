@@ -47,11 +47,13 @@ import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.UserVariable;
+import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.WhenClause;
-import net.sf.jsqlparser.expression.WithinGroupExpression;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseOr;
+import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
@@ -306,11 +308,6 @@ class AbstractExpressionVisitor implements ExpressionVisitor {
 	}
 
 	@Override
-	public void visit(WithinGroupExpression arg0) {
-
-	}
-
-	@Override
 	public void visit(ExtractExpression arg0) {
 
 	}
@@ -388,5 +385,20 @@ class AbstractExpressionVisitor implements ExpressionVisitor {
 	@Override
 	public void visit(NotExpression arg0) {
 
+	}
+
+	@Override
+	public void visit(BitwiseRightShift arg0) {
+		
+	}
+
+	@Override
+	public void visit(BitwiseLeftShift arg0) {
+		
+	}
+
+	@Override
+	public void visit(ValueListExpression arg0) {
+		
 	}
 }
