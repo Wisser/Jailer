@@ -528,7 +528,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            {@link Association} with parent row
 	 */
 	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, List<Row> parentRows,
-			final Association association, Frame parentFrame, RowsClosure rowsClosure,
+			final Association association, final Frame parentFrame, RowsClosure rowsClosure,
 			Boolean selectDistinct, boolean reload, ExecutionContext executionContext) {
 		this.table = table;
 		this.session = session;
@@ -1004,7 +1004,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTableScrollPane.addMouseListener(rowTableListener);
 		singleRowViewScrollContentPanel.addMouseListener(rowTableListener);
 		
-		andConditionEditor = new ConditionEditor(parentFrame, null, dataModel);
 		openEditorLabel.setIcon(conditionEditorIcon);
 		openEditorLabel.setText(null);
 		openEditorLabel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1018,6 +1017,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
+						if (andConditionEditor == null) {
+							andConditionEditor = new ConditionEditor(parentFrame, null, dataModel);
+						}
 						String cond = andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
 						if (cond != null) {
 							if (!getAndConditionText().equals(ConditionEditor.toSingleLine(cond))) {
@@ -1791,8 +1793,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					new Object[] { 
 							"Only this table", 
 							"This and related tables (" + (count) + ")", 
-							"Related tables (" + (count - 1) + ")",
-							"Cancel" },
+							"Related tables (" + (count - 1) + ")"
+					},
 					null);
 			if (o == 0) {
 				UIUtil.setWaitCursor(parent);
