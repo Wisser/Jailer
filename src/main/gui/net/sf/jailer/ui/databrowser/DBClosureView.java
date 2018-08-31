@@ -279,6 +279,10 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                                 selectTableCell(column, row);
                             }
                         }
+                        int tableLevel = -1;
+                        if (cellInfo.containsKey(value)) {
+                        	tableLevel = cellInfo.get(value).level;
+                        }
                         JCheckBoxMenuItem exclude = new JCheckBoxMenuItem("Exclude " + getDataModel().getDisplayName(table) + " from Path");
                         exclude.setSelected(excludedFromPath.contains(table));
                         exclude.setEnabled(mainPath.contains(cellInfo.get(value)) || excludedFromPath.contains(table));
@@ -301,6 +305,34 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                                 }
                             }
                         });
+                        
+                        final Set<Table> toExclude = new HashSet<Table>();
+                        for (Entry<String, CellInfo> ciE: cellInfo.entrySet()) {
+                            if (ciE.getValue().selected && ciE.getValue().level == tableLevel) {
+                            	Table tableByDisplayName = getDataModel().getTableByDisplayName(ciE.getKey());
+								if (tableByDisplayName != null) {
+									toExclude.add(tableByDisplayName);
+								}
+                            }
+                        }
+                        JCheckBoxMenuItem excludeAll = new JCheckBoxMenuItem("Exclude all with Distance " + (tableLevel  + 1) + " from Path");
+                        excludeAll.setEnabled(toExclude.size() > 1);
+                        excludeAll.addActionListener(new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                            	excludedFromPath.addAll(toExclude);
+                                mainPath.clear();
+                                mainPathAsSet.clear();
+                                refresh();
+                                CellInfo ci = cellInfo.get(selectedTable);
+                                if (ci != null) {
+                                    String st = selectedTable;
+                                    selectedTable = null;
+                                    select(st, ci);
+                                }
+                            }
+                        });
+                        
                         JMenuItem deselect = new JMenuItem("Deselect Path");
                         deselect.addActionListener(new ActionListener() {
                             @Override
@@ -336,6 +368,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                                 menu.add(openAndSelect);
                                 menu.add(new JSeparator());
                                 menu.add(exclude);
+                                menu.add(excludeAll);
+                                menu.add(new JSeparator());
                                 menu.add(deselect);
                                 UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
                             }
@@ -351,6 +385,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                             menu.add(select);
                             menu.addSeparator();
                             menu.add(exclude);
+                            menu.add(excludeAll);
                             menu.addSeparator();
                             JPopupMenu popup = rb.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
                             JPopupMenu popup2 = rb.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true, closureTable);
