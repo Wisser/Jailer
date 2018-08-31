@@ -1,6 +1,7 @@
 7.11
   - Database analysis not only finds primary keys and foreign keys for tables,
     but also for views and synonyms by analyzing the underlying tables.
+  - Fixed a memory leak in data browser.
 
 7.10.8
   - Data browser improvements
