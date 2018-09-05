@@ -1,4 +1,5 @@
 7.11.1
+  - Closing a root table did not work properly in the data browser.
   - Minor bug fixes.
 
 7.11
