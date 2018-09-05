@@ -2567,7 +2567,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	public void closeAll(Collection<RowBrowser> toClose) {
 		for (RowBrowser rb : toClose) {
-			close(rb, false);
+			close(rb, toClose.size() == 1);
 			// getDesktopManager().closeFrame(rb.internalFrame);
 			rb.internalFrame.dispose();
 		}
