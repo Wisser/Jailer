@@ -1113,7 +1113,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					return schema;
 				}
 				if (schema.equalsIgnoreCase(userName.trim())) {
-					userSchema = schema;
+					if (userSchema == null || !userSchema.equals(userName.trim())) {
+						userSchema = schema;
+					}
 				}
 			}
 			if (userSchema != null) {
