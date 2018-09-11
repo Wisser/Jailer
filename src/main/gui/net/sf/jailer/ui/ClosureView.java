@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -622,8 +623,15 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						}
 						extractionModelEditor.incCaptureLevel();
 						try {
-							while (!toSelect.isEmpty()) {
-								ClosureView.this.extractionModelEditor.select(toSelect.pop());
+							if (!toSelect.isEmpty()) {
+								Table source = toSelect.pop();
+								while (!toSelect.isEmpty()) {
+									Table dest = toSelect.pop();
+									if (!ClosureView.this.extractionModelEditor.graphView.isTableVisible(dest)) {
+										ClosureView.this.extractionModelEditor.graphView.showTable(source, dest);
+									}
+									source = dest;
+								}
 							}
 						} finally {
 							extractionModelEditor.decCaptureLevel();
@@ -688,7 +696,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 //    	}
 		
 		// table model
-		refreshTableModel(null);
+		refreshTableModel(null, null);
 
 		refreshing = false;
 	}
@@ -698,7 +706,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	 */
 	public void refresh() {
 		String prevSelection = selectedTable;
-		refreshTableModel(null);
+		refreshTableModel(null, null);
 		if (cellInfo.containsKey(prevSelection)) {
 			selectedTable = prevSelection;
 		} else {
@@ -711,8 +719,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	/**
 	 * Refreshes the table model.
 	 * @param excludedTables 
+	 * @param path 
 	 */
-	private void refreshTableModel(Set<Table> excludedTables) {
+	private void refreshTableModel(Set<Table> excludedTables, List<Table> path) {
 		cellInfo.clear();
 		dependencies.clear();
 		if (excludedTables == null) {
@@ -756,7 +765,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		
 		TreeSet<String> nonIsolated = new TreeSet<String>();
 		
+		List<Table> stations = new LinkedList<Table>();
+		if (path != null) {
+			stations.addAll(path);
+		}
+		stations.removeAll(excludedTables);
+    	
 		while (!currentLine.isEmpty()) {
+
 			// add current line to table model
 			if (distance == OMEGA || isolated) {
 				Object[] lineAsObjects = new Object[tablesPerLine + 1];
@@ -800,7 +816,21 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			
 			// get next line
 			List<String> nextLine = new ArrayList<String>();
-			for (String t: currentLine) {
+			String nextStat = null;
+			if (!stations.isEmpty()) {
+				Table nextStatT = stations.get(0);
+				if (nextStatT != null) {
+					nextStat = getDataModel().getDisplayName(nextStatT);
+				}
+			}
+
+			List<String> cl = currentLine;
+			if (nextStat != null && currentLine.contains(nextStat)) {
+				cl = new ArrayList<String>();
+				cl.add(nextStat);
+				stations.remove(0);
+			}
+			for (String t: cl) {
 				Table table = getDataModel().getTableByDisplayName(t);
 				if (table != null && !excludedTables.contains(table)) {
 					CellInfo cellInfoT = this.cellInfo.get(t);
@@ -1613,12 +1643,12 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		}
 		Result result = new PathFinder().find(source, destination, getDataModel(), false, parent);
 		if (result != null) {
-			refreshTableModel(result.excludedTables);
+			refreshTableModel(result.excludedTables, result.path);
 			List<Table> path = result.path;
 			Table table = null;
 			for (int i = 0; i < path.size(); i++) {
 				table = path.get(i);
-				ClosureView.this.extractionModelEditor.select(table);
+//				ClosureView.this.extractionModelEditor.select(table);
 			}
 			if (table != null) {
 				CellInfo ci = cellInfo.get(getDataModel().getDisplayName(table));

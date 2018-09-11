@@ -115,7 +115,7 @@ public class GraphicalDataModelView extends JPanel {
 	/**
 	 * Maximum number of tables to make visible during expansion ("expand single table").
 	 */
-	public static final int EXPAND_SINGLE_TABLE_LIMIT = 10;
+	public static final int EXPAND_SINGLE_TABLE_LIMIT = 4;
 	
 	/**
 	 * The selected association.
