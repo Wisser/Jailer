@@ -21,11 +21,13 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -67,6 +69,8 @@ import javax.swing.table.TableColumn;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.pathfinder.PathFinder;
+import net.sf.jailer.ui.pathfinder.PathFinder.Result;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.Pair;
@@ -167,6 +171,36 @@ public abstract class ClosureView extends javax.swing.JDialog {
         findButton.setVisible(false);
         searchButton.setText("Find Table");
 		
+		AutoCompletion.enable(findPathComboBox);
+		findPathComboBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if (e.getKeyChar() == '\n') {
+					findButtonActionPerformed(null);
+				}
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        JButton stFindButtonButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, findPathComboBox, "Find Path to...", new Runnable() {
+			@Override
+			public void run() {
+				findPathButtonActionPerformed(null);
+			}
+		}, true);
+		tablePanel.add(stFindButtonButton, gridBagConstraints);
+        
+        findPathComboBox.setVisible(false);
+        findPathButton.setVisible(false);
+        stFindButtonButton.setText("Find Path to...");
+		
 		columnsComboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 
 				4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
 		}));
@@ -245,6 +279,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		};
 		closureTable.setShowGrid(false);
 		closureTable.setSurrendersFocusOnKeystroke(true);
+        closureTable.getTableHeader().setReorderingAllowed(false);
 		jScrollPane1.setViewportView(closureTable);
 
 		closureTable.addMouseListener(new MouseListener() {
@@ -262,7 +297,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					if (value == null || !(value instanceof String)) return;
 					Table table = getDataModel().getTableByDisplayName((String) value);
 					if (table != null) {
-						JPopupMenu popup = ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, true);
+						JPopupMenu popup = ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, createFindPathMenuItem(table), true);
 						popup.show(e.getComponent(), e.getX(), e.getY());
 					}
 				}
@@ -362,7 +397,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 							selectTableCell(column, row);
 						}
 						
-						ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, false);
+						ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, null, false);
 						popup.show(e.getComponent(), cellRect.x, cellRect.y + cellRect.height + 4);
 					}
 				}
@@ -617,7 +652,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 //    	}
 		
 		// table model
-		refreshTableModel();
+		refreshTableModel(null);
 
 		refreshing = false;
 	}
@@ -627,7 +662,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	 */
 	public void refresh() {
 		String prevSelection = selectedTable;
-		refreshTableModel();
+		refreshTableModel(null);
 		if (cellInfo.containsKey(prevSelection)) {
 			selectedTable = prevSelection;
 		} else {
@@ -639,10 +674,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	
 	/**
 	 * Refreshes the table model.
+	 * @param excludedTables 
 	 */
-	private void refreshTableModel() {
+	private void refreshTableModel(Set<Table> excludedTables) {
 		cellInfo.clear();
 		dependencies.clear();
+		if (excludedTables == null) {
+			excludedTables = new HashSet<Table>();
+		}
 		Table selectedTable = getSelectedTable();
 		refreshAssociationView(selectedTable);
 		
@@ -727,7 +766,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			List<String> nextLine = new ArrayList<String>();
 			for (String t: currentLine) {
 				Table table = getDataModel().getTableByDisplayName(t);
-				if (table != null) {
+				if (table != null && !excludedTables.contains(table)) {
 					CellInfo cellInfoT = this.cellInfo.get(t);
 					for (Association association: table.associations) {
 						String displayName = getDataModel().getDisplayName(association.destination);
@@ -736,10 +775,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 								nextLine.add(displayName);
 								visited.add(displayName);
 								CellInfo cellInfo = new CellInfo(distance);
-								cellInfo.parents.add(cellInfoT);
+								if (!excludedTables.contains(association.destination)) {
+									cellInfo.parents.add(cellInfoT);
+								}
 								cellInfo.table = association.destination;
 								if (association.isInsertDestinationBeforeSource()) {
-									dependencies.add(new Pair<String, String>(t, displayName));
+									if (!excludedTables.contains(association.destination)) {
+										dependencies.add(new Pair<String, String>(t, displayName));
+									}
 								}
 								this.cellInfo.put(displayName, cellInfo);
 							} else {
@@ -852,6 +895,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		vector.addAll(nonIsolated);
 		searchComboBox.setModel(new DefaultComboBoxModel<String>(vector));
 		searchComboBox.setSelectedItem("");
+		findPathComboBox.setModel(new DefaultComboBoxModel<String>(vector));
+		findPathComboBox.setSelectedItem("");
 	}
 
 	private Table getSelectedTable() {
@@ -1102,9 +1147,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				public void mouseClicked(MouseEvent e) {
 					if (SwingUtilities.isRightMouseButton(e)) {
 						if (tableName != null) {
-							Table table = getDataModel().getTable(tableName);
+							final Table table = getDataModel().getTable(tableName);
 							if (table != null) {
-								JPopupMenu popup = ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, false);
+								JPopupMenu popup = ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, createFindPathMenuItem(table), false);
 								popup.show(e.getComponent(), e.getX(), e.getY());
 							}
 						}
@@ -1125,7 +1170,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		}
 		return label;
 	}
-	
+
 	/**
 	 * Collects names of associations in the closure ordered by distance into {@link #associationClosure}.
 	 *  
@@ -1209,10 +1254,12 @@ public abstract class ClosureView extends javax.swing.JDialog {
         tablePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
-        searchComboBox = new net.sf.jailer.ui.JComboBox();
+        searchComboBox = new JComboBox();
         jLabel7 = new javax.swing.JLabel();
-        columnsComboBox = new net.sf.jailer.ui.JComboBox();
+        columnsComboBox = new JComboBox();
         findButton = new javax.swing.JButton();
+        findPathComboBox = new JComboBox();
+        findPathButton = new javax.swing.JButton();
         associationPane = new javax.swing.JPanel();
         associationPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -1236,8 +1283,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         tabbedPane.setMinimumSize(new java.awt.Dimension(182, 190));
         tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
-            @Override
-			public void stateChanged(javax.swing.event.ChangeEvent evt) {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 tabbedPaneStateChanged(evt);
             }
         });
@@ -1277,8 +1323,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         searchComboBox.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 searchComboBoxActionPerformed(evt);
             }
         });
@@ -1289,7 +1334,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         jLabel7.setText("Columns ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 7;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
@@ -1297,21 +1342,42 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         columnsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
-            @Override
-			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 columnsComboBoxItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 2;
         tablePanel.add(columnsComboBox, gridBagConstraints);
 
         findButton.setText("Search");
         findButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 findButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        tablePanel.add(findButton, gridBagConstraints);
+
+        findPathComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        findPathComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                findPathComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 2;
+        tablePanel.add(findPathComboBox, gridBagConstraints);
+
+        findPathButton.setText("Search");
+        findPathButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                findPathButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1319,7 +1385,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        tablePanel.add(findButton, gridBagConstraints);
+        tablePanel.add(findPathButton, gridBagConstraints);
 
         tablePane.add(tablePanel);
 
@@ -1388,8 +1454,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         showOnlyEnabledCheckBox.setText("Show only enabled associations");
         showOnlyEnabledCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            @Override
-			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 showOnlyEnabledCheckBoxItemStateChanged(evt);
             }
         });
@@ -1466,6 +1531,68 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		}
     }//GEN-LAST:event_findButtonActionPerformed
 
+    private void findPathComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPathComboBoxActionPerformed
+    }//GEN-LAST:event_findPathComboBoxActionPerformed
+
+    private void findPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPathButtonActionPerformed
+    	Object toFind = findPathComboBox.getSelectedItem();
+		if (toFind != null) {
+			CellInfo cellInfo = this.cellInfo.get(toFind);
+			if (cellInfo != null) {
+				Object currentSelection = rootTable.getSelectedItem();
+				if (currentSelection instanceof String) {
+					final Table source = getDataModel().getTableByDisplayName((String) currentSelection);
+					if (source.closure(true).contains(cellInfo.table)) {
+						findPath(source, cellInfo.table);
+					}
+				}
+			}
+		}
+	}//GEN-LAST:event_findPathButtonActionPerformed
+
+    protected JMenuItem createFindPathMenuItem(final Table table) {
+		JMenuItem findPath = new JMenuItem("Find Path to " + getDataModel().getDisplayName(table));
+		Object currentSelection = rootTable.getSelectedItem();
+		if (currentSelection instanceof String) {
+			final Table source = getDataModel().getTableByDisplayName((String) currentSelection);
+			if (source.closure(true).contains(table)) {
+				findPath.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						findPath(source, table);
+					}
+				});
+				return findPath;
+			}
+		}
+		findPath.setEnabled(false);
+		return findPath;
+	}
+
+	private void findPath(Table source, Table destination) {
+		Frame parent = null;
+		Window w = SwingUtilities.getWindowAncestor(rootTable);
+		if (w instanceof Frame) {
+			parent = (Frame) w;
+		}
+		Result result = new PathFinder().find(source, destination, getDataModel(), false, parent);
+		if (result != null) {
+			refreshTableModel(result.excludedTables);
+			List<Table> path = result.path;
+			Table table = null;
+			for (int i = 0; i < path.size(); i++) {
+				table = path.get(i);
+				ClosureView.this.extractionModelEditor.select(table);
+			}
+			if (table != null) {
+				CellInfo ci = cellInfo.get(getDataModel().getDisplayName(table));
+				if (ci != null) {
+					selectTableCell(ci.column, ci.row);
+				}
+			}
+		}
+	}
+ 
 	private void initTabbedPane() {
 		if (tabbedPane.getSelectedIndex() == 2) {
 			tabAssTabPanel.removeAll();
@@ -1493,9 +1620,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JPanel associationPane;
     private javax.swing.JPanel associationPanel;
     private javax.swing.JTable closureTable;
-    private net.sf.jailer.ui.JComboBox columnsComboBox;
+    private JComboBox columnsComboBox;
     public javax.swing.JPanel contentPanel;
     private javax.swing.JButton findButton;
+    private javax.swing.JButton findPathButton;
+    private JComboBox findPathComboBox;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1505,7 +1634,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
-    private net.sf.jailer.ui.JComboBox searchComboBox;
+    private JComboBox searchComboBox;
     private javax.swing.JCheckBox showOnlyEnabledCheckBox;
     private javax.swing.JPanel tabAssAssPanel;
     private javax.swing.JPanel tabAssPanel;

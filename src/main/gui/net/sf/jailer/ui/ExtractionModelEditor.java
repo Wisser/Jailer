@@ -1388,7 +1388,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						if (selNode instanceof Association) {
 							table = ((Association) selNode).destination;
 						}
-						JPopupMenu popup = graphView.createPopupMenu(table, false);
+						JPopupMenu popup = graphView.createPopupMenu(table, null, false);
 						popup.show(evt.getComponent(), evt.getX(), evt.getY());
 					}
 				}

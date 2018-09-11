@@ -53,7 +53,6 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -70,9 +69,12 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.AutoCompletion;
+import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.pathfinder.PathFinder;
+import net.sf.jailer.ui.pathfinder.PathFinder.Result;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -97,7 +99,267 @@ public abstract class DBClosureView extends javax.swing.JDialog {
      */
     private final List<Color> bgColor = new ArrayList<Color>();
     
-    /**
+    private final class TableMouseListener implements MouseListener {
+		private Map<Integer, String> manuallySelected = new TreeMap<Integer, String>();
+
+		public void openPathFinder(final Table table) {
+			PathFinder pathFinder = new PathFinder();
+			Result result = pathFinder.find(getRootTable(), table, getDataModel(), true, DBClosureView.this.parent);
+			if (result != null) {
+				List<Table> path = result.path;
+				mainPath.clear();
+			    mainPathAsSet.clear();
+			    excludedFromPath.clear();
+			    excludedFromPath.addAll(result.excludedTables);
+			    refreshTableModel();
+			    selectedTable = null;
+			    refresh();
+			    
+			    for (int i = 0; i < path.size(); ++i) {
+			    	Table r = path.get(i);
+			    	String tabName = getDataModel().getDisplayName(r);
+			        selectCell(result.expand && i == path.size() - 1, tabName, r);
+			    }
+			}
+		}
+
+		private void expandPath() {
+		    List<Table> path = new ArrayList<Table>();
+		    for (CellInfo ci: mainPath) {
+		        path.add(ci.table);
+		    }
+		    expandTablePath(path);
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseClicked(final MouseEvent e) {
+		     // context menu
+		    if (SwingUtilities.isRightMouseButton(e)) {
+		        int row = closureTable.rowAtPoint(e.getPoint());
+		        int column = closureTable.columnAtPoint(e.getPoint());
+		        if (row < 0 || column < 0) return;
+		        final Object value = closureTable.getModel().getValueAt(row, column);
+		        if (value == null || !(value instanceof String)) return;
+		        final Table table = getDataModel().getTableByDisplayName((String) value);
+		        if (table != null) {
+		            if (selectedTable == null || !selectedTable.equals(value)) {
+		                if (cellInfo.containsKey(value) && !cellInfo.get(value).selected) {
+		                    selectTableCell(column, row);
+		                }
+		            }
+//                        int tableLevel = -1;
+//                        if (cellInfo.containsKey(value)) {
+//                        	tableLevel = cellInfo.get(value).level;
+//                        }
+//                        JCheckBoxMenuItem exclude = new JCheckBoxMenuItem("Exclude " + getDataModel().getDisplayName(table) + " from Path");
+//                        exclude.setSelected(excludedFromPath.contains(table));
+//                        exclude.setEnabled(mainPath.contains(cellInfo.get(value)) || excludedFromPath.contains(table));
+//                        exclude.addActionListener(new ActionListener() {
+//                            @Override
+//                            public void actionPerformed(ActionEvent e) {
+//                                if (!excludedFromPath.contains(table)) {
+//                                    excludedFromPath.add(table);
+//                                } else {
+//                                    excludedFromPath.remove(table);
+//                                }
+//                                mainPath.clear();
+//                                mainPathAsSet.clear();
+//                                refresh();
+//                                CellInfo ci = cellInfo.get(selectedTable);
+//                                if (ci != null) {
+//                                    String st = selectedTable;
+//                                    selectedTable = null;
+//                                    select(st, ci);
+//                                }
+//                            }
+//                        });
+//                        
+//                        final Set<Table> toExclude = new HashSet<Table>();
+//                        for (Entry<String, CellInfo> ciE: cellInfo.entrySet()) {
+//                            if (ciE.getValue().selected && ciE.getValue().level == tableLevel) {
+//                            	Table tableByDisplayName = getDataModel().getTableByDisplayName(ciE.getKey());
+//								if (tableByDisplayName != null) {
+//									toExclude.add(tableByDisplayName);
+//								}
+//                            }
+//                        }
+//                        JCheckBoxMenuItem excludeAll = new JCheckBoxMenuItem("Exclude all with Distance " + (tableLevel  + 1) + " from Path");
+//                        excludeAll.setEnabled(toExclude.size() > 1);
+//                        excludeAll.addActionListener(new ActionListener() {
+//                            @Override
+//                            public void actionPerformed(ActionEvent e) {
+//                            	excludedFromPath.addAll(toExclude);
+//                                mainPath.clear();
+//                                mainPathAsSet.clear();
+//                                refresh();
+//                                CellInfo ci = cellInfo.get(selectedTable);
+//                                if (ci != null) {
+//                                    String st = selectedTable;
+//                                    selectedTable = null;
+//                                    select(st, ci);
+//                                }
+//                            }
+//                        });
+		            
+		            JMenuItem deselect = new JMenuItem("Deselect path");
+		            deselect.addActionListener(new ActionListener() {
+		                @Override
+		                public void actionPerformed(ActionEvent e) {
+		                	mainPath.clear();
+		                    mainPathAsSet.clear();
+		                    excludedFromPath.clear();
+		                    refreshTableModel();
+		                    selectedTable = null;
+		                    refresh();
+		                }
+		            });
+		            JMenuItem pathFinder = new JMenuItem("Find alternative path to " + getDataModel().getDisplayName(table));
+		            pathFinder.addActionListener(new ActionListener() {
+		                @Override
+		                public void actionPerformed(ActionEvent e) {
+		                	openPathFinder(table);
+		                }
+		            });
+		            RowBrowser rb = getVisibleTables().get(table);
+		            if (rb == null) {
+		                if (!mainPath.isEmpty()) {
+		                    JPopupMenu menu = new JPopupMenu();
+		                    JMenuItem open = new JMenuItem("Open path to " + selectedTable);
+		                    open.addActionListener(new ActionListener() {
+		                        @Override
+		                        public void actionPerformed(ActionEvent e) {
+		                            expandPath();
+		                        }
+		                    });
+		                    menu.add(open);
+		                    JMenuItem openAndSelect = new JMenuItem("Open path to and select " + selectedTable);
+		                    openAndSelect.addActionListener(new ActionListener() {
+		                        @Override
+		                        public void actionPerformed(ActionEvent e) {
+		                            expandPath();
+		                            DBClosureView.this.select(selectedTable);
+		                        }
+		                    });
+		                    menu.add(openAndSelect);
+//                                menu.add(new JSeparator());
+//                                menu.add(exclude);
+//                                menu.add(excludeAll);
+		                    menu.add(deselect);
+		                    menu.add(new JSeparator());
+		                    menu.add(pathFinder);
+		                    UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
+		                }
+		            } else {
+		                JPopupMenu menu = new JPopupMenu();
+		                JMenuItem select = new JMenuItem("Select " + getDataModel().getDisplayName(table));
+		                select.addActionListener(new ActionListener() {
+		                    @Override
+		                    public void actionPerformed(ActionEvent e) {
+		                        DBClosureView.this.select((String) value);
+		                    }
+		                });
+		                menu.add(select);
+//                            menu.addSeparator();
+//                            menu.add(exclude);
+//                            menu.add(excludeAll);
+		                menu.addSeparator();
+		                JPopupMenu popup = rb.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
+		                JPopupMenu popup2 = rb.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true, closureTable);
+		                popup.add(new JSeparator());
+		                for (Component c : popup.getComponents()) {
+		                    menu.add(c);
+		                }
+		                for (Component c : popup2.getComponents()) {
+		                    menu.add(c);
+		                }
+		                if (!mainPath.isEmpty()) {
+		                	menu.addSeparator();
+		                	menu.add(deselect);
+		                	menu.addSeparator();
+		                    menu.add(pathFinder);
+		                }
+		                UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
+		            }
+		        }
+		    }
+
+		    if (SwingUtilities.isLeftMouseButton(e)) {
+		        Point position = e.getPoint();
+		        int row = closureTable.rowAtPoint(position);
+		        int column = closureTable.columnAtPoint(position);
+		        if (row < 0 || column < 0) return;
+		        
+		        Object value = closureTable.getModel().getValueAt(row, column);
+		        if (value == null || !(value instanceof String)) return;
+		        final Table table = getDataModel().getTableByDisplayName((String) value);
+		        selectCell(e.getClickCount() > 1, value, table);
+		    }
+		}
+
+		private void selectCell(boolean expandPath, Object value, final Table table) {
+			if (table != null) {
+			    if (cellInfo.containsKey(value)) {
+			        String prevSelectedTable = selectedTable;
+			        CellInfo selectedCellInfo = cellInfo.get(value);
+			        if (selectedCellInfo.selected && !mainPathAsSet.contains(selectedCellInfo)) {
+			            manuallySelected.put(selectedCellInfo.level, (String) value);
+			            select(prevSelectedTable, selectedCellInfo);
+			        } else if (!selectedCellInfo.selected) {
+			            manuallySelected.clear();
+			            selectTableCell((String) value);
+			        } else {
+			        	scrollToTable(table);
+			        }
+			    }
+			    
+			    if (expandPath) {
+			        RowBrowser rb = getVisibleTables().get(table);
+			        if (rb == null) {
+			            if (!mainPath.isEmpty()) {
+			                expandPath();
+			            }
+			        }
+			    }
+			}
+		}
+
+		private void select(String toSelect, CellInfo selectedCellInfo) {
+		    TreeMap<Integer, String> newMS = new TreeMap<Integer, String>(manuallySelected);
+		    String lastFound = null;
+		    for (Entry<Integer, String> ms: manuallySelected.entrySet()) {
+		        find(ms.getValue());
+		        if (selectedCellInfo.level < ms.getKey() && !mainPathAsSet.contains(selectedCellInfo)) {
+		            manuallySelected = newMS;
+		            if (lastFound != null) {
+		            find(lastFound);
+		            }
+		            break;
+		        }
+		        newMS.put(ms.getKey(), ms.getValue());
+		        lastFound = ms.getValue();
+		    }
+		    if (toSelect != null && !toSelect.equals(selectedTable)) {
+		        find(toSelect);
+		    }
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+		}
+	}
+	/**
      * Holds infos about a cell in the closure-table.
      */
     private class CellInfo {
@@ -128,6 +390,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private Set<Pair<String, String>> dependencies = new HashSet<Pair<String,String>>();
     private Set<Table> excludedFromPath = new HashSet<Table>();
     private final JFrame parent;
+
+	private TableMouseListener tableMouseListener;
     
     /** Creates new form FindDialog 
      * @param rootTable */
@@ -165,6 +429,42 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         searchComboBox.setVisible(false);
         findButton.setVisible(false);
         searchButton.setText("Find Table");
+        
+        AutoCompletion.enable(findPathComboBox);
+        findPathComboBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == '\n') {
+                	findPathComboBoxActionPerformed(null);
+                }
+            }
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+            @Override
+            public void keyPressed(KeyEvent arg0) {
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 20;
+        JButton stFindPathButton = StringSearchPanel.createSearchButton(this.parent, findPathComboBox, "Find Path to", new Runnable() {
+            @Override
+            public void run() {
+            	Object toFind = findPathComboBox.getSelectedItem();
+				if (toFind != null) {
+				    CellInfo cellInfo = DBClosureView.this.cellInfo.get(toFind);
+				    if (cellInfo != null) {
+				    	tableMouseListener.openPathFinder(cellInfo.table);
+				    }
+				}
+            }
+        }, true);
+        tablePanel.add(stFindPathButton, gridBagConstraints);
+        
+        findPathComboBox.setVisible(false);
+        findPathButton.setVisible(false);
+        stFindPathButton.setText("Find Path to...");
         
         columnsComboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 
                 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
@@ -245,232 +545,10 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         };
         closureTable.setShowGrid(false);
         closureTable.setSurrendersFocusOnKeystroke(true);
+        closureTable.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(closureTable);
 
-        closureTable.addMouseListener(new MouseListener() {
-            
-        	private Map<Integer, String> manuallySelected = new TreeMap<Integer, String>();
-
-            private void expandPath() {
-                List<Table> path = new ArrayList<Table>();
-                for (CellInfo ci: mainPath) {
-                    path.add(ci.table);
-                }
-                expandTablePath(path);
-            }
-            
-            @Override
-			public void mouseReleased(MouseEvent e) {
-            }
-
-            @Override
-			public void mouseClicked(final MouseEvent e) {
-                 // context menu
-                if (SwingUtilities.isRightMouseButton(e)) {
-                    int row = closureTable.rowAtPoint(e.getPoint());
-                    int column = closureTable.columnAtPoint(e.getPoint());
-                    if (row < 0 || column < 0) return;
-                    final Object value = closureTable.getModel().getValueAt(row, column);
-                    if (value == null || !(value instanceof String)) return;
-                    final Table table = getDataModel().getTableByDisplayName((String) value);
-                    if (table != null) {
-                        if (selectedTable == null || !selectedTable.equals(value)) {
-                            if (cellInfo.containsKey(value) && !cellInfo.get(value).selected) {
-                                selectTableCell(column, row);
-                            }
-                        }
-                        int tableLevel = -1;
-                        if (cellInfo.containsKey(value)) {
-                        	tableLevel = cellInfo.get(value).level;
-                        }
-                        JCheckBoxMenuItem exclude = new JCheckBoxMenuItem("Exclude " + getDataModel().getDisplayName(table) + " from Path");
-                        exclude.setSelected(excludedFromPath.contains(table));
-                        exclude.setEnabled(mainPath.contains(cellInfo.get(value)) || excludedFromPath.contains(table));
-                        exclude.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                if (!excludedFromPath.contains(table)) {
-                                    excludedFromPath.add(table);
-                                } else {
-                                    excludedFromPath.remove(table);
-                                }
-                                mainPath.clear();
-                                mainPathAsSet.clear();
-                                refresh();
-                                CellInfo ci = cellInfo.get(selectedTable);
-                                if (ci != null) {
-                                    String st = selectedTable;
-                                    selectedTable = null;
-                                    select(st, ci);
-                                }
-                            }
-                        });
-                        
-                        final Set<Table> toExclude = new HashSet<Table>();
-                        for (Entry<String, CellInfo> ciE: cellInfo.entrySet()) {
-                            if (ciE.getValue().selected && ciE.getValue().level == tableLevel) {
-                            	Table tableByDisplayName = getDataModel().getTableByDisplayName(ciE.getKey());
-								if (tableByDisplayName != null) {
-									toExclude.add(tableByDisplayName);
-								}
-                            }
-                        }
-                        JCheckBoxMenuItem excludeAll = new JCheckBoxMenuItem("Exclude all with Distance " + (tableLevel  + 1) + " from Path");
-                        excludeAll.setEnabled(toExclude.size() > 1);
-                        excludeAll.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                            	excludedFromPath.addAll(toExclude);
-                                mainPath.clear();
-                                mainPathAsSet.clear();
-                                refresh();
-                                CellInfo ci = cellInfo.get(selectedTable);
-                                if (ci != null) {
-                                    String st = selectedTable;
-                                    selectedTable = null;
-                                    select(st, ci);
-                                }
-                            }
-                        });
-                        
-                        JMenuItem deselect = new JMenuItem("Deselect Path");
-                        deselect.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                            	mainPath.clear();
-                                mainPathAsSet.clear();
-                                excludedFromPath.clear();
-                                refreshTableModel();
-                                selectedTable = null;
-                                refresh();
-                            }
-                        });
-                        RowBrowser rb = getVisibleTables().get(table);
-                        if (rb == null) {
-                            if (!mainPath.isEmpty()) {
-                                JPopupMenu menu = new JPopupMenu();
-                                JMenuItem open = new JMenuItem("Open Path to " + selectedTable);
-                                open.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        expandPath();
-                                    }
-                                });
-                                menu.add(open);
-                                JMenuItem openAndSelect = new JMenuItem("Open Path to and Select " + selectedTable);
-                                openAndSelect.addActionListener(new ActionListener() {
-                                    @Override
-                                    public void actionPerformed(ActionEvent e) {
-                                        expandPath();
-                                        DBClosureView.this.select(selectedTable);
-                                    }
-                                });
-                                menu.add(openAndSelect);
-                                menu.add(new JSeparator());
-                                menu.add(exclude);
-                                menu.add(excludeAll);
-                                menu.add(new JSeparator());
-                                menu.add(deselect);
-                                UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
-                            }
-                        } else {
-                            JPopupMenu menu = new JPopupMenu();
-                            JMenuItem select = new JMenuItem("Select " + getDataModel().getDisplayName(table));
-                            select.addActionListener(new ActionListener() {
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    DBClosureView.this.select((String) value);
-                                }
-                            });
-                            menu.add(select);
-                            menu.addSeparator();
-                            menu.add(exclude);
-                            menu.add(excludeAll);
-                            menu.addSeparator();
-                            JPopupMenu popup = rb.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
-                            JPopupMenu popup2 = rb.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true, closureTable);
-                            popup.add(new JSeparator());
-                            for (Component c : popup.getComponents()) {
-                                menu.add(c);
-                            }
-                            for (Component c : popup2.getComponents()) {
-                                menu.add(c);
-                            }
-                            if (!mainPath.isEmpty()) {
-                            	menu.addSeparator();
-                            	menu.add(deselect);
-                            }
-                            UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
-                        }
-                    }
-                }
-
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                    Point position = e.getPoint();
-                    int row = closureTable.rowAtPoint(position);
-                    int column = closureTable.columnAtPoint(position);
-                    if (row < 0 || column < 0) return;
-                    
-                    Object value = closureTable.getModel().getValueAt(row, column);
-                    if (value == null || !(value instanceof String)) return;
-                    final Table table = getDataModel().getTableByDisplayName((String) value);
-                    if (table != null) {
-                        if (cellInfo.containsKey(value)) {
-                            String prevSelectedTable = selectedTable;
-                            CellInfo selectedCellInfo = cellInfo.get(value);
-                            if (selectedCellInfo.selected && !mainPathAsSet.contains(selectedCellInfo)) {
-                                manuallySelected.put(selectedCellInfo.level, (String) value);
-                                select(prevSelectedTable, selectedCellInfo);
-                            } else if (!selectedCellInfo.selected) {
-                                manuallySelected.clear();
-                                selectTableCell(column, row);
-                            } else {
-                            	scrollToTable(table);
-                            }
-                        }
-                        
-                        if (e.getClickCount() > 1) {
-                            RowBrowser rb = getVisibleTables().get(table);
-                            if (rb == null) {
-                                if (!mainPath.isEmpty()) {
-                                    expandPath();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            private void select(String toSelect, CellInfo selectedCellInfo) {
-                TreeMap<Integer, String> newMS = new TreeMap<Integer, String>(manuallySelected);
-                String lastFound = null;
-                for (Entry<Integer, String> ms: manuallySelected.entrySet()) {
-                    find(ms.getValue());
-                    if (selectedCellInfo.level < ms.getKey() && !mainPathAsSet.contains(selectedCellInfo)) {
-                        manuallySelected = newMS;
-                        if (lastFound != null) {
-                        find(lastFound);
-                        }
-                        break;
-                    }
-                    newMS.put(ms.getKey(), ms.getValue());
-                    lastFound = ms.getValue();
-                }
-                if (toSelect != null && !toSelect.equals(selectedTable)) {
-                    find(toSelect);
-                }
-            }
-        
-            @Override
-			public void mouseEntered(MouseEvent e) {
-            }
-            @Override
-			public void mouseExited(MouseEvent e) {
-            }
-            @Override
-			public void mousePressed(MouseEvent e) {
-            }
-        });
+        closureTable.addMouseListener(tableMouseListener = new TableMouseListener());
         
         searchComboBox.setMaximumRowCount(30);
         
@@ -632,42 +710,46 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private void selectTableCell(int col, int row) {
         if (col >= 1 && row >= 0) {
             String displayName = (String) closureTable.getModel().getValueAt(row, col);
-            closureTable.getSelectionModel().clearSelection();
-            for (CellInfo c: cellInfo.values()) {
-                c.selected = false;
+            selectTableCell(displayName);
+        }
+    }
+
+    private void selectTableCell(String displayName) {
+        closureTable.getSelectionModel().clearSelection();
+        for (CellInfo c: cellInfo.values()) {
+            c.selected = false;
+        }
+        if (displayName != null && !"".equals(displayName)) {
+            Table prevTable = null;
+            if (selectedTable != null) {
+                prevTable = getDataModel().getTableByDisplayName(selectedTable);
             }
-            if (displayName != null && !"".equals(displayName)) {
-                Table prevTable = null;
-                if (selectedTable != null) {
-                    prevTable = getDataModel().getTableByDisplayName(selectedTable);
-                }
-                selectedTable = displayName;
-                searchComboBox.setSelectedItem(selectedTable);
-                repaintClosureView();
-                Table table = getDataModel().getTableByDisplayName(selectedTable);
-                if (table != null) {
-                    CellInfo selectionInfo = cellInfo.get(selectedTable);
-                    selectionInfo.select();
-                    if (prevTable != table) {
-                        Set<Table> visibleTables = getVisibleTables().keySet();
-                        Set<Table> mainPathTables = new HashSet<Table>();
-                        for (CellInfo ci: mainPath) {
-                            mainPathTables.add(ci.table);
-                        }
-                        Set<CellInfo> pathToVisibleTable = shortestPathToVisibleTable(visibleTables, selectionInfo);
-                        Set<CellInfo> pathToMainPathTable = shortestPathToVisibleTable(mainPathTables, selectionInfo);
-                        List<CellInfo> pathVT = new ArrayList<CellInfo>();
-                        int vtMaxRow = fillPath(selectionInfo, visibleTables, pathToVisibleTable, pathVT);
-                        List<CellInfo> pathST = new ArrayList<CellInfo>();
-                        int stMaxRow = fillPath(selectionInfo, mainPathTables, pathToMainPathTable, pathST);
-                        if (pathToMainPathTable.isEmpty()) { // (vtMaxRow > stMaxRow) {
-                            mainPath = pathVT;
-                        } else {
-                            mainPath = pathST;
-                        }
+            selectedTable = displayName;
+            searchComboBox.setSelectedItem(selectedTable);
+            repaintClosureView();
+            Table table = getDataModel().getTableByDisplayName(selectedTable);
+            if (table != null) {
+                CellInfo selectionInfo = cellInfo.get(selectedTable);
+                selectionInfo.select();
+                if (prevTable != table) {
+                    Set<Table> visibleTables = getVisibleTables().keySet();
+                    Set<Table> mainPathTables = new HashSet<Table>();
+                    for (CellInfo ci: mainPath) {
+                        mainPathTables.add(ci.table);
                     }
-                    mainPathAsSet = new HashSet<CellInfo>(mainPath);
+                    Set<CellInfo> pathToVisibleTable = shortestPathToVisibleTable(visibleTables, selectionInfo);
+                    Set<CellInfo> pathToMainPathTable = shortestPathToVisibleTable(mainPathTables, selectionInfo);
+                    List<CellInfo> pathVT = new ArrayList<CellInfo>();
+                    int vtMaxRow = fillPath(selectionInfo, visibleTables, pathToVisibleTable, pathVT);
+                    List<CellInfo> pathST = new ArrayList<CellInfo>();
+                    int stMaxRow = fillPath(selectionInfo, mainPathTables, pathToMainPathTable, pathST);
+                    if (pathToMainPathTable.isEmpty()) { // (vtMaxRow > stMaxRow) {
+                        mainPath = pathVT;
+                    } else {
+                        mainPath = pathST;
+                    }
                 }
+                mainPathAsSet = new HashSet<CellInfo>(mainPath);
             }
         }
     }
@@ -974,6 +1056,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         vector.addAll(nonIsolated);
         searchComboBox.setModel(new DefaultComboBoxModel<String>(vector));
         searchComboBox.setSelectedItem("");
+        findPathComboBox.setModel(new DefaultComboBoxModel<String>(vector));
+        findPathComboBox.setSelectedItem("");
     }
 
     private Table getSelectedTable() {
@@ -1000,9 +1084,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         tablePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
-        searchComboBox = new net.sf.jailer.ui.JComboBox();
+        searchComboBox = new JComboBox();
         jLabel7 = new javax.swing.JLabel();
-        columnsComboBox = new net.sf.jailer.ui.JComboBox();
+        columnsComboBox = new javax.swing.JComboBox();
         findButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -1012,6 +1096,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         jLabel6 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
+        findPathComboBox = new JComboBox();
+        findPathButton = new javax.swing.JButton();
 
         contentPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -1053,8 +1139,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         searchComboBox.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 searchComboBoxActionPerformed(evt);
             }
         });
@@ -1065,7 +1150,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         jLabel7.setText("Columns ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 7;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
@@ -1073,20 +1158,18 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         columnsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
-            @Override
-			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 columnsComboBoxItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 8;
         gridBagConstraints.gridy = 20;
         tablePanel.add(columnsComboBox, gridBagConstraints);
 
         findButton.setText("Find");
         findButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 findButtonActionPerformed(evt);
             }
         });
@@ -1145,6 +1228,30 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridy = 8;
         tablePanel.add(jLabel9, gridBagConstraints);
 
+        findPathComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        findPathComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                findPathComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 20;
+        tablePanel.add(findPathComboBox, gridBagConstraints);
+
+        findPathButton.setText("Find Path to...");
+        findPathButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                findPathButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        tablePanel.add(findPathButton, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1167,6 +1274,12 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         find((String) toFind);
     }//GEN-LAST:event_findButtonActionPerformed
 
+    private void findPathComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPathComboBoxActionPerformed
+    }//GEN-LAST:event_findPathComboBoxActionPerformed
+
+    private void findPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPathButtonActionPerformed
+    }//GEN-LAST:event_findPathButtonActionPerformed
+
     protected void find(String toFind) {
         if (toFind != null && !toFind.equals(selectedTable)) {
             CellInfo cellInfo = this.cellInfo.get(toFind);
@@ -1182,11 +1295,13 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     protected abstract void select(String selectedTable);
 	protected abstract void scrollToTable(Table table);
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+	// Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable closureTable;
-    private net.sf.jailer.ui.JComboBox columnsComboBox;
+    private javax.swing.JComboBox columnsComboBox;
     public javax.swing.JPanel contentPanel;
     private javax.swing.JButton findButton;
+    private javax.swing.JButton findPathButton;
+    private JComboBox findPathComboBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1197,7 +1312,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
-    private net.sf.jailer.ui.JComboBox searchComboBox;
+    private JComboBox searchComboBox;
     public javax.swing.JPanel tablePanel;
     // End of variables declaration//GEN-END:variables
     

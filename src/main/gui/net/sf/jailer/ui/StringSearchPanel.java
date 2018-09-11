@@ -17,7 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
@@ -30,6 +29,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,6 +49,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -56,6 +58,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -80,18 +84,26 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public interface Prepare {
 		void prepare(Set<MDSchema> selectedSchemas);
 	}
-	
+
 	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess) {
-		return createSearchButton(owner, comboBox, titel, onSuccess, null);
+		return createSearchButton(owner, comboBox, titel, onSuccess, false);
+	}
+
+	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, boolean alternativeIcon) {
+		return createSearchButton(owner, comboBox, titel, onSuccess, null, alternativeIcon);
 	}
 	
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare) {
-		return createSearchButton(owner, comboBox, titel, onSuccess, null, null, null);
+	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare, boolean alternativeIcon) {
+		return createSearchButton(owner, comboBox, titel, onSuccess, null, null, null, alternativeIcon);
 	}
 	
 	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel) {
+		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, false);
+	}
+
+	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon) {
 		final JButton button = new JButton();
-		button.setIcon(UIUtil.scaleIcon(button, icon));
+		button.setIcon(UIUtil.scaleIcon(button, alternativeIcon? icon2 : icon));
 		button.setToolTipText("Find Table");
 		button.addActionListener(new ActionListener() {
 			@Override
@@ -117,9 +129,34 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				});
 			}
 		});
+		updateEnabledState(button, comboBox);
+		comboBox.getModel().addListDataListener(new ListDataListener() {
+			@Override
+			public void intervalRemoved(ListDataEvent arg0) {
+				updateEnabledState(button, comboBox);
+			}
+			@Override
+			public void intervalAdded(ListDataEvent arg0) {
+				updateEnabledState(button, comboBox);
+			}
+			@Override
+			public void contentsChanged(ListDataEvent arg0) {
+				updateEnabledState(button, comboBox);
+			}
+		});
+		comboBox.addPropertyChangeListener("model", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent arg0) {
+				updateEnabledState(button, comboBox);
+			}
+		});
 		return button;
 	}
-	
+
+	private static void updateEnabledState(JButton button, JComboBox comboBox) {
+		button.setEnabled(comboBox.getModel().getSize() > 1 || comboBox.getModel().getSize() == 1 && !"".equals(comboBox.getModel().getElementAt(0)));
+	}
+
 	public String find(Frame owner, String titel, int x, int y) {
 		dialog = new EscapableDialog(owner, titel, true) {
 		};
@@ -678,12 +715,14 @@ public class StringSearchPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     static private ImageIcon icon;
+    static private ImageIcon icon2;
     static {
 		String dir = "/net/sf/jailer/ui/resource";
 		
 		// load images
 		try {
 			icon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/search.png"));
+			icon2 = new ImageIcon(MetaDataPanel.class.getResource(dir + "/search2.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

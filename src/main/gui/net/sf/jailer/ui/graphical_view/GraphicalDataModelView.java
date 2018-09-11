@@ -362,7 +362,7 @@ public class GraphicalDataModelView extends JPanel {
 						popup.show(e.getComponent(), e.getX(), e.getY());
 					}
 					if (table != null) {
-						JPopupMenu popup = createPopupMenu(table, true);
+						JPopupMenu popup = createPopupMenu(table, null, true);
 						popup.show(e.getComponent(), e.getX(), e.getY());
 					}
 				}
@@ -693,9 +693,10 @@ public class GraphicalDataModelView extends JPanel {
 	 * Creates popup menu.
 	 *
 	 * @param table the table for which the menu pops up
+	 * @param findPathMenuItem additional menu item
 	 * @return the popup menu
 	 */
-	public JPopupMenu createPopupMenu(final Table table, boolean withNavigation) {
+	public JPopupMenu createPopupMenu(final Table table, JMenuItem findPathMenuItem, boolean withNavigation) {
 		JPopupMenu popup = new JScrollPopupMenu();
 		boolean withModifications = modelEditor.getAdditionalPopupMenuItems().isEmpty();
 			
@@ -771,7 +772,7 @@ public class GraphicalDataModelView extends JPanel {
 //				modelEditor.select(table);
 //			}
 //		});
-		JMenuItem selectAsRoot = new JMenuItem("Focus " + table.getName());
+		JMenuItem selectAsRoot = new JMenuItem("Focus on " + table.getName());
 		selectAsRoot.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -891,6 +892,9 @@ public class GraphicalDataModelView extends JPanel {
 		}
 		if (navigateTo != null) {
 			popup.add(navigateTo);
+		}
+		if (findPathMenuItem != null) {
+			popup.add(findPathMenuItem);
 		}
 		if (withModifications){
 			popup.add(dataBrowser);

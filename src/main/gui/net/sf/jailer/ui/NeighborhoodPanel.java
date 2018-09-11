@@ -161,7 +161,7 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
 					@Override
 					protected void onRightClick(MouseEvent e) {
 						if (t != null) {
-							JPopupMenu popup = graphView.createPopupMenu(t, true);
+							JPopupMenu popup = graphView.createPopupMenu(t, null, true);
 							popup.show(e.getComponent(), e.getX(), e.getY());
 							popup.addPopupMenuListener(new PopupMenuListener() {
 								@Override

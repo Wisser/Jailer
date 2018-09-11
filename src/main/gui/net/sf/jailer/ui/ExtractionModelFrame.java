@@ -44,6 +44,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -217,7 +218,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				for (final String item: list) {
 					JMenuItem menuItem = new JMenuItem(item.split(",")[0]);
 					sandBox.add(menuItem);
-					menuItem.addActionListener(new ActionListener() {
+					final ActionListener a;
+					menuItem.addActionListener(a = new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
 							try {
@@ -225,12 +227,20 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								String tmpFileName = Configuration.getInstance().createTempFile().getPath();
 								extractionModelEditor.save(tmpFileName);
 								ExtractionModel extractionModel = new ExtractionModel(tmpFileName, new HashMap<String, String>(), new HashMap<String, String>(), executionContext);
-								c.getMethod("main", ExtractionModel.class).invoke(c.newInstance(), extractionModel);
+								c.getMethod("main", ExtractionModel.class, JFrame.class).invoke(c.newInstance(), extractionModel, ExtractionModelFrame.this);
 							} catch (Throwable t) {
 								UIUtil.showException(ExtractionModelFrame.this, "Error", t);
 							}
 						}
 					});
+					if (menuItem.getText().endsWith("!")) {
+						UIUtil.invokeLater(4, new Runnable() {
+							@Override
+							public void run() {
+								a.actionPerformed(null);
+							}
+						});
+					}
 				}
 			}
 		} catch (Throwable e) {
