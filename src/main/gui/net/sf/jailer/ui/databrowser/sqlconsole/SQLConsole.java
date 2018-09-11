@@ -22,8 +22,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -884,8 +884,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     }
 
                     private ColumnsTable columnsTable; 
-                    JPanel jPanel;
-					
+                    
 					public void updateColumnsAndTextView(final BrowserContentPane rb,
 							final TabContentPanel tabContentPanel) {
 						String tableSortAndFilterState = "";
@@ -904,27 +903,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							}
 						}
 						if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel || tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.contentPanel) {
-							columnsTable = new ColumnsTable(rb);
-							if (jPanel == null) {
-								jPanel = new JPanel(new GridBagLayout());
-								jPanel.setOpaque(true);
-								tabContentPanel.columnsScrollPane.setViewportView(jPanel);
+							Point vp = null;
+							if (columnsTable != null) {
+								if (tabContentPanel.columnsScrollPane.getViewport() != null) {
+									vp = tabContentPanel.columnsScrollPane.getViewport().getViewPosition();
+								}
 							}
-					        jPanel.removeAll();
-							GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-					        gridBagConstraints.gridx = 1;
-					        gridBagConstraints.gridy = 1;
-					        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-					        gridBagConstraints.weightx = 0;
-					        gridBagConstraints.weighty = 0;
-					        jPanel.add(columnsTable, gridBagConstraints);
-							gridBagConstraints = new java.awt.GridBagConstraints();
-					        gridBagConstraints.gridx = 2;
-					        gridBagConstraints.gridy = 2;
-					        gridBagConstraints.weightx = 1;
-					        gridBagConstraints.weighty = 1;
-					        jPanel.add(new JLabel(" "), gridBagConstraints);
-
+							columnsTable = new ColumnsTable(rb);
+							tabContentPanel.columnsScrollPane.setViewportView(columnsTable);
+							if (vp != null) {
+								if (tabContentPanel.columnsScrollPane.getViewport() != null) {
+									tabContentPanel.columnsScrollPane.getViewport().setViewPosition(vp);
+								}
+							}
 							tabContentPanel.columnsSortedStateLabel.setText("  " + tableSortAndFilterState);
 							tabContentPanel.columnsSortedStateLabel.setVisible(!tableSortAndFilterState.isEmpty());
 						}
