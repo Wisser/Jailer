@@ -115,6 +115,7 @@ public class ColumnsTable extends JTable {
 		setRowSelectionAllowed(true);
 		setColumnSelectionAllowed(true);
 		setCellSelectionEnabled(true);
+		getTableHeader().setReorderingAllowed(false);
 		setShowGrid(false);
 		setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		setModel(cDm);
