@@ -1,3 +1,6 @@
+7.11.2
+  - The new "PathFinder" feature allows finding association paths between tables in complex data models.
+
 7.11.1
   - Closing a root table did not work properly in the data browser.
   - Minor bug fixes.
