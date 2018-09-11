@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -576,8 +577,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				Table table = getDataModel().getTableByDisplayName(selectedTable);
 				if (table != null) {
 					CellInfo selectionInfo = cellInfo.get(selectedTable);
-					selectionInfo.select();
 					if (selectionInfo != null) {
+						selectionInfo.select();
 						Association association = null;
 						for (CellInfo parent: selectionInfo.parents) {
 							Table pre = parent.table;
@@ -591,6 +592,41 @@ public abstract class ClosureView extends javax.swing.JDialog {
 									}
 								}
 							}
+						}
+						Stack<Table> toSelect = new Stack<Table>();
+						CellInfo ci = selectionInfo;
+						final int MAX_PATH_LENGTH = 1000;
+						while (ci != null) {
+							if (toSelect.size() > MAX_PATH_LENGTH) {
+								break;
+							}
+							if (ci.table != null) {
+								toSelect.push(ci.table);
+							}
+							CellInfo nextCi = null;
+							for (CellInfo parent: ci.parents) {
+								Table pre = parent.table;
+								if (pre != null) {
+									CellInfo preInfo = cellInfo.get(getDataModel().getDisplayName(pre));
+									if (preInfo != null) {
+										if (preInfo.selected) {
+											if (preInfo.table != null) {
+												nextCi = preInfo;
+												break;
+											}
+										}
+									}
+								}
+							}
+							ci = nextCi;
+						}
+						extractionModelEditor.incCaptureLevel();
+						try {
+							while (!toSelect.isEmpty()) {
+								ClosureView.this.extractionModelEditor.select(toSelect.pop());
+							}
+						} finally {
+							extractionModelEditor.decCaptureLevel();
 						}
 						if (association != null && ClosureView.this.extractionModelEditor.select(association)) {
 							return;

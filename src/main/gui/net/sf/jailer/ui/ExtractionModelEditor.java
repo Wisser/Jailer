@@ -2223,24 +2223,28 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					}
 				}
 			}
-			for (DefaultMutableTreeNode node: treeNodes) {
-				if (node.getChildCount() > 0) {
-					Table t = null;
-					Association a = null;
-					if (node.getUserObject() instanceof Association) {
-						a = (Association) node.getUserObject();
-						t = a.destination;
-					}
-					if (t != null && a != null && table.equals(t)) {
-						select(a);
-						TreePath treePath = new TreePath(node.getPath());
-						tree.expandPath(treePath);
-						for (int i = 0; i < node.getChildCount(); ++i) {
-							DefaultMutableTreeNode c = (DefaultMutableTreeNode) node.getChildAt(i);
-							tree.collapsePath(new TreePath(c.getPath()));
+			for (boolean checkVisibility: new boolean [] { true, false }) {
+				for (DefaultMutableTreeNode node: treeNodes) {
+					if (node.getChildCount() > 0) {
+						Table t = null;
+						Association a = null;
+						if (node.getUserObject() instanceof Association) {
+							a = (Association) node.getUserObject();
+							t = a.destination;
 						}
-						tree.scrollPathToVisible(treePath);
-						return true;
+						if (t != null && a != null && table.equals(t)) {
+							if (!checkVisibility || (graphView.isTableVisible(a.source) && graphView.isTableVisible(a.destination))) {
+								select(a);
+								TreePath treePath = new TreePath(node.getPath());
+								tree.expandPath(treePath);
+								for (int i = 0; i < node.getChildCount(); ++i) {
+									DefaultMutableTreeNode c = (DefaultMutableTreeNode) node.getChildAt(i);
+									tree.collapsePath(new TreePath(c.getPath()));
+								}
+								tree.scrollPathToVisible(treePath);
+								return true;
+							}
+						}
 					}
 				}
 			}

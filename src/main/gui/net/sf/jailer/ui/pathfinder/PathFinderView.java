@@ -119,6 +119,13 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         redoButton.setText(null);
         redoButton.setToolTipText("Redo");
         redoButton.setIcon(UIUtil.scaleIcon(this, rightIcon));
+        
+        if (jScrollPane1.getHorizontalScrollBar() != null) {
+        	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(10);
+        }
+        if (jScrollPane1.getVerticalScrollBar() != null) {
+        	jScrollPane1.getVerticalScrollBar().setUnitIncrement(10);
+        }
     }
 
     public void showGraph(boolean undoing) {
@@ -211,8 +218,6 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     		}
     		boolean showExcludeButton = true;
     		if (nodes.size() <= 1) {
-    			showExcludeButton = false;
-    		} else {
     			Node node = nodes.get(0);
 	    		if (node.table.equals(source) || node.table.equals(destination)) {
 	    			showExcludeButton = false;
