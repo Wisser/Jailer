@@ -129,27 +129,29 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				});
 			}
 		});
-		updateEnabledState(button, comboBox);
-		comboBox.getModel().addListDataListener(new ListDataListener() {
-			@Override
-			public void intervalRemoved(ListDataEvent arg0) {
-				updateEnabledState(button, comboBox);
-			}
-			@Override
-			public void intervalAdded(ListDataEvent arg0) {
-				updateEnabledState(button, comboBox);
-			}
-			@Override
-			public void contentsChanged(ListDataEvent arg0) {
-				updateEnabledState(button, comboBox);
-			}
-		});
-		comboBox.addPropertyChangeListener("model", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent arg0) {
-				updateEnabledState(button, comboBox);
-			}
-		});
+		if (prepare == null) {
+			updateEnabledState(button, comboBox);
+			comboBox.getModel().addListDataListener(new ListDataListener() {
+				@Override
+				public void intervalRemoved(ListDataEvent arg0) {
+					updateEnabledState(button, comboBox);
+				}
+				@Override
+				public void intervalAdded(ListDataEvent arg0) {
+					updateEnabledState(button, comboBox);
+				}
+				@Override
+				public void contentsChanged(ListDataEvent arg0) {
+					updateEnabledState(button, comboBox);
+				}
+			});
+			comboBox.addPropertyChangeListener("model", new PropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent arg0) {
+					updateEnabledState(button, comboBox);
+				}
+			});
+		}
 		return button;
 	}
 
