@@ -1,6 +1,5 @@
 package net.sf.jailer.ui.graphical_view;
 
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;

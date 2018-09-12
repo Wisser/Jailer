@@ -22,13 +22,10 @@ import java.awt.Toolkit;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JFrame;
-
 import org.fife.rsta.ui.EscapableDialog;
 
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.ui.UIUtil;
 
 /**

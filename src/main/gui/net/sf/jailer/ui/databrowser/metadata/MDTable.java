@@ -163,7 +163,6 @@ public class MDTable extends MDObject {
                 synchronized (metaDataSource.getSession().getMetaData()) {
                     ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%", 
                     		true, isSynonym? "SYNONYM" : null);
-                    // TODO test
                     while (resultSet.next()) {
                         String colName = metaDataSource.getQuoting().quote(resultSet.getString(4));
                         columns.add(colName);

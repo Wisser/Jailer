@@ -204,7 +204,6 @@ public class SbEDialog extends javax.swing.JDialog {
 	}//GEN-LAST:event_jButton3ActionPerformed
 
     private void regardButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regardButtonActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_regardButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -17,7 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Font;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

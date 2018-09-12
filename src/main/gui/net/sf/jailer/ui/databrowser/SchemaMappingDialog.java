@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.databrowser;
 
-import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.io.File;
