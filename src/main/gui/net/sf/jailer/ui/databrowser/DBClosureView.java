@@ -137,7 +137,26 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
 		@Override
 		public void mouseClicked(final MouseEvent e) {
-		     // context menu
+			// reset view
+			{
+			    Point position = e.getPoint();
+		        int row = closureTable.rowAtPoint(position);
+		        int column = closureTable.columnAtPoint(position);
+		        if (row >= 0 && column >= 0) {
+			    	Object value = closureTable.getModel().getValueAt(row, column);
+			        CellInfo ci = cellInfo.get(value);
+					if (!excludedFromPath.isEmpty() && ci != null && !mainPathAsSet.contains(ci)) {
+				        mainPath.clear();
+		                mainPathAsSet.clear();
+		                excludedFromPath.clear();
+		                refreshTableModel();
+		                selectedTable = null;
+		                refresh();
+			        }
+		        }
+			}
+
+			// context menu
 		    if (SwingUtilities.isRightMouseButton(e)) {
 		        int row = closureTable.rowAtPoint(e.getPoint());
 		        int column = closureTable.columnAtPoint(e.getPoint());
@@ -204,19 +223,18 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 //                                }
 //                            }
 //                        });
-		            
-		            JMenuItem deselect = new JMenuItem("Deselect path");
-		            deselect.addActionListener(new ActionListener() {
-		                @Override
-		                public void actionPerformed(ActionEvent e) {
-		                	mainPath.clear();
-		                    mainPathAsSet.clear();
-		                    excludedFromPath.clear();
-		                    refreshTableModel();
-		                    selectedTable = null;
-		                    refresh();
-		                }
-		            });
+//		            JMenuItem deselect = new JMenuItem("Deselect path");
+//		            deselect.addActionListener(new ActionListener() {
+//		                @Override
+//		                public void actionPerformed(ActionEvent e) {
+//		                	mainPath.clear();
+//		                    mainPathAsSet.clear();
+//		                    excludedFromPath.clear();
+//		                    refreshTableModel();
+//		                    selectedTable = null;
+//		                    refresh();
+//		                }
+//		            });
 		            JMenuItem pathFinder = new JMenuItem("Find alternative path to " + getDataModel().getDisplayName(table));
 		            pathFinder.addActionListener(new ActionListener() {
 		                @Override
@@ -233,22 +251,23 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		                        @Override
 		                        public void actionPerformed(ActionEvent e) {
 		                            expandPath();
-		                        }
-		                    });
-		                    menu.add(open);
-		                    JMenuItem openAndSelect = new JMenuItem("Open path to and select " + selectedTable);
-		                    openAndSelect.addActionListener(new ActionListener() {
-		                        @Override
-		                        public void actionPerformed(ActionEvent e) {
-		                            expandPath();
 		                            DBClosureView.this.select(selectedTable);
 		                        }
 		                    });
-		                    menu.add(openAndSelect);
+		                    menu.add(open);
+//		                    JMenuItem openAndSelect = new JMenuItem("Open path to and select " + selectedTable);
+//		                    openAndSelect.addActionListener(new ActionListener() {
+//		                        @Override
+//		                        public void actionPerformed(ActionEvent e) {
+//		                            expandPath();
+//		                            DBClosureView.this.select(selectedTable);
+//		                        }
+//		                    });
+//		                    menu.add(openAndSelect);
 //                                menu.add(new JSeparator());
 //                                menu.add(exclude);
 //                                menu.add(excludeAll);
-		                    menu.add(deselect);
+//		                    menu.add(deselect);
 		                    menu.add(new JSeparator());
 		                    menu.add(pathFinder);
 		                    UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
@@ -277,8 +296,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		                    menu.add(c);
 		                }
 		                if (!mainPath.isEmpty()) {
-		                	menu.addSeparator();
-		                	menu.add(deselect);
+//		                	menu.addSeparator();
+//		                	menu.add(deselect);
 		                	menu.addSeparator();
 		                    menu.add(pathFinder);
 		                }
