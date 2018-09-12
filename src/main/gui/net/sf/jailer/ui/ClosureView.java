@@ -422,6 +422,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			private Font font = new JLabel("normal").getFont();
 			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
 			private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+			private Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
 			
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -472,6 +473,10 @@ public abstract class ClosureView extends javax.swing.JDialog {
 							((JLabel) render).setForeground(new Color(160, 80, 0));
 						} else if (!allDisabled && someRestricted) {
 							((JLabel) render).setForeground(new Color(0, 80, 160));
+						}
+						if (currentExcludedTables != null && currentExcludedTables.contains(t)) {
+							((JLabel) render).setFont(italic);
+							((JLabel) render).setForeground(new Color(150, 150, 150));
 						}
 					}
 				}
@@ -621,6 +626,12 @@ public abstract class ClosureView extends javax.swing.JDialog {
 							}
 							ci = nextCi;
 						}
+						Table selTable = getSelectedTable();
+						if (selTable != null && currentPath != null && !toSelect.contains(selTable)) {
+							refresh();
+							selectTableCell(col, row);
+							return;
+						}
 						extractionModelEditor.incCaptureLevel();
 						try {
 							if (!toSelect.isEmpty()) {
@@ -716,6 +727,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		repaintClosureView();
 	}
 	
+	private List<Table> currentPath = null;
+	private Set<Table> currentExcludedTables = null;
+	
 	/**
 	 * Refreshes the table model.
 	 * @param excludedTables 
@@ -724,9 +738,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	private void refreshTableModel(Set<Table> excludedTables, List<Table> path) {
 		cellInfo.clear();
 		dependencies.clear();
+		currentPath = null;
+		if (path != null) {
+			currentPath = new ArrayList<Table>(path);
+		}
 		if (excludedTables == null) {
 			excludedTables = new HashSet<Table>();
 		}
+		currentExcludedTables = new HashSet<Table>(excludedTables);
 		Table selectedTable = getSelectedTable();
 		refreshAssociationView(selectedTable);
 		
@@ -770,7 +789,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			stations.addAll(path);
 		}
 		stations.removeAll(excludedTables);
-    	
+
 		while (!currentLine.isEmpty()) {
 
 			// add current line to table model
@@ -817,20 +836,21 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			// get next line
 			List<String> nextLine = new ArrayList<String>();
 			String nextStat = null;
+			Table nextStatT = null;
 			if (!stations.isEmpty()) {
-				Table nextStatT = stations.get(0);
+				nextStatT = stations.get(0);
 				if (nextStatT != null) {
 					nextStat = getDataModel().getDisplayName(nextStatT);
 				}
 			}
 
-			List<String> cl = currentLine;
 			if (nextStat != null && currentLine.contains(nextStat)) {
-				cl = new ArrayList<String>();
-				cl.add(nextStat);
 				stations.remove(0);
+			} else {
+				nextStat = null;
+				nextStatT = null;
 			}
-			for (String t: cl) {
+			for (String t: currentLine) {
 				Table table = getDataModel().getTableByDisplayName(t);
 				if (table != null && !excludedTables.contains(table)) {
 					CellInfo cellInfoT = this.cellInfo.get(t);
@@ -841,19 +861,23 @@ public abstract class ClosureView extends javax.swing.JDialog {
 								nextLine.add(displayName);
 								visited.add(displayName);
 								CellInfo cellInfo = new CellInfo(distance);
-								if (!excludedTables.contains(association.destination)) {
-									cellInfo.parents.add(cellInfoT);
+								if (!excludedTables.contains(table)) {
+									if (nextStatT == null || nextStatT == cellInfoT.table) {
+										cellInfo.parents.add(cellInfoT);
+									}
 								}
 								cellInfo.table = association.destination;
 								if (association.isInsertDestinationBeforeSource()) {
-									if (!excludedTables.contains(association.destination)) {
-										dependencies.add(new Pair<String, String>(t, displayName));
-									}
+									dependencies.add(new Pair<String, String>(t, displayName));
 								}
 								this.cellInfo.put(displayName, cellInfo);
 							} else {
 								if (nextLine.contains(displayName)) {
-									this.cellInfo.get(displayName).parents.add(cellInfoT);
+									if (!excludedTables.contains(table)) {
+										if (nextStatT == null || nextStatT == cellInfoT.table) {
+											this.cellInfo.get(displayName).parents.add(cellInfoT);
+										}
+									}
 									if (association.isInsertDestinationBeforeSource()) {
 										dependencies.add(new Pair<String, String>(t, displayName));
 									}

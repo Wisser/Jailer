@@ -828,7 +828,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(rowsTable, value, isSelected, false, row, column);
 				final RowSorter<?> rowSorter = rowsTable.getRowSorter();
-				if (rowSorter.getViewRowCount() == 0) {
+				if (rowSorter.getViewRowCount() == 0 && table == rowsTable) {
 					return render;
 				}
 
@@ -3585,6 +3585,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				@Override
 				public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 					if (table != rowsTable) {
+						column = table.convertColumnIndexToModel(column);
 						if (column == 0) {
 							return null;
 						}

@@ -1364,10 +1364,12 @@ public class GraphicalDataModelView extends JPanel {
 	 * Creates visible node for given table.
 	 */
 	public void showTable(Table source, Table destination) {
-		List<Table> toCheck = new ArrayList<Table>();
-		toCheck.add(destination);
-		addEdges(theGraph, source, null, toCheck, false, new HashSet<Table>(toCheck));
-		checkForExpansion(theGraph, model.getTables(), true);
+		synchronized (visualization) {
+			List<Table> toCheck = new ArrayList<Table>();
+			toCheck.add(destination);
+			addEdges(theGraph, source, null, toCheck, false, new HashSet<Table>(toCheck));
+			checkForExpansion(theGraph, model.getTables(), true);
+		}
 	}
 	
 	/**

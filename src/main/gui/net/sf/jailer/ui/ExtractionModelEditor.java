@@ -19,7 +19,6 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -282,10 +281,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			public void itemStateChanged(ItemEvent arg0) {
 				Object o1 = rootTable.getSelectedItem();
 				Object o2 = subjectTable.getSelectedItem();
-				resetFocus.setEnabled(!(o1 == null && o2 == null || o1 != null && o1.equals(o2)));
+				 resetFocus.setEnabled(!(o1 == null && o2 == null || o1 != null && o1.equals(o2)));
 			}
 		};
-				
+
 		rootTable.addItemListener(aListener);
 		subjectTable.addItemListener(aListener);
 		

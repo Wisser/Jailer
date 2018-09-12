@@ -217,7 +217,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     			okExpandButton.setEnabled(false);
     		}
     		boolean showExcludeButton = true;
-    		if (nodes.size() <= 1) {
+    		if (nodes.size() == 1) {
     			Node node = nodes.get(0);
 	    		if (node.table.equals(source) || node.table.equals(destination)) {
 	    			showExcludeButton = false;
