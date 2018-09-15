@@ -19,8 +19,9 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.List;
-import java.util.Set;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -40,22 +41,22 @@ public class PathFinder {
 	
 	public class Result {
 		public List<Table> path;
-		public Set<Table> excludedTables;
 		public boolean expand;
 	}
-	
-	public Result find(Table source, Table destination, DataModel dataModel, boolean withOpenTablesButton, Frame owner) {
+
+	public Result find(Table source, Table destination, DataModel dataModel, boolean withOpenTablesButton, boolean fromHistory, Frame owner) {
 		final EscapableDialog dialog = new EscapableDialog(owner, "PathFinder", true) {
 			private static final long serialVersionUID = 1L;
 		};
 
-		PathFinderView view = new PathFinderView(dataModel, source, destination, withOpenTablesButton) {
+		final PathFinderView view = new PathFinderView(dataModel, source, destination, withOpenTablesButton, fromHistory) {
 			@Override
 			protected void applyPath(List<Table> path, boolean expand) {
 				PathFinder.this.path = path;
 				PathFinder.this.expand = expand;
 				dialog.setVisible(false);
 			}
+			private static final long serialVersionUID = 1L;
 		};
 
 		view.showGraph(true);
@@ -64,6 +65,12 @@ public class PathFinder {
 		dialog.pack();
 		int minWidth = 1200;
 		dialog.setSize(minWidth, Math.min(Math.max(dialog.getHeight() + 20, 440), 600));
+        dialog.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent arg0) {
+				view.sepLabel.setVisible(false);
+			}
+		});
 		Point ownerLoc;
 		Dimension ownerSize;
 		if (owner != null) {
@@ -90,7 +97,6 @@ public class PathFinder {
 		}
 		Result result = new Result();
 		result.path = path;
-		result.excludedTables = view.getExcludedTables();
 		result.expand = expand;
 		return result;
 	}

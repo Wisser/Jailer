@@ -21,6 +21,7 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -50,6 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -85,6 +87,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		void prepare(Set<MDSchema> selectedSchemas);
 	}
 
+	public interface AdditionalComponentFactory {
+		JComponent create(StringSearchPanel searchPanel);
+	}
+
 	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, false);
 	}
@@ -94,14 +100,14 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 	
 	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare, boolean alternativeIcon) {
-		return createSearchButton(owner, comboBox, titel, onSuccess, null, null, null, alternativeIcon);
+		return createSearchButton(owner, comboBox, titel, onSuccess, null, null, null, alternativeIcon, null);
 	}
 	
 	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel) {
-		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, false);
+		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, false, null);
 	}
 
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon) {
+	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory) {
 		final JButton button = new JButton();
 		button.setIcon(UIUtil.scaleIcon(button, alternativeIcon? icon2 : icon));
 		button.setToolTipText("Find Table");
@@ -115,6 +121,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				        try {
 							Point location = button.getLocationOnScreen();
 							StringSearchPanel searchPanel = new StringSearchPanel(comboBox, metaDataSource, dataModel, prepare);
+							if (additionalComponentFactory != null) {
+								searchPanel.plugInPanel.add(additionalComponentFactory.create(searchPanel), java.awt.BorderLayout.CENTER);
+							} else {
+								searchPanel.plugInPanel.setVisible(false);
+							}
 							String result = searchPanel.find(owner, titel, location.x, location.y);
 							if (result != null && !result.equals(searchPanel.showAllLabel)) {
 								comboBox.setSelectedItem(result);
@@ -253,12 +264,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			@Override
 			public void keyTyped(KeyEvent e) {
 				if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
-					dialog.setVisible(false);
+					close();
 				} else if (e.getKeyChar() == KeyEvent.VK_DOWN) {
 					searchList.grabFocus();
 				} else if (e.getKeyChar() == '\n') {
 					result  = searchList.getSelectedValue();
-					dialog.setVisible(false);
+					close();
 				}
 			}
 			@Override
@@ -315,9 +326,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() >1) {
+				if (e.getClickCount() > 1) {
 					result  = searchList.getSelectedValue();
-					dialog.setVisible(false);
+					close();
 				}
 			}
 		});
@@ -539,6 +550,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        plugInPanel = new javax.swing.JPanel();
 
         loadingPanel.setBackground(java.awt.Color.white);
 
@@ -548,8 +560,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         cancelLoadiingButton.setText("Cancel");
         cancelLoadiingButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelLoadiingButtonActionPerformed(evt);
             }
         });
@@ -568,10 +579,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         searchList.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            @Override
-			public int getSize() { return strings.length; }
-            @Override
-			public String getElementAt(int i) { return strings[i]; }
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
         });
         jScrollPane1.setViewportView(searchList);
 
@@ -615,8 +624,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         selectAllButton.setText("Select all");
         selectAllButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectAllButtonActionPerformed(evt);
             }
         });
@@ -647,8 +655,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         okButton.setText(" Ok ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -661,8 +668,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -677,16 +683,28 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         add(jPanel1, gridBagConstraints);
+
+        plugInPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        add(plugInPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     	result  = searchList.getSelectedValue();
-		dialog.setVisible(false);
+		close();
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-    	dialog.setVisible(false);
+    	close();
 	}//GEN-LAST:event_cancelButtonActionPerformed
+
+	public void close() {
+		dialog.setVisible(false);
+	}
 
     private void cancelLoadiingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelLoadiingButtonActionPerformed
         cancelLoading.set(true);
@@ -709,6 +727,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel loadingPanel;
     private javax.swing.JButton okButton;
+    private javax.swing.JPanel plugInPanel;
     private javax.swing.JPanel schemaPanel;
     private javax.swing.JList<String> searchList;
     private javax.swing.JTextField searchTextField;

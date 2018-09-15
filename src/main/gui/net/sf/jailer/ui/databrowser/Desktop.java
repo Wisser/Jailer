@@ -38,6 +38,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -73,8 +74,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.DefaultDesktopManager;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
@@ -87,6 +91,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
@@ -176,6 +181,8 @@ public abstract class Desktop extends JDesktopPane {
 	private final QueryBuilderDialog queryBuilderDialog;
 	private final DesktopIFrameStateChangeRenderer iFrameStateChangeRenderer = new DesktopIFrameStateChangeRenderer();
 	private final DesktopAnchorManager anchorManager;
+	
+	private static final KeyStroke KS_SQLCONSOLE = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
 	
 	public DesktopIFrameStateChangeRenderer getiFrameStateChangeRenderer() {
 		return iFrameStateChangeRenderer;
@@ -299,6 +306,32 @@ public abstract class Desktop extends JDesktopPane {
 			});
 			updateUIThread.setDaemon(true);
 			updateUIThread.start();
+			
+			AbstractAction a = new AbstractAction() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					for (final RowBrowser rb : tableBrowsers) {
+						if (rb.internalFrame.isSelected()) {
+							rb.browserContentPane.rowsTable.grabFocus();
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									rb.browserContentPane.openQueryBuilder(true);
+								}
+							});
+							break;
+						}
+					}
+				}
+			};
+			Container parent = parentFrame.getContentPane();
+			if (parent instanceof JComponent) {
+				JComponent comp = (JComponent) parent;
+				InputMap im = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+				im.put(KS_SQLCONSOLE, a);
+				ActionMap am = comp.getActionMap();
+				am.put(a, a);
+			}
 		} catch (Exception e) {
 			UIUtil.showException(null, "Error", e, session);
 		}

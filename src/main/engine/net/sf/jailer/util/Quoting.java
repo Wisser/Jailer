@@ -248,6 +248,9 @@ public class Quoting {
 	private static boolean isQuoted(String identifier, String qu) {
 		if (identifier != null && identifier.length() > 1) {
 			String q = identifier.substring(0, 1);
+			if (q.equals("[") && identifier.endsWith("]")) {
+				return true;
+			}
 			if (identifier.endsWith(q)) {
 				char c = q.charAt(0);
 				if (q.equals(qu) || isPotentialIdentifierQuote(c)) {

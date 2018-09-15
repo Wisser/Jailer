@@ -108,8 +108,10 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
 		length = graphView.getHeight() / (getFontMetrics(font).getHeight() + 2) - 12;
 		if (length < 2) {
 			length = 2;
+		} else if (length > 20) { 
+			length = 20;
 		}
-		
+
 		initTableList(dataModel, table, hideIgnored, graphView);
 		createTableLinks(dataModel, table, graphView, hideIgnored);
 		

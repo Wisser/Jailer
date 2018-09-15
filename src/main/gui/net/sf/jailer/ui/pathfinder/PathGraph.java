@@ -22,6 +22,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import jdk.nashorn.internal.ir.annotations.Ignore;
+
 import java.util.Set;
 
 import net.sf.jailer.datamodel.Association;
@@ -41,8 +44,9 @@ public class PathGraph {
 	
 	private Map<Table, Node> nodePerTable = new HashMap<Table, Node>();
 	private Map<Pair<Node, Node>, EdgeType> edgeTypes = new HashMap<Pair<Node, Node>, EdgeType>();
+	private Set<Table> visitedExcludedTables = new HashSet<Table>();
 
-	public enum EdgeType { PARENT, CHILD, ASSOCIATION };
+	public enum EdgeType { PARENT, CHILD, ASSOCIATION, IGNORED };
 	
 	public class Node {
 		Table table;
@@ -130,26 +134,40 @@ public class PathGraph {
      * Creates new Graph.
      * @param excludedTables 
      * @param pathStations 
+     * @param considerRestrictions 
      */
-    public PathGraph(DataModel dataModel, Table source, Table destination, Set<Table> excludedTables, List<Table> pathStations) {
+    public PathGraph(DataModel dataModel, Table source, Table destination, Set<Table> excludedTables, List<Table> pathStations, boolean considerRestrictions) {
     	this.source = source;
     	this.destination = destination;
     	
-    	createGraph(excludedTables, pathStations);
-    	Node destNode = nodePerTable.get(this.destination);
-    	if (destNode == null) {
-    		reset();
-    		return;
+    	List<Table> stations = new ArrayList<Table>(pathStations);
+    	Node destNode;
+    	for (;;) {
+	    	visitedExcludedTables.clear();
+	    	createGraph(excludedTables, stations, visitedExcludedTables, considerRestrictions);
+	    	destNode = nodePerTable.get(this.destination);
+	    	if (destNode == null) {
+	    		// retry with shorter path
+	    		if (!stations.isEmpty()) {
+	    			stations.remove(stations.size() - 1);
+	    			continue;
+	    		}
+	    		reset();
+	    		return;
+	    	}
+	    	break;
     	}
     	Set<Table> destClosure = new HashSet<Table>();
     	destNode.collectPrevClosure(destClosure);
     	Set<Table> excluded = new HashSet<Table>(dataModel.getTables());
     	excluded.removeAll(destClosure);
     	excluded.addAll(excludedTables);
-    	createGraph(excluded, pathStations);
+    	visitedExcludedTables.clear();
+    	createGraph(excluded, stations, visitedExcludedTables, considerRestrictions);
+    	visitedExcludedTables.retainAll(excludedTables);
     }
 
-    private void createGraph(Set<Table> excluded, List<Table> pathStations) {
+    private void createGraph(Set<Table> excluded, List<Table> pathStations, Set<Table> visitedExTables, boolean considerRestrictions) {
     	reset();
 
     	Set<Table> currentColumn = new HashSet<Table>();
@@ -163,22 +181,34 @@ public class PathGraph {
 		stations.remove(source);
 		stations.remove(destination);
 		stations.removeAll(excluded);
+		Set<Table> onPath = new HashSet<Table>(pathStations);
+		onPath.add(source);
+		onPath.add(destination);
+		Set<Table> lastVisitedExTables = new HashSet<Table>();
     	do {
+    		boolean onStation = false;
 			if (!stations.isEmpty()) {
 				Table nextStat = stations.get(0);
 				if (currentColumn.contains(nextStat)) {
 					currentColumn.clear();
 					currentColumn.add(nextStat);
 					stations.remove(0);
+					onStation = true;
 				}
 			}
+			if (!onStation) {
+				visitedExTables.addAll(lastVisitedExTables);
+			}
+			lastVisitedExTables.clear();
     		Set<Table> nextColumn = new HashSet<Table>();
     		for (Table table: currentColumn) {
     			node = nodePerTable.get(table);
 				for (Association a: table.associations) {
-					if (!a.isIgnored()) {
+					if (!a.isIgnored() || !considerRestrictions
+							|| (onPath.contains(a.source) && onPath.contains(a.destination))) {
 						Table dest = a.destination;
 						if (excluded.contains(dest)) {
+							lastVisitedExTables.add(dest);
 							continue;
 						}
 						Node newNode = nodePerTable.get(dest);
@@ -187,7 +217,9 @@ public class PathGraph {
 						}
 						nextColumn.add(dest);
 						EdgeType type;
-						if (a.isInsertDestinationBeforeSource()) {
+						if (a.isIgnored()) {
+							type = EdgeType.IGNORED;
+						} else if (a.isInsertDestinationBeforeSource()) {
 							type = EdgeType.PARENT;
 						} else if (a.isInsertSourceBeforeDestination()) {
 							type = EdgeType.CHILD;
@@ -202,7 +234,7 @@ public class PathGraph {
 						}
 						Pair<Node, Node> edgeKey = new Pair<Node, Node>(node, newNode);
 						EdgeType oldType = edgeTypes.get(edgeKey);
-						if (oldType != null && !type.equals(oldType)) {
+						if (oldType != null && !oldType.equals(EdgeType.IGNORED) && !type.equals(oldType)) {
 							type = EdgeType.ASSOCIATION;
 						}
 						edgeTypes.put(edgeKey, type);
@@ -214,6 +246,11 @@ public class PathGraph {
     		++column;
         	currentColumn = nextColumn;
     	} while (!currentColumn.isEmpty());
+    	visitedExTables.addAll(lastVisitedExTables);
     }
+
+	public Set<Table> getVisitedExcludedTables() {
+		return visitedExcludedTables;
+	}
 
 }

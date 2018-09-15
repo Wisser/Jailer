@@ -646,7 +646,6 @@ public class AssociationProposer {
 												return dColumn;
 											}
 										}
-										break;
 									}
 								}
 							}

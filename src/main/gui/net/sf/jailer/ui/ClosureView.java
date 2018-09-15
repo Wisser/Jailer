@@ -43,7 +43,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +70,8 @@ import javax.swing.table.TableColumn;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.StringSearchPanel.AdditionalComponentFactory;
+import net.sf.jailer.ui.pathfinder.HistoryPanel;
 import net.sf.jailer.ui.pathfinder.PathFinder;
 import net.sf.jailer.ui.pathfinder.PathFinder.Result;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
@@ -191,12 +192,35 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
-        JButton stFindButtonButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, findPathComboBox, "Find Path to...", new Runnable() {
+        Object currentSelection = rootTable.getSelectedItem();
+        Table source = null;
+		if (currentSelection instanceof String) {
+			source = getDataModel().getTableByDisplayName((String) currentSelection);
+		}
+        final javax.swing.JComboBox comboBox = findPathComboBox;
+        JButton stFindButtonButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox, "Select destination or choose from History", new Runnable() {
 			@Override
 			public void run() {
 				findPathButtonActionPerformed(null);
 			}
-		}, true);
+		}, null, null, null, true, new AdditionalComponentFactory() {
+			@Override
+			public JComponent create(final StringSearchPanel searchPanel) {
+				HistoryPanel historyPanel = new HistoryPanel(ClosureView.this.getSelectedTable(), getDataModel()) {
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					protected void close() {
+						searchPanel.close();
+					}
+					@Override
+					protected void apply(Table source, Table destination) {
+						findPath(source, destination, true);
+					}
+				};
+		        return historyPanel;
+			}
+		});
 		tablePanel.add(stFindButtonButton, gridBagConstraints);
         
         findPathComboBox.setVisible(false);
@@ -422,7 +446,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			private Font font = new JLabel("normal").getFont();
 			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
 			private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-			private Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
+			// private Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
 			
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -474,9 +498,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						} else if (!allDisabled && someRestricted) {
 							((JLabel) render).setForeground(new Color(0, 80, 160));
 						}
-						if (currentExcludedTables != null && currentExcludedTables.contains(t)) {
-							((JLabel) render).setFont(italic);
-							((JLabel) render).setForeground(new Color(150, 150, 150));
+						if (currentForcedDistance != null && currentForcedDistance.containsKey(t)) {
+							((JLabel) render).setFont(bold);
+//							((JLabel) render).setForeground(new Color(150, 150, 150));
 						}
 					}
 				}
@@ -627,10 +651,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 							ci = nextCi;
 						}
 						Table selTable = getSelectedTable();
-						if (selTable != null && currentPath != null && !toSelect.contains(selTable)) {
-							refresh();
-							selectTableCell(col, row);
-							return;
+						if (currentForcedDistance != null) {
+							if (selTable != null && !toSelect.contains(selTable)
+								||
+								!currentForcedDistance.containsKey(table)) {
+								refresh();
+								selectTableCell(col, row);
+								return;
+							}
 						}
 						extractionModelEditor.incCaptureLevel();
 						try {
@@ -707,7 +735,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 //    	}
 		
 		// table model
-		refreshTableModel(null, null);
+		refreshTableModel(null);
 
 		refreshing = false;
 	}
@@ -717,7 +745,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	 */
 	public void refresh() {
 		String prevSelection = selectedTable;
-		refreshTableModel(null, null);
+		refreshTableModel(null);
 		if (cellInfo.containsKey(prevSelection)) {
 			selectedTable = prevSelection;
 		} else {
@@ -727,28 +755,23 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		repaintClosureView();
 	}
 	
-	private List<Table> currentPath = null;
-	private Set<Table> currentExcludedTables = null;
+	private Map<Table, Integer> currentForcedDistance = null;
 	
 	/**
 	 * Refreshes the table model.
 	 * @param excludedTables 
 	 * @param path 
 	 */
-	private void refreshTableModel(Set<Table> excludedTables, List<Table> path) {
+	private void refreshTableModel(Map<Table, Integer> forcedDistance) {
 		cellInfo.clear();
 		dependencies.clear();
-		currentPath = null;
-		if (path != null) {
-			currentPath = new ArrayList<Table>(path);
+		currentForcedDistance = forcedDistance;
+		if (forcedDistance == null) {
+			forcedDistance = new HashMap<Table, Integer>();
 		}
-		if (excludedTables == null) {
-			excludedTables = new HashSet<Table>();
-		}
-		currentExcludedTables = new HashSet<Table>(excludedTables);
 		Table selectedTable = getSelectedTable();
 		refreshAssociationView(selectedTable);
-		
+
 		Object[] columns = new Object[tablesPerLine + 1];
 		for (int i = 0; i < columns.length; ++i) {
 			columns[i] = "";
@@ -784,12 +807,6 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		
 		TreeSet<String> nonIsolated = new TreeSet<String>();
 		
-		List<Table> stations = new LinkedList<Table>();
-		if (path != null) {
-			stations.addAll(path);
-		}
-		stations.removeAll(excludedTables);
-
 		while (!currentLine.isEmpty()) {
 
 			// add current line to table model
@@ -835,36 +852,31 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			
 			// get next line
 			List<String> nextLine = new ArrayList<String>();
-			String nextStat = null;
-			Table nextStatT = null;
-			if (!stations.isEmpty()) {
-				nextStatT = stations.get(0);
-				if (nextStatT != null) {
-					nextStat = getDataModel().getDisplayName(nextStatT);
-				}
-			}
 
-			if (nextStat != null && currentLine.contains(nextStat)) {
-				stations.remove(0);
-			} else {
-				nextStat = null;
-				nextStatT = null;
-			}
 			for (String t: currentLine) {
 				Table table = getDataModel().getTableByDisplayName(t);
-				if (table != null && !excludedTables.contains(table)) {
+				if (table != null) {
 					CellInfo cellInfoT = this.cellInfo.get(t);
 					for (Association association: table.associations) {
+						Integer fd = forcedDistance.get(association.destination);
+						if (fd != null && fd != distance + 1) {
+							continue;
+						}
+						boolean addToParent = true;
+                        if (forcedDistance.containsKey(association.destination)) {
+                        	if (!forcedDistance.containsKey(table)) {
+                        		addToParent = false;
+                        	}
+                        }
 						String displayName = getDataModel().getDisplayName(association.destination);
-						if (!association.isIgnored()) {
+                        if (!association.isIgnored() || 
+                        		(forcedDistance.containsKey(association.source) && forcedDistance.containsKey(association.destination))) {
 							if (!visited.contains(displayName)) {
 								nextLine.add(displayName);
 								visited.add(displayName);
 								CellInfo cellInfo = new CellInfo(distance);
-								if (!excludedTables.contains(table)) {
-									if (nextStatT == null || nextStatT == cellInfoT.table) {
-										cellInfo.parents.add(cellInfoT);
-									}
+								if (addToParent) {
+									cellInfo.parents.add(cellInfoT);
 								}
 								cellInfo.table = association.destination;
 								if (association.isInsertDestinationBeforeSource()) {
@@ -873,10 +885,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 								this.cellInfo.put(displayName, cellInfo);
 							} else {
 								if (nextLine.contains(displayName)) {
-									if (!excludedTables.contains(table)) {
-										if (nextStatT == null || nextStatT == cellInfoT.table) {
-											this.cellInfo.get(displayName).parents.add(cellInfoT);
-										}
+									if (addToParent) {
+										this.cellInfo.get(displayName).parents.add(cellInfoT);
 									}
 									if (association.isInsertDestinationBeforeSource()) {
 										dependencies.add(new Pair<String, String>(t, displayName));
@@ -1632,9 +1642,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				Object currentSelection = rootTable.getSelectedItem();
 				if (currentSelection instanceof String) {
 					final Table source = getDataModel().getTableByDisplayName((String) currentSelection);
-					if (source.closure(true).contains(cellInfo.table)) {
-						findPath(source, cellInfo.table);
-					}
+					// if (source.closure(true).contains(cellInfo.table)) {
+						findPath(source, cellInfo.table, false);
+					// }
 				}
 			}
 		}
@@ -1645,29 +1655,33 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		Object currentSelection = rootTable.getSelectedItem();
 		if (currentSelection instanceof String) {
 			final Table source = getDataModel().getTableByDisplayName((String) currentSelection);
-			if (source.closure(true).contains(table)) {
+			 if (source.closure(false).contains(table)) {
 				findPath.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
-						findPath(source, table);
+						findPath(source, table, false);
 					}
 				});
 				return findPath;
-			}
+			 }
 		}
 		findPath.setEnabled(false);
 		return findPath;
 	}
 
-	private void findPath(Table source, Table destination) {
+	private void findPath(Table source, Table destination, boolean fromHistory) {
 		Frame parent = null;
 		Window w = SwingUtilities.getWindowAncestor(rootTable);
 		if (w instanceof Frame) {
 			parent = (Frame) w;
 		}
-		Result result = new PathFinder().find(source, destination, getDataModel(), false, parent);
+		Result result = new PathFinder().find(source, destination, getDataModel(), false, fromHistory, parent);
 		if (result != null) {
-			refreshTableModel(result.excludedTables, result.path);
+			Map<Table, Integer> fd = new HashMap<Table, Integer>();
+			for (int i = 0; i < result.path.size(); ++i) {
+				fd.put(result.path.get(i), i);
+			}
+			refreshTableModel(fd);
 			List<Table> path = result.path;
 			Table table = null;
 			for (int i = 0; i < path.size(); i++) {

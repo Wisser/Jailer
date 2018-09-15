@@ -32,11 +32,19 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -62,8 +70,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.pathfinder.PathGraph.Node;
 import net.sf.jailer.ui.util.SmallButton;
@@ -81,7 +91,9 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	private final Map<Node, NodeRender> renderPerNode = new HashMap<Node, NodeRender>();
 	private PathGraph pathGraph;
 	private List<Table> result = new ArrayList<Table>();
-
+    private boolean hasRestrictions;
+    private final Set<Table> sourceClosure;
+    
 	private List<Table> pathStations  = new ArrayList<Table>();
 	private Set<Table> excludedTables = new HashSet<Table>();
 	
@@ -103,11 +115,13 @@ public abstract class PathFinderView extends javax.swing.JPanel {
      * Creates new form PathFinderView
      * @param destination 
      * @param source 
+     * @param fromHistory 
      */
-    public PathFinderView(DataModel dataModel, Table source, Table destination, boolean withExpandButton) {
+    public PathFinderView(DataModel dataModel, Table source, Table destination, boolean withExpandButton, boolean fromHistory) {
     	this.dataModel = dataModel;
     	this.source = source;
     	this.destination = destination;
+    	this.sourceClosure = source.closure(true);
         initComponents();
         if (!withExpandButton) {
         	okExpandButton.setVisible(false);
@@ -126,6 +140,29 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         if (jScrollPane1.getVerticalScrollBar() != null) {
         	jScrollPane1.getVerticalScrollBar().setUnitIncrement(10);
         }
+        restoreHistory();
+		historyButton.setEnabled(false);
+        if (getHistory(source, destination, dataModel) != null) {
+        	historyButton.setEnabled(true);
+        	if (fromHistory) {
+        		restoreFromHistory(false);
+        	}
+        }
+        hasRestrictions = false;
+        for (Table table: dataModel.getTables()) {
+        	for (Association a: table.associations) {
+        		if (a.isIgnored()) {
+        			hasRestrictions = true;
+        			break;
+        		}
+        	}
+        	if (hasRestrictions) {
+        		break;
+        	}
+        }
+        if (new PathGraph(dataModel, source, destination, excludedTables, pathStations, true).isEmpty()) {
+        	considerRestrictionsCheckbox.setSelected(false);
+        }
     }
 
     public void showGraph(boolean undoing) {
@@ -138,7 +175,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     		}
     	}
 
-    	this.pathGraph = new PathGraph(dataModel, source, destination, excludedTables, pathStations);
+    	this.pathGraph = new PathGraph(dataModel, source, destination, excludedTables, pathStations, considerRestrictionsCheckbox.isSelected());
     	renderPerNode.clear();
     	Set<Integer> nonExcludablesColumns = new HashSet<Integer>();
     	JPanel panel = new JPanel(new GridBagLayout()) {
@@ -167,6 +204,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 								color = new Color(255, 0, 0);
 							} else if (PathGraph.EdgeType.CHILD.equals(type)) {
 								color = new Color(0, 200, 0);
+							} else if (PathGraph.EdgeType.IGNORED.equals(type)) {
+								color = new Color(100, 100, 100);
 							} else {
 								color = new Color(0, 0, 255);
 							}
@@ -224,7 +263,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	    		} else {
 	    			Set<Table> excl = new HashSet<Table>(excludedTables);
 	    			excl.add(node.table);
-	    			if (new PathGraph(dataModel, source, destination, excl, pathStations).isEmpty()) {
+	    			if (new PathGraph(dataModel, source, destination, excl, pathStations, considerRestrictionsCheckbox.isSelected()).isEmpty()) {
 	    				showExcludeButton = false;
 	    			}
 	    		}
@@ -252,7 +291,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	    		if (showExcludeButton) {
 	    			Set<Table> excl = new HashSet<Table>(excludedTables);
 	    			excl.addAll(toExclude);
-	    			if (new PathGraph(dataModel, source, destination, excl, pathStations).isEmpty()) {
+	    			if (new PathGraph(dataModel, source, destination, excl, pathStations, considerRestrictionsCheckbox.isSelected()).isEmpty()) {
 	    				excludeButton.setVisible(false);
 	    			}
 	    		}
@@ -363,7 +402,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     	pathContainerPanel.add(panel, java.awt.BorderLayout.CENTER);
 
     	initExclusionTable(nonExcludablesColumns);
-
+    	initMenu();
+    	
     	forceRepaint();
     	
     	lastState = state;
@@ -371,7 +411,13 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     	redoButton.setEnabled(!redoStack.isEmpty());
     }
 
-    abstract class NodeRender extends JPanel {
+    private void initMenu() {
+    	 resetButton.setEnabled(!pathStations.isEmpty() || !excludedTables.isEmpty());
+    	 considerRestrictionsCheckbox.setEnabled(hasRestrictions 
+        		&& (considerRestrictionsCheckbox.isSelected() || !new PathGraph(dataModel, source, destination, excludedTables, pathStations, true).isEmpty()));
+	}
+
+	abstract class NodeRender extends JPanel {
 		private static final long serialVersionUID = 1L;
 		private int selectedCount = 0;
 		
@@ -380,10 +426,11 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 			final JComponent button;
     		if (node.table.equals(source) || node.table.equals(destination)) {
     			button = new JLabel(dataModel.getDisplayName(node.table));
+	    		button.setForeground(sourceClosure.contains(node.table)? Color.BLACK : COLOR_NOT_IN_CLOSURE);
     		} else {
 	    		JToggleButton tButton = new JToggleButton(dataModel.getDisplayName(node.table));
 	    		tButton.setSelected(isSelected);
-	    		tButton.setForeground(Color.BLACK);
+	    		tButton.setForeground(sourceClosure.contains(node.table)? Color.BLACK : COLOR_NOT_IN_CLOSURE);
 	    		tButton.addActionListener(new ActionListener() {
     				@Override
     				public void actionPerformed(ActionEvent e) {
@@ -547,6 +594,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         pathContainerPanel = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         okExpandButton = new javax.swing.JButton();
+        sepLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         exclusionTable = new javax.swing.JTable();
@@ -554,6 +602,11 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jPanel4 = new javax.swing.JPanel();
         undoButton = new javax.swing.JButton();
         redoButton = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JSeparator();
+        historyButton = new javax.swing.JButton();
+        jSeparator3 = new javax.swing.JSeparator();
+        considerRestrictionsCheckbox = new javax.swing.JCheckBox();
+        resetButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
 
         setLayout(new java.awt.GridBagLayout());
@@ -562,7 +615,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 
         jSplitPane1.setResizeWeight(1.0);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Path"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Union of all shortest paths without excluded tables."));
         jPanel2.setForeground(java.awt.Color.white);
         jPanel2.setOpaque(false);
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -588,7 +641,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         jPanel2.add(okButton, gridBagConstraints);
@@ -601,9 +654,16 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel2.add(okExpandButton, gridBagConstraints);
+
+        sepLabel.setText("                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        jPanel2.add(sepLabel, gridBagConstraints);
 
         jSplitPane1.setLeftComponent(jPanel2);
 
@@ -671,10 +731,65 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         });
         jPanel4.add(redoButton, new java.awt.GridBagConstraints());
 
+        jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
+        jPanel4.add(jSeparator2, gridBagConstraints);
+
+        historyButton.setText("From History");
+        historyButton.setToolTipText("Take the previously determined path.");
+        historyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                historyButtonActionPerformed(evt);
+            }
+        });
+        jPanel4.add(historyButton, new java.awt.GridBagConstraints());
+
+        jSeparator3.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
+        jPanel4.add(jSeparator3, gridBagConstraints);
+
+        considerRestrictionsCheckbox.setSelected(true);
+        considerRestrictionsCheckbox.setText("Consider restrictions");
+        considerRestrictionsCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                considerRestrictionsCheckboxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        jPanel4.add(considerRestrictionsCheckbox, gridBagConstraints);
+
+        resetButton.setText("Reset");
+        resetButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 6;
+        gridBagConstraints.gridy = 0;
+        jPanel4.add(resetButton, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         jPanel1.add(jPanel4, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -693,11 +808,15 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        applyPath(result, false);
+    	applyPath(result, false);
+    	putIntoHistory(source, destination, result /* pathStations */, excludedTables);
+    	persistHistory();
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void okExpandButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okExpandButtonActionPerformed
         applyPath(result, true);
+    	putIntoHistory(source, destination, result /* pathStations */, excludedTables);
+    	persistHistory();
     }//GEN-LAST:event_okExpandButtonActionPerformed
 
     private void undoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoButtonActionPerformed
@@ -722,10 +841,45 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_redoButtonActionPerformed
 
+    private void historyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_historyButtonActionPerformed
+        restoreFromHistory(true);
+    }//GEN-LAST:event_historyButtonActionPerformed
+
+	private void restoreFromHistory(boolean show) {
+		HistoryItem historyItem = getHistory(source, destination, dataModel);
+        if (historyItem != null) {
+	    	List<Table> hPathStations = toTableList(historyItem.pathStations, dataModel);
+	        Set<Table> hExcludedTables = new HashSet<Table>(toTableList(historyItem.excludedTables, dataModel));
+	        if (hPathStations != null && hExcludedTables != null) {
+	        	pathStations = hPathStations;
+	        	excludedTables = hExcludedTables;
+	        	showGraph(false);
+	        }
+        }
+        historyButton.setEnabled(false);
+	}
+
+    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+    	 if (!pathStations.isEmpty() || !excludedTables.isEmpty()) {
+    		 pathStations.clear();
+    		 excludedTables.clear();
+    		 if (new PathGraph(dataModel, source, destination, excludedTables, pathStations, true).isEmpty()) {
+    			 considerRestrictionsCheckbox.setSelected(false);
+    		 }
+    		 showGraph(false);
+    	 }
+    }//GEN-LAST:event_resetButtonActionPerformed
+
+    private void considerRestrictionsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_considerRestrictionsCheckboxActionPerformed
+    	showGraph(false);
+    }//GEN-LAST:event_considerRestrictionsCheckboxActionPerformed
+
     protected abstract void applyPath(List<Table> path, boolean expand);
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox considerRestrictionsCheckbox;
     private javax.swing.JTable exclusionTable;
+    private javax.swing.JButton historyButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -734,11 +888,15 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton okButton;
     private javax.swing.JButton okExpandButton;
     private javax.swing.JPanel pathContainerPanel;
     private javax.swing.JButton redoButton;
+    private javax.swing.JButton resetButton;
+    javax.swing.JLabel sepLabel;
     private javax.swing.JButton undoButton;
     // End of variables declaration//GEN-END:variables
 
@@ -829,7 +987,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 		keys.add(new SortKey(2, SortOrder.DESCENDING));
 		exclusionTable.getRowSorter().setSortKeys(keys);
 		
-		Set<Table> closure = new HashSet<Table>(excludedTables);
+		Set<Table> closure = new HashSet<Table>(pathGraph.getVisitedExcludedTables());
 		for (int col = 0; ; ++col) {
 			List<Node> nodes = pathGraph.getNodes(col);
 			if (nodes.isEmpty()) {
@@ -886,7 +1044,102 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 		}
 	}
 
-    static {
+	private static final String HISTORY_FILE = ".pathhistory";
+	private static final int MAX_HISTORY_SIZE = 400;
+
+	private static List<HistoryItem> history = new LinkedList<HistoryItem>();
+
+	private static HistoryItem getHistory(Table source, Table destination, DataModel dataModel) {
+    	for (HistoryItem item: history) {
+    		if (source.getName().equals(item.source) && destination.getName().equals(item.destination)) {
+    			return item;
+    		}
+    	}
+    	return null;
+	}
+
+	public static List<Table> getHistoricDestinations(Table source, DataModel dataModel) {
+		restoreHistory();
+		List<Table> result = new ArrayList<Table>();
+    	for (HistoryItem item: history) {
+    		if (source.getName().equals(item.source)) {
+    			Table table = dataModel.getTable(item.destination);
+    			if (table != null) {
+    				result.add(table);
+    			}
+    		}
+    	}
+    	return result;
+	}
+
+	private static List<Table> toTableList(Collection<String> list, DataModel dataModel) {
+    	List<Table> result = new ArrayList<Table>();
+    	for (String tName: list) {
+    		Table table = dataModel.getTable(tName);
+    		if (table != null) {
+    			result.add(table);
+    		}
+    	}
+    	return result;
+    }
+
+    private static void putIntoHistory(Table source, Table destination, List<Table> path, Set<Table> excl) {
+    	for (Iterator<HistoryItem> i = history.iterator(); i.hasNext(); ) {
+    		HistoryItem item = i.next();
+    		if (source.getName().equals(item.source) && destination.getName().equals(item.destination)) {
+        		i.remove();
+    		}
+    	}
+    	HistoryItem historyItem = new HistoryItem();
+    	historyItem.source = source.getName();
+    	historyItem.destination = destination.getName();
+    	historyItem.pathStations = new ArrayList<String>();
+    	historyItem.excludedTables = new HashSet<String>();
+    	for (Table table: path) {
+    		historyItem.pathStations.add(table.getName());
+    	}
+    	for (Table table: excl) {
+    		historyItem.excludedTables.add(table.getName());
+    	}
+    	history.add(0, historyItem);
+    	if (history.size() > MAX_HISTORY_SIZE) {
+    		history.remove(history.size() - 1);
+    	}
+    }
+
+    private static void persistHistory() {
+		try {
+			File file = Environment.newFile(HISTORY_FILE);
+			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+			out.writeObject(history);
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+    }
+
+    private static boolean historyRestored = false;
+
+    private static void restoreHistory() {
+    	if (!historyRestored) {
+    		historyRestored = true;
+    		try {
+    			File file = Environment.newFile(HISTORY_FILE);
+    			if (file.exists()) {
+    				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+    				history = (List<HistoryItem>) in.readObject();
+    				in.close();
+    			}
+    		} catch (Exception e) {
+    			// ignore
+    		}
+    	}
+    }
+
+	private static final Color COLOR_NOT_IN_CLOSURE = new Color(255, 80, 80);
+
+	static {
         String dir = "/net/sf/jailer/ui/resource";
         
         // load images

@@ -4736,7 +4736,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}// GEN-LAST:event_limitBoxItemStateChanged
 
-	private void openQueryBuilder(boolean openSQLConsole) {
+	void openQueryBuilder(boolean openSQLConsole) {
 		QueryBuilderDialog.Relationship root = createQBRelations(true);
 		if (root != null) {
 			root.selectColumns = true;
