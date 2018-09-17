@@ -310,16 +310,18 @@ public abstract class Desktop extends JDesktopPane {
 			AbstractAction a = new AbstractAction() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					for (final RowBrowser rb : tableBrowsers) {
-						if (rb.internalFrame.isSelected()) {
-							rb.browserContentPane.rowsTable.grabFocus();
-							SwingUtilities.invokeLater(new Runnable() {
-								@Override
-								public void run() {
-									rb.browserContentPane.openQueryBuilder(true);
-								}
-							});
-							break;
+					if (isDesktopVisible()) {
+						for (final RowBrowser rb : tableBrowsers) {
+							if (rb.internalFrame.isSelected()) {
+								rb.browserContentPane.rowsTable.grabFocus();
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										rb.browserContentPane.openQueryBuilder(true);
+									}
+								});
+								break;
+							}
 						}
 					}
 				}

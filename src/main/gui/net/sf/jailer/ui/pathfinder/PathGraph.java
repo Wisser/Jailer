@@ -22,9 +22,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import jdk.nashorn.internal.ir.annotations.Ignore;
-
 import java.util.Set;
 
 import net.sf.jailer.datamodel.Association;
@@ -130,13 +127,23 @@ public class PathGraph {
 		return nodePerTable.isEmpty();
 	}
     
-    /**
+	   /**
      * Creates new Graph.
      * @param excludedTables 
      * @param pathStations 
      * @param considerRestrictions 
      */
     public PathGraph(DataModel dataModel, Table source, Table destination, Set<Table> excludedTables, List<Table> pathStations, boolean considerRestrictions) {
+    	this(dataModel, source, destination, excludedTables, pathStations, considerRestrictions, false);
+    }
+    
+	/**
+     * Creates new Graph.
+     * @param excludedTables 
+     * @param pathStations 
+     * @param considerRestrictions 
+     */
+    public PathGraph(DataModel dataModel, Table source, Table destination, Set<Table> excludedTables, List<Table> pathStations, boolean considerRestrictions, boolean strict) {
     	this.source = source;
     	this.destination = destination;
     	
@@ -148,7 +155,7 @@ public class PathGraph {
 	    	destNode = nodePerTable.get(this.destination);
 	    	if (destNode == null) {
 	    		// retry with shorter path
-	    		if (!stations.isEmpty()) {
+	    		if (!stations.isEmpty() && !strict) {
 	    			stations.remove(stations.size() - 1);
 	    			continue;
 	    		}
@@ -251,6 +258,23 @@ public class PathGraph {
 
 	public Set<Table> getVisitedExcludedTables() {
 		return visitedExcludedTables;
+	}
+
+	/**
+	 * Is this graph a unique non-empty path?
+	 */
+	public boolean isUnique() {
+		if (isEmpty()) {
+			return false;
+		}
+		for (int column = 0; ; ++column) {
+			int n = getNodes(column).size();
+			if (n == 0) {
+				return true;
+			} else if (n > 1) {
+				return false;
+			}
+		}
 	}
 
 }

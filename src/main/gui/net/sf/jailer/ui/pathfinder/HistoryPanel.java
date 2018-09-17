@@ -14,6 +14,7 @@ import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -77,11 +78,16 @@ public abstract class HistoryPanel extends javax.swing.JPanel {
 		historyTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				int sr = historyTable.getSelectedRow();
-				if (sr >= 0) {
-					close();
-					apply(source, dests.get(historyTable.getRowSorter().convertRowIndexToModel(sr)));
-				}
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						int sr = historyTable.getSelectedRow();
+						if (sr >= 0) {
+							close();
+							apply(source, dests.get(historyTable.getRowSorter().convertRowIndexToModel(sr)));
+						}
+					}
+				});
 			}
 		});
 		historyTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {

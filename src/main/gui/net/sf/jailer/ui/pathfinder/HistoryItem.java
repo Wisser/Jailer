@@ -29,8 +29,14 @@ public class HistoryItem implements Serializable {
 
 	public String source;
 	public String destination;
+	public boolean implicit = false;
 	
 	public List<String> pathStations;
+	public List<String> path;
 	public Set<String> excludedTables;
+
+	public boolean isValid() {
+		return path != null && pathStations != null && excludedTables != null && source != null && destination != null;
+	}
 	
 }

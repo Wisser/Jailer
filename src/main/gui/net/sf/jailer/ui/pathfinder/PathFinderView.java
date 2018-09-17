@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeMap;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
@@ -57,7 +58,9 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
@@ -75,7 +78,9 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.pathfinder.PathGraph.EdgeType;
 import net.sf.jailer.ui.pathfinder.PathGraph.Node;
+import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.util.SmallButton;
 
 /**
@@ -123,6 +128,12 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     	this.destination = destination;
     	this.sourceClosure = source.closure(true);
         initComponents();
+
+        redDotIconScaled = UIUtil.scaleIcon(this, redDotIcon);
+    	blueDotIconScaled = UIUtil.scaleIcon(this, blueDotIcon);
+    	greenDotIconScaled = UIUtil.scaleIcon(this, greenDotIcon);
+    	greyDotIconScaled = UIUtil.scaleIcon(this, greyDotIcon);
+
         if (!withExpandButton) {
         	okExpandButton.setVisible(false);
         }
@@ -263,7 +274,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	    		} else {
 	    			Set<Table> excl = new HashSet<Table>(excludedTables);
 	    			excl.add(node.table);
-	    			if (new PathGraph(dataModel, source, destination, excl, pathStations, considerRestrictionsCheckbox.isSelected()).isEmpty()) {
+	    			if (new PathGraph(dataModel, source, destination, excl, pathStations, considerRestrictionsCheckbox.isSelected(), true).isEmpty()) {
 	    				showExcludeButton = false;
 	    			}
 	    		}
@@ -291,7 +302,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	    		if (showExcludeButton) {
 	    			Set<Table> excl = new HashSet<Table>(excludedTables);
 	    			excl.addAll(toExclude);
-	    			if (new PathGraph(dataModel, source, destination, excl, pathStations, considerRestrictionsCheckbox.isSelected()).isEmpty()) {
+	    			if (new PathGraph(dataModel, source, destination, excl, pathStations, considerRestrictionsCheckbox.isSelected(), true).isEmpty()) {
 	    				excludeButton.setVisible(false);
 	    			}
 	    		}
@@ -309,12 +320,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     			if (nodes.size() == 1 && pathStations.contains(node.table)) {
     				newPathStations.add(node.table);
     			}
-				NodeRender nodeRender = new NodeRender(node, showExcludeButton, newPathStations.contains(node.table), pathStationIndex) {
-					@Override
-					protected void onClick() {
-					}
-					private static final long serialVersionUID = 1L;
-				};
+				NodeRender nodeRender = new NodeRender(node, showExcludeButton, newPathStations.contains(node.table), pathStationIndex);
 				renderPerNode.put(node, nodeRender);
 
 		        gridBagConstraints = new java.awt.GridBagConstraints();
@@ -417,7 +423,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         		&& (considerRestrictionsCheckbox.isSelected() || !new PathGraph(dataModel, source, destination, excludedTables, pathStations, true).isEmpty()));
 	}
 
-	abstract class NodeRender extends JPanel {
+	class NodeRender extends JPanel {
 		private static final long serialVersionUID = 1L;
 		private int selectedCount = 0;
 		
@@ -431,14 +437,19 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	    		JToggleButton tButton = new JToggleButton(dataModel.getDisplayName(node.table));
 	    		tButton.setSelected(isSelected);
 	    		tButton.setForeground(sourceClosure.contains(node.table)? Color.BLACK : COLOR_NOT_IN_CLOSURE);
+	    		final ArrayList<Table> nPathStations = new ArrayList<Table>(pathStations);
+	    		if (isSelected) {
+					nPathStations.remove(pathStationIndex);
+				} else {
+					nPathStations.add(pathStationIndex, node.table);
+				}
+		        if (new PathGraph(dataModel, source, destination, excludedTables, nPathStations, considerRestrictionsCheckbox.isSelected()).isEmpty()) {
+		        	tButton.setEnabled(false);
+		        }
 	    		tButton.addActionListener(new ActionListener() {
     				@Override
     				public void actionPerformed(ActionEvent e) {
-    					if (isSelected) {
-    						pathStations.remove(pathStationIndex);
-    					} else {
-    						pathStations.add(pathStationIndex, node.table);
-    					}
+    					pathStations = nPathStations;
     					showGraph(false);
     				}
 				});
@@ -515,10 +526,9 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     			excludeButton.setVisible(false);
     		}
 
-    		addMouseListener(new MouseListener() {
+    		MouseListener mouseListener = new MouseListener() {
     			@Override
     			public void mouseReleased(MouseEvent e) {
-    				onClick();
     			}
     			@Override
     			public void mousePressed(MouseEvent e) {
@@ -531,17 +541,110 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     			}
 				@Override
     			public void mouseClicked(MouseEvent e) {
-    				onClick();
+					if (!SwingUtilities.isRightMouseButton(e) && !node.table.equals(source) || node.table.equals(destination)) {
+						return;
+					}
+					JPopupMenu popup;
+					try {
+						UIUtil.setWaitCursor(PathFinderView.this);
+						popup = createPopupMenu();
+					} finally {
+						UIUtil.resetWaitCursor(PathFinderView.this);
+					}
+					if (popup != null) {
+						Point p = SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), button);
+						if (e.getComponent() == null) {
+							p = new Point(e.getX(), e.getY());
+						}
+						UIUtil.showPopup(button, (int) p.getX(), (int) p.getY(), popup);
+					}
     			}
-    		});
-    	}
+				private JPopupMenu createPopupMenu() {
+					Map<String, PathGraph.EdgeType> following = new TreeMap<String, PathGraph.EdgeType>();
+					Set<String> disablesTables = new HashSet<String>();
+					for (Association a: node.table.associations) {
+						EdgeType pType = following.get(dataModel.getDisplayName(a.destination));
+						EdgeType type;
+						if (a.isIgnored()) {
+							type = EdgeType.IGNORED;
+						} else if (a.isInsertDestinationBeforeSource()) {
+							type = EdgeType.PARENT;
+						} else if (a.isInsertSourceBeforeDestination()) {
+							type = EdgeType.CHILD;
+						} else {
+							type = EdgeType.ASSOCIATION;
+						}
+						if (pType != null && pType != type) {
+							type = EdgeType.ASSOCIATION;
+						}
+						following.put(dataModel.getDisplayName(a.destination), type);
 
-		protected abstract void onClick();
+				        if (source.equals(a.destination) || destination.equals(a.destination) /* || excludedTables.contains(a.destination) */
+				        		|| pathStations.contains(a.destination)
+				        		|| new PathGraph(dataModel, source, destination, nextExcludedTables(a.destination), nextPathStations(a.destination), considerRestrictionsCheckbox.isSelected(), true).getNode(a.destination) == null) {
+				        	disablesTables.add(dataModel.getDisplayName(a.destination));
+				        }
+					}
+					
+					JPopupMenu popupMenu = new JScrollPopupMenu();
+					for (Entry<String, EdgeType> e: following.entrySet()) {
+						JMenuItem item = new JMenuItem(e.getKey());
+						final Table dest = dataModel.getTableByDisplayName(e.getKey());
+						popupMenu.add(item);
+						if (e.getValue() == EdgeType.PARENT) {
+							item.setIcon(redDotIconScaled);
+						} else if (e.getValue() == EdgeType.CHILD) {
+							item.setIcon(greenDotIconScaled);
+						} else if (e.getValue() == EdgeType.IGNORED) {
+							item.setIcon(greyDotIconScaled);
+						} else {
+							item.setIcon(blueDotIconScaled);
+						}
+						if (disablesTables.contains(e.getKey())) {
+							item.setEnabled(false);
+						} else {
+							item.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									excludedTables = nextExcludedTables(dest);
+									pathStations = nextPathStations(dest);
+			    					showGraph(false);
+								}
+							});
+						}
+					}
+					return popupMenu;
+				}
+
+				private List<Table> nextPathStations(Table destination) {
+					List<Table> nPathStations = new ArrayList<Table>(pathStations);
+					if (!nPathStations.contains(node.table)) {
+						nPathStations.add(pathStationIndex, node.table);
+					}
+					nPathStations.remove(destination);
+					int in = nPathStations.indexOf(node.table);
+					if (in >= 0) {
+						nPathStations.add(in + 1, destination);
+					}
+					return nPathStations;
+				}
+
+				private Set<Table> nextExcludedTables(Table dest) {
+					Set<Table> nExpludedTables = new HashSet<Table>(excludedTables);
+					nExpludedTables.remove(dest);
+					return nExpludedTables;
+				}
+    		};
+
+    		addMouseListener(mouseListener);
+    		button.addMouseListener(mouseListener);
+    		excludeButton.addMouseListener(mouseListener);
+    	}
     }
 
     private Node selectedNode = null;
     private Set<Node> relatedToSelectedNode = new HashSet<Node>();
-    
+
 	private void setSelectedNode(Node node) {
 		for (Node n: relatedToSelectedNode) {
 			NodeRender nodeRender = renderPerNode.get(n);
@@ -809,13 +912,13 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     	applyPath(result, false);
-    	putIntoHistory(source, destination, result /* pathStations */, excludedTables);
+    	putIntoHistory(source, destination, pathStations, result, excludedTables, true);
     	persistHistory();
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void okExpandButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okExpandButtonActionPerformed
         applyPath(result, true);
-    	putIntoHistory(source, destination, result /* pathStations */, excludedTables);
+    	putIntoHistory(source, destination, pathStations, result, excludedTables, true);
     	persistHistory();
     }//GEN-LAST:event_okExpandButtonActionPerformed
 
@@ -848,13 +951,22 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	private void restoreFromHistory(boolean show) {
 		HistoryItem historyItem = getHistory(source, destination, dataModel);
         if (historyItem != null) {
-	    	List<Table> hPathStations = toTableList(historyItem.pathStations, dataModel);
+        	List<Table> hPathStations = toTableList(historyItem.pathStations, dataModel);
+        	List<Table> hPath = toTableList(historyItem.path, dataModel);
 	        Set<Table> hExcludedTables = new HashSet<Table>(toTableList(historyItem.excludedTables, dataModel));
-	        if (hPathStations != null && hExcludedTables != null) {
-	        	pathStations = hPathStations;
-	        	excludedTables = hExcludedTables;
-	        	showGraph(false);
+
+	        excludedTables = hExcludedTables;
+	        if (new PathGraph(dataModel, source, destination, hExcludedTables, hPathStations, true).isUnique()) {
+		        pathStations = hPathStations;
+	        } else {
+		        pathStations = hPath;
 	        }
+
+	        if (new PathGraph(dataModel, source, destination, excludedTables, pathStations, true).isEmpty()) {
+	        	considerRestrictionsCheckbox.setSelected(false);
+	        }
+
+	        showGraph(false);
         }
         historyButton.setEnabled(false);
 	}
@@ -1052,7 +1164,9 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	private static HistoryItem getHistory(Table source, Table destination, DataModel dataModel) {
     	for (HistoryItem item: history) {
     		if (source.getName().equals(item.source) && destination.getName().equals(item.destination)) {
-    			return item;
+    			if (item.isValid()) {
+    				return item;
+    			}
     		}
     	}
     	return null;
@@ -1062,11 +1176,13 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 		restoreHistory();
 		List<Table> result = new ArrayList<Table>();
     	for (HistoryItem item: history) {
-    		if (source.getName().equals(item.source)) {
-    			Table table = dataModel.getTable(item.destination);
-    			if (table != null) {
-    				result.add(table);
-    			}
+    		if (item.isValid()) {
+	    		if (source.getName().equals(item.source)) {
+	    			Table table = dataModel.getTable(item.destination);
+	    			if (table != null) {
+	    				result.add(table);
+	    			}
+	    		}
     		}
     	}
     	return result;
@@ -1083,19 +1199,26 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     	return result;
     }
 
-    private static void putIntoHistory(Table source, Table destination, List<Table> path, Set<Table> excl) {
+    private static void putIntoHistory(Table source, Table destination, List<Table> pathStations, List<Table> path, Set<Table> excl, boolean withReversal) {
     	for (Iterator<HistoryItem> i = history.iterator(); i.hasNext(); ) {
     		HistoryItem item = i.next();
     		if (source.getName().equals(item.source) && destination.getName().equals(item.destination)) {
+        		if (!item.implicit && !withReversal) {
+        			return;
+        		}
         		i.remove();
     		}
     	}
     	HistoryItem historyItem = new HistoryItem();
     	historyItem.source = source.getName();
     	historyItem.destination = destination.getName();
+    	historyItem.path = new ArrayList<String>();
     	historyItem.pathStations = new ArrayList<String>();
     	historyItem.excludedTables = new HashSet<String>();
     	for (Table table: path) {
+    		historyItem.path.add(table.getName());
+    	}
+    	for (Table table: pathStations) {
     		historyItem.pathStations.add(table.getName());
     	}
     	for (Table table: excl) {
@@ -1104,6 +1227,14 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     	history.add(0, historyItem);
     	if (history.size() > MAX_HISTORY_SIZE) {
     		history.remove(history.size() - 1);
+    	}
+    	
+    	if (withReversal) {
+    		List<Table> rPath = new ArrayList<Table>(path);
+			List<Table> rPathStations = new ArrayList<Table>(pathStations);
+			Collections.reverse(rPath);
+			Collections.reverse(rPathStations);
+			putIntoHistory(destination, source, rPathStations, rPath, excl, false);
     	}
     }
 
@@ -1151,6 +1282,29 @@ public abstract class PathFinderView extends javax.swing.JPanel {
             // ignore
         }
     }
+
+	private ImageIcon redDotIconScaled;
+	private ImageIcon blueDotIconScaled;
+	private ImageIcon greenDotIconScaled;
+	private ImageIcon greyDotIconScaled;
+	
+	private static ImageIcon redDotIcon;
+	private static ImageIcon blueDotIcon;
+	private static ImageIcon greenDotIcon;
+	private static ImageIcon greyDotIcon;
+	static {
+		String dir = "/net/sf/jailer/ui/resource";
+		
+		// load images
+		try {
+			redDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/reddot.gif"));
+			blueDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/bluedot.gif"));
+			greenDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/greendot.gif"));
+			greyDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/greydot.gif"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
     private static final long serialVersionUID = 1L;
 

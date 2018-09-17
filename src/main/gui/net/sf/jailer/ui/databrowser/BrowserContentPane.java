@@ -1004,15 +1004,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTableScrollPane.addMouseListener(rowTableListener);
 		singleRowViewScrollContentPanel.addMouseListener(rowTableListener);
 		
-		openEditorLabel.setIcon(conditionEditorIcon);
-		openEditorLabel.setText(null);
-		openEditorLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+		openEditorButton.setIcon(UIUtil.scaleIcon(this, conditionEditorIcon));
+		openEditorButton.setText(null);
+		openEditorButton.addActionListener(new ActionListener() {
 			@Override
-			public void mouseReleased(MouseEvent e) {
-				mouseClicked(e);
-			}
-			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void actionPerformed(ActionEvent e) {
+				final Point pos = new Point(openEditorButton.getX(), openEditorButton.getY() + openEditorButton.getHeight());
+				SwingUtilities.convertPointToScreen(pos, openEditorButton.getParent());
 				loadButton.grabFocus();
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
@@ -1020,6 +1018,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						if (andConditionEditor == null) {
 							andConditionEditor = new ConditionEditor(parentFrame, null, dataModel);
 						}
+						andConditionEditor.setLocationAndFit(pos);
 						String cond = andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
 						if (cond != null) {
 							if (!getAndConditionText().equals(ConditionEditor.toSingleLine(cond))) {
@@ -1031,16 +1030,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						openEditorLabel.setIcon(conditionEditorSelectedIcon);
 					}
 				});
-			}
-
-			@Override
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				openEditorLabel.setIcon(conditionEditorSelectedIcon);
-			}
-
-			@Override
-			public void mouseExited(java.awt.event.MouseEvent evt) {
-				openEditorLabel.setIcon(conditionEditorIcon);
 			}
 		});
 		relatedRowsLabel.setIcon(UIUtil.scaleIcon(this, relatedRowsIcon));
@@ -1324,8 +1313,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param runnable 
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint) {
+		return createPopupMenu(row, rowIndex, x, y, navigateFromAllRows, altCopyTCB, repaint, true);
+	}
+
+	/**
+	 * Creates popup menu for navigation.
+	 * @param navigateFromAllRows 
+	 * @param runnable 
+	 */
+	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
-		tableFilter.setAccelerator(KS_FILTER);
+		if (withKeyStroke) {
+			tableFilter.setAccelerator(KS_FILTER);
+		}
 		tableFilter.setSelected(isTableFilterEnabled);
 		if (isLimitExceeded) {
 			tableFilter.setForeground(Color.red);
@@ -1343,7 +1343,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			copyTCB = altCopyTCB;
 		} else {
 			copyTCB = new JMenuItem("Copy to Clipboard");
-			copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
+			if (withKeyStroke) {
+				copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
+			}
 			copyTCB.setEnabled(rowsTable.getSelectedColumnCount() > 0);
 			copyTCB.addActionListener(new ActionListener() {
 				@Override
@@ -1357,7 +1359,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			JPopupMenu jPopupMenu = new JPopupMenu();
 			if (row != null) {
 				JMenuItem det = new JMenuItem("Details");
-				det.setAccelerator(KS_DETAILS);
+				if (withKeyStroke) {
+					det.setAccelerator(KS_DETAILS);
+				}
 				jPopupMenu.add(det);
 				jPopupMenu.add(new JSeparator());
 				det.addActionListener(new ActionListener() {
@@ -1375,7 +1379,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			jPopupMenu.addSeparator();
 			jPopupMenu.add(tableFilter);
 			JMenuItem editMode = new JMenuItem("Edit Mode");
-			editMode.setAccelerator(KS_EDIT);
+			if (withKeyStroke) {
+				editMode.setAccelerator(KS_EDIT);
+			}
 			jPopupMenu.add(editMode);
 			editMode.setEnabled(false);
 			return jPopupMenu;
@@ -1455,7 +1461,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		if (row != null) {
 			JMenuItem det = new JMenuItem("Details");
-			det.setAccelerator(KS_DETAILS);
+			if (withKeyStroke) {
+				det.setAccelerator(KS_DETAILS);
+			}
 			popup.insert(det, 0);
 			popup.insert(new JSeparator(), 1);
 			det.addActionListener(new ActionListener() {
@@ -1604,7 +1612,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			popup.addSeparator();
 			popup.add(tableFilter);
 			JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
-			editMode.setAccelerator(KS_EDIT);
+			if (withKeyStroke) {
+				editMode.setAccelerator(KS_EDIT);
+			}
 			editMode.setSelected(isEditMode);
 			editMode.addActionListener(new ActionListener() {
 				@Override
@@ -4062,6 +4072,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         andCondition = new javax.swing.JComboBox();
+        openEditorLabel = new javax.swing.JLabel();
         pendingNonpendingPanel = new javax.swing.JPanel();
         cardPanel = new javax.swing.JPanel();
         tablePanel = new javax.swing.JPanel();
@@ -4113,7 +4124,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         andLabel = new javax.swing.JLabel();
-        openEditorLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         rrPanel = new javax.swing.JPanel();
@@ -4124,9 +4134,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel9 = new javax.swing.JPanel();
         dropA = new javax.swing.JLabel();
         dropB = new javax.swing.JLabel();
+        openEditorButton = new javax.swing.JButton();
 
         andCondition.setEditable(true);
         andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        openEditorLabel.setText(" And  ");
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -4602,13 +4615,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         menuPanel.add(andLabel, gridBagConstraints);
 
-        openEditorLabel.setText(" And  ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        menuPanel.add(openEditorLabel, gridBagConstraints);
-
         jLabel3.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel3.setText(" From ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4695,6 +4701,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 5;
         menuPanel.add(dropB, gridBagConstraints);
+
+        openEditorButton.setText("jButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 8;
+        menuPanel.add(openEditorButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -4789,6 +4801,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel noRowsFoundPanel;
     private javax.swing.JLabel on;
     private javax.swing.JPanel onPanel;
+    private javax.swing.JButton openEditorButton;
     private javax.swing.JLabel openEditorLabel;
     private javax.swing.JPanel pendingNonpendingPanel;
     private javax.swing.JLabel relatedRowsLabel;
@@ -4812,7 +4825,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	JPanel thumbnail;
 	private ConditionEditor andConditionEditor;
-	private Icon conditionEditorIcon;
+	private ImageIcon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;
 	{
 		String dir = "/net/sf/jailer/ui/resource";
@@ -5328,7 +5341,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 	}
-	
+
 	private static String readCharacterStream(final Reader reader)
 			throws IOException {
 		final StringBuilder sb = new StringBuilder();

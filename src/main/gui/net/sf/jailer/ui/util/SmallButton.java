@@ -5,6 +5,7 @@ import java.awt.event.MouseListener;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 public abstract class SmallButton extends JLabel {
 
@@ -14,7 +15,9 @@ public abstract class SmallButton extends JLabel {
 		addMouseListener(new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				onClick();
+				if (SwingUtilities.isLeftMouseButton(e)) {
+					onClick();
+				}
 			}
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -29,7 +32,9 @@ public abstract class SmallButton extends JLabel {
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				onClick();
+				if (SwingUtilities.isLeftMouseButton(e)) {
+					onClick();
+				}
 			}
 		});
 	}

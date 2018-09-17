@@ -16,7 +16,10 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -34,6 +37,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 
+import org.fife.rsta.ui.EscapableDialog;
+
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -50,12 +55,12 @@ import net.sf.jailer.util.SqlUtil;
  * 
  * @author Ralf Wisser
  */
-public class ConditionEditor extends javax.swing.JDialog {
-	
+public class ConditionEditor extends EscapableDialog {
+
 	private boolean ok;
 	private ParameterSelector parameterSelector;
 	private DataModelBasedSQLCompletionProvider provider;
-	
+
 	/** Creates new form ConditionEditor */
 	public ConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel) {
 		super(parent, true);
@@ -525,6 +530,21 @@ public class ConditionEditor extends javax.swing.JDialog {
 		return sb.toString();
 	}
 
+	public void setLocationAndFit(Point pos) {
+		setLocation(pos);
+//		UIUtil.fit(this);
+        try {
+            // Get the size of the screen
+            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+            int hd = getY() - (dim.height - 80);
+            if (hd > 0) {
+                setLocation(getX(), Math.max(getY() - hd, 0));
+            }
+        } catch (Throwable t) {
+            // ignore
+        }
+	}
+
 	/**
 	 * Converts multi-line text into single line presentation.
 	 */
@@ -610,4 +630,5 @@ public class ConditionEditor extends javax.swing.JDialog {
 	public final RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
 	
 	private static final long serialVersionUID = -5169934807182707970L;
+
 }

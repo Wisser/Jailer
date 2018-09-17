@@ -161,6 +161,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private JMenuItem menuItemToggle;
 	private JMenuItem menuItemSubstituteVariables;
 	private JMenuItem menuItemAnalyse;
+	private int initialTabbedPaneSelection = 0;
+	private int initialTabbedPaneSelectionLoc = -1;
 
 	private final String IGNORED_STATEMENTS = "(\\s*/\\s*)";
 
@@ -677,7 +679,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * @param statementStartOffset 
      * @param explain 
      */
-    private void executeSQL(final String sql, Status status, int statementStartOffset, final boolean explain) {
+    private void executeSQL(final String sql, final Status status, int statementStartOffset, final boolean explain) {
         Statement statement = null;
         ResultSet resultSet = null;
         final Status localStatus = new Status();
@@ -865,9 +867,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rTabContainer = tabContentPanel;
                         final int MAXLENGTH = 30;
                         String title = shortSQL(sqlE, MAXLENGTH);
+                        final int loc = status != null && status.location != null? status.location.a : -1;
+                        if (initialTabbedPaneSelection >= 0 && initialTabbedPaneSelectionLoc == loc) {
+                        	if (initialTabbedPaneSelection < tabContentPanel.tabbedPane.getTabCount()) {
+                        		tabContentPanel.tabbedPane.setSelectedIndex(initialTabbedPaneSelection);
+                        	}
+                        }
                         tabContentPanel.tabbedPane.addChangeListener(new ChangeListener() {
 							@Override
 							public void stateChanged(ChangeEvent e) {
+								initialTabbedPaneSelection = tabContentPanel.tabbedPane.getSelectedIndex();
+								initialTabbedPaneSelectionLoc = loc;
 								updateColumnsAndTextView(rb, tabContentPanel);
 							}
 						});

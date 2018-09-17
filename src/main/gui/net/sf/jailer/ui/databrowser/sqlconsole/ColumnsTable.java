@@ -224,7 +224,7 @@ public class ColumnsTable extends JTable {
 			return null;
 		}
 		JMenuItem copyTCB = new JMenuItem("Copy to Clipboard");
-		copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
+		// copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
 		copyTCB.setEnabled(getSelectedColumnCount() > 0);
 		copyTCB.addActionListener(new ActionListener() {
 			@Override
@@ -245,7 +245,7 @@ public class ColumnsTable extends JTable {
 					}
 				}
 			}
-		});
+		}, false);
 	}
 
 	private void adjustTableColumnsWidth() {
