@@ -1400,7 +1400,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				} else {
 					try {
 						UIUtil.setWaitCursor(this);
-						createFrame(modelFile, false);
+						createFrame(modelFile, false, executionContext);
 					} finally {
 						UIUtil.resetWaitCursor(this);
 					}
@@ -1457,7 +1457,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void newModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newModelActionPerformed
 		try {
-			createFrame(null, false);
+			createFrame(null, false, executionContext);
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
@@ -1890,7 +1890,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							file = commandLine.arguments.get(0);
 						}	
 					}
-					createFrame(file, true);
+					createFrame(file, true, null);
 				} catch (Throwable e) {
 					UIUtil.showException(null, "Error", e);
 				}
@@ -1947,11 +1947,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		return extractionModelFrame;
 	}
 	
-	public static void createFrame(String file, final boolean withStartupWizzard) {
+	public static void createFrame(String file, final boolean withStartupWizzard, ExecutionContext executionContext) {
 		try {
 			final String finalFile = file;
 			if (file != null && new File(file).exists()) {
-				ExecutionContext executionContext = new ExecutionContext(CommandLineInstance.getInstance());
+				if (executionContext == null) {
+					executionContext = new ExecutionContext(CommandLineInstance.getInstance());
+				} else {
+					executionContext = new ExecutionContext(executionContext);
+				}
 				DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file, executionContext), executionContext);
 				createFrame(finalFile, true, true, null, executionContext);
 			} else {
