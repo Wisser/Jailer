@@ -453,6 +453,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 						if (toEdit.getName().equals(l.cells.get(0))) {
 							if (new TableEditor(DataModelEditor.this, displayNames, tables, associations, excludeFromDeletion).edit(l, columns)) {
 								markDirty();
+								resetTableTableModel();
 								repaint();
 							}
 							break;
@@ -461,7 +462,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				}
 			}
 		});
-		
+
 		if (merge) {
 			ModelBuilder.cleanUp(executionContext);
 		}
