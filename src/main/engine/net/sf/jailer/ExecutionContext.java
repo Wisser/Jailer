@@ -77,7 +77,7 @@ public class ExecutionContext {
 		this.importFilterMappingTableSchema = other.importFilterMappingTableSchema;
 		this.scope = other.scope;
 		this.rawparameters = other.rawparameters;
-		this.progressListenerRegistry = other.progressListenerRegistry;
+// don't share progressListenerRegistry, was: this.progressListenerRegistry = other.progressListenerRegistry;
 	}
 
 	/**
