@@ -21,7 +21,6 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.Point;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -91,23 +90,23 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		JComponent create(StringSearchPanel searchPanel);
 	}
 
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess) {
+	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, false);
 	}
 
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, boolean alternativeIcon) {
+	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, boolean alternativeIcon) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, null, alternativeIcon);
 	}
 	
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare, boolean alternativeIcon) {
+	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, boolean alternativeIcon) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, null, null, null, alternativeIcon, null);
 	}
 	
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel) {
+	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, false, null);
 	}
 
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory) {
+	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory) {
 		final JButton button = new JButton();
 		button.setIcon(UIUtil.scaleIcon(button, alternativeIcon? icon2 : icon));
 		button.setToolTipText("Find Table");
@@ -170,8 +169,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		button.setEnabled(comboBox.getModel().getSize() > 1 || comboBox.getModel().getSize() == 1 && !"".equals(comboBox.getModel().getElementAt(0)));
 	}
 
-	public String find(Frame owner, String titel, int x, int y) {
-		dialog = new EscapableDialog(owner, titel, true) {
+	public String find(Frame owner, Object titel, int x, int y) {
+		dialog = new EscapableDialog(owner, String.valueOf(titel), true) {
 		};
 		dialog.getContentPane().add(this);
 		dialog.pack();

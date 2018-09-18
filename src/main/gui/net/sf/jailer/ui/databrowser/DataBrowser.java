@@ -3126,12 +3126,18 @@ public class DataBrowser extends javax.swing.JFrame {
         				desktop.getiFrameStateChangeRenderer().startAtomic();
         				disableBorderBrowserUpdates = true;
         	            suppressUpdateClosureBrowser = true;
+        	            RowBrowser nextRb = null;
 	            		while (i > 0) {
 		            		Table table = path.get(i);
-		            		RowBrowser rb = getVisibleTables().get(table);
+		            		RowBrowser rb;
+		            		if (nextRb != null && nextRb.association != null && nextRb.association.destination.equals(table)) {
+		            			rb = nextRb;
+		            		} else {
+		            			rb = getVisibleTables().get(table);
+		            		}
 		            		Association association = associations[i - 1];
 		            		if (association != null) {
-		            			rb.browserContentPane.navigateTo(association, -1, null);
+		            			nextRb = rb.browserContentPane.navigateTo(association, -1, null);
 		            			visibleTables = null;
 		            		} else {
 		            			break;

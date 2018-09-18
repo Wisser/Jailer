@@ -4984,7 +4984,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return null;
 	}
 
-	protected abstract void navigateTo(Association association, int rowIndex, Row row);
+	protected abstract RowBrowser navigateTo(Association association, int rowIndex, Row row);
 
 	protected abstract void onContentChange(List<Row> rows, boolean reloadChildren);
 

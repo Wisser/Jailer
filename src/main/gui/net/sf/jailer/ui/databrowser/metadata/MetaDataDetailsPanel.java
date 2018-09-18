@@ -262,7 +262,8 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					protected void onContentChange(List<Row> rows, boolean reloadChildren) {
 					}
 					@Override
-					protected void navigateTo(Association association, int rowIndex, Row row) {
+					protected RowBrowser navigateTo(Association association, int rowIndex, Row row) {
+						return null;
 					}
 					@Override
 					protected List<RowBrowser> getTableBrowser() {

@@ -25,11 +25,14 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -52,6 +55,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -68,6 +72,8 @@ import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -232,13 +238,40 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 				g2d.setStroke(stroke);
 				
 				Path2D.Double path = new Path2D.Double();
-				double border = 0.25;
+				double border = 0.4;
 				double f = (1.0 - 2.0 * border) / 20;
 				int midX = (int) (start.getX() + ((end.getX() - start.getX()) * (border + f)));
 				f = 0.25 * f * (end.getY() - start.getY());
 				path.moveTo(end.getX(), end.getY());
 				path.curveTo(midX, end.getY(), midX, start.getY() + f, start.getX(), start.getY());
 				g2d.draw(path);
+				
+				Polygon arrowHead = new Polygon();
+				double ws = 0.4;
+				double hs = 2.0 / 3.0;
+				double w = 3, h = w;
+				arrowHead.addPoint(0, 0);
+				arrowHead.addPoint((int) (ws * -w), (int) (hs * (-h)));
+				// m_arrowHead.addPoint(0, (int) (hs * (-2 * h)));
+				arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
+				arrowHead.addPoint(0, 0);
+
+				AffineTransform at = getArrowTrans(new Point2D.Double(midX, start.getY()), new Point2D.Double(start.getX() + 4, start.getY()), 6);
+				Shape m_curArrow = at.createTransformedShape(arrowHead);
+
+				g2d.fill(m_curArrow);
+				g2d.draw(m_curArrow);
+			}
+			protected AffineTransform getArrowTrans(Point2D p1, Point2D p2, double width) {
+				AffineTransform m_arrowTrans = new AffineTransform();
+				int o = 1;
+				m_arrowTrans.setToTranslation(p2.getX() + o, p2.getY());
+				m_arrowTrans.rotate(-Math.PI / 2.0 + Math.atan2(p2.getY() - p1.getY(), p2.getX() + o - p1.getX()));
+				if (width > 1) {
+					double scalar = width / 2;
+					m_arrowTrans.scale(scalar, scalar);
+				}
+				return m_arrowTrans;
 			}
     	};
     	panel.setOpaque(false);
@@ -585,10 +618,15 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 				        	disablesTables.add(dataModel.getDisplayName(a.destination));
 				        }
 					}
-					
+
 					JPopupMenu popupMenu = new JScrollPopupMenu();
+					Border titleUnderline = BorderFactory.createMatteBorder(0, 0, 0, 0, popupMenu.getForeground());
+					TitledBorder labelBorder = BorderFactory.createTitledBorder(
+							titleUnderline, "Successor of " + dataModel.getDisplayName(node.table), TitledBorder.LEFT, TitledBorder.ABOVE_TOP, popupMenu.getFont(), popupMenu.getForeground());
+					popupMenu.setBorder(BorderFactory.createCompoundBorder(popupMenu.getBorder(), labelBorder));
+
 					for (Entry<String, EdgeType> e: following.entrySet()) {
-						JMenuItem item = new JMenuItem(e.getKey());
+						JMenuItem item = new JMenuItem(e.getKey() + "              ");
 						final Table dest = dataModel.getTableByDisplayName(e.getKey());
 						popupMenu.add(item);
 						if (e.getValue() == EdgeType.PARENT) {
@@ -698,6 +736,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         okButton = new javax.swing.JButton();
         okExpandButton = new javax.swing.JButton();
         sepLabel = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         exclusionTable = new javax.swing.JTable();
@@ -728,9 +767,9 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jScrollPane1.setViewportView(pathContainerPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -763,10 +802,19 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 
         sepLabel.setText("                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         jPanel2.add(sepLabel, gridBagConstraints);
+
+        jLabel2.setForeground(java.awt.Color.gray);
+        jLabel2.setText("Open context menu (right mouse click on table) to define its direct successor.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel2.add(jLabel2, gridBagConstraints);
 
         jSplitPane1.setLeftComponent(jPanel2);
 
@@ -993,6 +1041,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private javax.swing.JTable exclusionTable;
     private javax.swing.JButton historyButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

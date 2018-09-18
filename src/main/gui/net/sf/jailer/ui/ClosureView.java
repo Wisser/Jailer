@@ -198,29 +198,41 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			source = getDataModel().getTableByDisplayName((String) currentSelection);
 		}
         final javax.swing.JComboBox comboBox = findPathComboBox;
-        JButton stFindButtonButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox, "Select destination or choose from History", new Runnable() {
-			@Override
-			public void run() {
-				findPathButtonActionPerformed(null);
-			}
-		}, null, null, null, true, new AdditionalComponentFactory() {
-			@Override
-			public JComponent create(final StringSearchPanel searchPanel) {
-				HistoryPanel historyPanel = new HistoryPanel(ClosureView.this.getSelectedTable(), getDataModel()) {
-					private static final long serialVersionUID = 1L;
-
-					@Override
-					protected void close() {
-						searchPanel.close();
+        JButton stFindButtonButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox, 
+    		new Object() {
+				public String toString() {
+					Table source = null;
+					Object currentSelection = ClosureView.this.rootTable.getSelectedItem();
+					if (currentSelection instanceof String) {
+						source = getDataModel().getTableByDisplayName((String) currentSelection);
 					}
-					@Override
-					protected void apply(Table source, Table destination) {
-						findPath(source, destination, true);
-					}
-				};
-		        return historyPanel;
-			}
-		});
+					return (source != null? ("From " + getDataModel().getDisplayName(source) + " - ") : "") + "Select destination or choose from History";
+				}
+			},
+			new Runnable() {
+				@Override
+				public void run() {
+					findPathButtonActionPerformed(null);
+				}
+			}, null, null, null, true,
+			new AdditionalComponentFactory() {
+				@Override
+				public JComponent create(final StringSearchPanel searchPanel) {
+					HistoryPanel historyPanel = new HistoryPanel(ClosureView.this.getSelectedTable(), getDataModel()) {
+						private static final long serialVersionUID = 1L;
+	
+						@Override
+						protected void close() {
+							searchPanel.close();
+						}
+						@Override
+						protected void apply(Table source, Table destination) {
+							findPath(source, destination, true);
+						}
+					};
+			        return historyPanel;
+				}
+			});
 		tablePanel.add(stFindButtonButton, gridBagConstraints);
         
         findPathComboBox.setVisible(false);

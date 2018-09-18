@@ -638,8 +638,8 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected void navigateTo(Association association, int rowIndex, Row row) {
-				addTableBrowser(tableBrowser, tableBrowser, rowIndex, association.destination, association, "", null, true);
+			protected RowBrowser navigateTo(Association association, int rowIndex, Row row) {
+				return addTableBrowser(tableBrowser, tableBrowser, rowIndex, association.destination, association, "", null, true);
 			}
 
 			@Override

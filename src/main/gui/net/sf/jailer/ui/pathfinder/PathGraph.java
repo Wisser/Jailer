@@ -177,6 +177,21 @@ public class PathGraph {
     private void createGraph(Set<Table> excluded, List<Table> pathStations, Set<Table> visitedExTables, boolean considerRestrictions) {
     	reset();
 
+    	Map<Table, Table> forcedSucc = new HashMap<Table, Table>();
+
+    	for (int i = 1; i < pathStations.size(); ++i) {
+    		Table a = pathStations.get(i - 1);
+    		Table b = pathStations.get(i);
+    		for (Association as: a.associations) {
+				if (!as.isIgnored() || !considerRestrictions) {
+					if (as.destination.equals(b)) {
+						forcedSucc.put(a, b);
+						break;
+					}
+    			}
+    		}
+    	}
+
     	Set<Table> currentColumn = new HashSet<Table>();
     	currentColumn.add(source);
 		int column = 0;
@@ -216,6 +231,9 @@ public class PathGraph {
 						Table dest = a.destination;
 						if (excluded.contains(dest)) {
 							lastVisitedExTables.add(dest);
+							continue;
+						}
+						if (forcedSucc.containsKey(table) && !forcedSucc.get(table).equals(dest)) {
 							continue;
 						}
 						Node newNode = nodePerTable.get(dest);

@@ -252,35 +252,24 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		                	openPathFinder(table, false);
 		                }
 		            });
+		            
+		            JMenuItem openPath = new JMenuItem("Open path to " + getDataModel().getDisplayName(table));
+                    if (rt == null || !rt.closure(false).contains(table)) {
+		            	openPath.setEnabled(false);
+		            }
+                    openPath.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            expandPath();
+                            DBClosureView.this.select(selectedTable);
+                        }
+                    });
+                    
 		            RowBrowser rb = getVisibleTables().get(table);
 		            if (rb == null) {
 		                if (!mainPath.isEmpty()) {
 		                    JPopupMenu menu = new JPopupMenu();
-		                    JMenuItem open = new JMenuItem("Open path to " + getDataModel().getDisplayName(table));
-		                    if (rt == null || !rt.closure(false).contains(table)) {
-				            	open.setEnabled(false);
-				            }
-		                    open.addActionListener(new ActionListener() {
-		                        @Override
-		                        public void actionPerformed(ActionEvent e) {
-		                            expandPath();
-		                            DBClosureView.this.select(selectedTable);
-		                        }
-		                    });
-		                    menu.add(open);
-//		                    JMenuItem openAndSelect = new JMenuItem("Open path to and select " + selectedTable);
-//		                    openAndSelect.addActionListener(new ActionListener() {
-//		                        @Override
-//		                        public void actionPerformed(ActionEvent e) {
-//		                            expandPath();
-//		                            DBClosureView.this.select(selectedTable);
-//		                        }
-//		                    });
-//		                    menu.add(openAndSelect);
-//                                menu.add(new JSeparator());
-//                                menu.add(exclude);
-//                                menu.add(excludeAll);
-//		                    menu.add(deselect);
+		                    menu.add(openPath);
 		                    menu.add(new JSeparator());
 		                    menu.add(pathFinder);
 		                    UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
@@ -312,6 +301,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 //		                	menu.addSeparator();
 //		                	menu.add(deselect);
 		                	menu.addSeparator();
+		                	menu.add(openPath);
 		                    menu.add(pathFinder);
 		                }
 		                UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), menu);
@@ -480,18 +470,26 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 20;
-		JButton stFindPathButton = StringSearchPanel.createSearchButton(this.parent, findPathComboBox, "Select destination or choose from History", new Runnable() {
-            @Override
-            public void run() {
-            	Object toFind = findPathComboBox.getSelectedItem();
-				if (toFind != null) {
-				    CellInfo cellInfo = DBClosureView.this.cellInfo.get(toFind);
-				    if (cellInfo != null) {
-				    	tableMouseListener.openPathFinder(cellInfo.table, false);
-				    }
-				}
-            }
-		}, null, null, null, true, new AdditionalComponentFactory() {
+		JButton stFindPathButton = StringSearchPanel.createSearchButton(
+				this.parent, findPathComboBox, 
+				new Object() {
+					public String toString() {
+						Table rootTable = getRootTable();
+						return (rootTable != null? ("From " + getDataModel().getDisplayName(rootTable) + " - ") : "") + "Select destination or choose from History";
+					}
+				},
+				new Runnable() {
+					@Override
+		            public void run() {
+		            	Object toFind = findPathComboBox.getSelectedItem();
+						if (toFind != null) {
+						    CellInfo cellInfo = DBClosureView.this.cellInfo.get(toFind);
+						    if (cellInfo != null) {
+						    	tableMouseListener.openPathFinder(cellInfo.table, false);
+						    }
+						}
+		            }
+				}, null, null, null, true, new AdditionalComponentFactory() {
 			@Override
 			public JComponent create(final StringSearchPanel searchPanel) {
 				HistoryPanel historyPanel = new HistoryPanel(getRootTable(), getDataModel()) {
