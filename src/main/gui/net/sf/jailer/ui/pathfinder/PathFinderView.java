@@ -624,7 +624,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 					TitledBorder labelBorder = BorderFactory.createTitledBorder(
 							titleUnderline, "Successor of " + dataModel.getDisplayName(node.table), TitledBorder.LEFT, TitledBorder.ABOVE_TOP, popupMenu.getFont(), popupMenu.getForeground());
 					popupMenu.setBorder(BorderFactory.createCompoundBorder(popupMenu.getBorder(), labelBorder));
-
+					popupMenu.addSeparator();
+					
 					for (Entry<String, EdgeType> e: following.entrySet()) {
 						JMenuItem item = new JMenuItem(e.getKey() + "              ");
 						final Table dest = dataModel.getTableByDisplayName(e.getKey());
@@ -1148,7 +1149,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 		keys.add(new SortKey(2, SortOrder.DESCENDING));
 		exclusionTable.getRowSorter().setSortKeys(keys);
 		
-		Set<Table> closure = new HashSet<Table>(pathGraph.getVisitedExcludedTables());
+		// Set<Table> closure = new HashSet<Table>(pathGraph.getVisitedExcludedTables());
+		Set<Table> exCand = new HashSet<Table>(excludedTables);
 		for (int col = 0; ; ++col) {
 			List<Node> nodes = pathGraph.getNodes(col);
 			if (nodes.isEmpty()) {
@@ -1156,12 +1158,12 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 			}
 			if (!nonExcludablesColumns.contains(col)) {
 				for (Node node: nodes) {
-					closure.add(node.table);
+					exCand.add(node.table);
 				}
 			}
 		}
 		exclusionCandidates.clear();
-		exclusionCandidates.addAll(closure);
+		exclusionCandidates.addAll(exCand);
 		exclusionCandidates.remove(source);
 		exclusionCandidates.remove(destination);
 		updateExclusionTableModel();

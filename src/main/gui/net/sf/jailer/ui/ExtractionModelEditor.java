@@ -217,7 +217,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
-	
+
 	/** 
 	 * Creates new form ModelTree.
 	 *  
@@ -239,12 +239,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		};
 		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame, parametersGetter);
-		try {
-			dataModel = new DataModel(executionContext);
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error in Data Model", e);
-			return;
-		}
 		try {
 			if (extractionModelFile == null || !new File(extractionModelFile).exists()) {
 				needsSave = extractionModelFile != null;

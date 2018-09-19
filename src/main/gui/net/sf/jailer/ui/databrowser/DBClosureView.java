@@ -339,11 +339,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 			    }
 			    
 			    if (expandPath) {
-			        RowBrowser rb = getVisibleTables().get(table);
-			        if (rb == null) {
-			            if (!mainPath.isEmpty()) {
-			                expandPath();
-			            }
+			    	if (!mainPath.isEmpty()) {
+			    		expandPath();
 			        }
 			    }
 			}

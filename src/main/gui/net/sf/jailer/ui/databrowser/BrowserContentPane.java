@@ -765,11 +765,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		registerAccelerator(KS_DETAILS, new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Point loc = SwingUtilities.convertPoint(
-						BrowserContentPane.this,
-						0, 0,
-						SwingUtilities.getWindowAncestor(BrowserContentPane.this) 
-						);
+				Point loc = new Point(18, 16);
+				SwingUtilities.convertPointToScreen(loc, rowsTable);
 				openDetails(loc.x, loc.y);
 			}
 		});
@@ -1325,6 +1322,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		if (withKeyStroke) {
 			tableFilter.setAccelerator(KS_FILTER);
+		} else {
+			tableFilter.setVisible(false);
 		}
 		tableFilter.setSelected(isTableFilterEnabled);
 		if (isLimitExceeded) {
@@ -1484,9 +1483,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				qb.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						List<String> whereClauses = new ArrayList<String>();
-						whereClauses.add(SqlUtil.replaceAliases(row.rowId, "A", "A"));
-						getQueryBuilderDialog().buildQuery(table, true, false, new ArrayList<Association>(), whereClauses, dataModel, session, getMetaDataSource(), false);
+						openQueryBuilder(false, SqlUtil.replaceAliases(row.rowId, "A", "A"));
 					}
 				});
 
@@ -1496,9 +1493,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				sqlConsole.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						List<String> whereClauses = new ArrayList<String>();
-						whereClauses.add(SqlUtil.replaceAliases(row.rowId, "A", "A"));
-						getQueryBuilderDialog().buildQuery(table, true, false, new ArrayList<Association>(), whereClauses, dataModel, session, getMetaDataSource(), true);
+						openQueryBuilder(true, SqlUtil.replaceAliases(row.rowId, "A", "A"));
 					}
 				});
 
@@ -4749,8 +4744,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}// GEN-LAST:event_limitBoxItemStateChanged
 
 	void openQueryBuilder(boolean openSQLConsole) {
+		openQueryBuilder(openSQLConsole, null);
+	}
+
+	void openQueryBuilder(boolean openSQLConsole, String alternativeWhere) {
 		QueryBuilderDialog.Relationship root = createQBRelations(true);
 		if (root != null) {
+			if (alternativeWhere != null) {
+				root.whereClause = alternativeWhere;
+			}
 			root.selectColumns = true;
 			getQueryBuilderDialog().buildQuery(table, root, dataModel, session, getMetaDataSource(), openSQLConsole);
 		}
