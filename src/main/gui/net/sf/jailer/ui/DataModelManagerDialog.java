@@ -847,6 +847,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
        	String folder = choseFolder();
        	if (folder != null) {
+       		new File(folder).mkdir();
        		executionContext.setDatamodelFolder(folder);
        		baseFolders.remove(folder);
        		baseFolders.add(0, folder);
