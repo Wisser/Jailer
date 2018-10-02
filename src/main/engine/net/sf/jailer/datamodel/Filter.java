@@ -184,4 +184,8 @@ public class Filter {
 		return applyAtExport;
 	}
 
+	public boolean isNullFilter() {
+		return "null".equalsIgnoreCase(expression.trim());
+	}
+
 }

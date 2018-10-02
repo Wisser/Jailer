@@ -270,6 +270,11 @@ public class RestrictionModel {
 			}
 			restriction.put(association, condition);
 		}
+		if (!association.isIgnored()) {
+			if (association.hasNullableFK() && association.fkHasNullFilter()) {
+				association.setOrResetFKNullFilter(false);
+			}
+		}
 	}
 
 	/**

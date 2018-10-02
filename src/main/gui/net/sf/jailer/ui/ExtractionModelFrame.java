@@ -1271,7 +1271,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private Association findRestrictedDependency(DataModel dataModel) {
 		for (Association association: dataModel.namedAssociations.values()) {
 			if (association.isInsertDestinationBeforeSource() && association.isRestricted()) {
-				return association;
+				if (!association.fkHasNullFilter()) {
+					return association;
+				}
 			}
 		}
 		return null;

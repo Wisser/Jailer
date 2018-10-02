@@ -473,6 +473,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				onApply(false);
 			}
 		});
+		restrictionEditor.fkToNullCheckBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (currentAssociation != null) {
+					currentAssociation.setOrResetFKNullFilter(restrictionEditor.fkToNullCheckBox.isSelected());
+				}
+				onApply(false);
+			}
+		});
 //		restrictionEditor.jump.addActionListener(new ActionListener() {
 //			public void actionPerformed(ActionEvent e) {
 //				onJump();
@@ -1756,7 +1765,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 
 	private void initRestrictedDependencyWarningField() {
-		restrictionEditor.restrictedDependencyWarning.setVisible(currentAssociation != null && !ScriptFormat.XML.equals(scriptFormat) && currentAssociation.isInsertDestinationBeforeSource() && currentAssociation.isRestricted());
+		boolean restrictedDep = currentAssociation != null && !ScriptFormat.XML.equals(scriptFormat) && currentAssociation.isInsertDestinationBeforeSource() && currentAssociation.isRestricted();
+		restrictionEditor.restrictedDependencyWarning.setVisible(restrictedDep);
+		restrictionEditor.fkToNullCheckBox.setVisible(restrictedDep);
+		restrictionEditor.fkToNullCheckBox.setEnabled(restrictedDep && currentAssociation.hasNullableFK());
+		restrictionEditor.fkToNullCheckBox.setSelected(restrictedDep && currentAssociation.fkHasNullFilter());
 	}
 
 	/**
@@ -1794,6 +1807,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				needsSave = true;
 				extractionModelFrame.updateTitle(needsSave);
 			}
+
+			if (restrictionEditor.restricted.isSelected() && currentAssociation.hasNullableFK() && currentAssociation.fkHasNullFilter()) {
+				currentAssociation.setOrResetFKNullFilter(false);
+			}
+
 			String condition;
 			if (restrictionEditor.ignore.getModel().isSelected()) {
 				condition = "ignore";

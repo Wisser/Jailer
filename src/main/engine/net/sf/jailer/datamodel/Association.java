@@ -552,4 +552,51 @@ public class Association extends ModelElement {
 		return mapping;
 	}
 
+	public boolean hasNullableFK() {
+		if (!isInsertDestinationBeforeSource()) {
+			return false;
+		}
+		Map<Column, Column> sdMap = createSourceToDestinationKeyMapping();
+		if (sdMap.isEmpty()) {
+			return false;
+		}
+		for (Column c: sdMap.keySet()) {
+			if (!c.isNullable) {
+				return false;
+			}
+			if (c.getFilter() != null && !c.getFilter().isDerived() && !c.getFilter().isNullFilter()) {
+				return false;
+			}
+			for (Column pk: source.primaryKey.getColumns()) {
+				if (c.name.equals(pk.name)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	public boolean fkHasNullFilter() {
+		Map<Column, Column> sdMap = createSourceToDestinationKeyMapping();
+		for (Column c: sdMap.keySet()) {
+			if (c.getFilter() == null || !c.getFilter().isNullFilter()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public void setOrResetFKNullFilter(boolean set) {
+		Map<Column, Column> sdMap = createSourceToDestinationKeyMapping();
+		for (Column c: sdMap.keySet()) {
+			if (set) {
+				c.setFilter(new Filter("null", null, false, null));
+			} else {
+				c.setFilter(null);
+			}
+		}
+		getDataModel().deriveFilters();
+		getDataModel().version++;
+	}
+
 }

@@ -72,6 +72,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel9 = new javax.swing.JPanel();
         restriction = new javax.swing.JTextField();
         apply = new javax.swing.JButton();
+        fkToNullCheckBox = new javax.swing.JCheckBox();
         jPanel4 = new javax.swing.JPanel();
         columnsA = new javax.swing.JLabel();
         source = new javax.swing.JLabel();
@@ -168,6 +169,15 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         jPanel7.add(jPanel9, gridBagConstraints);
 
+        fkToNullCheckBox.setText("Set foreign key columns to null");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel7.add(fkToNullCheckBox, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -257,6 +267,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
     javax.swing.JLabel columnsA;
     javax.swing.JLabel columnsB;
     public javax.swing.JLabel destination;
+    public javax.swing.JCheckBox fkToNullCheckBox;
     public javax.swing.JRadioButton ignore;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel4;
