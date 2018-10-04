@@ -1509,9 +1509,7 @@ public abstract class Desktop extends JDesktopPane {
 							// } else {
 							x1 += BORDER;
 							// }
-							
-							// TODO
-							
+
 							p = tableBrowser.browserContentPane.rowsTable;
 							Integer pY = yPerRowTable1.get(p);
 							if (pY != null) {
@@ -1559,9 +1557,7 @@ public abstract class Desktop extends JDesktopPane {
 							// } else {
 							// x2 += BORDER;
 							// }
-							
-							// TODO
-							
+
 							p = visParent.browserContentPane.rowsTable;
 							pY = yPerRowTable2.get(p);
 							if (pY != null) {
@@ -3339,13 +3335,10 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private void logFPS(Map<Long, Long> durations, long now, long avgD) {
-
-		// TODO
-		
-		long k = durations.keySet().iterator().next();
-		if (k != now && desktopAnimation.isActive()) {
-			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
-		}
+//		long k = durations.keySet().iterator().next();
+//		if (k != now && desktopAnimation.isActive()) {
+//			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
+//		}
 	}
 
 	private final int RESCALE_DURATION = 500;
