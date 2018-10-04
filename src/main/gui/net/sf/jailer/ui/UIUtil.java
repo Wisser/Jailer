@@ -951,7 +951,7 @@ public class UIUtil {
 	/**
 	 * Pair of Icon and Text.
 	 */
-	public static class IconWithText {
+	public static class IconWithText implements Comparable<IconWithText> {
 		public final String text;
 		public final ImageIcon icon;
 
@@ -963,6 +963,11 @@ public class UIUtil {
 		@Override
 		public String toString() {
 			return text;
+		}
+
+		@Override
+		public int compareTo(IconWithText o) {
+			return text.compareTo(o.text);
 		}
 	}
 

@@ -313,6 +313,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 		closureView.addTabComponent("Closure Border", closureBorderView.getContentPane());
 		closureBorderView.dispose();
+
+		restrDepsView = extractionModelFrame.restrictedDependenciesView.getContentPane();
+		closureView.addTabComponent("Restricted Dependencies", restrDepsView);
+		extractionModelFrame.restrictedDependenciesView.dispose();
 		
 		Container cVContentPane = closureView.getContentPane();
 		closureView.dispose();
@@ -661,7 +665,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * The "closure view" component.
 	 */
-	private ClosureView closureView;
+	ClosureView closureView;
 
 	void setOrientation(boolean horizontal) {
 		isHorizontalLayout = horizontal;
@@ -2946,7 +2950,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel xmlMappingPanel;
     private javax.swing.JButton xmlTagApply;
     // End of variables declaration//GEN-END:variables
-	
+    
+    Container restrDepsView;
+    
 	private Icon dropDownIcon;
 	private Icon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;

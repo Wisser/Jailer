@@ -34,6 +34,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
@@ -71,7 +72,11 @@ public class ResultSetRenderer extends javax.swing.JPanel {
                 null, null, new RowsClosure(), Integer.MAX_VALUE, false, false,
                 resultSet.getMetaData().getColumnCount() > 1? 180 : 400,
                 executionContext);
-		rb.setTableFilterEnabled(false);
+		if (resultSet instanceof MemorizedResultSet && ((MemorizedResultSet) resultSet).getSize() > 1) {
+			rb.setTableFilterEnabled(true);
+		} else {
+			rb.setTableFilterEnabled(false);
+		}
         LoadJob loadJob = rb.newLoadJob(resultSet, Integer.MAX_VALUE);
         loadJob.run();
         JComponent rTabContainer = rb.getRowsTableContainer();
@@ -140,7 +145,7 @@ public class ResultSetRenderer extends javax.swing.JPanel {
             this.limit = limit;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
             rowsCount.setVisible(false);
-        }
+    	}
         @Override
         protected int getReloadLimit() {
         	if (limit == null) {

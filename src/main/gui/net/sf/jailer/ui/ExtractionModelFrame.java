@@ -146,6 +146,29 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         initAnimationSteptime();
 		isHorizontalLayout = isHorizonal;
 		horizontalLayoutMenuItem.setSelected(isHorizontalLayout);
+
+		restrictedDependenciesView = new RestrictedDependenciesListDialog(this) {
+			private static final long serialVersionUID = -7426280043553389753L;
+			@Override
+			protected Table getRoot() {
+				return extractionModelEditor == null? null : extractionModelEditor.root;
+			}
+			@Override
+			protected DataModel getDataModel() {
+				return extractionModelEditor == null? null : extractionModelEditor.dataModel;
+			}
+			@Override
+			protected void removeRestrictions(Collection<Association> associations) {
+				if (extractionModelEditor != null) {
+					extractionModelEditor.removeRestrictions(associations);
+				}
+			}
+			@Override
+			protected void onSelect(Association association) {
+				extractionModelEditor.select(association);
+			}
+		};
+		
 		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext), "editor");
 		extractionModelEditor.extractionModelFile = extractionModelFile;
 		pack();
@@ -176,28 +199,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		
 		updateMenuItems();
 
-		restrictedDependenciesView = new RestrictedDependenciesListDialog(this) {
-			private static final long serialVersionUID = -7426280043553389753L;
-			@Override
-			protected Table getRoot() {
-				return extractionModelEditor == null? null : extractionModelEditor.root;
-			}
-			@Override
-			protected DataModel getDataModel() {
-				return extractionModelEditor == null? null : extractionModelEditor.dataModel;
-			}
-			@Override
-			protected void removeRestrictions(Collection<Association> associations) {
-				if (extractionModelEditor != null) {
-					extractionModelEditor.removeRestrictions(associations);
-				}
-			}
-			@Override
-			protected void onSelect(Association association) {
-				extractionModelEditor.select(association);
-			}
-		};
-		
 		cycleViewDialog = new CyclesView(this);
 		filterEditorDialog = new FilterEditorDialog(this, new ParameterSelector.ParametersGetter() {
 			@Override
@@ -355,7 +356,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         openDataBrowserItem = new javax.swing.JMenuItem();
         queryBuilder = new javax.swing.JMenuItem();
         cycleView = new javax.swing.JMenuItem();
-        restrictedDependenciesToolMenuItem = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         helpContent = new javax.swing.JMenuItem();
@@ -832,14 +832,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu3.add(cycleView);
 
-        restrictedDependenciesToolMenuItem.setText("Restricted Dependencies View");
-        restrictedDependenciesToolMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                restrictedDependenciesToolMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu3.add(restrictedDependenciesToolMenuItem);
-
         renderHtml.setText("HTML Rendering");
         renderHtml.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1159,11 +1151,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				if (restrictedDependency != null) {
 					switch (JOptionPane.showOptionDialog(this, 
 							"Dependency from '" + restrictedDependency.source.getName() + "' to '" + restrictedDependency.destination.getName() + "'\n" +
-							"is restricted.\nReferential integrity is not guaranteed!", "Restricted Dependency", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Ok", "Cancel", "Show Dependency" }, "Cancel")) {
+							"is restricted.\nReferential integrity is not guaranteed!", "Restricted Dependency", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Ok", "Cancel", "Show dependency" }, "Cancel")) {
 					case 1: return;
 					case 2: 
-						restrictedDependenciesView.setVisible(true);
-						restrictedDependenciesView.toFront();
+						extractionModelEditor.closureView.selectTabComponent(extractionModelEditor.restrDepsView);
 						return;
 					}
 				}
@@ -1701,11 +1692,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		extractionModelEditor.closureBorderView.toFront();
 	}//GEN-LAST:event_closureBorderToolMenuItemActionPerformed
 
-	private void restrictedDependenciesToolMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restrictedDependenciesToolMenuItemActionPerformed
-		restrictedDependenciesView.setVisible(true);
-		restrictedDependenciesView.toFront();
-	}//GEN-LAST:event_restrictedDependenciesToolMenuItemActionPerformed
-
     private void reloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadActionPerformed
     	try {
     		if (extractionModelEditor.extractionModelFile == null) {
@@ -2082,7 +2068,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     public javax.swing.JMenuItem reload;
     private javax.swing.JMenuItem removeAllRestrictions;
     private javax.swing.JMenuItem renderHtml;
-    private javax.swing.JMenuItem restrictedDependenciesToolMenuItem;
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;
     private javax.swing.JCheckBoxMenuItem showIgnored;

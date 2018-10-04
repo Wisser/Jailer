@@ -1768,4 +1768,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	public void addTabComponent(String titel, Container tab) {
 		 tabbedPane.addTab(titel, tab);
 	}
+
+	public void selectTabComponent(Container tab) {
+		tabbedPane.setSelectedComponent(tab);
+	}
+
 }
