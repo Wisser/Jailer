@@ -90,6 +90,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -1385,6 +1386,8 @@ public abstract class Desktop extends JDesktopPane {
 	private synchronized boolean calculateLinks() {
 		boolean changed = false;
 		Set<Long> linesHash = new HashSet<Long>(20000);
+		Map<JTable, Integer> yPerRowTable1 = new HashMap<JTable, Integer>();
+		Map<JTable, Integer> yPerRowTable2 = new HashMap<JTable, Integer>();
 		for (RowBrowser tableBrowser : tableBrowsers) {
 			JInternalFrame internalFrame = tableBrowser.internalFrame;
 			if (internalFrame.isMaximum()) {
@@ -1501,20 +1504,30 @@ public abstract class Desktop extends JDesktopPane {
 
 							x1 = internalFrame.getX();
 							y = cellRect.height * i;
-							y1 = internalFrame.getY() + y + cellRect.height / 2;
 							// if (r1) {
 							// x1 += internalFrame.getWidth()- BORDER;
 							// } else {
 							x1 += BORDER;
 							// }
+							
+							// TODO
+							
 							p = tableBrowser.browserContentPane.rowsTable;
-							if (ignoreScrolling) {
-								p = p.getParent();
+							Integer pY = yPerRowTable1.get(p);
+							if (pY != null) {
+								y1 = pY;
+							} else {
+								y1 = internalFrame.getY();
+								if (ignoreScrolling) {
+									p = p.getParent();
+								}
+								while (p != internalFrame) {
+									y1 += p.getY();
+									p = p.getParent();
+								}
+								yPerRowTable1.put(tableBrowser.browserContentPane.rowsTable, y1);
 							}
-							while (p != internalFrame) {
-								y1 += p.getY();
-								p = p.getParent();
-							}
+							y1 += y + cellRect.height / 2;
 							min = internalFrame.getY() + cellRect.height * 2;
 							if (y1 < min) {
 								y1 = min;
@@ -1541,20 +1554,30 @@ public abstract class Desktop extends JDesktopPane {
 
 							x2 = visParent.internalFrame.getX();
 							y = cellRect.height * i;
-							y2 = visParent.internalFrame.getY() + y + cellRect.height / 2;
 							// if (r2) {
 							x2 += visParent.internalFrame.getWidth() - BORDER;
 							// } else {
 							// x2 += BORDER;
 							// }
+							
+							// TODO
+							
 							p = visParent.browserContentPane.rowsTable;
-							if (ignoreScrolling) {
-								p = p.getParent();
+							pY = yPerRowTable2.get(p);
+							if (pY != null) {
+								y2 = pY;
+							} else {
+								y2 = visParent.internalFrame.getY();
+								if (ignoreScrolling) {
+									p = p.getParent();
+								}
+								while (p != visParent.internalFrame) {
+									y2 += p.getY();
+									p = p.getParent();
+								}
+								yPerRowTable2.put(visParent.browserContentPane.rowsTable, y2);
 							}
-							while (p != visParent.internalFrame) {
-								y2 += p.getY();
-								p = p.getParent();
-							}
+							y2 += y + cellRect.height / 2;
 							min = visParent.internalFrame.getY() + cellRect.height;
 							if (y2 < min) {
 								y2 = min;
@@ -3316,10 +3339,13 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private void logFPS(Map<Long, Long> durations, long now, long avgD) {
-//		long k = durations.keySet().iterator().next();
-//		if (k != now && desktopAnimation.isActive()) {
-//			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
-//		}
+
+		// TODO
+		
+		long k = durations.keySet().iterator().next();
+		if (k != now && desktopAnimation.isActive()) {
+			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
+		}
 	}
 
 	private final int RESCALE_DURATION = 500;
