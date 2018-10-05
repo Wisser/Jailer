@@ -1126,7 +1126,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         if (bounds != null) {
         	int b = 18;
         	bounds = new Rectangle(bounds.x, Math.max(bounds.y - b, 0), bounds.width, bounds.height + 2 * b);
-            metaDataTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
+            metaDataTree.scrollRectToVisible(new Rectangle(0, bounds.y, 1, bounds.height));
         }
     }
 
@@ -1226,12 +1226,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         }
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         metaDataTree.setModel(treeModel);
- 		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				metaDataTree.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
-		 	}
-		});
+		metaDataTree.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
         selectSchema(metaDataSource.getDefaultSchema());
     }
 
