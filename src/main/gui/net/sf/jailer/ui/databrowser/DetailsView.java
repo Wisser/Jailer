@@ -17,6 +17,7 @@ package net.sf.jailer.ui.databrowser;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -132,8 +133,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				@Override
 				public void ancestorAdded(AncestorEvent event) {
 					closeButton.grabFocus();
-					jScrollPane1.getVerticalScrollBar().setValue(jScrollPane1.getVerticalScrollBar().getMinimum());					
-					jScrollPane1.getHorizontalScrollBar().setValue(jScrollPane1.getHorizontalScrollBar().getMinimum());
+					resetScrollPane();
 				}
 			});
 		}
@@ -158,7 +158,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private int currentRow;
 	private boolean sortColumns;
 	private JPanel content;
-	
+	private boolean isPacked = false;
+
 	private void setCurrentRow(int row, boolean selectableFields) {
 		currentRow = row;
 
@@ -167,7 +168,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		labels.clear();
 		labelColors.clear();
 		
-		JPanel oldContent = content;
+		final JPanel oldContent = content;
 		content = new JPanel(new GridBagLayout());
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.weightx = 1;
@@ -271,12 +272,30 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			gridBagConstraints.gridy = i;
 			content.add(l, gridBagConstraints);
 		}
-		jPanel1.add(content, gridBagConstraints);
-		if (oldContent != null) {
-			jPanel1.remove(oldContent);
+		Runnable update = new Runnable() {
+			@Override
+			public void run() {
+				if (oldContent != null) {
+					jPanel1.remove(oldContent);
+				}
+				GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				gridBagConstraints.weightx = 1;
+				gridBagConstraints.weighty = 1;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridy = 1;
+				jPanel1.add(content, gridBagConstraints);
+				jPanel1.revalidate();
+				jPanel1.repaint();
+			}
+		};
+		if (isPacked) {
+			UIUtil.invokeLater(2, update);
+		} else {
+			update.run();
+			isPacked = true;
 		}
-		jPanel1.revalidate();
-		jPanel1.repaint();
 		onRowChanged(row);
 	}
 
@@ -370,6 +389,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
     private void sortCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortCheckBoxActionPerformed
     	sortColumns = !sortColumns;
     	setCurrentRow(currentRow, showSpinner);
+    	UIUtil.invokeLater(4, new Runnable() {
+			@Override
+			public void run() {
+				resetScrollPane();
+			}
+		});
     }//GEN-LAST:event_sortCheckBoxActionPerformed
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
@@ -410,6 +435,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	public void setSortColumns(boolean selected) {
 		sortColumns = selected;
     	setCurrentRow(currentRow, showSpinner);
+	}
+
+	private void resetScrollPane() {
+		jScrollPane1.getVerticalScrollBar().setValue(jScrollPane1.getVerticalScrollBar().getMinimum());					
+		jScrollPane1.getHorizontalScrollBar().setValue(jScrollPane1.getHorizontalScrollBar().getMinimum());
 	}
 
 }
