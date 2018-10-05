@@ -708,7 +708,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 if (evt.getButton() == MouseEvent.BUTTON1) {
                     if (mdTable != null) {
                         if (evt.getClickCount() > 1) {
-                            openTable(mdTable);
+                        	if (node != null && metaDataTree.getSelectionModel().isPathSelected(node)) {
+                        		openTable(mdTable);
+                        	}
                         }
                     }
                 }
