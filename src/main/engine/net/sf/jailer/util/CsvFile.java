@@ -245,10 +245,11 @@ public class CsvFile {
 	 * @return decoded and splitted line
 	 */
 	public static String[] decodeLine(String line) {
-		List<String> cells = new ArrayList<String>();
-		StringBuilder sb = new StringBuilder();
+		List<String> cells = new ArrayList<String>(1000);
+		StringBuilder sb = new StringBuilder(1000);
 		boolean esc = false;
-		for (int i = 0; i < line.length(); ++i) {
+		int length = line.length();
+		for (int i = 0; i < length; ++i) {
 			char c = line.charAt(i);
 			if (c == '\\') {
 				if (esc) {

@@ -1867,6 +1867,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
                     	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
                     }
 
+                    UIUtil.prepareUI();
                 } catch (Exception x) {
 				}
 				
