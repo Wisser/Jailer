@@ -28,6 +28,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -877,8 +878,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                     }
                 }
-                Component comp = super.getTreeCellRendererComponent(tree, value + (unknownTable? "" : (isDirty? " !" : "  ")), sel, expanded, leaf, row, hasFocus);
+                Component comp = super.getTreeCellRendererComponent(tree, value + (unknownTable? "" : (isDirty? " !" : " ")), sel, expanded, leaf, row, hasFocus);
                 String tooltip = null;
+                JLabel cCountLabel = null;
             	if (comp instanceof JLabel) {
             		String text = ((JLabel) comp).getText();
             		int maxLength = 20;
@@ -896,10 +898,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             			} else {
             				estRowCountFormatted = estRowCount.toString();
             			}
-						if (fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
-            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#7777ff\">(~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\">)</font>");
+            			cCountLabel = new JLabel("~" + estRowCountFormatted);
+            			if (fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
+							cCountLabel.setForeground(new Color(51, 51, 255));
+//            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#7777ff\">(~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\">)</font>");
             			} else {
-            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#aaaaff\">(~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\">)</font>");
+            				cCountLabel.setForeground(new Color(238, 238, 255));
+//            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#aaaaff\">(~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\">)</font>");
             			}
             		}
             	}	
@@ -911,24 +916,24 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 if (isJailerTable && !sel) {
                     comp.setEnabled(false);
                 }
+                JPanel panel = new JPanel(new FlowLayout(0, 0, 0));
                 if (image != null) {
-                    JPanel panel = new JPanel(new FlowLayout(0, 0, 0));
                     JLabel label = new JLabel(image);
                     label.setText(" ");
                     label.setOpaque(false);
                     panel.add(label);
                     panel.setOpaque(false);
-                    panel.add(comp);
-                    comp = panel;
                 }
-                JPanel panel = new JPanel(new FlowLayout(0, 0, 0));
                 panel.add(comp);
                 JLabel label = new JLabel("");
                 if (unknownTable && !isJailerTable) {
                     label.setIcon(finalScaledWarnIcon);
+                    panel.add(label);
+                }
+                if (cCountLabel != null) {
+                	panel.add(cCountLabel);
                 }
                 label.setOpaque(false);
-                panel.add(label);
                 panel.add(new JLabel("                                                                                                                  "));
                 panel.setOpaque(false);
                 panel.setToolTipText(tooltip);
@@ -1068,7 +1073,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
 
     public void reset() {
-    	UIUtil.setWaitCursor(refreshButton);
+    	final Window wa = SwingUtilities.getWindowAncestor(this);
+    	UIUtil.setWaitCursor(wa != null? wa : refreshButton);
         JDBCMetaDataBasedModelElementFinder.resetCaches(metaDataSource.getSession());
         setOutline(new ArrayList<OutlineInfo>(), -1);
         proceduresPerSchema.clear();
@@ -1099,7 +1105,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                     }
                 } finally {
-                	UIUtil.resetWaitCursor(refreshButton);
+                	UIUtil.resetWaitCursor(wa != null? wa : refreshButton);
                 }
             }
         });
@@ -1284,11 +1290,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 								        SwingUtilities.invokeLater(new Runnable() {
 								            @Override
 								            public void run() {
+								            	Window wa = SwingUtilities.getWindowAncestor(MetaDataPanel.this);
 								                try {
-								                	UIUtil.setWaitCursor(MetaDataPanel.this);
+								                	UIUtil.setWaitCursor(wa != null? wa : MetaDataPanel.this);
 								                    expandImmediatelly();
 								                } finally {
-								                	UIUtil.resetWaitCursor(MetaDataPanel.this);
+								                	UIUtil.resetWaitCursor(wa != null? wa : MetaDataPanel.this);
 								                }
 								            }
 								        });
