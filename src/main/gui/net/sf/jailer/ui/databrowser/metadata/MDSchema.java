@@ -235,11 +235,11 @@ public class MDSchema extends MDObject {
 	/**
 	 * Asynchronously loads the tables.
 	 */
-	public void loadTables() {
+	public void loadTables(final boolean loadTableColumns) {
 		loadTablesQueue.add(new Runnable() {
 			@Override
 			public void run() {
-				getTables(false);
+				getTables(loadTableColumns);
 			}
 		});
 	}
