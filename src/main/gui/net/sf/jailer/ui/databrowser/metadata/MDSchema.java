@@ -134,17 +134,18 @@ public class MDSchema extends MDObject {
 	 * @return tables of schema
 	 */
 	public List<MDTable> getTables() {
-		return getTables(true);
+		return getTables(true, null);
 	}
 
 	private Object getTablesLock = new String("getTablesLock");
 	
 	/**
 	 * Gets tables of schema
+	 * @param afterLoadAction 
 	 * 
 	 * @return tables of schema
 	 */
-	public List<MDTable> getTables(boolean loadTableColumns) {
+	public List<MDTable> getTables(boolean loadTableColumns, Runnable afterLoadAction) {
 		synchronized (getTablesLock) {
 			if (tables == null) {
 				try {
@@ -183,6 +184,9 @@ public class MDSchema extends MDObject {
 						rs.close();
 						for (Runnable loadJob : loadJobs.values()) {
 							loadTableColumnsQueue.add(loadJob);
+						}
+						if (afterLoadAction != null) {
+							loadTableColumnsQueue.add(afterLoadAction);
 						}
 					}
 					Collections.sort(tables, new Comparator<MDTable>() {
@@ -235,11 +239,11 @@ public class MDSchema extends MDObject {
 	/**
 	 * Asynchronously loads the tables.
 	 */
-	public void loadTables(final boolean loadTableColumns) {
+	public void loadTables(final boolean loadTableColumns, final Runnable afterLoadAction) {
 		loadTablesQueue.add(new Runnable() {
 			@Override
 			public void run() {
-				getTables(loadTableColumns);
+				getTables(loadTableColumns, afterLoadAction);
 			}
 		});
 	}

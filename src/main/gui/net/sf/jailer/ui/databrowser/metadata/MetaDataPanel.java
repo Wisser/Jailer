@@ -1707,6 +1707,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         }
     }
 
+    public void refresh() {
+    	metaDataTree.repaint();
+    }
+    
     static ImageIcon warnIcon;
     static ImageIcon viewIcon;
     static ImageIcon viewsIcon;
