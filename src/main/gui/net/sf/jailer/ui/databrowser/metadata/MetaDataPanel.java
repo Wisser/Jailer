@@ -1217,8 +1217,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             leafs = new Iterable<Object>() {
 				@Override
 				public Iterator<Object> iterator() {
-		        	List<Object> leafs = new ArrayList<Object>();
-		            for (MDTable table: schema.getTables()) {
+					List<Object> leafs = new ArrayList<Object>();
+		            for (MDTable table: schema.getTables(true, new Runnable() {
+						@Override
+						public void run() {
+							refresh();
+						}
+					})) {
 						if (!table.isView() && !table.isSynonym()) {
 							leafs.add(table);
 						}
