@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.BoxLayout;
-import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -287,7 +287,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
         }
 	}
 
-	public Icon getIcon() {
+	public ImageIcon getIcon() {
 		return databaseObjectRenderingDescription.getIcon();
 	}
 

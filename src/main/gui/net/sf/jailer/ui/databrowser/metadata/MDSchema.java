@@ -150,6 +150,10 @@ public class MDSchema extends MDObject {
 				try {
 					tables = new ArrayList<MDTable>();
 					Map<String, Long> estimatedRowCounts = readEstimatedRowCounts();
+					if (estimatedRowCounts.size() > 10000) {
+						// rendering many ERCs is too expensive
+						estimatedRowCounts.clear();
+					}
 					MetaDataSource metaDataSource = getMetaDataSource();
 					synchronized (metaDataSource.getSession().getMetaData()) {
 						ResultSet rs = metaDataSource.readTables(getName());

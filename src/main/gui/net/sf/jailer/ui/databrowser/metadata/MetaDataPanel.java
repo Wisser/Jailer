@@ -18,7 +18,6 @@ package net.sf.jailer.ui.databrowser.metadata;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GradientPaint;
@@ -35,6 +34,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -68,7 +68,6 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
@@ -372,14 +371,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 							final IconWithText label = (IconWithText) row[0];
 							return new MDDescriptionBasedGeneric(row[1] + " on " + row[2] + (row[3] != null && row[3].toString().trim().length() > 0? "(" + row[3] + ")" : ""), getMetaDataSource(), schema, dataModel, detailDesc) {
 								@Override
-								public Icon getIcon() {
+								public ImageIcon getIcon() {
 									return label == null? null : label.icon;
 								}
 							};
 						}
 
 						@Override
-						public Icon getIcon() {
+						public ImageIcon getIcon() {
 							return label == null? null : label.icon;
 						}
 					});
@@ -811,7 +810,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             }
         });
         
-        final ImageIcon finalScaledWarnIcon = getScaledIcon(this, warnIcon); 
+        final ImageIcon finalScaledWarnIcon = getScaledIcon(this, warnIcon, true); 
         
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
             Map<MDTable, Boolean> dirtyTables = new HashMap<MDTable, Boolean>();
@@ -823,12 +822,15 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 boolean isView = false;
                 boolean isSynonym = false;
                 Boolean isDirty = false;
-                Icon image = null;
+                ImageIcon image = null;
         		Long estRowCount = null;
                 if (value instanceof DefaultMutableTreeNode) {
                     Object uo = ((DefaultMutableTreeNode) value).getUserObject();
                     if (uo instanceof JLabel) {
-                    	image = ((JLabel) uo).getIcon();
+                    	Icon icon = ((JLabel) uo).getIcon();
+                    	if (icon instanceof ImageIcon) {
+                    		image = (ImageIcon) ((JLabel) uo).getIcon();
+                    	}
                     }
                     if (uo == CATEGORY_VIEWS) {
                     	image = viewsIcon;
@@ -878,16 +880,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                     }
                 }
-                Component comp = super.getTreeCellRendererComponent(tree, value + (unknownTable? "" : (isDirty? " !" : " ")), sel, expanded, leaf, row, hasFocus);
-                String tooltip = null;
-                JLabel cCountLabel = null;
+                Component comp = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             	if (comp instanceof JLabel) {
             		String text = ((JLabel) comp).getText();
-            		int maxLength = 20;
-            		if (text != null && text.length() > maxLength) {
-            			// TODO tooltips dont work with tree nodes
-            			tooltip = text;
-            		}
             		if (estRowCount != null) {
             			Color fg = ((JLabel) comp).getForeground();
             			String estRowCountFormatted;
@@ -898,46 +893,48 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             			} else {
             				estRowCountFormatted = estRowCount.toString();
             			}
-            			cCountLabel = new JLabel("~" + estRowCountFormatted);
             			if (fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
-							cCountLabel.setForeground(new Color(51, 51, 255));
-//            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#7777ff\">(~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\">)</font>");
+            				((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#7777ff\">~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\"></font>");
             			} else {
-            				cCountLabel.setForeground(new Color(238, 238, 255));
-//            				((JLabel) comp).setText("<html>" + text + "&nbsp;<font color=\"#aaaaff\">(~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\">)</font>");
+            				((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#aaaaff\">~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\"></font>");
             			}
             		}
-            	}	
-                Font font = comp.getFont();
-                if (font != null) {
-                    Font bold = new Font(font.getName(), unknownTable || isDirty? (font.getStyle() | Font.ITALIC) : (font.getStyle() & ~Font.ITALIC), font.getSize());
-                    comp.setFont(bold);
-                }
+            	}
                 if (isJailerTable && !sel) {
-                    comp.setEnabled(false);
+                	if (comp instanceof JLabel) {
+                    	((JLabel) comp).setForeground(Color.gray);
+                	}
                 }
-                JPanel panel = new JPanel(new FlowLayout(0, 0, 0));
                 if (image != null) {
-                    JLabel label = new JLabel(image);
-                    label.setText(" ");
-                    label.setOpaque(false);
-                    panel.add(label);
-                    panel.setOpaque(false);
+                	if (comp instanceof JLabel) {
+                    	((JLabel) comp).setIcon(image);
+                	}
                 }
-                panel.add(comp);
-                JLabel label = new JLabel("");
-                if (unknownTable && !isJailerTable) {
-                    label.setIcon(finalScaledWarnIcon);
-                    panel.add(label);
+                if ((unknownTable || isDirty) && !isJailerTable) {
+                	if (comp instanceof JLabel) {
+                		if (image != null) {
+                			ImageIcon combinedIcon = combinedIcons.get(image);
+                			if (combinedIcon == null) {
+	                			Image im = image.getImage();
+	                			// create the new image, canvas size is the max. of both image sizes
+	                			int w = Math.max(image.getIconWidth(), finalScaledWarnIcon.getIconWidth());
+	                			int h = Math.max(image.getIconHeight(), finalScaledWarnIcon.getIconHeight());
+	                			BufferedImage combined = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+	
+	                			// paint both images, preserving the alpha channels
+	                			Graphics g = combined.getGraphics();
+	                			g.drawImage(im, 0, 0, null);
+	                			g.translate(image.getIconWidth() / 4, image.getIconHeight() / 4);
+	                			g.drawImage(finalScaledWarnIcon.getImage(), 0, 0, null);
+	                			combinedIcon = new ImageIcon(combined);
+	                			combinedIcons.put(image, combinedIcon);
+                			}
+							((JLabel) comp).setIcon(combinedIcon);
+                		} else {
+                			((JLabel) comp).setIcon(finalScaledWarnIcon);
+                		}
+                	}
                 }
-                if (cCountLabel != null) {
-                	panel.add(cCountLabel);
-                }
-                label.setOpaque(false);
-                panel.add(new JLabel("                                                                                                                  "));
-                panel.setOpaque(false);
-                panel.setToolTipText(tooltip);
-                comp = panel;
                 return comp;
             }
         };
@@ -1252,7 +1249,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				    @Override
 				    protected void expandImmediatelly() {
 				        if (!expanded) {
-				            for (Object leaf: leafs) {
+				        	for (Object leaf: leafs) {
 				                DefaultMutableTreeNode tableChild = new DefaultMutableTreeNode(leaf);
 				                schemaViewsChild.add(tableChild);
 				                if (leaf instanceof MDDescriptionBasedGeneric) {
@@ -1719,8 +1716,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     static ImageIcon synonymsIcon;
     static ImageIcon databaseIcon;
     static ImageIcon schemaIcon;
+    private static HashMap<ImageIcon, ImageIcon> combinedIcons = new HashMap<ImageIcon, ImageIcon>();
     
-    static ImageIcon getScaledIcon(JComponent component, ImageIcon icon) {
+    static ImageIcon getScaledIcon(JComponent component, ImageIcon icon, boolean small) {
         if (icon != null) {
             ImageIcon scaledIcon = icon;
             if (scaledIcon != null) {
@@ -1728,6 +1726,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 double s = heigth / (double) scaledIcon.getIconHeight();
                 if (icon == viewIcon) {
                     s *= 0.8;
+                }
+                if (small) {
+                	s *= 0.8;
                 }
                 try {
                     return new ImageIcon(scaledIcon.getImage().getScaledInstance((int)(scaledIcon.getIconWidth() * s), (int)(scaledIcon.getIconHeight() * s), Image.SCALE_SMOOTH));

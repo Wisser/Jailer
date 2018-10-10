@@ -76,7 +76,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				}
 						
 				if (mdTable != null && !mdTableIsUpTodate && !ModelBuilder.isJailerTable(table.getUnqualifiedName())) {
-					warnLabel.setIcon(MetaDataPanel.getScaledIcon(TableDetailsView.this, MetaDataPanel.warnIcon));
+					warnLabel.setIcon(MetaDataPanel.getScaledIcon(TableDetailsView.this, MetaDataPanel.warnIcon, false));
 					analyseButton.setText("Analyse schema \"" + mdTable.getSchema().getUnquotedName() + "\"");
 					analyseButton.addActionListener(new ActionListener() {
 		                @Override
