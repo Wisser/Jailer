@@ -58,11 +58,13 @@ import net.sf.jailer.ui.databrowser.Row;
  * @author Ralf Wisser
  */
 public class ColumnsTable extends JTable {
+	private static final long serialVersionUID = 1L;
 
 	private final int MAX_ROWS = 198;
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	final BrowserContentPane rb;
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ColumnsTable(final BrowserContentPane rb) {
 		this.rb = rb;
 		final JTable rowsTable = rb.rowsTable;
@@ -79,7 +81,8 @@ public class ColumnsTable extends JTable {
 		}
 		final TableColumnModel cm = rowsTable.getColumnModel();
 		TableModel cDm = new DefaultTableModel(cNames, rowsTable.getModel().getColumnCount()) {
-			
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public boolean isCellEditable(int rowIndex, int columnIndex) {
 				if (columnIndex == 0) {
@@ -133,6 +136,8 @@ public class ColumnsTable extends JTable {
 		im.put(KS_COPY_TO_CLIPBOARD, key);
 		ActionMap am = getActionMap();
 		Action a = new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				UIUtil.copyToClipboard(ColumnsTable.this, false);
