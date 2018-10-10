@@ -473,7 +473,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						public void run() {
 							cancelLoading.set(false);
 							for (MDSchema schema: toLoad) {
-								schema.loadTables(false);
+								schema.loadTables(false, null);
 								setCheckboxState(checkboxPerSchema.get(schema), schema, true, false);
 								while (!schema.isLoaded() && !cancelLoading.get()) {
 									try {

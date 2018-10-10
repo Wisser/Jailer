@@ -3277,7 +3277,19 @@ public class DataBrowser extends javax.swing.JFrame {
 					final MDSchema defaultSchema = metaDataSource.getDefaultSchema();
 					if (defaultSchema != null) {
 						// tigger reading meta data asynchronously
-						defaultSchema.loadTables(true);
+						defaultSchema.loadTables(true, new Runnable() {
+							@Override
+							public void run() {
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										if (metaDataPanel != null) {
+											metaDataPanel.refresh();
+										}
+									}
+								});
+							}
+						});
 					}
 					metaDataPanel = null;
 				}
