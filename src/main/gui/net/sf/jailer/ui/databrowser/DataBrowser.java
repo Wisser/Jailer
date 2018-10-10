@@ -3274,6 +3274,16 @@ public class DataBrowser extends javax.swing.JFrame {
 				metaDataSource = getMetaDataSource(newSession);
 				if (metaDataSource == null || Boolean.TRUE.equals(session.getSessionProperty(DataBrowser.class, "removeMetaDataSource"))) {
 					metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
+					final MDSchema defaultSchema = metaDataSource.getDefaultSchema();
+					if (defaultSchema != null) {
+						// tigger reading meta data asynchronously
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								defaultSchema.getTables();
+							}
+						}).start();
+					}
 					metaDataPanel = null;
 				}
 				session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", null);
