@@ -1620,6 +1620,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	return (Integer) limitComboBox.getSelectedItem();
         }
         @Override
+        protected Session retrieveCurrentSession() {
+    		return session;
+    	}
+        @Override
         protected void unhide() {
         }
         @Override
