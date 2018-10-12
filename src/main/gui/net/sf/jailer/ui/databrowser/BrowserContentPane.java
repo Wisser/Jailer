@@ -861,7 +861,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						} else {
 							Table type = getResultSetTypeForColumn(convertedColumnIndex);
-							if (isEditMode && r != null && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
+							if (isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
 									&& isPKComplete(type, r)) {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1_EM : BG2_EM);
 							} else {
@@ -1607,6 +1607,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			popup.addSeparator();
 			popup.add(tableFilter);
 			JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
+			editMode.setEnabled(isTableEditable(table));
 			if (withKeyStroke) {
 				editMode.setAccelerator(KS_EDIT);
 			}
@@ -1772,6 +1773,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		popup.add(tableFilter);
 		JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
+		editMode.setEnabled(isTableEditable(table));
 		editMode.setAccelerator(KS_EDIT);
 		editMode.setSelected(isEditMode);
 		editMode.addActionListener(new ActionListener() {
@@ -1783,6 +1785,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		popup.add(editMode);
 		return popup;
+	}
+
+	protected boolean isTableEditable(Table theTable) {
+		return resultSetType != null || !rowIdSupport.getPrimaryKey(theTable).getColumns().isEmpty();
 	}
 
 	public boolean closeWithChildren(Component parentComponent) {
@@ -3462,7 +3468,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						r = rows.get(row);
 					}
 					Table type = getResultSetTypeForColumn(column);
-					return isEditMode && r != null && browserContentCellEditor.isEditable(type, row, column, r.values[column]) && isPKComplete(type, r);
+					return isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, row, column, r.values[column]) && isPKComplete(type, r);
 				}
 
 				@Override

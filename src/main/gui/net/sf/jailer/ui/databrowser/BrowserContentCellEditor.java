@@ -26,6 +26,7 @@ import java.util.Map;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -83,6 +84,22 @@ public class BrowserContentCellEditor {
 				return content == null || (content instanceof String && !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0));
 			}
 		},
+		NCHAR {
+			@Override
+			String cellContentToText(int columnType, Object content) {
+				return String.valueOf(content);
+			}
+
+			@Override
+			Object textToContent(int columnType, String text, Object oldContent) {
+				return new CellContentConverter.NCharWrapper(text);
+			}
+
+			@Override
+			boolean isEditable(int columnType, Object content) {
+				return content == null || (content instanceof CellContentConverter.NCharWrapper && !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0));
+			}
+		},
 		DATE {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 			SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -137,10 +154,10 @@ public class BrowserContentCellEditor {
 		converterPerType.put(Types.BIGINT, Converter.DECMAL);
 		
 		converterPerType.put(Types.CHAR, Converter.CHAR);
-		converterPerType.put(Types.NCHAR, Converter.CHAR);
-		converterPerType.put(Types.LONGNVARCHAR, Converter.CHAR);
+		converterPerType.put(Types.NCHAR, Converter.NCHAR);
+		converterPerType.put(Types.LONGNVARCHAR, Converter.NCHAR);
 		converterPerType.put(Types.LONGVARCHAR, Converter.CHAR);
-		converterPerType.put(Types.NVARCHAR, Converter.CHAR);
+		converterPerType.put(Types.NVARCHAR, Converter.NCHAR);
 		converterPerType.put(Types.VARCHAR, Converter.CHAR);
 
 		converterPerType.put(Types.DATE, Converter.DATE);
