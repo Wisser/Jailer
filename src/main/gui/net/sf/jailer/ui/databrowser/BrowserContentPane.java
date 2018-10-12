@@ -2586,6 +2586,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	public void reloadRows(String cause) {
 		if (!suppressReload) {
+			session = retrieveCurrentSession();
 			lastReloadTS = System.currentTimeMillis();
 			cancelLoadJob(true);
 			setPendingState(true, true);
@@ -2604,6 +2605,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			getRunnableQueue().add(reloadJob);
 		}
+	}
+
+	protected Session retrieveCurrentSession() {
+		return session;
 	}
 
 	/**
