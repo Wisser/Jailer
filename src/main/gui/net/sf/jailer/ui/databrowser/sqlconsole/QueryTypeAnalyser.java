@@ -413,9 +413,9 @@ public class QueryTypeAnalyser {
 	}
 
 	private static Table createTable(MDTable theTable, String tableAlias, List<String> columnNames, List<Pair<String, String>> selectClause, Map<Pair<String, String>, Collection<Pair<String, String>>> equivs, MetaDataSource metaDataSource) throws SQLException {
-		if (theTable.getPrimaryKeyColumns().isEmpty()) {
-			return null;
-		}
+//		if (theTable.getPrimaryKeyColumns().isEmpty()) {
+//			return null;
+//		}
 		for (String pk: theTable.getPrimaryKeyColumns()) {
 			if (!columnNames.contains(pk)) {
 				boolean ok = false;
@@ -457,6 +457,7 @@ public class QueryTypeAnalyser {
 			columns.add(new net.sf.jailer.datamodel.Column(pk, "", 0, -1));
 		}
 		table.setColumns(columns);
+		table.setIsArtifical(true);
 		return table;
 	}
 

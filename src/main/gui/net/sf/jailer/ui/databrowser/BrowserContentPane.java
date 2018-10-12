@@ -862,7 +862,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						} else {
 							Table type = getResultSetTypeForColumn(convertedColumnIndex);
 							if (isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
-									&& isPKComplete(type, r)) {
+									&& isPKComplete(type, r) && !rowIdSupport.getPrimaryKey(type, BrowserContentPane.this.session).getColumns().isEmpty()) {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1_EM : BG2_EM);
 							} else {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
@@ -1594,9 +1594,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								});
 							}
 						});
+						boolean hasPK = !rowIdSupport.getPrimaryKey(table).getColumns().isEmpty();
+						if (!hasPK) {
+							delete.setEnabled(false);
+						}
 						inserts.setEnabled(rows.size() > 0);
-						updates.setEnabled(rows.size() > 0);
-						deletes.setEnabled(rows.size() > 0);
+						updates.setEnabled(hasPK && rows.size() > 0);
+						deletes.setEnabled(hasPK && rows.size() > 0);
 					}
 				} else {
 					popup.add(sql);
@@ -1684,9 +1688,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				public String toString() { return SQLDMLBuilder.buildDelete(table, sortedAndFiltered(rows), session); }});
 			}
 		});
+		boolean hasPK = !rowIdSupport.getPrimaryKey(table).getColumns().isEmpty();
 		insert.setEnabled(rows.size() > 0);
-		update.setEnabled(rows.size() > 0);
-		delete.setEnabled(rows.size() > 0);
+		update.setEnabled(hasPK && rows.size() > 0);
+		delete.setEnabled(hasPK && rows.size() > 0);
 
 		popup.add(new JSeparator());
 		JMenuItem exportData = new JMenuItem("Export Data");
@@ -3468,7 +3473,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						r = rows.get(row);
 					}
 					Table type = getResultSetTypeForColumn(column);
-					return isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, row, column, r.values[column]) && isPKComplete(type, r);
+					if (isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, row, column, r.values[column]) && isPKComplete(type, r)) {
+						return !rowIdSupport.getPrimaryKey(type, session).getColumns().isEmpty();
+					}
+					return false;
 				}
 
 				@Override

@@ -220,7 +220,7 @@ public class CellContentConverter {
 		}
 	}
 
-	static class NCharWrapper {
+	public static class NCharWrapper {
 		private final String value;
 		public NCharWrapper(String value) {
 			this.value = value;
@@ -310,7 +310,7 @@ public class CellContentConverter {
 			return resultSet.getString(i);
 		}
 		Object object = resultSet.getObject(i);
-		if (type == Types.NCHAR || type == Types.NVARCHAR) {
+		if (type == Types.NCHAR || type == Types.NVARCHAR || type == Types.LONGNVARCHAR) {
 			if (object instanceof String) {
 				object = new NCharWrapper((String) object);
 			}
