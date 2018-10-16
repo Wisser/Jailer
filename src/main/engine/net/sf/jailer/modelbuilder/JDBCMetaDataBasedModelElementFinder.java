@@ -1041,7 +1041,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 
 	/**
-	 * Finds all non-empty schemas in DB.
+	 * Finds all schemas in DB.
 	 * 
 	 * @param session the statement executor for executing SQL-statements
 	 * @param userName schema with this name may be empty
@@ -1066,6 +1066,50 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			if (userName != null) {
 				schemas.add(userName);
 			}
+		}
+		Collections.sort(schemas);
+		return schemas;
+	}
+
+	/**
+	 * Finds all catalogs with all schemas in DB.
+	 * 
+	 * @param session the statement executor for executing SQL-statements
+	 */ 
+	public static List<String> getCatalogsWithSchemas(Session session) {
+		if (DBMS.MySQL.equals(session.dbms)) {
+			return Collections.emptyList(); // no catalogs here
+		}
+		if (!DBMS.MSSQL.equals(session.dbms)) {
+			return Collections.emptyList(); // DBMS not (yet) supported
+		}
+		
+		List<String> schemas = new ArrayList<String>();
+		try {
+			DatabaseMetaData metaData = session.getMetaData();
+			ResultSet rsCatalog = metaData.getCatalogs();
+			while (rsCatalog.next()) {
+				String catalog = rsCatalog.getString("TABLE_CAT");
+				if (catalog != null) {
+					catalog = catalog.trim();
+					if (!catalog.isEmpty()) {
+						ResultSet rs = DBMS.MySQL.equals(session.dbms)? metaData.getCatalogs() : metaData.getSchemas();
+						while (rs.next()) {
+							String schema = rs.getString(DBMS.MySQL.equals(session.dbms)? "TABLE_CAT" : "TABLE_SCHEM").trim();
+							if (schema != null) {
+								if (DBMS.POSTGRESQL.equals(session.dbms) && schema.startsWith("pg_toast_temp")) {
+									continue;
+								}
+								schemas.add(catalog + "." + schema);
+							}
+						}
+						rs.close();
+					}
+				}
+			}
+			rsCatalog.close();
+		} catch (SQLException e) {
+			return Collections.emptyList();
 		}
 		Collections.sort(schemas);
 		return schemas;

@@ -716,6 +716,7 @@
                 <Component class="javax.swing.JComboBox" name="workingTableSchemaComboBox">
                   <Properties>
                     <Property name="editable" type="boolean" value="true"/>
+                    <Property name="maximumRowCount" type="int" value="20"/>
                     <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                       <StringArray count="4">
                         <StringItem index="0" value="Item 1"/>
@@ -805,6 +806,7 @@
                 <Component class="javax.swing.JComboBox" name="iFMTableSchemaComboBox">
                   <Properties>
                     <Property name="editable" type="boolean" value="true"/>
+                    <Property name="maximumRowCount" type="int" value="20"/>
                     <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
                       <StringArray count="4">
                         <StringItem index="0" value="Item 1"/>

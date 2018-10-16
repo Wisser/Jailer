@@ -160,273 +160,281 @@ public class ExportDialog extends javax.swing.JDialog {
 		this.sourceDBMS = session.dbms;
 		this.dbConnectionDialog = dbConnectionDialog;
 		this.additionalSubjects = additionalSubjects;
-		initComponents();
-		
-		CancellationHandler.reset(null);
-
-		if (!showCmd) {
-			commandLinePanel.setVisible(false);
-		}
-		
-		List<String> allSchemas = JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema());
-		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
-		initWorkingTableSchemaBox(session, allSchemas, defaultSchema);
-		initIFMTableSchemaBox(session, allSchemas, defaultSchema);
-
-		try {
-			JTextField c = (JTextField) workingTableSchemaComboBox.getEditor().getEditorComponent();
-			c.getDocument().addDocumentListener(new DocumentListener() {
-				@Override
-				public void removeUpdate(DocumentEvent e) {
-					update();
-				}
-				@Override
-				public void insertUpdate(DocumentEvent e) {
-					update();
-				}
-				@Override
-				public void changedUpdate(DocumentEvent e) {
-					update();
-				}
-				private void update() {
-					if (DEFAULT_SCHEMA.equals(workingTableSchemaComboBox.getEditor().getItem())) {
-						scopeGlobal.setEnabled(globalIsAvailable);
-						scopeSession.setEnabled(sessionLocalIsAvailable);
-					} else {
-						scopeGlobal.setEnabled(true);
-						scopeSession.setEnabled(true);
-					}
-					updateCLIArea();				
-				}
-			});
-		} catch (ClassCastException e) {
-			// ignore
-		}
-
-		parameterEditor = new ParameterEditor(parent);
-		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		parameterPanel.add(parameterEditor.createPane(dataModel.getParameters(subjectCondition, additionalSubjects)), gridBagConstraints);
-		
-		ScriptFormat theScriptFormat = ScriptFormat.SQL;
-		try {
-			theScriptFormat = ScriptFormat.valueOf(dataModel.getExportModus());
-		} catch (Exception e) {
-		}
-		
-		scriptFormat = theScriptFormat;
-		toLabel.setText(scriptFormat.getDisplayName());
-		
-		setModal(true);
-		setLocation(100, 150);
-		Map<String, JComponent> fields = new HashMap<String, JComponent>();
-		fields.put("insert" + scriptFormat.name(), insert);
-		fields.put("threads", threads);
-		fields.put("rowsPerThread", rowsPerThread);
-		fields.put("unicode", unicode);
-		for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
-			fields.put("$" + e.getKey(), e.getValue());
-		}
 		
 		try {
-			JTextField c;
-			c = (JTextField) workingTableSchemaComboBox.getEditor().getEditorComponent();
-			fields.put("workingTableSchema", c);
-		} catch (ClassCastException e) {
-			// ignore
-		}
-		
-		confirmInsert.setSelected(lastConfirmInsert);
-		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
-			exportLabel.setText(" Receipt*");
-			jLabel3.setVisible(false);
-			delete.setVisible(false);
-			browseDeleteButton.setVisible(false);
-		} else {
-			confirmInsert.setVisible(false);
-		}
-		
-		sortedCheckBox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat) || ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat) || ScriptFormat.LIQUIBASE_XML.equals(scriptFormat));
-		sortedCheckBox.setSelected(true);
-		upsertCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat));
-		rowsPerThread.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
+			UIUtil.setWaitCursor(parent);
 
-		Map<JTextField, String> defaults = new HashMap<JTextField, String>();
-
-		if (ScriptFormat.INTRA_DATABASE.equals(scriptFormat)) {
-			jLabel8.setVisible(false);
-			jPanel8.setVisible(false);
-		}
-		
-		if ((!ScriptFormat.SQL.equals(scriptFormat)) && (!ScriptFormat.INTRA_DATABASE.equals(scriptFormat)) && (!ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat)) && !ScriptFormat.LIQUIBASE_XML.equals(scriptFormat)) {
-			schemaMappingPanel.setVisible(false);
-		} else {
-			schemaMappingPanel.setVisible(true);
-			initSchemaMapping(dataModel, fields, defaults);
-		}
-		initSourceSchemaMapping(dataModel, fields, defaults);
-		
-		theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
-		
-		theSettings.restore(settingsContext);
-		for (JTextField field: defaults.keySet()) {
-			if (field.getText().length() == 0) {
-				field.setText(defaults.get(field));
-			}
-		}
-		
-		if (scriptFormat == ScriptFormat.INTRA_DATABASE && insert.getText().trim().length() == 0) {
-			insert.setText("receipt.txt");
-		}
-		
-		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
-			for (Map.Entry<String, JTextField> e: schemaMappingFields.entrySet()) {
-				if (e.getKey().equals(e.getValue().getText())) {
-					e.getValue().setText("");
-				}
-			}
-		}
-		
-		if (threads.getText().length() == 0) {
-			threads.setText("4");
-		}
-		if (rowsPerThread.getText().length() == 0) {
-			rowsPerThread.setText("50");
-		}
-		
-		useRowIds.setSelected(true);
-		if (session.dbms.getRowidName() == null) {
-			useRowIds.setVisible(false);
-		}
-		
-		if (additionalSubjects.isEmpty()) {
-			additSubsLabel.setVisible(false);
-			additSubsLabelTitel.setVisible(false);
-		} else {
-			StringBuilder sb = new StringBuilder();
-			int ll = 0;
-			for (AdditionalSubject as: additionalSubjects) {
-				if (sb.length() > 0) {
-					sb.append(", ");
-				}
-				sb.append(as.getSubject().getName());
-				ll += as.getSubject().getName().length();
-				if (ll > 120) {
-					ll = 0;
-					sb.append("\n");
-				}
-			}
-			final int MAX = 60;
-			if (sb.length() > MAX) {
-				additSubsLabel.setToolTipText(UIUtil.toHTML(sb.toString(), 0));
-				additSubsLabel.setText(sb.toString().substring(0, MAX) + "...");
-			} else {
-				additSubsLabel.setText(sb.toString());
-			}
-		}
-		
-		subjectTable.setText(subject.getName());
-		if (subjectCondition.equals(previousInitialSubjectCondition)) {
-			where.setText(ConditionEditor.toSingleLine(previousSubjectCondition));
-		} else {
-			where.setText(ConditionEditor.toSingleLine(subjectCondition));
-		}
-		
-		initScopeButtons(session);
-		
-		browseInsertButton.setIcon(loadIcon);
-		browseDeleteButton.setIcon(loadIcon);
-		
-		if (parameterEditor.firstTextField != null) {
-			parameterEditor.firstTextField.grabFocus();
-		}
-		
-		DocumentListener dl = new DocumentListener() {
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateCLIArea();
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateCLIArea();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateCLIArea();
-			}
-		};
-		ActionListener al = new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				workingTableSchemaComboBox.setEnabled(!scopeLocal.isSelected());
-				updateCLIArea();
-			}
-		};
-		where.getDocument().addDocumentListener(dl);
-		insert.getDocument().addDocumentListener(dl);
-		delete.getDocument().addDocumentListener(dl);
-		threads.getDocument().addDocumentListener(dl);
-		rowsPerThread.getDocument().addDocumentListener(dl);
-		upsertCheckbox.addActionListener(al);
-		explain.addActionListener(al);
-		unicode.addActionListener(al);
-		sortedCheckBox.addActionListener(al);
-		scopeGlobal.addActionListener(al);
-		scopeSession.addActionListener(al);
-		scopeLocal.addActionListener(al);
-		for (JTextField field: parameterEditor.textfieldsPerParameter.values()) {
-			field.getDocument().addDocumentListener(dl);
-		}
+			initComponents();
+			
+			CancellationHandler.reset(null);
 	
-		Dimension preferredSize = where.getPreferredSize();
-		preferredSize.width = 10;
-		where.setPreferredSize(preferredSize);
-		
-		final ConditionEditor subjectConditionEditor = new ConditionEditor(null, null, dataModel);
-		subjectConditionEditor.setTitle("Subject condition");
-		openWhereEditor.setIcon(conditionEditorIcon);
-		openWhereEditor.setText(null);
-		openWhereEditor.addMouseListener(new java.awt.event.MouseAdapter() {
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				mouseClicked(e);
+			if (!showCmd) {
+				commandLinePanel.setVisible(false);
 			}
-			@Override
-			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				String cond = subjectConditionEditor.edit(where.getText(), "Subject", "T", subject, null, null, null, false, true);
-				if (cond != null) {
-					if (!where.getText().equals(ConditionEditor.toSingleLine(cond))) {
-						where.setText(ConditionEditor.toSingleLine(cond));
+			
+			List<String> allSchemas = new ArrayList<String>(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema()));
+			allSchemas.addAll(JDBCMetaDataBasedModelElementFinder.getCatalogsWithSchemas(session));
+			String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+			initWorkingTableSchemaBox(session, allSchemas, defaultSchema);
+			initIFMTableSchemaBox(session, allSchemas, defaultSchema);
+	
+			try {
+				JTextField c = (JTextField) workingTableSchemaComboBox.getEditor().getEditorComponent();
+				c.getDocument().addDocumentListener(new DocumentListener() {
+					@Override
+					public void removeUpdate(DocumentEvent e) {
+						update();
 					}
-					openWhereEditor.setIcon(conditionEditorSelectedIcon);
+					@Override
+					public void insertUpdate(DocumentEvent e) {
+						update();
+					}
+					@Override
+					public void changedUpdate(DocumentEvent e) {
+						update();
+					}
+					private void update() {
+						if (DEFAULT_SCHEMA.equals(workingTableSchemaComboBox.getEditor().getItem())) {
+							scopeGlobal.setEnabled(globalIsAvailable);
+							scopeSession.setEnabled(sessionLocalIsAvailable);
+						} else {
+							scopeGlobal.setEnabled(true);
+							scopeSession.setEnabled(true);
+						}
+						updateCLIArea();				
+					}
+				});
+			} catch (ClassCastException e) {
+				// ignore
+			}
+	
+			parameterEditor = new ParameterEditor(parent);
+			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 0;
+			gridBagConstraints.fill = GridBagConstraints.BOTH;
+			gridBagConstraints.weightx = 1.0;
+			gridBagConstraints.weighty = 1.0;
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			parameterPanel.add(parameterEditor.createPane(dataModel.getParameters(subjectCondition, additionalSubjects)), gridBagConstraints);
+			
+			ScriptFormat theScriptFormat = ScriptFormat.SQL;
+			try {
+				theScriptFormat = ScriptFormat.valueOf(dataModel.getExportModus());
+			} catch (Exception e) {
+			}
+			
+			scriptFormat = theScriptFormat;
+			toLabel.setText(scriptFormat.getDisplayName());
+			
+			setModal(true);
+			setLocation(100, 150);
+			Map<String, JComponent> fields = new HashMap<String, JComponent>();
+			fields.put("insert" + scriptFormat.name(), insert);
+			fields.put("threads", threads);
+			fields.put("rowsPerThread", rowsPerThread);
+			fields.put("unicode", unicode);
+			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
+				fields.put("$" + e.getKey(), e.getValue());
+			}
+			
+			try {
+				JTextField c;
+				c = (JTextField) workingTableSchemaComboBox.getEditor().getEditorComponent();
+				fields.put("workingTableSchema", c);
+			} catch (ClassCastException e) {
+				// ignore
+			}
+			
+			confirmInsert.setSelected(lastConfirmInsert);
+			if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
+				exportLabel.setText(" Receipt*");
+				jLabel3.setVisible(false);
+				delete.setVisible(false);
+				browseDeleteButton.setVisible(false);
+			} else {
+				confirmInsert.setVisible(false);
+			}
+			
+			sortedCheckBox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat) || ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat) || ScriptFormat.LIQUIBASE_XML.equals(scriptFormat));
+			sortedCheckBox.setSelected(true);
+			upsertCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat));
+			rowsPerThread.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
+	
+			Map<JTextField, String> defaults = new HashMap<JTextField, String>();
+	
+			if (ScriptFormat.INTRA_DATABASE.equals(scriptFormat)) {
+				jLabel8.setVisible(false);
+				jPanel8.setVisible(false);
+			}
+			
+			if ((!ScriptFormat.SQL.equals(scriptFormat)) && (!ScriptFormat.INTRA_DATABASE.equals(scriptFormat)) && (!ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat)) && !ScriptFormat.LIQUIBASE_XML.equals(scriptFormat)) {
+				schemaMappingPanel.setVisible(false);
+			} else {
+				schemaMappingPanel.setVisible(true);
+				initSchemaMapping(dataModel, fields, defaults);
+			}
+			initSourceSchemaMapping(dataModel, fields, defaults);
+			
+			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
+			
+			theSettings.restore(settingsContext);
+			for (JTextField field: defaults.keySet()) {
+				if (field.getText().length() == 0) {
+					field.setText(defaults.get(field));
 				}
 			}
 			
-			@Override
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				openWhereEditor.setIcon(conditionEditorSelectedIcon);
+			if (scriptFormat == ScriptFormat.INTRA_DATABASE && insert.getText().trim().length() == 0) {
+				insert.setText("receipt.txt");
 			}
-			@Override
-			public void mouseExited(java.awt.event.MouseEvent evt) {
-				openWhereEditor.setIcon(conditionEditorIcon);
-		   }
-		});
-
-		initTargetDBMS(session);
+			
+			if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
+				for (Map.Entry<String, JTextField> e: schemaMappingFields.entrySet()) {
+					if (e.getKey().equals(e.getValue().getText())) {
+						e.getValue().setText("");
+					}
+				}
+			}
+			
+			if (threads.getText().length() == 0) {
+				threads.setText("4");
+			}
+			if (rowsPerThread.getText().length() == 0) {
+				rowsPerThread.setText("50");
+			}
+			
+			useRowIds.setSelected(true);
+			if (session.dbms.getRowidName() == null) {
+				useRowIds.setVisible(false);
+			}
+			
+			if (additionalSubjects.isEmpty()) {
+				additSubsLabel.setVisible(false);
+				additSubsLabelTitel.setVisible(false);
+			} else {
+				StringBuilder sb = new StringBuilder();
+				int ll = 0;
+				for (AdditionalSubject as: additionalSubjects) {
+					if (sb.length() > 0) {
+						sb.append(", ");
+					}
+					sb.append(as.getSubject().getName());
+					ll += as.getSubject().getName().length();
+					if (ll > 120) {
+						ll = 0;
+						sb.append("\n");
+					}
+				}
+				final int MAX = 60;
+				if (sb.length() > MAX) {
+					additSubsLabel.setToolTipText(UIUtil.toHTML(sb.toString(), 0));
+					additSubsLabel.setText(sb.toString().substring(0, MAX) + "...");
+				} else {
+					additSubsLabel.setText(sb.toString());
+				}
+			}
+			
+			subjectTable.setText(subject.getName());
+			if (subjectCondition.equals(previousInitialSubjectCondition)) {
+				where.setText(ConditionEditor.toSingleLine(previousSubjectCondition));
+			} else {
+				where.setText(ConditionEditor.toSingleLine(subjectCondition));
+			}
+			
+			initScopeButtons(session);
+			
+			browseInsertButton.setIcon(loadIcon);
+			browseDeleteButton.setIcon(loadIcon);
+			
+			if (parameterEditor.firstTextField != null) {
+				parameterEditor.firstTextField.grabFocus();
+			}
+			
+			DocumentListener dl = new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+			};
+			ActionListener al = new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					workingTableSchemaComboBox.setEnabled(!scopeLocal.isSelected());
+					updateCLIArea();
+				}
+			};
+			where.getDocument().addDocumentListener(dl);
+			insert.getDocument().addDocumentListener(dl);
+			delete.getDocument().addDocumentListener(dl);
+			threads.getDocument().addDocumentListener(dl);
+			rowsPerThread.getDocument().addDocumentListener(dl);
+			upsertCheckbox.addActionListener(al);
+			explain.addActionListener(al);
+			unicode.addActionListener(al);
+			sortedCheckBox.addActionListener(al);
+			scopeGlobal.addActionListener(al);
+			scopeSession.addActionListener(al);
+			scopeLocal.addActionListener(al);
+			for (JTextField field: parameterEditor.textfieldsPerParameter.values()) {
+				field.getDocument().addDocumentListener(dl);
+			}
 		
-		updateCLIArea();
-		
-		pack();
-		setSize(Math.max(Math.min(getSize().width, 900), 580), getSize().height);
-		placeholder.setVisible(false);
-		placeholder1.setVisible(false);
-		UIUtil.initPeer();
-		UIUtil.fit(this);
+			Dimension preferredSize = where.getPreferredSize();
+			preferredSize.width = 10;
+			where.setPreferredSize(preferredSize);
+			
+			final ConditionEditor subjectConditionEditor = new ConditionEditor(null, null, dataModel);
+			subjectConditionEditor.setTitle("Subject condition");
+			openWhereEditor.setIcon(conditionEditorIcon);
+			openWhereEditor.setText(null);
+			openWhereEditor.addMouseListener(new java.awt.event.MouseAdapter() {
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					mouseClicked(e);
+				}
+				@Override
+				public void mouseClicked(java.awt.event.MouseEvent evt) {
+					String cond = subjectConditionEditor.edit(where.getText(), "Subject", "T", subject, null, null, null, false, true);
+					if (cond != null) {
+						if (!where.getText().equals(ConditionEditor.toSingleLine(cond))) {
+							where.setText(ConditionEditor.toSingleLine(cond));
+						}
+						openWhereEditor.setIcon(conditionEditorSelectedIcon);
+					}
+				}
+				
+				@Override
+				public void mouseEntered(java.awt.event.MouseEvent evt) {
+					openWhereEditor.setIcon(conditionEditorSelectedIcon);
+				}
+				@Override
+				public void mouseExited(java.awt.event.MouseEvent evt) {
+					openWhereEditor.setIcon(conditionEditorIcon);
+			   }
+			});
+	
+			initTargetDBMS(session);
+			
+			updateCLIArea();
+			
+			pack();
+			setSize(Math.max(Math.min(getSize().width, 900), 580), getSize().height);
+			placeholder.setVisible(false);
+			placeholder1.setVisible(false);
+			UIUtil.initPeer();
+			UIUtil.fit(this);
+		} finally {
+			UIUtil.resetWaitCursor(parent);
+		}
 		setVisible(true);
 		try {
 			if (initScopeButtonThread != null) {
@@ -575,7 +583,13 @@ public class ExportDialog extends javax.swing.JDialog {
 			if (DEFAULT_SCHEMA.equals(schema)) {
 				result.add(schema);
 			} else {
-				result.add(quoting.quote(schema));
+				int iDot = schema.indexOf('.');
+				if (iDot > 0) {
+					String catalog = schema.substring(0, iDot);
+					result.add(quoting.quote(catalog) + "." + quoting.quote(schema.substring(iDot + 1)));
+				} else {
+					result.add(quoting.quote(schema));
+				}
 			}
 		}
 		schemas.clear();
@@ -586,15 +600,20 @@ public class ExportDialog extends javax.swing.JDialog {
 		explain.setEnabled(!scopeLocal.isSelected());
 
 		List<String> args = new ArrayList<String>(initialArgs);
-		if (extractionModelFileName != null && args.size() > 0) {
-			args.set(0, extractionModelFileName);
+		if (args.size() > 0) {
+			if (extractionModelFileName != null) {
+				args.set(0, extractionModelFileName);
+			} else {
+				args.set(0, "<extraction model>");
+			}
 		}
 		fillCLIArgs(args);
 		String cmd = "sh jailer.sh";
 		if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
 			cmd = "jailer.bat";
 		}
-		cliArea.setText(cmd + UIUtil.createCLIArgumentString(user, password, args, executionContext));
+		String cli = cmd + UIUtil.createCLIArgumentString(user, password, args, executionContext);
+		cliArea.setText(cli);
 		cliArea.setCaretPosition(0);
 		jScrollPane1.getViewport().setViewPosition(new Point(0,0));
 	}
@@ -663,6 +682,7 @@ public class ExportDialog extends javax.swing.JDialog {
 				}
 			}
 			JComboBox cb = new JComboBox();
+			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
 			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel)); 
 			cb.setEditable(true);
@@ -760,6 +780,7 @@ public class ExportDialog extends javax.swing.JDialog {
 				}
 			}
 			JComboBox cb = new JComboBox();
+			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
 			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel)); 
 			cb.setEditable(true);
@@ -1378,6 +1399,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel1.add(jLabel10, gridBagConstraints);
 
         workingTableSchemaComboBox.setEditable(true);
+        workingTableSchemaComboBox.setMaximumRowCount(20);
         workingTableSchemaComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         workingTableSchemaComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1438,6 +1460,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel1.add(targetDBMSLabel, gridBagConstraints);
 
         iFMTableSchemaComboBox.setEditable(true);
+        iFMTableSchemaComboBox.setMaximumRowCount(20);
         iFMTableSchemaComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         iFMTableSchemaComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
