@@ -1,3 +1,7 @@
+8.0.3
+  - Feature Request "#44 MSSQL export to another DB in same instance" https://sourceforge.net/p/jailer/feature-requests/44/
+  - SQL-Console: each request will now be executed in the same connection.
+
 8.0.2
   - Increased responsiveness and performance of the SQL Console.
 

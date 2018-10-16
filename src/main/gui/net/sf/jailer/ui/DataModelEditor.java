@@ -253,12 +253,14 @@ public class DataModelEditor extends javax.swing.JDialog {
 		filterHeader.setAutoChoices(AutoChoices.ENABLED);
 		filterHeader.setTable(tablesTable);
 		filterHeader.setMaxVisibleRows(20);
-
+		filterHeader.setRowHeightDelta(2);
+		
 		filterHeader = new TableFilterHeader();
 		filterHeader.setAutoChoices(AutoChoices.ENABLED);
 		filterHeader.setTable(associationsTable);
 		filterHeader.setMaxVisibleRows(20);
-
+		filterHeader.setRowHeightDelta(2);
+		
 		String modelpath = executionContext.getQualifiedDatamodelFolder();
 		try {
 			modelpath = new File(modelpath).getAbsolutePath();

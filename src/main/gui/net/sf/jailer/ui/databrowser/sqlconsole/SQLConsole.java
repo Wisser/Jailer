@@ -696,6 +696,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             localStatus.numStatements++;
             status.updateView(false);
             statement = session.getConnection().createStatement();
+            CancellationHandler.reset(SQLConsole.this);
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
             sqlStatement = 
@@ -1035,13 +1036,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         status.errorPositionIsKnown = false;
                     }
                 }
-
-                if (error instanceof CancellationException) {
-                    CancellationHandler.reset(SQLConsole.this);
-                    queue.clear();
-                }
                 status.failed = true;
                 status.error = error;
+            }
+            if (error instanceof CancellationException) {
+                CancellationHandler.reset(SQLConsole.this);
+                queue.clear();
             }
             status.updateView(false);
             SwingUtilities.invokeLater(new Runnable() {

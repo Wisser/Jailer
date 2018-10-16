@@ -156,7 +156,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		this.initialArgs = new ArrayList<String>(initialArgs);
 		this.user = user;
 		this.password = password;
-		this.settingsContext = session.dbUrl;
+		this.settingsContext = session.dbUrl + ":" + session.getSchema();
 		this.sourceDBMS = session.dbms;
 		this.dbConnectionDialog = dbConnectionDialog;
 		this.additionalSubjects = additionalSubjects;
@@ -168,9 +168,11 @@ public class ExportDialog extends javax.swing.JDialog {
 			commandLinePanel.setVisible(false);
 		}
 		
-		initWorkingTableSchemaBox(session);
-		initIFMTableSchemaBox(session);
-		
+		List<String> allSchemas = JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema());
+		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+		initWorkingTableSchemaBox(session, allSchemas, defaultSchema);
+		initIFMTableSchemaBox(session, allSchemas, defaultSchema);
+
 		try {
 			JTextField c = (JTextField) workingTableSchemaComboBox.getEditor().getEditorComponent();
 			c.getDocument().addDocumentListener(new DocumentListener() {
@@ -229,6 +231,14 @@ public class ExportDialog extends javax.swing.JDialog {
 		fields.put("unicode", unicode);
 		for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
 			fields.put("$" + e.getKey(), e.getValue());
+		}
+		
+		try {
+			JTextField c;
+			c = (JTextField) workingTableSchemaComboBox.getEditor().getEditorComponent();
+			fields.put("workingTableSchema", c);
+		} catch (ClassCastException e) {
+			// ignore
 		}
 		
 		confirmInsert.setSelected(lastConfirmInsert);
@@ -471,7 +481,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	private static String lastIFMTableSchema = null;
 	
 	@SuppressWarnings("unchecked")
-	private void initIFMTableSchemaBox(Session session) {
+	private void initIFMTableSchemaBox(Session session, List<String> allSchemas, String defaultSchema) {
 		boolean hasImportFilter = false;
 		for (Table table: dataModel.getTables()) {
 			for (Column column: table.getColumns()) {
@@ -491,8 +501,8 @@ public class ExportDialog extends javax.swing.JDialog {
 		}
 		List<String> schemas = new ArrayList<String>();
 		schemas.add(DEFAULT_SCHEMA);
-		schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema()));
-		schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema()));
+		schemas.addAll(allSchemas);
+		schemas.remove(defaultSchema);
 		quoteSchemas(schemas, session);
 		if (lastIFMTableSchema != null && !schemas.contains(lastIFMTableSchema)) {
 			schemas.add(lastIFMTableSchema);
@@ -528,15 +538,15 @@ public class ExportDialog extends javax.swing.JDialog {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void initWorkingTableSchemaBox(Session session) {
+	private void initWorkingTableSchemaBox(Session session, List<String> allSchemas, String defaultSchema) {
 		List<String> schemas = new ArrayList<String>();
 		schemas.add(DEFAULT_SCHEMA);
-		schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema()));
-		schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema()));
+		schemas.addAll(allSchemas);
+		schemas.remove(defaultSchema);
 		quoteSchemas(schemas, session);
 		schemaComboboxModel = schemas.toArray(new String[0]);
 		workingTableSchemaComboBox.setModel(new DefaultComboBoxModel(schemaComboboxModel));
-		workingTableSchemaComboBox.setSelectedItem(lastWorkingTableSchema != null && schemas.contains(lastWorkingTableSchema)? lastWorkingTableSchema : DEFAULT_SCHEMA);
+		workingTableSchemaComboBox.setSelectedItem(lastWorkingTableSchema != null? lastWorkingTableSchema : DEFAULT_SCHEMA);
 		workingTableSchemaComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {

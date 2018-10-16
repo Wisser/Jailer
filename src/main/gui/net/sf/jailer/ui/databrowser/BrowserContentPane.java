@@ -3872,6 +3872,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (isTableFilterEnabled && !noFilter) {
 			if (filterHeader == null) {
 				filterHeader = new TableFilterHeader();
+				filterHeader.setRowHeightDelta(2);
 				filterHeader.setAutoChoices(AutoChoices.ENABLED);
 				filterHeader.setTable(rowsTable);
 				filterHeader.setMaxVisibleRows(20);
