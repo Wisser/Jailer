@@ -1,4 +1,5 @@
 8.0.3
+  - Feature Request "#47 Add additional tables adds too much" https://sourceforge.net/p/jailer/feature-requests/47/
   - Feature Request "#44 MSSQL export to another DB in same instance" https://sourceforge.net/p/jailer/feature-requests/44/
   - SQL-Console: each request will now be executed in the same connection.
 

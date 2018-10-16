@@ -52,6 +52,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	private final String subjectCond;
 	private final Table subject;
 	private Set<Table> remaining = new HashSet<Table>();
+	private Set<Table> remainingIsolated = new HashSet<Table>();
 	
 	@SuppressWarnings("serial")
 	private class AdditionalSubjectListEditor extends ListEditor<AdditionalSubject> {
@@ -258,7 +259,12 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			remaining.remove(subjects.get(i).getSubject());
 		}
 				
+		remainingIsolated.clear();
+		remainingIsolated.addAll(remaining);
+		remainingIsolated.removeAll(subject.closure(true));
+		
 		addAllButton.setEnabled(!remaining.isEmpty());
+		addIsolatedlButton.setEnabled(!remainingIsolated.isEmpty());
 		removeAllButton.setEnabled(!subjects.isEmpty());
 	}
 
@@ -273,7 +279,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         detailsPanel = new javax.swing.JPanel();
-        detailsComboBox = new net.sf.jailer.ui.JComboBox();
+        detailsComboBox = new JComboBox();
         detailsLabel = new javax.swing.JLabel();
         detailsCondtition = new javax.swing.JTextField();
         detailsWhere = new javax.swing.JLabel();
@@ -282,6 +288,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
         addAllButton = new javax.swing.JButton();
         removeAllButton = new javax.swing.JButton();
+        addIsolatedlButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         subjectsPanel = new javax.swing.JPanel();
@@ -322,13 +329,12 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
         okButton.setText(" Ok ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
@@ -336,20 +342,18 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
         jPanel3.add(cancelButton, gridBagConstraints);
 
         addAllButton.setText("Add remaining tables");
         addAllButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addAllButtonActionPerformed(evt);
             }
         });
@@ -360,17 +364,28 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
         removeAllButton.setText("Delete all");
         removeAllButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeAllButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
         jPanel3.add(removeAllButton, gridBagConstraints);
+
+        addIsolatedlButton.setText("Add isolated tables");
+        addIsolatedlButton.setToolTipText("Add all remaining tables that are not in the closure of the primary subject.");
+        addIsolatedlButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addIsolatedlButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
+        jPanel3.add(addIsolatedlButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -452,10 +467,30 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		collectRemaining();
 	}//GEN-LAST:event_removeAllButtonActionPerformed
 
+    private void addIsolatedlButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addIsolatedlButtonActionPerformed
+    	try {
+			UIUtil.setWaitCursor(this);
+			
+			List<Table> tables = new ArrayList<Table>(remainingIsolated);
+			Collections.sort(tables);
+			
+			for (Table table: tables) {
+				subjects.add(new AdditionalSubject(table, ""));
+			}
+			sortSubjects();
+			
+			additionalSubjectListEditor.setModel(subjects);
+			collectRemaining();
+		} finally {
+			UIUtil.resetWaitCursor(this);
+		}
+    }//GEN-LAST:event_addIsolatedlButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addAllButton;
+    private javax.swing.JButton addIsolatedlButton;
     private javax.swing.JButton cancelButton;
-    private net.sf.jailer.ui.JComboBox detailsComboBox;
+    private JComboBox detailsComboBox;
     private javax.swing.JTextField detailsCondtition;
     private javax.swing.JLabel detailsLabel;
     private javax.swing.JPanel detailsPanel;
