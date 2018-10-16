@@ -19,8 +19,8 @@ HyperSQL;jdbc:hsqldb:<file|hsql|http>:<DB>;org.hsqldb.jdbcDriver
 # Microsoft SQL Server (JTurbo Driver);jdbc:JTurbo://<HOST>:<PORT>/<DB>;com.ashna.jturbo.driver.Driver
 # Microsoft SQL Server (Sprinta Driver);jdbc:inetdae:<HOST>:<PORT>?database=<DB>;com.inet.tds.TdsDriver
 # Microsoft SQL Server (Microsoft Driver);jdbc:microsoft:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.jdbc.sqlserver.SQLServerDriver
-Microsoft SQL Server (Microsoft Driver);jdbc:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.sqlserver.jdbc.SQLServerDriver
-MySQL (MM.MySQL Driver);jdbc:mysql://<HOST>:<PORT>/<DB>;org.gjt.mm.mysql.Driver;lib/mysql-connector-java-5.1.5-bin.jar
+Microsoft SQL Server;jdbc:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.sqlserver.jdbc.SQLServerDriver
+MySQL;jdbc:mysql://<HOST>:<PORT>/<DB>;org.gjt.mm.mysql.Driver;lib/mysql-connector-java-5.1.5-bin.jar
 Oracle OCI;jdbc:oracle:oci:@<SID>;oracle.jdbc.driver.OracleDriver
 # PostgreSQL (v6.5 and earlier);jdbc:postgresql://<HOST>:<PORT>/<DB>;postgresql.Driver
 #PostgreSQL (JDBC Driver 9.4);jdbc:postgresql://<HOST>:<PORT>/<DB>;org.postgresql.Driver;lib/postgresql-9.4.1211.jre6.jar

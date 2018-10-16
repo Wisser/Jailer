@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -54,6 +55,7 @@ import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
+import net.sf.jailer.util.Pair;
 
 public class TabContentPanel extends javax.swing.JPanel {
 
@@ -67,9 +69,14 @@ public class TabContentPanel extends javax.swing.JPanel {
 	
     /**
      * Creates new form TabContentPanel
+     * @param caretDotMark 
      */
-    public TabContentPanel(JLabel rowsCount, JComponent metaDataDetails, String type, boolean explain) {
+    public TabContentPanel(JLabel rowsCount, JComponent metaDataDetails, String type, boolean explain, javax.swing.JPanel shimPanel, Pair<Integer, Integer> caretDotMark) {
+    	this.shimPanel = shimPanel == null? new javax.swing.JPanel(new GridBagLayout()) : shimPanel;
+    	this.caretDotMark = caretDotMark;
         initComponents();
+        loadingPanel.setVisible(false);
+        
         statementLabel = new JLabel() {
         	@Override
         	public Dimension getMinimumSize() {
@@ -150,6 +157,15 @@ public class TabContentPanel extends javax.swing.JPanel {
 				metaPanel.add(metaDataDetails);
 			}
 		}
+
+		this.shimPanel.removeAll();
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1;
+        gridBagConstraints.weighty = 1;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        this.shimPanel.add(this, gridBagConstraints);
     }
 
     public static String toType(ResultSetMetaData metaData, Session session, ExecutionContext executionContext) throws Exception {
@@ -380,6 +396,13 @@ public class TabContentPanel extends javax.swing.JPanel {
         panel = new javax.swing.JPanel();
         controlsPanel1 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
+        loadingPanel = new javax.swing.JPanel();
+        cancelLoadButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        jPanel13 = new javax.swing.JPanel();
+        loadingCauseLabel = new javax.swing.JLabel();
+        loadingLabel = new javax.swing.JLabel();
         tabbedPane = new javax.swing.JTabbedPane();
         contentPanel = new javax.swing.JPanel();
         columnsPanel = new javax.swing.JPanel();
@@ -415,6 +438,75 @@ public class TabContentPanel extends javax.swing.JPanel {
         add(panel, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jLayeredPane1.setLayout(new java.awt.GridBagLayout());
+
+        loadingPanel.setBackground(new Color(255,255,255,150));
+        loadingPanel.setLayout(new java.awt.GridBagLayout());
+
+        cancelLoadButton.setText("Cancel");
+        cancelLoadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelLoadButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        loadingPanel.add(cancelLoadButton, gridBagConstraints);
+
+        jLabel2.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        loadingPanel.add(jLabel2, gridBagConstraints);
+
+        jPanel13.setOpaque(false);
+        jPanel13.setLayout(new java.awt.GridBagLayout());
+
+        loadingCauseLabel.setFont(new java.awt.Font("DejaVu Sans", 0, 14)); // NOI18N
+        loadingCauseLabel.setForeground(new java.awt.Color(141, 16, 16));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel13.add(loadingCauseLabel, gridBagConstraints);
+
+        loadingLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
+        loadingLabel.setForeground(new java.awt.Color(141, 16, 16));
+        loadingLabel.setText("loading...     ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel13.add(loadingLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
+        loadingPanel.add(jPanel13, gridBagConstraints);
+
+        jLayeredPane1.setLayer(loadingPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 2, 4);
+        jLayeredPane1.add(loadingPanel, gridBagConstraints);
 
         tabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
 
@@ -530,7 +622,15 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPanel1.add(tabbedPane, gridBagConstraints);
+        jLayeredPane1.add(tabbedPane, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jLayeredPane1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -554,7 +654,13 @@ public class TabContentPanel extends javax.swing.JPanel {
 		}
     }//GEN-LAST:event_headerCheckBoxActionPerformed
 
+    private void cancelLoadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelLoadButtonActionPerformed
+    }//GEN-LAST:event_cancelLoadButtonActionPerformed
+
+    final Pair<Integer, Integer> caretDotMark;
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    javax.swing.JButton cancelLoadButton;
     private javax.swing.JComboBox<String> columnSeparatorComboBox;
     public javax.swing.JPanel columnsPanel;
     public javax.swing.JScrollPane columnsScrollPane;
@@ -564,9 +670,15 @@ public class TabContentPanel extends javax.swing.JPanel {
     private javax.swing.JButton copyCBButton;
     private javax.swing.JCheckBox headerCheckBox;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel13;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea;
+    private javax.swing.JLabel loadingCauseLabel;
+    private javax.swing.JLabel loadingLabel;
+    javax.swing.JPanel loadingPanel;
     private javax.swing.JPanel metaPanel;
     private javax.swing.JPanel metaTabPanel;
     public javax.swing.JPanel panel;
@@ -576,4 +688,6 @@ public class TabContentPanel extends javax.swing.JPanel {
     private javax.swing.JPanel typePanel;
     // End of variables declaration//GEN-END:variables
     public javax.swing.JLabel statementLabel;
+	public final javax.swing.JPanel shimPanel;
+	javax.swing.JButton loadButton;
 }

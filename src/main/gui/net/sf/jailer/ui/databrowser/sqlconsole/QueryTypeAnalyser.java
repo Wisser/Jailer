@@ -290,7 +290,7 @@ public class QueryTypeAnalyser {
 			}
 			return result;
 		} catch (Exception e) {
-			logger.info("error", e);
+			// logger.info("error", e);
 		}
 		return null;
 	}

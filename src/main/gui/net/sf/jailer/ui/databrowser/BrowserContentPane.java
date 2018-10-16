@@ -2586,7 +2586,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	public void reloadRows(String cause) {
 		if (!suppressReload) {
-			session = retrieveCurrentSession();
 			lastReloadTS = System.currentTimeMillis();
 			cancelLoadJob(true);
 			setPendingState(true, true);
@@ -2605,10 +2604,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			getRunnableQueue().add(reloadJob);
 		}
-	}
-
-	protected Session retrieveCurrentSession() {
-		return session;
 	}
 
 	/**
@@ -4730,7 +4725,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 		private void cancelLoadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelLoadButtonActionPerformed
-			cancelLoadJob(false);
+			cancelLoadJob(false); 
 			updateMode("cancelled", null);
 		}//GEN-LAST:event_cancelLoadButtonActionPerformed
 
@@ -4867,6 +4862,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Cancels current load job.
 	 * @param propagate 
+	 * @return 
 	 */
 	public void cancelLoadJob(boolean propagate) {
 		LoadJob cLoadJob;

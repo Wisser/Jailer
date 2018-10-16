@@ -171,6 +171,36 @@ public class ExportDialog extends javax.swing.JDialog {
 		initWorkingTableSchemaBox(session);
 		initIFMTableSchemaBox(session);
 		
+		try {
+			JTextField c = (JTextField) workingTableSchemaComboBox.getEditor().getEditorComponent();
+			c.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					update();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					update();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					update();
+				}
+				private void update() {
+					if (DEFAULT_SCHEMA.equals(workingTableSchemaComboBox.getEditor().getItem())) {
+						scopeGlobal.setEnabled(globalIsAvailable);
+						scopeSession.setEnabled(sessionLocalIsAvailable);
+					} else {
+						scopeGlobal.setEnabled(true);
+						scopeSession.setEnabled(true);
+					}
+					updateCLIArea();				
+				}
+			});
+		} catch (ClassCastException e) {
+			// ignore
+		}
+
 		parameterEditor = new ParameterEditor(parent);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 0;
@@ -1337,6 +1367,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(jLabel10, gridBagConstraints);
 
+        workingTableSchemaComboBox.setEditable(true);
         workingTableSchemaComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         workingTableSchemaComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1837,7 +1868,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		args.add("-scope");
 		args.add(getTemporaryTableScope().toString());
 
-		String schema = (String) workingTableSchemaComboBox.getSelectedItem();
+		String schema = (String) workingTableSchemaComboBox.getEditor().getItem();
 		if (schema != null && schema.length() > 0 && !schema.equals(DEFAULT_SCHEMA)) {
 			args.add("-working-table-schema");
 			args.add(schema);
