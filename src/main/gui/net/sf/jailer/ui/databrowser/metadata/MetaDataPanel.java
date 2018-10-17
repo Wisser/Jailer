@@ -26,6 +26,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -55,6 +56,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -63,6 +66,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
@@ -91,6 +95,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.log4j.Logger;
+import org.fife.rsta.ui.EscapableDialog;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import net.sf.jailer.ExecutionContext;
@@ -697,10 +702,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                             JMenu menu = new JMenu("Create Script");
                             popup.add(menu);
                             ++itemCount;
-                            menu.add(createScriptMenuItem("Delete Script", "Delete from %1$s;", "", mdTables, false));
-                            menu.add(createScriptMenuItem("Drop Table Script", "Drop %2$s %1$s;", "", mdTables, false));
+                            Point pos = new Point(evt.getX(), evt.getY());
+							SwingUtilities.convertPointToScreen(pos, evt.getComponent());
+                            menu.add(createScriptMenuItem("Delete Script", "Delete from %1$s;", "", mdTables, false, pos));
+                            menu.add(createScriptMenuItem("Create Table Script", "DDL", "", mdTables, false, pos));
+                            menu.add(createScriptMenuItem("Drop Table Script", "Drop %2$s %1$s;", "", mdTables, false, pos));
                             menu.addSeparator();
-                            menu.add(createScriptMenuItem("Count Rows Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true));
+                            menu.add(createScriptMenuItem("Count Rows Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true, pos));
                         }
                         popup.show(evt.getComponent(), evt.getX(), evt.getY());
                     }
@@ -715,33 +723,92 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     }
                 }
             }
-            private JMenuItem createScriptMenuItem(String title, final String template, final String separator, final Set<MDTable> mdTables, final boolean execute) {
+            private JMenuItem createScriptMenuItem(String title, final String template, final String separator, final Set<MDTable> mdTables, final boolean execute, final Point pos) {
                 JMenuItem item = new JMenuItem(title);
+                final AtomicBoolean cancelLoading = new AtomicBoolean(false);
+
                 item.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                    	StringBuilder script = new StringBuilder();
-                    	for (MDTable mdTable: mdTables) {
-                    		if (script.length() > 0) {
-                    			script.append(separator + "\n");
-                    		}
-                    		String tableName;
-                    		String tableType = "Table";
-                    		if (mdTable.isView()) {
-                    			tableType = "View";
-                    		}
-                    		if (mdTable.isSynonym()) {
-                    			tableType = "Synonym";
-                    		}
-                    		if (mdTable.getSchema().isDefaultSchema) {
-                    			tableName = mdTable.getName();
-                    		} else {
-                    			tableName = mdTable.getSchema() + "." + mdTable.getName();
-                    		}
-							script.append(String.format(template, tableName, tableType));
+                    	final Window wa = SwingUtilities.getWindowAncestor(MetaDataPanel.this);
+                    	final boolean withWaitDialog;
+                    	if ("DDL".equals(template) && mdTables.size() > 1) {
+                    		cancelLoading.set(false);
+                    		withWaitDialog = true;
+	                    	SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									JDialog dialog;
+									dialog = new EscapableDialog((wa instanceof Frame)? (Frame) wa : null, "Script") {
+									};
+									dialog.setModal(true);
+									waitDialog.set(dialog);
+									dialog.getContentPane().add(waitingPanel);
+									dialog.pack();
+									dialog.setLocation(pos.x + dialog.getWidth() / 2 - dialog.getWidth() / 2, pos.y + dialog.getHeight() / 2 - dialog.getHeight() / 2);
+									dialog.setVisible(true);
+									waitDialog.set(null);
+									cancelLoading.set(true);
+								}
+	                    	});
+                    	} else {
+                    		waitDialog.set(null);
+                    		withWaitDialog = false;
                     	}
-            			script.append("\n");
-						appendScript(script.toString(), execute);
+                    	MDSchema.loadMetaData(new Runnable() {
+							@Override
+							public void run() {
+				        		if (withWaitDialog) {
+			                    	for (MDTable mdTable: mdTables) {
+			                    		mdTable.getDDL();
+			                    		if (cancelLoading.get()) {
+			                    			break;
+			                    		}
+			                    	}
+				        		}
+		                    	SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+			                    		if (!cancelLoading.get()) {
+					                    	StringBuilder script = new StringBuilder();
+					                    	for (MDTable mdTable: mdTables) {
+					                    		if (script.length() > 0) {
+					                    			script.append(separator + UIUtil.LINE_SEPARATOR);
+					                    		}
+					                    		if ("DDL".equals(template)) {
+						                    		String ddl = mdTable.getDDL().trim();
+													script.append(ddl);
+													if (!ddl.endsWith(";")) {
+														script.append(";");
+													}
+					                    		} else {
+						                    		String tableName;
+						                    		String tableType = "Table";
+						                    		if (mdTable.isView()) {
+						                    			tableType = "View";
+						                    		}
+						                    		if (mdTable.isSynonym()) {
+						                    			tableType = "Synonym";
+						                    		}
+						                    		if (mdTable.getSchema().isDefaultSchema) {
+						                    			tableName = mdTable.getName();
+						                    		} else {
+						                    			tableName = mdTable.getSchema() + "." + mdTable.getName();
+						                    		}
+						                    		script.append(String.format(template, tableName, tableType));
+					                    		}
+					                    	}
+					            			script.append("\n");
+											appendScript(script.toString(), execute);
+				                    	}
+						        		if (waitDialog.get() != null) {
+						        			waitDialog.get().dispose();
+						        			waitDialog.set(null);
+						        		}
+									}
+								});
+							}
+						}, 2);
                     }
                 });
                 return item;
@@ -1346,6 +1413,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        waitingPanel = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        cancelButton = new javax.swing.JButton();
         splitPane = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -1361,6 +1431,20 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+
+        waitingPanel.setBackground(java.awt.Color.white);
+
+        jLabel5.setForeground(java.awt.Color.red);
+        jLabel5.setText("creating...");
+        waitingPanel.add(jLabel5);
+
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+        waitingPanel.add(cancelButton);
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -1489,6 +1573,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private void refreshButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButton1ActionPerformed
         onSelectTable();
     }//GEN-LAST:event_refreshButton1ActionPerformed
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        JDialog waitingDialog = waitDialog.get();
+    	if (waitingDialog != null) {
+    		waitingDialog.dispose();
+    	}
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
     private List<OutlineInfo> outlineTables = new ArrayList<OutlineInfo>();
     private boolean inSelectOutlineTable = false;
@@ -1664,10 +1755,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -1679,6 +1772,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private javax.swing.JButton refreshButton;
     private javax.swing.JButton refreshButton1;
     private javax.swing.JSplitPane splitPane;
+    private javax.swing.JPanel waitingPanel;
     // End of variables declaration//GEN-END:variables
 
     protected abstract void open(Table table);
@@ -1715,7 +1809,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     public void refresh() {
     	metaDataTree.repaint();
     }
-    
+
     static ImageIcon warnIcon;
     static ImageIcon viewIcon;
     static ImageIcon viewsIcon;
@@ -1727,6 +1821,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     static ImageIcon schemaIcon;
     private static HashMap<ImageIcon, ImageIcon> combinedIcons = new HashMap<ImageIcon, ImageIcon>();
     
+    private final AtomicReference<JDialog> waitDialog = new AtomicReference<JDialog>(null);
+        
     static ImageIcon getScaledIcon(JComponent component, ImageIcon icon, boolean small) {
         if (icon != null) {
             ImageIcon scaledIcon = icon;

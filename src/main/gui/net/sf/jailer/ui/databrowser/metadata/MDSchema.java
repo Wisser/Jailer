@@ -57,7 +57,7 @@ public class MDSchema extends MDObject {
 	private List<MDTable> tables;
 	private static final BlockingQueue<Runnable> loadTableColumnsQueue = new LinkedBlockingQueue<Runnable>();
 	private static final BlockingQueue<Runnable> loadTablesQueue = new LinkedBlockingQueue<Runnable>();
-	private static final BlockingQueue<Runnable> loadMetaDataQueues[] = new LinkedBlockingQueue[2];
+	private static final BlockingQueue<Runnable> loadMetaDataQueues[] = new LinkedBlockingQueue[3];
 	private boolean valid = true;
 	private AtomicBoolean loaded = new AtomicBoolean(false);
 	private AtomicBoolean constraintsLoaded = new AtomicBoolean(false);
