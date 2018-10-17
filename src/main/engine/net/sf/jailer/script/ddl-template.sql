@@ -38,7 +38,7 @@ ${create-table}${schema}JAILER_ENTITY${table-suffix}
 -- ,  CONSTRAINT jlr_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES ${schema}JAILER_GRAPH${table-suffix}(id)
 ) ${create-table-suffix};
 
-${create-index}${index-schema}jlr_enty_brthdy${table-suffix} ON ${index-table-prefix}${schema}JAILER_ENTITY${table-suffix} (r_entitygraph, birthday, type) ${create-index-suffix};
+${create-index}${index-schema}jlr_enty_brthdy${table-suffix} ON ${index-table-prefix}${schema}JAILER_ENTITY${table-suffix} (r_entitygraph, type, birthday) ${create-index-suffix};
 ${for-each:column-list}${create-index}${index-schema}jlr_enty_upk${table-suffix}$i ON ${index-table-prefix}${schema}JAILER_ENTITY${table-suffix} (r_entitygraph $, type) ${create-index-suffix};
 ${end}
 
