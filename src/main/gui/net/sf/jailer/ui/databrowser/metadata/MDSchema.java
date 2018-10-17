@@ -174,7 +174,7 @@ public class MDSchema extends MDObject {
 											try {
 												table.getColumns();
 											} catch (SQLException e) {
-												logger.info("error", e);
+												// logger.info("error", e);
 											}
 										}
 									}
