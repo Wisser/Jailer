@@ -194,13 +194,6 @@ public class ExportDialog extends javax.swing.JDialog {
 						update();
 					}
 					private void update() {
-						if (DEFAULT_SCHEMA.equals(workingTableSchemaComboBox.getEditor().getItem())) {
-							scopeGlobal.setEnabled(globalIsAvailable);
-							scopeSession.setEnabled(sessionLocalIsAvailable);
-						} else {
-							scopeGlobal.setEnabled(true);
-							scopeSession.setEnabled(true);
-						}
 						updateCLIArea();				
 					}
 				});
@@ -558,13 +551,6 @@ public class ExportDialog extends javax.swing.JDialog {
 		workingTableSchemaComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if (DEFAULT_SCHEMA.equals(workingTableSchemaComboBox.getSelectedItem())) {
-					scopeGlobal.setEnabled(globalIsAvailable);
-					scopeSession.setEnabled(sessionLocalIsAvailable);
-				} else {
-					scopeGlobal.setEnabled(true);
-					scopeSession.setEnabled(true);
-				}
 				updateCLIArea();				
 			}
 		});
@@ -1980,7 +1966,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	}
 	
 	public String getWorkingTableSchema() {
-		String schema = (String) workingTableSchemaComboBox.getSelectedItem();
+		String schema = (String) workingTableSchemaComboBox.getEditor().getItem();
 		if (schema.length() > 0 && !schema.equals(DEFAULT_SCHEMA)) {
 			return schema;
 		}
