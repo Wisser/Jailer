@@ -2,6 +2,7 @@
   - SQL-Console: All requests are now executed in the same connection.
   - Feature Request "#47 Add additional tables adds too much" https://sourceforge.net/p/jailer/feature-requests/47/
   - Feature Request "#44 MSSQL export to another DB in same instance" https://sourceforge.net/p/jailer/feature-requests/44/
+  - Feature Request "#49 Mac shortcuts" https://sourceforge.net/p/jailer/feature-requests/49/
 
 8.0.2
   - Increased responsiveness and performance of the SQL Console.
