@@ -133,6 +133,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	private final String password;
 	private final String subjectCondition;
 	private final String settingsContext;
+	private final String settingsContextSecondaryKey;
 	private final DBMS sourceDBMS;
 	private final DbConnectionDialog dbConnectionDialog;
 
@@ -141,7 +142,6 @@ public class ExportDialog extends javax.swing.JDialog {
 	private static boolean lastConfirmInsert = false;
 	private final String extractionModelFileName;
 	private final ExecutionContext executionContext;
-
 
 	/** Creates new form DbConnectionDialog 
 	 * @param showCmd 
@@ -156,7 +156,8 @@ public class ExportDialog extends javax.swing.JDialog {
 		this.initialArgs = new ArrayList<String>(initialArgs);
 		this.user = user;
 		this.password = password;
-		this.settingsContext = session.dbUrl + ":" + session.getSchema();
+		this.settingsContext = session.dbUrl; 
+		this.settingsContextSecondaryKey = session.getSchema();
 		this.sourceDBMS = session.dbms;
 		this.dbConnectionDialog = dbConnectionDialog;
 		this.additionalSubjects = additionalSubjects;
@@ -271,7 +272,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			
 			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
 			
-			theSettings.restore(settingsContext);
+			theSettings.restore(settingsContext, settingsContextSecondaryKey);
 			for (JTextField field: defaults.keySet()) {
 				if (field.getText().length() == 0) {
 					field.setText(defaults.get(field));
@@ -1597,8 +1598,8 @@ public class ExportDialog extends javax.swing.JDialog {
 				f.setText(DEFAULT_SCHEMA);
 			}
 		}
-		theSettings.save(settingsContext);
-		
+		theSettings.save(settingsContext, settingsContextSecondaryKey);
+
 		boolean err = false;
 		if (insert.getText().trim().length() == 0 && (!delete.isVisible() || delete.getText().trim().length() == 0)) {
 			exportLabel.setForeground(Color.RED);

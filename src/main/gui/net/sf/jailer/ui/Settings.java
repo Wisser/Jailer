@@ -94,9 +94,11 @@ public class Settings  {
 	 * Saves a setting.
 	 * 
 	 * @param name the name of the setting
+	 * @param settingsContextSecondaryKey 
 	 */
-	public void save(String name) {
+	public void save(String name, String settingsContextSecondaryKey) {
 		if (name != null && name.trim().length() > 0) {
+			name = name.trim() + ":" + settingsContextSecondaryKey;
 			Map<String, String> setting = new HashMap<String, String>();
 			for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
 				if (entry.getValue() instanceof JTextField) {
@@ -129,10 +131,14 @@ public class Settings  {
 	 * Restores a setting.
 	 * 
 	 * @param name the name of the setting
+	 * @param settingsContextSecondaryKey 
 	 */
-	public void restore(String name) {
+	public void restore(String name, String settingsContextSecondaryKey) {
 		if (name != null && name.trim().length() > 0) {
-			Map<String, String> setting = settings.get(name.trim());
+			Map<String, String> setting = settings.get(name.trim() + ":" + settingsContextSecondaryKey);
+			if (setting == null) {
+				setting = settings.get(name.trim());
+			}
 			if (setting != null) {
 				for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
 					if (entry.getValue() instanceof JTextField) {
