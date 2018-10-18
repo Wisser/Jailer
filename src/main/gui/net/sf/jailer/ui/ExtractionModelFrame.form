@@ -305,6 +305,14 @@
                 <Property name="label" type="java.lang.String" value="Look&amp;Feel"/>
               </Properties>
             </Menu>
+            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="nativeLAFCheckBoxMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Native Look&amp;Feel"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="nativeLAFCheckBoxMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
             <Menu class="javax.swing.JMenu" name="jMenu4">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Animation step time"/>

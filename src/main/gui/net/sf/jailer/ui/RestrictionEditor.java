@@ -119,9 +119,11 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel7.add(jLabel4, gridBagConstraints);
 
         jPanel1.setBackground(java.awt.Color.white);
+        jPanel1.setOpaque(false);
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
         ignore.setText("Disabled");
+        ignore.setOpaque(false);
         jPanel1.add(ignore);
 
         restrictedDependencyWarning.setForeground(new java.awt.Color(255, 0, 51));
@@ -136,9 +138,11 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel7.add(jPanel1, gridBagConstraints);
 
         jPanel8.setBackground(java.awt.Color.white);
+        jPanel8.setOpaque(false);
         jPanel8.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
         restricted.setText("Enabled. Restricted by   ");
+        restricted.setOpaque(false);
         jPanel8.add(restricted);
 
         openRestrictionConditionEditor.setText("jLabel5");
@@ -170,6 +174,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel7.add(jPanel9, gridBagConstraints);
 
         fkToNullCheckBox.setText("Set foreign key columns to null");
+        fkToNullCheckBox.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;

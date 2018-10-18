@@ -76,6 +76,7 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.PrintUtil;
@@ -142,6 +143,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		this.executionContext = executionContext;
 		initComponents();
 		initSandbox();
+		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel);
         initAnimationSteptime();
 		isHorizontalLayout = isHorizonal;
@@ -337,6 +339,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jSeparator11 = new javax.swing.JSeparator();
         horizontalLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         view = new javax.swing.JMenu();
+        nativeLAFCheckBoxMenuItem = new javax.swing.JCheckBoxMenuItem();
         jMenu4 = new javax.swing.JMenu();
         steptime0 = new javax.swing.JRadioButtonMenuItem();
         steptime10 = new javax.swing.JRadioButtonMenuItem();
@@ -691,6 +694,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         view.setLabel("Look&Feel");
         viewMenu.add(view);
+
+        nativeLAFCheckBoxMenuItem.setText("Native Look&Feel");
+        nativeLAFCheckBoxMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nativeLAFCheckBoxMenuItemActionPerformed(evt);
+            }
+        });
+        viewMenu.add(nativeLAFCheckBoxMenuItem);
 
         jMenu4.setText("Animation step time");
 
@@ -1735,6 +1746,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         updateInfoPanel.setVisible(false);
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void nativeLAFCheckBoxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nativeLAFCheckBoxMenuItemActionPerformed
+    }//GEN-LAST:event_nativeLAFCheckBoxMenuItemActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -1847,28 +1861,29 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				
-				try {
-					for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-				        if ("Nimbus".equals(info.getName())) {
-				            UIManager.setLookAndFeel(info.getClassName());
-				            break;
-				        }
-				    }
-					customizeNimbus();
-                    ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
-                    ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
-                    Object dSize = UIManager.get("SplitPane.dividerSize");
-                    if (new Integer(10).equals(dSize)) {
-                    	UIManager.put("SplitPane.dividerSize", new Integer(14));
-                    }
-
-                    if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
-                    	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
-                    }
-
-                    UIUtil.prepareUI();
-                } catch (Exception x) {
+				if (!Boolean.TRUE.equals(UISettings.restore(UISettings.USE_NATIVE_PLAF))) {
+					try {
+						for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+					        if ("Nimbus".equals(info.getName())) {
+					            UIManager.setLookAndFeel(info.getClassName());
+					            break;
+					        }
+					    }
+						customizeNimbus();
+	                    ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
+	                    ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
+	                    Object dSize = UIManager.get("SplitPane.dividerSize");
+	                    if (new Integer(10).equals(dSize)) {
+	                    	UIManager.put("SplitPane.dividerSize", new Integer(14));
+	                    }
+	
+	                    if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
+	                    	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
+	                    }
+	
+	                    UIUtil.prepareUI();
+	                } catch (Exception x) {
+					}
 				}
 				
 				String file = null;
@@ -2061,6 +2076,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
     private javax.swing.JMenuItem load;
+    private javax.swing.JCheckBoxMenuItem nativeLAFCheckBoxMenuItem;
     private javax.swing.JMenuItem newModel;
     private javax.swing.JMenuItem openDataBrowserItem;
     private javax.swing.JMenuItem openDataModelEditor;

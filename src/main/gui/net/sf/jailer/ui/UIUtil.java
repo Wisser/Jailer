@@ -29,6 +29,8 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -58,6 +60,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -85,6 +88,7 @@ import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CycleFinder;
@@ -1047,6 +1051,22 @@ public class UIUtil {
 	 */
 	public static void prepareUI() {
 		new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);	
+	}
+
+	/**
+	 * Initializes the "Native L&F" menu items.
+	 * 
+	 * @param nativeLAFCheckBoxMenuItem the menu item
+	 */
+	public static void initPLAFMenuItem(final JCheckBoxMenuItem nativeLAFCheckBoxMenuItem, final Component parentComponent) {
+		nativeLAFCheckBoxMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.USE_NATIVE_PLAF)));
+		nativeLAFCheckBoxMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				UISettings.store(UISettings.USE_NATIVE_PLAF, nativeLAFCheckBoxMenuItem.isSelected());
+				JOptionPane.showMessageDialog(parentComponent, "The look and feel has been changed.\n(Becomes effective after restart)", "L&F", JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
 	}
 
 }

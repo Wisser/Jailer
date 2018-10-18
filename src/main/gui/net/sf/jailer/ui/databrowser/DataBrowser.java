@@ -150,6 +150,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.SmallButton;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Quoting;
@@ -233,7 +234,8 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         initComponents();
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel);
-        initRowLimitButtons();
+		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
+		initRowLimitButtons();
         autoLayoutMenuItem.setSelected(inAutoLayoutMode());
         workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
         workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.getTabCount() - 1, new JLabel(addSqlConsoleIcon));
@@ -1152,6 +1154,7 @@ public class DataBrowser extends javax.swing.JFrame {
         newWindowMenuItem = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         view = new javax.swing.JMenu();
+        nativeLAFCheckBoxMenuItem = new javax.swing.JCheckBoxMenuItem();
         helpMenu = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
         helpForum = new javax.swing.JMenuItem();
@@ -1913,6 +1916,14 @@ public class DataBrowser extends javax.swing.JFrame {
         view.setText("Look&Feel");
         menuWindow.add(view);
 
+        nativeLAFCheckBoxMenuItem.setText("Native Look&Feel");
+        nativeLAFCheckBoxMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nativeLAFCheckBoxMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(nativeLAFCheckBoxMenuItem);
+
         menuBar.add(menuWindow);
 
         helpMenu.setText("Help");
@@ -2309,31 +2320,33 @@ public class DataBrowser extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
 			public void run() {
-                try {
-                    try {
-                    	for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                            if ("Nimbus".equals(info.getName())) {
-                                UIManager.setLookAndFeel(info.getClassName());
-                                break;
-                            }
-                        }
-                        ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
-                        ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
-                        Object dSize = UIManager.get("SplitPane.dividerSize");
-                        if (new Integer(10).equals(dSize)) {
-                        	UIManager.put("SplitPane.dividerSize", new Integer(14));
-                        }
-
-                        if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
-                        	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
-                        }
-                        
-                        UIUtil.prepareUI();
-                    } catch (Exception x) {
-                    }
-                    createFrame();
-                } catch (Exception e) {
-                    e.printStackTrace();
+            	try {
+            		if (!Boolean.TRUE.equals(UISettings.restore(UISettings.USE_NATIVE_PLAF))) {
+            			try {
+	                    	for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+	                            if ("Nimbus".equals(info.getName())) {
+	                                UIManager.setLookAndFeel(info.getClassName());
+	                                break;
+	                            }
+	                        }
+	                        ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
+	                        ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
+	                        Object dSize = UIManager.get("SplitPane.dividerSize");
+	                        if (new Integer(10).equals(dSize)) {
+	                        	UIManager.put("SplitPane.dividerSize", new Integer(14));
+	                        }
+	
+	                        if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
+	                        	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
+	                        }
+	                        
+	                        UIUtil.prepareUI();
+	                    } catch (Exception x) {
+	                    }
+            		}
+            		createFrame();
+            	} catch (Exception e) {
+            		e.printStackTrace();
                 }
             }
         });
@@ -2592,6 +2605,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel metaDataViewPanel;
     private javax.swing.JLabel modelName;
     private javax.swing.JLabel modelPath;
+    private javax.swing.JCheckBoxMenuItem nativeLAFCheckBoxMenuItem;
     private javax.swing.JPanel navigationPanel;
     private javax.swing.JTree navigationTree;
     private javax.swing.JScrollPane navigationTreeScrollPane;
@@ -3756,6 +3770,10 @@ public class DataBrowser extends javax.swing.JFrame {
         updateInfoPanel.setVisible(false);
         UpdateInfoManager.download();
     }//GEN-LAST:event_downloadButtonActionPerformed
+
+    private void nativeLAFCheckBoxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nativeLAFCheckBoxMenuItemActionPerformed
+
+    }//GEN-LAST:event_nativeLAFCheckBoxMenuItemActionPerformed
 
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();
