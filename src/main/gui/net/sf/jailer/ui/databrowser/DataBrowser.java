@@ -353,6 +353,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				layeredPaneContent.setSize(jLayeredPane1.getSize());
+				jLayeredPane1.validate();
 			}
 			@Override
 			public void componentMoved(ComponentEvent e) {
@@ -1125,6 +1126,8 @@ public class DataBrowser extends javax.swing.JFrame {
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
         dataModelEditorjMenuItem = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        columnOrderItem = new javax.swing.JMenuItem();
         jSeparator11 = new javax.swing.JPopupMenu.Separator();
         analyseSQLMenuItem1 = new javax.swing.JMenuItem();
         jSeparator10 = new javax.swing.JPopupMenu.Separator();
@@ -1132,8 +1135,6 @@ public class DataBrowser extends javax.swing.JFrame {
         schemaMappingMenuItem = new javax.swing.JMenuItem();
         jviewMenu = new javax.swing.JMenu();
         rowLimitMenu = new javax.swing.JMenu();
-        jSeparator2 = new javax.swing.JPopupMenu.Separator();
-        columnOrderItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         exportDataMenuItem = new javax.swing.JMenuItem();
         dataImport = new javax.swing.JMenuItem();
@@ -1154,6 +1155,7 @@ public class DataBrowser extends javax.swing.JFrame {
         newWindowMenuItem = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         view = new javax.swing.JMenu();
+        jMenu3 = new javax.swing.JMenu();
         nativeLAFCheckBoxMenuItem = new javax.swing.JCheckBoxMenuItem();
         helpMenu = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
@@ -1751,6 +1753,15 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuTools.add(dataModelEditorjMenuItem);
+        menuTools.add(jSeparator2);
+
+        columnOrderItem.setText("Column Ordering");
+        columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnOrderItemActionPerformed(evt);
+            }
+        });
+        menuTools.add(columnOrderItem);
         menuTools.add(jSeparator11);
 
         analyseSQLMenuItem1.setText("Analyze SQL Script");
@@ -1785,15 +1796,6 @@ public class DataBrowser extends javax.swing.JFrame {
         rowLimitMenu.setText("Row Limit");
         rowLimitMenu.setToolTipText("Desktop Row Limit");
         jviewMenu.add(rowLimitMenu);
-        jviewMenu.add(jSeparator2);
-
-        columnOrderItem.setText("Column Ordering");
-        columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                columnOrderItemActionPerformed(evt);
-            }
-        });
-        jviewMenu.add(columnOrderItem);
 
         menuBar.add(jviewMenu);
 
@@ -1916,15 +1918,19 @@ public class DataBrowser extends javax.swing.JFrame {
         view.setText("Look&Feel");
         menuWindow.add(view);
 
+        menuBar.add(menuWindow);
+
+        jMenu3.setText("Settings");
+
         nativeLAFCheckBoxMenuItem.setText("Native Look&Feel");
         nativeLAFCheckBoxMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nativeLAFCheckBoxMenuItemActionPerformed(evt);
             }
         });
-        menuWindow.add(nativeLAFCheckBoxMenuItem);
+        jMenu3.add(nativeLAFCheckBoxMenuItem);
 
-        menuBar.add(menuWindow);
+        menuBar.add(jMenu3);
 
         helpMenu.setText("Help");
 
@@ -2564,6 +2570,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLayeredPane jLayeredPane2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;

@@ -181,24 +181,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			dbConnectionDialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, null, executionContext);
 		}
 
-		// L&F can no longer be changed
-		view.setVisible(false);
-		
-		try {
-			for (final LookAndFeelInfo lfInfo: UIManager.getInstalledLookAndFeels()) {
-				JMenuItem mItem = new JMenuItem();
-				mItem.setText(lfInfo.getName());
-				view.add(mItem);
-				mItem.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						setPLAF(lfInfo.getClassName());
-					}
-				});
-			}
-		} catch (Throwable t) {
-		}
-		
 		updateMenuItems();
 
 		cycleViewDialog = new CyclesView(this);
@@ -318,6 +300,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         updateDataModel = new javax.swing.JMenuItem();
         openDataModelEditor = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        columnOrderItem = new javax.swing.JMenuItem();
         jSeparator14 = new javax.swing.JPopupMenu.Separator();
         analyzeSQLMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
@@ -336,10 +320,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jSeparator4 = new javax.swing.JSeparator();
         showIgnored = new javax.swing.JCheckBoxMenuItem();
         showTableDetails = new javax.swing.JCheckBoxMenuItem();
-        jSeparator11 = new javax.swing.JSeparator();
+        jMenu3 = new javax.swing.JMenu();
+        dataExport = new javax.swing.JMenuItem();
+        dataImport = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JSeparator();
+        openDataBrowserItem = new javax.swing.JMenuItem();
+        queryBuilder = new javax.swing.JMenuItem();
+        cycleView = new javax.swing.JMenuItem();
+        renderHtml = new javax.swing.JMenuItem();
+        jMenu5 = new javax.swing.JMenu();
         horizontalLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
-        view = new javax.swing.JMenu();
-        nativeLAFCheckBoxMenuItem = new javax.swing.JCheckBoxMenuItem();
         jMenu4 = new javax.swing.JMenu();
         steptime0 = new javax.swing.JRadioButtonMenuItem();
         steptime10 = new javax.swing.JRadioButtonMenuItem();
@@ -350,16 +340,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptime100 = new javax.swing.JRadioButtonMenuItem();
         steptime200 = new javax.swing.JRadioButtonMenuItem();
         steptime500 = new javax.swing.JRadioButtonMenuItem();
-        jSeparator3 = new javax.swing.JPopupMenu.Separator();
-        columnOrderItem = new javax.swing.JMenuItem();
-        jMenu3 = new javax.swing.JMenu();
-        dataExport = new javax.swing.JMenuItem();
-        dataImport = new javax.swing.JMenuItem();
-        jSeparator5 = new javax.swing.JSeparator();
-        openDataBrowserItem = new javax.swing.JMenuItem();
-        queryBuilder = new javax.swing.JMenuItem();
-        cycleView = new javax.swing.JMenuItem();
-        renderHtml = new javax.swing.JMenuItem();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
+        nativeLAFCheckBoxMenuItem = new javax.swing.JCheckBoxMenuItem();
         jMenu2 = new javax.swing.JMenu();
         helpContent = new javax.swing.JMenuItem();
         tutorial = new javax.swing.JMenuItem();
@@ -553,6 +535,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu1.add(openDataModelEditor);
+        jMenu1.add(jSeparator3);
+
+        columnOrderItem.setText("Column Ordering");
+        columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnOrderItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(columnOrderItem);
         jMenu1.add(jSeparator14);
 
         analyzeSQLMenuItem.setText("Analyze SQL Script");
@@ -680,7 +671,63 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         viewMenu.add(showTableDetails);
-        viewMenu.add(jSeparator11);
+
+        jMenuBar2.add(viewMenu);
+
+        jMenu3.setText("Tools");
+
+        dataExport.setLabel("Export Data");
+        dataExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataExportActionPerformed(evt);
+            }
+        });
+        jMenu3.add(dataExport);
+
+        dataImport.setLabel("Import SQL Data");
+        dataImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataImportActionPerformed(evt);
+            }
+        });
+        jMenu3.add(dataImport);
+        jMenu3.add(jSeparator5);
+
+        openDataBrowserItem.setText("Data Browser");
+        openDataBrowserItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openDataBrowserItemActionPerformed(evt);
+            }
+        });
+        jMenu3.add(openDataBrowserItem);
+
+        queryBuilder.setText("Query Builder");
+        queryBuilder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                queryBuilderActionPerformed(evt);
+            }
+        });
+        jMenu3.add(queryBuilder);
+
+        cycleView.setText("Cycle View");
+        cycleView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cycleViewActionPerformed(evt);
+            }
+        });
+        jMenu3.add(cycleView);
+
+        renderHtml.setText("HTML Rendering");
+        renderHtml.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renderHtmlActionPerformed(evt);
+            }
+        });
+        jMenu3.add(renderHtml);
+
+        jMenuBar2.add(jMenu3);
+
+        jMenu5.setText("Settings");
 
         horizontalLayoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_MASK));
         horizontalLayoutMenuItem.setSelected(true);
@@ -690,18 +737,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
                 horizontalLayoutMenuItemActionPerformed(evt);
             }
         });
-        viewMenu.add(horizontalLayoutMenuItem);
-
-        view.setLabel("Look&Feel");
-        viewMenu.add(view);
-
-        nativeLAFCheckBoxMenuItem.setText("Native Look&Feel");
-        nativeLAFCheckBoxMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nativeLAFCheckBoxMenuItemActionPerformed(evt);
-            }
-        });
-        viewMenu.add(nativeLAFCheckBoxMenuItem);
+        jMenu5.add(horizontalLayoutMenuItem);
 
         jMenu4.setText("Animation step time");
 
@@ -787,71 +823,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu4.add(steptime500);
 
-        viewMenu.add(jMenu4);
-        viewMenu.add(jSeparator3);
+        jMenu5.add(jMenu4);
+        jMenu5.add(jSeparator6);
 
-        columnOrderItem.setText("Column Ordering");
-        columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
+        nativeLAFCheckBoxMenuItem.setText("Native Look&Feel");
+        nativeLAFCheckBoxMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                columnOrderItemActionPerformed(evt);
+                nativeLAFCheckBoxMenuItemActionPerformed(evt);
             }
         });
-        viewMenu.add(columnOrderItem);
+        jMenu5.add(nativeLAFCheckBoxMenuItem);
 
-        jMenuBar2.add(viewMenu);
-
-        jMenu3.setText("Tools");
-
-        dataExport.setLabel("Export Data");
-        dataExport.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dataExportActionPerformed(evt);
-            }
-        });
-        jMenu3.add(dataExport);
-
-        dataImport.setLabel("Import SQL Data");
-        dataImport.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dataImportActionPerformed(evt);
-            }
-        });
-        jMenu3.add(dataImport);
-        jMenu3.add(jSeparator5);
-
-        openDataBrowserItem.setText("Data Browser");
-        openDataBrowserItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openDataBrowserItemActionPerformed(evt);
-            }
-        });
-        jMenu3.add(openDataBrowserItem);
-
-        queryBuilder.setText("Query Builder");
-        queryBuilder.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                queryBuilderActionPerformed(evt);
-            }
-        });
-        jMenu3.add(queryBuilder);
-
-        cycleView.setText("Cycle View");
-        cycleView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cycleViewActionPerformed(evt);
-            }
-        });
-        jMenu3.add(cycleView);
-
-        renderHtml.setText("HTML Rendering");
-        renderHtml.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                renderHtmlActionPerformed(evt);
-            }
-        });
-        jMenu3.add(renderHtml);
-
-        jMenuBar2.add(jMenu3);
+        jMenuBar2.add(jMenu5);
 
         jMenu2.setText("Help");
 
@@ -1022,6 +1005,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			try {
 				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, true, executionContext);
 				dataBrowser.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+				dataBrowser.setExtendedState(Frame.MAXIMIZED_BOTH);
 				dataBrowser.setVisible(true);
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
@@ -2059,6 +2043,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
+    private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
@@ -2066,13 +2051,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
-    private javax.swing.JSeparator jSeparator11;
     private javax.swing.JSeparator jSeparator12;
     private javax.swing.JPopupMenu.Separator jSeparator14;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
+    private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
     private javax.swing.JMenuItem load;
@@ -2103,7 +2088,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem updateDataModel;
     private javax.swing.JLabel updateInfoLabel;
     private javax.swing.JPanel updateInfoPanel;
-    private javax.swing.JMenu view;
     private javax.swing.JMenu viewMenu;
     private javax.swing.JMenuItem zoomToFit;
     // End of variables declaration//GEN-END:variables

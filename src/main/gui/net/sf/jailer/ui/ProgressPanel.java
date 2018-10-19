@@ -472,6 +472,14 @@ public class ProgressPanel extends javax.swing.JPanel {
 		JOptionPane.showMessageDialog(this, message, "Finished", JOptionPane.INFORMATION_MESSAGE);
 	}
 	
+	public void onCancel() {
+		inCancellingStep = true;
+		stepLabel.setText("cancelling...");
+		stepLabel.setForeground(Color.RED);
+    }
+
+	public boolean inCancellingStep = false;
+	
 	// 
 	// obsolete
 	// new StatisticDialog(this, message);

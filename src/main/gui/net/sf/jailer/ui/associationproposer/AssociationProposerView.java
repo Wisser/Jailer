@@ -152,7 +152,9 @@ public class AssociationProposerView extends javax.swing.JPanel {
         problemTabPanel.add(jScrollPane2);
 
         statusLabel.setVisible(false);
-                
+
+        proposalTable.setShowVerticalLines(false);
+        proposalTable.setShowHorizontalLines(false);
 		proposalTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		proposalsModel = new DefaultTableModel(new String[] { " ", "A", "B", "Condition" }, 0) {
 			@Override
@@ -229,6 +231,8 @@ public class AssociationProposerView extends javax.swing.JPanel {
 		
 		knownTable.setAutoCreateRowSorter(true);
 		knownTable.setRowSelectionAllowed(false);
+		knownTable.setShowVerticalLines(false);
+		knownTable.setShowHorizontalLines(false);
 		knownTable.setDefaultRenderer(Object.class, renderer);
 		keys = new ArrayList<SortKey>();
 		keys.add(new SortKey(0, SortOrder.ASCENDING));

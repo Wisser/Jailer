@@ -160,9 +160,11 @@ public class SingleStageProgressListener implements ProgressListener {
 								progressPanel.collectedRowsLabel.setText("" + collectedRows);
 								progressPanel.exportedRowsLabel.setText("" + exportedRows);
 								progressPanel.explainedRowsLabel.setText("" + explainedRows);
-								progressPanel.stepLabel.setText(currentStep);
-								if (isErrorStage) {
-									progressPanel.stepLabel.setForeground(Color.RED);
+								if (!progressPanel.inCancellingStep || isErrorStage) {
+									progressPanel.stepLabel.setText(currentStep);
+									if (isErrorStage) {
+										progressPanel.stepLabel.setForeground(Color.RED);
+									}
 								}
 								long t = System.currentTimeMillis();
 								if (!stopClock) {

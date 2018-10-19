@@ -333,6 +333,10 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 
 		jPanel2.setLayout(new java.awt.GridBagLayout());
 
+		columnsTable.setShowHorizontalLines(false);
+		columnsTable.setShowVerticalLines(false);
+		columnsTable.setShowGrid(false);
+
 		columnsTable.setModel(new javax.swing.table.DefaultTableModel(
 			new Object [][] {
 				{null, null, null, null},

@@ -393,7 +393,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 		};
 	
 		tablesTable.setAutoCreateRowSorter(true);
-		
+		tablesTable.setShowVerticalLines(false);
+		tablesTable.setShowHorizontalLines(false);
+
 		tablesTable.setDefaultRenderer(Object.class, tablesListItemRenderer);
 		resetTableTableModel();
 
@@ -411,6 +413,8 @@ public class DataModelEditor extends javax.swing.JDialog {
 		associationsTable.setDefaultRenderer(Object.class, associationsListItemRenderer);
 		
 		associationsTable.setAutoCreateRowSorter(true);
+		associationsTable.setShowVerticalLines(false);
+		associationsTable.setShowHorizontalLines(false);
 		resetAssociationTableModel();
 		adjustTableColumnsWidth(associationsTable);
 
@@ -679,6 +683,7 @@ public class DataModelEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 22);
         getContentPane().add(nameTextField, gridBagConstraints);
 
+        jSplitPane1.setContinuousLayout(true);
         jSplitPane1.setOneTouchExpandable(true);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tables"));

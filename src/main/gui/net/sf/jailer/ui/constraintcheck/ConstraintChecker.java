@@ -111,6 +111,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 			}
 		};
 		problemsTable.setModel(problemsModel);
+		problemsTable.setShowGrid(false);
 		final TableCellRenderer defaultTableCellRenderer = problemsTable.getDefaultRenderer(String.class);
 		problemsTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 			final Color BG1 = new Color(255, 255, 255);

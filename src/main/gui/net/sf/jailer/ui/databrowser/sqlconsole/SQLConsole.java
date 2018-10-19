@@ -22,7 +22,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -166,7 +165,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private int initialTabbedPaneSelectionLoc = -1;
 
 	private final String IGNORED_STATEMENTS = "(\\s*/\\s*)";
-	private final static String NEWLINE = System.getProperty("line.separator");
 	
 	/**
 	 * Stops the consumer thread.
@@ -333,7 +331,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         runnAllButton.setIcon(UIUtil.scaleIcon(this, runAllIcon));
         runSQLButton.setToolTipText(runSQLButton.getText() + " - Ctrl-Enter");
         runnAllButton.setToolTipText(runnAllButton.getText() + " - Alt-Enter");
-        runnAllButton.setMargin(new Insets(0, 0, 0, 0));
                 
         scaledCancelIcon = UIUtil.scaleIcon(this, cancelIcon);
         cancelButton.setIcon(scaledCancelIcon);
@@ -1484,6 +1481,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(0.6);
+        jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -1567,7 +1565,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         dummyLabel.setForeground(java.awt.Color.gray);
         dummyLabel.setText(" ");
-        dummyLabel.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1600,7 +1597,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel3.add(jTabbedPane1, gridBagConstraints);
 
         jLabel2.setText(" ");
-        jLabel2.setToolTipText("");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1846,9 +1842,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	        String pre = "";
 	        int lineCount = editorPane.getLineCount();
 	        if (lineCount > 0 && editorPane.getDocument().getLength() > 0) {
-	            pre = NEWLINE;
+	            pre = "\n";
 	            if (editorPane.getText(lineCount - 1, lineCount - 1, true).trim().length() > 0) {
-	                pre += NEWLINE;
+	                pre += "\n";
 	            }
 	        }
 	        if (useLineContinuation) {
@@ -1859,7 +1855,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	    	if (!sql.endsWith(";") && !sql.endsWith(" \\")) {
 	            sql += ";";
 	        }
-	        editorPane.append(pre + sql + NEWLINE);
+	        editorPane.append(pre + sql.replace("\r", "") + "\n");
 	        setCaretPosition(editorPane.getDocument().getLength());
     	}
         if (!running.get()) {
@@ -2159,15 +2155,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	private String addLineContinuation(String statement) {
 		String newStatement = statement;
-		if (!"\n".equals(NEWLINE)) {
-			newStatement = newStatement.replace(NEWLINE, "\n");
-		}
+		newStatement = newStatement.replace("\r", "");
 		newStatement = newStatement.replaceAll("((?:(?:;(?: |\\t|\\r)*(?:--[^\\n]*)?)))(\\n(\\r)?)", "$1 \\\\$2");
 		newStatement = newStatement.replaceAll("((?:(?:\\n(?: |\\t|\\r)*)))(?=\\n)", "$1 \\\\");
 		newStatement = newStatement.replaceAll("\\\\(\\s*)$", "$1");
-		if (!"\n".equals(NEWLINE)) {
-			newStatement = newStatement.replace("\n", NEWLINE);
-		}
 		return newStatement;
 	}
 
@@ -2234,7 +2225,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			StringBuilder sb = new StringBuilder();
 			int c;
 	        while ((c = in.read()) != -1) {
-	        	sb.append((char) c);
+	        	if (c != '\r') {
+	        		sb.append((char) c);
+	        	}
 	        }
 	        in.close();
 	        editorPane.setText(sb.toString());
@@ -2267,8 +2260,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (newFile != null) {
 				file = newFile;
 			}
-			BufferedWriter out = new BufferedWriter(new FileWriter(file));
-			out.write(editorPane.getText());
+			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+			int lines = editorPane.getLineCount();
+			for (int line = 0; line < lines; ++line) {
+				out.print(getLineContent(line).replace("\r", "").replace("\n", ""));
+				if (line < lines - 1) {
+					out.println();
+				}
+			}
 			out.close();
 	        initialContentSize = editorPane.getDocument().getLength();
 	        initialContentHash = editorPane.getText().hashCode();

@@ -226,6 +226,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 			
 			columnOrderPrio = new TreeMap<String, DataModel.ColumnOrderPriority>(dataModel.columnOrderPrio);
 			
+			columnOrderTable.getColumnModel().getColumn(1).setCellRenderer(renderer);
 			columnOrderTable.getColumnModel().getColumn(3).setCellRenderer(renderer);
 			columnOrderTable.getColumnModel().getColumn(4).setCellRenderer(renderer);
 			columnOrderTable.setDefaultRenderer(Object.class, renderer);
@@ -285,6 +286,8 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        columnOrderTable.setShowHorizontalLines(false);
+        columnOrderTable.setShowVerticalLines(false);
         jScrollPane1.setViewportView(columnOrderTable);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

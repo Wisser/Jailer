@@ -855,7 +855,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         openSubjectConditionEditor = new javax.swing.JLabel();
         subjectTable = new JComboBox();
         jPanel10 = new javax.swing.JPanel();
-        exportFormat = new JComboBox();
+        exportFormat = new javax.swing.JComboBox();
         exportButton = new javax.swing.JButton();
         openXmlSettings = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
@@ -866,7 +866,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new JComboBox();
+        aggregationCombobox = new javax.swing.JComboBox();
         tagField = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
         xmlTagApply = new javax.swing.JButton();
@@ -899,6 +899,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
+        jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
 
         toolBarPanel.setBackground(new java.awt.Color(255, 255, 255));
@@ -933,8 +934,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         rootTable.setMaximumRowCount(18);
         rootTable.setModel(getTableListModel());
         rootTable.addItemListener(new java.awt.event.ItemListener() {
-            @Override
-			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 rootTableItemStateChanged(evt);
             }
         });
@@ -945,8 +945,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         resetFocus.setText("Reset");
         resetFocus.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetFocusActionPerformed(evt);
             }
         });
@@ -1051,8 +1050,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         additionalSubjectsButton.setText("Additional Subjects");
         additionalSubjectsButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 additionalSubjectsButtonActionPerformed(evt);
             }
         });
@@ -1096,8 +1094,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         subjectTable.setMaximumRowCount(18);
         subjectTable.setModel(subjectListModel());
         subjectTable.addItemListener(new java.awt.event.ItemListener() {
-            @Override
-			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 subjectTableItemStateChanged(evt);
             }
         });
@@ -1112,8 +1109,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         exportFormat.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         exportFormat.addItemListener(new java.awt.event.ItemListener() {
-            @Override
-			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 onExportModusChanged(evt);
             }
         });
@@ -1133,8 +1129,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         openXmlSettings.setText("Setting");
         openXmlSettings.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openXmlSettingsActionPerformed(evt);
             }
         });
@@ -1164,14 +1159,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         tree.setAutoscrolls(true);
         tree.setCellRenderer(getTreeCellRenderer(tree.getCellRenderer()));
         tree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
-            @Override
-			public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
                 treeValueChanged(evt);
             }
         });
         tree.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-			public void mouseClicked(java.awt.event.MouseEvent evt) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 treeMouseClicked(evt);
             }
         });
@@ -1210,8 +1203,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         aggregationCombobox.setModel(getAggregationModel());
         aggregationCombobox.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 aggregationComboboxActionPerformed(evt);
             }
         });
@@ -1234,8 +1226,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         xmlTagApply.setText("apply");
         xmlTagApply.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 xmlTagApplyActionPerformed(evt);
             }
         });
@@ -1243,8 +1234,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         mapColumns.setText("map columns");
         mapColumns.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mapColumnsActionPerformed(evt);
             }
         });
@@ -2886,14 +2876,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton additionalSubjectsButton;
-    private JComboBox aggregationCombobox;
+    private javax.swing.JComboBox aggregationCombobox;
     private javax.swing.JLabel associatedWith;
     javax.swing.JTextField condition;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JPanel editorPanel;
     public javax.swing.JButton exportButton;
-    private JComboBox exportFormat;
+    private javax.swing.JComboBox exportFormat;
     private javax.swing.JPanel focusLabelPanel;
     javax.swing.JPanel focusPanel;
     private javax.swing.JPanel graphContainer;

@@ -449,11 +449,15 @@ public class UIUtil {
                     synchronized (UIUtil.class) {
                         f = exp[0] == null;
                     }
+                    try {
+                    	CancellationHandler.checkForCancellation(null);
+                    } catch (CancellationException ce) {
+                    	cancelled = true;
+                    }
                     if (cancelled && f) {
                         JOptionPane.showMessageDialog(outputView.dialog, "Cancellation in progress...", "Cancellation",
                                 JOptionPane.INFORMATION_MESSAGE);
-                    }
-                    if (exp[0] == null && !fin[0] && !cancelled) {
+                    } else if (exp[0] == null && !fin[0] && !cancelled) {
                         if (JOptionPane.showConfirmDialog(outputView.dialog, "Cancel operation?", "Cancellation",
                                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                             if (!outputView.hasFinished) {
@@ -467,6 +471,7 @@ public class UIUtil {
                                 if (progressListener != null) {
                                     progressListener.newStage("cancelling", true, true);
                                 }
+                                outputView.getCancelButton().setEnabled(false);
                                 cancelled = true;
                             }
                         }
@@ -1063,8 +1068,9 @@ public class UIUtil {
 		nativeLAFCheckBoxMenuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UISettings.store(UISettings.USE_NATIVE_PLAF, nativeLAFCheckBoxMenuItem.isSelected());
-				JOptionPane.showMessageDialog(parentComponent, "The look and feel has been changed.\n(Becomes effective after restart)", "L&F", JOptionPane.INFORMATION_MESSAGE);
+				boolean nativeLF = nativeLAFCheckBoxMenuItem.isSelected();
+				UISettings.store(UISettings.USE_NATIVE_PLAF, nativeLF);
+				JOptionPane.showMessageDialog(parentComponent, "The look and feel has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 	}
