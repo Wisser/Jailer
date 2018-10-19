@@ -757,6 +757,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setResizeWeight(1.0);
+        jSplitPane1.setContinuousLayout(true);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Union of all shortest paths without excluded tables."));
         jPanel2.setForeground(java.awt.Color.white);
@@ -1078,6 +1079,13 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private DefaultTableModel exclusionTableModel;
     
     private void initExclusionTable(Set<Integer> nonExcludablesColumns) {
+    	List<SortKey> keys = new ArrayList<SortKey>();
+    	if (exclusionTable.getRowSorter() != null) {
+    		keys.addAll(exclusionTable.getRowSorter().getSortKeys());
+    	}
+    	if (keys.isEmpty()) {
+    		keys.add(new SortKey(2, SortOrder.DESCENDING));
+    	}
 		exclusionTable.setColumnSelectionAllowed(false);
 		exclusionTable.setRowSelectionAllowed(false);
 		exclusionTableModel = new DefaultTableModel(new String[] { "Excluded", "Table", "Neighbors" }, 0) {
@@ -1145,8 +1153,8 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 		exclusionTable.getColumnModel().getColumn(0).setCellRenderer(renderer);
 		exclusionTable.setDefaultRenderer(Object.class, renderer);
 		exclusionTable.setAutoCreateRowSorter(true);
-		List<SortKey> keys = new ArrayList<SortKey>();
-		keys.add(new SortKey(2, SortOrder.DESCENDING));
+		exclusionTable.setShowHorizontalLines(false);
+		exclusionTable.setShowVerticalLines(false);
 		exclusionTable.getRowSorter().setSortKeys(keys);
 		
 		// Set<Table> closure = new HashSet<Table>(pathGraph.getVisitedExcludedTables());
