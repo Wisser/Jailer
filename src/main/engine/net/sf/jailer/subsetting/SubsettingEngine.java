@@ -466,7 +466,6 @@ public class SubsettingEngine {
 	 */
 	private void writeEntities(Table table, boolean orderByPK) throws SQLException {
 		entityGraph.readEntities(table, orderByPK);
-		entityGraph.deleteEntities(table);
 	}
 
 	/**
@@ -1403,32 +1402,36 @@ public class SubsettingEngine {
 					writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session, "exporting rows");
 				}
 			}
-			entityGraph.delete();
 			
 			if (deleteScriptFileName != null) {
 				executionContext.getProgressListenerRegistry().fireNewStage("delete", false, false);
 				executionContext.getProgressListenerRegistry().fireNewStage("delete-reduction", false, false);
 				setEntityGraph(exportedEntities);
-				List<Runnable> resetFilters = removeFilters(datamodel);
-				Table.clearSessionProperties(session);
-				deleteEntities(subjects, totalProgress, session);
-				datamodel.transpose();
-				writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session, "writing delete-script");
-				for (Runnable rf: resetFilters) {
-					rf.run();
+				try {
+					List<Runnable> resetFilters = removeFilters(datamodel);
+					Table.clearSessionProperties(session);
+					deleteEntities(subjects, totalProgress, session);
+					datamodel.transpose();
+					writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session, "writing delete-script");
+					for (Runnable rf: resetFilters) {
+						rf.run();
+					}
+					Table.clearSessionProperties(session);
+					exportedEntities.delete();
+				} finally {
+					setEntityGraph(entityGraph);
 				}
-				Table.clearSessionProperties(session);
-				exportedEntities.delete();
-				exportedEntities.shutDown();
-				setEntityGraph(entityGraph);
 				datamodel.transpose();
 			}
+			entityGraph.truncate(executionContext, true);
+			entityGraph.delete();
 			entityGraph.close();
 		} catch (CancellationException e) {
 			try {
 				_log.info("cleaning up after cancellation...");
 				CancellationHandler.reset(null);
 				entityGraph.getSession().rollbackAll();
+				entityGraph.truncate(executionContext, false);
 				entityGraph.delete();
 				if (exportedEntities != null) {
 					if (entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
@@ -1448,6 +1451,7 @@ public class SubsettingEngine {
 		} catch (Exception e) {
 			try {
 				_log.info("cleaning up...");
+				entityGraph.truncate(executionContext, false);
 				entityGraph.delete();
 				if (exportedEntities != null) {
 					if (entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {

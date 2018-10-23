@@ -419,9 +419,11 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	@Override
 	public void delete() throws SQLException {
-		localSession.executeUpdate("Delete from " + dmlTableReference(DEPENDENCY, localSession) + " Where r_entitygraph=" + graphID + "");
-		localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + "");
-		localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY_GRAPH, localSession) + " Where id=" + graphID + "");
+		if (!isTruncated) {
+			localSession.executeUpdate("Delete from " + dmlTableReference(DEPENDENCY, localSession) + " Where r_entitygraph=" + graphID + "");
+			localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + "");
+			localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY_GRAPH, localSession) + " Where id=" + graphID + "");
+		}
 	}
 
 	/**

@@ -74,6 +74,7 @@ public abstract class EntityGraph {
 	public abstract void setBirthdayOfSubject(int birthdayOfSubject);
 	
 	public final DataModel dataModel;
+	protected boolean isTruncated = false;
 	
 	/**
 		* The execution context.
@@ -425,7 +426,7 @@ public abstract class EntityGraph {
 	 * The {@link ImportFilterManager}.
 	 */
 	protected ImportFilterManager importFilterManager;
-	
+
 	/**
 	 * Sets the {@link TransformerFactory}.
 	 * 
@@ -493,5 +494,46 @@ public abstract class EntityGraph {
 	protected String dmlTableReference(String tableName, Session session) throws SQLException {
 		return SQLDialect.dmlTableReference(tableName, session, executionContext);
 	}
-	
+
+	/**
+	 * Tries to delete this graph using "truncate".
+	 * 
+	 * @param checkExist if <code>true</code>, checks existence of each graph
+	 */
+	public void truncate(ExecutionContext executionContext, boolean checkExist) throws SQLException {
+		if (isTruncated) {
+			return;
+		}
+		if (checkExist) {
+			final boolean found[] = new boolean[] { false };
+			getSession().executeQuery("Select * from " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext) + " Where id=" + graphID, new Session.AbstractResultSetReader() {
+				@Override
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					found[0] = true;
+				}
+			});
+			if (!found[0]) {
+				throw new RuntimeException("EntityGraph has been deleted.");
+			}
+		}
+		final int count[] = new int[] { 0 };
+		getSession().executeQuery("Select count(*) from " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext), new Session.AbstractResultSetReader() {
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				count[0] = resultSet.getInt(1);
+			}
+		});
+		if (count[0] == 1) {
+			try {
+				getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(DEPENDENCY, getSession(), executionContext));
+				getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(ENTITY, getSession(), executionContext));
+				getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext));
+			} catch (SQLException e) {
+				// "truncate" not supported
+				return;
+			}
+			isTruncated  = true;
+		}
+	}
+
 }
