@@ -578,27 +578,8 @@ public class LocalEntityGraph extends EntityGraph {
 		remoteSession.executeQuery(select, new LocalInlineViewBuilder(alias, upkColumnList(table, null)) {
 			@Override
 			protected void process(String inlineView) throws SQLException {
-				Map<Column, Column> match = upkMatch(table);
-				StringBuffer sb = new StringBuffer();
-				for (Column column: universalPrimaryKey.getColumns()) {
-					if (sb.length() > 0) {
-						sb.append(" and ");
-					}
-					Column tableColumn = match.get(column);
-					sb.append("Duplicate." + column.name);
-					if (tableColumn != null) {
-						sb.append("=" + alias + "." + column.name);
-					} else {
-						sb.append(" is null");
-					}
-				}
-				
-				String entityJoinCondition = sb.toString();
 				String select = "Select " + graphID + " as GRAPH_ID, " + upkColumnList(table, alias, null) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
-				" From " + inlineView + 
-				" left join " + dmlTableReference(ENTITY, localSession) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) + " and " +
-				entityJoinCondition + 
-				" Where Duplicate.type is null";
+				" From " + inlineView;
 				
 				String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type) " + select;
 				rc[0] += localSession.executeUpdate(insert);

@@ -339,38 +339,46 @@ public class RemoteEntityGraph extends EntityGraph {
 			joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, isInverseAssociation? null : "E", isInverseAssociation? "E" : null, today, birthdayOfSubject, inDeleteMode);
 		}
 		String select;
-		if (session.dbms.isAvoidLeftJoin()) {
-			// bug fix for [ jailer-Bugs-3294893 ] "Outer Join for selecting dependant entries and Oracle 10"
-			// mixing left joins and theta-style joins causes problems on oracle DBMS
+		if (joinedTable == null && !joinWithEntity) {
 			select =
-				"Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
-				(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
-				" From " + quoting.requote(table.getName()) + " " + alias
-					+
-				(joinedTable != null? ", " + quoting.requote(joinedTable.getName()) + " " + joinedTableAlias + " ": "") +
-				(joinWithEntity? ", " + dmlTableReference(ENTITY, session) + " E" : "") +
-				" Where (" + condition + ") " +
-					// CW	"and Duplicate.type is null" +
-				(joinedTable != null? " and (" + joinCondition + ")" : "") +
-
-					" AND NOT EXISTS (select * from " + dmlTableReference(ENTITY, session)
-					+ " DuplicateExists where r_entitygraph=" + graphID + " " + "AND DuplicateExists.type="
-					+ typeName(table)
-					+ " and " + pkEqualsEntityID(table, alias, "DuplicateExists") + ")";
-
+					"Select " + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
+					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
+					" From " + quoting.requote(table.getName()) + " " + alias +
+					" Where (" + condition + ")";
 		} else {
-			select =
-				"Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
-				(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
-				" From " + quoting.requote(table.getName()) + " " + alias +
-				" left join " + dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) + " and " +
-				pkEqualsEntityID(table, alias, "Duplicate") + 
-				(joinedTable != null? ", " + quoting.requote(joinedTable.getName()) + " " + joinedTableAlias + " ": "") +
-				(joinWithEntity? ", " + dmlTableReference(ENTITY, session) + " E" : "") +
-				" Where (" + condition + ") and Duplicate.type is null" +
-				(joinedTable != null? " and (" + joinCondition + ")" : "");
+			if (session.dbms.isAvoidLeftJoin()) {
+				// bug fix for [ jailer-Bugs-3294893 ] "Outer Join for selecting dependant entries and Oracle 10"
+				// mixing left joins and theta-style joins causes problems on oracle DBMS
+				select =
+					"Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
+					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
+					" From " + quoting.requote(table.getName()) + " " + alias
+						+
+					(joinedTable != null? ", " + quoting.requote(joinedTable.getName()) + " " + joinedTableAlias + " ": "") +
+					(joinWithEntity? ", " + dmlTableReference(ENTITY, session) + " E" : "") +
+					" Where (" + condition + ") " +
+						// CW	"and Duplicate.type is null" +
+					(joinedTable != null? " and (" + joinCondition + ")" : "") +
+	
+						" AND NOT EXISTS (select * from " + dmlTableReference(ENTITY, session)
+						+ " DuplicateExists where r_entitygraph=" + graphID + " " + "AND DuplicateExists.type="
+						+ typeName(table)
+						+ " and " + pkEqualsEntityID(table, alias, "DuplicateExists") + ")";
+	
+			} else {
+				select =
+					"Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
+					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
+					" From " + quoting.requote(table.getName()) + " " + alias +
+					" left join " + dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) + " and " +
+					pkEqualsEntityID(table, alias, "Duplicate") + 
+					(joinedTable != null? ", " + quoting.requote(joinedTable.getName()) + " " + joinedTableAlias + " ": "") +
+					(joinWithEntity? ", " + dmlTableReference(ENTITY, session) + " E" : "") +
+					" Where (" + condition + ") and Duplicate.type is null" +
+					(joinedTable != null? " and (" + joinCondition + ")" : "");
+			}
 		}
-		
+
 		if (source != null && explain) {
 			String max = "";
 			Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(source));

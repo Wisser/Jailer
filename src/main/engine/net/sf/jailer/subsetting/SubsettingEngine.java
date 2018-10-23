@@ -180,27 +180,17 @@ public class SubsettingEngine {
 	 *            the table
 	 * @param condition
 	 *            the condition (in SQL) the exported rows must fulfill
-
 	 * @param progressOfYesterday
 	 *            set of tables to account for resolvation
 	 * @param completedTables 
 	 * 
 	 * @return set of tables from which entities are added
 	 */
-	private Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, boolean skipRoot, Set<Table> completedTables) throws SQLException {
+	private Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, Set<Table> completedTables) throws SQLException {
 		_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition.replace('\n', ' ').replace('\r', ' '));
 		int today = entityGraph.getAge();
 		entityGraph.setAge(today + 1);
 		Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
-		if (!skipRoot) {
-			executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, table);
-			executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, table);
-			long rc = entityGraph.addEntities(table, condition, today);
-			executionContext.getProgressListenerRegistry().fireCollected(today, table, rc);
-			if (rc > 0) {
-				progress.put(table, new ArrayList<Association>());
-			}
-		}
 		if (progressOfYesterday != null) {
 			for (Table t: progressOfYesterday) {
 				progress.put(t, new ArrayList<Association>());
@@ -1387,7 +1377,7 @@ public class SubsettingEngine {
 			Set<Table> completedTables = new HashSet<Table>();
 			Set<Table> progress = exportSubjects(extractionModel, completedTables);
 			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
-			progress.addAll(export(extractionModel.subject, subjectCondition, progress, true, completedTables));
+			progress.addAll(export(extractionModel.subject, subjectCondition, progress, completedTables));
 			totalProgress.addAll(progress);
 			subjects.add(extractionModel.subject);
 	
