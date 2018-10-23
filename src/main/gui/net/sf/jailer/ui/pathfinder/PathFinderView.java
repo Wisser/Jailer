@@ -1151,6 +1151,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 			}
 		};
 		exclusionTable.getColumnModel().getColumn(0).setCellRenderer(renderer);
+		exclusionTable.getColumnModel().getColumn(2).setCellRenderer(renderer);
 		exclusionTable.setDefaultRenderer(Object.class, renderer);
 		exclusionTable.setAutoCreateRowSorter(true);
 		exclusionTable.setShowHorizontalLines(false);
