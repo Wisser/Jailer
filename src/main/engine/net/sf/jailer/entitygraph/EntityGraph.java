@@ -532,16 +532,7 @@ public abstract class EntityGraph {
 			return;
 		}
 		if (checkExist) {
-			final boolean found[] = new boolean[] { false };
-			getSession().executeQuery("Select * from " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext) + " Where id=" + graphID, new Session.AbstractResultSetReader() {
-				@Override
-				public void readCurrentRow(ResultSet resultSet) throws SQLException {
-					found[0] = true;
-				}
-			});
-			if (!found[0]) {
-				throw new RuntimeException("EntityGraph has been deleted.");
-			}
+			checkExist(executionContext);
 		}
 		final int count[] = new int[] { 0 };
 		getSession().executeQuery("Select count(*) from " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext), new Session.AbstractResultSetReader() {
@@ -560,6 +551,22 @@ public abstract class EntityGraph {
 				return;
 			}
 			isTruncated  = true;
+		}
+	}
+
+	/**
+	 * Check if the graph still exists.
+	 */
+	public void checkExist(ExecutionContext executionContext) throws SQLException {
+		final boolean found[] = new boolean[] { false };
+		getSession().executeQuery("Select * from " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext) + " Where id=" + graphID, new Session.AbstractResultSetReader() {
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				found[0] = true;
+			}
+		});
+		if (!found[0]) {
+			throw new RuntimeException("EntityGraph has been deleted.");
 		}
 	}
 

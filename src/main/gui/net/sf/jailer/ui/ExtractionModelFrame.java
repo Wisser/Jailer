@@ -1553,6 +1553,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE)) {
 				dispose();
+				UIUtil.checkTermination();
 			}
 		} else {
 			dispose();

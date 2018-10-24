@@ -97,7 +97,13 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 		String head = style.head(columnNames);
 		
 		if (!statementBuilder.isAppendable(head)) {
-			process(statementBuilder.build());
+			boolean wasLogging = session.getLogStatements();
+			try {
+				session.setLogStatements(false);
+				process(statementBuilder.build());
+			} finally {
+				session.setLogStatements(wasLogging);
+			}
 		}
 
 		String item = style.item(values, columnNames, statementBuilder.size());

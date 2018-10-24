@@ -172,7 +172,7 @@ public class Session {
 	/**
 	 * The logger.
 	 */
-	public static final Logger _log = Logger.getLogger("sql");
+	public static final Logger _log  = Logger.getLogger("sql");
 
 	/**
 	 * Connection factory.
@@ -374,6 +374,22 @@ public class Session {
 		}
 	}
 
+	private static final ThreadLocal<Boolean> logStatements = new ThreadLocal<Boolean>();
+	
+	/**
+	 * Log statements?
+	 */
+	public void setLogStatements(boolean logStatements) {
+		Session.logStatements.set(logStatements);
+	}
+	
+	/**
+	 * Log statements?
+	 */
+	public boolean getLogStatements() {
+		return !Boolean.FALSE.equals(logStatements.get());
+	}
+
 	/**
 	 * Logs driver info
 	 * 
@@ -483,7 +499,9 @@ public class Session {
 				CancellationHandler.end(statement, context);
 			}
 		}
-		_log.info(rc + " row(s)");
+		if (getLogStatements()) {
+			_log.info(rc + " row(s)");
+		}
 		return rc;
 	}
 
@@ -498,7 +516,9 @@ public class Session {
 	 * @param timeout the timeout in sec
 	 */
 	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit, int timeout) throws SQLException {
-		_log.info(sqlQuery);
+		if (getLogStatements()) {
+			_log.info(sqlQuery);
+		}
 		try {
 			return executeQuery(connectionFactory.getConnection(), sqlQuery, reader, alternativeSQL, context, limit, timeout);
 		} catch (SQLException e) {
@@ -550,7 +570,9 @@ public class Session {
 	 * @return update-count
 	 */
 	public int executeUpdate(String sqlUpdate) throws SQLException {
-		_log.info(sqlUpdate);
+		if (getLogStatements()) {
+			_log.info(sqlUpdate);
+		}
 		CancellationHandler.checkForCancellation(null);
 		try {
 			int rowCount = 0;
@@ -571,7 +593,9 @@ public class Session {
 					}
 					CancellationHandler.end(statement, null);
 					ok = true;
-					_log.info("" + rowCount + " row(s)");
+					if (getLogStatements()) {
+						_log.info("" + rowCount + " row(s)");
+					}
 				} catch (SQLException e) {
 					CancellationHandler.checkForCancellation(null);
 					CancellationHandler.end(statement, null);
@@ -612,7 +636,9 @@ public class Session {
 	 * @return update-count
 	 */
 	public int executeUpdate(String sqlUpdate, Object[] parameter) throws SQLException {
-		_log.info(sqlUpdate);
+		if (getLogStatements()) {
+			_log.info(sqlUpdate);
+		}
 		try {
 			CancellationHandler.checkForCancellation(null);
 			int rowCount = 0;
@@ -626,7 +652,9 @@ public class Session {
 				}
 				rowCount = statement.executeUpdate();
 				CancellationHandler.end(statement, null);
-				_log.info("" + rowCount + " row(s)");
+				if (getLogStatements()) {
+					_log.info("" + rowCount + " row(s)");
+				}
 			} finally {
 				if (statement != null) {
 					try { statement.close(); } catch (SQLException e) { }
@@ -647,7 +675,9 @@ public class Session {
 	 */
 	public void insertClob(String table, String column, String where, File lobFile, long length) throws SQLException, IOException {
 		String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
-		_log.info(sqlUpdate);
+		if (getLogStatements()) {
+			_log.info(sqlUpdate);
+		}
 		PreparedStatement statement = null;
 		try {
 			statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
@@ -741,7 +771,9 @@ public class Session {
 	 * @param sql the SQL-Statement
 	 */
 	public long execute(String sql, Object cancellationContext) throws SQLException {
-		_log.info(sql);
+		if (getLogStatements()) {
+			_log.info(sql);
+		}
 		long rc = 0;
 		Statement statement = null;
 		try {
@@ -749,7 +781,9 @@ public class Session {
 			statement = connectionFactory.getConnection().createStatement();
 			CancellationHandler.begin(statement, cancellationContext);
 			rc = statement.executeUpdate(sql);
-			_log.info("" + rc + " row(s)");
+			if (getLogStatements()) {
+				_log.info("" + rc + " row(s)");
+			}
 		} catch (SQLException e) {
 			CancellationHandler.checkForCancellation(cancellationContext);
 			if (!silent) {

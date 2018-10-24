@@ -335,7 +335,7 @@ public class SubsettingEngine {
 				JobManager.Job job = new JobManager.Job() {
 					@Override
 					public void run() throws SQLException {
-						runstats(false);
+						runstats();
 						if (association.getJoinCondition() != null) {
 							_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + "...");
 						} else {
@@ -638,7 +638,7 @@ public class SubsettingEngine {
 			}
 			if (!executionContext.getNoSorting()) {
 				addDependencies(dependentTables, false);
-				runstats(true);
+				runstats();
 				removeSingleRowCycles(prevProgress, session);
 			} else {
 				_log.warn("skipping topological sorting");
@@ -1005,7 +1005,7 @@ public class SubsettingEngine {
 		// then write entities of tables having cyclic-dependencies
 		_log.info("create hierarchy for: " + asString(progress));
 		addDependencies(progress, true);
-		runstats(true);
+		runstats();
 		removeSingleRowCycles(progress, session);
 
 		List<Table> lexSortedTables = new ArrayList<Table>(progress);
@@ -1236,10 +1236,10 @@ public class SubsettingEngine {
 	/**
 	 * Runs script for updating the DB-statistics.
 	 */
-	private synchronized void runstats(boolean force) {
+	private synchronized void runstats() {
 		if (entityGraph != null) {
 			Session session = entityGraph.getSession();
-			if (force || lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
+			if (lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
 				lastRunstats = entityGraph.getTotalRowcount();
 	
 				StatisticRenovator statisticRenovator = session.dbms.getStatisticRenovator();
@@ -1375,7 +1375,8 @@ public class SubsettingEngine {
 		EntityGraph exportedEntities = null;
 		
 		try {
-			runstats(false);
+			runstats();
+			entityGraph.checkExist(executionContext);
 			executionContext.getProgressListenerRegistry().fireNewStage("collecting rows", false, false);
 			Set<Table> completedTables = new HashSet<Table>();
 			Set<Table> progress = exportSubjects(extractionModel, completedTables);
@@ -1383,6 +1384,7 @@ public class SubsettingEngine {
 			progress.addAll(export(extractionModel.subject, subjectCondition, progress, completedTables));
 			totalProgress.addAll(progress);
 			subjects.add(extractionModel.subject);
+			entityGraph.checkExist(executionContext);
 	
 			if (explain) {
 				executionContext.getProgressListenerRegistry().fireNewStage("generating explain-log", false, false);
