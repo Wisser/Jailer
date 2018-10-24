@@ -290,9 +290,6 @@ public class DDLCreator {
 					public void close() {
 					}
 				};
-				if (JailerVersion.WORKING_TABLE_VERSION == 1) {
-					session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + "7.0" + "' and jkey='upk'", reader);
-				}
 				if (!uptodate[0]) {
 					session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + JailerVersion.WORKING_TABLE_VERSION + "' and jkey='upk'", reader);
 				}
