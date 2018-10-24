@@ -3,6 +3,7 @@
   - Feature Request "#47 Add additional tables adds too much" https://sourceforge.net/p/jailer/feature-requests/47/
   - Feature Request "#44 MSSQL export to another DB in same instance" https://sourceforge.net/p/jailer/feature-requests/44/
   - Feature Request "#49 Mac shortcuts" https://sourceforge.net/p/jailer/feature-requests/49/
+  - Feature Request "#50 Option to not to delete too much from entities" https://sourceforge.net/p/jailer/feature-requests/50/
 
 8.0.2
   - Increased responsiveness and performance of the SQL Console.
