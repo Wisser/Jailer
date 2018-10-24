@@ -265,9 +265,9 @@ public class RemoteEntityGraph extends EntityGraph {
 	@Override
 	public void delete() throws SQLException {
 		if (!isTruncated) {
-			session.executeUpdate("Delete from " + dmlTableReference(DEPENDENCY, session) + " Where r_entitygraph=" + graphID + "");
-			session.executeUpdate("Delete from " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + "");
-			session.executeUpdate("Delete from " + dmlTableReference(ENTITY_GRAPH, session) + " Where id=" + graphID + "");
+			deleteRows(session, dmlTableReference(DEPENDENCY, session), "r_entitygraph=" + graphID + "");
+			deleteRows(session, dmlTableReference(ENTITY, session), "r_entitygraph=" + graphID + "");
+			deleteRows(session, dmlTableReference(ENTITY_GRAPH, session), "id=" + graphID + "");
 		}
 	}
 
@@ -757,34 +757,34 @@ public class RemoteEntityGraph extends EntityGraph {
 				toEqualsPK.append(dmlTableReference(DEPENDENCY, session) + ".TO_" + column.name + " is null and " + column.name + " is null");
 			}
 		}
-		session.executeUpdate(
-				"Delete From " + dmlTableReference(DEPENDENCY, session) + " " +
-				"Where " + dmlTableReference(DEPENDENCY, session) + ".r_entitygraph=" + graphID + " and assoc=0 and from_type=" + typeName(table) + " and " + 
+		deleteRows(session,
+				dmlTableReference(DEPENDENCY, session),
+				dmlTableReference(DEPENDENCY, session) + ".r_entitygraph=" + graphID + " and assoc=0 and from_type=" + typeName(table) + " and " + 
 					  "exists (Select * from " + dmlTableReference(ENTITY, session) + " E Where " + 
 						  "E.r_entitygraph=" + graphID + " and " +
 						  fromEqualsPK + " and " + dmlTableReference(DEPENDENCY, session) + ".from_type=E.type and " +
 						  "E.birthday=0)");
-		session.executeUpdate(
-				"Delete From " + dmlTableReference(DEPENDENCY, session) + " " +
-				"Where " + dmlTableReference(DEPENDENCY, session) + ".r_entitygraph=" + graphID + " and assoc=0 and to_type=" + typeName(table) + " and " +
+		deleteRows(session,
+				dmlTableReference(DEPENDENCY, session),
+				dmlTableReference(DEPENDENCY, session) + ".r_entitygraph=" + graphID + " and assoc=0 and to_type=" + typeName(table) + " and " +
 					  "exists (Select * from " + dmlTableReference(ENTITY, session) + " E Where " + 
 						  "E.r_entitygraph=" + graphID + " and " +
 						  toEqualsPK + " and " + dmlTableReference(DEPENDENCY, session) + ".to_type=E.type and " +
 						  "E.birthday=0)");
-		session.executeUpdate(
-				"Delete From " + dmlTableReference(ENTITY, session) + " " +
-				"Where r_entitygraph=" + graphID + " and type=" + typeName(table) + " and " +
+		deleteRows(session,
+				dmlTableReference(ENTITY, session),
+				"r_entitygraph=" + graphID + " and type=" + typeName(table) + " and " +
 					   "birthday=0");
 	}
-	
+
 	/**
 	 * Deletes all entities from a given table.
 	 */
 	@Override
 	public long deleteEntities(Table table) throws SQLException {
-		return session.executeUpdate(
-				"Delete From " + dmlTableReference(ENTITY, session) + " " +
-				"Where r_entitygraph=" + graphID + " and " +
+		return deleteRows(session,
+				dmlTableReference(ENTITY, session),
+				"r_entitygraph=" + graphID + " and " +
 					   "type=" + typeName(table));
 	}
 
@@ -878,13 +878,13 @@ public class RemoteEntityGraph extends EntityGraph {
 				} finally {
 					session.setSilent(silent);
 				}
-				session.executeUpdate("Delete from " + dmlTableReference(ENTITY_SET_ELEMENT, session) + " where set_id=" + setId + "");
+				deleteRows(session, dmlTableReference(ENTITY_SET_ELEMENT, session), "set_id=" + setId + "");
 			}
 			return rc;
 		}
 		return 0;
 	}
-	
+
 	/**
 	 * Reads all entities which depends on given entity. 
 	 * 
@@ -983,12 +983,10 @@ public class RemoteEntityGraph extends EntityGraph {
 				sb.append("FROM_" + column.name + " = TO_" + column.name);
 			}
 		}
-		String delete = "Delete from " + dmlTableReference(DEPENDENCY, session) +
-			" Where " + sb +
+		deleteRows(session, dmlTableReference(DEPENDENCY, session), sb +
 			" and from_type=" + typeName(table) + "" +
 			" and to_type=" + typeName(table) + "" +
-			" and r_entitygraph=" + graphID;
-		session.executeUpdate(delete);
+			" and r_entitygraph=" + graphID);
 	}
 
 	/**

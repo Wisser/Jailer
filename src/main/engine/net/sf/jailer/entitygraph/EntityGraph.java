@@ -77,12 +77,12 @@ public abstract class EntityGraph {
 	protected boolean isTruncated = false;
 	
 	/**
-		* The execution context.
-		*/
-	   protected final ExecutionContext executionContext;
-	   
-	   protected boolean inDeleteMode = false;
-	
+	 * The execution context.
+	 */
+	protected final ExecutionContext executionContext;
+
+	protected boolean inDeleteMode = false;
+
 	/**
 	 * The unique ID of the graph.
 	 */
@@ -401,10 +401,7 @@ public abstract class EntityGraph {
 	 * @param association the asociation
 	 */
 	public void removeDependencies(Association association) throws SQLException {
-		String delete;
-		delete = "Delete from " + dmlTableReference(DEPENDENCY, getSession()) +
-		 " Where depend_id=" + association.getId() + " and r_entitygraph=" + graphID;
-		getSession().executeUpdate(delete);
+		deleteRows(getSession(), dmlTableReference(DEPENDENCY, getSession()), "depend_id=" + association.getId() + " and r_entitygraph=" + graphID);
 	}
 	
 	public abstract Session getTargetSession();
@@ -493,6 +490,36 @@ public abstract class EntityGraph {
 	 */
 	protected String dmlTableReference(String tableName, Session session) throws SQLException {
 		return SQLDialect.dmlTableReference(tableName, session, executionContext);
+	}
+
+	/**
+	 * Deletes rows from table.
+	 * Applies DBMS-specific deletion strategies, if available.
+	 * 
+	 * @param session the session
+	 * @param table the table
+	 * @param where the "where" condition
+	 * 
+	 * @return row count
+	 */
+	protected long deleteRows(Session session, String table, String where) throws SQLException {
+		String deleteChunk = session.dbms.getDeleteChunkStatement();
+		long rc = 0;
+		
+		if (deleteChunk != null) {
+			try {
+				long c;
+				do {
+					c = session.executeUpdate(String.format(deleteChunk, table, where));
+					rc += c;
+				} while (c > 0);
+				return rc;
+			} catch (Exception e) {
+				// fall back
+			}
+		}
+		
+		return rc + session.executeUpdate("Delete from " + table + " where " + where);
 	}
 
 	/**

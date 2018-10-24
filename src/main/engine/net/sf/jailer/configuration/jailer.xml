@@ -257,6 +257,7 @@ union all
         <avoidLeftJoin>false</avoidLeftJoin>
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <deleteChunkStatement>DELETE TOP (30000) FROM %1$s WHERE %2$s</deleteChunkStatement>
         <estimatedRowCountQuery>
 SELECT tbl.name, p.rows
 FROM sys.tables AS tbl

@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
@@ -86,6 +87,23 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 		arguments.put("JAILER_GRAPH", SQLDialect.dmlTableReference("JAILER_GRAPH", session, executionContext));
 		arguments.put("JAILER_DEPENDENCY", SQLDialect.dmlTableReference("JAILER_DEPENDENCY", session, executionContext));
 		arguments.put("JAILER_SET", SQLDialect.dmlTableReference("JAILER_SET", session, executionContext));
+		Map<String, String> splittedArguments = new HashMap<String, String>();
+		for (Entry<String, String> e: arguments.entrySet()) {
+			String schtab = e.getValue();
+			int iDot = schtab.lastIndexOf('.');
+			String schema;
+			String tab;
+			if (iDot >= 0) {
+				schema = schtab.substring(0, iDot);
+				tab = schtab.substring(iDot + 1);
+			} else {
+				schema = session.getSchema();
+				tab = schtab;
+			}
+			splittedArguments.put("SCHEMA_" + e.getKey(), schema);
+			splittedArguments.put("TABLE_" + e.getKey(), tab);
+		}
+		arguments.putAll(splittedArguments);
 		File file = Configuration.getInstance().createTempFile();
 		PrintWriter out = new PrintWriter(new FileOutputStream(file));
 		out.print(new PrintUtil().applyTemplate(scriptFileName.replace('/', File.separatorChar), arguments, null));

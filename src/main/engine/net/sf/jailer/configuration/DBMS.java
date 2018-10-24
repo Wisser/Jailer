@@ -105,6 +105,7 @@ public class DBMS {
 		this.supportsSchemasInIndexDefinitions = other.supportsSchemasInIndexDefinitions;
 		this.useInlineViewsInDataBrowser = other.useInlineViewsInDataBrowser;
 		this.viewTextOrDDLQuery = other.viewTextOrDDLQuery;
+		this.deleteChunkStatement = other.deleteChunkStatement;
 		this.synonymTableQuery = other.synonymTableQuery;
 		this.estimatedRowCountQuery = other.estimatedRowCountQuery;
 		this.virtualColumnsQuery = other.virtualColumnsQuery;
@@ -295,6 +296,7 @@ public class DBMS {
 	private boolean useInlineViewsInDataBrowser = true;
 	private String virtualColumnsQuery = null;
 	private String synonymTableQuery;
+	private String deleteChunkStatement = null;
 	private String viewTextOrDDLQuery = "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'";
 	private String estimatedRowCountQuery = null;
 	private String userDefinedColumnsQuery = null;
@@ -1046,8 +1048,25 @@ public class DBMS {
 		return synonymTableQuery;
 	}
 
+	/**
+	 * Sets query to get underlying table of a synonym.
+	 */
 	public void setSynonymTableQuery(String synonymTableQuery) {
 		this.synonymTableQuery = synonymTableQuery;
+	}
+
+	/**
+	 * Gets statement for deleting a limited number of rows.
+	 */
+	public String getDeleteChunkStatement() {
+		return deleteChunkStatement;
+	}
+
+	/**
+	 * Sets statement for deleting a limited number of rows.
+	 */
+	public void setDeleteChunkStatement(String deleteChunkStatement) {
+		this.deleteChunkStatement = deleteChunkStatement;
 	}
 
 	/* (non-Javadoc)

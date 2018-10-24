@@ -87,6 +87,7 @@ import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
+import net.sf.jailer.util.JobManager.Job;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.xml.XmlExportTransformer;
@@ -337,6 +338,8 @@ public class SubsettingEngine {
 						runstats(false);
 						if (association.getJoinCondition() != null) {
 							_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + "...");
+						} else {
+							_log.warn("cannot resolve " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + ". jc == null");
 						}
 						executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, association);
 						long rc = entityGraph.resolveAssociation(table, association, today);
@@ -365,11 +368,12 @@ public class SubsettingEngine {
 			}
 		}
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
-		for (final Map.Entry<Table, List<JobManager.Job>> entry : jobsPerDestination.entrySet()) {
+		for (Map.Entry<Table, List<JobManager.Job>> entry : jobsPerDestination.entrySet()) {
+			final List<Job> jobList = new ArrayList<Job>(entry.getValue());
 			jobs.add(new JobManager.Job() {
 				@Override
 				public void run() throws CancellationException, SQLException {
-					for (JobManager.Job job : entry.getValue()) {
+					for (JobManager.Job job : jobList) {
 						job.run();
 					}
 				}
