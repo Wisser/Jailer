@@ -1043,9 +1043,11 @@ public class DataModel {
 		
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "known");
-		for (Association a: namedAssociations.values()) {
-			if (!a.reversed) {
-				out.println(CsvFile.encodeCell(a.getName()));
+		if (!restrictionDefinitions.isEmpty()) {
+			for (Association a: namedAssociations.values()) {
+				if (!a.reversed) {
+					out.println(CsvFile.encodeCell(a.getName()));
+				}
 			}
 		}
 		
