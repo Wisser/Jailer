@@ -338,8 +338,6 @@ public class SubsettingEngine {
 						runstats();
 						if (association.getJoinCondition() != null) {
 							_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + "...");
-						} else {
-							_log.warn("cannot resolve " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + ". jc == null");
 						}
 						executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, association);
 						long rc = entityGraph.resolveAssociation(table, association, today);

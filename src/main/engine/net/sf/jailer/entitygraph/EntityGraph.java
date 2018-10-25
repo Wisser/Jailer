@@ -531,6 +531,9 @@ public abstract class EntityGraph {
 		if (isTruncated) {
 			return;
 		}
+		if (executionContext.isEmbedded()) {
+			return;
+		}
 		if (checkExist) {
 			checkExist(executionContext);
 		}

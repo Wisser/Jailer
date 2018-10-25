@@ -77,6 +77,7 @@ public class ExecutionContext {
 		this.importFilterMappingTableSchema = other.importFilterMappingTableSchema;
 		this.scope = other.scope;
 		this.rawparameters = other.rawparameters;
+		this.embedded = other.embedded;
 // don't share progressListenerRegistry, was: this.progressListenerRegistry = other.progressListenerRegistry;
 	}
 
@@ -506,6 +507,20 @@ public class ExecutionContext {
 	}
 
 	/**
+	 * Is the subsetter embedded into an application?
+	 */
+	public boolean isEmbedded() {
+		return embedded;
+	}
+
+	/**
+	 * @param embedded is the subsetter embedded into an application?
+	 */
+	public void setEmbedded(boolean embedded) {
+		this.embedded = embedded;
+	}
+
+	/**
 	 * Gets parameters
 	 *
 	 * @return parameters
@@ -754,6 +769,8 @@ public class ExecutionContext {
 
 	private String rawparameters;
 	
+	private boolean embedded = false;
+
 	private ProgressListenerRegistry progressListenerRegistry = new ProgressListenerRegistry();
 
 	/**

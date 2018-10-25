@@ -74,6 +74,7 @@ public class Subsetter {
 			URL extractionModel,
 			ScriptFormat scriptFormat) {
 		executionContext = new ExecutionContext();
+		executionContext.setEmbedded(true);
 		setDataSource(dataSource);
 		setDbms(dbms);
 		setDataModelURL(dataModel);
@@ -97,6 +98,7 @@ public class Subsetter {
 			File extractionModel,
 			ScriptFormat scriptFormat) {
 		executionContext = new ExecutionContext();
+		executionContext.setEmbedded(true);
 		setDataSource(dataSource);
 		setDbms(dbms);
 		try {
