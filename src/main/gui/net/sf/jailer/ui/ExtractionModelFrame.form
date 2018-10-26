@@ -339,7 +339,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="cycleView">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Cycle View"/>
+                <Property name="text" type="java.lang.String" value="Cycle Finder"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cycleViewActionPerformed"/>

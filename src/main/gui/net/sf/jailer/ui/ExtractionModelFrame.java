@@ -709,7 +709,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu3.add(queryBuilder);
 
-        cycleView.setText("Cycle View");
+        cycleView.setText("Cycle Finder");
         cycleView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cycleViewActionPerformed(evt);

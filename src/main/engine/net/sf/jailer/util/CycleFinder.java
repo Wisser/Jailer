@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,12 +42,12 @@ public class CycleFinder {
 	 * Concatenation of two paths left/right or an edge, if left and right is null.
 	 */
 	public static class Path {
-		final Table from;
+		public final Table from;
 		final Table to;
 		final Path left;
 		final Path right;
 		final int birthday;
-		final int length;
+		public final int length;
 		
 		Path(Table from, Table to, Path left, Path right, int birthday) {
 			this.from = from;
@@ -108,16 +109,33 @@ public class CycleFinder {
 	}
 	
 	/**
+	 * Consumes cycles.
+	 */
+	public interface CycleConsumer {
+		
+		/**
+		 * Consumes a cycle
+		 * 
+		 * @param cycle a cyclic path
+		 * @return <code>false</code> to stop searching
+		 */
+		boolean consume(Path cycle);
+	}
+	
+	/**
 	 * Finds all dependency cycles in a data model.
 	 * 
 	 * @param dataModel the data model
+	 * @param cycleConsumer consumes cycles (optional)
+	 * 
 	 * @return all cycles in the data model
 	 */
-	public static Collection<Path> findCycle(DataModel dataModel, Collection<Table> tables) {
-		Collection<Path> allCycles = new ArrayList<Path>();
+	public static Collection<Path> findCycle(DataModel dataModel, Collection<Table> tables, CycleConsumer cycleConsumer) {
+		Collection<Path> allCycles = new LinkedHashSet<Path>();
 		Set<Pair<Table, Table>> tabu = new HashSet<Pair<Table,Table>>();
-		
-		for (;;) {
+		final int MAX_ITERATIONS = 10000;
+
+		for (int cd = 0; cd < MAX_ITERATIONS; ++cd) {
 			tables = getCycle(tables, tabu);
 			Map<Table, List<Path>> fromToPaths = new TreeMap<Table, List<Path>>();
 			for (Table table: tables) {
@@ -126,14 +144,14 @@ public class CycleFinder {
 			}
 			for (Table table: tables) {
 				for (Association association: table.associations) {
-					// if (!association.isIgnored()) {
+					 if (!association.isIgnored()) {
 						if (association.isInsertDestinationBeforeSource()) {
 							if (tables.contains(association.destination)) {
 								Path path = new Path(association.source, association.destination, null, null, 0);
 								fromToPaths.get(path.from).add(path);
 							}
 						}
-	//				}
+					}
 				}
 			}
 			List<Path> newPaths = new ArrayList<Path>();
@@ -212,14 +230,25 @@ public class CycleFinder {
 					}
 				}
 			}
-			allCycles.addAll(cycles.values());
-			if (cycles.isEmpty()) {
+			boolean newCycleFound = false;
+			for (Path cycle: cycles.values()) {
+				if (allCycles.add(cycle)) {
+					newCycleFound = true;
+					if (cycleConsumer != null) {
+						if (!cycleConsumer.consume(cycle)) {
+							newCycleFound = false;
+							break;
+						}
+					}
+				}
+			}
+			if (!newCycleFound) {
 				break;
 			}
 		}
 		return allCycles;
 	}
-	
+
 	/**
 	 * Gets set of all tables involved in a cycle.
 	 * 
