@@ -26,6 +26,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -270,8 +272,9 @@ public class CyclesView extends javax.swing.JDialog {
 
 	private class FindCyclesDialog extends javax.swing.JDialog {
 		public FindCyclesDialog() {
-			super(extractionModelFrame, false);
+			super(extractionModelFrame, true);
 			initComponents();
+			setTitle("Find cycles");
 			UIUtil.initPeer();
 		}
 		
@@ -282,6 +285,30 @@ public class CyclesView extends javax.swing.JDialog {
 			jButton1 = new javax.swing.JButton();
 
 			setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+			addWindowListener(new WindowListener() {
+				@Override
+				public void windowOpened(WindowEvent e) {
+				}
+				@Override
+				public void windowIconified(WindowEvent e) {
+				}
+				@Override
+				public void windowDeiconified(WindowEvent e) {
+				}
+				@Override
+				public void windowDeactivated(WindowEvent e) {
+				}
+				@Override
+				public void windowClosing(WindowEvent e) {
+					jButton1ActionPerformed(null);
+				}
+				@Override
+				public void windowClosed(WindowEvent e) {
+				}
+				@Override
+				public void windowActivated(WindowEvent e) {
+				}
+			});
 			getContentPane().setLayout(new java.awt.GridBagLayout());
 
 			label.setText("       Finding cycles...                         ");
@@ -331,30 +358,37 @@ public class CyclesView extends javax.swing.JDialog {
 			public void run() {
 				try {
 					final List<List<Table>> cycles = new ArrayList<List<Table>>();
-					CycleFinder.findCycle(extractionModelFrame.extractionModelEditor.dataModel, extractionModelFrame.extractionModelEditor.dataModel.getTables(),
-						new CycleConsumer() {
-							@Override
-							public boolean consume(final Path cycle) {
-								List<Table> path = new ArrayList<>(cycle.length);
-								cycle.fillPath(path);
-								cycles.add(new ArrayList<Table>(path));
-								path.remove(0);
-								for (int i = 1; i < path.size(); ++i) {
-									ArrayList<Table> e = new ArrayList<Table>(path);
-									e.add(e.get(0));
-									cycles.add(e);
-									path.add(path.remove(0));
-								}
-								final int numCycles = cycles.size();
-								SwingUtilities.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										findCyclesDialog.label.setText("       " + numCycles + " cycles found so far....     ");
+					try {
+						CycleFinder.findCycle(extractionModelFrame.extractionModelEditor.dataModel, extractionModelFrame.extractionModelEditor.dataModel.getTables(), true, null,
+							new CycleConsumer() {
+								@Override
+								public boolean consume(final Path cycle) {
+									List<Table> path = new ArrayList<>(cycle.length);
+									cycle.fillPath(path);
+									cycles.add(new ArrayList<Table>(path));
+									path.remove(0);
+									for (int i = 1; i < path.size(); ++i) {
+										ArrayList<Table> e = new ArrayList<Table>(path);
+										e.add(e.get(0));
+										cycles.add(e);
+										path.add(path.remove(0));
 									}
-								});
-								return numCycles < MAX_CYCLES;
+									final int numCycles = cycles.size();
+									SwingUtilities.invokeLater(new Runnable() {
+										@Override
+										public void run() {
+											findCyclesDialog.label.setText("       " + numCycles + " cycles found so far....     ");
+										}
+									});
+									return numCycles < MAX_CYCLES;
+								}
+							});
+						} catch (CancellationException ce) {
+							CancellationHandler.reset(null);
+							if (cycles.isEmpty()) {
+								return;
 							}
-						});
+						}
 					Collections.sort(cycles, new Comparator<List<Table>>() {
 						@Override
 						public int compare(List<Table> o1, List<Table> o2) {
@@ -381,14 +415,6 @@ public class CyclesView extends javax.swing.JDialog {
 								CyclesView.this.setVisible(true);
 								refreshTableModel(cycles);
 							}
-						}
-					});
-				} catch (CancellationException ce) {
-					CancellationHandler.reset(null);
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							CyclesView.this.setVisible(false);
 						}
 					});
 				} catch (final Throwable t) {
@@ -425,6 +451,7 @@ public class CyclesView extends javax.swing.JDialog {
 	 */
 	private synchronized void refreshTableModel(List<List<Table>> cycles) {
 		cellInfo.clear();
+		selectedTable = null;
 		int maxLength = 1;
 		
 		Set<Table> tables = new HashSet<Table>();

@@ -76,7 +76,7 @@ public class CycleFinder {
 		
 		@Override
 		public int hashCode() {
-			return 1;
+			return from.hashCode() + 7 * to.hashCode() + 11 * length;
 		}
 		
 		public void fillPath(List<Table> path) {
@@ -130,57 +130,65 @@ public class CycleFinder {
 	 * 
 	 * @return all cycles in the data model
 	 */
-	public static Collection<Path> findCycle(DataModel dataModel, Collection<Table> tables, CycleConsumer cycleConsumer) {
+	public static Collection<Path> findCycle(DataModel dataModel, Collection<Table> tables, boolean findExact, Long timeout, CycleConsumer cycleConsumer) {
 		Collection<Path> allCycles = new LinkedHashSet<Path>();
 		Set<Pair<Table, Table>> tabu = new HashSet<Pair<Table,Table>>();
-		final int MAX_ITERATIONS = 10000;
+		Set<Set<Table>> knownCycleSets = new HashSet<Set<Table>>();
+		long startTime = System.currentTimeMillis();
+		final int MAX_ITERATIONS = 100;
+		boolean exhaused = false;
 
-		for (int cd = 0; cd < MAX_ITERATIONS; ++cd) {
-			tables = getCycle(tables, tabu);
-			Map<Table, List<Path>> fromToPaths = new TreeMap<Table, List<Path>>();
-			for (Table table: tables) {
-				List<Path> pathList = new ArrayList<Path>(10);
-				fromToPaths.put(table, pathList);
-			}
-			for (Table table: tables) {
-				for (Association association: table.associations) {
-					 if (!association.isIgnored()) {
-						if (association.isInsertDestinationBeforeSource()) {
-							if (tables.contains(association.destination)) {
-								Path path = new Path(association.source, association.destination, null, null, 0);
-								fromToPaths.get(path.from).add(path);
+		try {
+			for (int cd = 0; cd < MAX_ITERATIONS; ++cd) {
+				tables = getCycle(tables, tabu);
+				Map<Table, List<Path>> fromToPaths = new TreeMap<Table, List<Path>>();
+				for (Table table: tables) {
+					List<Path> pathList = new ArrayList<Path>(10);
+					fromToPaths.put(table, pathList);
+				}
+				for (Table table: tables) {
+					for (Association association: table.associations) {
+						 if (!association.isIgnored()) {
+							if (association.isInsertDestinationBeforeSource()) {
+								if (tables.contains(association.destination)) {
+									Path path = new Path(association.source, association.destination, null, null, 0);
+									fromToPaths.get(path.from).add(path);
+								}
 							}
 						}
 					}
 				}
-			}
-			List<Path> newPaths = new ArrayList<Path>();
-			Set<Table> tSet = new TreeSet<Table>();
-			for (int today = 1; ; ++today) {
-				newPaths.clear();
-				int yesterday = today - 1;
-				
-				for (Map.Entry<Table, List<Path>> e: fromToPaths.entrySet()) {
-					for (Path path: e.getValue()) {
-						CancellationHandler.checkForCancellation(null);
-						if (path.from != path.to) {
-							List<Path> list = fromToPaths.get(path.to);
-							if (list != null) {
-								for (Path toAppend: list) {
-									if (toAppend.from != toAppend.to) {
-										if (toAppend.birthday == yesterday) {
-											Path newPath = new Path(path.from, toAppend.to, path, toAppend, today);
-											if (!fromToPaths.get(newPath.from).contains(newPath)) {
-												int aSize;
-												if (newPath.from == newPath.to) {
-													aSize = newPath.length;
-												} else {
-													aSize = newPath.length + 1;
-												}
-												tSet.clear();
-												newPath.fillSet(tSet);
-												if (tSet.size() == aSize) {
-													newPaths.add(newPath);
+				List<Path> newPaths = new ArrayList<Path>();
+				Set<Table> tSet = new TreeSet<Table>();
+				for (int today = 1; ; ++today) {
+					newPaths.clear();
+					int yesterday = today - 1;
+					
+					for (Map.Entry<Table, List<Path>> e: fromToPaths.entrySet()) {
+						for (Path path: e.getValue()) {
+							CancellationHandler.checkForCancellation(null);
+							if (timeout != null && System.currentTimeMillis() > startTime + timeout) {
+								return allCycles;
+							}
+							if (path.from != path.to) {
+								List<Path> list = fromToPaths.get(path.to);
+								if (list != null) {
+									for (Path toAppend: list) {
+										if (toAppend.from != toAppend.to) {
+											if (toAppend.birthday == yesterday) {
+												Path newPath = new Path(path.from, toAppend.to, path, toAppend, today);
+												if (!fromToPaths.get(newPath.from).contains(newPath)) {
+													int aSize;
+													if (newPath.from == newPath.to) {
+														aSize = newPath.length;
+													} else {
+														aSize = newPath.length + 1;
+													}
+													tSet.clear();
+													newPath.fillSet(tSet);
+													if (tSet.size() == aSize) {
+														newPaths.add(newPath);
+													}
 												}
 											}
 										}
@@ -189,19 +197,27 @@ public class CycleFinder {
 							}
 						}
 					}
-				}
-				if (newPaths.isEmpty()) {
-					break;
-				} else {
-					for (Path path: newPaths) {
-						fromToPaths.get(path.from).add(path);
+					if (newPaths.isEmpty()) {
+						exhaused = true;
+						break;
+					} else {
+						for (Path path: newPaths) {
+							fromToPaths.get(path.from).add(path);
+						}
 					}
-				}
-				boolean cycFound = false;
-				for (List<Path> pList: fromToPaths.values()) {
-					for (Path path: pList) {
-						if (path.from == path.to) {
-							cycFound = true;
+					boolean cycFound = false;
+					for (List<Path> pList: fromToPaths.values()) {
+						for (Path path: pList) {
+							if (path.from == path.to) {
+								Set<Table> taSet = new TreeSet<Table>();
+								path.fillSet(taSet);
+								if (!knownCycleSets.contains(taSet)) {
+									cycFound = true;
+									break;
+								}
+							}
+						}
+						if (cycFound) {
 							break;
 						}
 					}
@@ -209,42 +225,47 @@ public class CycleFinder {
 						break;
 					}
 				}
-				if (cycFound) {
+				
+				Map<Set<Table>, Path> cycles = new HashMap<Set<Table>, Path>();
+				for (List<Path> pList: fromToPaths.values()) {
+					CancellationHandler.checkForCancellation(null);
+					if (timeout != null && System.currentTimeMillis() > startTime + timeout) {
+						return allCycles;
+					}
+					for (Path path: pList) {
+						if (path.from == path.to) {
+							List<Table> pl = new ArrayList<Table>();
+							path.fillPath(pl);
+							if (!findExact) {
+								for (int i = 0; i < pl.size(); ++i) {
+									tabu.add(new Pair<Table, Table>(pl.get(i), pl.get((i + 1) % pl.size())));
+								}
+							}
+							Set<Table> taSet = new TreeSet<Table>();
+							path.fillSet(taSet);
+							knownCycleSets.add(taSet);
+							cycles.put(taSet, path);
+						}
+					}
+				}
+				boolean newCycleFound = false;
+				for (Path cycle: cycles.values()) {
+					if (allCycles.add(cycle)) {
+						newCycleFound = true;
+						if (cycleConsumer != null) {
+							if (!cycleConsumer.consume(cycle)) {
+								newCycleFound = false;
+								break;
+							}
+						}
+					}
+				}
+				if (!newCycleFound || exhaused) {
 					break;
 				}
 			}
-			
-			Map<Set<Table>, Path> cycles = new HashMap<Set<Table>, Path>();
-			for (List<Path> pList: fromToPaths.values()) {
-				CancellationHandler.checkForCancellation(null);
-				for (Path path: pList) {
-					if (path.from == path.to) {
-						List<Table> pl = new ArrayList<Table>();
-						path.fillPath(pl);
-						for (int i = 0; i < pl.size(); ++i) {
-							tabu.add(new Pair<Table, Table>(pl.get(i), pl.get((i + 1) % pl.size())));
-						}
-						Set<Table> taSet = new TreeSet<Table>();
-						path.fillSet(taSet);
-						cycles.put(taSet, path);
-					}
-				}
-			}
-			boolean newCycleFound = false;
-			for (Path cycle: cycles.values()) {
-				if (allCycles.add(cycle)) {
-					newCycleFound = true;
-					if (cycleConsumer != null) {
-						if (!cycleConsumer.consume(cycle)) {
-							newCycleFound = false;
-							break;
-						}
-					}
-				}
-			}
-			if (!newCycleFound) {
-				break;
-			}
+		} catch (OutOfMemoryError oom) {
+			// stop
 		}
 		return allCycles;
 	}

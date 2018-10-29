@@ -795,7 +795,7 @@ public class SubsettingEngine {
 				executionContext.getProgressListenerRegistry().fireNewStage("cycle error, analysing...", true, false);
 				String sMsg = msgTitel + "Paths:\n";
 				int i = 0;
-				for (CycleFinder.Path path: CycleFinder.findCycle(datamodel, cycle, null)) {
+				for (CycleFinder.Path path: CycleFinder.findCycle(datamodel, cycle, false, 10000L, null)) {
 					List<Table> pList = new ArrayList<Table>();
 					path.fillPath(pList);
 					sMsg += "[ ";
