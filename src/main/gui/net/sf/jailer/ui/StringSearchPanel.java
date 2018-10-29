@@ -486,7 +486,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 									setCheckboxState(checkboxPerSchema.get(schema), schema, false, false);						
 									break;
 								}
-								setCheckboxState(checkboxPerSchema.get(schema), schema, false, true);						
+								setCheckboxState(checkboxPerSchema.get(schema), schema, false, true);
 							}
 							SwingUtilities.invokeLater(new Runnable() {
 								@Override
@@ -504,6 +504,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 									stateChangeMode.set(true);
 									checkboxPerSchema.get(schema).setSelected(selected);
 									stateChangeMode.set(false);
+									updateTableList();
 								}
 							});
 						}
