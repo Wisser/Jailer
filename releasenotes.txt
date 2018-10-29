@@ -1,9 +1,13 @@
 8.1
   - SQL-Console: all requests are now executed in the same connection.
-  - Feature Request "#47 Add additional tables adds too much" https://sourceforge.net/p/jailer/feature-requests/47/
-  - Feature Request "#44 MSSQL export to another DB in same instance" https://sourceforge.net/p/jailer/feature-requests/44/
-  - Feature Request "#49 Mac shortcuts" https://sourceforge.net/p/jailer/feature-requests/49/
-  - Feature Request "#50 Option to not to delete too much from entities" https://sourceforge.net/p/jailer/feature-requests/50/
+  - Feature Request "#47 Add additional tables adds too much"
+    https://sourceforge.net/p/jailer/feature-requests/47/
+  - Feature Request "#44 MSSQL export to another DB in same instance"
+    https://sourceforge.net/p/jailer/feature-requests/44/
+  - Feature Request "#49 Mac shortcuts"
+    https://sourceforge.net/p/jailer/feature-requests/49/
+  - Feature Request "#50 Option to not to delete too much from entities"
+    https://sourceforge.net/p/jailer/feature-requests/50/
   - Improved Cycle Finder component.
 
 8.0.2
