@@ -466,7 +466,7 @@ public class QueryTypeAnalyser {
 			for (Entry<String, MDTable> e: fromClause.entrySet()) {
 				if (alias == null || idEquals(e.getKey(), alias, strict)) {
 					if (e.getValue() != null) {
-						for (String column: e.getValue().getColumns()) {
+						for (String column: e.getValue().getColumns(false)) {
 							if (idEquals(column, columnName, strict)) {
 								return new Pair<String, String>(e.getKey(), column);
 							}
