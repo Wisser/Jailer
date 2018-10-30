@@ -251,6 +251,9 @@ public class QueryTypeAnalyser {
 												break;
 											}
 											try {
+												if (!mdTable.isLoaded()) {
+													throw new QueryTooComplexException();
+												}
 												for (String col: mdTable.getColumns()) {
 													selectClause.add(new Pair<String, String>(e.getKey(), col));
 												}
