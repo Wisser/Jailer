@@ -264,8 +264,8 @@ public class CyclesView extends javax.swing.JDialog {
 			public void valueChanged(ListSelectionEvent evt) {
 			}
 		});
-		setLocation(500, 150);
-		setSize(600, 400);
+		setLocation(400, 150);
+		setSize(700, 500);
 //        setAlwaysOnTop(true);
 	}
 
