@@ -181,7 +181,7 @@ class ExpressionAnalyzer extends AbstractExpressionVisitor {
 				for (Entry<String, MDTable> e: fromClause.entrySet()) {
 					if (tableName == null || QueryTypeAnalyser.idEquals(e.getKey(), tableName, strict)) {
 						if (e.getValue() != null) {
-							for (String col: e.getValue().getColumns()) {
+							for (String col: e.getValue().getColumns(false)) {
 								if (QueryTypeAnalyser.idEquals(col, columnName, strict)) {
 									return new Pair<String, String>(e.getKey(), col);
 								}
