@@ -130,7 +130,7 @@ public class MDTable extends MDObject {
                 @Override
                 public void run() {
                     try {
-                        getColumns();
+                        getColumns(false);
                     } catch (SQLException e) {
                     	logger.info("error", e);
                     }
