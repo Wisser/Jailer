@@ -1,374 +1,478 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html><head><title>Jailer - SQL Export</title>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  
+  <title>Jailer - SQL Export</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
+  <meta name="description" content="Data Export Tool" />
+  <link rel="shortcut icon" href="favicon.ico" />
+  <meta name="keywords" content="data export referential integrity java jdbc dbms" />
+  <link rel="stylesheet" type="text/css" href="exporting-data-Dateien/styles.css" />
+</head>
 
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="description" content="Data Export Tool">
-<link rel="shortcut icon" href="favicon.ico">
-<meta name="keywords" content="data export referential integrity java jdbc dbms">
-<link rel="stylesheet" type="text/css" href="exporting-data-Dateien/styles.css"></head>
 <body left-margin="0" top-margin="0">
-<div align="left">
-<table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
-<tbody>
-<tr>
-<td colspan="2" class="bannerbackground" height="33" width="100%">
-<table border="0" cellpadding="4" cellspacing="0" width="100%">
-<tbody>
-<tr>
-<td><img src="exporting-data-Dateien/logo.png" hspace="10"></td>
-<td class="slogan" width="100%">Database&nbsp;Subsetting&nbsp;Tool</td>
-<td style="text-align: right; width: 100%;">
-<table border="0" cellpadding="0" cellspacing="0">
-<tbody>
-<tr>
-<td><a href="http://sourceforge.net/projects/jailer/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1" alt="SourceForge.net Logo" style="border: 0px solid ;"></a></td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-<tr>
-<td colspan="2" class="nav1background" height="33" width="100%">&nbsp; <b><font color="#ffffff"><a href="home.htm" target="_self" class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm" target="_self" class="tlink">Quick
-Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tlinkA">Tutorial</a>
-&nbsp;&nbsp;&nbsp;<a href="data-browsing.html" target="_self" class="tlink">Data Browser</a>
-&nbsp;&nbsp;&nbsp;<a href="faq.html" target="_self" class="tlink">FAQ</a> &nbsp;&nbsp;&nbsp;<a href="api.html" target="_self" class="tlink">API</a>
-&nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class="tlink">Documentation</a>
-&nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>&nbsp;&nbsp;&nbsp;
-<a href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self" class="tlink">Download</a>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</font></b></td>
-</tr>
-<tr>
-<td colspan="2" class="spacer" width="100%">
-</td>
-</tr>
-<tr>
-<td class="lmenucontainer" height="100%" valign="top" width="14%">
-<div align="center">
-<center>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-<tbody>
-<tr>
-<td width="100%"><br>
-</td>
-</tr>
-</tbody>
-</table>
-</center>
-</div>
-<ul>
-<li><small>Basic</small></li><ul><li><a href="exporting-data.htm" target="_self" class="llinkA">SQL
-Export</a></li></ul>
+  <div align="left">
+    <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0"
+    cellpadding="0" cellspacing="0" height="407" width="100%">
+      <tbody>
+        <tr>
+          <td colspan="2" class="bannerbackground" height="33" width="100%">
+            <table border="0" cellpadding="4" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td><img src="exporting-data-Dateien/logo.png" hspace="10" /></td>
 
-<ul><li><a href="exporting-xml.html" target="_self" class="llink">XML
-Export</a></li><li><a href="deleting-data.htm" target="_self" class="llink">Deleting
-Data</a></li></ul>
-<li><small>Advanced</small></li>
-<ul><li><a href="filters.html" target="_self" class="llink">Filters</a></li></ul>
-<ul><li><a href="subset-by-example.html" target="_self" class="llink">Subset&nbsp;By&nbsp;Example</a></li></ul>
-</ul>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-<tbody>
-<tr>
-<td class="content2background"><img style="width: 160px; height: 1px;" alt="" src="architecture-Dateien/vgradp.gif"></td>
-</tr>
-</tbody>
-</table>
-<p>&nbsp;</p>
-</td>
-<td class="contentbackground" height="418" valign="top" width="86%">
-<div align="right">
-<table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
-<tbody>
-<tr>
-<td class="contentbackground" height="21" width="100%"> <br>
-</td>
-</tr>
-<tr>
-<td class="content" height="520" valign="top" width="100%"> <small><small>&nbsp;</small></small><br>
-This tutorial shows you how to export consistent sets
-of rows from relational databases into topologically sorted SQL-DML,
-i.e. a sequence of INSERT-statements ordered in a way that no
-foreign-key contraint will be violated during execution.<br>
-<br>
-<h4>Objective</h4>
-Exporting all the data related to the employee named 'Scott' into a
-SQL-script.<br>
-<br>
-<h4>Step 1. Setup the database<br>
-</h4>
-<p>Create a new database schema and execute <a href="scott-tiger.sql.html"><img style="border: 0px solid ; width: 13px; height: 13px;" src="exporting-data-Dateien/arrow.gif" hspace="4"><big><span style="font-family: monospace;"><font size="4">script/scott-tiger.sql</font></span></big></a>.
-Make sure that the script runs successfully.<br>
-<br>
-<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
-<tbody>
-<tr>
-<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ db2 connect to wisser </span><span style="font-family: monospace;">user wisser </span><span style="font-family: monospace;">using <span style="font-style: italic;">&lt;password&gt;</span><span style="font-family: mon;"><span style="font-style: italic;"></span></span></span><span style="font-family: monospace;"><span style="color: rgb(51, 51, 255); font-style: italic;"></span></span><br>
-<span style="font-family: monospace;">$
-db2 -tvf
-script/scott-tiger.sql<br>
-</span><span style="font-family: monospace;"></span></td>
-</tr>
-</tbody>
-</table>
-<br>
-</p>
-<h4>Step 2. Building the data model<br>
-</h4>
-Start the Tool (<span style="font-family: monospace;">Jailer.exe
-</span>or <span style="font-family: monospace;">jailerGUI.bat</span>
-on windows platform)<br>
-<p>
-<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
-<tbody>
-<tr>
-<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailerGUI.sh</span><span style="font-family: monospace;"></span><br>
-</td>
-</tr>
-</tbody>
-</table>
-</p><p>
-and create a new data model. Press <span style="font-style: italic;">New</span> and enter "Tutorial" as the name for the new model.</p><p>
-<img style="width: 697px; height: 280px;" alt="" src="screenshot4.1.gif"><br>
-</p>
-<p><br>A data model holds information about the tables in the database and all
-associations between them.<br>
-Most of the information can be retrieved automatically by analyzing
-the database schema.<br>
-<br>
-Click on<span style="font-style: italic;"> Analyze Database</span>.<br>
-You will be asked for the
-database connection information.<br></p><p><img style="width: 655px; height: 328px;" alt="" src="screenshot4.2.gif"></p><p>Create a new connection.<br>
-</p>
-<p><img style="width: 409px; height: 316px;" alt="" src="dbs1.gif"><br>
-<br>
-</p>
-<p>Select the DBMS you are using from the displayed
-list, and fill out the following form:<br>
-</p>
-<img style="width: 570px; height: 369px;" alt="" src="screenshot4.3.gif"><br>
-<p><br>
-Finally click on<span style="font-style: italic;"> Connect</span><big style="font-style: italic;"><span style="font-family: monospace;"></span></big><span style="font-style: italic;">.</span>
-Jailer finds seven tables and five associations:<br>
-<br>
-<img src="exporting-data-Dateien/screen3.png"><br>
-<br>
-<br>
-Two associations are still missing: <br>
-</p>
-<ul>
-<li>an employee is classified into a
-salary grade depending on his salary</li>
-<li>employees may receive bonuses</li>
-</ul>
-<p> <br>
-Add the definitions manually (<big><span style="font-family: monospace;"><span style="font-family: mon;"><span style="font-style: italic;">Add</span>-</span></span></big>Button
-under <big><span style="font-family: monospace;"><font size="4">Associations</font></span></big>):<br>
-<br>
-<img src="exporting-data-Dateien/screen4.png"><br>
-<br>
-<img src="exporting-data-Dateien/screen42.png"><br>
-<br>The data model is&nbsp;now complete.<br><br>
-</p>
-<h4>Step 3. Export employee Scott (unrestricted)<br>
-</h4>
-Now lets try to export the employee named Scott. To do
-that we need an <span style="font-style: italic;">extraction-model</span>.<br>
-Select <big><span style="font-family: monospace;"><font size="4">EMPLOYEE</font></span></big>
-as table to extract from and type <span style="font-family: monospace;">T.NAME</span><big><span style="font-family: monospace;"><font size="4">='SCOTT'</font></span></big>
-into the <span style="font-style: italic;">Where</span>-field:
-<p><img src="exporting-data-Dateien/screen8.png"><br>
-<br>
-<br>
-This
-extraction model describes a set of entities containing (the)
-employee(s) named 'SCOTT', entities associated with these employees,
-entities associated with these entities and so forth.<br>
-</p>
-<p>Export this set (<span style="font-style: italic;">Export
-Data</span>-Button
-or <span style="font-style: italic;">T</span><span style="font-style: italic;">ools-&gt;Export Data</span>).
-Jailer first asks for a file name for the new extraction model. Call it
-<big><span style="font-family: monospace;"><font size="4">scott.csv. </font></span></big>After
-that the <span style="font-style: italic;">Data Export</span>
-dialog appears:</p>
-<br>
-<img src="exporting-data-Dateien/screen7.png"><br>
-<br>
-<br>
-Type <big><span style="font-family: monospace;"><font size="4">scott.sql</font></span></big>
-into the first field. This defines the name of the export file to be
-generated. <br>
-Click on <span style="font-style: italic;">Export Data</span>.
-The<span style="font-style: italic;"> Progress Panel</span>
-shows:<br>
-<br>
-<img style="width: 999px; height: 553px;" alt="" src="dbs12.gif"><br>
-<br>
-<br>
-Jailer has generated a file <a href="scott.sql.html"><img style="border: 0px solid ; width: 13px; height: 13px;" src="exporting-data-Dateien/arrow.gif" hspace="4"><big><span style="font-family: monospace;"><font size="4">scott.sql</font></span></big></a>
-containing <big><span style="font-family: monospace;"><font size="4">Insert</font></span></big>-statements
-for Scott, for his boss, for the president and for scott's
-department, salary-grade and project participations.<br>
-<br>
-But why are there also statements for all other employees?<br>
-<br>
-Let Jailer explain why:<br>
-<br>
-<img src="exporting-data-Dateien/screen10.png"><br>
-<br>
-<br>
-Open the <span style="font-family: monospace;">Explain.log</span>:<br>
-<br>
-<img style="width: 280px; height: 196px;" alt="" src="dbs13.gif"><br>
-<br>
-<img src="exporting-data-Dateien/screen12.png"><br>
-<br>
-The data of Adams and James, for example, has been exported, because
-Scott (7788) is Adams (7876) boss and James (7900) and Adams are both
-classified in the
-same salary-grade.<br>
-<br>
-<h4>Step 4. Export employee Scott (restricted)<br>
-</h4>
-Exporting an employee requires to export his boss and
-department too!
-Otherwise the set of exported entities would not be consistent (due to
-the dependencies based on foreign key constraints). No constraint
-prevents us from excluding
-the salary-grade and the bonus from export, but we don't do that
-becauses the
-resulting set would be incomplete.<br>
-<p>On the other hand, we don't want to export all
-subordinates of an employee, or all employees who works in the same
-department as Scott.<br>
-</p>
-<p>To exclude
-subordinates, department-members and 'same
-salary-grade'-employees, we must <span style="font-style: italic;">restrict</span>
-some associations.<span style="font-style: italic;"><br>
-</span><br>
-A <span style="font-style: italic;">restriction</span>
-is
-an extension of the associations join-condition (in
-SQL-syntax) for one direction of an association. <span style="font-style: italic;">disabled</span> (or <span style="font-style: italic;">false</span>) stands for
-an unsatisfiable
-condition.<br>
-</p>
-<p>Define restrictions:<br>
-</p>
-<ul>
-<li>from DEPARTMENT to EMPLOYEE</li>
-<li>from EMPLOYEE to EMPLOYEE (inverse-BOSS)</li>
-<li>from SALARYGRADE to EMPLOYEE</li>
-<li>from PROJECT to PROJECT_PARTICIPATION</li>
-<li>from ROLE to PROJECT_PARTICIPATION</li>
-</ul>
-<p> <br>
-<img src="exporting-data-Dateien/screen13.png"><br>
-<br>
-<br>
-<span style="font-style: italic;"></span>Use
-<span style="font-style: italic;">Tools-&gt;Export
-Data</span> again. Jailer
-will now export only the data related with Scott.<br>
-<br>
-<table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
-<tbody>
-<tr>
-<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;"><span style="font-family: monospace;">scott.sql </span></span></span><span style="font-family: monospace;"></span></big><br>
-</td>
-</tr>
-</tbody>
-</table>
-<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
-<tbody>
-<tr>
-<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;">--
-generated by
-Jailer at Sat May 03 12:38:33 CEST 2008&nbsp; from wisser@desktop<br>
---<br>
--- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT'
-(extractionmodel/scott.csv)<br>
--- database URL:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-jdbc:db2://localhost/wisser<br>
--- database user:&nbsp;&nbsp;&nbsp;&nbsp; scott<br>
--- Exported Entities: 13<br>
---&nbsp;&nbsp;&nbsp;&nbsp;
-DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-2<br>
---&nbsp;&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-3<br>
---&nbsp;&nbsp;&nbsp;&nbsp;
-PROJECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-2<br>
---&nbsp;&nbsp;&nbsp;&nbsp;
-PROJECT_PARTICIPATION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-2<br>
---&nbsp;&nbsp;&nbsp;&nbsp;
-ROLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-2<br>
---&nbsp;&nbsp;&nbsp;&nbsp;
-SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-2<br>
-<br>
-<br>
-<br>
-Insert into SALARYGRADE(GRADE, LOSAL, HISAL) values (4, 2001, 3000),
-(5, 3001, 9999);<br>
-Insert into ROLE(ROLE_ID, DESCRIPTION) values (100, 'Developer'), (102,
-'Project manager');<br>
-Insert into PROJECT(PROJECTNO, DESCRIPTION, START_DATE, END_DATE)
-values (1001, 'Development of Novel Magnetic Suspension System',
-'2006-01-01', '2007-08-13'), (1003, 'Foundation of Quantum Technology',
-'2007-02-24', '2008-07-31');<br>
-Insert into DEPARTMENT(DEPTNO, NAME, LOCATION) values (20, 'RESEARCH',
-'DALLAS'), (10, 'ACCOUNTING', 'NEW YORK');<br>
-Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM,
-DEPTNO) values (7839, 'KING', 'PRESIDENT', null, '1981-11-17', 5000.00,
-null, 10);<br>
-Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM,
-DEPTNO) values (7566, 'JONES', 'MANAGER', 7839, '1981-04-02', 2975.00,
-null, 20);<br>
-Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM,
-DEPTNO) values (7788, 'SCOTT', 'ANALYST', 7566, '1982-12-09', 3000.00,
-null, 20);<br>
-Insert into PROJECT_PARTICIPATION(PROJECTNO, EMPNO, START_DATE,
-END_DATE, ROLE_ID) values (1003, 7566, '2007-02-24', '2008-07-31', 102);<br>
-Insert into PROJECT_PARTICIPATION(PROJECTNO, EMPNO, START_DATE,
-END_DATE, ROLE_ID) values (1001, 7788, '2006-05-15', '2006-11-01', 100);<br>
-<br>
-</span></td>
-</tr>
-</tbody>
-</table>
-<br>
-<br>
-</p>
-<p><br>
-</p>
-<p><br>
-<br>
-</p>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>&nbsp; </p>
-</td>
-</tr>
-<tr>
-<td height="12" valign="top" width="14%"><br>
-</td>
-<td><br>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</body></html>
+                  <td class="slogan" width="100%">Database&nbsp;Subsetting&nbsp;Tool</td>
+
+                  <td style="text-align: right; width: 100%;">
+                    <table border="0" cellpadding="0" cellspacing="0">
+                      <tbody>
+                        <tr>
+                          <td><a href="http://sourceforge.net/projects/jailer/"><img src=
+                          "http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1"
+                          alt="SourceForge.net Logo" style=
+                          "border: 0px solid ;" /></a></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="nav1background" height="33" width="100%">&nbsp;
+          <b><font color="#FFFFFF"><a href="home.htm" target="_self" class=
+          "tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm" target="_self"
+          class="tlink">Quick Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm"
+          target="_self" class="tlinkA">Tutorial</a> &nbsp;&nbsp;&nbsp;<a href=
+          "data-browsing.html" target="_self" class="tlink">Data Browser</a>
+          &nbsp;&nbsp;&nbsp;<a href="faq.html" target="_self" class="tlink">FAQ</a>
+          &nbsp;&nbsp;&nbsp;<a href="api.html" target="_self" class="tlink">API</a>
+          &nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class=
+          "tlink">Documentation</a> &nbsp;&nbsp;&nbsp; <a href=
+          "http://sourceforge.net/forum/?group_id=197260" target="_self" class=
+          "tlink">Forum</a>&nbsp;&nbsp;&nbsp; <a href=
+          "http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self"
+          class="tlink">Download</a> &nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;</font></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2" class="spacer" width="100%"></td>
+        </tr>
+
+        <tr>
+          <td class="lmenucontainer" height="100%" valign="top" width="14%">
+            <div align="center">
+              <center>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tbody>
+                    <tr>
+                      <td width="100%"><br /></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </center>
+            </div>
+
+            <ul>
+              <li><small>Basic</small></li>
+
+              <li style="list-style: none; display: inline">
+                <ul>
+                  <li><a href="exporting-data.htm" target="_self" class="llinkA">SQL
+                  Export</a></li>
+                </ul>
+
+                <ul>
+                  <li><a href="exporting-xml.html" target="_self" class="llink">XML
+                  Export</a></li>
+
+                  <li><a href="deleting-data.htm" target="_self" class="llink">Deleting
+                  Data</a></li>
+                </ul>
+              </li>
+
+              <li><small>Advanced</small></li>
+
+              <li style="list-style: none; display: inline">
+                <ul>
+                  <li><a href="filters.html" target="_self" class=
+                  "llink">Filters</a></li>
+                </ul>
+
+                <ul>
+                  <li><a href="subset-by-example.html" target="_self" class=
+                  "llink">Subset&nbsp;By&nbsp;Example</a></li>
+                </ul>
+              </li>
+            </ul>
+
+            <table border="0" cellpadding="5" cellspacing="0" width="100%">
+              <tbody>
+                <tr>
+                  <td class="content2background"><img style="width: 160px; height: 1px;"
+                  alt="" src="architecture-Dateien/vgradp.gif" /></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>&nbsp;</p>
+          </td>
+
+          <td class="contentbackground" height="418" valign="top" width="86%">
+            <div align="right">
+              <table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+                <tbody>
+                  <tr>
+                    <td class="contentbackground" height="21" width="100%"><br /></td>
+                  </tr>
+
+                  <tr>
+                    <td class="content" height="520" valign="top" width="100%">
+                      <small><small>&nbsp;</small></small><br />
+                      This tutorial shows you how to export consistent sets of rows from
+                      relational databases into topologically sorted SQL-DML, i.e. a
+                      sequence of INSERT-statements ordered in a way that no foreign-key
+                      contraint will be violated during execution.<br />
+                      <br />
+
+                      <h4>Objective</h4>Exporting all the data related to the employee
+                      named 'Scott' into a SQL-script.<br />
+                      <br />
+
+                      <h4>Step 1. Setup the database<br /></h4>
+
+                      <p>Create a new database schema and execute <a href=
+                      "scott-tiger.sql.html"><img style=
+                      "border: 0px solid ; width: 13px; height: 13px;" src=
+                      "exporting-data-Dateien/arrow.gif" hspace="4" /><big><span style=
+                      "font-family: monospace;"><font size=
+                      "4">script/scott-tiger.sql</font></span></big></a>. Make sure that
+                      the script runs successfully.<br />
+                      <br /></p>
+
+                      <table style="width: 100%; text-align: left;" border="0"
+                      cellpadding="0" cellspacing="0">
+                        <tbody>
+                          <tr>
+                            <td style=
+                            "vertical-align: top; background-color: rgb(230, 255, 230);">
+                            <span style="font-family: monospace;">$ db2 connect to
+                            wisser</span> <span style="font-family: monospace;">user
+                            wisser</span> <span style="font-family: monospace;">using
+                            <span style=
+                            "font-style: italic;">&lt;password&gt;</span></span><br />
+                            <span style="font-family: monospace;">$ db2 -tvf
+                            script/scott-tiger.sql<br /></span></td>
+                          </tr>
+                        </tbody>
+                      </table><br />
+
+                      <h4>Step 2. Building the data model<br /></h4>Start the Tool
+                      (<span style="font-family: monospace;">Jailer.exe</span> or
+                      <span style="font-family: monospace;">jailerGUI.bat</span> on
+                      windows platform)<br />
+
+                      <table style="width: 100%; text-align: left;" border="0"
+                      cellpadding="0" cellspacing="0">
+                        <tbody>
+                          <tr>
+                            <td style=
+                            "vertical-align: top; background-color: rgb(230, 255, 230);">
+                            <span style="font-family: monospace;">$ sh
+                            jailerGUI.sh</span><br /></td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <p>and create a new data model. Press <span style=
+                      "font-style: italic;">New</span> and enter "Tutorial" as the name
+                      for the new model.</p>
+
+                      <p><img style="width: 697px; height: 280px;" alt="" src=
+                      "screenshot4.1.gif" /><br /></p>
+
+                      <p><br />
+                      A data model holds information about the tables in the database and
+                      all associations between them.<br />
+                      Most of the information can be retrieved automatically by analyzing
+                      the database schema.<br />
+                      <br />
+                      Click on <span style="font-style: italic;">Analyze
+                      Database</span>.<br />
+                      You will be asked for the database connection
+                      information.<br /></p>
+
+                      <p><img style="width: 655px; height: 328px;" alt="" src=
+                      "screenshot4.2.gif" /></p>
+
+                      <p>Create a new connection.<br /></p>
+
+                      <p><img style="width: 409px; height: 316px;" alt="" src=
+                      "dbs1.gif" /><br />
+                      <br /></p>
+
+                      <p>Select the DBMS you are using from the displayed list, and fill
+                      out the following form:<br /></p><img style=
+                      "width: 570px; height: 369px;" alt="" src=
+                      "screenshot4.3.gif" /><br />
+
+                      <p><br />
+                      Finally click on <span style=
+                      "font-style: italic;">Connect</span><span style=
+                      "font-style: italic;">.</span> Jailer finds seven tables and five
+                      associations:<br />
+                      <br />
+                      <img src="exporting-data-Dateien/screen3.png" /><br />
+                      <br />
+                      <br />
+                      Two associations are still missing:<br /></p>
+
+                      <ul>
+                        <li>an employee is classified into a salary grade depending on
+                        his salary</li>
+
+                        <li>employees may receive bonuses</li>
+                      </ul>
+
+                      <p><br />
+                      Add the definitions manually (<big><span style=
+                      "font-family: monospace;"><span style=
+                      "font-family: mon;"><span style=
+                      "font-style: italic;">Add</span>-</span></span></big>Button under
+                      <big><span style="font-family: monospace;"><font size=
+                      "4">Associations</font></span></big>):<br />
+                      <br />
+                      <img src="exporting-data-Dateien/screen4.png" /><br />
+                      <br />
+                      <img src="exporting-data-Dateien/screen42.png" /><br />
+                      <br />
+                      The data model is&nbsp;now complete.<br />
+                      <br /></p>
+
+                      <h4>Step 3. Export employee Scott (unrestricted)<br /></h4>Now lets
+                      try to export the employee named Scott. To do that we need an
+                      <span style="font-style: italic;">extraction-model</span>.<br />
+                      Select <big><span style="font-family: monospace;"><font size=
+                      "4">EMPLOYEE</font></span></big> as table to extract from and type
+                      <span style=
+                      "font-family: monospace;">T.NAME</span><big><span style="font-family: monospace;"><font size="4">='SCOTT'</font></span></big>
+                      into the <span style="font-style: italic;">Where</span>-field:
+
+                      <p><img src="exporting-data-Dateien/screen8.png" /><br />
+                      <br />
+                      <br />
+                      This extraction model describes a set of entities containing (the)
+                      employee(s) named 'SCOTT', entities associated with these
+                      employees, entities associated with these entities and so
+                      forth.<br /></p>
+
+                      <p>Export this set (<span style="font-style: italic;">Export
+                      Data</span>-Button or <span style=
+                      "font-style: italic;">T</span><span style=
+                      "font-style: italic;">ools-&gt;Export Data</span>). Jailer first
+                      asks for a file name for the new extraction model. Call it
+                      <big><span style="font-family: monospace;"><font size=
+                      "4">scott.csv.</font></span></big> After that the <span style=
+                      "font-style: italic;">Data Export</span> dialog appears:</p><br />
+                      <img src="exporting-data-Dateien/screen7.png" /><br />
+                      <br />
+                      <br />
+                      Type <big><span style="font-family: monospace;"><font size=
+                      "4">scott.sql</font></span></big> into the first field. This
+                      defines the name of the export file to be generated.<br />
+                      Click on <span style="font-style: italic;">Export Data</span>. The
+                      <span style="font-style: italic;">Progress Panel</span>
+                      shows:<br />
+                      <br />
+                      <img style="width: 999px; height: 553px;" alt="" src=
+                      "dbs12.gif" /><br />
+                      <br />
+                      <br />
+                      Jailer has generated a file <a href="scott.sql.html"><img style=
+                      "border: 0px solid ; width: 13px; height: 13px;" src=
+                      "exporting-data-Dateien/arrow.gif" hspace="4" /><big><span style=
+                      "font-family: monospace;"><font size=
+                      "4">scott.sql</font></span></big></a> containing <big><span style=
+                      "font-family: monospace;"><font size=
+                      "4">Insert</font></span></big>-statements for Scott, for his boss,
+                      for the president and for scott's department, salary-grade and
+                      project participations.<br />
+                      <br />
+                      But why are there also statements for all other employees?<br />
+                      <br />
+                      Let Jailer explain why:<br />
+                      <br />
+                      <img src="exporting-data-Dateien/screen10.png" /><br />
+                      <br />
+                      <br />
+                      Open the <span style=
+                      "font-family: monospace;">Explain.log</span>:<br />
+                      <br />
+                      <img style="width: 280px; height: 196px;" alt="" src=
+                      "dbs13.gif" /><br />
+                      <br />
+                      <img src="exporting-data-Dateien/screen12.png" /><br />
+                      <br />
+                      The data of Adams and James, for example, has been exported,
+                      because Scott (7788) is Adams (7876) boss and James (7900) and
+                      Adams are both classified in the same salary-grade.<br />
+                      <br />
+
+                      <h4>Step 4. Export employee Scott (restricted)<br /></h4>Exporting
+                      an employee requires to export his boss and department too!
+                      Otherwise the set of exported entities would not be consistent (due
+                      to the dependencies based on foreign key constraints). No
+                      constraint prevents us from excluding the salary-grade and the
+                      bonus from export, but we don't do that becauses the resulting set
+                      would be incomplete.<br />
+
+                      <p>On the other hand, we don't want to export all subordinates of
+                      an employee, or all employees who works in the same department as
+                      Scott.<br /></p>
+
+                      <p>To exclude subordinates, department-members and 'same
+                      salary-grade'-employees, we must <span style=
+                      "font-style: italic;">restrict</span> some
+                      associations.<span style="font-style: italic;"><br /></span><br />
+                      A <span style="font-style: italic;">restriction</span> is an
+                      extension of the associations join-condition (in SQL-syntax) for
+                      one direction of an association. <span style=
+                      "font-style: italic;">disabled</span> (or <span style=
+                      "font-style: italic;">false</span>) stands for an unsatisfiable
+                      condition.<br /></p>
+
+                      <p>Define restrictions:<br /></p>
+
+                      <ul>
+                        <li>from DEPARTMENT to EMPLOYEE</li>
+
+                        <li>from EMPLOYEE to EMPLOYEE (inverse-BOSS)</li>
+
+                        <li>from SALARYGRADE to EMPLOYEE</li>
+
+                        <li>from PROJECT to PROJECT_PARTICIPATION</li>
+
+                        <li>from ROLE to PROJECT_PARTICIPATION</li>
+                      </ul>
+
+                      <p><br />
+                      <img src="exporting-data-Dateien/screen13.png" /><br />
+                      <br />
+                      <br />
+                      Use <span style="font-style: italic;">Tools-&gt;Export Data</span>
+                      again. Jailer will now export only the data related with
+                      Scott.<br />
+                      <br /></p>
+
+                      <table style=
+                      "background-color: rgb(51, 102, 255); text-align: left;" border="0"
+                      cellpadding="2" cellspacing="0">
+                        <tbody>
+                          <tr>
+                            <td style=
+                            "vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);">
+                            <big><span style="font-family: monospace;"><span style=
+                            "font-weight: bold;"><span style=
+                            "font-family: monospace;">scott.sql</span></span></span>
+                            </big><br /></td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <table style="width: 100%; text-align: left;" border="0"
+                      cellpadding="0" cellspacing="0">
+                        <tbody>
+                          <tr>
+                            <td style=
+                            "vertical-align: top; background-color: rgb(202, 225, 235);"
+                            colspan="2"><span style="font-family: monospace;">--
+                            generated by Jailer at Sat May 03 12:38:33 CEST 2008&nbsp;
+                            from wisser@desktop<br />
+                            --<br />
+                            -- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT'
+                            (extractionmodel/scott.csv)<br />
+                            -- database URL:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            jdbc:db2://localhost/wisser<br />
+                            -- database user:&nbsp;&nbsp;&nbsp;&nbsp; scott<br />
+                            -- Exported Entities: 13<br />
+                            --&nbsp;&nbsp;&nbsp;&nbsp;
+                            DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            2<br />
+                            --&nbsp;&nbsp;&nbsp;&nbsp;
+                            EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            3<br />
+                            --&nbsp;&nbsp;&nbsp;&nbsp;
+                            PROJECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            2<br />
+                            --&nbsp;&nbsp;&nbsp;&nbsp;
+                            PROJECT_PARTICIPATION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            2<br />
+                            --&nbsp;&nbsp;&nbsp;&nbsp;
+                            ROLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            2<br />
+                            --&nbsp;&nbsp;&nbsp;&nbsp;
+                            SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            2<br />
+                            <br />
+                            <br />
+                            <br />
+                            Insert into SALARYGRADE(GRADE, LOSAL, HISAL) values (4, 2001,
+                            3000), (5, 3001, 9999);<br />
+                            Insert into ROLE(ROLE_ID, DESCRIPTION) values (100,
+                            'Developer'), (102, 'Project manager');<br />
+                            Insert into PROJECT(PROJECTNO, DESCRIPTION, START_DATE,
+                            END_DATE) values (1001, 'Development of Novel Magnetic
+                            Suspension System', '2006-01-01', '2007-08-13'), (1003,
+                            'Foundation of Quantum Technology', '2007-02-24',
+                            '2008-07-31');<br />
+                            Insert into DEPARTMENT(DEPTNO, NAME, LOCATION) values (20,
+                            'RESEARCH', 'DALLAS'), (10, 'ACCOUNTING', 'NEW YORK');<br />
+                            Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE,
+                            SALARY, COMM, DEPTNO) values (7839, 'KING', 'PRESIDENT',
+                            null, '1981-11-17', 5000.00, null, 10);<br />
+                            Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE,
+                            SALARY, COMM, DEPTNO) values (7566, 'JONES', 'MANAGER', 7839,
+                            '1981-04-02', 2975.00, null, 20);<br />
+                            Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE,
+                            SALARY, COMM, DEPTNO) values (7788, 'SCOTT', 'ANALYST', 7566,
+                            '1982-12-09', 3000.00, null, 20);<br />
+                            Insert into PROJECT_PARTICIPATION(PROJECTNO, EMPNO,
+                            START_DATE, END_DATE, ROLE_ID) values (1003, 7566,
+                            '2007-02-24', '2008-07-31', 102);<br />
+                            Insert into PROJECT_PARTICIPATION(PROJECTNO, EMPNO,
+                            START_DATE, END_DATE, ROLE_ID) values (1001, 7788,
+                            '2006-05-15', '2006-11-01', 100);<br />
+                            <br /></span></td>
+                          </tr>
+                        </tbody>
+                      </table><br />
+                      <br />
+
+                      <p><br /></p>
+
+                      <p><br />
+                      <br /></p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p>&nbsp;</p>
+          </td>
+        </tr>
+
+        <tr>
+          <td height="12" valign="top" width="14%"><br /></td>
+
+          <td><br /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
