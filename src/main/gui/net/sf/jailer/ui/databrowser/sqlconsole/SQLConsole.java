@@ -162,6 +162,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private JMenuItem menuItemSubstituteVariables;
 	private JMenuItem menuItemAnalyse;
 	private int initialTabbedPaneSelection = 0;
+	private List<? extends SortKey> initialSortKeys = null;
+	private String initialSortKeysSql = null;
 	private int initialTabbedPaneSelectionLoc = -1;
 
 	private final String IGNORED_STATEMENTS = "(\\s*/\\s*)";
@@ -856,6 +858,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								tabContentPanel.loadingPanel.setVisible(true);
 								tabContentPanel.repaint();
 								loadButton.setEnabled(false);
+								initialSortKeysSql = sql;
+								try {
+									initialSortKeys = rb.rowsTable.getRowSorter().getSortKeys();
+								} catch (Exception e2) {
+									initialSortKeys = null;
+								}
 								reload(tabContentPanel, sql);
 							}
 						});
@@ -897,7 +905,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         		tabContentPanel.tabbedPane.setSelectedIndex(initialTabbedPaneSelection);
                         	}
                         }
-                        tabContentPanel.tabbedPane.addChangeListener(new ChangeListener() {
+                		try {
+                    		if (initialSortKeys != null && initialSortKeysSql != null && initialSortKeysSql.equals(sql)) {
+                    			rb.getRowsTable().getRowSorter().setSortKeys(initialSortKeys);
+                    		}
+                		} catch (Exception e) {
+                			// ignore
+                		}
+                		tabContentPanel.tabbedPane.addChangeListener(new ChangeListener() {
 							@Override
 							public void stateChanged(ChangeEvent e) {
 								initialTabbedPaneSelection = tabContentPanel.tabbedPane.getSelectedIndex();
