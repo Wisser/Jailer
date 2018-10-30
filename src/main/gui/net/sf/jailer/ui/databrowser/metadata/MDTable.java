@@ -101,7 +101,16 @@ public class MDTable extends MDObject {
      * @return columns of table
      */
     public List<String> getColumns() throws SQLException {
-        readColumns();
+        return getColumns(true);
+    }
+
+    /**
+     * Gets columns of table
+     * 
+     * @return columns of table
+     */
+    public List<String> getColumns(boolean cached) throws SQLException {
+        readColumns(cached);
         return columns;
     }
 
@@ -149,11 +158,11 @@ public class MDTable extends MDObject {
      * @return primary key columns of table
      */
     public List<String> getPrimaryKeyColumns() throws SQLException {
-        readColumns();
+        readColumns(true);
         return primaryKey;
     }
 
-    private synchronized void readColumns() throws SQLException {
+    private synchronized void readColumns(boolean cached) throws SQLException {
         if (columns == null) {
             columns = new ArrayList<String>();
             columnTypes = new ArrayList<Column>();
@@ -162,7 +171,7 @@ public class MDTable extends MDObject {
                 MetaDataSource metaDataSource = getMetaDataSource();
                 synchronized (metaDataSource.getSession().getMetaData()) {
                     ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%", 
-                    		true, isSynonym? "SYNONYM" : null);
+                    		cached, isSynonym? "SYNONYM" : null);
                     while (resultSet.next()) {
                         String colName = metaDataSource.getQuoting().quote(resultSet.getString(4));
                         columns.add(colName);

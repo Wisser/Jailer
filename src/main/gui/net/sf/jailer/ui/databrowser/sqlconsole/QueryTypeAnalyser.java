@@ -233,7 +233,7 @@ public class QueryTypeAnalyser {
 										}
 										MDTable mdTable = fromClause.get(tableAlias);
 										try {
-											for (String col: mdTable.getColumns()) {
+											for (String col: mdTable.getColumns(false)) {
 												selectClause.add(new Pair<String, String>(tableAlias, col));
 											}
 										} catch (SQLException e) {
@@ -251,10 +251,7 @@ public class QueryTypeAnalyser {
 												break;
 											}
 											try {
-												if (!mdTable.isLoaded()) {
-													throw new QueryTooComplexException();
-												}
-												for (String col: mdTable.getColumns()) {
+												for (String col: mdTable.getColumns(false)) {
 													selectClause.add(new Pair<String, String>(e.getKey(), col));
 												}
 											} catch (SQLException e2) {
