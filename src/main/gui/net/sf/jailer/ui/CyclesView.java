@@ -173,11 +173,31 @@ public class CyclesView extends javax.swing.JDialog {
 		cyclesTable.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				int row = cyclesTable.rowAtPoint(e.getPoint());
+				int column = cyclesTable.columnAtPoint(e.getPoint());
+				if (row < 0 || column < 0) return;
+				if (SwingUtilities.isLeftMouseButton(e)) {
+					RowSorter<? extends TableModel> rowSorter = cyclesTable.getRowSorter();
+					row = rowSorter.convertRowIndexToModel(row);
+					if (row >= 0) {
+						String displayName = (String) cyclesTable.getModel().getValueAt(row, column);
+						cyclesTable.getSelectionModel().clearSelection();
+						if (displayName != null && !"".equals(displayName)) {
+	//						if (selectedTable == null || !selectedTable.equals(displayName)) {
+								selectedTable = displayName;
+								repaint();
+								Table table = getDataModel().getTableByDisplayName(selectedTable);
+								if (table != null) {
+									if (!CyclesView.this.extractionModelFrame.extractionModelEditor.select(table)) {
+										CyclesView.this.extractionModelFrame.extractionModelEditor.setRootSelection(table);
+									}
+								}
+	//						}
+						}
+					}
+				}
 				// context menu
 				if (SwingUtilities.isRightMouseButton(e)) {
-					int row = cyclesTable.rowAtPoint(e.getPoint());
-					int column = cyclesTable.columnAtPoint(e.getPoint());
-					if (row < 0 || column < 0) return;
 					Object value = cyclesTable.getModel().getValueAt(row, column);
 					if (value == null || !(value instanceof String)) return;
 					Table table = getDataModel().getTableByDisplayName((String) value);
@@ -237,32 +257,11 @@ public class CyclesView extends javax.swing.JDialog {
 				return render;
 			}
 		});
+		cyclesTable.setRowSelectionAllowed(true);
 		cyclesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		cyclesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent evt) {
-				int col = cyclesTable.getSelectedColumn();
-				int row = cyclesTable.getSelectedRow();
-				if (col >= 0 && row >= 0) {
-					RowSorter<? extends TableModel> rowSorter = cyclesTable.getRowSorter();
-					row = rowSorter.convertRowIndexToModel(row);
-					if (row >= 0) {
-						String displayName = (String) cyclesTable.getModel().getValueAt(row, col);
-						cyclesTable.getSelectionModel().clearSelection();
-						if (displayName != null && !"".equals(displayName)) {
-	//						if (selectedTable == null || !selectedTable.equals(displayName)) {
-								selectedTable = displayName;
-								repaint();
-								Table table = getDataModel().getTableByDisplayName(selectedTable);
-								if (table != null) {
-									if (!CyclesView.this.extractionModelFrame.extractionModelEditor.select(table)) {
-										CyclesView.this.extractionModelFrame.extractionModelEditor.setRootSelection(table);
-									}
-								}
-	//						}
-						}
-					}
-				}
 			}
 		});
 		setLocation(500, 150);
@@ -555,6 +554,7 @@ public class CyclesView extends javax.swing.JDialog {
 			column.setPreferredWidth(width + 50);
 		}
 		cyclesTable.setIntercellSpacing(new Dimension(0, 0));
+		cyclesTable.clearSelection();
 	}
 
 	/**
