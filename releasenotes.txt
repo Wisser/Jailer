@@ -1,3 +1,6 @@
+8.1.2
+  - New export option "check primary keys" allows checking the validity of manually defined primary keys.
+
 8.1.1
   - Increased initial responsiveness of the SQL Console.
   - SQL-Console: all requests are now executed in the same connection.
