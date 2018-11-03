@@ -885,7 +885,7 @@ public class DataModel {
 	 * @param subject the subject
 	 * @throws NoPrimaryKeyException if a table has no primary key
 	 */
-	public void checkForPrimaryKey(Set<Table> subjects, boolean forDeletion, boolean hasRowID) throws NoPrimaryKeyException {
+	public Set<Table> checkForPrimaryKey(Set<Table> subjects, boolean forDeletion, boolean hasRowID) throws NoPrimaryKeyException {
 		Set<Table> checked = new HashSet<Table>();
 		for (Table subject: subjects) {
 			Set<Table> toCheck = new HashSet<Table>(subject.closure(checked, true));
@@ -912,6 +912,7 @@ public class DataModel {
 			}
 			checked.addAll(toCheck);
 		}
+		return checked;
 	}
 
 	/**

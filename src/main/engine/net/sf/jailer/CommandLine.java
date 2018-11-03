@@ -147,6 +147,9 @@ public class CommandLine {
 	@Option(name="-import-filter-mapping-table-schema", usage="schema in which the import-filter mapping tables will be created")
 	public String importFilterMappingTableSchema = "";
 	
+	@Option(name="-check-primary-keys", usage="should the PKs be checked for validity?")
+	boolean checkPrimaryKeys = false;
+
 	@Argument
 	public List<String> arguments = new ArrayList<String>();
 

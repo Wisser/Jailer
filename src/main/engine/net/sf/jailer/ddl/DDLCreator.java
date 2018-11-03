@@ -269,7 +269,9 @@ public class DDLCreator {
 	 */
 	public boolean isUptodate(final Session session, boolean useRowId, String workingTableSchema) {
 		try {
+			boolean wasSilent = session.getSilent();
 			try {
+				session.setSilent(true);
 				final boolean[] uptodate = new boolean[] { false };
 				final DataModel datamodel = new DataModel(executionContext);
 				final Map<String, String> typeReplacement = targetDBMS(session).getTypeReplacement();
@@ -316,6 +318,8 @@ public class DDLCreator {
 				return uptodate[0];
 			} catch (Exception e) {
 				return false;
+			} finally {
+				session.setSilent(wasSilent);
 			}
 		} catch (Exception e) {
 			return false;

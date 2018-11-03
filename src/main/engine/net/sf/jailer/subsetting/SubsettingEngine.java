@@ -59,6 +59,7 @@ import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.DeletionTransformer;
+import net.sf.jailer.database.PrimaryKeyValidator;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.WorkingTableScope;
@@ -1354,8 +1355,13 @@ public class SubsettingEngine {
 			}
 		}
 		toCheck.add(extractionModel.subject);
-		extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null, !(session.dbms.getRowidName() == null || executionContext.getNoRowid() || !insertOnly || deleteScriptFileName != null));
-		
+		boolean hasRowID = !(session.dbms.getRowidName() == null || executionContext.getNoRowid() || !insertOnly || deleteScriptFileName != null);
+		Set<Table> checked = extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null, hasRowID);
+		if (executionContext.getCheckPrimaryKeys()) {
+			executionContext.getProgressListenerRegistry().fireNewStage("check primary keys", false, false);
+			PrimaryKeyValidator.validatePrimaryKey(session, checked);
+		}
+
 		subjectCondition = ParameterHandler.assignParameterValues(subjectCondition, executionContext.getParameters());
 		
 		if (!executionContext.getParameters().isEmpty()) {

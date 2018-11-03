@@ -78,6 +78,7 @@ public class ExecutionContext {
 		this.scope = other.scope;
 		this.rawparameters = other.rawparameters;
 		this.embedded = other.embedded;
+		this.checkPrimaryKeys = other.checkPrimaryKeys;
 // don't share progressListenerRegistry, was: this.progressListenerRegistry = other.progressListenerRegistry;
 	}
 
@@ -762,6 +763,9 @@ public class ExecutionContext {
 	// use primary keys to determine row identity (instead of rowid-column)
 	private boolean noRowid = false;
 
+	// Should the PKs be checked for validity?
+	private boolean checkPrimaryKeys = false;
+	
 	// schema in which the import-filter mapping tables will be created
 	private String importFilterMappingTableSchema = "";
 
@@ -792,6 +796,20 @@ public class ExecutionContext {
 		this.layoutStorage = layoutStorage;
 	}
 
+	/**
+	 * Should the PKs be checked for validity?
+	 */
+	public boolean getCheckPrimaryKeys() {
+		return checkPrimaryKeys;
+	}
+	
+	/**
+	 * Should the PKs be checked for validity?
+	 */
+	public void setCheckPrimaryKeys(boolean checkPrimaryKeys) {
+		this.checkPrimaryKeys = checkPrimaryKeys;
+	}
+	
 	private void copyCommandLineFields(CommandLine commandLine) {
 		uTF8 = commandLine.uTF8;
 		format = commandLine.format;
@@ -826,6 +844,7 @@ public class ExecutionContext {
 		transactional = commandLine.transactional;
 		noRowid = commandLine.noRowid;
 		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
+		checkPrimaryKeys = commandLine.checkPrimaryKeys;
 	}
 
 	private Map<String, String> copy(Map<String, String> map) {

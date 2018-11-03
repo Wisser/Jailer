@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
+import java.nio.channels.ReadPendingException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -158,7 +159,16 @@ public class MDTable extends MDObject {
      * @return primary key columns of table
      */
     public List<String> getPrimaryKeyColumns() throws SQLException {
-        readColumns(true);
+        return getPrimaryKeyColumns(true);
+    }
+
+    /**
+     * Gets primary key columns of table
+     * 
+     * @return primary key columns of table
+     */
+    public List<String> getPrimaryKeyColumns(boolean cached) throws SQLException {
+        readColumns(cached);
         return primaryKey;
     }
 
@@ -171,7 +181,7 @@ public class MDTable extends MDObject {
                 MetaDataSource metaDataSource = getMetaDataSource();
                 synchronized (metaDataSource.getSession().getMetaData()) {
                     ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%", 
-                    		cached, isSynonym? "SYNONYM" : null);
+                    		cached, false, isSynonym? "SYNONYM" : null);
                     while (resultSet.next()) {
                         String colName = metaDataSource.getQuoting().quote(resultSet.getString(4));
                         columns.add(colName);

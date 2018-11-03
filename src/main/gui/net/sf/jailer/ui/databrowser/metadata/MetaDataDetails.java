@@ -39,7 +39,7 @@ public enum MetaDataDetails {
 	COLUMNS("Columns", 0) {
 		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getColumns(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", true, mdTable.isSynonym()? "SYNONYM" : null);
+			return JDBCMetaDataBasedModelElementFinder.getColumns(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", true, true, mdTable.isSynonym()? "SYNONYM" : null);
 		}
 		@Override
 		public void adjustRowsTable(JTable rowsTable) {

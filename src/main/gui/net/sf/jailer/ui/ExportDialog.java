@@ -372,6 +372,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			threads.getDocument().addDocumentListener(dl);
 			rowsPerThread.getDocument().addDocumentListener(dl);
 			upsertCheckbox.addActionListener(al);
+			checkPKs.addActionListener(al);
 			explain.addActionListener(al);
 			unicode.addActionListener(al);
 			sortedCheckBox.addActionListener(al);
@@ -905,6 +906,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel30 = new javax.swing.JLabel();
         browseInsertButton = new javax.swing.JButton();
         browseDeleteButton = new javax.swing.JButton();
+        checkPKs = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1070,7 +1072,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 45;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(explain, gridBagConstraints);
 
         placeholder.setText(" "); // NOI18N
@@ -1339,7 +1341,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 46;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(unicode, gridBagConstraints);
 
         openWhereEditor.setText("jLabel28");
@@ -1411,7 +1413,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 47;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(confirmInsert, gridBagConstraints);
 
         jLabel17.setText(" To"); // NOI18N
@@ -1506,6 +1508,21 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 40;
         jPanel1.add(browseDeleteButton, gridBagConstraints);
+
+        checkPKs.setText("check primary keys"); // NOI18N
+        checkPKs.setToolTipText("<html>Check the validity of the primary keys of all relevant tables. <br>Reports an error if a primary key is ambiguous or contains a null. </html>");
+        checkPKs.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        checkPKs.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkPKsActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 48;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
+        jPanel1.add(checkPKs, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1749,6 +1766,10 @@ public class ExportDialog extends javax.swing.JDialog {
 			delete.setText(fn);
 		}
 	}//GEN-LAST:event_browseDeleteButtonActionPerformed
+
+    private void checkPKsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkPKsActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_checkPKsActionPerformed
 	
 	public boolean isOk() {
 		return isOk;
@@ -1773,6 +1794,9 @@ public class ExportDialog extends javax.swing.JDialog {
 			withDelete = true;
 			args.add("-d");
 			args.add(toFileName(delete.getText().trim()));
+		}
+		if (checkPKs.isSelected()) {
+			args.add("-check-primary-keys");
 		}
 		if (explain.isSelected()) {
 			args.add("-explain");
@@ -1998,6 +2022,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JButton browseInsertButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton cancelButton;
+    public javax.swing.JCheckBox checkPKs;
     private javax.swing.JTextArea cliArea;
     public javax.swing.JPanel commandLinePanel;
     public javax.swing.JCheckBox confirmInsert;

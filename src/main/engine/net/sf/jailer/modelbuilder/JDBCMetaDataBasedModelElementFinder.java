@@ -439,7 +439,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		for (String tableName: tableNames) {
 			Table tmp = new Table(tableName, null, false, false);
 			_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
-			resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))), quoting.unquote(tmp.getUnqualifiedName()), tableNamePattern, true, tableTypes.get(tableName));
+			resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))), quoting.unquote(tmp.getUnqualifiedName()), tableNamePattern, true, false, tableTypes.get(tableName));
 			_log.info("done");
 			Map<Integer, Column> pk = pkColumns.get(tableName);
 			while (resultSet.next()) {
@@ -839,7 +839,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 */
 	private boolean findUniqueIndexBasedKey(DatabaseMetaData metaData, Quoting quoting, Session session, Table tmp, Map<Integer, Column> pk, String tableType) {
 		try {
-			ResultSet resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%", true, tableType);
+			ResultSet resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%", true, false, tableType);
 			
 			List<String> nonNullColumns = new ArrayList<String>();
 			boolean hasNullable = false;
@@ -959,7 +959,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * Calls {@link DatabaseMetaData#getColumns(String, String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
 	 * @param withCaching 
 	 */
-	public static ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern, boolean withCaching, String tableType) throws SQLException {
+	public static ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern, boolean withCaching, boolean onlyIfCached, String tableType) throws SQLException {
 		boolean includeSynonym = false;
 		if (DBMS.ORACLE.equals(session.dbms)) {
 			if ("ALIAS".equalsIgnoreCase(tableType) || "SYNONYM".equalsIgnoreCase(tableType)) {
@@ -968,9 +968,17 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			includeSynonym = setIncludeSynonyms(includeSynonym, session);
 		}
 		try {
+			final String NAME = "getColumns " + includeSynonym + " " + schemaPattern;
+			
+			Object mdc = session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
+			if (withCaching && onlyIfCached) {
+				if (mdc == null) {
+					withCaching = false;
+				}
+					
+			}
 			if (withCaching) {
 				synchronized (session) {
-					final String NAME = "getColumns " + includeSynonym + " " + schemaPattern;
 					MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
 					if (metaDataCache == null) {
 						metaDataCache = MetaDataCache.readColumns(session, metaData, schemaPattern);
@@ -1197,7 +1205,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		String schemaName = quoting.unquote(table.getOriginalSchema(defaultSchema));
 		String tableName = quoting.unquote(table.getUnqualifiedName());
 		_log.info("getting columns for " + table.getOriginalSchema(defaultSchema) + "." + tableName);
-		ResultSet resultSet = getColumns(session, metaData, schemaName, tableName, "%", true, tableTypes.get(table.getName()));
+		ResultSet resultSet = getColumns(session, metaData, schemaName, tableName, "%", true, false, tableTypes.get(table.getName()));
 		_log.info("done");
 		while (resultSet.next()) {
 			String colName = quoting.quote(resultSet.getString(4));

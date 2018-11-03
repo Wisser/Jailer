@@ -2647,7 +2647,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
 			String schema = quoting.unquote(table.getOriginalSchema(defaultSchema));
 			String tableName = quoting.unquote(table.getUnqualifiedName());
-			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%", false, null);
+			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%", false, false, null);
 			while (resultSet.next()) {
 				String colName = resultSet.getString(4).toLowerCase();
 				columns.add(colName);
@@ -2661,7 +2661,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					schema = schema.toLowerCase();
 					tableName = tableName.toLowerCase();
 				}
-				resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%", false, null);
+				resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%", false, false, null);
 				while (resultSet.next()) {
 					String colName = resultSet.getString(4).toLowerCase();
 					columns.add(colName);
