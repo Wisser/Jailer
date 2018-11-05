@@ -230,6 +230,17 @@ union all
         
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
+
+		<sessionTemporaryTableManager>
+			<dmlTableReferencePrefix>#</dmlTableReferencePrefix>
+			<ddlTableReferencePrefix>#</ddlTableReferencePrefix>
+			<createTablePrefix>CREATE TABLE </createTablePrefix>
+			<createTableSuffix></createTableSuffix>
+			<createIndexPrefix>CREATE INDEX </createIndexPrefix>
+			<createIndexSuffix></createIndexSuffix>
+			<indexTablePrefix></indexTablePrefix>
+			<dropTablePrefix>DROP TABLE " </dropTablePrefix>
+		</sessionTemporaryTableManager>
         
         <ncharPrefix>N</ncharPrefix>
         <exportBlocks>timestamp</exportBlocks>
