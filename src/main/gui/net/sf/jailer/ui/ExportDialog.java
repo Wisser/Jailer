@@ -228,6 +228,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			fields.put("threads", threads);
 			fields.put("rowsPerThread", rowsPerThread);
 			fields.put("unicode", unicode);
+			fields.put("sorted", sortedCheckBox);
 			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
 				fields.put("$" + e.getKey(), e.getValue());
 			}
