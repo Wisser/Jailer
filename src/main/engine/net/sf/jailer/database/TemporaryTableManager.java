@@ -57,4 +57,9 @@ public interface TemporaryTableManager {
 	 */
 	String getDropTablePrefix();
 	
+	/**
+	 * Gets prefix of reference to a temporary table in DDL statements.
+	 */
+	String getDdlTableReferencePrefix();
+
 }

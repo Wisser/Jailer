@@ -26,6 +26,11 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 	 * Prefix of references to a temporary table in DML statements.
 	 */
 	private String dmlTableReferencePrefix = "";
+
+	/**
+	 * Prefix of references to a temporary table in DDL statements.
+	 */
+	private String ddlTableReferencePrefix = "";
 	
 	/**
 	 * Prefix of DDL statement to create temporary table.
@@ -138,14 +143,6 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 	public void setCreateIndexSuffix(String v) {
 		createIndexSuffix = v;
 	}
-
-	/**
-	 * Gets reference to a temporary table in DML statements.
-	 */
-	@Override
-	public String getDmlTableReference(String table) {
-		return dmlTableReferencePrefix + table + "_T";
-	}
 	
 	/**
 	 * Gets prefix to be used in DDL for dropping temporary tables.
@@ -162,8 +159,24 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 		dropTablePrefix = v;
 	}
 
+	/**
+	 * Gets reference to a temporary table in DML statements.
+	 */
+	@Override
+	public String getDmlTableReference(String table) {
+		return dmlTableReferencePrefix + table + "_T";
+	}
+
 	public String getDmlTableReferencePrefix() {
 		return dmlTableReferencePrefix;
+	}
+
+	public void setDdlTableReferencePrefix(String ddlTableReferencePrefix) {
+		this.ddlTableReferencePrefix = ddlTableReferencePrefix;
+	}
+	
+	public String getDdlTableReferencePrefix() {
+		return ddlTableReferencePrefix;
 	}
 
 }

@@ -154,6 +154,7 @@ public class DDLCreator {
 			arguments.put("create-index", tableManager.getCreateIndexPrefix());
 			arguments.put("create-index-suffix", tableManager.getCreateIndexSuffix());
 			arguments.put("index-table-prefix", tableManager.getIndexTablePrefix());
+			arguments.put("schema", schema + tableManager.getDdlTableReferencePrefix());
 		} else {
 			arguments.put("table-suffix", "");
 			arguments.put("drop-table", "DROP TABLE ");
