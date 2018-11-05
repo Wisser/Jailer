@@ -1521,7 +1521,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 48;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 8, 0);
         jPanel1.add(checkPKs, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

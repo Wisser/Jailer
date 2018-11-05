@@ -39,7 +39,7 @@ public class PrimaryKeyValidator {
 	 * @param tables the tables
 	 * @throws SQLException if a pk is invalid
 	 */
-	public static void validatePrimaryKey(Session session, Set<Table> tables) throws SQLException {
+	public void validatePrimaryKey(Session session, Set<Table> tables) throws SQLException {
 		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
 		for (Table table: tables) {
 			if (table.primaryKey == null || table.primaryKey.getColumns().isEmpty()) {
@@ -72,9 +72,14 @@ public class PrimaryKeyValidator {
 			checkUniqueness(session, table, new Quoting(session));
 			checkNoNull(session, table, new Quoting(session));
 		}
+		if (errorMessage.length() > 0) {
+			SqlException e = new SqlException(errorMessage.toString(), errorStatements.toString(), null);
+			e.setFormatted(true);
+			throw e;
+		}
 	}
 
-	private static void checkUniqueness(Session session, final Table table, Quoting quoting) throws SQLException {
+	private void checkUniqueness(Session session, final Table table, Quoting quoting) throws SQLException {
 		StringBuilder pks = new StringBuilder();
 		for (Column pkCol: table.primaryKey.getColumns()) {
 			if (pks.length() > 0) {
@@ -87,12 +92,12 @@ public class PrimaryKeyValidator {
 		session.executeQuery(sql, new Session.AbstractResultSetReader() {
 			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
-				throw new SqlException("Primary key of table \"" + table.getName() + "\" is not unique.", sql.toString(), null);
+				addError("Primary key of table \"" + table.getName() + "\" is not unique.", sql.toString());
 			}
 		});
 	}
 
-	private static void checkNoNull(Session session, final Table table, Quoting quoting) throws SQLException {
+	private void checkNoNull(Session session, final Table table, Quoting quoting) throws SQLException {
 		StringBuilder hasNull = new StringBuilder();
 		for (Column pkCol: table.primaryKey.getColumns()) {
 			if (hasNull.length() > 0) {
@@ -105,9 +110,17 @@ public class PrimaryKeyValidator {
 		session.executeQuery(sql, new Session.AbstractResultSetReader() {
 			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
-				throw new SqlException("Primary key of table \"" + table.getName() + "\" contains null.", sql.toString(), null);
+				addError("Primary key of table \"" + table.getName() + "\" contains null.", sql.toString());
 			}
 		});
+	}
+
+	private StringBuilder errorMessage = new StringBuilder();
+	private StringBuilder errorStatements = new StringBuilder();
+
+	private void addError(String messge, String sql) {
+		errorMessage.append("- " + messge + "\n");
+		errorStatements.append("- " + sql + "\n");
 	}
 
 }

@@ -670,8 +670,8 @@ public class UIUtil {
         if (t instanceof SqlException) {
             String message = ((SqlException) t).message;
             String sql = ((SqlException) t).sqlStatement;
-            new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent),
-                    lineWrap(message, 120).toString(), sql, true, null);
+			new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent),
+					((SqlException) t).isFormatted()? message : lineWrap(message, 120).toString(), sql, ((SqlException) t).isFormatted(), true, null);
             return;
         }
         String message = t.getMessage();
@@ -701,7 +701,7 @@ public class UIUtil {
         }
 
         new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent), msg.toString(),
-                contextDesc, false, context == EXCEPTION_CONTEXT_USER_ERROR ? title : null);
+                contextDesc, false, false, context == EXCEPTION_CONTEXT_USER_ERROR ? title : null);
     }
 
     private static StringBuilder lineWrap(String message, int maxwidth) {

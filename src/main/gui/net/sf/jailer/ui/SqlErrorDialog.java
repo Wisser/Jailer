@@ -49,7 +49,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
 	/** Creates new form SqlErrorDialog */
 	@SuppressWarnings("serial")
-	public SqlErrorDialog(Window parent, String message, String sql, boolean sqlError, String title) {
+	public SqlErrorDialog(Window parent, String message, String sql, boolean isFormatted, boolean sqlError, String title) {
 		super(parent, ModalityType.APPLICATION_MODAL);
 		this.sqlError = sqlError;
 		this.message = message;
@@ -58,7 +58,9 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		if (sqlError) {
 			this.sqlEditorPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
 			this.sqlEditorPane.setFadeCurrentLineHighlight(true);
-			sql = new BasicFormatterImpl().format(sql);
+			if (!isFormatted) {
+				sql = new BasicFormatterImpl().format(sql);
+			}
 		}
 		initComponents();
 		
@@ -74,8 +76,12 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 				setTitle("Internal Error");
 			}
 		}
+
+		message = message.trim();
+
 		int y = 1;
-		for (String line : message.trim().split("\n")) {
+		String[] splitted = message.split("\n");
+		for (String line : splitted) {
 			JLabel label = new JLabel(line);
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 1;
