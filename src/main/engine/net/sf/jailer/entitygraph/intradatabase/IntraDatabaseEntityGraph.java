@@ -78,8 +78,8 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			upsertStrategy = null;
 			upsertStrategies = new ArrayList<UpsertStrategy>();
 			
-			upsertStrategies.add(new MergeUS(false));
 			upsertStrategies.add(new MergeUS(true));
+			upsertStrategies.add(new MergeUS(false));
 			upsertStrategies.add(new UpsertMYSQLUS());
 			upsertStrategies.add(new UpsertPGUS());
 			upsertStrategies.add(new UpsertStandardUS());
@@ -263,12 +263,36 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	@Override
 	public void readEntities(Table table, boolean orderByPK)
 			throws SQLException {
-		readEntitiesByQuery(table, "Select " + filteredSelectionClause(table, COLUMN_PREFIX, quoting, true) + " From "
+		Long incSize = session.dbms.getIncrementalInsertIncrementSize();
+		if (incSize != null && DBMS.MSSQL.equals(session.dbms)) { // TODO make this available for other DBMS too 
+			for (;;) {
+				long rc = session.executeUpdate(
+					// TODO make this configurable
+					"Update top (" + incSize + ") " + SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " " +
+					"Set birthday=0 " +
+					"Where birthday>=0 and r_entitygraph=" + graphID + " " + 
+					"and type=" + typeName(table) + "");
+				if (rc <= 0) {
+					break;
+				}
+				readMarkedEntities(table, orderByPK);
+				session.executeUpdate(
+						"Update " + SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " " +
+						"Set birthday=-1 " +
+						"Where birthday=0 and r_entitygraph=" + graphID + " " + 
+						"and type=" + typeName(table) + "");
+				if (rc != incSize) {
+					break;
+				}
+			}
+		} else {
+			readEntitiesByQuery(table, "Select " + filteredSelectionClause(table, COLUMN_PREFIX, quoting, true) + " From "
 				+ SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " E join "
 				+ quoting.requote(table.getName()) + " T on "
 				+ pkEqualsEntityID(table, "T", "E")
 				+ " Where (E.birthday>=0 and E.r_entitygraph=" + graphID
 				+ " and E.type=" + typeName(table) + ")");
+		}
 	}
 
 	/**
