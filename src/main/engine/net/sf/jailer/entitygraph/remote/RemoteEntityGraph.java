@@ -341,7 +341,7 @@ public class RemoteEntityGraph extends EntityGraph {
 			joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, isInverseAssociation? null : "E", isInverseAssociation? "E" : null, today, birthdayOfSubject, inDeleteMode);
 		}
 		String select;
-		if (joinedTable == null && !joinWithEntity) {
+		if (joinedTable == null && !joinWithEntity && session.dbms.getIncrementalInsertIncrementSize() == null) {
 			select =
 					"Select " + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
 					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
@@ -396,9 +396,22 @@ public class RemoteEntityGraph extends EntityGraph {
 					 "Group by GRAPH_ID, " + upkColumnList(table, null) + ", BIRTHDAY, TYPE, ASSOCIATION";
 		}
 		
+		String selectIncrement = SqlUtil.applyIncrementalInsertRule(select, session, executionContext);
+		long incrementSize = 0;
+		if (selectIncrement != null) {
+			select = selectIncrement;
+			incrementSize = session.dbms.getIncrementalInsertIncrementSize();
+		}
 		String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
 		if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan on ");
-		long rc = session.executeUpdate(insert);
+		long rc = 0;
+		for (;;) {
+			long incRc = session.executeUpdate(insert);
+			rc += incRc;
+			if (incRc != incrementSize || incrementSize == 0) {
+				break;
+			}
+		}
 		totalRowcount += rc;
 		if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan off ");
 		return rc;

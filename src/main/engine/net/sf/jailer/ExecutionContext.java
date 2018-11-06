@@ -79,6 +79,7 @@ public class ExecutionContext {
 		this.rawparameters = other.rawparameters;
 		this.embedded = other.embedded;
 		this.checkPrimaryKeys = other.checkPrimaryKeys;
+		this.insertIncrementally = other.insertIncrementally;
 // don't share progressListenerRegistry, was: this.progressListenerRegistry = other.progressListenerRegistry;
 	}
 
@@ -508,6 +509,22 @@ public class ExecutionContext {
 	}
 
 	/**
+	 * If <code>true</code>, collects the rows using multiple insert operations with a limited number of rows per operation. <br>
+	 * Use this option if otherwise the transactions become too big.
+	 */
+	public boolean isInsertIncrementally() {
+		return insertIncrementally;
+	}
+
+	/**
+	 * If <code>true</code>, collects the rows using multiple insert operations with a limited number of rows per operation. <br>
+	 * Use this option if otherwise the transactions become too big.
+	 */
+	public void setInsertIncrementally(boolean insertIncrementally) {
+		this.insertIncrementally = insertIncrementally;
+	}
+
+	/**
 	 * Is the subsetter embedded into an application?
 	 */
 	public boolean isEmbedded() {
@@ -766,6 +783,9 @@ public class ExecutionContext {
 	// Should the PKs be checked for validity?
 	private boolean checkPrimaryKeys = false;
 	
+	// collects the rows using multiple insert operations with a limited number of rows per operation
+	private boolean insertIncrementally = false;
+
 	// schema in which the import-filter mapping tables will be created
 	private String importFilterMappingTableSchema = "";
 
@@ -845,6 +865,7 @@ public class ExecutionContext {
 		noRowid = commandLine.noRowid;
 		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
 		checkPrimaryKeys = commandLine.checkPrimaryKeys;
+		insertIncrementally = commandLine.insertIncrementally;
 	}
 
 	private Map<String, String> copy(Map<String, String> map) {
