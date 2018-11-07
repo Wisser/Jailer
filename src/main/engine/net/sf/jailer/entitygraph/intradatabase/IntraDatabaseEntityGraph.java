@@ -277,8 +277,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				}
 				readMarkedEntities(table, orderByPK);
 				session.executeUpdate(
-						"Update " + SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " " +
-						"Set birthday=-1 " +
+						"Delete from " + SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " " +
 						"Where birthday=0 and r_entitygraph=" + graphID + " " + 
 						"and type=" + typeName(table) + "");
 				if (rc != incSize) {
