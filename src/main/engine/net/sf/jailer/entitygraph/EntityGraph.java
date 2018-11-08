@@ -109,18 +109,7 @@ public abstract class EntityGraph {
 	 * @throws Exception 
 	 */
 	public abstract EntityGraph copy(int graphID, Session session) throws SQLException;
-	
-	/**
-	 * Finds an entity-graph.
-	 * 
-	 * @param graphID the unique ID of the graph
-	 * @param universalPrimaryKey the universal primary key
-	 * @param session for executing SQL-Statements
-	 * @return the entity-graph
-	 * @throws Exception 
-	 */
-	public abstract EntityGraph find(int graphID, Session session, PrimaryKey universalPrimaryKey) throws SQLException, Exception;
-	
+
 	/**
 	 * Gets the age of the graph.
 	 * 

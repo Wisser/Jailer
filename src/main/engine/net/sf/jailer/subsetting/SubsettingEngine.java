@@ -1295,15 +1295,22 @@ public class SubsettingEngine {
 
 		_log.info(session.dbms.getSqlDialect());
 		
+		Runnable updateStatistics = new Runnable() {
+			@Override
+			public void run() {
+				runstats();
+			}
+		};
+		
 		EntityGraph entityGraph;
 		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
 			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
-			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), executionContext);
+			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), updateStatistics, executionContext);
 		} else if (executionContext.getScope() == WorkingTableScope.LOCAL_DATABASE) {
 			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, executionContext);
 		} else {
 			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
-			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), executionContext);
+			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), updateStatistics, executionContext);
 		}
 
 		entityGraph.setExplain(explain);

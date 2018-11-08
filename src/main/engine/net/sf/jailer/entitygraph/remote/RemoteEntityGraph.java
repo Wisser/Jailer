@@ -71,17 +71,23 @@ public class RemoteEntityGraph extends EntityGraph {
 	protected final RowIdSupport rowIdSupport;
 	
 	/**
+	 * Updates statistics (optional).
+	 */
+	private final Runnable updateStatistics;
+	
+	/**
 	 * Constructor.
 	 * 
 	 * @param graphID the unique ID of the graph
 	 * @param session for executing SQL-Statements
 	 * @param universalPrimaryKey the universal primary key
 	 */
-	protected RemoteEntityGraph(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey, ExecutionContext executionContext) throws SQLException {
+	protected RemoteEntityGraph(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey, Runnable updateStatistics, ExecutionContext executionContext) throws SQLException {
 		super(graphID, dataModel, executionContext);
 		this.session = session;
 		this.quoting = new Quoting(session);
 		this.universalPrimaryKey = universalPrimaryKey;
+		this.updateStatistics = updateStatistics;
 		this.rowIdSupport = new RowIdSupport(dataModel, session.dbms, executionContext);
 		
 		File fieldProcTablesFile = new File("field-proc-tables.csv");
@@ -117,8 +123,8 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param universalPrimaryKey the universal primary key
 	 * @return the newly created entity-graph
 	 */
-	public static RemoteEntityGraph create(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey, ExecutionContext executionContext) throws SQLException {
-		RemoteEntityGraph entityGraph = new RemoteEntityGraph(dataModel, graphID, session, universalPrimaryKey, executionContext);
+	public static RemoteEntityGraph create(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey, Runnable updateStatistics, ExecutionContext executionContext) throws SQLException {
+		RemoteEntityGraph entityGraph = new RemoteEntityGraph(dataModel, graphID, session, universalPrimaryKey, updateStatistics, executionContext);
 		init(graphID, session, executionContext);
 		return entityGraph;
 	}
@@ -148,39 +154,11 @@ public class RemoteEntityGraph extends EntityGraph {
 	 */
 	@Override
 	public EntityGraph copy(int newGraphID, Session session) throws SQLException {
-		RemoteEntityGraph entityGraph = create(dataModel, newGraphID, session, universalPrimaryKey, executionContext);
+		RemoteEntityGraph entityGraph = create(dataModel, newGraphID, session, universalPrimaryKey, null, executionContext);
 		entityGraph.setBirthdayOfSubject(birthdayOfSubject);
 		session.executeUpdate(
 				"Insert into " + dmlTableReference(ENTITY, session) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
 					"Select " + newGraphID + ", " + universalPrimaryKey.columnList(null) + ", birthday, birthday, type From " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + "");
-		return entityGraph;
-	}
-
-	/**
-	 * Finds an entity-graph.
-	 * 
-	 * @param graphID the unique ID of the graph
-	 * @param universalPrimaryKey the universal primary key
-	 * @param session for executing SQL-Statements
-	 * @return the entity-graph
-	 */
-	@Override
-	public EntityGraph find(int graphID, Session session, PrimaryKey universalPrimaryKey) throws SQLException {
-		RemoteEntityGraph entityGraph = new RemoteEntityGraph(dataModel, graphID, session, universalPrimaryKey, executionContext);
-		final boolean[] found = new boolean[1];
-		found[0] = false;
-		session.executeQuery("Select * From " + dmlTableReference(ENTITY_GRAPH, session) + "Where id=" + graphID + "", new Session.ResultSetReader() {
-			@Override
-			public void readCurrentRow(ResultSet resultSet) throws SQLException {
-				found[0] = true;
-			}
-			@Override
-			public void close() {
-			}
-		});
-		if (!found[0]) {
-			throw new RuntimeException("entity-graph " + graphID + " not found");
-		}
 		return entityGraph;
 	}
 
@@ -412,11 +390,14 @@ public class RemoteEntityGraph extends EntityGraph {
 		for (;;) {
 			long incRc = session.executeUpdate(insert);
 			rc += incRc;
+			totalRowcount += incRc;
+			if (updateStatistics != null) {
+				updateStatistics.run();
+			}
 			if (incRc != incrementSize || incrementSize == 0) {
 				break;
 			}
 		}
-		totalRowcount += rc;
 		if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan off ");
 		return rc;
 	}

@@ -71,8 +71,8 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @throws SQLException 
 	 */
 	private IntraDatabaseEntityGraph(DataModel dataModel, int graphID,
-			Session session, PrimaryKey universalPrimaryKey, ExecutionContext executionContext) throws SQLException {
-		super(dataModel, graphID, session, universalPrimaryKey, executionContext);
+			Session session, PrimaryKey universalPrimaryKey, Runnable updateStatistics, ExecutionContext executionContext) throws SQLException {
+		super(dataModel, graphID, session, universalPrimaryKey, updateStatistics, executionContext);
 		upsertOnly = executionContext.getUpsertOnly();
 		synchronized (this) {
 			upsertStrategy = null;
@@ -157,9 +157,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @return the newly created entity-graph
 	 */
 	public static IntraDatabaseEntityGraph create(DataModel dataModel,
-			int graphID, Session session, PrimaryKey universalPrimaryKey, ExecutionContext executionContext) throws SQLException {
+			int graphID, Session session, PrimaryKey universalPrimaryKey, Runnable updateStatistics, ExecutionContext executionContext) throws SQLException {
 		IntraDatabaseEntityGraph entityGraph = new IntraDatabaseEntityGraph(
-				dataModel, graphID, session, universalPrimaryKey, executionContext);
+				dataModel, graphID, session, universalPrimaryKey, updateStatistics, executionContext);
 		init(graphID, session, executionContext);
 		return entityGraph;
 	}
@@ -177,7 +177,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	public EntityGraph copy(int newGraphID, Session session)
 			throws SQLException {
 		IntraDatabaseEntityGraph entityGraph = create(dataModel, newGraphID,
-				session, universalPrimaryKey, executionContext);
+				session, universalPrimaryKey, null, executionContext);
 		entityGraph.setBirthdayOfSubject(birthdayOfSubject);
 		session.executeUpdate("Insert into "
 				+ SQLDialect.dmlTableReference(ENTITY, session, executionContext)
@@ -187,45 +187,6 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				+ ", birthday, birthday, type From "
 				+ SQLDialect.dmlTableReference(ENTITY, session, executionContext)
 				+ " Where r_entitygraph=" + graphID + "");
-		return entityGraph;
-	}
-
-	/**
-	 * Finds an entity-graph.
-	 * 
-	 * @param graphID
-	 *            the unique ID of the graph
-	 * @param universalPrimaryKey
-	 *            the universal primary key
-	 * @param session
-	 *            for executing SQL-Statements
-	 * @return the entity-graph
-	 */
-	@Override
-	public EntityGraph find(int graphID, Session session,
-			PrimaryKey universalPrimaryKey) throws SQLException {
-		IntraDatabaseEntityGraph entityGraph = new IntraDatabaseEntityGraph(
-				dataModel, graphID, session, universalPrimaryKey, executionContext);
-		final boolean[] found = new boolean[1];
-		found[0] = false;
-		session.executeQuery(
-				"Select * From "
-						+ SQLDialect.dmlTableReference(ENTITY_GRAPH, session, executionContext)
-						+ "Where id=" + graphID + "",
-				new Session.ResultSetReader() {
-					@Override
-					public void readCurrentRow(ResultSet resultSet)
-							throws SQLException {
-						found[0] = true;
-					}
-
-					@Override
-					public void close() {
-					}
-				});
-		if (!found[0]) {
-			throw new RuntimeException("entity-graph " + graphID + " not found");
-		}
 		return entityGraph;
 	}
 
