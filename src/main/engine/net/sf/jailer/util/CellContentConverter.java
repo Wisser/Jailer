@@ -201,7 +201,7 @@ public class CellContentConverter {
 		POSTGRES_EXTENSIONS.addAll(Arrays.asList("hstore", "ghstore", "json", "jsonb", "_hstore", "_json", "_jsonb", "_ghstore"));
 	}
 	
-	public static class PObjectWrapper {
+	public static class PObjectWrapper implements Comparable<PObjectWrapper> {
 		private final String value;
 		private final String type;
 		public PObjectWrapper(String value, String type) {
@@ -247,9 +247,16 @@ public class CellContentConverter {
 				return false;
 			return true;
 		}
+		@Override
+		public int compareTo(PObjectWrapper o) {
+			if (o instanceof PObjectWrapper) {
+				return toString().compareTo(o.toString());
+			}
+			return 0;
+		}
 	}
 
-	public static class NCharWrapper {
+	public static class NCharWrapper implements Comparable<NCharWrapper> {
 		private final String value;
 		public NCharWrapper(String value) {
 			this.value = value;
@@ -280,6 +287,13 @@ public class CellContentConverter {
 		@Override
 		public String toString() {
 			return value;
+		}
+		@Override
+		public int compareTo(NCharWrapper o) {
+			if (o instanceof NCharWrapper) {
+				return toString().compareTo(o.toString());
+			}
+			return 0;
 		}
 	}
 

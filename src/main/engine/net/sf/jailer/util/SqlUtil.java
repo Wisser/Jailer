@@ -479,6 +479,9 @@ public class SqlUtil {
 		String tReplacement = String.format(tSplitted[1], session.dbms.getIncrementalInsertIncrementSize());
 		Pattern pattern = Pattern.compile(tPattern, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 		String incrementalSelect = pattern.matcher(select).replaceFirst(tReplacement);
+		if (!incrementalSelect.equals(select)) {
+			throw new RuntimeException("Pattern \"" + tPattern + "\" dont match \"" + select + "\"");
+		}
 		return incrementalSelect;
 	}
 
