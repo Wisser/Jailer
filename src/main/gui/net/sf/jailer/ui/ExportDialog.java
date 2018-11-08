@@ -1702,7 +1702,10 @@ public class ExportDialog extends javax.swing.JDialog {
 						if (cause instanceof SqlException) {
 							SqlException sqlEx = (SqlException) cause;
 							if (sqlEx.getInsufficientPrivileges()) {
-								if (0 == JOptionPane.showOptionDialog(this, "Insufficient privileges to create working-tables!\n" + hint, "Insufficient privileges", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Use local database", "Cancel" }, null)) {
+								String message = "Insufficient privileges to create working-tables!\n" + hint;
+								if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
+									JOptionPane.showOptionDialog(this, message, "Insufficient privileges", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Cancel" }, null);
+								} else if (0 == JOptionPane.showOptionDialog(this, message, "Insufficient privileges", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Use local database", "Cancel" }, null)) {
 									scopeLocal.setSelected(true);
 									return true;
 								}							
