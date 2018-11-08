@@ -1,6 +1,6 @@
 8.1.2
   - New export option "check primary keys" allows checking the validity of manually defined primary keys.
-  - New export option "insert incrementally" reduce transaction sizes. (Feature request 51)
+  - New export option "insert incrementally" reduces transaction sizes. (Feature request 51)
 
 8.1.1
   - Increased initial responsiveness of the SQL Console.
