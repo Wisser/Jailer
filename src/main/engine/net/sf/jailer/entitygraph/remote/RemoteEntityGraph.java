@@ -351,8 +351,10 @@ public class RemoteEntityGraph extends EntityGraph {
 					" Where (" + condition + ")";
 		} else {
 			if (session.dbms.isAvoidLeftJoin()) {
-				// bug fix for [ jailer-Bugs-3294893 ] "Outer Join for selecting dependant entries and Oracle 10"
+				// bug fix for [https://sourceforge.net/p/jailer/bugs/12/ ] "Outer Join for selecting dependant entries and Oracle 10"
 				// mixing left joins and theta-style joins causes problems on oracle DBMS
+				
+				// TODO is this still necessary?
 				select =
 					"Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
 					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +

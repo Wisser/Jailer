@@ -101,7 +101,10 @@
         <toNClob>to_nclob('%s')</toNClob>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>hextoraw('%s')</binaryPattern>
-        <avoidLeftJoin>true</avoidLeftJoin>
+        
+        <!--  <avoidLeftJoin>true</avoidLeftJoin> -->
+        <avoidLeftJoin>false</avoidLeftJoin>
+        
         <rowidName>ROWID</rowidName>
         <rowidType>ROWID</rowidType>
         <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
@@ -269,7 +272,7 @@ union all
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <deleteChunkStatement>DELETE TOP (30000) FROM %1$s WHERE %2$s</deleteChunkStatement>
-        <incrementalInsertTransformation>^(\s*SELECT\s+(?:DISTINCT)?)->$1 TOP(%1$s)</incrementalInsertTransformation>
+        <incrementalInsertTransformation>^(\s*SELECT\s+(?:DISTINCT)?)->$1 TOP(%1$s) </incrementalInsertTransformation>
         <incrementalInsertIncrementSize>30000</incrementalInsertIncrementSize>
         <estimatedRowCountQuery>
 SELECT tbl.name, p.rows
