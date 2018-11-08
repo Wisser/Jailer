@@ -1690,10 +1690,19 @@ public class ExportDialog extends javax.swing.JDialog {
 					return true;
 				} else {
 					try {
-						return UIUtil.runJailer(this, ddlArgs, false,
+						DDLCreator.uPKWasTooLong = false;
+						boolean result = UIUtil.runJailer(this, ddlArgs, false,
 							false, false, true,
 							null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null,
 							null, false, false, true, false, true, executionContext);
+						if (DDLCreator.uPKWasTooLong) {
+							JOptionPane.showMessageDialog(
+									this,
+									"Universal Primary Key is too big to be indexed.\nPerformance could suffer.\n\n"
+									+ "Solution: Try to reduce the number of primary key columns in the tables.",
+									"Universal Primaray Key is big", JOptionPane.INFORMATION_MESSAGE);
+						}
+						return result;
 					} catch (Exception e) {
 						Throwable cause = e;
 						while (cause != null && !(cause instanceof SqlException) && cause.getCause() != null && cause.getCause() != cause) {
