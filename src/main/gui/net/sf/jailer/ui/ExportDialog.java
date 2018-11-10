@@ -256,10 +256,10 @@ public class ExportDialog extends javax.swing.JDialog {
 			sortedCheckBox.setSelected(true);
 			upsertCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat));
 			rowsPerThread.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
-			insertIncrementally.setEnabled(session.dbms.getIncrementalInsertIncrementSize() != null);
-			
+			insertIncrementally.setEnabled(session.dbms.getIncrementalInsert().getIncrementSize() != 0);
+
 			Map<JTextField, String> defaults = new HashMap<JTextField, String>();
-	
+
 			if (ScriptFormat.INTRA_DATABASE.equals(scriptFormat)) {
 				jLabel8.setVisible(false);
 				jPanel8.setVisible(false);

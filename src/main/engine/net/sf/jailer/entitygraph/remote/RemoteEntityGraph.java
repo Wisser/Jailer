@@ -27,6 +27,7 @@ import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
+import net.sf.jailer.configuration.IncrementalInsertInfo;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -321,12 +322,14 @@ public class RemoteEntityGraph extends EntityGraph {
 			joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, isInverseAssociation? null : "E", isInverseAssociation? "E" : null, today, birthdayOfSubject, inDeleteMode);
 		}
 		String select;
-		if (joinedTable == null && !joinWithEntity && session.dbms.getIncrementalInsertIncrementSize() == null) {
+		IncrementalInsertInfo incremenalInsertInfo = session.dbms.getIncrementalInsert();
+		if (joinedTable == null && !joinWithEntity && !incremenalInsertInfo.isApplicable(executionContext)) {
 			select =
-					"Select " + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
+					"Select " + graphID + " " + incremenalInsertInfo.afterSelectFragment(executionContext) + "as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
 					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
 					" From " + quoting.requote(table.getName()) + " " + alias +
-					" Where (" + condition + ")";
+					" Where (" + condition + ") " + incremenalInsertInfo.additionalWhereConditionFragment(executionContext) +
+					incremenalInsertInfo.statementSuffixFragment(executionContext);
 		} else {
 			if (session.dbms.isAvoidLeftJoin()) {
 				// bug fix for [https://sourceforge.net/p/jailer/bugs/12/ ] "Outer Join for selecting dependant entries and Oracle 10"
@@ -334,7 +337,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				
 				// TODO is this still necessary?
 				select =
-					"Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
+					"Select " + (joinedTable != null? "distinct " : "") + incremenalInsertInfo.afterSelectFragment(executionContext) + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
 					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
 					" From " + quoting.requote(table.getName()) + " " + alias
 						+
@@ -347,11 +350,12 @@ public class RemoteEntityGraph extends EntityGraph {
 						" AND NOT EXISTS (select * from " + dmlTableReference(ENTITY, session)
 						+ " DuplicateExists where r_entitygraph=" + graphID + " " + "AND DuplicateExists.type="
 						+ typeName(table)
-						+ " and " + pkEqualsEntityID(table, alias, "DuplicateExists") + ")";
+						+ " and " + pkEqualsEntityID(table, alias, "DuplicateExists") + ") " + incremenalInsertInfo.additionalWhereConditionFragment(executionContext) +
+						incremenalInsertInfo.statementSuffixFragment(executionContext);
 	
 			} else {
 				select =
-					"Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
+					"Select " + (joinedTable != null? "distinct " : "") + incremenalInsertInfo.afterSelectFragment(executionContext) + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
 					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
 					" From " + quoting.requote(table.getName()) + " " + alias +
 					" left join " + dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) + " and " +
@@ -359,7 +363,8 @@ public class RemoteEntityGraph extends EntityGraph {
 					(joinedTable != null? ", " + quoting.requote(joinedTable.getName()) + " " + joinedTableAlias + " ": "") +
 					(joinWithEntity? ", " + dmlTableReference(ENTITY, session) + " E" : "") +
 					" Where (" + condition + ") and Duplicate.type is null" +
-					(joinedTable != null? " and (" + joinCondition + ")" : "");
+					(joinedTable != null? " and (" + joinCondition + ") " : " ") + incremenalInsertInfo.additionalWhereConditionFragment(executionContext) +
+					incremenalInsertInfo.statementSuffixFragment(executionContext);
 			}
 		}
 
@@ -377,13 +382,8 @@ public class RemoteEntityGraph extends EntityGraph {
 			select = "Select GRAPH_ID, " + upkColumnList(table, null) + ", BIRTHDAY, TYPE, ASSOCIATION, max(SOURCE_TYPE), " + max + " From (" + select + ") Q " +
 					 "Group by GRAPH_ID, " + upkColumnList(table, null) + ", BIRTHDAY, TYPE, ASSOCIATION";
 		}
-		
-		String selectIncrement = SqlUtil.applyIncrementalInsertRule(select, session, executionContext);
-		long incrementSize = 0;
-		if (selectIncrement != null) {
-			select = selectIncrement;
-			incrementSize = session.dbms.getIncrementalInsertIncrementSize();
-		}
+
+		long incrementSize = incremenalInsertInfo.getSize(executionContext);
 		String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
 		if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan on ");
 		long rc = 0;

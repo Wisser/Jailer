@@ -105,7 +105,6 @@ public class DBMS {
 		this.supportsSchemasInIndexDefinitions = other.supportsSchemasInIndexDefinitions;
 		this.useInlineViewsInDataBrowser = other.useInlineViewsInDataBrowser;
 		this.viewTextOrDDLQuery = other.viewTextOrDDLQuery;
-		this.deleteChunkStatement = other.deleteChunkStatement;
 		this.synonymTableQuery = other.synonymTableQuery;
 		this.estimatedRowCountQuery = other.estimatedRowCountQuery;
 		this.virtualColumnsQuery = other.virtualColumnsQuery;
@@ -126,8 +125,7 @@ public class DBMS {
 		this.packageNamesQuery = other.packageNamesQuery;
 		this.objectRenderers = other.objectRenderers;
 		this.procedureDetailNeedsSpecificName = other.procedureDetailNeedsSpecificName;
-		this.incrementalInsertTransformation = other.incrementalInsertTransformation;
-		this.incrementalInsertIncrementSize = other.incrementalInsertIncrementSize;
+		this.incrementalInsert = other.incrementalInsert;
 	}
 
 	/**
@@ -298,7 +296,6 @@ public class DBMS {
 	private boolean useInlineViewsInDataBrowser = true;
 	private String virtualColumnsQuery = null;
 	private String synonymTableQuery;
-	private String deleteChunkStatement = null;
 	private String viewTextOrDDLQuery = "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'";
 	private String estimatedRowCountQuery = null;
 	private String userDefinedColumnsQuery = null;
@@ -318,8 +315,7 @@ public class DBMS {
 	private List<DatabaseObjectRenderingDescription> objectRenderers = new ArrayList<DatabaseObjectRenderingDescription>();
 	private boolean procedureDetailNeedsSpecificName = false;
 
-	private String incrementalInsertTransformation;
-	private Long incrementalInsertIncrementSize;
+	private IncrementalInsertInfo incrementalInsert = new IncrementalInsertInfo();
 
 	/**
 	 * @return the virtualColumnsQuery
@@ -1061,45 +1057,21 @@ public class DBMS {
 	}
 
 	/**
-	 * Gets transformation rule for incremental inserts.
+	 * Information about how to do incremental inserts (never <code>null</code>).
 	 */
-	public String getIncrementalInsertTransformation() {
-		return incrementalInsertTransformation;
+	@XmlElement
+	public IncrementalInsertInfo getIncrementalInsert() {
+		if (incrementalInsert == null) {
+			incrementalInsert = new IncrementalInsertInfo();
+		}
+		return incrementalInsert;
 	}
 
 	/**
-	 * Sets transformation rule for incremental inserts.
+	 * Information about how to do incremental inserts.
 	 */
-	public void setIncrementalInsertTransformation(String incrementalInsertTransformation) {
-		this.incrementalInsertTransformation = incrementalInsertTransformation;
-	}
-
-	/**
-	 * Gets size of insert increment.
-	 */
-	public Long getIncrementalInsertIncrementSize() {
-		return incrementalInsertIncrementSize;
-	}
-
-	/**
-	 * Sets size of insert increment.
-	 */
-	public void setIncrementalInsertIncrementSize(Long incrementalInsertIncrementSize) {
-		this.incrementalInsertIncrementSize = incrementalInsertIncrementSize;
-	}
-
-	/**
-	 * Gets statement for deleting a limited number of rows.
-	 */
-	public String getDeleteChunkStatement() {
-		return deleteChunkStatement;
-	}
-
-	/**
-	 * Sets statement for deleting a limited number of rows.
-	 */
-	public void setDeleteChunkStatement(String deleteChunkStatement) {
-		this.deleteChunkStatement = deleteChunkStatement;
+	public void setIncrementalInsert(IncrementalInsertInfo incremenalInsertInfo) {
+		this.incrementalInsert = incremenalInsertInfo;
 	}
 
 	/* (non-Javadoc)

@@ -105,6 +105,11 @@
         <!--  <avoidLeftJoin>true</avoidLeftJoin> -->
         <avoidLeftJoin>false</avoidLeftJoin>
         
+        <incrementalInsert>
+        	<incrementSize>30000</incrementSize>
+        	<additionalWhereCondition>rownum &lt;= %1$s</additionalWhereCondition>
+        </incrementalInsert>
+
         <rowidName>ROWID</rowidName>
         <rowidType>ROWID</rowidType>
         <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
@@ -271,9 +276,10 @@ union all
         <avoidLeftJoin>false</avoidLeftJoin>
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
-        <deleteChunkStatement>DELETE TOP (30000) FROM %1$s WHERE %2$s</deleteChunkStatement>
-        <incrementalInsertTransformation>^(\s*SELECT\s+(?:DISTINCT)?)->$1 TOP(%1$s) </incrementalInsertTransformation>
-        <incrementalInsertIncrementSize>30000</incrementalInsertIncrementSize>
+        <incrementalInsert>
+        	<incrementSize>30000</incrementSize>
+        	<afterSelect>TOP(%1$s)</afterSelect>
+        </incrementalInsert>
         <estimatedRowCountQuery>
 SELECT tbl.name, p.rows
 FROM sys.tables AS tbl
@@ -446,7 +452,12 @@ union all
         
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
-        
+
+        <incrementalInsert>
+        	<incrementSize>30000</incrementSize>
+        	<statementSuffix>limit %1$s</statementSuffix>
+        </incrementalInsert>
+
         <identityInserts>false</identityInserts>
         <emptyBLOBValue>BINARY ''</emptyBLOBValue>
         <emptyCLOBValue>''</emptyCLOBValue>
@@ -1034,9 +1045,10 @@ union all
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>"</identifierQuoteString>
-        <deleteChunkStatement>DELETE TOP (30000) FROM %1$s WHERE %2$s</deleteChunkStatement>
-        <incrementalInsertTransformation>^(\s*SELECT\s+(?:DISTINCT)?)->$1 TOP(%1$s)</incrementalInsertTransformation>
-        <incrementalInsertIncrementSize>30000</incrementalInsertIncrementSize>
+        <incrementalInsert>
+        	<incrementSize>30000</incrementSize>
+        	<afterSelect>TOP(%1$s)</afterSelect>
+        </incrementalInsert>
     </dbms>
     
     <!-- for SQLite -->
@@ -1146,7 +1158,7 @@ union all
         
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
-        
+
         <identityInserts>false</identityInserts>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
