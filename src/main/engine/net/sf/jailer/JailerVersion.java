@@ -30,7 +30,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer working tables version.
 	 */
-	public static final int WORKING_TABLE_VERSION = 3;
+	public static final int WORKING_TABLE_VERSION = 4;
 
 	/**
 	 * The Jailer application name.
