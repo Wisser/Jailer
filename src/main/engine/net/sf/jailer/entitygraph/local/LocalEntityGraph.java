@@ -335,34 +335,6 @@ public class LocalEntityGraph extends EntityGraph {
 	}
 
 	/**
-	 * Finds an entity-graph.
-	 * 
-	 * @param graphID the unique ID of the graph
-	 * @param universalPrimaryKey the universal primary key
-	 * @param localSession for executing SQL-Statements
-	 * @return the entity-graph
-	 */
-	@Override
-	public EntityGraph find(int graphID, Session localSession, PrimaryKey universalPrimaryKey) throws IOException, SQLException {
-		LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, localSession, executionContext);
-		final boolean[] found = new boolean[1];
-		found[0] = false;
-		localSession.executeQuery("Select * From " + dmlTableReference(ENTITY_GRAPH, localSession) + "Where id=" + graphID + "", new Session.ResultSetReader() {
-			@Override
-			public void readCurrentRow(ResultSet resultSet) throws SQLException {
-				found[0] = true;
-			}
-			@Override
-			public void close() {
-			}
-		});
-		if (!found[0]) {
-			throw new RuntimeException("entity-graph " + graphID + " not found");
-		}
-		return entityGraph;
-	}
-
-	/**
 	 * Gets the age of the graph.
 	 * 
 	 * @return the age of the graph
@@ -871,7 +843,7 @@ public class LocalEntityGraph extends EntityGraph {
 	@Override
 	public void readEntities(Table table, boolean orderByPK) throws SQLException {
 		Session.ResultSetReader reader = getTransformerFactory().create(table);
-		long rc = readEntities(table, orderByPK, reader, true);
+		readEntities(table, orderByPK, reader, true);
 	}
 
 	/**

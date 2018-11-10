@@ -41,6 +41,8 @@ import net.sf.jailer.datamodel.Table;
  */
 public class PrintUtil {
 	
+	public static final String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
+
 	/**
 	 * Converts a set of tables into a string.
 	 * 

@@ -90,7 +90,8 @@ public class CollectedRowsCounter implements ProgressListener {
 			if (forDelete && deletedCount.containsKey(stable)) {
 				long r = deletedCount.get(stable);
 				if (r > 0) {
-					reduct = "(" + -r + ")";
+					reduct = "(" + rc + " - " + r + ")";
+					rc -= r;
 				}
 			}
 			result.add(String.format("   %-24s %10d %s", datamodel.getDisplayName(stable), rc, reduct));

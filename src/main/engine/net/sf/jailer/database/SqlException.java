@@ -27,6 +27,7 @@ public class SqlException extends SQLException {
 	public final String message;
 	public final String sqlStatement;
 	private boolean insufficientPrivileges = false;
+	private boolean isFormatted = false;
 	
 	public SqlException(String message, String sqlStatement, Throwable t) {
 		super(message, t);
@@ -42,6 +43,14 @@ public class SqlException extends SQLException {
 
 	public void setInsufficientPrivileges(boolean value) {
 		insufficientPrivileges = value;
+	}
+
+	public boolean isFormatted() {
+		return isFormatted;
+	}
+
+	public void setFormatted(boolean isFormatted) {
+		this.isFormatted = isFormatted;
 	}
 
 }

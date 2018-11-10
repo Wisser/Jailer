@@ -102,9 +102,11 @@ public class DDLCreator {
 	 * Creates the DDL for the working-tables.
 	 */
 	public boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
+		uPKWasTooLong = false;
 		try {
 			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport, workingTableSchema);
 		} catch (SQLException e) {
+			uPKWasTooLong = true;
 		}
 		// reconnect and retry with another index type
 		session.reconnect();
@@ -116,7 +118,9 @@ public class DDLCreator {
 		session.reconnect();
 		return createDDL(datamodel, session, temporaryTableScope, 2, rowIdSupport, workingTableSchema);
 	}
-		
+
+	public static boolean uPKWasTooLong = false;
+
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
@@ -154,6 +158,7 @@ public class DDLCreator {
 			arguments.put("create-index", tableManager.getCreateIndexPrefix());
 			arguments.put("create-index-suffix", tableManager.getCreateIndexSuffix());
 			arguments.put("index-table-prefix", tableManager.getIndexTablePrefix());
+			arguments.put("schema", schema + tableManager.getDdlTableReferencePrefix());
 		} else {
 			arguments.put("table-suffix", "");
 			arguments.put("drop-table", "DROP TABLE ");

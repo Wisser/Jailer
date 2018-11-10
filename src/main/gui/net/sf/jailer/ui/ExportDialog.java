@@ -228,6 +228,8 @@ public class ExportDialog extends javax.swing.JDialog {
 			fields.put("threads", threads);
 			fields.put("rowsPerThread", rowsPerThread);
 			fields.put("unicode", unicode);
+			fields.put("sorted", sortedCheckBox);
+			fields.put("insertIncrementally", insertIncrementally);
 			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
 				fields.put("$" + e.getKey(), e.getValue());
 			}
@@ -254,7 +256,8 @@ public class ExportDialog extends javax.swing.JDialog {
 			sortedCheckBox.setSelected(true);
 			upsertCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat));
 			rowsPerThread.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
-	
+			insertIncrementally.setEnabled(session.dbms.getIncrementalInsertIncrementSize() != null);
+			
 			Map<JTextField, String> defaults = new HashMap<JTextField, String>();
 	
 			if (ScriptFormat.INTRA_DATABASE.equals(scriptFormat)) {
@@ -373,6 +376,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			rowsPerThread.getDocument().addDocumentListener(dl);
 			upsertCheckbox.addActionListener(al);
 			checkPKs.addActionListener(al);
+			insertIncrementally.addActionListener(al);
 			explain.addActionListener(al);
 			unicode.addActionListener(al);
 			sortedCheckBox.addActionListener(al);
@@ -907,6 +911,7 @@ public class ExportDialog extends javax.swing.JDialog {
         browseInsertButton = new javax.swing.JButton();
         browseDeleteButton = new javax.swing.JButton();
         checkPKs = new javax.swing.JCheckBox();
+        insertIncrementally = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1070,7 +1075,7 @@ public class ExportDialog extends javax.swing.JDialog {
         explain.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 45;
+        gridBagConstraints.gridy = 47;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(explain, gridBagConstraints);
@@ -1339,7 +1344,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 46;
+        gridBagConstraints.gridy = 45;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(unicode, gridBagConstraints);
@@ -1411,7 +1416,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 47;
+        gridBagConstraints.gridy = 46;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(confirmInsert, gridBagConstraints);
@@ -1519,10 +1524,25 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 49;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 8, 0);
+        jPanel1.add(checkPKs, gridBagConstraints);
+
+        insertIncrementally.setText("insert incrementally"); // NOI18N
+        insertIncrementally.setToolTipText("<html>Collects the rows using multiple insert operations with a limited number of rows per operation.<br>Use this option if otherwise the transactions become too big.</html>");
+        insertIncrementally.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        insertIncrementally.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                insertIncrementallyActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 48;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
-        jPanel1.add(checkPKs, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        jPanel1.add(insertIncrementally, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1670,10 +1690,19 @@ public class ExportDialog extends javax.swing.JDialog {
 					return true;
 				} else {
 					try {
-						return UIUtil.runJailer(this, ddlArgs, false,
+						DDLCreator.uPKWasTooLong = false;
+						boolean result = UIUtil.runJailer(this, ddlArgs, false,
 							false, false, true,
 							null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null,
 							null, false, false, true, false, true, executionContext);
+						if (DDLCreator.uPKWasTooLong) {
+							JOptionPane.showMessageDialog(
+									this,
+									"Universal Primary Key is too big to be indexed.\nPerformance could suffer.\n\n"
+									+ "Solution: Try to reduce the number of primary key columns in the tables.",
+									"Universal Primaray Key is big", JOptionPane.INFORMATION_MESSAGE);
+						}
+						return result;
 					} catch (Exception e) {
 						Throwable cause = e;
 						while (cause != null && !(cause instanceof SqlException) && cause.getCause() != null && cause.getCause() != cause) {
@@ -1682,7 +1711,10 @@ public class ExportDialog extends javax.swing.JDialog {
 						if (cause instanceof SqlException) {
 							SqlException sqlEx = (SqlException) cause;
 							if (sqlEx.getInsufficientPrivileges()) {
-								if (0 == JOptionPane.showOptionDialog(this, "Insufficient privileges to create working-tables!\n" + hint, "Insufficient privileges", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Use local database", "Cancel" }, null)) {
+								String message = "Insufficient privileges to create working-tables!\n" + hint;
+								if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
+									JOptionPane.showOptionDialog(this, message, "Insufficient privileges", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Cancel" }, null);
+								} else if (0 == JOptionPane.showOptionDialog(this, message, "Insufficient privileges", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Use local database", "Cancel" }, null)) {
 									scopeLocal.setSelected(true);
 									return true;
 								}							
@@ -1770,6 +1802,10 @@ public class ExportDialog extends javax.swing.JDialog {
     private void checkPKsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkPKsActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_checkPKsActionPerformed
+
+    private void insertIncrementallyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertIncrementallyActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_insertIncrementallyActionPerformed
 	
 	public boolean isOk() {
 		return isOk;
@@ -1797,6 +1833,9 @@ public class ExportDialog extends javax.swing.JDialog {
 		}
 		if (checkPKs.isSelected()) {
 			args.add("-check-primary-keys");
+		}
+		if (insertIncrementally.isSelected()) {
+			args.add("-insert-incrementally");
 		}
 		if (explain.isSelected()) {
 			args.add("-explain");
@@ -2033,6 +2072,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel iFMTPanel;
     private javax.swing.JComboBox iFMTableSchemaComboBox;
     private javax.swing.JTextField insert;
+    public javax.swing.JCheckBox insertIncrementally;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;

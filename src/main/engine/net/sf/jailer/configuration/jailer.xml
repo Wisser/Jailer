@@ -101,7 +101,10 @@
         <toNClob>to_nclob('%s')</toNClob>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>hextoraw('%s')</binaryPattern>
-        <avoidLeftJoin>true</avoidLeftJoin>
+        
+        <!--  <avoidLeftJoin>true</avoidLeftJoin> -->
+        <avoidLeftJoin>false</avoidLeftJoin>
+        
         <rowidName>ROWID</rowidName>
         <rowidType>ROWID</rowidType>
         <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
@@ -230,6 +233,17 @@ union all
         
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
+
+		<sessionTemporaryTableManager>
+			<dmlTableReferencePrefix>#</dmlTableReferencePrefix>
+			<ddlTableReferencePrefix>#</ddlTableReferencePrefix>
+			<createTablePrefix>CREATE TABLE </createTablePrefix>
+			<createTableSuffix></createTableSuffix>
+			<createIndexPrefix>CREATE INDEX </createIndexPrefix>
+			<createIndexSuffix></createIndexSuffix>
+			<indexTablePrefix></indexTablePrefix>
+			<dropTablePrefix>DROP TABLE </dropTablePrefix>
+		</sessionTemporaryTableManager>
         
         <ncharPrefix>N</ncharPrefix>
         <exportBlocks>timestamp</exportBlocks>
@@ -258,6 +272,8 @@ union all
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <deleteChunkStatement>DELETE TOP (30000) FROM %1$s WHERE %2$s</deleteChunkStatement>
+        <incrementalInsertTransformation>^(\s*SELECT\s+(?:DISTINCT)?)->$1 TOP(%1$s) </incrementalInsertTransformation>
+        <incrementalInsertIncrementSize>30000</incrementalInsertIncrementSize>
         <estimatedRowCountQuery>
 SELECT tbl.name, p.rows
 FROM sys.tables AS tbl
@@ -990,12 +1006,14 @@ union all
         <tableProperties></tableProperties>
         
         <sessionTemporaryTableManager>
-            <createIndexPrefix>CREATE INDEX </createIndexPrefix>
-            <createIndexSuffix></createIndexSuffix>
-            <createTablePrefix>CREATE TABLE #</createTablePrefix>
-            <createTableSuffix></createTableSuffix>
-            <dropTablePrefix>DROP TABLE #</dropTablePrefix>
-            <indexTablePrefix>#</indexTablePrefix>
+			<dmlTableReferencePrefix>#</dmlTableReferencePrefix>
+			<ddlTableReferencePrefix>#</ddlTableReferencePrefix>
+			<createTablePrefix>CREATE TABLE </createTablePrefix>
+			<createTableSuffix></createTableSuffix>
+			<createIndexPrefix>CREATE INDEX </createIndexPrefix>
+			<createIndexSuffix></createIndexSuffix>
+			<indexTablePrefix></indexTablePrefix>
+			<dropTablePrefix>DROP TABLE </dropTablePrefix>
         </sessionTemporaryTableManager>
         <exportBlocks>timestamp</exportBlocks>
         <exportBlocks>TIMESTAMP</exportBlocks>
@@ -1008,13 +1026,17 @@ union all
                 <key>TIMESTAMP</key>
                 <value>DATETIME</value>
             </entry>
-        </typeReplacement>        <identityInserts>true</identityInserts>
+        </typeReplacement>
+        <identityInserts>true</identityInserts>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>0x%s</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>"</identifierQuoteString>
+        <deleteChunkStatement>DELETE TOP (30000) FROM %1$s WHERE %2$s</deleteChunkStatement>
+        <incrementalInsertTransformation>^(\s*SELECT\s+(?:DISTINCT)?)->$1 TOP(%1$s)</incrementalInsertTransformation>
+        <incrementalInsertIncrementSize>30000</incrementalInsertIncrementSize>
     </dbms>
     
     <!-- for SQLite -->

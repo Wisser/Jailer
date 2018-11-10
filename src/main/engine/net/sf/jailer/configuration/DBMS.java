@@ -126,6 +126,8 @@ public class DBMS {
 		this.packageNamesQuery = other.packageNamesQuery;
 		this.objectRenderers = other.objectRenderers;
 		this.procedureDetailNeedsSpecificName = other.procedureDetailNeedsSpecificName;
+		this.incrementalInsertTransformation = other.incrementalInsertTransformation;
+		this.incrementalInsertIncrementSize = other.incrementalInsertIncrementSize;
 	}
 
 	/**
@@ -315,7 +317,10 @@ public class DBMS {
 	private String packageNamesQuery;
 	private List<DatabaseObjectRenderingDescription> objectRenderers = new ArrayList<DatabaseObjectRenderingDescription>();
 	private boolean procedureDetailNeedsSpecificName = false;
-	
+
+	private String incrementalInsertTransformation;
+	private Long incrementalInsertIncrementSize;
+
 	/**
 	 * @return the virtualColumnsQuery
 	 */
@@ -1053,6 +1058,34 @@ public class DBMS {
 	 */
 	public void setSynonymTableQuery(String synonymTableQuery) {
 		this.synonymTableQuery = synonymTableQuery;
+	}
+
+	/**
+	 * Gets transformation rule for incremental inserts.
+	 */
+	public String getIncrementalInsertTransformation() {
+		return incrementalInsertTransformation;
+	}
+
+	/**
+	 * Sets transformation rule for incremental inserts.
+	 */
+	public void setIncrementalInsertTransformation(String incrementalInsertTransformation) {
+		this.incrementalInsertTransformation = incrementalInsertTransformation;
+	}
+
+	/**
+	 * Gets size of insert increment.
+	 */
+	public Long getIncrementalInsertIncrementSize() {
+		return incrementalInsertIncrementSize;
+	}
+
+	/**
+	 * Sets size of insert increment.
+	 */
+	public void setIncrementalInsertIncrementSize(Long incrementalInsertIncrementSize) {
+		this.incrementalInsertIncrementSize = incrementalInsertIncrementSize;
 	}
 
 	/**

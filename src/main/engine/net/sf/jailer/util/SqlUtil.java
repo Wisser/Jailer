@@ -30,8 +30,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
@@ -450,6 +454,35 @@ public class SqlUtil {
 			++i;
 		}
 		return 0;
+	}
+
+	/**
+	 * Applies the {@link DBMS#getIncrementalInsertTransformation(), if applicable.
+	 * 
+	 * @param select the select statement
+	 * @param executionContext {@link ExecutionContext}
+	 * @return transformed select statement or <code>null</code>
+	 */
+	public static String applyIncrementalInsertRule(String select, Session session, ExecutionContext executionContext) {
+		if (!executionContext.isInsertIncrementally()) {
+			return null;
+		}
+		if (session.dbms.getIncrementalInsertIncrementSize() == null || session.dbms.getIncrementalInsertIncrementSize() <= 0) {
+			return null;
+		}
+		String incrementalInsertTransformation = session.dbms.getIncrementalInsertTransformation();
+		if (incrementalInsertTransformation == null) {
+			return null;
+		}
+		String[] tSplitted = incrementalInsertTransformation.split("->");
+		String tPattern = tSplitted[0].trim();
+		String tReplacement = String.format(tSplitted[1], session.dbms.getIncrementalInsertIncrementSize());
+		Pattern pattern = Pattern.compile(tPattern, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+		String incrementalSelect = pattern.matcher(select).replaceFirst(tReplacement);
+		if (incrementalSelect.equals(select)) {
+			throw new RuntimeException("Pattern \"" + tPattern + "\" dont match \"" + select + "\"");
+		}
+		return incrementalSelect;
 	}
 
 	/**

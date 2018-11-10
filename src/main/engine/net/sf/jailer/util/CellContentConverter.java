@@ -201,7 +201,7 @@ public class CellContentConverter {
 		POSTGRES_EXTENSIONS.addAll(Arrays.asList("hstore", "ghstore", "json", "jsonb", "_hstore", "_json", "_jsonb", "_ghstore"));
 	}
 	
-	public static class PObjectWrapper {
+	public static class PObjectWrapper implements Comparable<PObjectWrapper> {
 		private final String value;
 		private final String type;
 		public PObjectWrapper(String value, String type) {
@@ -218,16 +218,82 @@ public class CellContentConverter {
 		public String toString() {
 			return value;
 		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((type == null) ? 0 : type.hashCode());
+			result = prime * result + ((value == null) ? 0 : value.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			PObjectWrapper other = (PObjectWrapper) obj;
+			if (type == null) {
+				if (other.type != null)
+					return false;
+			} else if (!type.equals(other.type))
+				return false;
+			if (value == null) {
+				if (other.value != null)
+					return false;
+			} else if (!value.equals(other.value))
+				return false;
+			return true;
+		}
+		@Override
+		public int compareTo(PObjectWrapper o) {
+			if (o instanceof PObjectWrapper) {
+				return toString().compareTo(o.toString());
+			}
+			return 0;
+		}
 	}
 
-	public static class NCharWrapper {
+	public static class NCharWrapper implements Comparable<NCharWrapper> {
 		private final String value;
 		public NCharWrapper(String value) {
 			this.value = value;
 		}
 		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((value == null) ? 0 : value.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			NCharWrapper other = (NCharWrapper) obj;
+			if (value == null) {
+				if (other.value != null)
+					return false;
+			} else if (!value.equals(other.value))
+				return false;
+			return true;
+		}
+		@Override
 		public String toString() {
 			return value;
+		}
+		@Override
+		public int compareTo(NCharWrapper o) {
+			if (o instanceof NCharWrapper) {
+				return toString().compareTo(o.toString());
+			}
+			return 0;
 		}
 	}
 

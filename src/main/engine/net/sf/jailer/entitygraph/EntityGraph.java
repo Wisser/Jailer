@@ -109,18 +109,7 @@ public abstract class EntityGraph {
 	 * @throws Exception 
 	 */
 	public abstract EntityGraph copy(int graphID, Session session) throws SQLException;
-	
-	/**
-	 * Finds an entity-graph.
-	 * 
-	 * @param graphID the unique ID of the graph
-	 * @param universalPrimaryKey the universal primary key
-	 * @param session for executing SQL-Statements
-	 * @return the entity-graph
-	 * @throws Exception 
-	 */
-	public abstract EntityGraph find(int graphID, Session session, PrimaryKey universalPrimaryKey) throws SQLException, Exception;
-	
+
 	/**
 	 * Gets the age of the graph.
 	 * 
@@ -143,7 +132,7 @@ public abstract class EntityGraph {
 	public abstract long getSize() throws SQLException;
 
 	/**
-	 * Gets the number of entities form given tables in the graph.
+	 * Gets the number of entities from given tables in the graph.
 	 * 
 	 * @return the number of entities in the graph
 	 * @throws SQLException 
@@ -151,16 +140,18 @@ public abstract class EntityGraph {
 	public long getSize(final Set<Table> tables) throws SQLException {
 		final long[] total = new long[1];
 		total[0] = 0;
-		getSession().executeQuery("Select type, count(*) From " + dmlTableReference(ENTITY, getSession()) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
-			@Override
-			public void readCurrentRow(ResultSet resultSet) throws SQLException {
-				Table table = dataModel.getTableByOrdinal(resultSet.getInt(1));
-				if (tables.contains(table)) {
-					long count = resultSet.getLong(2);
-					total[0] += count;
+		if (!tables.isEmpty()) {
+			getSession().executeQuery("Select type, count(*) From " + dmlTableReference(ENTITY, getSession()) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
+				@Override
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					Table table = dataModel.getTableByOrdinal(resultSet.getInt(1));
+					if (tables.contains(table)) {
+						long count = resultSet.getLong(2);
+						total[0] += count;
+					}
 				}
-			}
-		});
+			});
+		}
 		return total[0];
 	}
 

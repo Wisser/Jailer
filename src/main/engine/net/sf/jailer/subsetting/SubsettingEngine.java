@@ -172,7 +172,11 @@ public class SubsettingEngine {
 	 *            the comment line (without '--'-prefix)
 	 */
 	private void appendCommentHeader(String comment) {
-		commentHeader.append("-- " + (comment.replace('\n', ' ').replace('\r', ' ')) + "\n");
+		if (comment.isEmpty()) {
+			commentHeader.append(PrintUtil.LINE_SEPARATOR);
+		} else {
+			commentHeader.append("-- " + (comment.replace('\n', ' ').replace('\r', ' ')) + PrintUtil.LINE_SEPARATOR);
+		}
 	}
 
 	/**
@@ -576,11 +580,9 @@ public class SubsettingEngine {
 				result = new OutputStreamWriter(outputStream);
 			}
 			result.append(commentHeader);
-			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer: Configuration.getScriptEnhancer()) {
 				enhancer.addComments(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
 			}
-			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer: Configuration.getScriptEnhancer()) {
 				enhancer.addProlog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
 			}
@@ -757,7 +759,7 @@ public class SubsettingEngine {
 			if (executionContext.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
 				// write epilogs
 				result.append("-- epilog");
-				result.append(System.getProperty("line.separator"));
+				result.append(PrintUtil.LINE_SEPARATOR);
 				for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
 					enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
 				}
@@ -1189,7 +1191,7 @@ public class SubsettingEngine {
 	
 	private void appendSync(OutputStreamWriter result) throws IOException {
 		if (executionContext.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
-			result.append("-- sync" + System.getProperty("line.separator"));
+			result.append("-- sync" + PrintUtil.LINE_SEPARATOR);
 		}
 	}
 	
@@ -1293,15 +1295,22 @@ public class SubsettingEngine {
 
 		_log.info(session.dbms.getSqlDialect());
 		
+		Runnable updateStatistics = new Runnable() {
+			@Override
+			public void run() {
+				runstats();
+			}
+		};
+		
 		EntityGraph entityGraph;
 		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
 			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
-			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), executionContext);
+			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), updateStatistics, executionContext);
 		} else if (executionContext.getScope() == WorkingTableScope.LOCAL_DATABASE) {
 			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, executionContext);
 		} else {
 			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
-			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), executionContext);
+			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), updateStatistics, executionContext);
 		}
 
 		entityGraph.setExplain(explain);
@@ -1359,7 +1368,7 @@ public class SubsettingEngine {
 		Set<Table> checked = extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null, hasRowID);
 		if (executionContext.getCheckPrimaryKeys()) {
 			executionContext.getProgressListenerRegistry().fireNewStage("check primary keys", false, false);
-			PrimaryKeyValidator.validatePrimaryKey(session, checked);
+			new PrimaryKeyValidator().validatePrimaryKey(session, checked);
 		}
 
 		subjectCondition = ParameterHandler.assignParameterValues(subjectCondition, executionContext.getParameters());
