@@ -906,7 +906,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="insertIncrementally">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="insert incrementally" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="limit transaction size" noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Collects the rows using multiple insert operations with a limited number of rows per operation.&lt;br&gt;Use this option if otherwise the transactions become too big.&lt;/html&gt;"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">

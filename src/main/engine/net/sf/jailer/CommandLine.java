@@ -150,7 +150,7 @@ public class CommandLine {
 	@Option(name="-check-primary-keys", usage="should the PKs be checked for validity?")
 	boolean checkPrimaryKeys = false;
 
-	@Option(name="-insert-incrementally", usage="collects the rows using multiple insert operations with a limited number of rows per operation")
+	@Option(name="-limit-transaction-size", usage="collects the rows using multiple insert operations with a limited number of rows per operation")
 	boolean insertIncrementally = false;
 	
 	@Argument

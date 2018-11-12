@@ -105,10 +105,10 @@
         <!--  <avoidLeftJoin>true</avoidLeftJoin> -->
         <avoidLeftJoin>false</avoidLeftJoin>
         
-        <incrementalInsert>
-        	<incrementSize>30000</incrementSize>
+        <limitTransactionSize>
+        	<limit>30000</limit>
         	<additionalWhereCondition>rownum &lt;= %1$s</additionalWhereCondition>
-        </incrementalInsert>
+        </limitTransactionSize>
 
         <rowidName>ROWID</rowidName>
         <rowidType>ROWID</rowidType>
@@ -276,10 +276,10 @@ union all
         <avoidLeftJoin>false</avoidLeftJoin>
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
-        <incrementalInsert>
-        	<incrementSize>30000</incrementSize>
+        <limitTransactionSize>
+        	<limit>30000</limit>
         	<afterSelect>TOP(%1$s)</afterSelect>
-        </incrementalInsert>
+        </limitTransactionSize>
         <estimatedRowCountQuery>
 SELECT tbl.name, p.rows
 FROM sys.tables AS tbl
@@ -453,10 +453,10 @@ union all
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
 
-        <incrementalInsert>
-        	<incrementSize>30000</incrementSize>
+        <limitTransactionSize>
+        	<limit>30000</limit>
         	<statementSuffix>limit %1$s</statementSuffix>
-        </incrementalInsert>
+        </limitTransactionSize>
 
         <identityInserts>false</identityInserts>
         <emptyBLOBValue>BINARY ''</emptyBLOBValue>
@@ -1045,10 +1045,10 @@ union all
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>"</identifierQuoteString>
-        <incrementalInsert>
-        	<incrementSize>30000</incrementSize>
+        <limitTransactionSize>
+        	<limit>30000</limit>
         	<afterSelect>TOP(%1$s)</afterSelect>
-        </incrementalInsert>
+        </limitTransactionSize>
     </dbms>
     
     <!-- for SQLite -->

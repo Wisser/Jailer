@@ -125,7 +125,7 @@ public class DBMS {
 		this.packageNamesQuery = other.packageNamesQuery;
 		this.objectRenderers = other.objectRenderers;
 		this.procedureDetailNeedsSpecificName = other.procedureDetailNeedsSpecificName;
-		this.incrementalInsert = other.incrementalInsert;
+		this.limitTransactionSize = other.limitTransactionSize;
 	}
 
 	/**
@@ -315,7 +315,7 @@ public class DBMS {
 	private List<DatabaseObjectRenderingDescription> objectRenderers = new ArrayList<DatabaseObjectRenderingDescription>();
 	private boolean procedureDetailNeedsSpecificName = false;
 
-	private IncrementalInsertInfo incrementalInsert = new IncrementalInsertInfo();
+	private LimitTransactionSizeInfo limitTransactionSize = new LimitTransactionSizeInfo();
 
 	/**
 	 * @return the virtualColumnsQuery
@@ -1057,21 +1057,21 @@ public class DBMS {
 	}
 
 	/**
-	 * Information about how to do incremental inserts (never <code>null</code>).
+	 * Information about how to to limit transaction size (never <code>null</code>).
 	 */
 	@XmlElement
-	public IncrementalInsertInfo getIncrementalInsert() {
-		if (incrementalInsert == null) {
-			incrementalInsert = new IncrementalInsertInfo();
+	public LimitTransactionSizeInfo getLimitTransactionSize() {
+		if (limitTransactionSize == null) {
+			limitTransactionSize = new LimitTransactionSizeInfo();
 		}
-		return incrementalInsert;
+		return limitTransactionSize;
 	}
 
 	/**
-	 * Information about how to do incremental inserts.
+	 * Information about how to limit transaction size.
 	 */
-	public void setIncrementalInsert(IncrementalInsertInfo incremenalInsertInfo) {
-		this.incrementalInsert = incremenalInsertInfo;
+	public void setLimitTransactionSize(LimitTransactionSizeInfo incremenalInsertInfo) {
+		this.limitTransactionSize = incremenalInsertInfo;
 	}
 
 	/* (non-Javadoc)

@@ -27,7 +27,7 @@ import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
-import net.sf.jailer.configuration.IncrementalInsertInfo;
+import net.sf.jailer.configuration.LimitTransactionSizeInfo;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -495,19 +495,19 @@ public abstract class EntityGraph {
 	 * @return row count
 	 */
 	protected long deleteRows(Session session, String table, String where) throws SQLException {
-		IncrementalInsertInfo incrementalInsert = session.dbms.getIncrementalInsert();
+		LimitTransactionSizeInfo limitTransactionSize = session.dbms.getLimitTransactionSize();
 		long rc = 0;
 
-		if (incrementalInsert.isApplicable(executionContext)) {
+		if (limitTransactionSize.isApplicable(executionContext)) {
 			try {
 				long c;
 				do {
-					c = session.executeUpdate("Delete " + incrementalInsert.afterSelectFragment(executionContext)
+					c = session.executeUpdate("Delete " + limitTransactionSize.afterSelectFragment(executionContext)
 							+ "from " + table + " where (" + where + ") "
-							+ incrementalInsert.additionalWhereConditionFragment(executionContext)
-							+ incrementalInsert.statementSuffixFragment(executionContext));
+							+ limitTransactionSize.additionalWhereConditionFragment(executionContext)
+							+ limitTransactionSize.statementSuffixFragment(executionContext));
 					rc += c;
-				} while (c > 0 && c == incrementalInsert.getIncrementSize());
+				} while (c > 0 && c == limitTransactionSize.getLimit());
 				return rc;
 			} catch (Exception e) {
 				// fall back

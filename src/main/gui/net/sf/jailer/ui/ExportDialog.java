@@ -256,7 +256,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			sortedCheckBox.setSelected(true);
 			upsertCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat));
 			rowsPerThread.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
-			insertIncrementally.setEnabled(session.dbms.getIncrementalInsert().getIncrementSize() != 0);
+			insertIncrementally.setEnabled(session.dbms.getLimitTransactionSize().getLimit() != 0);
 
 			Map<JTextField, String> defaults = new HashMap<JTextField, String>();
 
@@ -1529,7 +1529,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 8, 0);
         jPanel1.add(checkPKs, gridBagConstraints);
 
-        insertIncrementally.setText("insert incrementally"); // NOI18N
+        insertIncrementally.setText("limit transaction size"); // NOI18N
         insertIncrementally.setToolTipText("<html>Collects the rows using multiple insert operations with a limited number of rows per operation.<br>Use this option if otherwise the transactions become too big.</html>");
         insertIncrementally.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         insertIncrementally.addActionListener(new java.awt.event.ActionListener() {
@@ -1835,7 +1835,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add("-check-primary-keys");
 		}
 		if (insertIncrementally.isSelected()) {
-			args.add("-insert-incrementally");
+			args.add("-limit-transaction-size");
 		}
 		if (explain.isSelected()) {
 			args.add("-explain");

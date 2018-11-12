@@ -41,13 +41,14 @@ public class UpdateInfoManager {
 			@Override
 			public void run() {
 				try {
+					boolean inIntervall = true;
 					File lastTSFile = Environment.newFile(LAST_TS_FILE);
 					if (lastTSFile.exists()) {
 						ObjectInputStream in = new ObjectInputStream(new FileInputStream(lastTSFile));
 						long lastTS = in.readLong();
 						in.close();
 						if (System.currentTimeMillis() < lastTS + CHECK_INTERVALL) {
-							return;
+							inIntervall = false;
 						}
 					}
 					
@@ -66,7 +67,7 @@ public class UpdateInfoManager {
 			        String inputLine = in.readLine();
 			        in.close();
 			        
-			        if (inputLine != null && !inputLine.trim().isEmpty()) {
+			        if (inputLine != null && !inputLine.trim().isEmpty() && inIntervall) {
 			        	final String[] versions = inputLine.trim().split(",");
 			        	for (String version: versions) {
 			        		if (version.trim().equals(JailerVersion.VERSION)) {

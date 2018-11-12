@@ -22,12 +22,12 @@ import net.sf.jailer.ExecutionContext;
  * 
  * @author Ralf Wisser
  */
-public class IncrementalInsertInfo {
+public class LimitTransactionSizeInfo {
 	
 	/**
-	 * Increment size
+	 * Limit.
 	 */
-	private long incrementSize = 0;
+	private long limit = 0;
 
 	/**
 	 * Pattern to be inserted after "SELECT" in a select query.
@@ -50,7 +50,7 @@ public class IncrementalInsertInfo {
 	 * @return <code>true</code> if applicable
 	 */
 	public boolean isApplicable(ExecutionContext executionContext) {
-		return incrementSize > 0 && executionContext.isInsertIncrementally();
+		return limit > 0 && executionContext.isInsertIncrementally();
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class IncrementalInsertInfo {
 	 * @return increment size or <code>null</code>, if incremental inserts are not applicable
 	 */
 	public long getSize(ExecutionContext executionContext) {
-		return isApplicable(executionContext)? incrementSize : 0;
+		return isApplicable(executionContext)? limit : 0;
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class IncrementalInsertInfo {
 	 */
 	public String afterSelectFragment(ExecutionContext executionContext) {
 		if (afterSelect != null && !afterSelect.trim().isEmpty() && isApplicable(executionContext)) {
-			return String.format(afterSelect, incrementSize) + " ";
+			return String.format(afterSelect, limit) + " ";
 		} else {
 			return "";
 		}
@@ -82,7 +82,7 @@ public class IncrementalInsertInfo {
 	 */
 	public String additionalWhereConditionFragment(ExecutionContext executionContext) {
 		if (additionalWhereCondition != null && !additionalWhereCondition.trim().isEmpty() && isApplicable(executionContext)) {
-			return "and " + String.format(additionalWhereCondition, incrementSize) + " ";
+			return "and " + String.format(additionalWhereCondition, limit) + " ";
 		} else {
 			return "";
 		}
@@ -95,26 +95,26 @@ public class IncrementalInsertInfo {
 	 */
 	public String statementSuffixFragment(ExecutionContext executionContext) {
 		if (statementSuffix != null && !statementSuffix.trim().isEmpty() && isApplicable(executionContext)) {
-			return String.format(statementSuffix, incrementSize) + " ";
+			return String.format(statementSuffix, limit) + " ";
 		} else {
 			return "";
 		}
 	}
 
 	/**
-	 * Increment size or 0.
+	 * Limit or 0.
 	 * 
-	 * @return increment size or 0 if incremental insert is not possible
+	 * @return limit or 0 if limiting is not possible
 	 */
-	public long getIncrementSize() {
-		return incrementSize;
+	public long getLimit() {
+		return limit;
 	}
 
 	/**
-	 * Sets increment size.
+	 * Limit.
 	 */
-	public void setIncrementSize(long size) {
-		this.incrementSize = size;
+	public void setLimit(long size) {
+		this.limit = size;
 	}
 
 	/**

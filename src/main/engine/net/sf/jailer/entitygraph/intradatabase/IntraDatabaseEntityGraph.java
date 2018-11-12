@@ -224,14 +224,14 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	@Override
 	public void readEntities(Table table, boolean orderByPK)
 			throws SQLException {
-		long incSize = session.dbms.getIncrementalInsert().getSize(executionContext);
+		long incSize = session.dbms.getLimitTransactionSize().getSize(executionContext);
 		if (incSize > 0) { 
 			String update = 
-					"Update " + session.dbms.getIncrementalInsert().afterSelectFragment(executionContext) + SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " " +
+					"Update " + session.dbms.getLimitTransactionSize().afterSelectFragment(executionContext) + SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " " +
 					"Set birthday=0 " +
 					"Where (birthday>=0 and r_entitygraph=" + graphID + " " + 
-					"and type=" + typeName(table) + ") " + session.dbms.getIncrementalInsert().additionalWhereConditionFragment(executionContext) +
-					session.dbms.getIncrementalInsert().statementSuffixFragment(executionContext);
+					"and type=" + typeName(table) + ") " + session.dbms.getLimitTransactionSize().additionalWhereConditionFragment(executionContext) +
+					session.dbms.getLimitTransactionSize().statementSuffixFragment(executionContext);
 			for (;;) {
 				long rc = session.executeUpdate(update);
 				if (rc <= 0) {
