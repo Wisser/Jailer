@@ -181,7 +181,7 @@ public class ProgressTable extends JTable {
 								p = 100;
 							}
 						}
-						numberRender.setText(cellInfo.numberOfRows + " rows" + (p == 0 ? "" : " (" + p + "%)"));
+						numberRender.setText(UIUtil.format(cellInfo.numberOfRows) + " rows" + (p == 0 ? "" : " (" + p + "%)"));
 						tableRender.setForeground(Color.BLACK);
 						float f = 0.2f + (p / 100.0f) * 0.8f;
 						if (f > 1.0f) {

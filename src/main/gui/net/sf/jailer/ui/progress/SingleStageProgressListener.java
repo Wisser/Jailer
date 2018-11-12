@@ -36,6 +36,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.ui.ProgressPanel;
 import net.sf.jailer.ui.ProgressTable;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.CancellationException;
 
 /**
@@ -157,9 +158,9 @@ public class SingleStageProgressListener implements ProgressListener {
 							}
 							if (SingleStageProgressListener.this.forExportStage) {
 								progressTable.setTotalNumberOfCollectedRows(collectedRows);
-								progressPanel.collectedRowsLabel.setText("" + collectedRows);
-								progressPanel.exportedRowsLabel.setText("" + exportedRows);
-								progressPanel.explainedRowsLabel.setText("" + explainedRows);
+								progressPanel.collectedRowsLabel.setText(UIUtil.format(collectedRows));
+								progressPanel.exportedRowsLabel.setText(UIUtil.format(exportedRows.get()));
+								progressPanel.explainedRowsLabel.setText(UIUtil.format(explainedRows));
 								if (!progressPanel.inCancellingStep || isErrorStage) {
 									progressPanel.stepLabel.setText(currentStep);
 									if (isErrorStage) {
@@ -176,7 +177,7 @@ public class SingleStageProgressListener implements ProgressListener {
 								}
 								nextUpdateTS[0] = t + 500;
 							} else {
-								progressPanel.deletedRowsLabel.setText("" + exportedRows);
+								progressPanel.deletedRowsLabel.setText(UIUtil.format(exportedRows.get()));
 							}
 						}
 					}

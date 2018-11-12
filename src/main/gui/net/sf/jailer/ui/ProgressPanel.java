@@ -107,7 +107,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 //            gridBagConstraints.insets = new Insets(2, 0, 2, 0);
 			rowsPerTablePanel.add(l, gridBagConstraints);
 
-			l = new JLabel("" + rowsPerTable.get(tableName) + "  ");
+			l = new JLabel("" + UIUtil.format(rowsPerTable.get(tableName)) + "  ");
 			if (y % 2 == 0) {
 				l.setBackground(new java.awt.Color(240, 255, 255));
 			} else {

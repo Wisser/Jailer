@@ -55,6 +55,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1089,6 +1090,10 @@ public class UIUtil {
 				JOptionPane.showMessageDialog(parentComponent, "The look and feel has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
+	}
+
+	public static String format(long number) {
+		return NumberFormat.getInstance().format(number);
 	}
 
 }
