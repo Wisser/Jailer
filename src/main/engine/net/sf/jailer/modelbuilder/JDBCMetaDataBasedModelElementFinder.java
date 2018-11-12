@@ -53,6 +53,7 @@ import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -779,6 +780,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				}
 				@Override
 				public void visit(UseStatement use) {
+				}
+				@Override
+				public void visit(Block arg0) {
 				}
 			});
 			if (isValid[0] && selectExists[0] && underlyingTableInfo.underlyingTable != null) {

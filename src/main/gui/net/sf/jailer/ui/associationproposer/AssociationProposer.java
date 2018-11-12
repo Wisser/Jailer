@@ -50,6 +50,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
@@ -654,6 +655,11 @@ public class AssociationProposer {
 				}
 			}
 			return null;
+		}
+
+		@Override
+		public void visit(Block arg0) {
+			// ignore
 		}
 	}
 

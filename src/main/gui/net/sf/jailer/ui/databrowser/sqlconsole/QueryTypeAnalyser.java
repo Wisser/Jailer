@@ -99,6 +99,7 @@ import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.Statement;
@@ -911,6 +912,10 @@ public class QueryTypeAnalyser {
 		@Override
 		public void visit(UseStatement use) {
 			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Block arg0) {
 		}
 		
 	}
