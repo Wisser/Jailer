@@ -5,11 +5,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.StringReader;
 import java.net.URI;
-import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.Date;
+import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -20,14 +22,14 @@ import net.sf.jailer.ui.Environment;
 
 public class UpdateInfoManager {
 
-	private static final String versionURL = "http://jailer.sourceforge.net/currentVersion";
+	private static final String versionURL = "http://jailer.sourceforge.net/currentVersion.php";
 	private static final String downloadURL = "https://sourceforge.net/projects/jailer/files/";
 	private static final long CHECK_INTERVALL = 1000L * 60 * 60 * 46;
 	private static final long DELAY = 1000L * 10;
 	private static final String LAST_TS_FILE = ".lastcuats";
 	private static boolean checked = false;
 
-	public static void checkUpdateAvailability(final JComponent ui, final JLabel infoLabel) {
+	public static void checkUpdateAvailability(final JComponent ui, final JLabel infoLabel, final String modul) {
 		ui.setVisible(false);
 
 		if (checked) {
@@ -49,9 +51,18 @@ public class UpdateInfoManager {
 						}
 					}
 					
-					URI uri = new URI(versionURL);
-					URLConnection connection = uri.toURL().openConnection();
-			        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+					Object uuid = UISettings.restore("uuid");
+					if (uuid == null) {
+						uuid = UUID.randomUUID().toString();
+						UISettings.store("uuid", uuid);
+					}
+					String content = HttpUtil.get(versionURL
+							+ "?jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name"), "UTF-8")
+							+ "&modul=" + URLEncoder.encode(modul, "UTF-8")
+							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
+							+ "&uuid=" + URLEncoder.encode(uuid.toString(), "UTF-8")
+							+ "&version=" + URLEncoder.encode(JailerVersion.VERSION, "UTF-8"));
+					BufferedReader in = new BufferedReader(new StringReader(content));
 			        String inputLine = in.readLine();
 			        in.close();
 			        

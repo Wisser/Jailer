@@ -144,7 +144,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		initComponents();
 		initSandbox();
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
-        UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel);
+        UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, "S");
         initAnimationSteptime();
 		isHorizontalLayout = isHorizonal;
 		horizontalLayoutMenuItem.setSelected(isHorizontalLayout);

@@ -233,7 +233,7 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
-        UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel);
+        UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, "B");
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
 		initRowLimitButtons();
         autoLayoutMenuItem.setSelected(inAutoLayoutMode());

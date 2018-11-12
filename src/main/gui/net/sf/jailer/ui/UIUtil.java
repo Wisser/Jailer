@@ -44,12 +44,17 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,6 +93,7 @@ import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.util.HttpUtil;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
@@ -844,6 +850,16 @@ public class UIUtil {
     }
 
     private static void sendIssue(final String type, final String issue) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+		    	try {
+					HttpUtil.get("http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + URLEncoder.encode(issue, "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					// ignore
+				}
+			}
+		}).start();
     }
 
     public static String toHTML(String plainText, int maxLineLength) {

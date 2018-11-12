@@ -70,7 +70,7 @@ public class UISettings  {
 	 * @param name the name of the property
 	 * @param value value to store
 	 */
-	public static void store(String name, Object value) {
+	public static synchronized void store(String name, Object value) {
 		loadUISettings();
 		properties.put(name, value);
 		File file = Environment.newFile(FILENAME);
@@ -95,7 +95,7 @@ public class UISettings  {
 	 * 
 	 * @param name the name of the property
 	 */
-	public static Object restore(String name) {
+	public static synchronized Object restore(String name) {
 		loadUISettings();
 		return properties.get(name);
 	}
