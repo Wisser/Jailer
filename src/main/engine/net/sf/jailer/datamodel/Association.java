@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.restrictionmodel.RestrictionModel;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -482,10 +483,24 @@ public class Association extends ModelElement {
 	 *         represents an equi-join
 	 */
 	public Map<Column, Column> createSourceToDestinationKeyMapping() {
+		return createSourceToDestinationKeyMapping(null);
+	}
+
+	/**
+	 * Maps source-columns to destination-columns, if this represents an
+	 * equi-join. Otherwise it returns an empty map.
+	 * 
+	 * @param assignments if not <code>null</code>, put column assignments into it
+	 * 
+	 * @return map from source-columns to destination-columns, if this
+	 *         represents an equi-join
+	 */
+	public Map<Column, Column> createSourceToDestinationKeyMapping(Set<Pair<Column, Column>> assignments) {
 		String[] equations = getUnrestrictedJoinCondition().replaceAll("\\(|\\)", " ").trim()
 				.split("\\s*\\b(a|A)(n|N)(d|D)\\b\\s*");
 		Map<Column, Column> mapping = new HashMap<Column, Column>();
 		Set<Column> destinationColumns = new HashSet<Column>();
+		boolean isValid = true;
 		for (String equation: equations) {
 			String hs[] = equation.split("\\s*=\\s*");
 			if (hs.length != 2) {
@@ -537,19 +552,25 @@ public class Association extends ModelElement {
 				}
 			}
 			if (sourceColumn == null || destinationColumn == null) {
-				return Collections.emptyMap();
-			}
-
-			if (mapping.put(sourceColumn, destinationColumn) != null) {
-				return Collections.emptyMap();
-			}
-			
-			if (!destinationColumns.add(destinationColumn)) {
-				return Collections.emptyMap();
+				isValid = false;
+			} else {
+				if (assignments != null) {
+					assignments.add(new Pair<Column, Column>(sourceColumn, destinationColumn));
+				}
+				if (mapping.put(sourceColumn, destinationColumn) != null) {
+					isValid = false;
+				}
+				if (!destinationColumns.add(destinationColumn)) {
+					isValid = false;
+				}
 			}
 		}
 
-		return mapping;
+		if (isValid) {
+			return mapping;
+		} else {
+			return Collections.emptyMap();
+		}
 	}
 
 	public boolean hasNullableFK() {

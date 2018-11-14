@@ -783,31 +783,43 @@ public class AssociationProposer {
 			}
 			
 			for (Pair<String, String> aliasesPair: aliasesPairs) {
-				boolean hasNonTransientEquation = false;
-				StringBuilder sb = new StringBuilder();
+				StringBuilder condition = new StringBuilder();
+				StringBuilder conditionNonTransient = new StringBuilder();
 				Set<Equation> seen = new HashSet<Equation>();
 				for (Equation e: theEquations) {
 					if (e.aliasA.equals(aliasesPair.a) && e.aliasB.equals(aliasesPair.b)) {
 						if (e.reversal == null || !seen.contains(e.reversal)) {
 							seen.add(e);
 							if (!e.isTransient) {
-								hasNonTransientEquation = true;
+								if (conditionNonTransient.length() > 0) {
+									conditionNonTransient.append(" and \n");
+								}
+								conditionNonTransient.append("A." + e.a.name + "=B." + e.b.name);
 							}
-							if (sb.length() > 0) {
-								sb.append(" and \n");
+							if (condition.length() > 0) {
+								condition.append(" and \n");
 							}
-							sb.append("A." + e.a.name + "=B." + e.b.name);
+							condition.append("A." + e.a.name + "=B." + e.b.name);
 						}
 					}
 				}
-				if (hasNonTransientEquation) {
+				if (conditionNonTransient.length() > 0) {
 					String name = ("AP" + (UUID.randomUUID().toString()));
-					Association association = new Association(pair.a, pair.b, false, false, sb.toString(), dataModel, false, null, "Association Proposer");
-					Association revAssociation = new Association(pair.b, pair.a, false, false, sb.toString(), dataModel, true, null, "Association Proposer");
+					Association association = new Association(pair.a, pair.b, false, false, conditionNonTransient.toString(), dataModel, false, null, "Association Proposer");
+					Association revAssociation = new Association(pair.b, pair.a, false, false, conditionNonTransient.toString(), dataModel, true, null, "Association Proposer");
 					association.setName(name);
 					association.reversalAssociation = revAssociation;
 					revAssociation.reversalAssociation = association;
 					addAssociation(name, pair, association, true);
+					if (!conditionNonTransient.toString().equals(condition.toString())) {
+						name = ("AP" + (UUID.randomUUID().toString()));
+						association = new Association(pair.a, pair.b, false, false, condition.toString(), dataModel, false, null, "Association Proposer");
+						revAssociation = new Association(pair.b, pair.a, false, false, condition.toString(), dataModel, true, null, "Association Proposer");
+						association.setName(name);
+						association.reversalAssociation = revAssociation;
+						revAssociation.reversalAssociation = association;
+						addAssociation(name, pair, association, true);
+					}
 				}
 			}
 		}
@@ -827,18 +839,19 @@ public class AssociationProposer {
 			assocPerSourceDest.put(pair, assocList);
 		}
 		if (check) {
-			Map<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Column> mapping = association.createSourceToDestinationKeyMapping();
-			Map<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Column> revMapping = association.reversalAssociation.createSourceToDestinationKeyMapping();
-			if (!mapping.isEmpty() && !revMapping.isEmpty()) {
-				for (Association other: assocList) {
-					Map<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Column> otherMapping = other.createSourceToDestinationKeyMapping();
-					if (mapping.equals(otherMapping) || revMapping.equals(otherMapping)) {
-						if (fromDataModel.contains(other) && !knownAssociations.contains(other)) {
-							newKnownAssociations.add(association);
-							knownAssociations.add(other);
-						}
-						return;
+			Set<Pair<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Column>> mapping = new HashSet<Pair<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Column>>();
+			Set<Pair<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Column>> revMapping = new HashSet<Pair<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Column>>();
+			association.createSourceToDestinationKeyMapping(mapping);
+			association.createSourceToDestinationKeyMapping(revMapping);
+			for (Association other: assocList) {
+				Set<Pair<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Column>> otherMapping = new HashSet<Pair<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Column>>();
+				other.createSourceToDestinationKeyMapping(otherMapping);
+				if (mapping.equals(otherMapping) || revMapping.equals(otherMapping)) {
+					if (fromDataModel.contains(other) && !knownAssociations.contains(other)) {
+						newKnownAssociations.add(association);
+						knownAssociations.add(other);
 					}
+					return;
 				}
 			}
 		}
