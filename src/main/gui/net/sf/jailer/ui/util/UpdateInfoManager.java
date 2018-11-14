@@ -58,7 +58,7 @@ public class UpdateInfoManager {
 						UISettings.store("uuid", uuid);
 					}
 					String content = HttpUtil.get(versionURL
-							+ "?jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name"), "UTF-8")
+							+ "?jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8")
 							+ "&modul=" + URLEncoder.encode(modul, "UTF-8")
 							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
 							+ "&uuid=" + URLEncoder.encode(uuid.toString(), "UTF-8")

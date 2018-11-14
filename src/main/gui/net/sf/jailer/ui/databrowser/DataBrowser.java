@@ -794,7 +794,7 @@ public class DataBrowser extends javax.swing.JFrame {
         if (root != null) {
             final RowBrowser rb = desktop.addTableBrowser(null, null, 0, root, null, condition, null, true);
             if (rb != null && rb.internalFrame != null) {
-                SwingUtilities.invokeLater(new Runnable() {
+                UIUtil.invokeLater(10, new Runnable() {
                     @Override
                     public void run() {
                         try {
