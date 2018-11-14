@@ -671,15 +671,15 @@ public class AssociationProposer {
 		public final net.sf.jailer.datamodel.Column a;
 		public final String aliasB;
 		public final net.sf.jailer.datamodel.Column b;
-		public final boolean isTransient;
+		public final boolean isTransitive;
 		public Equation reversal;
 		
-		public Equation(String aliasA, net.sf.jailer.datamodel.Column a, String aliasB, net.sf.jailer.datamodel.Column b, boolean isTransient) {
+		public Equation(String aliasA, net.sf.jailer.datamodel.Column a, String aliasB, net.sf.jailer.datamodel.Column b, boolean isTransive) {
 			this.aliasA = aliasA;
 			this.aliasB = aliasB;
 			this.a = a;
 			this.b = b;
-			this.isTransient = isTransient;
+			this.isTransitive = isTransive;
 		}
 		
 		public String toString() {
@@ -784,34 +784,38 @@ public class AssociationProposer {
 			
 			for (Pair<String, String> aliasesPair: aliasesPairs) {
 				StringBuilder condition = new StringBuilder();
-				StringBuilder conditionNonTransient = new StringBuilder();
+				StringBuilder conditionNonTransitive = new StringBuilder();
 				Set<Equation> seen = new HashSet<Equation>();
-				for (Equation e: theEquations) {
-					if (e.aliasA.equals(aliasesPair.a) && e.aliasB.equals(aliasesPair.b)) {
-						if (e.reversal == null || !seen.contains(e.reversal)) {
-							seen.add(e);
-							if (!e.isTransient) {
-								if (conditionNonTransient.length() > 0) {
-									conditionNonTransient.append(" and \n");
+				for (boolean transitive: new boolean[] { false, true }) { // non-transitive first
+					for (Equation e: theEquations) {
+						if (e.isTransitive == transitive) {
+							if (e.aliasA.equals(aliasesPair.a) && e.aliasB.equals(aliasesPair.b)) {
+								if (e.reversal == null || !seen.contains(e.reversal)) {
+									seen.add(e);
+									if (!e.isTransitive) {
+										if (conditionNonTransitive.length() > 0) {
+											conditionNonTransitive.append(" and \n");
+										}
+										conditionNonTransitive.append("A." + e.a.name + "=B." + e.b.name);
+									}
+									if (condition.length() > 0) {
+										condition.append(" and \n");
+									}
+									condition.append("A." + e.a.name + "=B." + e.b.name);
 								}
-								conditionNonTransient.append("A." + e.a.name + "=B." + e.b.name);
 							}
-							if (condition.length() > 0) {
-								condition.append(" and \n");
-							}
-							condition.append("A." + e.a.name + "=B." + e.b.name);
 						}
 					}
 				}
-				if (conditionNonTransient.length() > 0) {
+				if (conditionNonTransitive.length() > 0) {
 					String name = ("AP" + (UUID.randomUUID().toString()));
-					Association association = new Association(pair.a, pair.b, false, false, conditionNonTransient.toString(), dataModel, false, null, "Association Proposer");
-					Association revAssociation = new Association(pair.b, pair.a, false, false, conditionNonTransient.toString(), dataModel, true, null, "Association Proposer");
+					Association association = new Association(pair.a, pair.b, false, false, conditionNonTransitive.toString(), dataModel, false, null, "Association Proposer");
+					Association revAssociation = new Association(pair.b, pair.a, false, false, conditionNonTransitive.toString(), dataModel, true, null, "Association Proposer");
 					association.setName(name);
 					association.reversalAssociation = revAssociation;
 					revAssociation.reversalAssociation = association;
 					addAssociation(name, pair, association, true);
-					if (!conditionNonTransient.toString().equals(condition.toString())) {
+					if (!conditionNonTransitive.toString().equals(condition.toString())) {
 						name = ("AP" + (UUID.randomUUID().toString()));
 						association = new Association(pair.a, pair.b, false, false, condition.toString(), dataModel, false, null, "Association Proposer");
 						revAssociation = new Association(pair.b, pair.a, false, false, condition.toString(), dataModel, true, null, "Association Proposer");
