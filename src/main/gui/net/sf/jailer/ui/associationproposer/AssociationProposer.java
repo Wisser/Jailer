@@ -831,7 +831,16 @@ public class AssociationProposer {
 	private final Map<Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table>, List<Association>> assocPerSourceDest
 		= new HashMap<Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table>, List<Association>>();
 	
-	private void addAssociation(String name, Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table> pair,
+	/**
+	 * Adds an association to the proposals list.
+	 * 
+	 * @param name name of association
+	 * @param pair (source, destination) table pair
+	 * @param association the association
+	 * @param check check if association is already known?
+	 * @return <code>true</code> if association was added
+	 */
+	public boolean addAssociation(String name, Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table> pair,
 			Association association, boolean check) {
 		List<Association> assocList = assocPerSourceDest.get(pair);
 		if (assocList == null) {
@@ -851,7 +860,7 @@ public class AssociationProposer {
 						newKnownAssociations.add(association);
 						knownAssociations.add(other);
 					}
-					return;
+					return false;
 				}
 			}
 		}
@@ -860,6 +869,8 @@ public class AssociationProposer {
 		if (check) {
 			newAssociations.add(association);
 		}
+		
+		return true;
 	}
 
 	/**

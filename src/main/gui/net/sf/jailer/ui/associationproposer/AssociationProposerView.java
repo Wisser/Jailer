@@ -38,6 +38,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -70,6 +71,7 @@ import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -930,18 +932,34 @@ public class AssociationProposerView extends javax.swing.JPanel {
     		
     		BufferedWriter out = new BufferedWriter(new FileWriter(ModelBuilder.getModelBuilderAssociationsFilename(executionContext)));
     		out.append("\n");
+    		AssociationProposer ap = new AssociationProposer(dataModel);
+			int knownCount = 0;
     		for (int i = 0; i < proposalsModel.getRowCount(); ++i) {
     			if (Boolean.TRUE.equals(proposalsModel.getValueAt(i, 0))) {
 	    			String condition = String.valueOf(proposalsModel.getValueAt(i, 3));
 	    			condition = condition.replaceAll(" *\\n", " ");
-	    			out.append(
-	    					CsvFile.encodeCell(String.valueOf(proposalsModel.getValueAt(i, 1))) + "; " +
-	    					CsvFile.encodeCell(String.valueOf(proposalsModel.getValueAt(i, 2))) + "; ; ; " +
-	    					CsvFile.encodeCell(condition) + "; " + names.get(i) + "; " + DataModelEditor.DATA_MODEL_EDITOR_AUTHOR + "\n");
+	    			String fromName = proposalsModel.getValueAt(i, 1).toString();
+					String toName = proposalsModel.getValueAt(i, 2).toString();
+					Table from = dataModel.getTable(fromName);
+					Table to = dataModel.getTable(toName);
+					if (from != null && to != null) {
+						Association association = new Association(from, to, false, false, condition, dataModel, false, null);
+						if (ap.addAssociation(names.get(i), new Pair<Table, Table>(from, to), association, true)) {
+							out.append(
+		    					CsvFile.encodeCell(String.valueOf(fromName)) + "; " +
+		    					CsvFile.encodeCell(String.valueOf(toName)) + "; ; ; " +
+		    					CsvFile.encodeCell(condition) + "; " + names.get(i) + "; " + DataModelEditor.DATA_MODEL_EDITOR_AUTHOR + "\n");
+						} else {
+							++knownCount;
+						}
+					}
     			}
     		}
     		out.close();
     		accepted = true;
+    		if (knownCount > 0) {
+    			JOptionPane.showMessageDialog(dialog, knownCount + " of " + proposalsModel.getRowCount() + " associations are already known.", "", JOptionPane.INFORMATION_MESSAGE);
+    		}
     		dialog.dispose();
     	} catch (Throwable t) {
     		UIUtil.showException(this, "Error", t);
