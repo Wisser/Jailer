@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -391,10 +393,27 @@ public class AssociationProposerView extends javax.swing.JPanel {
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
-								addResult(1000L, associationProposer.pickUpNewAssociations(), associationProposer.pickUpKnownAssociations(), null);
+								addResult(1000L, sort(associationProposer.pickUpNewAssociations()), sort(associationProposer.pickUpKnownAssociations()), null);
 								jProgressBar1.setValue(1000);
 								loadButton.setEnabled(true);
 								acceptButton.grabFocus();
+							}
+							private List<Association> sort(List<Association> associations) {
+								Collections.sort(associations, new Comparator<Association>() {
+									@Override
+									public int compare(Association o1, Association o2) {
+										int sourceDiff = o1.source.getName().compareTo(o2.source.getName());
+										if (sourceDiff != 0) {
+											return sourceDiff;
+										}
+										int destinationDiff = o1.destination.getName().compareTo(o2.destination.getName());
+										if (destinationDiff != 0) {
+											return destinationDiff;
+										}
+										return o1.getUnrestrictedJoinCondition().compareTo(o2.getUnrestrictedJoinCondition());
+									}
+								});
+								return associations;
 							}
 						});
 					} catch (Throwable e) {
