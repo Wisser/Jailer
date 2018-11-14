@@ -108,7 +108,13 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
  */
 public class AssociationProposer {
 
-	private String[] FUNCTIONS_TO_IGNORE = new String[] { "XMLSERIALIZE", "XMLFOREST" };
+	private Map<String, String> FUNCTION_CALL_REPLACEMENT = new HashMap<String, String>();
+	{
+		FUNCTION_CALL_REPLACEMENT.put("XMLSERIALIZE", "1");
+		FUNCTION_CALL_REPLACEMENT.put("XMLFOREST", "1");
+		FUNCTION_CALL_REPLACEMENT.put("IIF", "1");
+		FUNCTION_CALL_REPLACEMENT.put("WITH", "");
+	}
 
 	private final DataModel dataModel;
 	private final Map<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Table> columnToTable = new IdentityHashMap<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Table>();
@@ -141,8 +147,8 @@ public class AssociationProposer {
 	 */
 	public synchronized String analyze(String sqlStatement, int startLineNumber) {
 		sqlStatement = removeCommentsAndLiterals(sqlStatement);
-		for (String function : FUNCTIONS_TO_IGNORE) {
-			sqlStatement = removeFunction(function, sqlStatement);
+		for (Entry<String, String> e: FUNCTION_CALL_REPLACEMENT.entrySet()) {
+			sqlStatement = removeFunction(e.getKey(), e.getValue(), sqlStatement);
 		}
 		net.sf.jsqlparser.statement.Statement st;
 		try {
@@ -166,8 +172,8 @@ public class AssociationProposer {
 		return null;
 	}
 
-	private String removeFunction(String function, String sqlStatement) {
-		Pattern pattern = Pattern.compile("(\\b\\w+\\b)|\\(\\)|.", Pattern.DOTALL);
+	private String removeFunction(String function, String replacement, String sqlStatement) {
+		Pattern pattern = Pattern.compile("(?:(\\b\\w+\\b)\\s*\\()|\\(\\)|.", Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(sqlStatement);
 		int level = 0;
 		Integer funcLevel = null;
@@ -176,6 +182,7 @@ public class AssociationProposer {
 		if (result) {
 			do {
 				String token = matcher.group(0);
+				String wordPOpen = matcher.group(1);
 				if ("(".equals(token)) {
 					++level;
 				} else if (")".equals(token)) {
@@ -184,11 +191,11 @@ public class AssociationProposer {
 
 				int l = token.length();
 				matcher.appendReplacement(sb, "");
-				if (function.equalsIgnoreCase(token)) {
+				if (wordPOpen != null && function.equalsIgnoreCase(wordPOpen)) {
 					if (funcLevel == null) {
 						funcLevel = level;
-						--l;
-						sb.append("1");
+						l -= replacement.length();
+						sb.append(replacement);
 					}
 				}
 				if (funcLevel != null) {
@@ -203,6 +210,9 @@ public class AssociationProposer {
 					if (funcLevel == level) {
 						funcLevel = null;
 					}
+				}
+				if (wordPOpen != null) {
+					++level;
 				}
 				result = matcher.find();
 			} while (result);
