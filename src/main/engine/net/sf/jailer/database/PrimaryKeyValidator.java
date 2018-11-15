@@ -17,12 +17,15 @@ package net.sf.jailer.database;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -39,9 +42,10 @@ public class PrimaryKeyValidator {
 	 * @param tables the tables
 	 * @throws SQLException if a pk is invalid
 	 */
-	public void validatePrimaryKey(Session session, Set<Table> tables) throws SQLException {
+	public void validatePrimaryKey(final Session session, Set<Table> tables, JobManager jobManager) throws SQLException {
 		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
-		for (Table table: tables) {
+		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
+		for (final Table table: tables) {
 			if (table.primaryKey == null || table.primaryKey.getColumns().isEmpty()) {
 				// nothing to check here
 				return;
@@ -69,9 +73,20 @@ public class PrimaryKeyValidator {
 			} catch (Exception e) {
 				// ignore
 			}
-			checkUniqueness(session, table, new Quoting(session));
-			checkNoNull(session, table, new Quoting(session));
+			jobs.add(new JobManager.Job() {
+				@Override
+				public void run() throws SQLException {
+					checkUniqueness(session, table, new Quoting(session));
+				}
+			});
+			jobs.add(new JobManager.Job() {
+				@Override
+				public void run() throws SQLException {
+					checkNoNull(session, table, new Quoting(session));
+				}
+			});
 		}
+		jobManager.executeJobs(jobs);
 		if (errorMessage.length() > 0) {
 			SqlException e = new SqlException(errorMessage.toString(), errorStatements.toString(), null);
 			e.setFormatted(true);
@@ -94,7 +109,7 @@ public class PrimaryKeyValidator {
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				addError("Primary key of table \"" + table.getName() + "\" is not unique.", sql.toString());
 			}
-		});
+		}, null, null, 1);
 	}
 
 	private void checkNoNull(Session session, final Table table, Quoting quoting) throws SQLException {
@@ -112,7 +127,7 @@ public class PrimaryKeyValidator {
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				addError("Primary key of table \"" + table.getName() + "\" contains null.", sql.toString());
 			}
-		});
+		}, null, null, 1);
 	}
 
 	private StringBuilder errorMessage = new StringBuilder();

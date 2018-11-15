@@ -1368,7 +1368,7 @@ public class SubsettingEngine {
 		Set<Table> checked = extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null, hasRowID);
 		if (executionContext.getCheckPrimaryKeys()) {
 			executionContext.getProgressListenerRegistry().fireNewStage("check primary keys", false, false);
-			new PrimaryKeyValidator().validatePrimaryKey(session, checked);
+			new PrimaryKeyValidator().validatePrimaryKey(session, checked, jobManager);
 		}
 
 		subjectCondition = ParameterHandler.assignParameterValues(subjectCondition, executionContext.getParameters());
