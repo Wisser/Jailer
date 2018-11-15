@@ -1,8 +1,9 @@
-8.1.3
+8.1.4
   - New export option "check primary keys" allows checking the validity of manually defined primary keys.
   - New export option "limit transaction sizes" reduces transaction sizes. (Feature request 51)
   - Improved indexing of working tables.
   - JSQLParser has been updated to version 1.3.
+  - Fix for bug 32 "SQL analyzer: duplicate associations" 
 
 8.1.1
   - Increased initial responsiveness of the SQL Console.
