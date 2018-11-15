@@ -76,6 +76,7 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
+import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
 import net.sf.jailer.util.CancellationHandler;
@@ -143,6 +144,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		this.executionContext = executionContext;
 		initComponents();
 		initSandbox();
+        AnimationController.registerWindow(this, new AnimationController.AnimationControl() {
+			@Override
+			public void setEnabled(boolean enabled) {
+				extractionModelEditor.graphView.setAnimationEnabled(enabled);
+			}
+		});
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, "S");
         initAnimationSteptime();

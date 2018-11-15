@@ -181,6 +181,8 @@ public class GraphicalDataModelView extends JPanel {
 	private NBodyForce force;
 	private volatile boolean layoutHasBeenSet = false;
 	private final ExecutionContext executionContext;
+
+	private final ActionList animate;
 	
 	/**
 	 * Constructor.
@@ -309,7 +311,7 @@ public class GraphicalDataModelView extends JPanel {
 		draw.add(new ColorAction(edges, VisualItem.FILLCOLOR, ColorLib.gray(200)));
 		draw.add(new ColorAction(edges, VisualItem.STROKECOLOR, ColorLib.gray(200)));
 		
-		ActionList animate = new ActionList(Activity.INFINITY);
+		animate = new ActionList(Activity.INFINITY);
 		animate.add(fill);
 		animate.add(new RepaintAction());
 		
@@ -2059,7 +2061,13 @@ public class GraphicalDataModelView extends JPanel {
 		visualization.invalidateAll();
 		display.invalidate();
 	}
-
+	
+	public void setAnimationEnabled(boolean enabled) {
+		synchronized (visualization) {
+			animate.setEnabled(enabled);
+		}
+	}
+		
 	private static final long serialVersionUID = -5938101712807557555L;
 
 }

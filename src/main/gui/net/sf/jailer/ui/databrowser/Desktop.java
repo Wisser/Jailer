@@ -282,7 +282,7 @@ public abstract class Desktop extends JDesktopPane {
 										long startTime = System.currentTimeMillis();
 										try {
 											checkAnchorRetension();
-											if (isDesktopVisible()) {
+											if (isDesktopVisible() && isAnimationEnabled()) {
 												suppressRepaintDesktop = true;
 												desktopAnimation.animate();
 												boolean cl = calculateLinks();
@@ -3376,6 +3376,16 @@ public abstract class Desktop extends JDesktopPane {
 		rescaleFactorHasChanged = false;
 	}
 
+	private boolean animationEnabled = true;
+	
+	public boolean isAnimationEnabled() {
+		return animationEnabled;
+	}
+
+	public void setAnimationEnabled(boolean animationEnabled) {
+		this.animationEnabled = animationEnabled;
+	}
+	
 	/**
 	 * Maximum number of concurrent DB connections.
 	 */

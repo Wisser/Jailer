@@ -149,6 +149,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
+import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
@@ -233,6 +234,7 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
+
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, "B");
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
 		initRowLimitButtons();
@@ -778,6 +780,13 @@ public class DataBrowser extends javax.swing.JFrame {
 
         desktop.addMouseMotionListener(mia);
         desktop.addMouseListener(mia);
+
+        AnimationController.registerWindow(this, new AnimationController.AnimationControl() {
+			@Override
+			public void setEnabled(boolean enabled) {
+				desktop.setAnimationEnabled(enabled);
+			}
+		});
 
         int c = 0;
         for (Frame frame: Frame.getFrames()) {
