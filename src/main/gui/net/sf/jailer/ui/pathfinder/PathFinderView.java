@@ -152,10 +152,10 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         redoButton.setIcon(UIUtil.scaleIcon(this, rightIcon));
         
         if (jScrollPane1.getHorizontalScrollBar() != null) {
-        	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(10);
+        	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
         }
         if (jScrollPane1.getVerticalScrollBar() != null) {
-        	jScrollPane1.getVerticalScrollBar().setUnitIncrement(10);
+        	jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
         }
         restoreHistory();
 		historyButton.setEnabled(false);

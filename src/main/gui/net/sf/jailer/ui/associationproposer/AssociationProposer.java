@@ -35,6 +35,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
+import net.sf.jailer.util.SqlUtil;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
@@ -108,14 +109,6 @@ import net.sf.jsqlparser.statement.upsert.Upsert;
  */
 public class AssociationProposer {
 
-	private Map<String, String> FUNCTION_CALL_REPLACEMENT = new HashMap<String, String>();
-	{
-		FUNCTION_CALL_REPLACEMENT.put("XMLSERIALIZE", "1");
-		FUNCTION_CALL_REPLACEMENT.put("XMLFOREST", "1");
-		FUNCTION_CALL_REPLACEMENT.put("IIF", "1");
-		FUNCTION_CALL_REPLACEMENT.put("WITH", "");
-	}
-
 	private final DataModel dataModel;
 	private final Map<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Table> columnToTable = new IdentityHashMap<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Table>();
 	private final Set<Equation> equations = new HashSet<Equation>();
@@ -146,10 +139,7 @@ public class AssociationProposer {
 	 * @return an error message if statement is invalid, else <code>null</code>
 	 */
 	public synchronized String analyze(String sqlStatement, int startLineNumber) {
-		sqlStatement = removeCommentsAndLiterals(sqlStatement);
-		for (Entry<String, String> e: FUNCTION_CALL_REPLACEMENT.entrySet()) {
-			sqlStatement = removeFunction(e.getKey(), e.getValue(), sqlStatement);
-		}
+		sqlStatement = SqlUtil.removeNonMeaningfulFragments(sqlStatement);
 		net.sf.jsqlparser.statement.Statement st;
 		try {
 			st = CCJSqlParserUtil.parse(sqlStatement);
@@ -170,90 +160,6 @@ public class AssociationProposer {
 		proposeJoinConditions();
 		sqlStatement = st.toString();
 		return null;
-	}
-
-	private String removeFunction(String function, String replacement, String sqlStatement) {
-		Pattern pattern = Pattern.compile("(?:(\\b\\w+\\b)\\s*\\()|\\(\\)|.", Pattern.DOTALL);
-		Matcher matcher = pattern.matcher(sqlStatement);
-		int level = 0;
-		Integer funcLevel = null;
-		boolean result = matcher.find();
-		StringBuffer sb = new StringBuffer();
-		if (result) {
-			do {
-				String token = matcher.group(0);
-				String wordPOpen = matcher.group(1);
-				if ("(".equals(token)) {
-					++level;
-				} else if (")".equals(token)) {
-					--level;
-				}
-
-				int l = token.length();
-				matcher.appendReplacement(sb, "");
-				if (wordPOpen != null && function.equalsIgnoreCase(wordPOpen)) {
-					if (funcLevel == null) {
-						funcLevel = level;
-						l -= replacement.length();
-						sb.append(replacement);
-					}
-				}
-				if (funcLevel != null) {
-					while (l > 0) {
-						--l;
-						sb.append(' ');
-					}
-				} else {
-					sb.append(token);
-				}
-				if (funcLevel != null && ")".equals(token)) {
-					if (funcLevel == level) {
-						funcLevel = null;
-					}
-				}
-				if (wordPOpen != null) {
-					++level;
-				}
-				result = matcher.find();
-			} while (result);
-		}
-		matcher.appendTail(sb);
-		return sb.toString();
-	}
-
-	/**
-	 * Removes comments and literals from SQL statement.
-	 * 
-	 * @param statement
-	 *            the statement
-	 * 
-	 * @return statement the statement without comments and literals
-	 */
-	private String removeCommentsAndLiterals(String statement) {
-		Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
-		Matcher matcher = pattern.matcher(statement);
-		boolean result = matcher.find();
-		StringBuffer sb = new StringBuffer();
-		if (result) {
-			do {
-				int l = matcher.group(0).length();
-				matcher.appendReplacement(sb, "");
-				if (matcher.group(1) != null) {
-					l -= 2;
-					sb.append("'");
-				}
-				while (l > 0) {
-					--l;
-					sb.append(' ');
-				}
-				if (matcher.group(1) != null) {
-					sb.append("'");
-				}
-				result = matcher.find();
-			} while (result);
-		}
-		matcher.appendTail(sb);
-		return sb.toString();
 	}
 
 	/**

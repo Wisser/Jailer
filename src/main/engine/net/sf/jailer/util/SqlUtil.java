@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.datamodel.DataModel;
@@ -476,6 +478,113 @@ public class SqlUtil {
 		SQL_TYPE.put(Types.CLOB, "CLOB");
 		SQL_TYPE.put(Types.NCLOB, "NCLOB");
 		SQL_TYPE.put(Types.BLOB, "BLOB");
+	}
+
+	private static Map<String, String> FUNCTION_CALL_REPLACEMENT = new HashMap<String, String>();
+	static {
+		FUNCTION_CALL_REPLACEMENT.put("XMLSERIALIZE", "1");
+		FUNCTION_CALL_REPLACEMENT.put("XMLFOREST", "1");
+		FUNCTION_CALL_REPLACEMENT.put("IIF", "1");
+		FUNCTION_CALL_REPLACEMENT.put("WITH", "");
+	}
+
+	/**
+	 * Removes all non-meaningful fragments of an SQL statement
+	 * that might interfere with the SQL parser. (Comments, Literals, etc.)
+	 * 
+	 * @param sqlStatement
+	 * @return
+	 */
+	public static String removeNonMeaningfulFragments(String sqlStatement) {
+		sqlStatement = removeCommentsAndLiterals(sqlStatement);
+		for (Entry<String, String> e: FUNCTION_CALL_REPLACEMENT.entrySet()) {
+			sqlStatement = removeFunction(e.getKey(), e.getValue(), sqlStatement);
+		}
+		return sqlStatement;
+	}
+
+	private static String removeFunction(String function, String replacement, String sqlStatement) {
+		Pattern pattern = Pattern.compile("(?:(\\b\\w+\\b)\\s*\\()|\\(\\)|.", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(sqlStatement);
+		int level = 0;
+		Integer funcLevel = null;
+		boolean result = matcher.find();
+		StringBuffer sb = new StringBuffer();
+		if (result) {
+			do {
+				String token = matcher.group(0);
+				String wordPOpen = matcher.group(1);
+				if ("(".equals(token)) {
+					++level;
+				} else if (")".equals(token)) {
+					--level;
+				}
+
+				int l = token.length();
+				matcher.appendReplacement(sb, "");
+				if (wordPOpen != null && function.equalsIgnoreCase(wordPOpen)) {
+					if (funcLevel == null) {
+						funcLevel = level;
+						l -= replacement.length();
+						sb.append(replacement);
+					}
+				}
+				if (funcLevel != null) {
+					while (l > 0) {
+						--l;
+						sb.append(' ');
+					}
+				} else {
+					sb.append(token);
+				}
+				if (funcLevel != null && ")".equals(token)) {
+					if (funcLevel == level) {
+						funcLevel = null;
+					}
+				}
+				if (wordPOpen != null) {
+					++level;
+				}
+				result = matcher.find();
+			} while (result);
+		}
+		matcher.appendTail(sb);
+		return sb.toString();
+	}
+
+	/**
+	 * Removes comments and literals from SQL statement.
+	 * 
+	 * @param statement
+	 *            the statement
+	 * 
+	 * @return statement the statement without comments and literals
+	 */
+	private static String removeCommentsAndLiterals(String statement) {
+		Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(statement);
+		boolean result = matcher.find();
+		StringBuffer sb = new StringBuffer();
+		if (result) {
+			do {
+				int l = matcher.group(0).length();
+				matcher.appendReplacement(sb, "");
+				if (matcher.group(1) != null) {
+					l -= 2;
+					sb.append("'");
+				}
+				while (l > 0) {
+					--l;
+					sb.append(' ');
+				}
+				if (matcher.group(1) != null) {
+					sb.append("'");
+				}
+				result = matcher.find();
+			} while (result);
+		}
+		matcher.appendTail(sb);
+		return sb.toString();
 	}
 
 }

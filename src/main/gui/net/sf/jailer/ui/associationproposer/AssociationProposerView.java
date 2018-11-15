@@ -952,7 +952,8 @@ public class AssociationProposerView extends javax.swing.JPanel {
     		BufferedWriter out = new BufferedWriter(new FileWriter(ModelBuilder.getModelBuilderAssociationsFilename(executionContext)));
     		out.append("\n");
     		AssociationProposer ap = new AssociationProposer(dataModel);
-			int knownCount = 0;
+    		int knownCount = 0;
+    		int allCount = 0;
     		for (int i = 0; i < proposalsModel.getRowCount(); ++i) {
     			if (Boolean.TRUE.equals(proposalsModel.getValueAt(i, 0))) {
 	    			String condition = String.valueOf(proposalsModel.getValueAt(i, 3));
@@ -962,6 +963,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
 					Table from = dataModel.getTable(fromName);
 					Table to = dataModel.getTable(toName);
 					if (from != null && to != null) {
+						++allCount;
 						Association association = new Association(from, to, false, false, condition, dataModel, false, null);
 						if (ap.addAssociation(names.get(i), new Pair<Table, Table>(from, to), association, true)) {
 							out.append(
@@ -977,7 +979,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
     		out.close();
     		accepted = true;
     		if (knownCount > 0) {
-    			JOptionPane.showMessageDialog(dialog, knownCount + " of " + proposalsModel.getRowCount() + " associations are already known.", "", JOptionPane.INFORMATION_MESSAGE);
+    			JOptionPane.showMessageDialog(dialog, knownCount + " of " + allCount + " associations are already known.", "", JOptionPane.INFORMATION_MESSAGE);
     		}
     		dialog.dispose();
     	} catch (Throwable t) {

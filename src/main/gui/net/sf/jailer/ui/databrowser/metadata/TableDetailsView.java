@@ -51,6 +51,12 @@ public class TableDetailsView extends javax.swing.JPanel {
      */
     public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, final DataModel dataModel) {
         initComponents();
+        if (jScrollPane1.getHorizontalScrollBar() != null) {
+        	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
+        }
+        if (jScrollPane1.getVerticalScrollBar() != null) {
+        	jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
+        }
         updateColumnsTable = new Runnable() {
 			@Override
 			public void run() {
