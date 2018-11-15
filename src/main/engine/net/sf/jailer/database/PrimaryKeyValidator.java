@@ -35,6 +35,8 @@ import net.sf.jailer.util.Quoting;
  */
 public class PrimaryKeyValidator {
 
+	private static final boolean FAIL_FAST = true;
+	
 	/**
 	 * Validates all primary keys of a set of tables.
 	 * 
@@ -77,16 +79,26 @@ public class PrimaryKeyValidator {
 				@Override
 				public void run() throws SQLException {
 					checkUniqueness(session, table, new Quoting(session));
+					if (FAIL_FAST) {
+						throwIfErrorFound();
+					}
 				}
 			});
 			jobs.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
 					checkNoNull(session, table, new Quoting(session));
+					if (FAIL_FAST) {
+						throwIfErrorFound();
+					}
 				}
 			});
 		}
 		jobManager.executeJobs(jobs);
+		throwIfErrorFound();
+	}
+
+	private void throwIfErrorFound() throws SqlException {
 		if (errorMessage.length() > 0) {
 			SqlException e = new SqlException(errorMessage.toString(), errorStatements.toString(), null);
 			e.setFormatted(true);
