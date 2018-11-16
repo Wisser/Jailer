@@ -28,8 +28,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -493,8 +491,10 @@ public class AssociationProposer {
 								net.sf.jailer.datamodel.Column rightColumn = getColumn(right);
 								if (rightColumn != null) {
 									boolean sameTable = false;
-									String leftAlias = ((Column) leftExpression).getTable().getName();
-									String rightAlias = ((Column) rightExpression).getTable().getName();
+									Table leftTable = ((Column) leftExpression).getTable();
+									String leftAlias = leftTable != null? leftTable.getName() : null;
+									Table rightTable = ((Column) rightExpression).getTable();
+									String rightAlias = rightTable != null? rightTable.getName() : null;
 									if (leftAlias != null && rightAlias != null) {
 										if (Quoting.equalsIgnoreQuotingAndCase(leftAlias, rightAlias)) {
 											sameTable = true;
@@ -529,7 +529,10 @@ public class AssociationProposer {
 		}
 
 		private net.sf.jailer.datamodel.Column getColumn(Column column) {
-			String alias = column.getTable().getName();
+			String alias = null;
+			if (column.getTable() != null) {
+				alias = column.getTable().getName();
+			}
 			Set<String> tableCandidat = new HashSet<String>();
 			for (boolean withSchema: new boolean[] { true, false }) {
 				for (int i = scopes.size() - 1; i >= 0; --i) {

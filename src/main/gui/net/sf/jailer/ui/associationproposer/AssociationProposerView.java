@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -419,10 +420,11 @@ public class AssociationProposerView extends javax.swing.JPanel {
 					} catch (Throwable e) {
 						final Throwable fe = e;
 						final String title = "Error in file \"" + file.getName() + "\" at line " + lineNr;
+						final Object exceptionContext = (e instanceof IOException || e instanceof FileNotFoundException)? UIUtil.EXCEPTION_CONTEXT_USER_ERROR : null;
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
-								UIUtil.showException(AssociationProposerView.this, title, fe, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
+								UIUtil.showException(AssociationProposerView.this, title, fe, exceptionContext);
 								loadButton.setEnabled(true);
 							}
 						});
