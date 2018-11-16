@@ -66,11 +66,6 @@ public class AnimationController {
 				controlAnimation();
 			}
 			@Override
-			public void windowIconified(WindowEvent e) {
-				windowIsActive.put(window, false);
-				controlAnimation();
-			}
-			@Override
 			public void windowActivated(WindowEvent e) {
 				windowIsActive.put(window, true);
 				controlAnimation();
@@ -84,6 +79,9 @@ public class AnimationController {
 			
 			@Override
 			public void windowOpened(WindowEvent e) {
+			}
+			@Override
+			public void windowIconified(WindowEvent e) {
 			}
 			@Override
 			public void windowDeiconified(WindowEvent e) {
