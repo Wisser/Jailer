@@ -1,3 +1,6 @@
+8.1.6
+  - Fixed "SQLite JDBC: inconsistent internal state" during database analysis.
+
 8.1.5
   - New export option "check primary keys" allows checking the validity of manually defined primary keys.
   - New export option "limit transaction sizes" reduces transaction sizes. (Feature request 51)

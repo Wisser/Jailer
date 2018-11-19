@@ -44,7 +44,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -52,8 +51,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -665,7 +662,16 @@ public class UIUtil {
      *            the exception
      */
     public static void showException(Component parent, String title, Throwable t, Object context) {
-        if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException) {
+        if (context == EXCEPTION_CONTEXT_USER_ERROR) {
+        	if (t instanceof IndexOutOfBoundsException
+        			|| t instanceof NullPointerException
+        			|| t instanceof ClassCastException
+        			|| t instanceof IllegalStateException
+        			|| t instanceof IllegalArgumentException) {
+        		context = null;
+        	}
+        }
+    	if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException) {
             context = EXCEPTION_CONTEXT_USER_ERROR;
         }
         t.printStackTrace();
