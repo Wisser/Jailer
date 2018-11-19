@@ -194,7 +194,7 @@ public class MetaDataCache {
 				}
 				rowList.add(row);
 			}
-			metaDataCache.resultSetMetaData = new MemorizedResultSetMetaData(rsMetaData.getColumnCount(), names, types); 
+			metaDataCache.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types); 
 			rs.close();
 
 			if (metaDataCache.cache.isEmpty()) {
