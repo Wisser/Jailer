@@ -954,9 +954,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             			Color fg = ((JLabel) comp).getForeground();
             			String estRowCountFormatted;
             			if (estRowCount >= 1000000) {
-            				estRowCountFormatted = String.format("%1.1f M", (double) estRowCount / 1000000.0);
+            				estRowCountFormatted = String.format("%,1.1f M", (double) estRowCount / 1000000.0);
             			} else if (estRowCount >= 1000) {
-            				estRowCountFormatted = String.format("%1.1f K", (double) estRowCount / 1000.0);
+            				estRowCountFormatted = String.format("%,1.1f K", (double) estRowCount / 1000.0);
             			} else {
             				estRowCountFormatted = estRowCount.toString();
             			}
