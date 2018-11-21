@@ -953,7 +953,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		try {
 			BasicDataSource dataSource = new BasicDataSource(ci.driverClass, ci.url, ci.user, ci.password, 0, urls);
 			Window w = parent instanceof Window? (Window) parent : SwingUtilities.getWindowAncestor(parent);
-			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, w);
+			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, null, w);
 			if (session != null) {
 				session.shutDown();
 				return true;
@@ -979,7 +979,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		BasicDataSource dataSource = new BasicDataSource(currentConnection.driverClass,
 				currentConnection.url, currentConnection.user,
 				currentConnection.password, 0, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2, currentConnection.jar3, currentConnection.jar4));
-		Session session = new Session(dataSource, dataSource.dbms);
+		Session session = new Session(dataSource, dataSource.dbms, executionContext.getIsolationLevel());
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
 				session, currentConnection.user);
 		defaultSchema[0] = JDBCMetaDataBasedModelElementFinder
@@ -1001,7 +1001,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		BasicDataSource dataSource = new BasicDataSource(currentConnection.driverClass,
 				currentConnection.url, currentConnection.user,
 				currentConnection.password, 0, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2, currentConnection.jar3, currentConnection.jar4));
-		Session session = new Session(dataSource, dataSource.dbms);
+		Session session = new Session(dataSource, dataSource.dbms, executionContext.getIsolationLevel());
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
 				session, currentConnection.user);
 		String defaultSchema = JDBCMetaDataBasedModelElementFinder

@@ -942,7 +942,7 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         ConnectionInfo connection = dbConnectionDialog.currentConnection;
         BasicDataSource dataSource = new BasicDataSource(connection.driverClass, connection.url, connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
-        session = SessionForUI.createSession(dataSource, dataSource.dbms, this);
+        session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), this);
         if (session != null) {
 	        List<String> args = new ArrayList<String>();
 	        dbConnectionDialog.addDbArgs(args);

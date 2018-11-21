@@ -1180,7 +1180,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						args.add(tmpFileName != null? tmpFileName : extractionModelEditor.extractionModelFile);
 						dbConnectionDialog.addDbArgs(args);
 						BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs()); 
-						Session session = SessionForUI.createSession(dataSource, dataSource.dbms, this);
+						Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), this);
 
 						if (session != null) {
 							if (extractionModelEditor.dataModel != null) {

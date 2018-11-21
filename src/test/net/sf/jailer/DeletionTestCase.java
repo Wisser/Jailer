@@ -79,7 +79,7 @@ public class DeletionTestCase extends DbmsAwareTestCase {
 		
 		if (doDeletion(datamodelDir, new File(testDir, "extractionmodel.csv"), result, insertResult, scope)) {
 			BasicDataSource dataSource = new BasicDataSource(connectionArguments.get(0), connectionArguments.get(1), connectionArguments.get(2), connectionArguments.get(3), 0);
-			Session statementExecutor = new Session(dataSource, dataSource.dbms);
+			Session statementExecutor = new Session(dataSource, dataSource.dbms, null);
 			new SqlScriptExecutor(statementExecutor, 1).executeScript(result.getCanonicalPath());
 			statementExecutor.shutDown();
 			

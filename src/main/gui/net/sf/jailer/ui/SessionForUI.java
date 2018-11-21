@@ -45,8 +45,8 @@ public class SessionForUI extends Session {
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
 	 */
-	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, final Window w) throws SQLException {
-		final SessionForUI session = new SessionForUI(dataSource, dbms);
+	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, final Window w) throws SQLException {
+		final SessionForUI session = new SessionForUI(dataSource, dbms, isolationLevel);
 		final AtomicReference<Connection> con = new AtomicReference<Connection>();
 		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
 		session.connectionDialog = new JDialog(w, "Connecting");
@@ -116,8 +116,8 @@ public class SessionForUI extends Session {
 	/**
 	 * Constructor.
 	 */
-	private SessionForUI(DataSource dataSource, DBMS dbms) throws SQLException {
-		super(dataSource, dbms);
+	private SessionForUI(DataSource dataSource, DBMS dbms, Integer isolationLevel) throws SQLException {
+		super(dataSource, dbms, isolationLevel);
 		connectingPanel.setBackground(java.awt.Color.white);
 
         jLabel1.setForeground(java.awt.Color.red);

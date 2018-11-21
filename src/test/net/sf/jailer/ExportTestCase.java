@@ -94,7 +94,7 @@ public class ExportTestCase extends DbmsAwareTestCase {
 		if (format.equals("SQL")) {
 			DatabaseOperation.DELETE_ALL.execute(getConnection(), getDataSet());
 			BasicDataSource dataSource = new BasicDataSource(connectionArguments.get(0), connectionArguments.get(1), connectionArguments.get(2), connectionArguments.get(3), 0);
-			Session statementExecutor = new Session(dataSource, dataSource.dbms);
+			Session statementExecutor = new Session(dataSource, dataSource.dbms, null);
 			new SqlScriptExecutor(statementExecutor, 1).executeScript(result.getCanonicalPath());
 			statementExecutor.shutDown();
 			assertDatabaseState(expectedResult.getCanonicalPath());

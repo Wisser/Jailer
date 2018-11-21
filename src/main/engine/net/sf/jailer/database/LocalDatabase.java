@@ -54,7 +54,7 @@ public class LocalDatabase {
 		} catch (Exception e) {
 			dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, 0, ClasspathUtil.toURLArray(jarfile, null, null, null));
 		}
-		session = new Session(dataSource, dataSource.dbms, null, false, true);
+		session = new Session(dataSource, dataSource.dbms, null, null, false, true);
 	}
 	
 	/**

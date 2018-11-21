@@ -248,6 +248,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		    		{
 		    			noSingleRowDetailsView = true;
 		    			rowsTableScrollPane.setWheelScrollingEnabled(true);
+		    			sortColumnsCheckBox.setVisible(false);
 		    		}
 		    		@Override
 		    		protected int getReloadLimit() {

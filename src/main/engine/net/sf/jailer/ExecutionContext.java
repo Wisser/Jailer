@@ -18,6 +18,7 @@ package net.sf.jailer;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -73,6 +74,7 @@ public class ExecutionContext {
 		this.datamodelFolder = other.datamodelFolder;
 		this.noSorting = other.noSorting;
 		this.transactional = other.transactional;
+		this.isolationLevel = other.isolationLevel;
 		this.noRowid = other.noRowid;
 		this.importFilterMappingTableSchema = other.importFilterMappingTableSchema;
 		this.scope = other.scope;
@@ -466,6 +468,24 @@ public class ExecutionContext {
 	}
 
 	/**
+	 * Gets IsolationLevel.
+	 * 
+	 * @see Connection#setTransactionIsolation(int)
+	 */
+	public Integer getIsolationLevel() {
+		return isolationLevel;
+	}
+
+	/**
+	 * Sets IsolationLevel.
+	 * 
+	 * @see Connection#setTransactionIsolation(int)
+	 */
+	public void setIsolationLevel(Integer isolationLevel) {
+		this.isolationLevel = isolationLevel;
+	}
+
+	/**
 	 * If <code>true</code>, Use primary keys to determine row identity (instead
 	 * of rowid-column)
 	 *
@@ -776,7 +796,10 @@ public class ExecutionContext {
 
 	// import rows in a single transaction
 	private boolean transactional = false;
-
+	
+	// isolation level
+	private Integer isolationLevel = null;
+	
 	// use primary keys to determine row identity (instead of rowid-column)
 	private boolean noRowid = false;
 
@@ -862,6 +885,7 @@ public class ExecutionContext {
 		datamodelFolder = commandLine.datamodelFolder;
 		noSorting = commandLine.noSorting;
 		transactional = commandLine.transactional;
+		isolationLevel = commandLine.isolationLevel;
 		noRowid = commandLine.noRowid;
 		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
 		checkPrimaryKeys = commandLine.checkPrimaryKeys;

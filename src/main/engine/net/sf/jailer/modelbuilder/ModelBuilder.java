@@ -170,7 +170,7 @@ public class ModelBuilder {
 	 * @param warnings string-buffer to print warnings into, may be <code>null</code>
 	 */
 	public static void build(DataSource dataSource, DBMS dbms, String schema, StringBuffer warnings, ExecutionContext executionContext) throws Exception {
-		session = new Session(dataSource, dbms);
+		session = new Session(dataSource, dbms, executionContext.getIsolationLevel());
 		session.setIntrospectionSchema(schema);
 
 		resetFiles(executionContext);

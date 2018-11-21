@@ -217,8 +217,8 @@ public class Session {
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
 	 */
-	public Session(DataSource dataSource, DBMS dbms) throws SQLException {
-		this(dataSource, dbms, null, false);
+	public Session(DataSource dataSource, DBMS dbms, Integer isolationLevel) throws SQLException {
+		this(dataSource, dbms, isolationLevel, null, false);
 	}
 
 	/**
@@ -227,8 +227,8 @@ public class Session {
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
 	 */
-	public Session(DataSource dataSource, DBMS dbms, final WorkingTableScope scope, boolean transactional) throws SQLException {
-		this(dataSource, dbms, scope, transactional, false);
+	public Session(DataSource dataSource, DBMS dbms, Integer isolationLevel, final WorkingTableScope scope, boolean transactional) throws SQLException {
+		this(dataSource, dbms, isolationLevel, scope, transactional, false);
 	}
 	
 	/**
@@ -238,7 +238,7 @@ public class Session {
 	 * @param dbms the DBMS
 	 * @param local <code>true</code> for the local entity-graph database
 	 */
-	public Session(final DataSource dataSource, DBMS dbms, final WorkingTableScope scope, boolean transactional, final boolean local) throws SQLException {
+	public Session(final DataSource dataSource, DBMS dbms, final Integer isolationLevel, final WorkingTableScope scope, boolean transactional, final boolean local) throws SQLException {
 		this.transactional = transactional;
 		this.local = local;
 		this.scope = scope;
@@ -281,19 +281,13 @@ public class Session {
 					_log.info("set auto commit to " + ac);
 					con.setAutoCommit(ac);
 					try {
-						DatabaseMetaData meta = con.getMetaData();
-						String productName = meta.getDatabaseProductName();
-						if (productName != null) {
-							if ((!"ASE".equals(productName)) && !productName.toUpperCase().contains("ADAPTIVE SERVER")) {
-								// Sybase don't handle UR level correctly, see http://docs.sun.com/app/docs/doc/819-4728/gawlc?a=view
-								if (!productName.toUpperCase().startsWith("HSQL")) {
-									// HSQL don't allow write access at UR level
-									con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-								}
-							  }
+						if (isolationLevel != null) {
+							_log.info("set isolation level to " + isolationLevel);
+							con.setTransactionIsolation(isolationLevel);
+							_log.info("isolation level is " + con.getTransactionIsolation());
 						}
 					} catch (SQLException e) {
-						_log.info("can't set isolation level to UR. Reason: " + e.getMessage());
+						_log.warn("can't set isolation level to UR. Reason: " + e.getMessage());
 					}
 					if (scope == WorkingTableScope.SESSION_LOCAL || scope == WorkingTableScope.TRANSACTION_LOCAL) {
 						temporaryTableSession = con;

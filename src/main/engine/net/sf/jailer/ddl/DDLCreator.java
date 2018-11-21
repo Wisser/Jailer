@@ -72,7 +72,7 @@ public class DDLCreator {
 	public boolean createDDL(DataSource dataSource, DBMS dbms, WorkingTableScope temporaryTableScope, String workingTableSchema) throws SQLException, FileNotFoundException, IOException {
 		Session session = null;
 		if (dataSource != null) {
-			session = new Session(dataSource, dbms);
+			session = new Session(dataSource, dbms, executionContext.getIsolationLevel());
 		}
 		try {
 			return createDDL(new DataModel(executionContext), session, temporaryTableScope, workingTableSchema);
@@ -253,7 +253,7 @@ public class DDLCreator {
 	public boolean isUptodate(DataSource dataSource, DBMS dbms, boolean useRowId, String workingTableSchema) {
 		try {
 			if (dataSource != null) {
-				final Session session = new Session(dataSource, dbms);
+				final Session session = new Session(dataSource, dbms, executionContext.getIsolationLevel());
 				try {
 					return isUptodate(session, useRowId, workingTableSchema);
 				} finally {
@@ -368,7 +368,7 @@ public class DDLCreator {
 	public String getTableInConflict(DataSource dataSource, DBMS dbms) {
 		try {
 			if (dataSource != null) {
-				Session session = new Session(dataSource, dbms);
+				Session session = new Session(dataSource, dbms, executionContext.getIsolationLevel());
 				session.setSilent(true);
 				try {
 					final boolean[] uptodate = new boolean[] { false };

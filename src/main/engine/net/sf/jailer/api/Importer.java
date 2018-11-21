@@ -52,7 +52,7 @@ public class Importer {
 	 * @param inputScript the SQL-script-file
 	 */
 	public void execute(File inputScript) throws IOException, SQLException {
-		Session session = new Session(getDataSource(), null);
+		Session session = new Session(getDataSource(), null, null);
 		new SqlScriptExecutor(session, getNumberOfThreads()).executeScript(inputScript.getPath(), getTransactional());
 	}
 	

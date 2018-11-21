@@ -88,7 +88,7 @@ public class PrivilegedSessionProviderDialog extends javax.swing.JDialog {
 										BasicDataSource dataSource = new BasicDataSource(info.driverClass,
 												info.url, info.user,
 												info.password, 0, ClasspathUtil.toURLArray(info.jar1, info.jar2, info.jar3, info.jar4));
-										newSession.set(new Session(dataSource, dataSource.dbms));
+										newSession.set(new Session(dataSource, dataSource.dbms, executionContext.getIsolationLevel()));
 									} catch (Exception e) {
 										UIUtil.showException(theParent, "Error", e);
 									}

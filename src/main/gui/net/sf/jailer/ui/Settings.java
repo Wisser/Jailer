@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 
@@ -105,6 +106,11 @@ public class Settings  {
 					setting.put(entry.getKey(), ((JTextField) entry.getValue()).getText());
 				} else if (entry.getValue() instanceof JCheckBox) {
 					setting.put(entry.getKey(), Boolean.valueOf(((JCheckBox) entry.getValue()).isSelected()).toString());
+				} else if (entry.getValue() instanceof JComboBox) {
+					Object sItem = ((JComboBox) entry.getValue()).getSelectedItem();
+					if (sItem != null) {
+						setting.put(entry.getKey(), sItem.toString());
+					}
 				}
 			}
 			settings.put(name.trim(), setting);
@@ -145,6 +151,8 @@ public class Settings  {
 						((JTextField) entry.getValue()).setText(setting.get(entry.getKey()));
 					} else if (entry.getValue() instanceof JCheckBox && setting.containsKey(entry.getKey())) {
 						((JCheckBox) entry.getValue()).setSelected(Boolean.valueOf(setting.get(entry.getKey())));
+					} else if (entry.getValue() instanceof JComboBox && setting.containsKey(entry.getKey())) {
+						((JComboBox) entry.getValue()).setSelectedItem(setting.get(entry.getKey()));
 					}
 				}
 			}

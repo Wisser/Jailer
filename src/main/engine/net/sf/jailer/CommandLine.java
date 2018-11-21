@@ -141,6 +141,9 @@ public class CommandLine {
 	@Option(name="-transactional", usage="import rows in a single transaction")
 	public boolean transactional = false;
 	
+	@Option(name="-isolation-level", usage="isolation level (optional), 1=READ_UNCOMMITTED, 2=READ_COMMITTED, 4=REPEATABLE_READ, 8=SERIALIZABLE")
+	public Integer isolationLevel = null;
+	
 	@Option(name="-no-rowid", usage="use primary keys to determine row identity (instead of rowid-column)")
 	public boolean noRowid = false;
 	
