@@ -18,6 +18,7 @@ package net.sf.jailer.database;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -54,7 +55,7 @@ public class LocalDatabase {
 		} catch (Exception e) {
 			dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, 0, ClasspathUtil.toURLArray(jarfile, null, null, null));
 		}
-		session = new Session(dataSource, dataSource.dbms, null, null, false, true);
+		session = new Session(dataSource, dataSource.dbms, Connection.TRANSACTION_READ_UNCOMMITTED, null, false, true);
 	}
 	
 	/**
