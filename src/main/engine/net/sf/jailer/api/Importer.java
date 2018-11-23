@@ -17,6 +17,7 @@ package net.sf.jailer.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
@@ -52,7 +53,7 @@ public class Importer {
 	 * @param inputScript the SQL-script-file
 	 */
 	public void execute(File inputScript) throws IOException, SQLException {
-		Session session = new Session(getDataSource(), null, null);
+		Session session = new Session(getDataSource(), null, isolationLevel, null, getTransactional());
 		new SqlScriptExecutor(session, getNumberOfThreads()).executeScript(inputScript.getPath(), getTransactional());
 	}
 	
@@ -94,7 +95,7 @@ public class Importer {
 	}
 
 	/**
-	 * If <code>true</code>, Import rows in a single transaction. (default is true)
+	 * If <code>true</code>, import rows in a single transaction. (default is true)
 	 *
 	 * @return <code>true</code> if Import rows in a single transaction
 	 */
@@ -106,14 +107,33 @@ public class Importer {
 	 * If <code>true</code>, Import rows in a single transaction. (default is true)
 	 *
 	 * @param transactional
-	 *            <code>true</code> if Import rows in a single transaction
+	 *            <code>true</code> if import rows in a single transaction
 	 */
 	public void setTransactional(boolean transactional) {
 		this.transactional = transactional;
 	}
 
+	/**
+	 * Gets IsolationLevel.
+	 * 
+	 * @see Connection#setTransactionIsolation(int)
+	 */
+	public Integer getIsolationLevel() {
+		return isolationLevel;
+	}
+
+	/**
+	 * Sets IsolationLevel.
+	 * 
+	 * @see Connection#setTransactionIsolation(int)
+	 */
+	public void setIsolationLevel(Integer isolationLevel) {
+		this.isolationLevel = isolationLevel;
+	}
+
 	private DataSource dataSource;
 	private int numberOfThreads = 1;
 	private boolean transactional = true;
-	
+	private Integer isolationLevel;
+
 }

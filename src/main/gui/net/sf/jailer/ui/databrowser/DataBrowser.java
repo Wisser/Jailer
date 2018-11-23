@@ -46,10 +46,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.sql.SQLException;
@@ -66,7 +62,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -240,6 +235,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		initRowLimitButtons();
         autoLayoutMenuItem.setSelected(inAutoLayoutMode());
         workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
+        workbenchTabbedPane.setTabComponentAt(1, new JLabel("SQL Console ", sqlConsoleIcon, JLabel.LEFT));
         workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.getTabCount() - 1, new JLabel(addSqlConsoleIcon));
         
         tableTreesTabbedPane.setTabComponentAt(0, new JLabel("Navigation", navigationIcon, JLabel.LEFT));
@@ -260,6 +256,8 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
 		});
+
+        autoLayoutMenuItem.setVisible(false);
 
         initialized = true;
 
@@ -1078,6 +1076,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jInternalFrame1 = new javax.swing.JInternalFrame();
         hiddenPanel = new javax.swing.JPanel();
         closurePanel = new javax.swing.JPanel();
+        consoleDummyPanel = new javax.swing.JPanel();
         addSQLConsoleTab = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jSplitPane4 = new javax.swing.JSplitPane();
@@ -1365,6 +1364,7 @@ public class DataBrowser extends javax.swing.JFrame {
         desktopSplitPane.setRightComponent(closurePanel);
 
         workbenchTabbedPane.addTab("Desktop", desktopSplitPane);
+        workbenchTabbedPane.addTab("SQL Console", consoleDummyPanel);
         workbenchTabbedPane.addTab("+", addSQLConsoleTab);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1990,7 +1990,8 @@ public class DataBrowser extends javax.swing.JFrame {
                     dcd.addDbArgs(args);
                     ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), true);
                     if (importDialog.isOk) {
-                        UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getUser(), dcd.getPassword(), null, null, false, true, false, executionContext);
+                    	importDialog.fillCLIArgs(args);
+						UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getUser(), dcd.getPassword(), null, null, false, true, false, executionContext);
                         if (desktop != null) {
                             desktop.updateMenu();
                             for (RowBrowser rb : desktop.getBrowsers()) {
@@ -2347,8 +2348,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	                        ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
 	                        ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
 	                        Object dSize = UIManager.get("SplitPane.dividerSize");
-	                        if (new Integer(10).equals(dSize)) {
-	                        	UIManager.put("SplitPane.dividerSize", new Integer(14));
+	                        if (Integer.valueOf(10).equals(dSize)) {
+	                        	UIManager.put("SplitPane.dividerSize", Integer.valueOf(14));
 	                        }
 	
 	                        if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
@@ -2382,7 +2383,7 @@ public class DataBrowser extends javax.swing.JFrame {
             dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
         }
         if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
-            dataBrowser.setConnection(dbConnectionDialog);
+    		dataBrowser.setConnection(dbConnectionDialog);
             if (dataBrowser.session != null) {
 	            dataBrowser.askForDataModel();
 	            dataBrowser.desktop.openSchemaMappingDialog(true);
@@ -2539,6 +2540,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem columnOrderItem;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JMenuItem consistencyCheckMenuItem;
+    private javax.swing.JPanel consoleDummyPanel;
     private javax.swing.JMenuItem createExtractionModelMenuItem;
     private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem dataModelEditorjMenuItem;
@@ -3577,18 +3579,24 @@ public class DataBrowser extends javax.swing.JFrame {
 		final JLabel titleLbl = new JLabel(sqlConsoleIcon);
 		String tabName = "SQL Console";
 		++sqlConsoleNr;
-		final String title = tabName + (sqlConsoleNr > 1? " (" + sqlConsoleNr + ")" : "");
+		String title = tabName + (sqlConsoleNr > 1? " (" + sqlConsoleNr + ")" : "") + " ";
 
 		final SQLConsoleWithTitle sqlConsole = new SQLConsoleWithTitle(session, metaDataSource, datamodel, executionContext, title, titleLbl);
 		sqlConsoles.add(sqlConsole);
 		
 		try {
 			ignoreTabChangeEvent = true;
+    		for (int i = 0; i < workbenchTabbedPane.getTabCount(); ++i) {
+    			if (workbenchTabbedPane.getComponentAt(i) == consoleDummyPanel) {
+    				workbenchTabbedPane.removeTabAt(i);
+    				break;
+    			}
+    		}
 			workbenchTabbedPane.insertTab(title, null, sqlConsole, null, sqlConsoles.size());
 			JPanel titelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 			titelPanel.setOpaque(false);
 			titleLbl.setText(title);
-			titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+			// titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 			titelPanel.add(titleLbl);
 			SmallButton closeButton = new SmallButton(closeIcon) {
 				@Override
@@ -3748,33 +3756,34 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
     }//GEN-LAST:event_columnOrderItemActionPerformed
 
-    private static final String AUTOLAYOUT_SETTINGS_FILE = ".autolayout";
+//    private static final String AUTOLAYOUT_SETTINGS_FILE = ".autolayout";
     
 	private boolean inAutoLayoutMode() {
-		File file = Environment.newFile(AUTOLAYOUT_SETTINGS_FILE);
-		if (!file.exists()) {
-			return true;
-		}
-		ObjectInputStream in;
-		try {
-			in = new ObjectInputStream(new FileInputStream(file));
-			Object content = in.readObject();
-			in.close();
-			return Boolean.TRUE.equals(content);
-		} catch (Exception e) {
-			return true;
-		}
+		return true;
+//		File file = Environment.newFile(AUTOLAYOUT_SETTINGS_FILE);
+//		if (!file.exists()) {
+//			return true;
+//		}
+//		ObjectInputStream in;
+//		try {
+//			in = new ObjectInputStream(new FileInputStream(file));
+//			Object content = in.readObject();
+//			in.close();
+//			return Boolean.TRUE.equals(content);
+//		} catch (Exception e) {
+//			return true;
+//		}
 	}
 
 	private void setAutoLayoutMode(boolean selected) {
-		try {
-			File file = Environment.newFile(AUTOLAYOUT_SETTINGS_FILE);
-			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
-			out.writeObject(autoLayoutMenuItem.isSelected());
-			out.close();
-		} catch (Exception e) {
-			// ignore
-		}
+//		try {
+//			File file = Environment.newFile(AUTOLAYOUT_SETTINGS_FILE);
+//			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+//			out.writeObject(autoLayoutMenuItem.isSelected());
+//			out.close();
+//		} catch (Exception e) {
+//			// ignore
+//		}
 	}
 
 	private void autoLayoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoLayoutMenuItemActionPerformed

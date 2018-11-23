@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -392,6 +393,43 @@ public class Subsetter {
 	 */
 	public void setNumberOfThreads(int numberOfThreads) {
 		executionContext.setNumberOfThreads(numberOfThreads);
+	}
+
+	/**
+	 * If <code>true</code>, export rows in a single transaction. (default is false)
+	 *
+	 * @return <code>true</code> if Import rows in a single transaction
+	 */
+	public boolean getTransactional() {
+		return executionContext.getTransactional();
+	}
+
+	/**
+	 * If <code>true</code>, export rows in a single transaction. (default is false)
+	 *
+	 * @param transactional
+	 *            <code>true</code> if import rows in a single transaction
+	 */
+	public void setTransactional(boolean transactional) {
+		executionContext.setTransactional(transactional);
+	}
+
+	/**
+	 * Gets IsolationLevel.
+	 * 
+	 * @see Connection#setTransactionIsolation(int)
+	 */
+	public Integer getIsolationLevel() {
+		return executionContext.getIsolationLevel();
+	}
+
+	/**
+	 * Sets IsolationLevel.
+	 * 
+	 * @see Connection#setTransactionIsolation(int)
+	 */
+	public void setIsolationLevel(Integer isolationLevel) {
+		executionContext.setIsolationLevel(isolationLevel);
 	}
 
 	/**
