@@ -252,26 +252,22 @@ public class Session {
 			private Connection defaultConnection = null;
 			private Random random = new Random();
 			@Override
-			public Connection getConnection() throws SQLException {
+			public synchronized Connection getConnection() throws SQLException {
 				@SuppressWarnings("resource")
 				Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;
 				
 				if (con == null) {
 					try {
 						con = dataSource.getConnection();
-						synchronized (this) {
-							defaultConnection = con;
-						}
+						defaultConnection = con;
 					} catch (SQLException e) {
-						synchronized (this) {
-							if (connections != null && connections.size() > 1) {
-								con = connections.get(random.nextInt(connections.size()));
-							} else if (defaultConnection != null) {
-								// fall back to default connection
-								con = defaultConnection;
-							} else {
-								throw e;
-							}
+						if (connections != null && connections.size() > 1) {
+							con = connections.get(random.nextInt(connections.size()));
+						} else if (defaultConnection != null) {
+							// fall back to default connection
+							con = defaultConnection;
+						} else {
+							throw e;
 						}
 					}
 					boolean ac = scope == null || scope != WorkingTableScope.TRANSACTION_LOCAL;
@@ -289,7 +285,7 @@ public class Session {
 					} catch (SQLException e) {
 						_log.warn("can't set isolation level to UR. Reason: " + e.getMessage());
 					}
-					if (scope == WorkingTableScope.SESSION_LOCAL || scope == WorkingTableScope.TRANSACTION_LOCAL) {
+					if ((Session.this.transactional && !local) || scope == WorkingTableScope.SESSION_LOCAL || scope == WorkingTableScope.TRANSACTION_LOCAL) {
 						temporaryTableSession = con;
 					} else {
 						connection.set(con);

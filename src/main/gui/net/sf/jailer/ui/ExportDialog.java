@@ -244,6 +244,13 @@ public class ExportDialog extends javax.swing.JDialog {
 			} catch (ClassCastException e) {
 				// ignore
 			}
+			try {
+				JTextField c;
+				c = (JTextField) iFMTableSchemaComboBox.getEditor().getEditorComponent();
+				fields.put("iFMTableSchema", c);
+			} catch (ClassCastException e) {
+				// ignore
+			}
 			
 			confirmInsert.setSelected(lastConfirmInsert);
 			if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
@@ -381,6 +388,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			upsertCheckbox.addActionListener(al);
 			checkPKs.addActionListener(al);
 			insertIncrementally.addActionListener(al);
+			transactional.addActionListener(al);
 			explain.addActionListener(al);
 			unicode.addActionListener(al);
 			sortedCheckBox.addActionListener(al);
@@ -449,13 +457,6 @@ public class ExportDialog extends javax.swing.JDialog {
 		if (isOk) {
 			previousInitialSubjectCondition = subjectCondition;
 			previousSubjectCondition = where.getText();
-			lastWorkingTableSchema = getWorkingTableSchema();
-			try {
-				JTextField c = (JTextField) iFMTableSchemaComboBox.getEditor().getEditorComponent();
-				lastIFMTableSchema = c.getText().trim();
-			} catch (ClassCastException e) {
-				// ignore
-			}
 		}
 	}
 
@@ -525,9 +526,6 @@ public class ExportDialog extends javax.swing.JDialog {
 		}
 	}
 
-	private static String lastWorkingTableSchema = null;
-	private static String lastIFMTableSchema = null;
-	
 	@SuppressWarnings("unchecked")
 	private void initIFMTableSchemaBox(Session session, List<String> allSchemas, String defaultSchema) {
 		boolean hasImportFilter = false;
@@ -552,12 +550,9 @@ public class ExportDialog extends javax.swing.JDialog {
 		schemas.addAll(allSchemas);
 		schemas.remove(defaultSchema);
 		quoteSchemas(schemas, session);
-		if (lastIFMTableSchema != null && !schemas.contains(lastIFMTableSchema)) {
-			schemas.add(lastIFMTableSchema);
-		}
 		String[] ifmComboboxModel = schemas.toArray(new String[0]);
 		iFMTableSchemaComboBox.setModel(new DefaultComboBoxModel(ifmComboboxModel));
-		iFMTableSchemaComboBox.setSelectedItem(lastIFMTableSchema != null && schemas.contains(lastIFMTableSchema)? lastIFMTableSchema : DEFAULT_SCHEMA);
+		iFMTableSchemaComboBox.setSelectedItem(DEFAULT_SCHEMA);
 		iFMTableSchemaComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -594,7 +589,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		quoteSchemas(schemas, session);
 		schemaComboboxModel = schemas.toArray(new String[0]);
 		workingTableSchemaComboBox.setModel(new DefaultComboBoxModel(schemaComboboxModel));
-		workingTableSchemaComboBox.setSelectedItem(lastWorkingTableSchema != null? lastWorkingTableSchema : DEFAULT_SCHEMA);
+		workingTableSchemaComboBox.setSelectedItem(DEFAULT_SCHEMA);
 		workingTableSchemaComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -956,7 +951,8 @@ public class ExportDialog extends javax.swing.JDialog {
         targetDBMSLabel1 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         isolationLevelComboBox = new javax.swing.JComboBox();
-        jLabel28 = new javax.swing.JLabel();
+        iLHintLabel = new javax.swing.JLabel();
+        transactional = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1069,7 +1065,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel6.setText(" Parallel threads "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 50;
+        gridBagConstraints.gridy = 51;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel6, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1095,13 +1091,13 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 50;
+        gridBagConstraints.gridy = 51;
         gridBagConstraints.ipadx = 30;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(threads, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 51;
+        gridBagConstraints.gridy = 52;
         gridBagConstraints.ipadx = 30;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(rowsPerThread, gridBagConstraints);
@@ -1143,7 +1139,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 53;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(16, 0, 0, 0);
         jPanel1.add(jLabel8, gridBagConstraints);
 
         jLabel7.setText(" Export from"); // NOI18N
@@ -1185,7 +1181,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel16.setText(" Rows per statement "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 51;
+        gridBagConstraints.gridy = 52;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel16, gridBagConstraints);
 
@@ -1568,7 +1564,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 49;
+        gridBagConstraints.gridy = 50;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 8, 0);
         jPanel1.add(checkPKs, gridBagConstraints);
@@ -1606,15 +1602,15 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel3.add(isolationLevelComboBox, gridBagConstraints);
 
-        jLabel28.setForeground(new java.awt.Color(128, 128, 128));
-        jLabel28.setText("  (for all collection and export transactions)");
+        iLHintLabel.setForeground(new java.awt.Color(128, 128, 128));
+        iLHintLabel.setText("  (for all collection and export transactions)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        jPanel3.add(jLabel28, gridBagConstraints);
+        jPanel3.add(iLHintLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1622,6 +1618,21 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jPanel3, gridBagConstraints);
+
+        transactional.setText("transactional"); // NOI18N
+        transactional.setToolTipText("Perform export in a single transaction");
+        transactional.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        transactional.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                transactionalActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 49;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        jPanel1.add(transactional, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1885,6 +1896,10 @@ public class ExportDialog extends javax.swing.JDialog {
     private void insertIncrementallyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertIncrementallyActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_insertIncrementallyActionPerformed
+
+    private void transactionalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transactionalActionPerformed
+        iLHintLabel.setVisible(!transactional.isSelected());
+    }//GEN-LAST:event_transactionalActionPerformed
 	
 	public boolean isOk() {
 		return isOk;
@@ -1915,6 +1930,9 @@ public class ExportDialog extends javax.swing.JDialog {
 		}
 		if (insertIncrementally.isSelected()) {
 			args.add("-limit-transaction-size");
+		}
+		if (transactional.isSelected()) {
+			args.add("-transactional");
 		}
 		Object isolationLevel = isolationLevelComboBox.getSelectedItem();
 		if (isolationLevel != null && !String.valueOf(Connection.TRANSACTION_NONE).equals(isolationLevel)) {
@@ -2155,6 +2173,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel exportLabel;
     private javax.swing.JPanel iFMTPanel;
     private javax.swing.JComboBox iFMTableSchemaComboBox;
+    private javax.swing.JLabel iLHintLabel;
     private javax.swing.JTextField insert;
     public javax.swing.JCheckBox insertIncrementally;
     private javax.swing.JComboBox isolationLevelComboBox;
@@ -2179,7 +2198,6 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
-    private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
@@ -2215,6 +2233,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel targetDBMSLabel1;
     private javax.swing.JTextField threads;
     private javax.swing.JLabel toLabel;
+    public javax.swing.JCheckBox transactional;
     public javax.swing.JCheckBox unicode;
     private javax.swing.JCheckBox upsertCheckbox;
     public javax.swing.JCheckBox useRowIds;

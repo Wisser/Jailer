@@ -147,7 +147,7 @@ public class Settings  {
 			}
 			if (setting != null) {
 				for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
-					if (entry.getValue() instanceof JTextField) {
+					if (entry.getValue() instanceof JTextField && setting.containsKey(entry.getKey())) {
 						((JTextField) entry.getValue()).setText(setting.get(entry.getKey()));
 					} else if (entry.getValue() instanceof JCheckBox && setting.containsKey(entry.getKey())) {
 						((JCheckBox) entry.getValue()).setSelected(Boolean.valueOf(setting.get(entry.getKey())));

@@ -1269,7 +1269,7 @@ public class SubsettingEngine {
 			_log.info("exporting '" + extractionModelURL + "' to '" + scriptFile + "'");
 		}
 
-		Session session = new Session(dataSource, dbms, executionContext.getIsolationLevel(), executionContext.getScope(), false);
+		Session session = new Session(dataSource, dbms, executionContext.getIsolationLevel(), executionContext.getScope(), executionContext.getTransactional());
 		ExtractionModel extractionModel = null;
 		if (modelPoolSize > 0) {
 			synchronized (modelPool) {

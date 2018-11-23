@@ -71,8 +71,25 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	
 	private final Set<Table> totalProgress;
 
-	private Session localSession;
-	private LocalDatabase localDatabase;
+	private Session theLocalSession;
+	private LocalDatabase theLocalDatabase;
+	
+	private synchronized Session getLocalSession() {
+		if (theLocalSession == null) {
+			LocalDatabaseConfiguration localConfiguration = Configuration.getInstance().localEntityGraphConfiguration;
+			try {
+				this.theLocalDatabase = new LocalDatabase(localConfiguration.getDriver(), localConfiguration.getUrlPattern(), localConfiguration.getUser(), localConfiguration.getPassword(), localConfiguration.getLib());
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(e);
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+			theLocalSession = theLocalDatabase.getSession();
+		}
+		return theLocalSession;
+	}
 	
 	private final Map<Table, List<Column>> nonderivedFilteredColumnsPerTable = new HashMap<Table, List<Column>>();
 	
@@ -110,15 +127,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		quotedMappingTablesSchema = mappingTablesSchema.length() > 0? targetQuoting.requote(mappingTablesSchema) + "." : "";
 
 		if (localSession != null) {
-			this.localSession = localSession;
-		} else {
-			LocalDatabaseConfiguration localConfiguration = Configuration.getInstance().localEntityGraphConfiguration;
-			try {
-				this.localDatabase = new LocalDatabase(localConfiguration.getDriver(), localConfiguration.getUrlPattern(), localConfiguration.getUser(), localConfiguration.getPassword(), localConfiguration.getLib());
-			} catch (ClassNotFoundException e) {
-				throw new RuntimeException(e);
-			}
-			this.localSession = localDatabase.getSession();
+			this.theLocalSession = localSession;
 		}
 		collectNonderivedFilteredColumnsPerTable();
 	}
@@ -192,7 +201,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			mapColumnsLocal.add(columnToMappingTableLocal);
 			if (mapColumns.size() == maxColumnsPerMappingTable) {
 				result.append(createDDL(schema, mapColumns, configuration, mapTableIndex == 0));
-				localDDL.append(createDDL("", mapColumnsLocal, localSession.dbms, mapTableIndex == 0));
+				localDDL.append(createDDL("", mapColumnsLocal, getLocalSession().dbms, mapTableIndex == 0));
 				mapColumns.clear();
 				mapColumnsLocal.clear();
 				++mapTableIndex;
@@ -200,11 +209,11 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		}
 		if (mapColumns.size() > 0) {
 			result.append(createDDL(schema, mapColumns, configuration, mapTableIndex == 0));
-			localDDL.append(createDDL("", mapColumnsLocal, localSession.dbms, mapTableIndex == 0));
+			localDDL.append(createDDL("", mapColumnsLocal, getLocalSession().dbms, mapTableIndex == 0));
 			sync(result);
 		}
 		localDDL.close();
-		new SqlScriptExecutor(localSession, 1).executeScript(tmpFile.getAbsolutePath());
+		new SqlScriptExecutor(getLocalSession(), 1).executeScript(tmpFile.getAbsolutePath());
 		tmpFile.delete();
 	}
 
@@ -278,10 +287,10 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	
 	protected abstract void sync(OutputStreamWriter result) throws IOException;
 
-	public void shutDown() throws SQLException {
-		if (this.localDatabase != null) {
-			this.localDatabase.shutDown();
-			this.localDatabase = null;
+	public synchronized void shutDown() throws SQLException {
+		if (this.theLocalDatabase != null) {
+			this.theLocalDatabase.shutDown();
+			this.theLocalDatabase = null;
 		}
 	}
 
@@ -305,7 +314,8 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 				@Override
 				public void run() throws SQLException {
 					final Map<Column, PreparedStatement> insertStatement = new HashMap<Column, PreparedStatement>();
-					Connection connection = localSession.getConnection();
+					Connection connection;
+					connection = getLocalSession().getConnection();
 					final List<Column> columns = filters.getValue();
 					for (Column column: columns) {
 						insertStatement.put(column, connection.prepareStatement(
@@ -413,7 +423,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 					String query = "Select distinct " + mapping.oldValueColumnName + ", 0 as " + mapping.newValueColumnName
 							+ " From " + mapping.mappingTableName
 							+ " Where " + mapping.oldValueColumnName + " is not null";
-					localSession.executeQuery(query, scriptFileWriter);
+					getLocalSession().executeQuery(query, scriptFileWriter);
 					scriptFileWriter.close();
 				}
 			});
