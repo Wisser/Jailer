@@ -918,7 +918,7 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void appendLayout() {
-				Desktop.this.restoreSession(tableBrowser);
+				Desktop.this.restoreSession(tableBrowser, null);
 			}
 
 			@Override
@@ -2708,7 +2708,8 @@ public abstract class Desktop extends JDesktopPane {
 	public abstract void openSchemaAnalyzer();
 	public abstract void onNewDataModel();
 	public abstract void onLayoutChanged(boolean isLayouted, boolean scrollToCenter);
-
+	public abstract void updateBookmarksMenu();
+	
 	public void openSchemaMappingDialog(boolean silent) {
 		try {
 			Map<String, String> mapping = schemaMapping;
@@ -2781,28 +2782,42 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * Stores browser session.
 	 */
-	public void storeSession() {
+	public void storeSession(BookmarksPanel bookmarksPanel) {
 		String fnProp = null;
 		for (RowBrowser rb : tableBrowsers) {
 			if (fnProp == null && rb.parent == null && rb.browserContentPane.table != null) {
 				if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
 					fnProp = datamodel.get().getDisplayName(rb.browserContentPane.table).replace(' ', '-').replace('\"', '-').replace('\'', '-')
-							.replace('(', '-').replace(')', '-').toLowerCase()
-							+ ".dbl";
+							.replace('(', '-').replace(')', '-')
+							+ (bookmarksPanel == null? ".dbl" : "");
 				}
 			}
 		}
 
-		if (currentSessionFileName != null) {
-			fnProp = currentSessionFileName;
+		if (bookmarksPanel == null) {
+			if (currentSessionFileName != null) {
+				fnProp = currentSessionFileName;
+			}
 		}
 
-		File startDir = Environment.newFile("layout");
-		Component pFrame = SwingUtilities.getWindowAncestor(this);
-		if (pFrame == null) {
-			pFrame = this;
+		String sFile;
+		
+		if (bookmarksPanel != null) {
+			File startDir = bookmarksPanel.getBookmarksFolder();
+			sFile = bookmarksPanel.newBookmark(fnProp);
+			if (sFile != null) {
+				File f = new File(startDir, sFile + ".dbl");
+				startDir.mkdirs();
+				sFile = f.getAbsolutePath();
+			}
+		} else {
+			File startDir = Environment.newFile("layout");
+			Component pFrame = SwingUtilities.getWindowAncestor(this);
+			if (pFrame == null) {
+				pFrame = this;
+			}
+			sFile = UIUtil.choseFile(fnProp == null ? null : new File(startDir, fnProp), startDir.getPath(), "Store Layout", ".dbl", pFrame, true, false);
 		}
-		String sFile = UIUtil.choseFile(fnProp == null ? null : new File(startDir, fnProp), startDir.getPath(), "Store Layout", ".dbl", pFrame, true, false);
 
 		if (sFile != null) {
 			try {
@@ -2810,7 +2825,18 @@ public abstract class Desktop extends JDesktopPane {
 			} catch (Throwable e) {
 				UIUtil.showException(this, "Error", e, session);
 			}
-			currentSessionFileName = sFile;
+			if (bookmarksPanel == null) {
+				currentSessionFileName = sFile;
+			} else {
+				bookmarksPanel.updateBookmarksMenu();
+				updateAllBookmarkMenues();
+			}
+		}
+	}
+
+	public void updateAllBookmarkMenues() {
+		for (Desktop dTop: desktops) {
+			dTop.updateBookmarksMenu();
 		}
 	}
 
@@ -2853,7 +2879,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 
-			csv += where + "; ";
+			csv += CsvFile.encodeCell(where) + "; ";
 
 			csv += rb.internalFrame.getLocation().x + "; " + rb.internalFrame.getLocation().y + "; ";
 			csv += rb.internalFrame.getSize().width + "; " + rb.internalFrame.getSize().height + "; ";
@@ -2875,14 +2901,15 @@ public abstract class Desktop extends JDesktopPane {
 
 	/**
 	 * Restores browser session.
+	 * @param bookMarkFile 
 	 */
-	public void restoreSession(RowBrowser toBeAppended) {
+	public void restoreSession(RowBrowser toBeAppended, File bookMarkFile) {
 		File startDir = Environment.newFile("layout");
 		Component pFrame = SwingUtilities.getWindowAncestor(this);
 		if (pFrame == null) {
 			pFrame = this;
 		}
-		String sFile = UIUtil.choseFile(null, startDir.getPath(), toBeAppended == null ? "Restore Layout" : "Append Layout", ".dbl", pFrame, true, true);
+		String sFile = bookMarkFile != null? bookMarkFile.getAbsolutePath() : UIUtil.choseFile(null, startDir.getPath(), toBeAppended == null ? "Restore Layout" : "Append Layout", ".dbl", pFrame, true, true);
 		
 		if (sFile != null) {
 			try {

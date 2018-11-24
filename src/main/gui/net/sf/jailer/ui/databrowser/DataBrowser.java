@@ -229,7 +229,7 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
-
+        
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, "B");
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
 		initRowLimitButtons();
@@ -547,7 +547,8 @@ public class DataBrowser extends javax.swing.JFrame {
             protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
             	storeSessionItem.setEnabled(hasIFrame);
             	closeAllMenuItem.setEnabled(hasIFrame);
-                exportDataMenuItem.setEnabled(hasTableBrowser);
+            	addBookmarkMenuItem.setEnabled(hasTableBrowser);
+            	exportDataMenuItem.setEnabled(hasTableBrowser);
                 createExtractionModelMenuItem.setEnabled(hasTableBrowser);
                 updateIFramesBar();
                 super.updateMenu(hasTableBrowser, hasIFrame);
@@ -619,7 +620,13 @@ public class DataBrowser extends javax.swing.JFrame {
 					anchorManager.checkRetention();
 				}
 			}
+
+			@Override
+			public void updateBookmarksMenu() {
+		        new BookmarksPanel(DataBrowser.this, bookmarkMenu, desktop, executionContext).updateBookmarksMenu();
+			}
         };
+        new BookmarksPanel(this, bookmarkMenu, desktop, executionContext).updateBookmarksMenu();
 
         jScrollPane1.setViewportView(desktop);
         addWindowListener(new WindowListener() {
@@ -1143,6 +1150,10 @@ public class DataBrowser extends javax.swing.JFrame {
         schemaMappingMenuItem = new javax.swing.JMenuItem();
         jviewMenu = new javax.swing.JMenu();
         rowLimitMenu = new javax.swing.JMenu();
+        bookmarkMenu = new javax.swing.JMenu();
+        addBookmarkMenuItem = new javax.swing.JMenuItem();
+        editBookmarkMenuItem = new javax.swing.JMenuItem();
+        jSeparator13 = new javax.swing.JPopupMenu.Separator();
         jMenu2 = new javax.swing.JMenu();
         exportDataMenuItem = new javax.swing.JMenuItem();
         dataImport = new javax.swing.JMenuItem();
@@ -1808,6 +1819,27 @@ public class DataBrowser extends javax.swing.JFrame {
 
         menuBar.add(jviewMenu);
 
+        bookmarkMenu.setText("Bookmark");
+
+        addBookmarkMenuItem.setText("Add Bookmark");
+        addBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addBookmarkMenuItemActionPerformed(evt);
+            }
+        });
+        bookmarkMenu.add(addBookmarkMenuItem);
+
+        editBookmarkMenuItem.setText("Edit Bookmarks");
+        editBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editBookmarkMenuItemActionPerformed(evt);
+            }
+        });
+        bookmarkMenu.add(editBookmarkMenuItem);
+        bookmarkMenu.add(jSeparator13);
+
+        menuBar.add(bookmarkMenu);
+
         jMenu2.setText("Tools");
 
         exportDataMenuItem.setText("Export Data");
@@ -2128,11 +2160,11 @@ public class DataBrowser extends javax.swing.JFrame {
     }// GEN-LAST:event_createExtractionModelMenuItemActionPerformed
 
     private void storeSessionItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_storeSessionItemActionPerformed
-        desktop.storeSession();
+        desktop.storeSession((BookmarksPanel) null);
     }// GEN-LAST:event_storeSessionItemActionPerformed
 
     private void restoreSessionItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_restoreSessionItemActionPerformed
-        desktop.restoreSession(null);
+        desktop.restoreSession(null, null);
     }// GEN-LAST:event_restoreSessionItemActionPerformed
 
     private void tinyLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tinyLayoutRadioButtonMenuItemActionPerformed
@@ -2251,7 +2283,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
             @Override
             void restoreSession() {
-                desktop.restoreSession(null);
+                desktop.restoreSession(null, null);
             }
         };
     }
@@ -2528,11 +2560,13 @@ public class DataBrowser extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JMenuItem addBookmarkMenuItem;
     private javax.swing.JPanel addSQLConsoleTab;
     private javax.swing.JMenuItem analyseMenuItem;
     private javax.swing.JMenuItem analyseSQLMenuItem1;
     private javax.swing.JLabel associatedWith;
     private javax.swing.JCheckBoxMenuItem autoLayoutMenuItem;
+    private javax.swing.JMenu bookmarkMenu;
     private javax.swing.JPanel borderBrowserPanel;
     private javax.swing.JPanel borderBrowserTabPane;
     private javax.swing.JMenuItem closeAllMenuItem;
@@ -2550,6 +2584,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JTabbedPane detailsAndBorderBrowserTabbedPane;
     private javax.swing.JButton downloadButton;
     private javax.swing.JPanel dummy;
+    private javax.swing.JMenuItem editBookmarkMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportDataMenuItem;
     private javax.swing.JLabel hasDependent;
@@ -2597,6 +2632,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JPopupMenu.Separator jSeparator11;
     private javax.swing.JPopupMenu.Separator jSeparator12;
+    private javax.swing.JPopupMenu.Separator jSeparator13;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
@@ -3802,6 +3838,15 @@ public class DataBrowser extends javax.swing.JFrame {
     private void nativeLAFCheckBoxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nativeLAFCheckBoxMenuItemActionPerformed
 
     }//GEN-LAST:event_nativeLAFCheckBoxMenuItemActionPerformed
+
+    private void addBookmarkMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBookmarkMenuItemActionPerformed
+        desktop.storeSession(new BookmarksPanel(this, bookmarkMenu, desktop, executionContext));
+    }//GEN-LAST:event_addBookmarkMenuItemActionPerformed
+
+    private void editBookmarkMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBookmarkMenuItemActionPerformed
+    	new BookmarksPanel(this, bookmarkMenu, desktop, executionContext).editBookmarks();
+    	desktop.updateAllBookmarkMenues();
+    }//GEN-LAST:event_editBookmarkMenuItemActionPerformed
 
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();

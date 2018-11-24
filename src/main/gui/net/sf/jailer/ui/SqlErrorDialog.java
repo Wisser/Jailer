@@ -284,14 +284,14 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		setVisible(false);
 		URI url;
 		try {
-			int MAX_LENGTH = 6000;
+			int MAX_LENGTH = 1000;
 			String issue = (sqlError ? message + "\n\n" : "") + sqlEditorPane.getText();
 			if (issue.length() > MAX_LENGTH) {
 				issue = issue.substring(0, MAX_LENGTH);
 			}
 			url = new URI("http://jailer.sf.net/issueReport.php?type="
 					+ URLEncoder.encode(sqlError ? "SQL" : "GUI", "UTF-8") + "&" + "issue="
-					+ URLEncoder.encode(issue, "UTF-8"));
+					+ URLEncoder.encode(issue.replace('\r', ' '), "UTF-8"));
 			Desktop.getDesktop().browse(url);
 		} catch (Exception e) {
 			// ignore

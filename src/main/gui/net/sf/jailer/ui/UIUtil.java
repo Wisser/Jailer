@@ -710,7 +710,13 @@ public class UIUtil {
             contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
             contextDesc += "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
             
-            sendIssue("internal", msg.toString() + "\n" + contextDesc);
+            final int MAX_CL = 1000;
+            
+            String iMsg = msg.toString() + "\n" + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
+            if (iMsg.length() > MAX_CL) {
+            	iMsg = iMsg.substring(0, MAX_CL);
+            }
+			sendIssue("internal", iMsg);
         }
 
         new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent), msg.toString(),

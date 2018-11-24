@@ -104,6 +104,9 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 					JTable table =(JTable) me.getSource();
 					Point p = me.getPoint();
 					int row = table.rowAtPoint(p);
+					if (row >= 0) {
+						onElementClicked(model.get(row));
+					}
 					if (me.getClickCount() >= 2) {
 						columnsTable.getSelectionModel().setSelectionInterval(row, row);
 						updateButtonActionPerformed(null);
@@ -163,6 +166,8 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 	abstract protected T copy(T element);
 	abstract protected T createNew();
 	abstract protected JComponent createDetailsView(T element);
+	protected void onElementClicked(T t) {
+	}
 	protected Dimension detailsViewMinSize() {
 		return null;
 	}
@@ -496,8 +501,10 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 			element = copy(model.get(i));
 			currentIndex = i;
 			detailsView = createDetailsView(element);
-			 detailsDialog = createEditDialog(element, "Edit " + elementTypeDisplayName, detailsView);
-			detailsDialog.setVisible(true);
+			if (detailsView != null) {
+				detailsDialog = createEditDialog(element, "Edit " + elementTypeDisplayName, detailsView);
+				detailsDialog.setVisible(true);
+			}
 		}
 	}//GEN-LAST:event_updateButtonActionPerformed
 
@@ -602,7 +609,20 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		upButton.setVisible(false);
 		downButton.setVisible(false);
 	}
+
+	public void hideAllButDeleteButton() {
+		hideUpAndDownButton();
+		addButton.setVisible(false);
+		copyButton.setVisible(false);
+		okButton.setVisible(false);
+		updateButton.setVisible(false);
+	}
 	
+	public void hideAllButtons() {
+		hideAllButDeleteButton();
+		deleteButton.setVisible(true);
+	}
+
 	// Variables declaration - do not modify//GEN-BEGIN:variables
 	private javax.swing.JButton addButton;
 	private javax.swing.JButton cancelButton;
