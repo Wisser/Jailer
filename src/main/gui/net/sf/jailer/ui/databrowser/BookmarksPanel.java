@@ -273,6 +273,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 			nb.setEnabled(false);
 			bookmarksMenu.add(nb);
 		} else {
+			int count = 0;
 			for (final String nb: bookmarks) {
 				JMenuItem b = new JMenuItem(nb.replaceAll("\\.dbl$", ""));
 				b.addActionListener(new ActionListener() {
@@ -284,6 +285,9 @@ public class BookmarksPanel extends javax.swing.JPanel {
 					}
 				});
 				bookmarksMenu.add(b);
+				if (++count > 40) {
+					break;
+				}
 			}
 		}
 	}
