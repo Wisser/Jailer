@@ -18,6 +18,7 @@ package net.sf.jailer.ui.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -27,26 +28,29 @@ public class HttpUtil {
 	public static String get(final String url) {
 		final StringBuilder result = new StringBuilder();
 		try {
-			get(url, result);
+			if (get(url, result) == 200) {
+				return result.toString();
+			}
 		} catch (Throwable e) {
-		    try {
-		        Process p = Runtime.getRuntime().exec("java -classpath jailer.jar -Djava.net.useSystemProxies=true " + HttpUtil.class.getName() + " " + url);
-	        	BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-	            String line;
-
-	            while ((line = input.readLine()) != null) {
-	                result.append(line + "\n");
-	            }
-	            
-	            input.close();
-		    } catch (Exception err) {
-		       // ignore
-		    }
+			// fall through
 		}
+	    try {
+	        Process p = Runtime.getRuntime().exec("java -classpath jailer.jar -Djava.net.useSystemProxies=true " + HttpUtil.class.getName() + " " + url);
+        	BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line;
+
+            while ((line = input.readLine()) != null) {
+                result.append(line + "\n");
+            }
+            
+            input.close();
+	    } catch (Exception err) {
+	       // ignore
+	    }
 		return result.toString();
 	}
 
-	public static void get(final String url, final StringBuilder result) throws MalformedURLException, IOException {
+	public static int get(final String url, final StringBuilder result) throws MalformedURLException, IOException {
 		URL theUrl;
 		theUrl = new URL(url);
 		URLConnection con = theUrl.openConnection();
@@ -55,6 +59,8 @@ public class HttpUtil {
 		while ((c = in.read()) != -1) {
 			result.append((char) c);
 		}
+		int rc = ((HttpURLConnection) con).getResponseCode();
+		return rc;
 	}
 
 	public static void main(String args[]) {
