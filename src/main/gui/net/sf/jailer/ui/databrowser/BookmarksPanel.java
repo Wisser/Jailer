@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JMenu;
@@ -65,10 +67,10 @@ public class BookmarksPanel extends javax.swing.JPanel {
  		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
  		UIUtil.fit(dialog);
 
- 		ListEditor<String> tableEditor = createListEditor();
+ 		ListEditor<StringBuilder> tableEditor = createListEditor(false);
 		tableEditor.hideAllButtons();
-		List<String> bookmarks = loadBookmarks();
-		tableEditor.setModel(new ArrayList<String>(bookmarks));
+		List<StringBuilder> bookmarks = loadBookmarks();
+		tableEditor.setModel(new ArrayList<StringBuilder>(bookmarks));
 		jPanel1.add(tableEditor);
 		nameTextField.setText(defaultName);
  		okButton.grabFocus();
@@ -76,10 +78,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
  		closeButton.setVisible(false);
  		dialog.setVisible(true);
  		
- 		String name = nameTextField.getText().replace(' ', '-').replace('\"', '-').replace('\'', '-')
- 				.replace("\\", "-").replace("/", "-")
- 				.replace("?", "-").replace("*", "-")
-				.replace('(', '-').replace(')', '-').trim();
+ 		String name = toValidFileName(nameTextField.getText());
 
  		if (!isOk || name.isEmpty()) {
  			return null;
@@ -87,6 +86,10 @@ public class BookmarksPanel extends javax.swing.JPanel {
  		
  		return name;
     }
+
+	private String toValidFileName(String text) {
+		return text.replaceAll("['`\"/\\\\\\~]+", " ").trim();
+	}
 
 	public void editBookmarks() {
 		dialog = new EscapableDialog(owner, "Edit Bookmarks") {
@@ -103,61 +106,80 @@ public class BookmarksPanel extends javax.swing.JPanel {
  		okButton.setVisible(false);
  		closeButton.setText(" Close ");
  		
- 		ListEditor<String> tableEditor = createListEditor();
-		tableEditor.hideAllButDeleteButton();
-		List<String> bookmarks = loadBookmarks();
-		tableEditor.setModel(new ArrayList<String>(bookmarks));
+ 		ListEditor<StringBuilder> tableEditor = createListEditor(true);
+		tableEditor.forUpdateAndDeleteOnly();
+		List<StringBuilder> bookmarks = loadBookmarks();
+		tableEditor.setModel(bookmarks);
 		jPanel1.add(tableEditor);
 		
  		isOk = false;
  		dialog.setVisible(true);
  		
-		for (String bm: bookmarks) {
-			if (!tableEditor.getModel().contains(bm)) {
-				new File(getBookmarksFolder(), bm).delete();
+		Set<String> bookmarksSet = new HashSet<String>();
+		for (StringBuilder sb: bookmarks) {
+			bookmarksSet.add(sb.toString());
+		}
+		
+		for (StringBuilder bm: loadBookmarks()) {
+			if (!bookmarksSet.contains(bm.toString())) {
+				new File(getBookmarksFolder(), bm.toString()).delete();
 			}
 		}
 	}
 
-	private ListEditor<String> createListEditor() {
-		return new ListEditor<String>(new String[] { "Name" }, "Bookmark", false, false, true) {
+	private ListEditor<StringBuilder> createListEditor(final boolean forRenaming) {
+		return new ListEditor<StringBuilder>(new String[] { "Name" }, "Bookmark", false, false, true) {
 
 			@Override
-			protected String getDisplayName(String element) {
-				return element.replaceAll("\\.dbl$", "");
+			protected String getDisplayName(StringBuilder element) {
+				return element.toString().replaceAll("\\.dbl$", "");
 			}
 
 			@Override
-			protected String copy(String element) {
+			protected StringBuilder copy(StringBuilder element) {
+				return new StringBuilder(element.toString());
+			}
+
+			@Override
+			protected StringBuilder createNew() {
+				return new StringBuilder();
+			}
+
+			@Override
+			protected JComponent createDetailsView(StringBuilder element) {
+				if (forRenaming) {
+					renameTextField.setText(getDisplayName(element));
+					return renamePanel;
+				}
 				return null;
 			}
 
 			@Override
-			protected String createNew() {
-				return null;
-			}
-
-			@Override
-			protected JComponent createDetailsView(String element) {
-				return null;
-			}
-
-			@Override
-			protected void updateFromDetailsView(String element, JComponent detailsView, List<String> model,
+			protected void updateFromDetailsView(StringBuilder element, JComponent detailsView, List<StringBuilder> model,
 					StringBuilder errorMessage) {
+				if (forRenaming) {
+					String dest = toValidFileName(renameTextField.getText()) + ".dbl";
+					StringBuilder source = element;
+					if (dest.length() > 0 && !dest.equals(source.toString())) {
+						new File(getBookmarksFolder(), dest).delete();
+						new File(getBookmarksFolder(), source.toString()).renameTo(new File(getBookmarksFolder(), dest));
+						source.setLength(0);
+						source.append(dest.toString());
+					}
+				}
 			}
 
 			@Override
-			protected Object[] toColumnList(String element, int index) {
+			protected Object[] toColumnList(StringBuilder element, int index) {
 				return new String[] { getDisplayName(element) };
 			}
 
 			@Override
-			protected Color getForegroundColor(String element, int column) {
+			protected Color getForegroundColor(StringBuilder element, int column) {
 				return null;
 			}
 
-			protected void onElementClicked(String element) {
+			protected void onElementClicked(StringBuilder element) {
 				nameTextField.setText(getDisplayName(element));
 			}
 		};
@@ -173,11 +195,46 @@ public class BookmarksPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        renamePanel = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        renameTextField = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
+
+        renamePanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel2.setText("  New name ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 4, 4, 8);
+        renamePanel.add(jLabel2, gridBagConstraints);
+
+        renameTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renameTextFieldActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 8);
+        renamePanel.add(renameTextField, gridBagConstraints);
+
+        jLabel3.setText("                                                                             ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        renamePanel.add(jLabel3, gridBagConstraints);
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -241,6 +298,9 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		dialog.setVisible(false);
     }//GEN-LAST:event_closeButtonActionPerformed
 
+    private void renameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renameTextFieldActionPerformed
+    }//GEN-LAST:event_renameTextFieldActionPerformed
+
 	private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_okButtonActionPerformed
 		isOk = true;
 		dialog.setVisible(false);
@@ -249,9 +309,13 @@ public class BookmarksPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JButton okButton;
+    private javax.swing.JPanel renamePanel;
+    private javax.swing.JTextField renameTextField;
     // End of variables declaration//GEN-END:variables
 
 	public File getBookmarksFolder() {
@@ -263,7 +327,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 	}
 
 	public void updateBookmarksMenu() {
-		List<String> bookmarks = loadBookmarks();
+		List<StringBuilder> bookmarks = loadBookmarks();
 		while (bookmarksMenu.getItemCount() > 3) {
 			bookmarksMenu.remove(bookmarksMenu.getItemCount() - 1);
 		}
@@ -274,7 +338,8 @@ public class BookmarksPanel extends javax.swing.JPanel {
 			bookmarksMenu.add(nb);
 		} else {
 			int count = 0;
-			for (final String nb: bookmarks) {
+			for (StringBuilder nbSb: bookmarks) {
+				final String nb = nbSb.toString();
 				JMenuItem b = new JMenuItem(nb.replaceAll("\\.dbl$", ""));
 				b.addActionListener(new ActionListener() {
 					@Override
@@ -292,7 +357,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		}
 	}
 
-	private List<String> loadBookmarks() {
+	private List<StringBuilder> loadBookmarks() {
 		try {
 			final File bookmarksFolder = getBookmarksFolder();
 			ArrayList<String> result = new ArrayList<String>(Arrays.asList(bookmarksFolder.list(new FilenameFilter() {
@@ -315,7 +380,11 @@ public class BookmarksPanel extends javax.swing.JPanel {
 					}
 				}
 			});
-			return result;
+			List<StringBuilder> resultAsSBList = new ArrayList<StringBuilder>();
+			for (String bm: result) {
+				resultAsSBList.add(new StringBuilder(bm));
+			}
+			return resultAsSBList;
 		} catch (Throwable t) {
 			return Collections.emptyList();
 		}

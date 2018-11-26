@@ -2784,14 +2784,30 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	public void storeSession(BookmarksPanel bookmarksPanel) {
 		String fnProp = null;
+		int propLen = 0;
+		final String INVALID_CHARS = "['`\"/\\\\\\~]+";
 		for (RowBrowser rb : tableBrowsers) {
-			if (fnProp == null && rb.parent == null && rb.browserContentPane.table != null) {
+			if (rb.browserContentPane.table != null) {
 				if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
-					fnProp = datamodel.get().getDisplayName(rb.browserContentPane.table).replace(' ', '-').replace('\"', '-').replace('\'', '-')
-							.replace('(', '-').replace(')', '-')
-							+ (bookmarksPanel == null? ".dbl" : "");
+					int l = 1;
+					RowBrowser parent;
+					for (parent = rb; parent.parent != null; parent = parent.parent) {
+						++l;
+					}
+					String prop = datamodel.get().getDisplayName(parent.browserContentPane.table).replaceAll(INVALID_CHARS, " ").trim();
+					if (parent != rb) {
+						prop += " - " + datamodel.get().getDisplayName(rb.browserContentPane.table).replaceAll(INVALID_CHARS, " ").trim();
+					}
+					if (l > propLen || fnProp == null || l == propLen && fnProp.compareTo(prop) < 0) {
+						fnProp = prop;
+						propLen = l;
+					}
 				}
 			}
+		}
+
+		if (fnProp != null && bookmarksPanel == null) {
+			fnProp += ".dbl";
 		}
 
 		if (bookmarksPanel == null) {

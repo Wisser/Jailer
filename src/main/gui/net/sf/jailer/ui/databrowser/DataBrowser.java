@@ -1821,6 +1821,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         bookmarkMenu.setText("Bookmark");
 
+        addBookmarkMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
         addBookmarkMenuItem.setText("Add Bookmark");
         addBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

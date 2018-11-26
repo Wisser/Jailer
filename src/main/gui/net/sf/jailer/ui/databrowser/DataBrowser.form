@@ -225,6 +225,9 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="addBookmarkMenuItem">
               <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Ctrl+B"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Add Bookmark"/>
               </Properties>
               <Events>

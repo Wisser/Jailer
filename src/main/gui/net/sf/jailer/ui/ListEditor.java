@@ -491,7 +491,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		element = createNew();
 		currentIndex = -1;
 		detailsView = createDetailsView(element);
-		 detailsDialog = createEditDialog(element, "New " + elementTypeDisplayName, detailsView);
+		detailsDialog = createEditDialog(element, "New " + elementTypeDisplayName, detailsView);
 		detailsDialog.setVisible(true);
 	}//GEN-LAST:event_addButtonActionPerformed
 
@@ -610,17 +610,20 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		downButton.setVisible(false);
 	}
 
-	public void hideAllButDeleteButton() {
+	public void forUpdateAndDeleteOnly() {
 		hideUpAndDownButton();
 		addButton.setVisible(false);
 		copyButton.setVisible(false);
-		okButton.setVisible(false);
-		updateButton.setVisible(false);
+		updateButton.setVisible(true);
+		updateButton.setText("Rename");
 	}
 	
 	public void hideAllButtons() {
-		hideAllButDeleteButton();
-		deleteButton.setVisible(true);
+		hideUpAndDownButton();
+		addButton.setVisible(false);
+		copyButton.setVisible(false);
+		updateButton.setVisible(false);
+		deleteButton.setVisible(false);
 	}
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables
