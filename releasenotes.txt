@@ -4,6 +4,7 @@
   - Implemented "#51 Reduce transaction sizes"
   - Implemented "#54 Number thousand separators"
   - New option to set the isolation level.
+  - Bookmark feature in data browser.
 
 8.1.5
   - New export option "check primary keys" allows checking the validity of manually defined primary keys.
