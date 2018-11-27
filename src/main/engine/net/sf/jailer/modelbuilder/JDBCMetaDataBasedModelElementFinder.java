@@ -1134,10 +1134,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * @param userName schema with this name may be empty
 	 */ 
 	public static String getDefaultSchema(Session session, String userName) {
-		if (DBMS.MySQL.equals(session.dbms)) {
+		if (session.dbms.getDefaultSchemaQuery() != null) {
 			try {
 				final String[] database = new String[1];
-				session.executeQuery("Select DATABASE()", new Session.AbstractResultSetReader() {
+				session.executeQuery(session.dbms.getDefaultSchemaQuery(), new Session.AbstractResultSetReader() {
 					@Override
 					public void readCurrentRow(ResultSet resultSet) throws SQLException {
 						database[0] = resultSet.getString(1);

@@ -126,6 +126,7 @@ public class DBMS {
 		this.objectRenderers = other.objectRenderers;
 		this.procedureDetailNeedsSpecificName = other.procedureDetailNeedsSpecificName;
 		this.limitTransactionSize = other.limitTransactionSize;
+		this.defaultSchemaQuery = other.defaultSchemaQuery;
 	}
 
 	/**
@@ -312,6 +313,8 @@ public class DBMS {
 	private String procedureSourceQuery;
 	private String packageSourceQuery;
 	private String packageNamesQuery;
+	private String defaultSchemaQuery;
+
 	private List<DatabaseObjectRenderingDescription> objectRenderers = new ArrayList<DatabaseObjectRenderingDescription>();
 	private boolean procedureDetailNeedsSpecificName = false;
 
@@ -1054,6 +1057,20 @@ public class DBMS {
 	 */
 	public void setSynonymTableQuery(String synonymTableQuery) {
 		this.synonymTableQuery = synonymTableQuery;
+	}
+
+	/**
+	 * Gets query to get default schema of the user.
+	 */
+	public String getDefaultSchemaQuery() {
+		return defaultSchemaQuery;
+	}
+
+	/**
+	 * Sets query to get default schema of the user.
+	 */
+	public void setDefaultSchemaQuery(String defaultSchemaQuery) {
+		this.defaultSchemaQuery = defaultSchemaQuery;
 	}
 
 	/**

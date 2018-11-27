@@ -288,6 +288,7 @@ INNER JOIN sys.partitions AS p ON p.object_id=CAST(tbl.object_id AS int)
 AND p.index_id=idx.index_id
 WHERE SCHEMA_NAME(tbl.schema_id)='%s'
 		</estimatedRowCountQuery>
+		<defaultSchemaQuery>SELECT SCHEMA_NAME()</defaultSchemaQuery>
 		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
         <virtualColumnsQuery>SELECT sysobjects.name AS TableName, syscolumns.name AS ColumnName FROM syscolumns JOIN sysobjects ON syscolumns.id = sysobjects.id AND sysobjects.xtype = 'U' WHERE syscolumns.iscomputed = 1</virtualColumnsQuery>
 		<userDefinedColumnsQuery>SELECT distinct DOMAIN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '%s' AND DOMAIN_NAME is not null</userDefinedColumnsQuery>
@@ -469,6 +470,7 @@ union all
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <defaultSchemaQuery>Select DATABASE()</defaultSchemaQuery>
 		<estimatedRowCountQuery>select TABLE_NAME, CARDINALITY from INFORMATION_SCHEMA.STATISTICS where TABLE_SCHEMA = '%s'</estimatedRowCountQuery>
 		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
         
