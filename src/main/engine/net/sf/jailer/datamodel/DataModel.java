@@ -380,7 +380,7 @@ public class DataModel {
 
 			// tables
 			File tabFile = new File(getTablesFile(executionContext));
-			InputStream nTablesFile = openModelFile(tabFile, executionContext);
+			InputStream nTablesFile = openModelFile(tabFile, failOnMissingTables, executionContext);
 			if (failOnMissingTables && nTablesFile == null) {
 				throw new RuntimeException("Datamodel not found: " + executionContext.getDataModelURL());
 			}
@@ -950,7 +950,11 @@ public class DataModel {
 		return parameters;
 	}
 
-	private static InputStream openModelFile(File file, ExecutionContext executionContext) {
+	private static InputStream openModelFile(File file, ExecutionContext executionContext) throws IOException {
+		return openModelFile(file, false, executionContext);
+	}
+
+	private static InputStream openModelFile(File file, boolean failOnIOException, ExecutionContext executionContext) throws IOException {
 		try {
 			URL dataModelURL = executionContext.getDataModelURL();
 			URI uri = dataModelURL.toURI();
@@ -959,6 +963,9 @@ public class DataModel {
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
+			if (failOnIOException) {
+				throw e;
+			}
 			return null;
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);

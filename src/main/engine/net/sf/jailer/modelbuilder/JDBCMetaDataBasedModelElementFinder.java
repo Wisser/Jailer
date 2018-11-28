@@ -1154,9 +1154,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		List<String> schemas = new ArrayList<String>();
 		try {
 			DatabaseMetaData metaData = session.getMetaData();
-			String dbName = metaData.getDatabaseProductName();
-			boolean isPostgreSQL = dbName != null && dbName.toLowerCase().contains("PostgreSQL".toLowerCase());
-			boolean isH2Sql = dbName != null && dbName.toLowerCase().startsWith("H2".toLowerCase());
+			boolean isPostgreSQL = DBMS.POSTGRESQL.equals(session.dbms);
+			boolean isH2Sql = DBMS.H2.equals(session.dbms);
 			ResultSet rs = DBMS.MySQL.equals(session.dbms)? metaData.getCatalogs() : metaData.getSchemas();
 			while (rs.next()) {
 				schemas.add(rs.getString(DBMS.MySQL.equals(session.dbms)? "TABLE_CAT" : "TABLE_SCHEM"));
