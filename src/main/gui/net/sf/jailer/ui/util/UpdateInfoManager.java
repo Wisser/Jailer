@@ -11,7 +11,6 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Date;
-import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -54,7 +53,7 @@ public class UpdateInfoManager {
 					
 					Object uuid = UISettings.restore("uuid");
 					if (uuid == null) {
-						uuid = UUID.randomUUID().toString();
+						uuid = String.valueOf(System.currentTimeMillis() % 1000000); // UUID.randomUUID().toString();
 						UISettings.store("uuid", uuid);
 					}
 					String content = HttpUtil.get(versionURL
