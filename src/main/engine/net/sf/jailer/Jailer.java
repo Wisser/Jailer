@@ -17,10 +17,14 @@ package net.sf.jailer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +33,9 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.configuration.Configuration;
@@ -97,6 +104,26 @@ public class Jailer {
 				}
 			}
 		});
+		Configuration configuration = Configuration.getInstance();
+		boolean unableToCreateTempFile = false;
+		try {
+			File tempFile = configuration.createTempFile();
+			FileOutputStream out = new FileOutputStream(tempFile);
+			out.write(0);
+			out.close();
+			tempFile.delete();
+		} catch (FileNotFoundException e) {
+			unableToCreateTempFile = true;
+		} catch (IOException e) {
+			unableToCreateTempFile = true;
+		}
+
+		if (new File(".singleuser").exists() || unableToCreateTempFile) {
+			File home = new File(System.getProperty("user.home"), ".jailer");
+			home.mkdirs();
+			configuration.setTempFileFolder(new File(home, "tmp").getPath());
+			updateLog4JLogPath(home);
+		}
 		try {
 			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
 		} catch (Exception e) {
@@ -116,6 +143,30 @@ public class Jailer {
 		}
 		if (!ok) {
 			System.exit(1);
+		}
+	}
+
+	private static void updateLog4JLogPath(File home) {
+		Enumeration e = LogManager.getCurrentLoggers();
+		while (e.hasMoreElements()) {
+			Logger logger = (Logger) e.nextElement();
+			Enumeration a = logger.getAllAppenders();
+			while (a.hasMoreElements()) {
+				Appender appender = (Appender) a.nextElement();
+				if (appender instanceof FileAppender) {
+                    FileAppender fileAppender = (FileAppender) appender;
+
+                    String logfileName = fileAppender.getFile();
+
+                    if (logfileName != null && logfileName.length() > 0) {
+                        File logfile = new File(logfileName);
+                        if (logfile.isAbsolute() == false) {
+                            fileAppender.setFile(new File(home, logfileName).getPath());
+                            fileAppender.activateOptions();
+                        }
+                    }
+				}
+			}
 		}
 	}
 

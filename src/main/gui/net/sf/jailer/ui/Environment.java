@@ -16,6 +16,8 @@
 package net.sf.jailer.ui;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -45,7 +47,7 @@ public class Environment {
 		initialLocal = Locale.getDefault();
 		Locale.setDefault(Locale.ENGLISH);
 		Configuration configuration = Configuration.getInstance();
-		if (new File(".singleuser").exists()) {
+		if (new File(".singleuser").exists() || unableToCreateTempFile(configuration)) {
 			home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
 			try {
@@ -89,6 +91,21 @@ public class Environment {
 				throw new RuntimeException(e);
 			}
 		}
+	}
+
+	private static boolean unableToCreateTempFile(Configuration configuration) {
+		try {
+			File tempFile = configuration.createTempFile();
+			FileOutputStream out = new FileOutputStream(tempFile);
+			out.write(0);
+			out.close();
+			tempFile.delete();
+		} catch (FileNotFoundException e) {
+			return true;
+		} catch (IOException e) {
+			return true;
+		}
+		return false;
 	}
 
 	private static boolean copyIfNotExists(String f) throws IOException {
