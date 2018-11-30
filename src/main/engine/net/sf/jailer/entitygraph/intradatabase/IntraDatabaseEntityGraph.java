@@ -19,13 +19,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
@@ -43,7 +39,6 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
-import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
@@ -87,63 +82,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		quoting = new Quoting(session);
 	}
 
-	private String defaultSchema = null;
 	private Quoting quoting = null;
-	private Map<Table, Boolean> hasPKPerTable = new HashMap<Table, Boolean>();
-
-	private synchronized boolean hasPrimarykey(Session session, Table table) {
-		try {
-			Boolean hasPrimarykey = hasPKPerTable.get(table);
-			if (hasPrimarykey != null) {
-				return hasPrimarykey;
-			}
-			
-			if (defaultSchema == null) {
-				defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
-			}
-	
-			String schema = table.getOriginalSchema("");
-			String mappedSchema = executionContext
-					.getSchemaMapping().get(schema);
-			if (mappedSchema != null) {
-				schema = mappedSchema;
-			}
-			if (schema.length() == 0) {
-				schema = defaultSchema;
-			}
-			
-			schema = quoting.unquote(schema);
-			String tableName = quoting.unquote(table.getUnqualifiedName());
-			ResultSet resultSet = getPrimaryKeys(session, session.getMetaData(), schema, tableName);
-			hasPrimarykey = resultSet.next();
-			resultSet.close();
-			if (!hasPrimarykey) {
-				if (session.getMetaData().storesUpperCaseIdentifiers()) {
-					schema = schema.toUpperCase();
-					tableName = tableName.toUpperCase();
-				} else {
-					schema = schema.toLowerCase();
-					tableName = tableName.toLowerCase();
-				}
-				resultSet = getPrimaryKeys(session, session.getMetaData(), schema, tableName);
-				hasPrimarykey = resultSet.next();
-				resultSet.close();
-			}
-			hasPKPerTable.put(table, hasPrimarykey);
-			return hasPrimarykey;
-		} catch (SQLException e) {
-			return true;
-		}
-	}
-
-	private ResultSet getPrimaryKeys(Session session,
-			DatabaseMetaData metaData, String schema, String table)
-			throws SQLException {
-		if (DBMS.MySQL.equals(session.dbms)) {
-			return metaData.getPrimaryKeys(schema, null, table);
-		}
-		return metaData.getPrimaryKeys(null, schema, table);
-	}
 
 	/**
 	 * Creates a new entity-graph.
@@ -365,11 +304,6 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		String labelCSL = insertClause(table, null, null);
 		sb.append("Insert into " + qualifiedTableName(table) + "(" + labelCSL
 				+ ") " + sqlSelect);
-		
-		if (!table.primaryKey.getColumns().isEmpty() && !hasPrimarykey(session, table)) {
-			// dont insert if PK constraint is not enforced
-			return upsertRows(table, sqlSelect, true);
-		}
 		
 		boolean silent = session.getSilent();
 		session.setSilent(true);
