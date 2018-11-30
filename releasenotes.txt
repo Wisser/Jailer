@@ -1,4 +1,7 @@
-8.1.6
+8.2.1
+  - Intra-database export: automatic fallback to MERGE on tables without PK has been removed.
+
+8.2
   - Fixed "SQLite JDBC: inconsistent internal state" during database analysis.
   - Fixed "#32 SQL analyzer: duplicate associations".
   - Implemented "#51 Reduce transaction sizes"
