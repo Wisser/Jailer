@@ -307,9 +307,11 @@ public class SqlScriptExecutor {
 					execute(new Runnable() {
 						@Override
 						public void run() {
-							boolean silent = session.getSilent();
 							boolean startsWithDrop = stmt.trim().toLowerCase().startsWith("drop");
+							boolean silent = session.getSilent();
 							session.setSilent(silent || finalTryMode || startsWithDrop);
+							boolean logStatements = session.getLogStatements();
+							session.setLogStatements(false);
 							try {
 								if (stmt.trim().length() > 0) {
 									totalRowCount.addAndGet(session.execute(stmt));
@@ -329,8 +331,10 @@ public class SqlScriptExecutor {
 										throw new RuntimeException(e);
 									}
 								}
+							} finally {
+								session.setSilent(silent);
+								session.setLogStatements(logStatements);
 							}
-							session.setSilent(silent);
 						}
 					}, inSync);
 					currentStatement.setLength(0);
