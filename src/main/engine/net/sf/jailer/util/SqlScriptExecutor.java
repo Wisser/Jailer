@@ -19,7 +19,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -177,8 +179,9 @@ public class SqlScriptExecutor {
 		_log.info("reading file '" + scriptFileName + "'");
 		BufferedReader bufferedReader;
 		long fileSize = 0;
+		final long[] bytesRead = new long[1];
 		File file = new File(scriptFileName);
-		FileInputStream inputStream = new FileInputStream(file);
+		InputStream inputStream = new FileInputStream(file);
 		
 		Charset encoding = Charset.defaultCharset();
 		
@@ -208,14 +211,33 @@ public class SqlScriptExecutor {
 		}
 		
 		inputStream = new FileInputStream(file);
+		inputStream = new FilterInputStream(inputStream) {
+			@Override
+			public int read() throws IOException {
+				int result = in.read();
+				if (result != -1) {
+					bytesRead[0]++;
+				}
+				return result;
+			}
+			@Override
+			public int read(byte[] b, int off, int len) throws IOException {
+				int result = in.read(b, off, len);
+				if (result != -1) {
+					bytesRead[0] += result;
+				}
+				return result;
+			}
+		};
+		bytesRead[0] = 0;
+		fileSize = file.length();
 		if (scriptFileName.toLowerCase().endsWith(".gz")) {
 			bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
 		} else if (scriptFileName.toLowerCase().endsWith(".zip")){
-			ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName));
+			ZipInputStream zis = new ZipInputStream(inputStream);
 			zis.getNextEntry();
 			bufferedReader = new BufferedReader(new InputStreamReader(zis, encoding));
 		} else {
-			fileSize = file.length();
 			bufferedReader = new BufferedReader(new InputStreamReader(inputStream, encoding));
 		}
 		
@@ -223,7 +245,6 @@ public class SqlScriptExecutor {
 		StringBuffer currentStatement = new StringBuffer();
 		final AtomicLong linesRead = new AtomicLong(0);
 		final AtomicLong totalRowCount = new AtomicLong(0);
-		final AtomicLong bytesRead = new AtomicLong(0);
 		final AtomicLong t = new AtomicLong(System.currentTimeMillis());
 		final AtomicInteger count = new AtomicInteger(0);
 		submittedTasks = 0;
@@ -241,14 +262,14 @@ public class SqlScriptExecutor {
 			public void run() {
 				if (System.currentTimeMillis() > t.get() + 1000) {
 					t.set(System.currentTimeMillis());
-					long p = 0;
+					long p = -1;
 					if (finalFileSize > 0) {
-						p = (100 * bytesRead.get()) / finalFileSize;
-						if (p > 100) {
-							p = 100;
+						p = (1000 * bytesRead[0]) / finalFileSize;
+						if (p > 999) {
+							p = 999;
 						}
 					}
-					_log.info(linesRead + " statements" + (p > 0? " (" + p + "%)" : ""));
+					_log.info(linesRead + " statements" + (p >= 0? " (" + String.format("%1.1f", p / 10.0) + "%)" : ""));
 				}
 			}
 		};
@@ -260,7 +281,6 @@ public class SqlScriptExecutor {
 			boolean tryMode = false;
 			
 			while ((line = lineReader.readLine()) != null) {
-				bytesRead.addAndGet(line.length() + 1);
 				line = line.trim();
 				if (line.length() == 0) {
 					continue;

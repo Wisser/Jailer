@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -36,6 +37,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.ui.util.LogUtil;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Quoting;
 
@@ -187,10 +189,10 @@ public class ExplainTool {
 	
 	private static File newFile(String name) {
 		File home = null;
-		if (new File(".singleuser").exists()) {
+		if (new File(".singleuser").exists() || !LogUtil.testCreateTempFile()) {
 			home = new File(System.getProperty("user.home"), ".jailer");
-			home.mkdirs();
 		}
+		home.mkdirs();
 		if (home == null || new File(name).isAbsolute()) {
 			return new File(name);
 		}
