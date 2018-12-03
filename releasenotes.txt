@@ -1,5 +1,7 @@
 8.2.1
   - Intra-database export: automatic fallback to MERGE on tables without PK has been removed.
+  - Increased SQL import performance + progress bar also for compressed files.
+  - Minor bug fixes.
 
 8.2
   - Fixed "SQLite JDBC: inconsistent internal state" during database analysis.
