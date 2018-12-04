@@ -954,9 +954,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 */
 	public static ResultSet getIndexes(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern) throws SQLException {
 		if (DBMS.MySQL.equals(session.dbms)) {
-			return metaData.getIndexInfo(schemaPattern, null, tableNamePattern, false, false);
+			return metaData.getIndexInfo(schemaPattern, null, tableNamePattern, false, true);
 		}
-		return metaData.getIndexInfo(null, schemaPattern, tableNamePattern, false, false);
+		return metaData.getIndexInfo(null, schemaPattern, tableNamePattern, false, true);
 	}
 
 	/**

@@ -82,6 +82,11 @@ public class SqlScriptExecutor {
 	 */
 	private final int threads;
 	
+	/**
+	 * Log statements?
+	 */
+	private final boolean logStatements;
+	
 	private RuntimeException exception;
 	
 	/**
@@ -89,12 +94,24 @@ public class SqlScriptExecutor {
 	 * 
 	 * @param session for execution of statements
 	 * @param threads number of threads to use
+	 * @param logStatements log statements?
 	 */
-	public SqlScriptExecutor(Session session, int threads) {
+	public SqlScriptExecutor(Session session, int threads, boolean logStatements) {
 		this.session = session;
 		this.threads = threads;
+		this.logStatements = logStatements;
 	}
-	
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param session for execution of statements
+	 * @param threads number of threads to use
+	 */
+	public SqlScriptExecutor(Session session, int threads) {
+		this(session, threads, true);
+	}
+
 	/**
 	 * Reads in and executes a SQL-script.
 	 * 
@@ -330,8 +347,8 @@ public class SqlScriptExecutor {
 							boolean startsWithDrop = stmt.trim().toLowerCase().startsWith("drop");
 							boolean silent = session.getSilent();
 							session.setSilent(silent || finalTryMode || startsWithDrop);
-							boolean logStatements = session.getLogStatements();
-							session.setLogStatements(false);
+							boolean oldLogStatements = session.getLogStatements();
+							session.setLogStatements(logStatements);
 							try {
 								if (stmt.trim().length() > 0) {
 									totalRowCount.addAndGet(session.execute(stmt));
@@ -353,7 +370,7 @@ public class SqlScriptExecutor {
 								}
 							} finally {
 								session.setSilent(silent);
-								session.setLogStatements(logStatements);
+								session.setLogStatements(oldLogStatements);
 							}
 						}
 					}, inSync);
