@@ -4022,9 +4022,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			MAXLINES = Math.max(10 * MAXLINES / rowsTable.getColumnCount(), 10);
 		}
 		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
+		int minTotalWidth = (int) (Desktop.BROWSERTABLE_DEFAULT_WIDTH * getLayoutFactor()) - 18;
+		int totalWidth = 0;
 		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
 			TableColumn column = rowsTable.getColumnModel().getColumn(i);
-			int width = ((int) (Desktop.BROWSERTABLE_DEFAULT_WIDTH * getLayoutFactor()) - 18) / rowsTable.getColumnCount();
+			int width = minTotalWidth / rowsTable.getColumnCount();
 
 			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(rowsTable, column.getHeaderValue(), false, false, 0, i);
 			int pw = comp.getPreferredSize().width;
@@ -4065,6 +4067,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			column.setPreferredWidth(width);
+			totalWidth += width;
+			if (i == rowsTable.getColumnCount() - 1) {
+				if (totalWidth < minTotalWidth) {
+					column.setPreferredWidth(width + minTotalWidth - totalWidth);
+				}
+			}
 		}
 	}
 
