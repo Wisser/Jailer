@@ -487,6 +487,7 @@ public class SqlUtil {
 		FUNCTION_CALL_REPLACEMENT.put("IIF", "1");
 		FUNCTION_CALL_REPLACEMENT.put("WITH", "");
 		FUNCTION_CALL_REPLACEMENT.put("OPTION", "");
+		FUNCTION_CALL_REPLACEMENT.put("CHAR", "1");  // workaround for https://github.com/JSQLParser/JSqlParser/issues/718
 	}
 
 	/**
