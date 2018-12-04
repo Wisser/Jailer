@@ -48,9 +48,6 @@ public class Environment {
 				copyIfNotExists("datamodel");
 				copyIfNotExists("extractionmodel");
 				copyIfNotExists("layout");
-				copyIfNotExists(".cdsettings");
-				copyIfNotExists(".exportdata.ui");
-				copyIfNotExists(".selecteddatamodel");
 				copyIfNotExists("demo-scott.h2.db");
 				copyIfNotExists("demo-sakila.h2.db");
 

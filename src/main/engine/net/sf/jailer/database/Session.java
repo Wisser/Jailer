@@ -391,7 +391,7 @@ public class Session {
 			DatabaseMetaData meta = connection.getMetaData();
 			_log.info("driver name:    " + meta.getDriverName());
 			_log.info("driver version: " + meta.getDriverVersion());
-			_log.info("DB name:        " + meta.getDatabaseProductName() + " (" + dbms + ")");
+			_log.info("DB name:        " + meta.getDatabaseProductName() + (dbms.getDisplayName() != null? " (" + dbms.getDisplayName() + ")" : ""));
 			_log.info("DB version:     " + meta.getDatabaseProductVersion());
 		} catch (Exception e) {
 			// ignore exceptions
