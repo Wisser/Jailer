@@ -26,9 +26,11 @@ import java.util.Locale;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.render.HtmlDataModelRenderer;
-import net.sf.jailer.ui.util.LogUtil;
+import net.sf.jailer.util.LogUtil;
 
 /**
+ * Sets up environment.
+ * 
  * @author Ralf Wisser
  */
 public class Environment {
