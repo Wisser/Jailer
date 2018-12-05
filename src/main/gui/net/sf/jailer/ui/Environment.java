@@ -39,6 +39,13 @@ public class Environment {
 	public static Locale initialLocal = Locale.ENGLISH;
 	
 	public static void init() {
+		String osName = System.getProperty("os.name");
+		if (osName != null) {
+			if (osName.toLowerCase().contains("mac os")) {
+				// https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
+				System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+			}
+		}
 		initialLocal = Locale.getDefault();
 		Locale.setDefault(Locale.ENGLISH);
 		if (new File(".singleuser").exists() || !LogUtil.testCreateTempFile()) {
