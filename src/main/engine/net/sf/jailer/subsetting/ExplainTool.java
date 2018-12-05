@@ -28,7 +28,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -37,8 +36,8 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
-import net.sf.jailer.ui.util.LogUtil;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Quoting;
 
 /**

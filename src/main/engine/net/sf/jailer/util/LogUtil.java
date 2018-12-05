@@ -1,17 +1,13 @@
-package net.sf.jailer.ui.util;
+package net.sf.jailer.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
-
-import net.sf.jailer.ui.Environment;
 
 public class LogUtil {
 
@@ -20,7 +16,7 @@ public class LogUtil {
 		PrintStream oldErr = System.err;
 		System.setErr(new PrintStream(new ByteArrayOutputStream()));
 		try {
-			props.load(Environment.class.getResourceAsStream("/log4j.properties"));
+			props.load(LogUtil.class.getResourceAsStream("/log4j.properties"));
 			Enumeration<?> e = props.propertyNames();
 			while (e.hasMoreElements()) {
 				String key = (String) e.nextElement();
