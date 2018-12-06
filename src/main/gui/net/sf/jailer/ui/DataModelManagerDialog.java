@@ -896,7 +896,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		hasSelectedModel = true;
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		store();
-		onSelect(null, executionContext);
+		try {
+			onSelect(null, executionContext);
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+		}
 		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		setVisible(false);
 		dispose();
