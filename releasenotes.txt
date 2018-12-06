@@ -2,6 +2,7 @@
   - Intra-database export: automatic fallback to MERGE on tables without PK has been removed.
   - Increased SQL import performance + progress bar also for compressed files.
   - Logging did not work if the working directory is read-only.
+  - Improved error handling.
   - Minor bug fixes.
 
 8.2
