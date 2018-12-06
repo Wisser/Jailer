@@ -3333,6 +3333,7 @@ public class DataBrowser extends javax.swing.JFrame {
     	String alias = connection != null ? " " + connection.alias : " ";
     	
     	UIUtil.setWaitCursor(this);
+    	CancellationHandler.reset(null);
     	try {
 	    	updateNavigationCombobox();
 	    	
