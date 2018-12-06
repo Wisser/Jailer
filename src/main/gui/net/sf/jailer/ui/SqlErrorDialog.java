@@ -38,6 +38,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
+import net.sf.jailer.ui.util.UISettings;
 
 /**
  * Shows SQL-Exception.
@@ -291,7 +292,9 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 			}
 			url = new URI("http://jailer.sf.net/issueReport.php?type="
 					+ URLEncoder.encode(sqlError ? "SQL" : "GUI", "UTF-8") + "&" + "issue="
-					+ URLEncoder.encode(issue.replace('\r', ' '), "UTF-8"));
+					+ URLEncoder.encode(issue.replace('\r', ' '), "UTF-8")
+					+ "&uuid=" + URLEncoder.encode(String.valueOf(UISettings.restore("uuid")), "UTF-8")
+					+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8"));
 			Desktop.getDesktop().browse(url);
 		} catch (Exception e) {
 			// ignore
