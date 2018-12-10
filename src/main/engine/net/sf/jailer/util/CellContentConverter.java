@@ -134,7 +134,7 @@ public class CellContentConverter {
 		if (content instanceof Time) {
 			return "'" + content + "'";
 		}
-		if (content.getClass().getSimpleName().equals("PGobject")) {
+		if (DBMS.POSTGRESQL.equals(configuration) && content.getClass().getSimpleName().equals("PGobject")) {
 			try {
 				if (pgObjectGetType == null) {
 					pgObjectGetType = content.getClass().getMethod("getType");
