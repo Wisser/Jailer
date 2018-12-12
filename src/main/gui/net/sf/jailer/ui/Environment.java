@@ -43,6 +43,7 @@ public class Environment {
 		if (osName != null) {
 			if (osName.toLowerCase().contains("mac os")) {
 				// https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
+				// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8215200
 				System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 			}
 		}
