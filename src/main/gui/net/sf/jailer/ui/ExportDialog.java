@@ -172,7 +172,14 @@ public class ExportDialog extends javax.swing.JDialog {
 
 			initComponents();
 			
-			CancellationHandler.reset(null);
+			if (jScrollPane2.getHorizontalScrollBar() != null) {
+	        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
+	        }
+	        if (jScrollPane2.getVerticalScrollBar() != null) {
+	        	jScrollPane2.getVerticalScrollBar().setUnitIncrement(16);
+	        }
+			
+	        CancellationHandler.reset(null);
 	
 			if (!showCmd) {
 				commandLinePanel.setVisible(false);
@@ -227,7 +234,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			toLabel.setText(scriptFormat.getDisplayName());
 			
 			setModal(true);
-			setLocation(100, 150);
+			setLocation(100, 100);
 			Map<String, JComponent> fields = new HashMap<String, JComponent>();
 			fields.put("insert" + scriptFormat.name(), insert);
 			fields.put("threads", threads);
