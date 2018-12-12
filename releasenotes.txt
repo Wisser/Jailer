@@ -1,3 +1,7 @@
+8.2.2
+  - Implemented "#57 Analyze database convenience". UPK is formed exclusively for the tables related to the subjects.
+  - Implemented "#58 receipt += times"
+
 8.2.1
   - Intra-database export: automatic fallback to MERGE on tables without PK has been removed.
   - Increased SQL import performance + progress bar also for compressed files.
