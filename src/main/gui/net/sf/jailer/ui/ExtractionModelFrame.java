@@ -1196,13 +1196,24 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, false, session.dbms.getRowidName() != null);
 							}
 	
-							ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, executionContext);
+							String jmFile = extractionModelEditor.extractionModelFile != null? extractionModelEditor.extractionModelFile : tmpFileName;
+							
+							ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, executionContext);
 							session.shutDown();
 							if (exportDialog.isOk()) {
 								exportDialog.fillCLIArgs(args);
 								List<String> ddlArgs = new ArrayList<String>();
 								ddlArgs.add("create-ddl");
 								dbConnectionDialog.addDbArgs(ddlArgs);
+								ddlArgs.add(jmFile);
+								if (exportDialog.isIndependentWorkingTablesSelected()) {
+									ddlArgs.add("-independent-working-tables");
+									String delFile = exportDialog.getDeleteFileName();
+									if (delFile != null) {
+										ddlArgs.add("-d");
+										ddlArgs.add(delFile);
+									}
+								}
 								if (!exportDialog.isUseRowId()) {
 									ddlArgs.add("-no-rowid");
 								}

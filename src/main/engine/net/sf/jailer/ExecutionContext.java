@@ -21,6 +21,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import net.sf.jailer.configuration.DBMS;
@@ -82,6 +83,8 @@ public class ExecutionContext {
 		this.embedded = other.embedded;
 		this.checkPrimaryKeys = other.checkPrimaryKeys;
 		this.insertIncrementally = other.insertIncrementally;
+		this.independentWorkingTables = other.independentWorkingTables;
+		this.upkDomain = other.upkDomain;
 // don't share progressListenerRegistry, was: this.progressListenerRegistry = other.progressListenerRegistry;
 	}
 
@@ -812,12 +815,16 @@ public class ExecutionContext {
 	// schema in which the import-filter mapping tables will be created
 	private String importFilterMappingTableSchema = "";
 
+	// create working tables that are independent of the extraction model. (Potentially less efficient)
+	private boolean independentWorkingTables = false;
+	
 	private WorkingTableScope scope = WorkingTableScope.GLOBAL;
 
 	private String rawparameters;
 	
 	private boolean embedded = false;
-
+	private Set<String> upkDomain;
+	
 	private ProgressListenerRegistry progressListenerRegistry = new ProgressListenerRegistry();
 
 	/**
@@ -853,6 +860,28 @@ public class ExecutionContext {
 		this.checkPrimaryKeys = checkPrimaryKeys;
 	}
 	
+	/**
+	 * Create working tables that are independent of the extraction model. (Potentially less efficient)
+	 */
+	public boolean isIndependentWorkingTables() {
+		return independentWorkingTables;
+	}
+
+	/**
+	 * Create working tables that are independent of the extraction model. (Potentially less efficient)
+	 */
+	public void setIndependentWorkingTables(boolean independentWorkingTables) {
+		this.independentWorkingTables = independentWorkingTables;
+	}
+
+	public Set<String> getUpkDomain() {
+		return upkDomain;
+	}
+
+	public void setUpkDomain(Set<String> upkDomain) {
+		this.upkDomain = upkDomain;
+	}
+
 	private void copyCommandLineFields(CommandLine commandLine) {
 		uTF8 = commandLine.uTF8;
 		format = commandLine.format;
@@ -884,6 +913,7 @@ public class ExecutionContext {
 		workingTableSchema = commandLine.workingTableSchema;
 		datamodelFolder = commandLine.datamodelFolder;
 		noSorting = commandLine.noSorting;
+		independentWorkingTables = commandLine.independentWorkingTables;
 		transactional = commandLine.transactional;
 		isolationLevel = commandLine.isolationLevel;
 		noRowid = commandLine.noRowid;

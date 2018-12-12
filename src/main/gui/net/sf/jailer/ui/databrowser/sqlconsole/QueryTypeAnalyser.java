@@ -446,7 +446,7 @@ public class QueryTypeAnalyser {
 		for (String pk: theTable.getPrimaryKeyColumns()) {
 			pkColumns.add(new net.sf.jailer.datamodel.Column(pk, "", 0, -1));
 		}
-		PrimaryKey primaryKey = new PrimaryKeyFactory().createPrimaryKey(pkColumns);
+		PrimaryKey primaryKey = new PrimaryKeyFactory(null).createPrimaryKey(pkColumns, null);
 		Table toTable = theTable.getMetaDataSource().toTable(theTable);
 		Table table;
 		if (toTable != null) {

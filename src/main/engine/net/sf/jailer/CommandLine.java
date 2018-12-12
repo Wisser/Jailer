@@ -137,6 +137,9 @@ public class CommandLine {
 
 	@Option(name="-no-sorting", usage="the exported rows will not be sorted according to foreign key constraints")
 	public boolean noSorting = false;
+
+	@Option(name="-independent-working-tables", usage="create working tables that are independent of the extraction model. (Potentially less efficient)")
+	public boolean independentWorkingTables = false;
 	
 	@Option(name="-transactional", usage="import rows in a single transaction")
 	public boolean transactional = false;

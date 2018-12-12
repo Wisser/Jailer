@@ -16,13 +16,19 @@
 
 package net.sf.jailer.datamodel;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.extractionmodel.ExtractionModel;
+import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 
 /**
  * Factory for {@link PrimaryKey}s. Builds the universal primary key as a
@@ -32,6 +38,18 @@ import net.sf.jailer.database.Session;
  */
 public class PrimaryKeyFactory {
 
+	// {@link ExecutionContext} (optional)
+	private final ExecutionContext executionContext;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param executionContext {@link ExecutionContext} (optional)
+	 */
+	public PrimaryKeyFactory(ExecutionContext executionContext) {
+		this.executionContext = executionContext;
+	}
+	
 	/**
 	 * {@link #getUniversalPrimaryKey()} closes the factory, no further creation
 	 * of PKs is allowed then.
@@ -52,11 +70,17 @@ public class PrimaryKeyFactory {
 	 * @exception IllegalStateException
 	 *                if factory is closed
 	 */
-	public PrimaryKey createPrimaryKey(List<Column> columns) {
+	public PrimaryKey createPrimaryKey(List<Column> columns, String tableName) {
 		if (closed) {
 			throw new IllegalStateException("factory is closed");
 		}
 		PrimaryKey primaryKey = new PrimaryKey(columns);
+		
+		if (executionContext != null && executionContext.getUpkDomain() != null && tableName != null) {
+			if (!executionContext.getUpkDomain().contains(tableName)) {
+				return primaryKey;
+			}
+		}
 
 		if (Configuration.getInstance().getDoMinimizeUPK()) {
 			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
@@ -161,6 +185,26 @@ public class PrimaryKeyFactory {
 	public PrimaryKey getUniversalPrimaryKey(Session session) {
 		closed = true;
 		return universalPrimaryKey;
+	}
+
+	public static void createUPKScope(String extractionModelFile, ExecutionContext executionContext) throws MalformedURLException, IOException {
+		ExtractionModel extractionModel = new ExtractionModel(new File(extractionModelFile).toURI().toURL(), executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext, true);
+		Set<Table> subjects = new HashSet<Table>();
+		if (extractionModel.additionalSubjects != null) {
+			for (AdditionalSubject as: extractionModel.additionalSubjects) {
+				subjects.add(as.getSubject());
+			}
+		}
+		subjects.add(extractionModel.subject);
+		
+		Set<String> upkDomain = new HashSet<String>();
+		for (Table subject: subjects) {
+			for (Table table: subject.closure(true)) {
+				upkDomain.add(table.getName());
+			}
+		}
+		
+		executionContext.setUpkDomain(upkDomain);
 	}
 
 }

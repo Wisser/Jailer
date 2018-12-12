@@ -249,7 +249,7 @@ public class ModelBuilder {
 							}
 						}
 						if (newPk.size() == old.primaryKey.getColumns().size()) {
-							table = new Table(old.getName(), new PrimaryKeyFactory().createPrimaryKey(newPk), false, false);
+							table = new Table(old.getName(), new PrimaryKeyFactory(executionContext).createPrimaryKey(newPk, old.getName()), false, false);
 							table.setAuthor(old.getAuthor());
 						}
 					}
@@ -273,7 +273,7 @@ public class ModelBuilder {
 		resetTableFile(tableDefinitions, executionContext);
 
 		// re-read data model with new tables
-		dataModel = new DataModel(getModelBuilderTablesFilename(executionContext), getModelBuilderAssociationsFilename(executionContext), new HashMap<String, String>(), assocFilter, new PrimaryKeyFactory(), executionContext, false, knownIdentifiers);
+		dataModel = new DataModel(getModelBuilderTablesFilename(executionContext), getModelBuilderAssociationsFilename(executionContext), new HashMap<String, String>(), assocFilter, new PrimaryKeyFactory(executionContext), executionContext, false, knownIdentifiers);
 
 		Collection<Association> associations = new ArrayList<Association>();
 		Map<Association, String[]> namingSuggestion = new HashMap<Association, String[]>();

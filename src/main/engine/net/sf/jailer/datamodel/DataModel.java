@@ -298,7 +298,7 @@ public class DataModel {
 	 * @param knownIdentifiers 
 	 */
 	public DataModel(ExecutionContext executionContext) throws IOException {
-		this(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext, false, null);
+		this(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, false, null);
 	}
 
 	/**
@@ -307,7 +307,7 @@ public class DataModel {
 	 * @param knownIdentifiers 
 	 */
 	public DataModel(KnownIdentifierMap knownIdentifiers, ExecutionContext executionContext) throws IOException {
-		this(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext, false, knownIdentifiers);
+		this(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, false, knownIdentifiers);
 	}
 
 	/**
@@ -315,7 +315,7 @@ public class DataModel {
 	 * and builds the relational data model.
 	 */
 	public DataModel(Map<String, String> sourceSchemaMapping, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
-		this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(), executionContext, failOnMissingTables, null);
+		this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(executionContext), executionContext, failOnMissingTables, null);
 	}
 
 	/**
@@ -337,7 +337,7 @@ public class DataModel {
 	 * @param additionalAssociationsFile association file to read too
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, ExecutionContext executionContext) throws IOException {
-		this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext, false, null);
+		this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, false, null);
 	}
 
 	/**
@@ -348,7 +348,7 @@ public class DataModel {
 	 * @param additionalAssociationsFile association file to read too
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, ExecutionContext executionContext) throws IOException {
-		this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(), executionContext, false, null);
+		this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(executionContext), executionContext, false, null);
 	}
 
 	/**
@@ -414,7 +414,7 @@ public class DataModel {
 					}
 				}
 				String mappedSchemaTableName = SqlUtil.mappedSchema(sourceSchemaMapping, tabName);
-				Table table = new Table(mappedSchemaTableName, primaryKeyFactory.createPrimaryKey(pk), defaultUpsert, excludeFromDeletion.contains(mappedSchemaTableName));
+				Table table = new Table(mappedSchemaTableName, primaryKeyFactory.createPrimaryKey(pk, mappedSchemaTableName), defaultUpsert, excludeFromDeletion.contains(mappedSchemaTableName));
 				table.setAuthor(line.cells.get(j + 1));
 				table.setOriginalName(line.cells.get(0));
 				if (tables.containsKey(mappedSchemaTableName)) {

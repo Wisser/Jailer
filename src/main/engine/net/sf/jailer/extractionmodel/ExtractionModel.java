@@ -398,7 +398,7 @@ public class ExtractionModel {
 		}
 		
 		dataModel.deriveFilters();
-		disableUnknownChildren(new CsvFile(modelURL.openStream(), "known", csvLocation, null).getLines());
+		disableUnknownAssociations(new CsvFile(modelURL.openStream(), "known", csvLocation, null).getLines());
 	}
 
 	private KnownIdentifierMap knownIdentifierMap;
@@ -420,7 +420,7 @@ public class ExtractionModel {
 		return table;
 	}
 
-	private void disableUnknownChildren(List<Line> lines) {
+	private void disableUnknownAssociations(List<Line> lines) {
 		Set<String> known = new HashSet<String>();
 		for (Line line: lines) {
 			known.add(line.cells.get(0));
@@ -430,7 +430,7 @@ public class ExtractionModel {
 		}
 		for (Association a: dataModel.namedAssociations.values()) {
 			String name = a.reversed? a.reversalAssociation.getName() : a.getName();
-			if (!known.contains(name) && a.isInsertSourceBeforeDestination()) {
+			if (!known.contains(name) /* && a.isInsertSourceBeforeDestination() */) {
 				dataModel.getRestrictionModel().addRestriction(a.source, a, "false", "SYSTEM", true, new HashMap<String, String>());
 			}
 		}

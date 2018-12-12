@@ -376,7 +376,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		if (depth > MAX_DEPTH) {
 			return new HashSet<Table>();
 		}
-		PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
+		PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory(executionContext);
 		
 		Set<Table> tables = new HashSet<Table>();
 		DatabaseMetaData metaData = session.getMetaData();
@@ -493,7 +493,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					columns.add(column);
 				}
 			}
-			PrimaryKey primaryKey = primaryKeyFactory.createPrimaryKey(columns);
+			PrimaryKey primaryKey = primaryKeyFactory.createPrimaryKey(columns, tableName);
 			Table table = new Table(tableName, primaryKey, false, false);
 			table.setAuthor(metaData.getDriverName());
 			tables.add(table);

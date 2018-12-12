@@ -217,9 +217,9 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param remoteSession
 	 */
 	private LocalEntityGraph(int graphID, Session remoteSession, ExecutionContext executionContext) throws IOException, SQLException {
-		super(graphID, new DataModel(new PrimaryKeyFactory() {
+		super(graphID, new DataModel(new PrimaryKeyFactory(executionContext) {
 			@Override
-			public PrimaryKey createPrimaryKey(List<Column> columns) {
+			public PrimaryKey createPrimaryKey(List<Column> columns, String tableName) {
 				List<Column> localPK = new ArrayList<Column>(columns.size());
 				for (Column c: columns) {
 					if (c.type.equalsIgnoreCase("nvarchar") || c.type.equalsIgnoreCase("nchar")) {
@@ -228,7 +228,7 @@ public class LocalEntityGraph extends EntityGraph {
 						localPK.add(new Column(c.name, getConfiguration().getLocalPKType(), getConfiguration().getLocalPKLength(), -1));
 					}
 				}
-				return super.createPrimaryKey(localPK);
+				return super.createPrimaryKey(localPK, tableName);
 			}
 		}, executionContext.getSourceSchemaMapping(), executionContext), executionContext);
 		this.remoteSession = remoteSession;

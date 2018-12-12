@@ -143,15 +143,18 @@ public class ExportDialog extends javax.swing.JDialog {
 
 	private static boolean lastConfirmInsert = false;
 	private final String extractionModelFileName;
+	private final String jmFile;
 	private final ExecutionContext executionContext;
 
 	/** Creates new form DbConnectionDialog 
 	 * @param showCmd 
+	 * @param jmFile 
 	 * @param args */
-	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, ExecutionContext executionContext) {
+	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, ExecutionContext executionContext) {
 		super(parent, true);
 		this.executionContext = executionContext;
 		this.extractionModelFileName = extractionModelFileName;
+		this.jmFile = jmFile;
 		this.subjectCondition = subjectCondition;
 		this.dataModel = dataModel;
 		this.subject = subject;
@@ -232,6 +235,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			fields.put("unicode", unicode);
 			fields.put("sorted", sortedCheckBox);
 			fields.put("insertIncrementally", insertIncrementally);
+			fields.put("independentWorkingTables", independentWorkingTables);
 			fields.put("isolationLevel", isolationLevelComboBox);
 			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
 				fields.put("$" + e.getKey(), e.getValue());
@@ -388,6 +392,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			upsertCheckbox.addActionListener(al);
 			checkPKs.addActionListener(al);
 			insertIncrementally.addActionListener(al);
+			independentWorkingTables.addActionListener(al);
 			transactional.addActionListener(al);
 			explain.addActionListener(al);
 			unicode.addActionListener(al);
@@ -953,6 +958,7 @@ public class ExportDialog extends javax.swing.JDialog {
         isolationLevelComboBox = new javax.swing.JComboBox();
         iLHintLabel = new javax.swing.JLabel();
         transactional = new javax.swing.JCheckBox();
+        independentWorkingTables = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1065,7 +1071,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel6.setText(" Parallel threads "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 51;
+        gridBagConstraints.gridy = 54;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel6, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1091,13 +1097,13 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 51;
+        gridBagConstraints.gridy = 54;
         gridBagConstraints.ipadx = 30;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(threads, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 52;
+        gridBagConstraints.gridy = 55;
         gridBagConstraints.ipadx = 30;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(rowsPerThread, gridBagConstraints);
@@ -1137,7 +1143,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel8.setText(" Working table scope"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 53;
+        gridBagConstraints.gridy = 56;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(16, 0, 0, 0);
         jPanel1.add(jLabel8, gridBagConstraints);
@@ -1181,7 +1187,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel16.setText(" Rows per statement "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 52;
+        gridBagConstraints.gridy = 55;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel16, gridBagConstraints);
 
@@ -1255,7 +1261,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 53;
+        gridBagConstraints.gridy = 56;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
@@ -1421,7 +1427,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 57;
+        gridBagConstraints.gridy = 60;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
         jPanel1.add(useRowIds, gridBagConstraints);
@@ -1429,7 +1435,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel10.setText(" Working table schema "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 54;
+        gridBagConstraints.gridy = 57;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(jLabel10, gridBagConstraints);
@@ -1444,7 +1450,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 54;
+        gridBagConstraints.gridy = 57;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(workingTableSchemaComboBox, gridBagConstraints);
@@ -1503,7 +1509,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 56;
+        gridBagConstraints.gridy = 59;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(iFMTableSchemaComboBox, gridBagConstraints);
@@ -1528,7 +1534,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 56;
+        gridBagConstraints.gridy = 59;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(iFMTPanel, gridBagConstraints);
 
@@ -1564,7 +1570,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 50;
+        gridBagConstraints.gridy = 53;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 8, 0);
         jPanel1.add(checkPKs, gridBagConstraints);
@@ -1629,10 +1635,25 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 49;
+        gridBagConstraints.gridy = 52;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(transactional, gridBagConstraints);
+
+        independentWorkingTables.setText("independent working tables"); // NOI18N
+        independentWorkingTables.setToolTipText("<html>Create working tables that are independent of the extraction model. <br>(Potentially less efficient)</html>");
+        independentWorkingTables.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        independentWorkingTables.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                independentWorkingTablesActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 49;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        jPanel1.add(independentWorkingTables, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1756,6 +1777,15 @@ public class ExportDialog extends javax.swing.JDialog {
 		List<String> ddlArgs = new ArrayList<String>();
 		ddlArgs.add("create-ddl");
 		dbConnectionDialog.addDbArgs(ddlArgs);
+		ddlArgs.add(jmFile);
+		if (isIndependentWorkingTablesSelected()) {
+			ddlArgs.add("-independent-working-tables");
+			String delFile = getDeleteFileName();
+			if (delFile != null) {
+				ddlArgs.add("-d");
+				ddlArgs.add(delFile);
+			}
+		}
 		if (!isUseRowId()) {
 			ddlArgs.add("-no-rowid");
 		}
@@ -1900,11 +1930,29 @@ public class ExportDialog extends javax.swing.JDialog {
     private void transactionalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transactionalActionPerformed
         iLHintLabel.setVisible(!transactional.isSelected());
     }//GEN-LAST:event_transactionalActionPerformed
+
+    private void independentWorkingTablesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_independentWorkingTablesActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_independentWorkingTablesActionPerformed
 	
 	public boolean isOk() {
 		return isOk;
 	}
+
+	/**
+	 * Gets name of delete-script, or <code>null</code>, if there is no delete-script.
+	 */
+	public String getDeleteFileName() {
+		if (delete.isVisible() && delete.getText().trim().length() > 0) {
+			return toFileName(delete.getText().trim());
+		}
+		return null;
+	}
 	
+	public boolean isIndependentWorkingTablesSelected() {
+		return independentWorkingTables.isSelected();
+	}
+
 	/**
 	 * Fills field content into cli-args.
 	 * 
@@ -1930,6 +1978,9 @@ public class ExportDialog extends javax.swing.JDialog {
 		}
 		if (insertIncrementally.isSelected()) {
 			args.add("-limit-transaction-size");
+		}
+		if (isIndependentWorkingTablesSelected()) {
+			args.add("-independent-working-tables");
 		}
 		if (transactional.isSelected()) {
 			args.add("-transactional");
@@ -2174,6 +2225,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel iFMTPanel;
     private javax.swing.JComboBox iFMTableSchemaComboBox;
     private javax.swing.JLabel iLHintLabel;
+    public javax.swing.JCheckBox independentWorkingTables;
     private javax.swing.JTextField insert;
     public javax.swing.JCheckBox insertIncrementally;
     private javax.swing.JComboBox isolationLevelComboBox;
