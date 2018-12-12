@@ -530,8 +530,10 @@ public class SubsettingEngine {
 	 * @param progress
 	 *            set of tables to account for extraction
 	 * @param stage stage name for {@link ProgressListener}
+	 * @param afterCollectionTimestamp 
+	 * @param startTimestamp 
 	 */
-	private void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session, String stage) throws IOException, SAXException, SQLException {
+	private void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session, String stage, Long startTimestamp, Long afterCollectionTimestamp) throws IOException, SAXException, SQLException {
 		_log.info("writing file '" + sqlScriptFile + "'...");
 
 		final File file = new File(sqlScriptFile);
@@ -768,6 +770,18 @@ public class SubsettingEngine {
 				for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
 					enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
 				}
+			}
+			if (startTimestamp != null && afterCollectionTimestamp != null) {
+				long now = System.currentTimeMillis();
+				result.append(PrintUtil.LINE_SEPARATOR);
+				result.append("-- Vital times");
+				result.append(PrintUtil.LINE_SEPARATOR);
+				result.append("--   Collecting: " + PrintUtil.formatVitalTime(afterCollectionTimestamp - startTimestamp));
+				result.append(PrintUtil.LINE_SEPARATOR);
+				result.append("--   Exporting:  " + PrintUtil.formatVitalTime(now - afterCollectionTimestamp));
+				result.append(PrintUtil.LINE_SEPARATOR);
+				result.append("--   Total:      " + PrintUtil.formatVitalTime(now - startTimestamp));
+				result.append(PrintUtil.LINE_SEPARATOR);
 			}
 			result.close();
 		}
@@ -1358,6 +1372,9 @@ public class SubsettingEngine {
 		}
 		appendCommentHeader("");
 
+		long startTimestamp = System.currentTimeMillis();
+		Long afterCollectionTimestamp = null; 
+		
 		Set<Table> toCheck = new HashSet<Table>();
 		boolean insertOnly = Boolean.FALSE.equals(extractionModel.subject.getUpsert()) && !executionContext.getUpsertOnly();
 		if (extractionModel.additionalSubjects != null) {
@@ -1403,7 +1420,9 @@ public class SubsettingEngine {
 			totalProgress.addAll(progress);
 			subjects.add(extractionModel.subject);
 			entityGraph.checkExist(executionContext);
-	
+			
+			afterCollectionTimestamp = System.currentTimeMillis();
+			
 			if (explain) {
 				executionContext.getProgressListenerRegistry().fireNewStage("generating explain-log", false, false);
 				ExplainTool.explain(entityGraph, session, executionContext);
@@ -1423,7 +1442,7 @@ public class SubsettingEngine {
 				if (ScriptFormat.XML.equals(scriptFormat)) {
 					writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
 				} else {
-					writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session, "exporting rows");
+					writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session, "exporting rows", startTimestamp, afterCollectionTimestamp);
 				}
 			}
 			
@@ -1436,7 +1455,7 @@ public class SubsettingEngine {
 					Table.clearSessionProperties(session);
 					deleteEntities(subjects, totalProgress, session);
 					datamodel.transpose();
-					writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session, "writing delete-script");
+					writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session, "writing delete-script", null, null);
 					for (Runnable rf: resetFilters) {
 						rf.run();
 					}
