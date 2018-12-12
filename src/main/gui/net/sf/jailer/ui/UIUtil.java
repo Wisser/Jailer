@@ -137,11 +137,11 @@ public class UIUtil {
     public static String choseFile(File selectedFile, String startDir, final String description, final String extension,
             Component parent, boolean addExtension, boolean forLoad, final boolean allowZip) {
         final String extensionAlias;
-        if (".jm".equalsIgnoreCase(extension)) {
-            extensionAlias = ".csv";
-        } else {
+//        if (".jm".equalsIgnoreCase(extension)) {
+//            extensionAlias = ".csv";
+//        } else {
             extensionAlias = null;
-        }
+//        }
         String newStartDir = restoreCurrentDir(extension);
         if (newStartDir != null) {
             startDir = newStartDir;

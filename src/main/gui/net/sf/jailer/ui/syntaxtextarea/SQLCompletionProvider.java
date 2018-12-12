@@ -527,9 +527,18 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                 tables.add(table);
                             }
                         } else {
+                        	Stack<Pair<String, TABLE>> stack = new Stack<Pair<String, TABLE>>();
                             for (Entry<String, TABLE> entry: aliasesTopLevel.entrySet()) {
-                                tables.add(entry.getValue());
-                                tableNames.add(entry.getKey());
+                                stack.push(new Pair<String, TABLE>(entry.getKey(), entry.getValue()));
+                            }
+                            Set<String> seen = new HashSet<String>();
+                            while (!stack.isEmpty()) {
+                            	Pair<String, TABLE> entry = stack.pop();
+                            	if (!seen.contains(Quoting.normalizeIdentifier(entry.a))) {
+	                            	tables.add(entry.b);
+	                                tableNames.add(entry.a);
+	                                seen.add(Quoting.normalizeIdentifier(entry.a));
+                            	}
                             }
                         }
                         boolean timedOut = false;
@@ -678,7 +687,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             sb.append(alias + ".");
                         }
                     } else {
-                        if (tableNames.size() > 1) {
+                        if (tableNames.size() > 1 || tableNames.size() == 1 && !tableNames.get(0).equals(getTableName(table))) {
                             sb.append(tableNames.get(i) + ".");
                         }
                     }

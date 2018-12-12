@@ -1311,7 +1311,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			List<String> args = new ArrayList<String>();
 			args.add("render-datamodel");
 			File file = saveRestrictions();
-			args.add(file.getName());
+			args.add(file.getAbsolutePath());
 			UIUtil.runJailer(this, args, false, true, false, true, null, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, executionContext);
 			BrowserLauncher.openURL(Environment.newFile(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table))).getPath());
 		} catch (Exception e) {
@@ -1330,7 +1330,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				args.add(from.getName());
 				args.add(to.getName());
 				File file = saveRestrictions();
-				args.add(file.getName());
+				args.add(file.getAbsolutePath());
 				UIUtil.runJailer(this, args, false, false, false, false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext);
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
@@ -1344,16 +1344,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * @return restrictions file
 	 */
 	private File saveRestrictions() throws Exception {
-		File file;
+		File file = Configuration.getInstance().createTempFile();
 		String extractionModelFile = extractionModelEditor.extractionModelFile;
-		if (extractionModelFile == null) {
-			file = new File("tmp_restrictions.jm");
-		} else {
+		if (extractionModelFile != null) {
 			extractionModelFile = new File(extractionModelFile).getName();
 			if (extractionModelFile.toLowerCase().endsWith(".jm")) {
-				file = new File(extractionModelFile.substring(0, extractionModelFile.length() - 4) + "-restrictions.jm");
+				file = new File(Configuration.getInstance().getTempFileFolder(), extractionModelFile.substring(0, extractionModelFile.length() - 3) + "-restrictions.jm");
 			} else {
-				file = new File(extractionModelFile + "-restrictions.jm");
+				file = new File(Configuration.getInstance().getTempFileFolder(), extractionModelFile + "-restrictions.jm");
 			}
 		}
 		extractionModelEditor.saveRestrictions(file);

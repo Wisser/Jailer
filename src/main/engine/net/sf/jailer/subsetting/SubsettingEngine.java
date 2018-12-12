@@ -534,10 +534,15 @@ public class SubsettingEngine {
 	private void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session, String stage) throws IOException, SAXException, SQLException {
 		_log.info("writing file '" + sqlScriptFile + "'...");
 
-		OutputStream outputStream = new FileOutputStream(new File(sqlScriptFile));
+		final File file = new File(sqlScriptFile);
+		final File parentFile = file.getParentFile();
+		if (parentFile != null) {
+			parentFile.mkdirs();
+		}
+		OutputStream outputStream = new FileOutputStream(file);
 		if (sqlScriptFile.toLowerCase().endsWith(".zip")) {
 			outputStream = new ZipOutputStream(outputStream);
-			String zipFileName = new File(sqlScriptFile).getName();
+			String zipFileName = file.getName();
 			((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
 		} else {
 			if (sqlScriptFile.toLowerCase().endsWith(".gz")) {
@@ -784,7 +789,7 @@ public class SubsettingEngine {
 
 		if (rest > 0) {
 			try {
-				new File(sqlScriptFile).renameTo(new File(sqlScriptFile + ".failed"));
+				file.renameTo(new File(sqlScriptFile + ".failed"));
 			} catch (Exception e) {
 				_log.warn(e.getMessage());
 			}

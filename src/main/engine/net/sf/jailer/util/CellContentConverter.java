@@ -47,11 +47,6 @@ import net.sf.jailer.database.Session;
  */
 public class CellContentConverter {
 
-	/**
-	 * All hex digits.
-	 */
-	private static final char[] hexChar = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-	
 	private final ResultSetMetaData resultSetMetaData;
 	private final Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 	private final Map<String, Integer> columnIndex = new HashMap<String, Integer>();
@@ -154,7 +149,7 @@ public class CellContentConverter {
 			}
 			return "'" + content + "'";
 		}
-		if (targetConfiguration.isIdentityInserts()) {
+		if (DBMS.MSSQL.equals(configuration) || DBMS.SYBASE.equals(configuration)) {
 			// Boolean mapping for MSSQL/Sybase
 			if (content instanceof Boolean) {
 				content = Boolean.TRUE.equals(content)? "1" : "0";
@@ -503,4 +498,9 @@ public class CellContentConverter {
 		return null;
 	}
 
+	/**
+	 * All hex digits.
+	 */
+	public static final char[] hexChar = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+	
 }

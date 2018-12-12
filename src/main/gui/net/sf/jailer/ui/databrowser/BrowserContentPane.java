@@ -3282,10 +3282,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								o = cellContentConverter.getObject(resultSet, i);
 								if (o instanceof byte[]) {
 									final long length = ((byte[]) o).length;
-									o = new LobValue() {
+									StringBuilder sb = new StringBuilder();
+									int j;
+									for (j = 0; j < length && j < 128; ++j) {
+										byte b = ((byte[]) o)[j];
+										sb.append(" ");
+										sb.append(CellContentConverter.hexChar[(b >> 4) & 15]);
+										sb.append(CellContentConverter.hexChar[b & 15]);
+									}
+									if (j < length) {
+										sb.append("... " + length + " bytes");
+									}
+									final String content = sb.toString();
+									final byte[] finalO = (byte[]) o;
+									o = new BinValue() {
 										@Override
 										public String toString() {
-											return "<Blob> " + length + " bytes";
+											return "<Bin>" + content;
+										}
+
+										@Override
+										public byte[] getContent() {
+											return finalO;
 										}
 									};
 								}
@@ -3298,7 +3316,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 										&& type != Types.NULL && type != Types.OTHER && type != Types.REF && type != Types.SQLXML && type != Types.STRUCT;
 							}
 							if (pkColumnNames.contains(quoting.requote(column.name)) || isPK) {
-								String cVal = cellContentConverter.toSql(o);
+								String cVal = cellContentConverter.toSql(o instanceof BinValue? ((BinValue) o).getContent() : o);
 								String pkValue = "B." + quoting.requote(column.name) + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
 								if (pkColumn != null) {
 									pkColumn.put(column.name, pkValue);

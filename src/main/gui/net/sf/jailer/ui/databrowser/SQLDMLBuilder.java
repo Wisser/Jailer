@@ -252,6 +252,9 @@ public class SQLDMLBuilder {
 		if (value instanceof LobValue) {
 			return null;
 		}
+		if (value instanceof BinValue) {
+			return cellContentConverter.toSql(((BinValue) value).getContent());
+		}
 		return cellContentConverter.toSql(value);
 	}
 	
