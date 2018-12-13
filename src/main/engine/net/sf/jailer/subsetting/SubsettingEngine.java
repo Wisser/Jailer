@@ -1387,7 +1387,7 @@ public class SubsettingEngine {
 		}
 		toCheck.add(extractionModel.subject);
 		boolean hasRowID = !(session.dbms.getRowidName() == null || executionContext.getNoRowid() || !insertOnly || deleteScriptFileName != null);
-		Set<Table> checked = extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null, hasRowID);
+		Set<Table> checked = extractionModel.dataModel.checkForPrimaryKey(toCheck, hasRowID);
 		if (executionContext.getCheckPrimaryKeys()) {
 			executionContext.getProgressListenerRegistry().fireNewStage("check primary keys", false, false);
 			new PrimaryKeyValidator().validatePrimaryKey(session, checked, jobManager);

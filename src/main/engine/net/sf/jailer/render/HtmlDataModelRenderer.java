@@ -142,8 +142,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			String restrictions = "none";
 			List<String> restrictionModels = restrictionFiles;
 			if (!restrictionModels.isEmpty()) {
-				restrictions = restrictionModels.toString();
-				restrictions = restrictions.substring(1, restrictions.length() - 1);
+				restrictions = "&nbsp;" + new File(restrictionModels.get(0)).getName().replace("-restrictions.jm", ".jm");
 			}
 			
 			String domains = "";

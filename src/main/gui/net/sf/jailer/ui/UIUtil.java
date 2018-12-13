@@ -136,12 +136,6 @@ public class UIUtil {
      */
     public static String choseFile(File selectedFile, String startDir, final String description, final String extension,
             Component parent, boolean addExtension, boolean forLoad, final boolean allowZip) {
-        final String extensionAlias;
-//        if (".jm".equalsIgnoreCase(extension)) {
-//            extensionAlias = ".csv";
-//        } else {
-            extensionAlias = null;
-//        }
         String newStartDir = restoreCurrentDir(extension);
         if (newStartDir != null) {
             startDir = newStartDir;
@@ -185,7 +179,7 @@ public class UIUtil {
                     }
                 }
                 if (set) {
-                    fileChooser.setFile("*" + extension + (extensionAlias != null? ";*" + extensionAlias : "") + (allowZip ? ";*" + ".zip;*" + ".gz" : ""));
+                    fileChooser.setFile("*" + extension + (allowZip ? ";*" + ".zip;*" + ".gz" : ""));
                 }
             }
         }
@@ -193,7 +187,6 @@ public class UIUtil {
             @Override
             public boolean accept(File dir, String name) {
                 return name.toLowerCase().endsWith(extension)
-                        || (extensionAlias != null && name.toLowerCase().endsWith(extensionAlias))
                         || allowZip && name.toLowerCase().endsWith(extension + ".gz")
                         || allowZip && name.toLowerCase().endsWith(extension + ".zip");
             }
@@ -218,7 +211,6 @@ public class UIUtil {
                     fn = f.getCanonicalPath();
                 }
                 if (addExtension && !(fn.endsWith(extension)
-                        || (extensionAlias != null && fn.endsWith(extensionAlias))
                         || (allowZip && (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
                     fn += extension;
                 }
@@ -232,7 +224,6 @@ public class UIUtil {
                 try {
                     fn = selFile.getCanonicalPath();
                     if (addExtension && !(fn.endsWith(extension)
-                            || (extensionAlias != null && fn.endsWith(extensionAlias))
                             || (allowZip && (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
                         fn += extension;
                     }

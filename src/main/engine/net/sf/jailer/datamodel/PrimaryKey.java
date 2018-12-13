@@ -71,6 +71,9 @@ public class PrimaryKey {
 					if (assignedUPKColumns.contains(i)) {
 						continue;
 					}
+					if (i >= primaryKey.getColumns().size()) {
+						break;
+					}
 					Column otherColumn = primaryKey.getColumns().get(i);
 					if (isAssignable(column, otherColumn)) {
 						match.put(column, otherColumn);
@@ -84,6 +87,9 @@ public class PrimaryKey {
 			Map<Column, Column> match = new HashMap<Column, Column>();
 			int i = 0;
 			for (Column column: getColumns()) {
+				if (i >= primaryKey.getColumns().size()) {
+					break;
+				}
 				Column otherColumn = primaryKey.getColumns().get(i);
 				if (isAssignable(column, otherColumn)) {
 					match.put(column, otherColumn);

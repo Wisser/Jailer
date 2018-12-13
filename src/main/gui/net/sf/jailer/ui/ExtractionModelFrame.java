@@ -1193,7 +1193,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									}
 								}
 								toCheck.add(extractionModelEditor.subject);
-								extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, false, session.dbms.getRowidName() != null);
+								extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, session.dbms.getRowidName() != null);
 							}
 	
 							String jmFile = extractionModelEditor.extractionModelFile != null? extractionModelEditor.extractionModelFile : tmpFileName;
@@ -1344,7 +1344,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * @return restrictions file
 	 */
 	private File saveRestrictions() throws Exception {
-		File file = Configuration.getInstance().createTempFile();
+		File file = new File(Configuration.getInstance().getTempFileFolder(), "NewModel");
 		String extractionModelFile = extractionModelEditor.extractionModelFile;
 		if (extractionModelFile != null) {
 			extractionModelFile = new File(extractionModelFile).getName();
