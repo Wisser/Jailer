@@ -124,8 +124,8 @@ public enum InlineViewStyle {
 		}
 	},
 
-	INFORMIX1("(Select 1 A, '2' B, 3 C from sysmaster:\"informix\".sysdual Union all "
-			+ "Select 4, '5', 6 from sysmaster:\"informix\".sysdual) %s") {
+	INFORMIX1("(Select 1 A, '2' B, 3 C from sysmaster.sysdual Union all "
+			+ "Select 4, '5', 6 from sysmaster.sysdual) %s") {
 		@Override
 		public String head(String[] columnNames) throws SQLException {
 			return "(Select ";
@@ -148,12 +148,12 @@ public enum InlineViewStyle {
 
 		@Override
 		public String separator() throws SQLException {
-			return " from sysmaster:\"informix\".sysdual Union all Select ";
+			return " from sysmaster.sysdual Union all Select ";
 		}
 
 		@Override
 		public String terminator(String name, String[] columnNames) throws SQLException {
-			StringBuilder sb = new StringBuilder(" from sysmaster:\"informix\".sysdual) " + name);
+			StringBuilder sb = new StringBuilder(" from sysmaster.sysdual) " + name);
 			return sb.toString();
 		}
 	},
@@ -225,6 +225,72 @@ public enum InlineViewStyle {
 				sb.append(columnNames[i - 1]);
 			}
 			sb.append(")");
+			return sb.toString();
+		}
+	},
+	INFORMIX3("(Select 1 A, '2' B, 3 C from systables WHERE tabid=1 Union all " + 
+			   "Select 4, '5', 6 from systables WHERE tabid=1") {
+		@Override
+		public String head(String[] columnNames) throws SQLException {
+			return "(Select ";
+		}
+
+		@Override
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
+				}
+				sb.append(values[i - 1]);
+				if (rowNumber == 0) {
+					sb.append(" " + columnNames[i - 1]);
+				}
+			}
+			return sb.toString();
+		}
+
+		@Override
+		public String separator() throws SQLException {
+			return " from systables WHERE tabid=1 Union all Select ";
+		}
+
+		@Override
+		public String terminator(String name, String[] columnNames) throws SQLException {
+			StringBuilder sb = new StringBuilder(" from systables WHERE tabid=1 " + name);
+			return sb.toString();
+		}
+	},
+	INFORMIX4("(Select 1 A, '2' B, 3 C from sysmaster:\"informix\".sysdual Union all "
+			+ "Select 4, '5', 6 from sysmaster:\"informix\".sysdual) %s") {
+		@Override
+		public String head(String[] columnNames) throws SQLException {
+			return "(Select ";
+		}
+
+		@Override
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
+				}
+				sb.append(values[i - 1]);
+				if (rowNumber == 0) {
+					sb.append(" " + columnNames[i - 1]);
+				}
+			}
+			return sb.toString();
+		}
+
+		@Override
+		public String separator() throws SQLException {
+			return " from sysmaster:\"informix\".sysdual Union all Select ";
+		}
+
+		@Override
+		public String terminator(String name, String[] columnNames) throws SQLException {
+			StringBuilder sb = new StringBuilder(" from sysmaster:\"informix\".sysdual) " + name);
 			return sb.toString();
 		}
 	};
