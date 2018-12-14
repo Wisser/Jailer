@@ -589,7 +589,10 @@ public class Session {
 				} catch (SQLException e) {
 					CancellationHandler.checkForCancellation(null);
 					CancellationHandler.end(statement, null);
-					if (++failures > 10 || (e.getErrorCode() != -911 && e.getErrorCode() != 8176)) {
+
+					boolean deadlock = "40001".equals(e.getSQLState()); // "serialization failure", see https://en.wikipedia.org/wiki/SQLSTATE
+
+					if (++failures > 10 || !deadlock) {
 						throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"", sqlUpdate, e);
 					}
 					// deadlock
