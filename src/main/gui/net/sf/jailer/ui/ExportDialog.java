@@ -500,7 +500,7 @@ public class ExportDialog extends javax.swing.JDialog {
 				return super.getListCellRendererComponent(list, levels.get(value), index, isSelected, cellHasFocus);
 			}
 		});
-		isolationLevelComboBox.setSelectedItem(String.valueOf(Connection.TRANSACTION_NONE));
+		isolationLevelComboBox.setSelectedItem(String.valueOf(Connection.TRANSACTION_READ_UNCOMMITTED));
 		isolationLevelComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
