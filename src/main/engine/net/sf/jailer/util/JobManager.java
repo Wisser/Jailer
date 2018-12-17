@@ -112,6 +112,9 @@ public class JobManager {
 	public JobManager(int threads) {
 		runnersList = new ArrayList<JobRunner>(threads);
 		if (threads > 1) {
+			
+			// TODO create new threads as needed. Avoid having more threads (and DB connections) than necessary.
+			
 			for (int i = 0; i < threads; ++i) {
 				JobRunner jobRunner = new JobRunner();
 				runnersList.add(jobRunner);

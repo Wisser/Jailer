@@ -591,12 +591,16 @@ public class Session {
 					CancellationHandler.end(statement, null);
 
 					boolean deadlock = "40001".equals(e.getSQLState()); // "serialization failure", see https://en.wikipedia.org/wiki/SQLSTATE
-
-					if (++failures > 10 || !deadlock) {
+					boolean crf = DBMS.ORACLE.equals(dbms) && e.getErrorCode() == 8176; // ORA-08176: consistent read failure; rollback data not available
+					
+					if (++failures > 10 || !(deadlock || crf)) {
 						throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"", sqlUpdate, e);
 					}
 					// deadlock
 					serializeAccess = true;
+					
+					// TODO use ReadWriteLock to serialize access
+					
 					_log.info("Deadlock! Try again.");
 				} finally {
 					if (statement != null) {
