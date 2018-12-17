@@ -87,6 +87,9 @@ public class DDLCreator {
 	 * Creates the DDL for the working-tables.
 	 */
 	public void createDDL(Session localSession, WorkingTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
+		// TODO register all current export processes.
+		// Fail if a process is still active.
+		// Use a heard beat concept to detect dead processes 
 		createDDL(new DataModel(executionContext), localSession, temporaryTableScope, workingTableSchema);
 	}
 
