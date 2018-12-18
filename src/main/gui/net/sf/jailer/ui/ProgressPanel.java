@@ -463,7 +463,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 
 	public void confirm() {
 		String message;
-		message = "Successfully finished.";
+		message = "Successfully completed.";
 		if (DMLTransformer.numberOfExportedLOBs > 0) {
 			message += "\n" + DMLTransformer.numberOfExportedLOBs + " CLOBs/BLOBs exported.\n\n" +
 					   "Note that the CLOBs/BLOBs can only\n" +

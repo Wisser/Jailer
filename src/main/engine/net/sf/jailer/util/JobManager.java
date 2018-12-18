@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 /**
  * Executes a job-list in a concurrent way.
  *  
- * @author wisser
+ * @author Ralf Wisser
  */
 public class JobManager {
 
@@ -50,6 +50,11 @@ public class JobManager {
 	 * The runners list.
 	 */
 	private final List<JobRunner> runnersList;
+	
+	/**
+	 * Maximum number of threads.
+	 */
+	private final int threads;
 	
 	/**
 	 * Thread for executing jobs.
@@ -110,15 +115,16 @@ public class JobManager {
 	 * @param threads number of threads
 	 */
 	public JobManager(int threads) {
+		this.threads = threads;
 		runnersList = new ArrayList<JobRunner>(threads);
+	}
+	
+	private void ensureThreadCapacity(int capacity) {
 		if (threads > 1) {
-			
-			// TODO create new threads as needed. Avoid having more threads (and DB connections) than necessary.
-			
-			for (int i = 0; i < threads; ++i) {
+			while (runnersList.size() < Math.min(capacity, threads)) {
 				JobRunner jobRunner = new JobRunner();
 				runnersList.add(jobRunner);
-				String threadName = "job-runner " + (i + 1);
+				String threadName = "job-runner " + runnersList.size();
 				_log.debug("starting " + threadName);
 				Thread thread = new Thread(jobRunner, threadName);
 				thread.setDaemon(true);
@@ -134,6 +140,7 @@ public class JobManager {
 	 */
 	public void executeJobs(Collection<Job> jobs) throws CancellationException, SQLException {
 		int jobCount = jobs.size();
+		ensureThreadCapacity(jobCount);
 		_log.info("starting " + jobCount + " jobs");
 		if (runnersList.isEmpty()) {
 			for (Job job: jobs) {

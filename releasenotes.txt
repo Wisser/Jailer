@@ -3,6 +3,7 @@
   - Implemented "#58 receipt += times"
   - Fixed "#34 Possible Performance-Improvement in CellContentConverter.toSql"
   - Fixed "#59 Retry Deadlock?"
+  - Automatic adjustment of the number of database connections.
 
 8.2.1
   - Intra-database export: automatic fallback to MERGE on tables without PK has been removed.
