@@ -45,7 +45,7 @@ public class APIExample {
 					new File("lib/h2-1.3.175.jar")),
 			null,
 			APIExample.class.getResource("Demo-Scott"),
-			APIExample.class.getResource("Demo-Scott.csv"),
+			APIExample.class.getResource("Demo-Scott.jm"),
 			ScriptFormat.SQL);
 	
 	// The importer
