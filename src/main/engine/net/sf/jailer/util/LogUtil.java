@@ -44,7 +44,7 @@ public class LogUtil {
 
 	public static boolean testCreateTempFile() {
 		try {
-			File tempFile = new File("tmp", "tempfiletest"); // configuration.createTempFile();
+			File tempFile = new File("tempfiletest"); // configuration.createTempFile();
 			FileOutputStream out = new FileOutputStream(tempFile);
 			out.write(0);
 			out.close();
