@@ -68,8 +68,9 @@ public class UpdateInfoManager {
 			        
 			        if (inputLine != null && !inputLine.trim().isEmpty() && inIntervall) {
 			        	final String[] versions = inputLine.trim().split(",");
+			        	String currentVersion = JailerVersion.VERSION.replaceFirst("(\\d+\\.\\d+\\.\\d+)(\\.\\d+$)", "$1");
 			        	for (String version: versions) {
-			        		if (version.trim().equals(JailerVersion.VERSION)) {
+			        		if (version.trim().equals(currentVersion)) {
 			        			return;
 			        		}
 			        	}
