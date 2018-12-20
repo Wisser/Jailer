@@ -1179,6 +1179,8 @@ public class DataBrowser extends javax.swing.JFrame {
         helpMenu = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
         helpForum = new javax.swing.JMenuItem();
+        downloadMenuItem = new javax.swing.JMenuItem();
+        jSeparator14 = new javax.swing.JPopupMenu.Separator();
         aboutMenuItem = new javax.swing.JMenuItem();
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
@@ -1992,6 +1994,15 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         helpMenu.add(helpForum);
 
+        downloadMenuItem.setText("Download Latest Version");
+        downloadMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downloadMenuItemActionPerformed(evt);
+            }
+        });
+        helpMenu.add(downloadMenuItem);
+        helpMenu.add(jSeparator14);
+
         aboutMenuItem.setText("About Jailer");
         aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2150,7 +2161,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
         try {
-            BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/data-browsing.html"));
+            BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/data-browsing.html"));
         } catch (Exception e) {
             UIUtil.showException(this, "Error", e, session);
         }
@@ -2291,7 +2302,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_helpForumActionPerformed
         try {
-            BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
+            BrowserLauncher.openURL(new URI("https://sourceforge.net/p/jailer/discussion/"));
         } catch (Exception e) {
             UIUtil.showException(this, "Error", e, session);
         }
@@ -2584,6 +2595,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JSplitPane desktopSplitPane;
     private javax.swing.JTabbedPane detailsAndBorderBrowserTabbedPane;
     private javax.swing.JButton downloadButton;
+    private javax.swing.JMenuItem downloadMenuItem;
     private javax.swing.JPanel dummy;
     private javax.swing.JMenuItem editBookmarkMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
@@ -2634,6 +2646,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator11;
     private javax.swing.JPopupMenu.Separator jSeparator12;
     private javax.swing.JPopupMenu.Separator jSeparator13;
+    private javax.swing.JPopupMenu.Separator jSeparator14;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
@@ -3849,6 +3862,10 @@ public class DataBrowser extends javax.swing.JFrame {
     	new BookmarksPanel(this, bookmarkMenu, desktop, executionContext).editBookmarks();
     	desktop.updateAllBookmarkMenues();
     }//GEN-LAST:event_editBookmarkMenuItemActionPerformed
+
+    private void downloadMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadMenuItemActionPerformed
+        UpdateInfoManager.download();
+    }//GEN-LAST:event_downloadMenuItemActionPerformed
 
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();

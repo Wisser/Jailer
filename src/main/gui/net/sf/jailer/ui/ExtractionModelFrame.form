@@ -516,10 +516,18 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="helpForum">
               <Properties>
-                <Property name="label" type="java.lang.String" value="Help Forum"/>
+                <Property name="text" type="java.lang.String" value="Forum"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="helpForumActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="downloadMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Download Latest Version"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="downloadMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="jSeparator8">

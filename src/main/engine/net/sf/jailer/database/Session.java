@@ -599,7 +599,7 @@ public class Session {
 					// deadlock
 					serializeAccess = true;
 					
-					// TODO use ReadWriteLock to serialize access
+					// TODO use semaphore to serialize access
 					
 					_log.info("Deadlock! Try again.");
 				} finally {
@@ -813,6 +813,14 @@ public class Session {
 	public DatabaseMetaData getMetaData() throws SQLException {
 		Connection con = connectionFactory.getConnection();
 		DatabaseMetaData mData = metaData.get(con);
+		if (mData != null) {
+			try {
+				// is meta data still valid?
+				mData.getIdentifierQuoteString();
+			} catch (SQLException e) {
+				mData = null;
+			}
+		}
 		if (mData == null) {
 			mData = con.getMetaData();
 			metaData.put(con, mData);

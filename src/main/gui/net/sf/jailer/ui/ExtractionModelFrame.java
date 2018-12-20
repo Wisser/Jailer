@@ -354,6 +354,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         tutorial = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JSeparator();
         helpForum = new javax.swing.JMenuItem();
+        downloadMenuItem = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JSeparator();
         jMenuItem1 = new javax.swing.JMenuItem();
 
@@ -862,13 +863,21 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu2.add(tutorial);
         jMenu2.add(jSeparator7);
 
-        helpForum.setLabel("Help Forum");
+        helpForum.setText("Forum");
         helpForum.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpForumActionPerformed(evt);
             }
         });
         jMenu2.add(helpForum);
+
+        downloadMenuItem.setText("Download Latest Version");
+        downloadMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downloadMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(downloadMenuItem);
         jMenu2.add(jSeparator8);
 
         jMenuItem1.setText("About Jailer");
@@ -919,7 +928,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpForumActionPerformed
 		try {
-			BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
+			BrowserLauncher.openURL(new URI("https://sourceforge.net/p/jailer/discussion/"));
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -931,7 +940,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void tutorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tutorialActionPerformed
 		try {
-			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/exporting-data.htm"));
+			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/exporting-data.htm"));
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -939,7 +948,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void helpContentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpContentActionPerformed
 		try {
-			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/home.htm"));
+			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/home.htm"));
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -1750,6 +1759,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void nativeLAFCheckBoxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nativeLAFCheckBoxMenuItemActionPerformed
     }//GEN-LAST:event_nativeLAFCheckBoxMenuItemActionPerformed
 
+    private void downloadMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadMenuItemActionPerformed
+    	UpdateInfoManager.download();
+    }//GEN-LAST:event_downloadMenuItemActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -2043,6 +2056,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem disconnectDb;
     private javax.swing.JButton downloadButton;
+    private javax.swing.JMenuItem downloadMenuItem;
     private javax.swing.JMenu editMenu;
     private javax.swing.JPanel editorPanel;
     private javax.swing.JMenuItem exit;
