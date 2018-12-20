@@ -380,9 +380,9 @@ public class DataModel {
 
 			// tables
 			File tabFile = new File(getTablesFile(executionContext));
-			InputStream nTablesFile = openModelFile(tabFile, failOnMissingTables, executionContext);
+			InputStream nTablesFile = openModelFile(tabFile, false, executionContext);
 			if (failOnMissingTables && nTablesFile == null) {
-				throw new RuntimeException("Datamodel not found: " + executionContext.getDataModelURL());
+				throw new RuntimeException("Data model not found: " + executionContext.getDataModelURL());
 			}
 			CsvFile tablesFile = new CsvFile(nTablesFile, null, tabFile.getPath(), null);
 			List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
@@ -947,7 +947,11 @@ public class DataModel {
 		try {
 			URL dataModelURL = executionContext.getDataModelURL();
 			URI uri = dataModelURL.toURI();
-			URI resolved = new URI(uri.toString() + file.getName()); // uri.resolve(file.getName());
+			String uriAsString = uri.toString();
+			if (!uriAsString.endsWith("/")) {
+				uriAsString += "/";
+			}
+			URI resolved = new URI(uriAsString + file.getName()); // uri.resolve(file.getName());
 			return resolved.toURL().openStream();
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
