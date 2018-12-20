@@ -4,6 +4,7 @@
   - Fixed "#34 Possible Performance-Improvement in CellContentConverter.toSql"
   - Fixed "#59 Retry Deadlock?"
   - Automatic adjustment of the number of database connections.
+  - URL of forum and manual pages on sourceforge have been corrected. 
 
 8.2.1
   - Intra-database export: automatic fallback to MERGE on tables without PK has been removed.
