@@ -60,6 +60,7 @@ public class Environment {
 				copyIfNotExists("layout");
 				copyIfNotExists("demo-scott.h2.db");
 				copyIfNotExists("demo-sakila.h2.db");
+				copyIfNotExists("example");
 
 				configuration.setTempFileFolder(newFile("tmp").getPath());
 				HtmlDataModelRenderer renderer = configuration.getRenderer();
