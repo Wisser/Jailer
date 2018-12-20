@@ -1760,7 +1760,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			exportLabel.setForeground(Color.RED);
 			err = true;
 		}
-		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
+		if (scriptFormat == ScriptFormat.INTRA_DATABASE && sourceSchemaMappingPanel.isVisible()) {
 			for (Map.Entry<String, JTextField> e: schemaMappingFields.entrySet()) {
 				if (e.getValue().getText().trim().length() == 0) {
 					JLabel label = schemaMappingLabels.get(e.getKey());
