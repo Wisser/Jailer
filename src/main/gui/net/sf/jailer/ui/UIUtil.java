@@ -747,7 +747,7 @@ public class UIUtil {
         try {
             // Get the size of the screen
             Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-            int hd = d.getY() + d.getHeight() - (dim.height - 80);
+            int hd = d.getY() + d.getHeight() - (dim.height - 60);
             if (hd > 0) {
                 d.setSize(d.getWidth(), Math.max(d.getHeight() - hd, 150));
             }
