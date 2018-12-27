@@ -234,7 +234,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			toLabel.setText(scriptFormat.getDisplayName());
 			
 			setModal(true);
-			setLocation(100, 100);
+			setLocation(100, 60);
 			Map<String, JComponent> fields = new HashMap<String, JComponent>();
 			fields.put("insert" + scriptFormat.name(), insert);
 			fields.put("threads", threads);
@@ -687,14 +687,16 @@ public class ExportDialog extends javax.swing.JDialog {
 	private void initSchemaMapping(DataModel dataModel, Map<String, JComponent> fields, Map<JTextField, String> defaults) {
 		Set<String> distinctSchemas = new HashSet<String>();
 		
+		Set<String> relevantSchemas = getRelevantSchemas(true);
 		for (Table table: dataModel.getTables()) {
 			String schema = table.getOriginalSchema(DEFAULT_SCHEMA);
-			distinctSchemas.add(schema);
+			if (relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema)) {
+				distinctSchemas.add(schema);
+			}
 		}
 		
 		List<String> sortedSchemaList = new ArrayList<String>(distinctSchemas);
 		Collections.sort(sortedSchemaList);
-		Set<String> relevantSchemas = getRelevantSchemas(true);
 		
 		boolean simplified = sortedSchemaList.size() == 1;
 		if (simplified) {
@@ -703,23 +705,20 @@ public class ExportDialog extends javax.swing.JDialog {
 		
 		int y = 0;
 		for (String schema: sortedSchemaList) {
-			boolean add = relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema);
 			JLabel a = new JLabel(schema + " into ");
 			a.setFont(new java.awt.Font("Dialog", 0, 12));
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 1;
 			gridBagConstraints.gridy = y;
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-			if (add) {
-				if (simplified) {
-					a.setText(" Target schema ");
-					gridBagConstraints.gridx = 0;
-					gridBagConstraints.gridy = 80;
-					gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-					jPanel1.add(a, gridBagConstraints);
-				} else {
-					schemaMappingPanel.add(a, gridBagConstraints);
-				}
+			if (simplified) {
+				a.setText(" Target schema ");
+				gridBagConstraints.gridx = 0;
+				gridBagConstraints.gridy = 80;
+				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				jPanel1.add(a, gridBagConstraints);
+			} else {
+				schemaMappingPanel.add(a, gridBagConstraints);
 			}
 			JComboBox cb = new JComboBox();
 			cb.setMaximumRowCount(20);
@@ -756,20 +755,16 @@ public class ExportDialog extends javax.swing.JDialog {
 			gridBagConstraints.gridx = 3;
 			gridBagConstraints.gridy = y;
 			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			if (add) {
-				if (simplified) {
-					gridBagConstraints.gridx = 1;
-					gridBagConstraints.gridy = 80;
-					gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-					gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-					jPanel1.add(ccb, gridBagConstraints);
-				} else {
-					schemaMappingPanel.add(ccb, gridBagConstraints);
-				}
+			if (simplified) {
+				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridy = 80;
+				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+				jPanel1.add(ccb, gridBagConstraints);
+			} else {
+				schemaMappingPanel.add(ccb, gridBagConstraints);
 			}
-			if (add) {
-				y++;
-			}
+			y++;
 		}
 	}
 	
@@ -783,14 +778,16 @@ public class ExportDialog extends javax.swing.JDialog {
 	private void initSourceSchemaMapping(DataModel dataModel, Map<String, JComponent> fields, Map<JTextField, String> defaults) {
 		Set<String> distinctSchemas = new HashSet<String>();
 		
+		Set<String> relevantSchemas = getRelevantSchemas(true);
 		for (Table table: dataModel.getTables()) {
 			String schema = table.getOriginalSchema(DEFAULT_SCHEMA);
-			distinctSchemas.add(schema);
+			if (relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema)) {
+				distinctSchemas.add(schema);
+			}
 		}
 		
 		List<String> sortedSchemaList = new ArrayList<String>(distinctSchemas);
 		Collections.sort(sortedSchemaList);
-		Set<String> relevantSchemas = getRelevantSchemas(true);
 		
 		boolean simplified = sortedSchemaList.size() == 1;
 		if (simplified) {
@@ -799,25 +796,22 @@ public class ExportDialog extends javax.swing.JDialog {
 		
 		int y = 0;
 		for (String schema: sortedSchemaList) {
-			boolean add = relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema);
 			JLabel b = new JLabel(" instead of ");
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 2;
 			gridBagConstraints.gridy = y;
-			if (add) {
-				if (simplified) {
-					b.setText(" Source schema ");
-					gridBagConstraints.gridx = 0;
-					gridBagConstraints.gridy = 82;
-					gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-					jPanel1.add(b, gridBagConstraints);
-					gridBagConstraints = new java.awt.GridBagConstraints();
-					gridBagConstraints.gridx = 0;
-					gridBagConstraints.gridy = 83;
-					jPanel1.add(new JLabel(" "), gridBagConstraints);
-				} else {
-					sourceSchemaMappingPanel.add(b, gridBagConstraints);
-				}
+			if (simplified) {
+				b.setText(" Source schema ");
+				gridBagConstraints.gridx = 0;
+				gridBagConstraints.gridy = 82;
+				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				jPanel1.add(b, gridBagConstraints);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = 0;
+				gridBagConstraints.gridy = 83;
+				jPanel1.add(new JLabel(" "), gridBagConstraints);
+			} else {
+				sourceSchemaMappingPanel.add(b, gridBagConstraints);
 			}
 			JComboBox cb = new JComboBox();
 			cb.setMaximumRowCount(20);
@@ -853,16 +847,14 @@ public class ExportDialog extends javax.swing.JDialog {
 			gridBagConstraints.gridx = 1;
 			gridBagConstraints.gridy = y;
 			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			if (add) {
-				if (simplified) {
-					gridBagConstraints.gridx = 1;
-					gridBagConstraints.gridy = 82;
-					gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-					gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-					jPanel1.add(ccb, gridBagConstraints);
-				} else {
-					sourceSchemaMappingPanel.add(ccb, gridBagConstraints);
-				}
+			if (simplified) {
+				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridy = 82;
+				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+				jPanel1.add(ccb, gridBagConstraints);
+			} else {
+				sourceSchemaMappingPanel.add(ccb, gridBagConstraints);
 			}
 			JLabel a = new JLabel(schema);
 			a.setFont(new java.awt.Font("Dialog", 0, 12));
@@ -870,12 +862,8 @@ public class ExportDialog extends javax.swing.JDialog {
 			gridBagConstraints.gridx = 3;
 			gridBagConstraints.gridy = y;
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-			if (add) {
-				sourceSchemaMappingPanel.add(a, gridBagConstraints);
-			}
-			if (add) {
-				y++;
-			}
+			sourceSchemaMappingPanel.add(a, gridBagConstraints);
+			y++;
 		}
 	}
 	
@@ -1760,7 +1748,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			exportLabel.setForeground(Color.RED);
 			err = true;
 		}
-		if (scriptFormat == ScriptFormat.INTRA_DATABASE && sourceSchemaMappingPanel.isVisible()) {
+		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
 			for (Map.Entry<String, JTextField> e: schemaMappingFields.entrySet()) {
 				if (e.getValue().getText().trim().length() == 0) {
 					JLabel label = schemaMappingLabels.get(e.getKey());
