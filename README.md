@@ -41,19 +41,18 @@ Jailer is a tool for database subsetting and relational data browsing.
 
 ## Installation
 
-Use the installer "Jailer-Install-<N>.exe" or unzip the file "jailer_<N>.zip".
+Use the installer "Jailer-Install-n.n.n.exe" or unzip the file "jailer_n.n.n.zip".
+See also <a href="http://jailer.sourceforge.net/faq.html#multiuser">http://jailer.sourceforge.net/faq.html#multiuser</a>
 
  - Database Subsetter
     - On windows platform execute "Jailer.exe". You can also start "jailerGUI.bat".
     - On Unix/Linux platform execute the script "jailerGUI.sh" or use "java -jar jailer.jar"
 
-
  - Data Browser
     - On windows platform execute "jailerDataBrowser.exe", or "jailerDataBrowser.bat"
     - On Unix/Linux platform execute the script "jailerDataBrowser.sh"
 
-
-
+## Contact
  - Home:    http://jailer.sourceforge.net/ or https://github.com/Wisser/Jailer
  - Forum:   https://sourceforge.net/p/jailer/discussion/
  - Support: rwisser@users.sourceforge.net

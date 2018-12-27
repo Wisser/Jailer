@@ -188,7 +188,8 @@ public class ExplainTool {
 	
 	private static File newFile(String name) {
 		File home = null;
-		if (new File(".singleuser").exists() || !LogUtil.testCreateTempFile()) {
+		if (new File(".singleuser").exists() // legacy 
+				|| new File(".multiuser").exists()) {
 			home = new File(System.getProperty("user.home"), ".jailer");
 		}
 		home.mkdirs();

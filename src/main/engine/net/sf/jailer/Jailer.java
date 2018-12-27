@@ -100,7 +100,8 @@ public class Jailer {
 			}
 		});
 
-		if (new File(".singleuser").exists() || !LogUtil.testCreateTempFile()) {
+		if (new File(".singleuser").exists() // legacy 
+				|| new File(".multiuser").exists()) {
 			File home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
 			LogUtil.reloadLog4jConfig(home);

@@ -49,7 +49,8 @@ public class Environment {
 		}
 		initialLocal = Locale.getDefault();
 		Locale.setDefault(Locale.ENGLISH);
-		if (new File(".singleuser").exists() || !LogUtil.testCreateTempFile()) {
+		if (new File(".singleuser").exists() // legacy 
+				|| new File(".multiuser").exists()) {
 			home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
 			LogUtil.reloadLog4jConfig(home);
