@@ -446,10 +446,9 @@ public class ExportDialog extends javax.swing.JDialog {
 			});
 	
 			initTargetDBMS(session);
-
-			updateCLIArea();
 			
 			pack();
+			updateCLIArea();
 			setSize(Math.max(Math.min(getSize().width, 900), 580), getSize().height);
 			placeholder.setVisible(false);
 			placeholder1.setVisible(false);
@@ -568,7 +567,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		iFMTableSchemaComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				updateCLIArea();				
+				updateCLIArea();
 			}
 		});
 		try {
@@ -706,7 +705,6 @@ public class ExportDialog extends javax.swing.JDialog {
 		int y = 0;
 		for (String schema: sortedSchemaList) {
 			JLabel a = new JLabel(schema + " into ");
-			a.setFont(new java.awt.Font("Dialog", 0, 12));
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 1;
 			gridBagConstraints.gridy = y;
@@ -857,7 +855,6 @@ public class ExportDialog extends javax.swing.JDialog {
 				sourceSchemaMappingPanel.add(ccb, gridBagConstraints);
 			}
 			JLabel a = new JLabel(schema);
-			a.setFont(new java.awt.Font("Dialog", 0, 12));
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 3;
 			gridBagConstraints.gridy = y;
@@ -981,7 +978,6 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         sourceSchemaMappingPanel.add(jLabel18, gridBagConstraints);
 
-        jLabel19.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         jLabel19.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -1011,7 +1007,6 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         schemaMappingPanel.add(jLabel13, gridBagConstraints);
 
-        jLabel14.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         jLabel14.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -1040,7 +1035,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(where, gridBagConstraints);
 
         exportLabel.setText(" Into*"); // NOI18N
@@ -1148,6 +1143,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jLabel7, gridBagConstraints);
 
         jLabel11.setText(" Where"); // NOI18N
@@ -1155,6 +1151,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 18;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jLabel11, gridBagConstraints);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
@@ -1300,7 +1297,6 @@ public class ExportDialog extends javax.swing.JDialog {
         cliArea.setEditable(false);
         cliArea.setColumns(20);
         cliArea.setLineWrap(true);
-        cliArea.setRows(5);
         cliArea.setWrapStyleWord(true);
         cliArea.setMaximumSize(new java.awt.Dimension(300, 2147483647));
         jScrollPane1.setViewportView(cliArea);
@@ -1353,6 +1349,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         jPanel1.add(commandLinePanel, gridBagConstraints);
 
         placeholder1.setText(" "); // NOI18N
@@ -1397,6 +1394,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 18;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(openWhereEditor, gridBagConstraints);
 
         additSubsLabel.setText(" "); // NOI18N
@@ -1505,8 +1503,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 59;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         jPanel1.add(iFMTableSchemaComboBox, gridBagConstraints);
 
         iFMTPanel.setLayout(new java.awt.GridBagLayout());
@@ -1531,6 +1528,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 59;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(iFMTPanel, gridBagConstraints);
 
         browseInsertButton.setText(" Browse..");
@@ -1915,11 +1913,9 @@ public class ExportDialog extends javax.swing.JDialog {
 	}//GEN-LAST:event_browseDeleteButtonActionPerformed
 
     private void checkPKsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkPKsActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_checkPKsActionPerformed
 
     private void insertIncrementallyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertIncrementallyActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_insertIncrementallyActionPerformed
 
     private void transactionalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transactionalActionPerformed
@@ -1927,7 +1923,6 @@ public class ExportDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_transactionalActionPerformed
 
     private void independentWorkingTablesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_independentWorkingTablesActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_independentWorkingTablesActionPerformed
 	
 	public boolean isOk() {
@@ -1954,8 +1949,6 @@ public class ExportDialog extends javax.swing.JDialog {
 	 * @param args the argument-list to fill
 	 */
 	public void fillCLIArgs(List<String> args) {
-		boolean withDelete = false;
-		
 		if (insert.getText().trim().length() > 0) {
 			args.add(0, "export");
 			args.add("-e");
@@ -1964,7 +1957,6 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add(0, "delete");
 		}
 		if (delete.isVisible() && delete.getText().trim().length() > 0) {
-			withDelete = true;
 			args.add("-d");
 			args.add(toFileName(delete.getText().trim()));
 		}
@@ -2075,8 +2067,6 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add(parameter.toString());
 		}
 		
-		Set<String> relevantSchemas = getRelevantSchemas(withDelete);
-	
 		StringBuilder sourceSchemaMapping = new StringBuilder();
 		for (String schema: sourceSchemaMappingFields.keySet()) {
 			String to = sourceSchemaMappingFields.get(schema).getText().trim();
@@ -2085,9 +2075,6 @@ public class ExportDialog extends javax.swing.JDialog {
 			}
 			if (sourceSchemaMapping.length() > 0) {
 				sourceSchemaMapping.append(",");
-			}
-			if (!relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema)) {
-				to = "I/" + schema;
 			}
 			sourceSchemaMapping.append((schema.equals(DEFAULT_SCHEMA)? "" : schema) + "=" + to);
 		}
