@@ -697,7 +697,7 @@ public class UIUtil {
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
         if (context != EXCEPTION_CONTEXT_USER_ERROR) {
-            contextDesc += "\nHelp Desk: https://sourceforge.net/forum/?group_id=197260";
+            contextDesc += "\nHelp Desk: https://sourceforge.net/p/jailer/discussion/";
             contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
             contextDesc += "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
             

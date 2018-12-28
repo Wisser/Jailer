@@ -88,7 +88,7 @@ public class About extends javax.swing.JDialog {
         getContentPane().add(nameLabel, gridBagConstraints);
 
         forumTextField.setEditable(false);
-        forumTextField.setText("https://sourceforge.net/forum/?group_id=197260");
+        forumTextField.setText("https://sourceforge.net/p/jailer/discussion/");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;

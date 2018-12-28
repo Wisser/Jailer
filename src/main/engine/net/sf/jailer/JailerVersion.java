@@ -44,4 +44,6 @@ public class JailerVersion {
 		System.out.print(VERSION);
 	}
 
+	// TODO Consider defining version as int[]
+	
 }
