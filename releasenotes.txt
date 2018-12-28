@@ -1,4 +1,4 @@
-8.2.2
+8.2.3
   - Implemented "#57 Analyze database convenience". UPK is formed exclusively for the tables related to the subjects.
   - Implemented "#58 receipt += times"
   - Fixed "#34 Possible Performance-Improvement in CellContentConverter.toSql"
