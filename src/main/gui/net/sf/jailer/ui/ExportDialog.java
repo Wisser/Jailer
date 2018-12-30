@@ -1039,7 +1039,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel1.add(where, gridBagConstraints);
 
         exportLabel.setText(" Into*"); // NOI18N
-        exportLabel.setToolTipText(" *  add '.zip' or '.gz' extension for compressed files");
+        exportLabel.setToolTipText("add '.zip' or '.gz' extension for compressed files");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 30;
@@ -1047,6 +1047,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel1.add(exportLabel, gridBagConstraints);
 
         jLabel3.setText(" Generate delete-script* "); // NOI18N
+        jLabel3.setToolTipText("add '.zip' or '.gz' extension for compressed files");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;
@@ -1065,6 +1066,8 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 54;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel6, gridBagConstraints);
+
+        insert.setToolTipText("add '.zip' or '.gz' extension for compressed files");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 30;
@@ -1072,6 +1075,8 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
         jPanel1.add(insert, gridBagConstraints);
+
+        delete.setToolTipText("add '.zip' or '.gz' extension for compressed files");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 40;
@@ -1157,6 +1162,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
+        subjectTable.setFont(subjectTable.getFont().deriveFont(subjectTable.getFont().getStyle() | java.awt.Font.BOLD));
         subjectTable.setText("jLabel11"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
