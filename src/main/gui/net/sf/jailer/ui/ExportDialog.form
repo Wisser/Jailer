@@ -172,7 +172,7 @@
                 <Component class="javax.swing.JLabel" name="exportLabel">
                   <Properties>
                     <Property name="text" type="java.lang.String" value=" Into*" noResource="true"/>
-                    <Property name="toolTipText" type="java.lang.String" value=" *  add &apos;.zip&apos; or &apos;.gz&apos; extension for compressed files"/>
+                    <Property name="toolTipText" type="java.lang.String" value="add &apos;.zip&apos; or &apos;.gz&apos; extension for compressed files"/>
                   </Properties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -183,6 +183,7 @@
                 <Component class="javax.swing.JLabel" name="jLabel3">
                   <Properties>
                     <Property name="text" type="java.lang.String" value=" Generate delete-script* " noResource="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value="add &apos;.zip&apos; or &apos;.gz&apos; extension for compressed files"/>
                   </Properties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -211,6 +212,9 @@
                   </Constraints>
                 </Component>
                 <Component class="javax.swing.JTextField" name="insert">
+                  <Properties>
+                    <Property name="toolTipText" type="java.lang.String" value="add &apos;.zip&apos; or &apos;.gz&apos; extension for compressed files"/>
+                  </Properties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="1" gridY="30" gridWidth="2" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="1" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
@@ -218,6 +222,9 @@
                   </Constraints>
                 </Component>
                 <Component class="javax.swing.JTextField" name="delete">
+                  <Properties>
+                    <Property name="toolTipText" type="java.lang.String" value="add &apos;.zip&apos; or &apos;.gz&apos; extension for compressed files"/>
+                  </Properties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                       <GridBagConstraints gridX="1" gridY="40" gridWidth="2" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="1" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
@@ -340,6 +347,11 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="subjectTable">
                       <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font bold="true" component="subjectTable" property="font" relativeSize="true" size="0"/>
+                          </FontInfo>
+                        </Property>
                         <Property name="text" type="java.lang.String" value="jLabel11" noResource="true"/>
                       </Properties>
                       <Constraints>
