@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Locale;
+import java.util.Random;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.render.HtmlDataModelRenderer;
@@ -72,7 +74,21 @@ public class Environment {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
+		} else {
+			if (!testCreateTempFile()) {
+				UIUtil.showException(null, "Error", 
+						new IllegalStateException(
+								"No write permission on "
+								+ new File(".").getAbsolutePath() + " \n"
+								+ "To setup multi-user mode, create a (empty) file \".multiuser\" in the this folder. "
+								+ "All model and settings files are then stored in a folder named \".jailer\" in the user's home directory."
+								));
+				System.exit(-1);
+			}
 		}
+		state = (new File(".singleuser").exists()? 1 : 0) // legacy 
+			  + (new File(".multiuser").exists()? 2 : 0)
+			  + (new File("..", "dbeauty").exists()? 4 : 0);
 	}
 
 	private static boolean copyIfNotExists(String f) throws IOException {
@@ -123,4 +139,19 @@ public class Environment {
 		return new File(home, name);
 	}
 
+	public static boolean testCreateTempFile() {
+		try {
+			File tempFile = new File("tp" + new Random().nextInt(100000));
+			FileOutputStream out = new FileOutputStream(tempFile);
+			out.write(0);
+			out.close();
+			tempFile.delete();
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
+
+	public static int state;
+	
 }
