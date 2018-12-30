@@ -54,6 +54,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -860,7 +861,8 @@ public class UIUtil {
 		    	try {
 					HttpUtil.get("http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + URLEncoder.encode(issue, "UTF-8")
 						+ "&uuid=" + URLEncoder.encode(String.valueOf(UISettings.restore("uuid")), "UTF-8")
-						+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8"));
+						+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
+						+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")");
 				} catch (UnsupportedEncodingException e) {
 					// ignore
 				}

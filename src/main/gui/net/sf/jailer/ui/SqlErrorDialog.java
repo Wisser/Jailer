@@ -22,6 +22,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.util.Date;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -294,7 +295,8 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 					+ URLEncoder.encode(sqlError ? "SQL" : "GUI", "UTF-8") + "&" + "issue="
 					+ URLEncoder.encode(issue.replace('\r', ' '), "UTF-8")
 					+ "&uuid=" + URLEncoder.encode(String.valueOf(UISettings.restore("uuid")), "UTF-8")
-					+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8"));
+					+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
+					+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")");
 			Desktop.getDesktop().browse(url);
 		} catch (Exception e) {
 			// ignore
