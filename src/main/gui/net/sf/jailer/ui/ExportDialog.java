@@ -1039,6 +1039,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel1.add(where, gridBagConstraints);
 
         exportLabel.setText(" Into*"); // NOI18N
+        exportLabel.setToolTipText(" *  add '.zip' or '.gz' extension for compressed files");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 30;
@@ -1156,13 +1157,13 @@ public class ExportDialog extends javax.swing.JDialog {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        subjectTable.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         subjectTable.setText("jLabel11"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         jPanel4.add(subjectTable, gridBagConstraints);
 
+        jLabel12.setFont(jLabel12.getFont().deriveFont((jLabel12.getFont().getStyle() | java.awt.Font.ITALIC) & ~java.awt.Font.BOLD));
         jLabel12.setText("  as T"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -1686,7 +1687,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 6);
         jPanel2.add(jButton1, gridBagConstraints);
 
-        jLabel2.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() & ~java.awt.Font.BOLD));
         jLabel2.setText(" *  add '.zip' or '.gz' extension for compressed files"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
