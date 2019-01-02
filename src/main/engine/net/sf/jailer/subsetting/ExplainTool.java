@@ -191,8 +191,8 @@ public class ExplainTool {
 		if (new File(".singleuser").exists() // legacy 
 				|| new File(".multiuser").exists()) {
 			home = new File(System.getProperty("user.home"), ".jailer");
+			home.mkdirs();
 		}
-		home.mkdirs();
 		if (home == null || new File(name).isAbsolute()) {
 			return new File(name);
 		}
