@@ -1,3 +1,9 @@
+8.2.5
+  - Improved livelock prevention.
+  - [feature-requests:#61] "Information about exported rows"
+  - [bugs:#36] "Data Export Dialog: Some settings are 'lost' between Exports"
+  - Fixed NPE in "explain" feature.
+
 8.2.4
   - Implemented "#57 Analyze database convenience". UPK is formed exclusively for the tables related to the subjects.
   - Implemented "#58 receipt += times"
