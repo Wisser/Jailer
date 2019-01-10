@@ -115,11 +115,12 @@ public class Subsetter {
 	/**
 	 * Generates the export-script.
 	 * @param whereClause if not <code>null</code>, overrides the extraction model's subject condition 
-	 * 
 	 * @param exportScriptFile the export-script file (compressed if it ends with '.zip' or '.gz')
+	 * 
+	 * @return export statistic
 	 */
-	public void execute(String whereClause, File exportScriptFile) throws SQLException, IOException {
-		execute(whereClause, exportScriptFile, null);
+	public ExportStatistic execute(String whereClause, File exportScriptFile) throws SQLException, IOException {
+		return execute(whereClause, exportScriptFile, null);
 	}
 
 	/**
