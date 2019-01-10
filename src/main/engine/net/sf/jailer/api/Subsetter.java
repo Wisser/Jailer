@@ -31,6 +31,7 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.WorkingTableScope;
+import net.sf.jailer.subsetting.ExportStatistic;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.subsetting.SubsettingEngine;
 
@@ -127,8 +128,10 @@ public class Subsetter {
 	 * @param whereClause if not <code>null</code>, overrides the extraction model's subject condition 
 	 * @param exportScriptFile the export-script file (compressed if it ends with '.zip' or '.gz'), optional
 	 * @param deleteScriptFile the delete-script file (compressed if it ends with '.zip' or '.gz'), optional
+	 * 
+	 * @return export statistic
 	 */
-	public void execute(String whereClause, File exportScriptFile, File deleteScriptFile) throws SQLException, IOException {
+	public ExportStatistic execute(String whereClause, File exportScriptFile, File deleteScriptFile) throws SQLException, IOException {
 		try {
 			if (getDataModelURL() == null) {
 				throw new IllegalStateException("missing DataModelURL");
@@ -150,7 +153,7 @@ public class Subsetter {
 					throw new IllegalStateException("no DBMS set but data-source is not net.sf.jailer.database.BasicDataSource");
 				}
 			}
-			new SubsettingEngine(executionContext).export(
+			return new SubsettingEngine(executionContext).export(
 					whereClause,
 					getExtractionModelURL(), 
 					exportScriptFile == null? null : exportScriptFile.getAbsolutePath(),

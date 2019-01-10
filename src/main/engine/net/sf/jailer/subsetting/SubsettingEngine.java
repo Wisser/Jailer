@@ -146,6 +146,11 @@ public class SubsettingEngine {
 	private StringBuffer commentHeader = new StringBuffer();
 	
 	/**
+	 * Export statistic.
+	 */
+	private ExportStatistic exportStatistic;
+	
+	/**
 	 * Sets the entity-graph to be used for finding the transitive closure.
 	 * 
 	 * @param entityGraph
@@ -216,7 +221,8 @@ public class SubsettingEngine {
 		_log.info("total progress: " + asString(totalProgress));
 		_log.info("export statistic:");
 
-		for (String line: collectedRowsCounter.createStatistic(false, datamodel)) {
+		exportStatistic = new ExportStatistic();
+		for (String line: collectedRowsCounter.createStatistic(false, datamodel, exportStatistic)) {
 			appendCommentHeader(line);
 			_log.info(line);
 		}
@@ -1280,10 +1286,15 @@ public class SubsettingEngine {
 	
 	/**
 	 * Exports entities.
+	 * 
 	 * @param datamodelBaseURL URL of datamodel folder
 	 * @param modelPoolSize size of extraction-model pool
+	 * 
+	 * @return statistic
 	 */
-	public void export(String whereClause, URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat, int modelPoolSize) throws SQLException, IOException, SAXException {
+	public ExportStatistic export(String whereClause, URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat, int modelPoolSize) throws SQLException, IOException, SAXException {
+		exportStatistic = new ExportStatistic();
+		
 		if (scriptFile != null) {
 			_log.info("exporting '" + extractionModelURL + "' to '" + scriptFile + "'");
 		}
@@ -1523,6 +1534,8 @@ public class SubsettingEngine {
 			}
 		}
 		shutDown();
+		
+		return exportStatistic;
 	}
 
 	/**
@@ -1688,7 +1701,7 @@ public class SubsettingEngine {
 		
 		appendCommentHeader("");
 		
-		for (String line: collectedRowsCounter.createStatistic(true, datamodel)) {
+		for (String line: collectedRowsCounter.createStatistic(true, datamodel, null)) {
 			appendCommentHeader(line);
 			_log.info(line);
 		}
