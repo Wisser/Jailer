@@ -3,6 +3,7 @@
   - [feature-requests:#61] "Information about exported rows"
   - [bugs:#36] "Data Export Dialog: Some settings are 'lost' between Exports"
   - Fixed NPE in "explain" feature.
+  - Minor bug fixes.
 
 8.2.4
   - Implemented "#57 Analyze database convenience". UPK is formed exclusively for the tables related to the subjects.
@@ -18,8 +19,7 @@
   - Increased SQL import performance + progress bar also for compressed files.
   - Logging did not work if the working directory is read-only.
   - Improved error handling.
-  - Minor bug fixes.
-
+c
 8.2
   - Fixed "SQLite JDBC: inconsistent internal state" during database analysis.
   - Fixed "#32 SQL analyzer: duplicate associations".
