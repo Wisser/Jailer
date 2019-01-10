@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2018 the original author or authors.
+ * Copyright 2007 - 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +89,11 @@ public class DataModel {
 	 */
 	public Map<String, Association> namedAssociations = new TreeMap<String, Association>();
 	
+	/**
+	 * Set of names of associations for which no decision has been made.
+	 */
+	public Set<String> decisionPending = new HashSet<String>();
+
 	/**
 	 * The restriction model.
 	 */
@@ -1044,10 +1049,11 @@ public class DataModel {
 		
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "known");
+		out.println("# known association; decision pending");
 		if (!restrictionDefinitions.isEmpty()) {
 			for (Association a: namedAssociations.values()) {
 				if (!a.reversed) {
-					out.println(CsvFile.encodeCell(a.getName()));
+					out.println(CsvFile.encodeCell(a.getName()) + "; " + CsvFile.encodeCell(Boolean.toString(decisionPending.contains(a.getName()))));
 				}
 			}
 		}
@@ -1057,7 +1063,7 @@ public class DataModel {
 		out.println(JailerVersion.VERSION);
 		out.close();
 	}
-	
+
 	/**
 	 * Saves xml mappings.
 	 * 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2018 the original author or authors.
+ * Copyright 2007 - 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -422,16 +422,24 @@ public class ExtractionModel {
 
 	private void disableUnknownAssociations(List<Line> lines) {
 		Set<String> known = new HashSet<String>();
+		dataModel.decisionPending.clear();
 		for (Line line: lines) {
 			known.add(line.cells.get(0));
+			if (Boolean.valueOf(line.cells.get(1))) {
+				dataModel.decisionPending.add(line.cells.get(0));
+			}
 		}
 		if (known.isEmpty()) {
 			return;
 		}
 		for (Association a: dataModel.namedAssociations.values()) {
 			String name = a.reversed? a.reversalAssociation.getName() : a.getName();
-			if (!known.contains(name) /* && a.isInsertSourceBeforeDestination() */) {
+			if (!known.contains(name)) {
+				// if (a.isInsertSourceBeforeDestination()) {  // TODO
 				dataModel.getRestrictionModel().addRestriction(a.source, a, "false", "SYSTEM", true, new HashMap<String, String>());
+				
+				// TOOD restrict to closure border (at save?)?
+				dataModel.decisionPending.add(name);
 			}
 		}
 	}
