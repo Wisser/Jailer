@@ -244,6 +244,10 @@ public class ExportDialog extends javax.swing.JDialog {
 			fields.put("insertIncrementally", insertIncrementally);
 			fields.put("independentWorkingTables", independentWorkingTables);
 			fields.put("isolationLevel", isolationLevelComboBox);
+			fields.put("upsertCheckbox", upsertCheckbox);
+			fields.put("scopeLocal", scopeLocal);
+			fields.put("scopeGlobal", scopeGlobal);
+			fields.put("scopeSession", scopeSession);
 			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
 				fields.put("$" + e.getKey(), e.getValue());
 			}
@@ -294,6 +298,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			}
 			initSourceSchemaMapping(dataModel, fields, defaults);
 			initIsolationLevel(session);
+			initScopeButtons(session);
 			
 			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
 			
@@ -360,8 +365,6 @@ public class ExportDialog extends javax.swing.JDialog {
 			} else {
 				where.setText(ConditionEditor.toSingleLine(subjectCondition));
 			}
-			
-			initScopeButtons(session);
 			
 			browseInsertButton.setIcon(loadIcon);
 			browseDeleteButton.setIcon(loadIcon);
@@ -659,12 +662,10 @@ public class ExportDialog extends javax.swing.JDialog {
 	
 	private Thread initScopeButtonThread;
 	private boolean sessionLocalIsAvailable = false;
-	private boolean globalIsAvailable = false;
 
 	private Set<String> targetSchemaSet = new TreeSet<String>();
 
 	private void initScopeButtons(final Session session) {
-		globalIsAvailable = true;
 		DBMS configuration = session.dbms;
 		sessionLocalIsAvailable = configuration.getSessionTemporaryTableManager() != null;
 
