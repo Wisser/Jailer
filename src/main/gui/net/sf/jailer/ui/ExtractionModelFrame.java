@@ -1353,14 +1353,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * @return restrictions file
 	 */
 	private File saveRestrictions() throws Exception {
-		File file = new File(Configuration.getInstance().getTempFileFolder(), "NewModel");
+		String tempFileFolder = Configuration.getInstance().getTempFileFolder();
+		new File(tempFileFolder).mkdirs();
+		File file = new File(tempFileFolder, "NewModel");
 		String extractionModelFile = extractionModelEditor.extractionModelFile;
 		if (extractionModelFile != null) {
 			extractionModelFile = new File(extractionModelFile).getName();
 			if (extractionModelFile.toLowerCase().endsWith(".jm")) {
-				file = new File(Configuration.getInstance().getTempFileFolder(), extractionModelFile.substring(0, extractionModelFile.length() - 3) + "-restrictions.jm");
+				file = new File(tempFileFolder, extractionModelFile.substring(0, extractionModelFile.length() - 3) + "-restrictions.jm");
 			} else {
-				file = new File(Configuration.getInstance().getTempFileFolder(), extractionModelFile + "-restrictions.jm");
+				file = new File(tempFileFolder, extractionModelFile + "-restrictions.jm");
 			}
 		}
 		extractionModelEditor.saveRestrictions(file);
