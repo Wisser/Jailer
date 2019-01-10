@@ -90,7 +90,7 @@ public class JobManager {
 				Job job = nextJob();
 				if (job == null) {
 					try {
-						Thread.sleep(200);
+						Thread.sleep(100);
 					} catch (InterruptedException e) {
 					}
 				} else {

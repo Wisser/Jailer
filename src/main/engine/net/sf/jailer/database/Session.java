@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 import javax.sql.DataSource;
 
@@ -548,10 +549,11 @@ public class Session {
 	}
 
 	/**
-	 * Lock for prevention of livelocks.
+	 * Prevention of livelocks.
 	 */
-	private static final Object DB_LOCK = new String("DB_LOCK");
-	
+	private final int PERMITS = Integer.MAX_VALUE / 4;
+	private Semaphore semaphore = new Semaphore(PERMITS);
+
 	/**
 	 * Executes a SQL-Update (INSERT, DELETE or UPDATE).
 	 * 
@@ -564,23 +566,52 @@ public class Session {
 			_log.info(sqlUpdate);
 		}
 		CancellationHandler.checkForCancellation(null);
+		final int maximumNumberOfFailures = 10;
 		try {
 			int rowCount = 0;
 			int failures = 0;
 			boolean ok = false;
 			boolean serializeAccess = false;
+
 			while (!ok) {
 				Statement statement = null;
 				try {
 					statement = connectionFactory.getConnection().createStatement();
 					CancellationHandler.begin(statement, null);
 					if (serializeAccess) {
-						synchronized (DB_LOCK) {
+						boolean acquired;
+						try {
+							semaphore.acquire(PERMITS);
+							acquired = true;
+						} catch (InterruptedException e) {
+							acquired = false;
+						}
+
+						try {
 							rowCount = statement.executeUpdate(sqlUpdate);
+						} finally {
+							if (acquired) {
+								semaphore.release(PERMITS);
+							}
 						}
 					} else {
-						rowCount = statement.executeUpdate(sqlUpdate);
+						boolean acquired;
+						try {
+							semaphore.acquire(1);
+							acquired = true;
+						} catch (InterruptedException e) {
+							acquired = false;
+						}
+
+						try {
+							rowCount = statement.executeUpdate(sqlUpdate);
+						} finally {
+							if (acquired) {
+								semaphore.release(1);
+							}
+						}
 					}
+
 					CancellationHandler.end(statement, null);
 					ok = true;
 					if (getLogStatements()) {
@@ -593,15 +624,17 @@ public class Session {
 					boolean deadlock = "40001".equals(e.getSQLState()); // "serialization failure", see https://en.wikipedia.org/wiki/SQLSTATE
 					boolean crf = DBMS.ORACLE.equals(dbms) && e.getErrorCode() == 8176; // ORA-08176: consistent read failure; rollback data not available
 					
-					if (++failures > 10 || !(deadlock || crf)) {
+					if (++failures > maximumNumberOfFailures || !(deadlock || crf)) {
 						throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"", sqlUpdate, e);
 					}
 					// deadlock
 					serializeAccess = true;
-					
-					// TODO use semaphore to serialize access
-					
-					_log.info("Deadlock! Try again.");
+					_log.info("Deadlock! Try again...");
+					try {
+						Thread.sleep(140);
+					} catch (InterruptedException e1) {
+						// ignore
+					}
 				} finally {
 					if (statement != null) {
 						try { statement.close(); } catch (SQLException e) { }
