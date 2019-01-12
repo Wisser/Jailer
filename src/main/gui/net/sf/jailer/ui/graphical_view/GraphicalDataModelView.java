@@ -1946,8 +1946,10 @@ public class GraphicalDataModelView extends JPanel {
 		showTableDetails = modelEditor.extractionModelFrame.showTableDetails();
 	//	dragForce.setParameter(DragForce.DRAG_COEFF, showTableDetails? 0.05f : 0.1f);
 		reversedShowDetailsTables.clear();
-		visualization.invalidateAll();
-		visualization.repaint();
+		synchronized (visualization) {
+			visualization.invalidateAll();
+			visualization.repaint();
+		}
 	}
 
 	/**
@@ -2058,8 +2060,10 @@ public class GraphicalDataModelView extends JPanel {
 		} else {
 			reversedShowDetailsTables.add(table);
 		}
-		visualization.invalidateAll();
-		display.invalidate();
+		synchronized (visualization) {
+			visualization.invalidateAll();
+			display.invalidate();
+		}
 	}
 	
 	public void setAnimationEnabled(boolean enabled) {
