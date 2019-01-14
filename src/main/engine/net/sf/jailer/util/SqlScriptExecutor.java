@@ -87,6 +87,7 @@ public class SqlScriptExecutor {
 	 */
 	private final boolean logStatements;
 	
+	private boolean transactional;
 	private RuntimeException exception;
 	
 	/**
@@ -120,6 +121,7 @@ public class SqlScriptExecutor {
 	 * @return Pair(statementCount, rowCount)
 	 */
 	public Pair<Integer, Long> executeScript(String scriptFileName, boolean transactional) throws IOException, SQLException {
+		this.transactional = transactional;
 		if (!transactional) {
 			return executeScript(scriptFileName);
 		}
@@ -351,7 +353,24 @@ public class SqlScriptExecutor {
 							session.setLogStatements(logStatements);
 							try {
 								if (stmt.trim().length() > 0) {
-									totalRowCount.addAndGet(session.execute(stmt));
+									boolean done = false;
+									long rc = 0;
+									if (finalTryMode) {
+										// [bugs:#37] PostreSQL: transactional execution
+										String withExists = stmt.replaceFirst("(?is)(DROP\\s+TABLE\\s+)", "$1IF EXISTS ");
+										if (!withExists.equals(stmt)) {
+											try {
+												rc = session.execute(withExists);
+											} catch (SQLException e) {
+												rc = session.execute(stmt);
+											}
+											done = true;
+										}
+									}
+									if (!done) {
+										rc = session.execute(stmt);
+									}
+									totalRowCount.addAndGet(rc);
 									linesRead.getAndIncrement();
 									if (!startsWithDrop) {
 										count.getAndIncrement();
@@ -362,10 +381,19 @@ public class SqlScriptExecutor {
 								if (!finalTryMode && !startsWithDrop) {
 									// fix for bug [2946477]
 									if (!stmt.trim().toUpperCase().contains("DROP TABLE JAILER_DUAL")) {
+										Session._log.warn(stmt, e);
 										if (e instanceof SqlException) {
 											((SqlException) e).setInsufficientPrivileges(count.get() == 0);
 										}
 										throw new RuntimeException(e);
+									}
+								}
+								if (transactional) {
+									try {
+										// [bugs:#37] PostreSQL: transactional execution
+										session.getConnection().commit();
+									} catch (SQLException e1) {
+										// ignore
 									}
 								}
 							} finally {
