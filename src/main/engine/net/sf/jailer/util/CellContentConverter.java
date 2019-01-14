@@ -149,8 +149,8 @@ public class CellContentConverter {
 			}
 			return "'" + content + "'";
 		}
-		if (DBMS.MSSQL.equals(configuration) || DBMS.SYBASE.equals(configuration)) {
-			// Boolean mapping for MSSQL/Sybase
+		if (DBMS.MSSQL.equals(targetConfiguration) || DBMS.SYBASE.equals(targetConfiguration) || DBMS.SQLITE.equals(targetConfiguration)) {
+			// Boolean mapping for MSSQL/Sybase/SQLite
 			if (content instanceof Boolean) {
 				content = Boolean.TRUE.equals(content)? "1" : "0";
 			}
