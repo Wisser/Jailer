@@ -124,6 +124,7 @@ import javax.swing.tree.DefaultTreeModel;
 import net.coderazzi.filters.gui.AutoChoices;
 import net.coderazzi.filters.gui.TableFilterHeader;
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -1927,7 +1928,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		try {
 			String file;
 			String ts = new SimpleDateFormat("HH-mm-ss-SSS").format(new Date());
-			File newFile;
 			
 			Table stable = table;
 			String subjectCondition;
@@ -2062,16 +2062,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //			}
 			subjectCondition = SqlUtil.replaceAliases(subjectCondition, "T", "T");
 			
-			for (int i = 1; ; ++i) {
-				file = Environment.newFile("extractionmodel" + File.separator + "by-example").getPath();
-				newFile = new File(file);
-				newFile.mkdirs();
-				file += File.separator + "SbE-" + (dataModel.getDisplayName(stable).replaceAll("['`\"/\\\\\\~]+", "")) + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".jm";
-				newFile = new File(file);
-				if (!newFile.exists()) {
-					break;
+			if (!doExport) {
+				for (int i = 1; ; ++i) {
+					file = Environment.newFile("extractionmodel" + File.separator + "by-example").getPath();
+					File newFile = new File(file);
+					newFile.mkdirs();
+					file += File.separator + "SbE-" + (dataModel.getDisplayName(stable).replaceAll("['`\"/\\\\\\~]+", "")) + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".jm";
+					newFile = new File(file);
+					if (!newFile.exists()) {
+						break;
+					}
 				}
+			} else {
+				file = Configuration.getInstance().createTempFile().getPath();
 			}
+			
 			Map<String, Map<String, double[]>> positions = new TreeMap<String, Map<String,double[]>>();
 			collectPositions(positions);
 			String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
@@ -2095,7 +2100,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				extractionModelFrame.markDirty();
 				extractionModelFrame.expandAll();
 			}
-			newFile.delete();
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e, session);
 		} finally {

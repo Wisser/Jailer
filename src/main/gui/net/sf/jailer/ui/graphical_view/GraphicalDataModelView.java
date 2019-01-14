@@ -927,9 +927,11 @@ public class GraphicalDataModelView extends JPanel {
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.FALSE.equals(table.upsert)) {
 						table.upsert = false;
-						visualization.invalidateAll();
-						display.invalidate();
-						modelEditor.markDirty();
+						synchronized (visualization) {
+							visualization.invalidateAll();
+							display.invalidate();
+							modelEditor.markDirty();
+						}
 					}
 				}
 			});
@@ -941,9 +943,11 @@ public class GraphicalDataModelView extends JPanel {
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.TRUE.equals(table.upsert)) {
 						table.upsert = true;
-						visualization.invalidateAll();
-						display.invalidate();
-						modelEditor.markDirty();
+						synchronized (visualization) {
+							visualization.invalidateAll();
+							display.invalidate();
+							modelEditor.markDirty();
+						}
 					}
 				}
 			});
@@ -954,9 +958,11 @@ public class GraphicalDataModelView extends JPanel {
 				public void actionPerformed(ActionEvent e) {
 					if (table.upsert != null) {
 						table.upsert = null;
-						visualization.invalidateAll();
-						display.invalidate();
-						modelEditor.markDirty();
+						synchronized (visualization) {
+							visualization.invalidateAll();
+							display.invalidate();
+							modelEditor.markDirty();
+						}
 					}
 				}
 			});
@@ -985,9 +991,11 @@ public class GraphicalDataModelView extends JPanel {
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.TRUE.equals(table.excludeFromDeletion)) {
 						table.excludeFromDeletion = true;
-						visualization.invalidateAll();
-						display.invalidate();
-						modelEditor.markDirty();
+						synchronized (visualization) {
+							visualization.invalidateAll();
+							display.invalidate();
+							modelEditor.markDirty();
+						}
 					}
 				}
 			});
@@ -999,9 +1007,11 @@ public class GraphicalDataModelView extends JPanel {
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.FALSE.equals(table.excludeFromDeletion)) {
 						table.excludeFromDeletion = false;
-						visualization.invalidateAll();
-						display.invalidate();
-						modelEditor.markDirty();
+						synchronized (visualization) {
+							visualization.invalidateAll();
+							display.invalidate();
+							modelEditor.markDirty();
+						}
 					}
 				}
 			});
@@ -1012,9 +1022,11 @@ public class GraphicalDataModelView extends JPanel {
 				public void actionPerformed(ActionEvent e) {
 					if (table.excludeFromDeletion != null) {
 						table.excludeFromDeletion = null;
-						visualization.invalidateAll();
-						display.invalidate();
-						modelEditor.markDirty();
+						synchronized (visualization) {
+							visualization.invalidateAll();
+							display.invalidate();
+							modelEditor.markDirty();
+						}
 					}
 				}
 			});
@@ -1114,7 +1126,9 @@ public class GraphicalDataModelView extends JPanel {
 				executionContext.getLayoutStorage().removeAll(root.getName());
 			}
 		}
-		visualization.reset();
+		synchronized (visualization) {
+			visualization.reset();
+		}
 		layout.cancel();
 	}
 
@@ -1140,13 +1154,15 @@ public class GraphicalDataModelView extends JPanel {
 	private void setGraph(Graph g) {
 		// update graph
 		inInitialization = true;
-		visualization.removeGroup(graph);
-		visualGraph = visualization.addGraph(graph, g);
-		if (visualGraph.getNodeCount() > 1) {
-			VisualItem f = (VisualItem) visualGraph.getNode(1);
-			visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
-			f.setFixed(true);
-			((VisualItem) visualGraph.getNode(0)).setFixed(true);
+		synchronized (visualization) {
+			visualization.removeGroup(graph);
+			visualGraph = visualization.addGraph(graph, g);
+			if (visualGraph.getNodeCount() > 1) {
+				VisualItem f = (VisualItem) visualGraph.getNode(1);
+				visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
+				f.setFixed(true);
+				((VisualItem) visualGraph.getNode(0)).setFixed(true);
+			}
 		}
 		
 		inInitialization = false;
