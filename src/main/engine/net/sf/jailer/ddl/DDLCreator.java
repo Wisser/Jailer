@@ -110,12 +110,24 @@ public class DDLCreator {
 			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport, workingTableSchema);
 		} catch (SQLException e) {
 			uPKWasTooLong = true;
+			try {
+				// [bugs:#37] PostreSQL: transactional execution
+				session.getConnection().commit();
+			} catch (SQLException e1) {
+				// ignore
+			}
 		}
 		// reconnect and retry with another index type
 		session.reconnect();
 		try {
 			return createDDL(datamodel, session, temporaryTableScope, 1, rowIdSupport, workingTableSchema);
 		} catch (SQLException e) {
+			try {
+				// [bugs:#37] PostreSQL: transactional execution
+				session.getConnection().commit();
+			} catch (SQLException e1) {
+				// ignore
+			}
 		}
 		// reconnect and retry with another index type
 		session.reconnect();
@@ -318,13 +330,19 @@ public class DDLCreator {
 					String testId = "ID:" + System.currentTimeMillis();
 					session.executeUpdate(
 							"INSERT INTO " + schema + SQLDialect.CONFIG_TABLE_ + "(jversion, jkey, jvalue) " +
-							"VALUES (" + JailerVersion.WORKING_TABLE_VERSION + ", '" + testId + "', 'ok')");
+							"VALUES ('" + JailerVersion.WORKING_TABLE_VERSION + "', '" + testId + "', 'ok')");
 					session.executeUpdate(
 							"DELETE FROM " + schema + SQLDialect.CONFIG_TABLE_ + " " +
-							"WHERE jversion=" + JailerVersion.WORKING_TABLE_VERSION + " and jkey='" + testId + "'");
+							"WHERE jversion='" + JailerVersion.WORKING_TABLE_VERSION + "' and jkey='" + testId + "'");
 				}
 				return uptodate[0];
 			} catch (Exception e) {
+				try {
+					// [bugs:#37] PostreSQL: transactional execution
+					session.getConnection().commit();
+				} catch (SQLException e1) {
+					// ignore
+				}
 				return false;
 			} finally {
 				session.setSilent(wasSilent);
@@ -333,7 +351,6 @@ public class DDLCreator {
 			return false;
 		}
 	}
-
 
 	/**
 	 * Checks whether working-tables schema is present.
@@ -356,6 +373,12 @@ public class DDLCreator {
 					});
 				return uptodate[0];
 			} catch (Exception e) {
+				try {
+					// [bugs:#37] PostreSQL: transactional execution
+					session.getConnection().commit();
+				} catch (SQLException e1) {
+					// ignore
+				}
 				return false;
 			}
 		} catch (Exception e) {

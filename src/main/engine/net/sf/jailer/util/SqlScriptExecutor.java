@@ -86,8 +86,7 @@ public class SqlScriptExecutor {
 	 * Log statements?
 	 */
 	private final boolean logStatements;
-	
-	private boolean transactional;
+
 	private RuntimeException exception;
 	
 	/**
@@ -121,7 +120,6 @@ public class SqlScriptExecutor {
 	 * @return Pair(statementCount, rowCount)
 	 */
 	public Pair<Integer, Long> executeScript(String scriptFileName, boolean transactional) throws IOException, SQLException {
-		this.transactional = transactional;
 		if (!transactional) {
 			return executeScript(scriptFileName);
 		}
@@ -355,7 +353,7 @@ public class SqlScriptExecutor {
 								if (stmt.trim().length() > 0) {
 									boolean done = false;
 									long rc = 0;
-									if (finalTryMode) {
+									if (startsWithDrop) {
 										// [bugs:#37] PostreSQL: transactional execution
 										String withExists = stmt.replaceFirst("(?is)(DROP\\s+TABLE\\s+)", "$1IF EXISTS ");
 										if (!withExists.equals(stmt)) {
@@ -388,13 +386,11 @@ public class SqlScriptExecutor {
 										throw new RuntimeException(e);
 									}
 								}
-								if (transactional) {
-									try {
-										// [bugs:#37] PostreSQL: transactional execution
-										session.getConnection().commit();
-									} catch (SQLException e1) {
-										// ignore
-									}
+								try {
+									// [bugs:#37] PostreSQL: transactional execution
+									session.getConnection().commit();
+								} catch (SQLException e1) {
+									// ignore
 								}
 							} finally {
 								session.setSilent(silent);

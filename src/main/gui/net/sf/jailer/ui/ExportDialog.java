@@ -57,6 +57,7 @@ import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
@@ -1794,7 +1795,13 @@ public class ExportDialog extends javax.swing.JDialog {
 			ddlArgs.add("-working-table-schema");
 			ddlArgs.add(getWorkingTableSchema());
 		}
-		DDLCreator ddlCreator = new DDLCreator(executionContext);
+		ExecutionContext cDDLExecutionContext = new ExecutionContext(executionContext);
+		cDDLExecutionContext.setIndependentWorkingTables(isIndependentWorkingTablesSelected());
+		cDDLExecutionContext.setNoRowid(!isUseRowId());
+		
+		// TODO PrimaryKeyFactory.createUPKScope
+		
+		DDLCreator ddlCreator = new DDLCreator(cDDLExecutionContext);
 		BasicDataSource dataSource;
 		String hint = 
 				"Possible solutions:\n" +
