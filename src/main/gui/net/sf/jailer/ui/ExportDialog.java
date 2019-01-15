@@ -1799,8 +1799,6 @@ public class ExportDialog extends javax.swing.JDialog {
 		cDDLExecutionContext.setIndependentWorkingTables(isIndependentWorkingTablesSelected());
 		cDDLExecutionContext.setNoRowid(!isUseRowId());
 		
-		// TODO PrimaryKeyFactory.createUPKScope
-		
 		DDLCreator ddlCreator = new DDLCreator(cDDLExecutionContext);
 		BasicDataSource dataSource;
 		String hint = 
@@ -1809,6 +1807,9 @@ public class ExportDialog extends javax.swing.JDialog {
 				"  - choose another working table schema\n" +
 				"  - execute the Jailer-DDL manually (jailer_ddl.sql)\n";
 		try {
+			if (!cDDLExecutionContext.isIndependentWorkingTables()) {
+				PrimaryKeyFactory.createUPKScope(jmFile, cDDLExecutionContext);
+			}
 			dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
 			String tableInConflict = ddlCreator.getTableInConflict(dataSource, dataSource.dbms);
 			if (tableInConflict != null && getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {

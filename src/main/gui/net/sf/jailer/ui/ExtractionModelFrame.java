@@ -64,6 +64,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
@@ -1231,7 +1232,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									ddlArgs.add(exportDialog.getWorkingTableSchema());
 								}
 								DMLTransformer.numberOfExportedLOBs = 0;
-								DDLCreator ddlCreator = new DDLCreator(executionContext);
+								
+								ExecutionContext cDDLExecutionContext = new ExecutionContext(executionContext);
+								cDDLExecutionContext.setIndependentWorkingTables(exportDialog.isIndependentWorkingTablesSelected());
+								cDDLExecutionContext.setNoRowid(!exportDialog.isUseRowId());
+								
+								DDLCreator ddlCreator = new DDLCreator(cDDLExecutionContext);
+								if (!cDDLExecutionContext.isIndependentWorkingTables()) {
+									PrimaryKeyFactory.createUPKScope(jmFile, cDDLExecutionContext);
+								}
+								
 								dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
 								String tableInConflict = ddlCreator.getTableInConflict(dataSource, dataSource.dbms);
 								if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
