@@ -387,7 +387,7 @@ public class DataModel {
 			File tabFile = new File(getTablesFile(executionContext));
 			InputStream nTablesFile = openModelFile(tabFile, false, executionContext);
 			if (failOnMissingTables && nTablesFile == null) {
-				throw new RuntimeException("Data model not found: " + executionContext.getDataModelURL());
+				throw new RuntimeException("Data model folder not found: " + executionContext.getDataModelURL());
 			}
 			CsvFile tablesFile = new CsvFile(nTablesFile, null, tabFile.getPath(), null);
 			List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());

@@ -37,6 +37,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -224,7 +225,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * @param extractionModelFile file containing the model
 	 * @param extractionModelFrame the enclosing frame
 	 */
-	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState, String connectionStateToolTip, ExecutionContext executionContext) {
+	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState, String connectionStateToolTip, ExecutionContext executionContext) throws IOException {
 		this.executionContext = executionContext;
 		this.extractionModelFrame = extractionModelFrame;
 		this.extractionModelFile = extractionModelFile;
@@ -239,27 +240,22 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		};
 		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame, parametersGetter);
-		try {
-			if (extractionModelFile == null || !new File(extractionModelFile).exists()) {
-				needsSave = extractionModelFile != null;
-				dataModel = new DataModel(executionContext);
-				extractionModel = new ExtractionModel(dataModel, executionContext);
-				executionContext.getLayoutStorage().removeAll();
-			} else {
-				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>(), new HashMap<String, String>(), executionContext);
-				executionContext.getLayoutStorage().restore(extractionModelFile);
-			}
-			subject = extractionModel.subject;
-			dataModel = extractionModel.dataModel;
-			if (subject == null && dataModel != null && !dataModel.getTables().isEmpty()) {
-				subject = dataModel.getTables().iterator().next();
-				needsSave = true;
-			}
-		} catch (Exception e) {
-			UIUtil.showException(this, extractionModelFile == null? "Error creating new Model" : "Error in " + new File(extractionModelFile).getName(), e);
-			return;
+		if (extractionModelFile == null || !new File(extractionModelFile).exists()) {
+			needsSave = extractionModelFile != null;
+			dataModel = new DataModel(executionContext);
+			extractionModel = new ExtractionModel(dataModel, executionContext);
+			executionContext.getLayoutStorage().removeAll();
+		} else {
+			extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>(), new HashMap<String, String>(), executionContext);
+			executionContext.getLayoutStorage().restore(extractionModelFile);
 		}
-
+		subject = extractionModel.subject;
+		dataModel = extractionModel.dataModel;
+		if (subject == null && dataModel != null && !dataModel.getTables().isEmpty()) {
+			subject = dataModel.getTables().iterator().next();
+			needsSave = true;
+		}
+	
 		boolean saveNeedsSave = needsSave;
 		initComponents();
 		

@@ -129,9 +129,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 *  Creates new form ExtractionModelFrame.
 	 *  
 	 *  @param extractionModelFile file containing the model, <code>null</code> for new model
-	 *  @param isHorizonal 
+	 *  @param isHorizonal
 	 */
-	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal, ExecutionContext executionContext) {
+	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal, ExecutionContext executionContext) throws IOException {
 		this(extractionModelFile, isHorizonal, null, executionContext);
 	}
 
@@ -139,9 +139,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 *  Creates new form ExtractionModelFrame.
 	 *  
 	 *  @param extractionModelFile file containing the model, <code>null</code> for new model
-	 *  @param isHorizonal 
+	 *  @param isHorizonal
 	 */
-	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal, DbConnectionDialog initDbConnectionDialog, ExecutionContext executionContext) {
+	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal, DbConnectionDialog initDbConnectionDialog, ExecutionContext executionContext) throws IOException {
 		this.executionContext = executionContext;
 		initComponents();
 		initSandbox();
@@ -1464,10 +1464,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				return;
 			}
 			UIUtil.setWaitCursor(this);
+			ExtractionModelEditor newModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext);
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
 			extractionModelEditor = null;
-			editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext), "editor");
+			editorPanel.add(extractionModelEditor = newModelEditor, "editor");
 			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 			validate();
 			extractionModelEditor.closureBorderView.refresh();
@@ -1492,9 +1493,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void reload() {
 		try {
 			UIUtil.setWaitCursor(this);
+			ExtractionModelEditor newModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext);
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
-			editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext), "editor");
+			editorPanel.add(extractionModelEditor = newModelEditor, "editor");
 			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 			validate();
 			extractionModelEditor.closureBorderView.refresh();
@@ -1951,7 +1953,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
 	}
 
-	public static ExtractionModelFrame createFrame(String file, boolean maximize, boolean visible, DbConnectionDialog connectionDialog, ExecutionContext executionContext) {
+	public static ExtractionModelFrame createFrame(String file, boolean maximize, boolean visible, DbConnectionDialog connectionDialog, ExecutionContext executionContext) throws IOException {
 		boolean isHorizonal = false;
 		ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal, connectionDialog, executionContext);
 		try {
