@@ -46,6 +46,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.sql.SQLException;
@@ -2987,6 +2988,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	                    	currentTableInDMV = toSelect;
 	                    }
                     }
+				} catch (IOException e) {
+					UIUtil.showException(DataBrowser.this, "Error", e);
 				} finally {
 					UIUtil.resetWaitCursor(DataBrowser.this);
 				}
