@@ -660,7 +660,10 @@ public class SubsettingEngine {
 	
 			rest = 0;
 	
-			if (scriptType == ScriptType.INSERT && (ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat()))) {
+			if (scriptType == ScriptType.INSERT && 
+					(executionContext.getOrderByPK() 
+					|| ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())
+					|| ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat()))) {
 				Set<Table> remaining = new HashSet<Table>(dependentTables);
 	
 				// topologically sort remaining tables while ignoring reflexive
@@ -1188,7 +1191,9 @@ public class SubsettingEngine {
 			_log.info("independent tables: " + asString(independentTables));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			for (final Table independentTable : independentTables) {
-				if (ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat()) || ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat())) {
+				if (executionContext.getOrderByPK()
+						|| ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat()) 
+						|| ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat())) {
 					// export rows sequentially, don't mix rows of different
 					// tables in a dataset!
 					writeEntities(independentTable, true);

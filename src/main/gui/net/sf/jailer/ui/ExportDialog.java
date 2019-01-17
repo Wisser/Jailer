@@ -249,6 +249,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			fields.put("scopeLocal", scopeLocal);
 			fields.put("scopeGlobal", scopeGlobal);
 			fields.put("scopeSession", scopeSession);
+			fields.put("orderByPK", orderByPKCheckbox);
 			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
 				fields.put("$" + e.getKey(), e.getValue());
 			}
@@ -277,6 +278,9 @@ public class ExportDialog extends javax.swing.JDialog {
 			} else {
 				confirmInsert.setVisible(false);
 			}
+			
+			orderByPKCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
+			orderByPKCheckbox.setVisible(ScriptFormat.SQL.equals(scriptFormat));
 			
 			sortedCheckBox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat) || ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat) || ScriptFormat.LIQUIBASE_XML.equals(scriptFormat));
 			sortedCheckBox.setSelected(true);
@@ -408,6 +412,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			explain.addActionListener(al);
 			unicode.addActionListener(al);
 			sortedCheckBox.addActionListener(al);
+			orderByPKCheckbox.addActionListener(al);
 			scopeGlobal.addActionListener(al);
 			scopeSession.addActionListener(al);
 			scopeLocal.addActionListener(al);
@@ -953,6 +958,7 @@ public class ExportDialog extends javax.swing.JDialog {
         iLHintLabel = new javax.swing.JLabel();
         transactional = new javax.swing.JCheckBox();
         independentWorkingTables = new javax.swing.JCheckBox();
+        orderByPKCheckbox = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1052,7 +1058,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel3.setToolTipText("add '.zip' or '.gz' extension for compressed files");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 40;
+        gridBagConstraints.gridy = 34;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel3, gridBagConstraints);
 
@@ -1081,7 +1087,7 @@ public class ExportDialog extends javax.swing.JDialog {
         delete.setToolTipText("add '.zip' or '.gz' extension for compressed files");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 40;
+        gridBagConstraints.gridy = 34;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
@@ -1110,7 +1116,7 @@ public class ExportDialog extends javax.swing.JDialog {
         upsertCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 44;
+        gridBagConstraints.gridy = 38;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
@@ -1378,7 +1384,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 43;
+        gridBagConstraints.gridy = 37;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
@@ -1490,14 +1496,14 @@ public class ExportDialog extends javax.swing.JDialog {
         targetDBMSComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 41;
+        gridBagConstraints.gridy = 35;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(targetDBMSComboBox, gridBagConstraints);
 
         targetDBMSLabel.setText(" Target DBMS"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 41;
+        gridBagConstraints.gridy = 35;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(targetDBMSLabel, gridBagConstraints);
 
@@ -1559,7 +1565,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 40;
+        gridBagConstraints.gridy = 34;
         jPanel1.add(browseDeleteButton, gridBagConstraints);
 
         checkPKs.setText("check primary keys"); // NOI18N
@@ -1595,7 +1601,7 @@ public class ExportDialog extends javax.swing.JDialog {
         targetDBMSLabel1.setText(" Isolation level"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 42;
+        gridBagConstraints.gridy = 36;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(targetDBMSLabel1, gridBagConstraints);
@@ -1622,7 +1628,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 42;
+        gridBagConstraints.gridy = 36;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jPanel3, gridBagConstraints);
@@ -1656,6 +1662,17 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(independentWorkingTables, gridBagConstraints);
+
+        orderByPKCheckbox.setText("order by primary key"); // NOI18N
+        orderByPKCheckbox.setToolTipText("<html>Orders the exported rows according to the primary key. This makes the result script deterministic.<br>\n<b>Please take into account that this can affect the performance.</b></html>\n");
+        orderByPKCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 39;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        jPanel1.add(orderByPKCheckbox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -2005,6 +2022,9 @@ public class ExportDialog extends javax.swing.JDialog {
 		if (!sortedCheckBox.isSelected()) {
 			args.add("-no-sorting");
 		}
+		if (orderByPKCheckbox.isSelected()) {
+			args.add("-order-by-pk");
+		}
 		if (!useRowIds.isSelected()) {
 			args.add("-no-rowid");
 		}
@@ -2267,6 +2287,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel openWhereEditor;
+    private javax.swing.JCheckBox orderByPKCheckbox;
     private javax.swing.JPanel parameterPanel;
     private javax.swing.JLabel placeholder;
     private javax.swing.JLabel placeholder1;

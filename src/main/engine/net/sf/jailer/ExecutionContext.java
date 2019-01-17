@@ -74,6 +74,7 @@ public class ExecutionContext {
 		this.workingTableSchema = other.workingTableSchema;
 		this.datamodelFolder = other.datamodelFolder;
 		this.noSorting = other.noSorting;
+		this.orderByPK = other.orderByPK;
 		this.transactional = other.transactional;
 		this.isolationLevel = other.isolationLevel;
 		this.noRowid = other.noRowid;
@@ -452,6 +453,20 @@ public class ExecutionContext {
 	}
 
 	/**
+	 * If <code>true</code>, the exported rows will be ordered according to the primary key.
+	 */
+	public boolean getOrderByPK() {
+		return orderByPK;
+	}
+
+	/**
+	 * @param orderByPK if <code>true</code>, the exported rows will be ordered according to the primary key
+	 */
+	public void setOrderByPK(boolean orderByPK) {
+		this.orderByPK = orderByPK;
+	}
+
+	/**
 	 * If <code>true</code>, Import rows in a single transaction
 	 *
 	 * @return <code>true</code> if Import rows in a single transaction
@@ -797,6 +812,9 @@ public class ExecutionContext {
 	// the exported rows will not be sorted according to foreign key constraints
 	private boolean noSorting = false;
 
+	// orders the exported rows according to the primary key
+	private boolean orderByPK = false;
+
 	// import rows in a single transaction
 	private boolean transactional = false;
 	
@@ -913,6 +931,7 @@ public class ExecutionContext {
 		workingTableSchema = commandLine.workingTableSchema;
 		datamodelFolder = commandLine.datamodelFolder;
 		noSorting = commandLine.noSorting;
+		orderByPK = commandLine.orderByPK;
 		independentWorkingTables = commandLine.independentWorkingTables;
 		transactional = commandLine.transactional;
 		isolationLevel = commandLine.isolationLevel;
