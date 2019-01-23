@@ -3,7 +3,7 @@
   - Fixed "#36 Data Export Dialog: Some settings are 'lost' between Exports"
   - FR "#62 subsequent Analyze database, new links fate", only the new "parent-> detail" relationships will be disabled.
   - FR "#61 Information about exported rows"
-  - Issue 10, "Export to SQLite - Boolean values", https://github.com/Wisser/Jailer/issues/10
+  - Fixed issue 10, "Export to SQLite - Boolean values", https://github.com/Wisser/Jailer/issues/10
 
 8.2.5
   - Improved livelock prevention.
