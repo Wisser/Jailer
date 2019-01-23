@@ -657,6 +657,16 @@ public class Subsetter {
 		this.modelPoolSize = modelPoolSize;
 	}
 
+	/**
+	 * Gets the {@link ExecutionContext}. <br>
+	 * Use this to set parameters that are not accessible via this facade.
+	 * 
+	 * @return the {@link ExecutionContext}
+	 */
+	public ExecutionContext getExecutionContext() {
+		return executionContext;
+	}
+
 	private final ExecutionContext executionContext;
 	
 	private int modelPoolSize = 10;

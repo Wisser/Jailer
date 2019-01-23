@@ -1,3 +1,10 @@
+8.2.6
+  - Fixed "#37 PostreSQL: transactional execution"
+  - Fixed "#36 Data Export Dialog: Some settings are 'lost' between Exports"
+  - FR "#62 subsequent Analyze database, new links fate", only the new "parent-> detail" relationships will be disabled.
+  - FR "#61 Information about exported rows"
+  - Issue 10, "Export to SQLite - Boolean values", https://github.com/Wisser/Jailer/issues/10
+
 8.2.5
   - Improved livelock prevention.
   - [feature-requests:#61] "Information about exported rows"
@@ -19,7 +26,7 @@
   - Increased SQL import performance + progress bar also for compressed files.
   - Logging did not work if the working directory is read-only.
   - Improved error handling.
-c
+
 8.2
   - Fixed "SQLite JDBC: inconsistent internal state" during database analysis.
   - Fixed "#32 SQL analyzer: duplicate associations".

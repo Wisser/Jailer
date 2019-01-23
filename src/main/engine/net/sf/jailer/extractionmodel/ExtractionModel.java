@@ -435,8 +435,9 @@ public class ExtractionModel {
 		for (Association a: dataModel.namedAssociations.values()) {
 			String name = a.reversed? a.reversalAssociation.getName() : a.getName();
 			if (!known.contains(name)) {
-				// if (a.isInsertSourceBeforeDestination()) {  // TODO
-				dataModel.getRestrictionModel().addRestriction(a.source, a, "false", "SYSTEM", true, new HashMap<String, String>());
+				if (a.isInsertSourceBeforeDestination()) {
+					dataModel.getRestrictionModel().addRestriction(a.source, a, "false", "SYSTEM", true, new HashMap<String, String>());
+				}
 				
 				// TOOD restrict to closure border (at save?)?
 				dataModel.decisionPending.add(name);

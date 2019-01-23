@@ -77,7 +77,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 				setTitle(title);
 				sendButton.setVisible(false);
 			} else {
-				setTitle("Internal Error");
+				setTitle("Unexpected Error");
 				sendButton.grabFocus();
 				KeyListener keyListener = new KeyListener() {
 					@Override
