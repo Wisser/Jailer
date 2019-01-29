@@ -153,7 +153,10 @@ public class UIUtil {
             }
         }
 
-        parent = SwingUtilities.getWindowAncestor(parent);
+        Window ancestor = SwingUtilities.getWindowAncestor(parent);
+        if (ancestor != null) {
+        	parent = ancestor;
+        }
         FileDialog fileChooser;
         if (parent instanceof Dialog) {
             fileChooser = new FileDialog((Dialog) parent);
