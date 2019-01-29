@@ -1,9 +1,13 @@
+8.3
+  - New "Model Migration Tool" allows you to easily find and edit the newly added associations
+    if the data model has been extended after the last change to this extraction model. 
+
 8.2.6
   - Fixed "#37 PostreSQL: transactional execution"
   - Fixed "#36 Data Export Dialog: Some settings are 'lost' between Exports"
   - FR "#62 subsequent Analyze database, new links fate", only the new "parent-> detail" relationships will be disabled.
   - FR "#61 Information about exported rows"
-  - Fixed issue 10, "Export to SQLite - Boolean values", https://github.com/Wisser/Jailer/issues/10
+  - Issue 10, "Export to SQLite - Boolean values", https://github.com/Wisser/Jailer/issues/10
 
 8.2.5
   - Improved livelock prevention.
