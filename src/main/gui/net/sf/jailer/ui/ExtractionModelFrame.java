@@ -20,6 +20,8 @@ import java.awt.Color;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -64,8 +67,8 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.extractionmodel.ExtractionModel;
@@ -156,7 +159,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         initAnimationSteptime();
 		isHorizontalLayout = isHorizonal;
 		horizontalLayoutMenuItem.setSelected(isHorizontalLayout);
-
+		
 		restrictedDependenciesView = new RestrictedDependenciesListDialog(this) {
 			private static final long serialVersionUID = -7426280043553389753L;
 			@Override
@@ -312,6 +315,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         columnOrderItem = new javax.swing.JMenuItem();
         jSeparator14 = new javax.swing.JPopupMenu.Separator();
         analyzeSQLMenuItem = new javax.swing.JMenuItem();
+        jSeparator15 = new javax.swing.JPopupMenu.Separator();
+        modelMigrationMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         ignoreAll = new javax.swing.JMenuItem();
         removeAllRestrictions = new javax.swing.JMenuItem();
@@ -562,6 +567,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu1.add(analyzeSQLMenuItem);
+        jMenu1.add(jSeparator15);
+
+        modelMigrationMenuItem.setText("Model Migration Tool");
+        modelMigrationMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                modelMigrationMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(modelMigrationMenuItem);
 
         jMenuBar2.add(jMenu1);
 
@@ -1164,10 +1178,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					switch (JOptionPane.showOptionDialog(this, 
 							"Dependency from '" + restrictedDependency.source.getName() + "' to '" + restrictedDependency.destination.getName() + "'\n" +
 							"is restricted.\nReferential integrity is not guaranteed!", "Restricted Dependency", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Ok", "Cancel", "Show dependency" }, "Cancel")) {
-					case 1: return;
+					case 0: break;
 					case 2: 
 						extractionModelEditor.closureView.selectTabComponent(extractionModelEditor.restrDepsView);
 						return;
+					default: return;
 					}
 				}
 			}
@@ -1292,10 +1307,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * Finds restricted dependency.
 	 */
 	private Association findRestrictedDependency(DataModel dataModel) {
+		Set<Table> closure = extractionModelEditor.getCurrentSubjectClosure();
 		for (Association association: dataModel.namedAssociations.values()) {
 			if (association.isInsertDestinationBeforeSource() && association.isRestricted()) {
-				if (!association.fkHasNullFilter()) {
-					return association;
+				if (closure.contains(association.source)) {
+					if (!association.fkHasNullFilter()) {
+						return association;
+					}
 				}
 			}
 		}
@@ -1777,6 +1795,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	UpdateInfoManager.download();
     }//GEN-LAST:event_downloadMenuItemActionPerformed
 
+    private void modelMigrationMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modelMigrationMenuItemActionPerformed
+        extractionModelEditor.openPendingDecisionsEditor();
+    }//GEN-LAST:event_modelMigrationMenuItemActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -2031,6 +2053,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
 	}
 
+	JDialog pendingDecisionsDialog;
+	
 	/**
 	 * Marks the model as dirty (needs save)
 	 */
@@ -2098,6 +2122,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator12;
     private javax.swing.JPopupMenu.Separator jSeparator14;
+    private javax.swing.JPopupMenu.Separator jSeparator15;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
@@ -2106,6 +2131,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
     private javax.swing.JMenuItem load;
+    javax.swing.JMenuItem modelMigrationMenuItem;
     private javax.swing.JCheckBoxMenuItem nativeLAFCheckBoxMenuItem;
     private javax.swing.JMenuItem newModel;
     private javax.swing.JMenuItem openDataBrowserItem;

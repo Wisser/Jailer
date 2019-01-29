@@ -198,9 +198,11 @@ public class PrimaryKeyFactory {
 		subjects.add(extractionModel.subject);
 		
 		Set<String> upkDomain = new HashSet<String>();
+		Set<Table> toIgnore = new HashSet<Table>();
 		for (Table subject: subjects) {
-			for (Table table: subject.closure(true)) {
+			for (Table table: subject.closure(toIgnore, true)) {
 				upkDomain.add(table.getName());
+				toIgnore.add(table);
 			}
 		}
 		

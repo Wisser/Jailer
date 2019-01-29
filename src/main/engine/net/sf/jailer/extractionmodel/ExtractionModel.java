@@ -425,7 +425,7 @@ public class ExtractionModel {
 		dataModel.decisionPending.clear();
 		for (Line line: lines) {
 			known.add(line.cells.get(0));
-			if (Boolean.valueOf(line.cells.get(1))) {
+			if ("pending".equalsIgnoreCase(line.cells.get(1))) {
 				dataModel.decisionPending.add(line.cells.get(0));
 			}
 		}
@@ -438,8 +438,6 @@ public class ExtractionModel {
 				if (a.isInsertSourceBeforeDestination()) {
 					dataModel.getRestrictionModel().addRestriction(a.source, a, "false", "SYSTEM", true, new HashMap<String, String>());
 				}
-				
-				// TOOD restrict to closure border (at save?)?
 				dataModel.decisionPending.add(name);
 			}
 		}

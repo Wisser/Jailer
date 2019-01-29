@@ -1053,7 +1053,7 @@ public class DataModel {
 		if (!restrictionDefinitions.isEmpty()) {
 			for (Association a: namedAssociations.values()) {
 				if (!a.reversed) {
-					out.println(CsvFile.encodeCell(a.getName()) + "; " + CsvFile.encodeCell(Boolean.toString(decisionPending.contains(a.getName()))));
+					out.println(CsvFile.encodeCell(a.getName()) + "; " + CsvFile.encodeCell(decisionPending.contains(a.getName())? "pending" : ""));
 				}
 			}
 		}

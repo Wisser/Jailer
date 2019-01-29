@@ -1773,4 +1773,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		tabbedPane.setSelectedComponent(tab);
 	}
 
+	public void selectTabIndex(int index) {
+		tabbedPane.setSelectedIndex(index);
+	}
+
 }
