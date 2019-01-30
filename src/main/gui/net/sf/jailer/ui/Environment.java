@@ -18,6 +18,7 @@ package net.sf.jailer.ui;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,7 +40,7 @@ public class Environment {
 
 	private static File home = null;
 	public static Locale initialLocal = Locale.ENGLISH;
-	
+
 	public static void init() {
 		String osName = System.getProperty("os.name");
 		if (osName != null) {
@@ -52,7 +53,7 @@ public class Environment {
 		}
 		initialLocal = Locale.getDefault();
 		Locale.setDefault(Locale.ENGLISH);
-		if (new File(".singleuser").exists() // legacy 
+		if (new File(".singleuser").exists() // legacy
 				|| new File(".multiuser").exists()) {
 			home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
@@ -76,30 +77,26 @@ public class Environment {
 			}
 		} else {
 			if (!testCreateTempFile()) {
-				UIUtil.showException(null, "Error", 
-						new IllegalStateException(
-								"No write permission on "
-								+ new File(".").getAbsolutePath() + " \n"
-								+ "To setup multi-user mode, create a (empty) file \".multiuser\" in the this folder. "
-								+ "All model and settings files are then stored in a folder named \".jailer\" in the user's home directory."
-								));
+				UIUtil.showException(null, "Error", new IllegalStateException("No write permission on "
+						+ new File(".").getAbsolutePath() + " \n"
+						+ "To setup multi-user mode, create a (empty) file \".multiuser\" in the this folder. "
+						+ "All model and settings files are then stored in a folder named \".jailer\" in the user's home directory."));
 				System.exit(-1);
 			}
 		}
-		state = (new File(".singleuser").exists()? 1 : 0) // legacy 
-			  + (new File(".multiuser").exists()? 2 : 0)
-			  + (new File("..", "dbeauty").exists()? 4 : 0)
-			  + (!testCreateTempFile()? 8 : 0);
+		state = (new File(".singleuser").exists() ? 1 : 0) // legacy
+				+ (new File(".multiuser").exists() ? 2 : 0) + (new File("..", "dbeauty").exists() ? 4 : 0)
+				+ (!testCreateTempFile() ? 8 : 0);
 	}
 
 	private static boolean copyIfNotExists(String f) throws IOException {
 		File sFile = new File(f);
 		File dFile = new File(home, f);
-		
+
 		if (dFile.exists() || !sFile.exists()) {
 			return false;
 		}
-		
+
 		Path sourcePath = sFile.toPath();
 		Path targetPath = dFile.toPath();
 		Files.walkFileTree(sourcePath, new CopyFileVisitor(targetPath));
@@ -107,30 +104,31 @@ public class Environment {
 	}
 
 	static class CopyFileVisitor extends SimpleFileVisitor<Path> {
-	    private final Path targetPath;
-	    private Path sourcePath = null;
-	    public CopyFileVisitor(Path targetPath) {
-	        this.targetPath = targetPath;
-	    }
+		private final Path targetPath;
+		private Path sourcePath = null;
 
-	    @Override
-	    public FileVisitResult preVisitDirectory(final Path dir,
-	    final BasicFileAttributes attrs) throws IOException {
-	        if (sourcePath == null) {
-	            sourcePath = dir;
-	        }
-	        Files.createDirectories(targetPath.resolve(sourcePath
-	                    .relativize(dir)));
-	        return FileVisitResult.CONTINUE;
-	    }
+		public CopyFileVisitor(Path targetPath) {
+			this.targetPath = targetPath;
+		}
 
-	    @Override
-	    public FileVisitResult visitFile(final Path file,
-	    final BasicFileAttributes attrs) throws IOException {
-	    Files.copy(file,
-	    		sourcePath == null? targetPath : targetPath.resolve(sourcePath.relativize(file)));
-	    return FileVisitResult.CONTINUE;
-	    }
+		@Override
+		public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+			if (sourcePath == null) {
+				sourcePath = dir;
+			}
+			Files.createDirectories(targetPath.resolve(sourcePath.relativize(dir)));
+			return FileVisitResult.CONTINUE;
+		}
+
+		@Override
+		public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+			try {
+				Files.copy(file, sourcePath == null ? targetPath : targetPath.resolve(sourcePath.relativize(file)));
+			} catch (FileAlreadyExistsException e) {
+				// ignore
+			}
+			return FileVisitResult.CONTINUE;
+		}
 	}
 
 	public static File newFile(String name) {
@@ -154,5 +152,5 @@ public class Environment {
 	}
 
 	public static int state;
-	
+
 }
