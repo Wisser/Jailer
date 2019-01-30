@@ -215,7 +215,7 @@ public class ExtractionModel {
 			try {
 				limit = Long.parseLong(subjectLine.cells.get(2));
 			} catch (NumberFormatException e) {
-				throw new RuntimeException(location, e);
+				limit = 0;
 			}
 		}
 		if (dataModel.getRestrictionModel() == null) {
