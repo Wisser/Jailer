@@ -32,6 +32,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import prefuse.Constants;
 import prefuse.render.EdgeRenderer;
+import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.visual.EdgeItem;
 import prefuse.visual.VisualItem;
@@ -262,8 +263,7 @@ public class AssociationRenderer extends EdgeRenderer {
 			}
 			color = reversed? associationColor(association.reversalAssociation) : associationColor(association);
 		}
-		item.setFillColor(color);
-		item.setStrokeColor(color);
+		boolean restricted = false;
 		BasicStroke stroke = item.getStroke();
 		if (stroke != null) {
 			if (reversed) {
@@ -274,10 +274,31 @@ public class AssociationRenderer extends EdgeRenderer {
 			if (association != null && association.isRestricted() && !association.isIgnored()) {
 				item.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), 
 					new float[] { 8f, 6f }, 1.0f));
+				restricted = true;
 			} else {
 				item.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit()));
 			}
 		}
+		if (isSelected) {
+			item.setStrokeColor(ColorLib.rgb(0, 0, 0));
+			stroke = item.getStroke();
+			if (stroke != null) {
+				BasicStroke itemStroke;
+				long animationstep = System.currentTimeMillis() / 100;
+				if (restricted) {
+					int length = 20;
+					itemStroke = new BasicStroke(stroke.getLineWidth(), BasicStroke.CAP_ROUND, stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 7f, 6f, 1f, 6f },
+							reversed? animationstep % length : length - animationstep % length);
+				} else {
+					int length = 12;
+					itemStroke = new BasicStroke(stroke.getLineWidth(), BasicStroke.CAP_ROUND, stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 7f, 5f },
+						reversed? animationstep % length : length - animationstep % length);
+				}
+				item.setStroke(itemStroke);
+			}
+		}
+		item.setFillColor(color);
+		item.setStrokeColor(color);
 		if ("XML".equals(association.getDataModel().getExportModus())) {
 			m_arrowHead = updateArrowHead(m_arrowWidth, m_arrowHeight, association, isSelected);
 			arrowIsPotAggregation = true;
