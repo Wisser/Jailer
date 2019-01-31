@@ -439,7 +439,16 @@ public class TableRenderer extends AbstractShapeRenderer {
 					isSelected = graphicalDataModelView.root != null && graphicalDataModelView.root.equals(table);
 				}
 			}
+			BasicStroke itemStroke = null;
 			if (isSelected) {
+				BasicStroke stroke = item.getStroke();
+				if (stroke != null) {
+					final int LENGTH = 12;
+					long animationstep = System.currentTimeMillis() / 100;
+					itemStroke = new BasicStroke(1.5f, BasicStroke.CAP_ROUND, stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 7f, 5f },
+						animationstep % LENGTH);
+					item.setStroke(itemStroke);
+				}
 				item.setStrokeColor(ColorLib.rgb(0, 0, 0));
 			} else {
 				item.setStrokeColor(ColorLib.rgba(0, 0, 0, 0));
@@ -448,7 +457,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 			if (graphicalDataModelView.tablesOnPath.contains(tableName)) {
 				fillColor = ColorLib.rgba(0.3f, 0.9f, 1.0f, 0.30f);
 			}
-			paint(g, item, fillColor, shape, new BasicStroke(isSelected? 1 : 0), isSelected? RENDER_TYPE_DRAW_AND_FILL : RENDER_TYPE_FILL);
+			paint(g, item, fillColor, shape, itemStroke != null? itemStroke : new BasicStroke(isSelected? 1 : 0), isSelected? RENDER_TYPE_DRAW_AND_FILL : RENDER_TYPE_FILL);
 		}
 
 		// now render the image and text

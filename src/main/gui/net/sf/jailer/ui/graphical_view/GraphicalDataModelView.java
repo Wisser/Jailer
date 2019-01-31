@@ -332,6 +332,7 @@ public class GraphicalDataModelView extends JPanel {
 		// set up a display to show the visualization
 		
 		display = new Display(visualization);
+		display.setDamageRedraw(false);
 		display.setSize(width, height);
 		display.pan(width / 2, height / 2);
 		display.setForeground(Color.GRAY);
