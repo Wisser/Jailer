@@ -123,9 +123,9 @@ public class GraphicalDataModelView extends JPanel {
 	public Association selectedAssociation;
 
 	/**
-	 * Set of names of all tables on path from selected one to the root.
+	 * Set of names of all tables on path from selected one to the root. (mapped to the position)
 	 */
-	Set<String> tablesOnPath = new HashSet<String>();
+	Map<String, Integer> tablesOnPath = new HashMap<String, Integer>();
 
 	/**
 	 * Path from selected one to the root.
@@ -1232,8 +1232,8 @@ public class GraphicalDataModelView extends JPanel {
 						for (int i = 0; i < path.size(); ++i) {
 							if (highlightPath) {
 								associationsOnPath.add(path.get(i));
-								tablesOnPath.add(path.get(i).source.getName());
-								tablesOnPath.add(path.get(i).destination.getName());
+								tablesOnPath.put(path.get(i).source.getName(), i);
+								tablesOnPath.put(path.get(i).destination.getName(), i);
 							}
 							expandTable(theGraph, path.get(i).source, path.get(i), false, null);
 							expandTable(theGraph, path.get(i).destination, path.get(i), false, null);
@@ -1983,11 +1983,11 @@ public class GraphicalDataModelView extends JPanel {
 	
 	public void exportDisplayToImage() throws Exception {
 		Association oldAssociation = selectedAssociation;
-		Set<String> oldTablesOnPath = tablesOnPath;
+		Map<String, Integer> oldTablesOnPath = tablesOnPath;
 		try {
 			synchronized (this) {
 				selectedAssociation = null;
-				tablesOnPath = new HashSet<String>();
+				tablesOnPath = new HashMap<String, Integer>();
 				inImageExport = true;
 			}
 			displayExporter.export(display);

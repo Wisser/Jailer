@@ -1625,9 +1625,11 @@ public abstract class Desktop extends JDesktopPane {
 		if (changed) {
 			rbSourceToLinks = null;
 		}
+		
+		animationStep = currentTimeMillis / (double) STEP_DELAY;
+		
 		if (lastAnimationStepTime + STEP_DELAY < currentTimeMillis) {
 			changed = true;
-			++animationStep;
 			lastAnimationStepTime = currentTimeMillis;
 		}
 		return changed;
@@ -1983,7 +1985,7 @@ public abstract class Desktop extends JDesktopPane {
 		return color;
 	}
 
-	private long animationStep = 0;
+	private double animationStep = 0;
 	long lastAnimationStepTime = 0;
 	final long STEP_DELAY = 50;
 
@@ -1997,7 +1999,7 @@ public abstract class Desktop extends JDesktopPane {
 			if (inClosure) {
 				final int LENGTH = 16;
 				g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f },
-						(inClosureRootPath ^ isToParentLink)? animationStep % LENGTH : (LENGTH - animationStep % LENGTH)));
+						(float) ((inClosureRootPath ^ isToParentLink)? animationStep % LENGTH : (LENGTH - animationStep % LENGTH))));
 			} else {
 				g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
 						1.0f) : stroke);

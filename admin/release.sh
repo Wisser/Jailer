@@ -11,6 +11,7 @@ cd ..
 mv $1.co/Jailer/* jailer
 cd jailer
 find -iname ".git" -exec rm -rf '{}' \;
+sed "s/stateOffset;/0;/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
 
 ant package
 

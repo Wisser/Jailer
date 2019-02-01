@@ -284,15 +284,15 @@ public class AssociationRenderer extends EdgeRenderer {
 			stroke = item.getStroke();
 			if (stroke != null) {
 				BasicStroke itemStroke;
-				long animationstep = System.currentTimeMillis() / 100;
+				long animationstep = System.currentTimeMillis();
 				if (restricted) {
-					int length = 20;
+					int length = 20 * 100;
 					itemStroke = new BasicStroke(stroke.getLineWidth(), BasicStroke.CAP_ROUND, stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 7f, 6f, 1f, 6f },
-							reversed? animationstep % length : length - animationstep % length);
+							(reversed? animationstep % length : length - animationstep % length) / 100.0f);
 				} else {
-					int length = 12;
+					int length = 12 * 100;
 					itemStroke = new BasicStroke(stroke.getLineWidth(), BasicStroke.CAP_ROUND, stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 7f, 5f },
-						reversed? animationstep % length : length - animationstep % length);
+						(reversed? animationstep % length : length - animationstep % length) / 100.0f);
 				}
 				item.setStroke(itemStroke);
 			}

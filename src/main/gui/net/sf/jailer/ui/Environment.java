@@ -84,9 +84,11 @@ public class Environment {
 				System.exit(-1);
 			}
 		}
+		int stateOffset = 100;
 		state = (new File(".singleuser").exists() ? 1 : 0) // legacy
 				+ (new File(".multiuser").exists() ? 2 : 0) + (new File("..", "dbeauty").exists() ? 4 : 0)
-				+ (!testCreateTempFile() ? 8 : 0);
+				+ (!testCreateTempFile() ? 8 : 0)
+				+ stateOffset;
 	}
 
 	private static boolean copyIfNotExists(String f) throws IOException {
