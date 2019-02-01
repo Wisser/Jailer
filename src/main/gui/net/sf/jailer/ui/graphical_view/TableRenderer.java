@@ -443,10 +443,10 @@ public class TableRenderer extends AbstractShapeRenderer {
 			if (isSelected) {
 				BasicStroke stroke = item.getStroke();
 				if (stroke != null) {
-					final int LENGTH = 12;
-					long animationstep = System.currentTimeMillis() / 100;
+					final int LENGTH = 12 * 100;
+					long animationstep = System.currentTimeMillis();
 					itemStroke = new BasicStroke(1.5f, BasicStroke.CAP_ROUND, stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 7f, 5f },
-						animationstep % LENGTH);
+						(animationstep % LENGTH) / 100.0f);
 					item.setStroke(itemStroke);
 				}
 				item.setStrokeColor(ColorLib.rgb(0, 0, 0));
@@ -454,8 +454,17 @@ public class TableRenderer extends AbstractShapeRenderer {
 				item.setStrokeColor(ColorLib.rgba(0, 0, 0, 0));
 			}
 			int fillColor = item.getFillColor();
-			if (graphicalDataModelView.tablesOnPath.contains(tableName)) {
-				fillColor = ColorLib.rgba(0.3f, 0.9f, 1.0f, 0.30f);
+			Integer pos = graphicalDataModelView.tablesOnPath.get(tableName);
+			if (pos != null) {
+				final int PERIOD = 6000;
+				double d = Math.sin((((System.currentTimeMillis() - pos * 500) % PERIOD) / (double) PERIOD) * 2 * Math.PI);
+				d = Math.pow(d *= d, 2.2);
+				double f = isSelected || graphicalDataModelView.tablesOnPath.size() <= 3? 0.0 : 0.70 * d;
+				fillColor = ColorLib.rgba(
+						ColorLib.interp(76, 240, f),
+						ColorLib.interp(230, 120, f),
+						ColorLib.interp(255, 90, f),
+						76);
 			}
 			paint(g, item, fillColor, shape, itemStroke != null? itemStroke : new BasicStroke(isSelected? 1 : 0), isSelected? RENDER_TYPE_DRAW_AND_FILL : RENDER_TYPE_FILL);
 		}
