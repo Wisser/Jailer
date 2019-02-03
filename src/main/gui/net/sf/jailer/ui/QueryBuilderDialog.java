@@ -81,6 +81,14 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			}
 		};
 		initComponents();
+		
+		if (jScrollPane1.getHorizontalScrollBar() != null) {
+        	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
+        }
+        if (jScrollPane1.getVerticalScrollBar() != null) {
+        	jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
+        }
+        
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(sqlTextArea);
 
@@ -170,7 +178,11 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
+        jPanel6 = new javax.swing.JPanel();
         relationshipsPanel = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Query Builder");
@@ -329,9 +341,39 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         jSplitPane1.setRightComponent(jPanel1);
 
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
         relationshipsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         relationshipsPanel.setLayout(new java.awt.GridBagLayout());
-        jScrollPane1.setViewportView(relationshipsPanel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel6.add(relationshipsPanel, gridBagConstraints);
+
+        jPanel7.setLayout(new java.awt.GridBagLayout());
+
+        jLabel3.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(96, 0, 0, 0);
+        jPanel7.add(jLabel3, gridBagConstraints);
+
+        jLabel5.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        jPanel7.add(jLabel5, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        jPanel6.add(jPanel7, gridBagConstraints);
+
+        jScrollPane1.setViewportView(jPanel6);
 
         jSplitPane1.setLeftComponent(jScrollPane1);
 
@@ -1368,11 +1410,15 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox distinctCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton joinAWithBButton;
