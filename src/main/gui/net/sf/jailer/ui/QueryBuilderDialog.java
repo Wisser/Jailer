@@ -177,6 +177,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
+        jPanel8 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel6 = new javax.swing.JPanel();
         relationshipsPanel = new javax.swing.JPanel();
@@ -341,6 +342,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         jSplitPane1.setRightComponent(jPanel1);
 
+        jPanel8.setLayout(new java.awt.GridBagLayout());
+
         jPanel6.setLayout(new java.awt.GridBagLayout());
 
         relationshipsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -352,6 +355,16 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel6.add(relationshipsPanel, gridBagConstraints);
+
+        jScrollPane1.setViewportView(jPanel6);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel8.add(jScrollPane1, gridBagConstraints);
 
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
@@ -371,11 +384,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        jPanel6.add(jPanel7, gridBagConstraints);
+        jPanel8.add(jPanel7, gridBagConstraints);
 
-        jScrollPane1.setViewportView(jPanel6);
-
-        jSplitPane1.setLeftComponent(jScrollPane1);
+        jSplitPane1.setLeftComponent(jPanel8);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1419,6 +1430,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton joinAWithBButton;
