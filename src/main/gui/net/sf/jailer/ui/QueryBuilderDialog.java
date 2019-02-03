@@ -117,7 +117,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		});
 		sqlEditButton.setVisible(false);
 		pack();
-		setSize(Math.max(700, getWidth()), 500);
+		setSize(Math.max(800, getWidth()), 500);
 		UIUtil.initPeer();
 	}
 	
@@ -153,9 +153,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        relationshipsPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         joinAWithBButton = new javax.swing.JButton();
         saveButton = new javax.swing.JButton();
@@ -169,45 +166,21 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         jPanel5 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         distinctCheckBox = new javax.swing.JCheckBox();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        relationshipsPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Query Builder");
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        relationshipsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        relationshipsPanel.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        getContentPane().add(relationshipsPanel, gridBagConstraints);
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), "SQL Query", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("DejaVu Sans", 0, 12), new java.awt.Color(86, 82, 125))); // NOI18N
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        jPanel3.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        jPanel1.add(jPanel3, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        getContentPane().add(jPanel1, gridBagConstraints);
-
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
         joinAWithBButton.setText(" Join selected Tables");
         joinAWithBButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 joinAWithBButtonActionPerformed(evt);
             }
         });
@@ -221,8 +194,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         saveButton.setText(" Save ");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveButtonActionPerformed(evt);
             }
         });
@@ -236,8 +208,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         clipboardSingleLineButton.setText(" Copy as Single Line ");
         clipboardSingleLineButton.setToolTipText(" Copy the query as a single line to the clipboard");
         clipboardSingleLineButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clipboardSingleLineButtonActionPerformed(evt);
             }
         });
@@ -273,8 +244,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         clipboardButton.setText(" Copy to Clipboard ");
         clipboardButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clipboardButtonActionPerformed(evt);
             }
         });
@@ -286,8 +256,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         sqlEditButton.setText("SQL Console");
         sqlEditButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sqlEditButtonActionPerformed(evt);
             }
         });
@@ -301,8 +270,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         cancelButton.setText("Close");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -344,6 +312,36 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 8, 0, 0);
         getContentPane().add(jPanel5, gridBagConstraints);
+
+        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setDoubleBuffered(true);
+        jSplitPane1.setOneTouchExpandable(true);
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), "SQL Query", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("DejaVu Sans", 0, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel1.add(jPanel3, gridBagConstraints);
+
+        jSplitPane1.setRightComponent(jPanel1);
+
+        relationshipsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        relationshipsPanel.setLayout(new java.awt.GridBagLayout());
+        jScrollPane1.setViewportView(relationshipsPanel);
+
+        jSplitPane1.setLeftComponent(jScrollPane1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        getContentPane().add(jSplitPane1, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1375,6 +1373,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton joinAWithBButton;
     private javax.swing.JTextField mlmTextField;
     private javax.swing.JPanel relationshipsPanel;
