@@ -23,43 +23,6 @@ import java.sql.SQLException;
  */
 public enum InlineViewStyle {
 
-	DB2("(values (1, '2', 3), (4, '5', 6)) %s(A, B, C)") {
-		@Override
-		public String head(String[] columnNames) throws SQLException {
-			return "(values ";
-		}
-
-		@Override
-		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
-			StringBuilder sb = new StringBuilder("(");
-			for (int i = 1; i <= columnNames.length; ++i) {
-				if (i > 1) {
-					sb.append(", ");
-				}
-				sb.append(values[i - 1]);
-			}
-			sb.append(")");
-			return sb.toString();
-		}
-
-		@Override
-		public String separator() throws SQLException {
-			return ", ";
-		}
-
-		@Override
-		public String terminator(String name, String[] columnNames) throws SQLException {
-			StringBuilder sb = new StringBuilder(") " + name + "(");
-			for (int i = 1; i <= columnNames.length; ++i) {
-				if (i > 1) {
-					sb.append(", ");
-				}
-				sb.append(columnNames[i - 1]);
-			}
-			sb.append(")");
-			return sb.toString();
-		}
-	},
 	MySQL("(Select 1 A, '2' B, 3 C Union all " + "Select 4, '5', 6) %s") {
 		@Override
 		public String head(String[] columnNames) throws SQLException {
@@ -120,6 +83,43 @@ public enum InlineViewStyle {
 		@Override
 		public String terminator(String name, String[] columnNames) throws SQLException {
 			StringBuilder sb = new StringBuilder(" from dual) " + name);
+			return sb.toString();
+		}
+	},
+	DB2("(values (1, '2', 3), (4, '5', 6)) %s(A, B, C)") {
+		@Override
+		public String head(String[] columnNames) throws SQLException {
+			return "(values ";
+		}
+
+		@Override
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			StringBuilder sb = new StringBuilder("(");
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
+				}
+				sb.append(values[i - 1]);
+			}
+			sb.append(")");
+			return sb.toString();
+		}
+
+		@Override
+		public String separator() throws SQLException {
+			return ", ";
+		}
+
+		@Override
+		public String terminator(String name, String[] columnNames) throws SQLException {
+			StringBuilder sb = new StringBuilder(") " + name + "(");
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
+				}
+				sb.append(columnNames[i - 1]);
+			}
+			sb.append(")");
 			return sb.toString();
 		}
 	},
