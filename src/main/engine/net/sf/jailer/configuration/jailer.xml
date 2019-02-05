@@ -769,7 +769,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
     <dbms>
         <id>POSTGRESQL</id>
         <displayName>PostgreSQL</displayName>
-        <urlPattern>jdbc:postgres.*</urlPattern>
+        <urlPattern>jdbc:postgres.*|jdbc:redshift.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
