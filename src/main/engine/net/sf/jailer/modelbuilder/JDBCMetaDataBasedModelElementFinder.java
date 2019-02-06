@@ -565,6 +565,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 										newPK.add(newC);
 									} else {
 										newPK = null;
+										break;
 									}
 								} else {
 									newPK = null;
