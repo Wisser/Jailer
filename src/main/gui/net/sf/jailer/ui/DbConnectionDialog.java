@@ -956,6 +956,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, null, w);
 			if (session != null) {
 				session.shutDown();
+//				if (DBMS.forDBMS(null) == dataSource.dbms) {
+//					// TODO: warn once about unknown DBMS
+//				}
 				return true;
 			}
 			return false;

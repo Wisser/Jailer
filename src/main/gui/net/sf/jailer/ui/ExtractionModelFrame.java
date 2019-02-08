@@ -18,10 +18,10 @@ package net.sf.jailer.ui;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Frame;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.awt.event.InputEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -147,6 +147,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal, DbConnectionDialog initDbConnectionDialog, ExecutionContext executionContext) throws IOException {
 		this.executionContext = executionContext;
 		initComponents();
+		initMenu();
 		initSandbox();
         AnimationController.registerWindow(this, new AnimationController.AnimationControl() {
 			@Override
@@ -201,6 +202,24 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				return extractionModelEditor.dataModel.getParameters(extractionModelEditor.condition.getText(), extractionModelEditor.extractionModel.additionalSubjects);
 			}
 		}, executionContext);
+	}
+
+	private void initMenu() {
+		int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+		if (mask != InputEvent.CTRL_MASK) {
+			for (int i = 0; i < jMenuBar2.getMenuCount(); ++i) {
+				JMenu menu = jMenuBar2.getMenu(i);
+				for (int j = 0; j < menu.getItemCount(); ++j) {
+					JMenuItem item = menu.getItem(j);
+					if (item != null) {
+						KeyStroke accelerator = item.getAccelerator();
+						if (accelerator != null) {
+							item.setAccelerator(KeyStroke.getKeyStroke(accelerator.getKeyCode(), mask, accelerator.isOnKeyRelease()));
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	private void initSandbox() {
@@ -318,6 +337,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jSeparator15 = new javax.swing.JPopupMenu.Separator();
         modelMigrationMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
+        undoMenuItem = new javax.swing.JMenuItem();
+        redoMenuItem = new javax.swing.JMenuItem();
+        jSeparator13 = new javax.swing.JPopupMenu.Separator();
         ignoreAll = new javax.swing.JMenuItem();
         removeAllRestrictions = new javax.swing.JMenuItem();
         jSeparator12 = new javax.swing.JSeparator();
@@ -581,6 +603,24 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         editMenu.setText("Edit");
 
+        undoMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        undoMenuItem.setText("Undo");
+        undoMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                undoMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(undoMenuItem);
+
+        redoMenuItem.setText("Redo");
+        redoMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                redoMenuItemActionPerformed(evt);
+            }
+        });
+        editMenu.add(redoMenuItem);
+        editMenu.add(jSeparator13);
+
         ignoreAll.setActionCommand("Disable all associations");
         ignoreAll.setLabel("Disable all associations");
         ignoreAll.addActionListener(new java.awt.event.ActionListener() {
@@ -666,7 +706,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         viewMenu.add(refresh);
 
-        zoomToFit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
+        zoomToFit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
         zoomToFit.setText("Zoom to fit");
         zoomToFit.setVerifyInputWhenFocusTarget(false);
         zoomToFit.addActionListener(new java.awt.event.ActionListener() {
@@ -1799,6 +1839,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         extractionModelEditor.openPendingDecisionsEditor();
     }//GEN-LAST:event_modelMigrationMenuItemActionPerformed
 
+    private void undoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoMenuItemActionPerformed
+        extractionModelEditor.undoChange();
+    }//GEN-LAST:event_undoMenuItemActionPerformed
+
+    private void redoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_redoMenuItemActionPerformed
+        extractionModelEditor.redoChange();
+    }//GEN-LAST:event_redoMenuItemActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -2121,6 +2169,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator12;
+    private javax.swing.JPopupMenu.Separator jSeparator13;
     private javax.swing.JPopupMenu.Separator jSeparator14;
     private javax.swing.JPopupMenu.Separator jSeparator15;
     private javax.swing.JSeparator jSeparator2;
@@ -2137,6 +2186,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem openDataBrowserItem;
     private javax.swing.JMenuItem openDataModelEditor;
     private javax.swing.JMenuItem queryBuilder;
+    javax.swing.JMenuItem redoMenuItem;
     private javax.swing.JMenuItem refresh;
     public javax.swing.JMenuItem reload;
     private javax.swing.JMenuItem removeAllRestrictions;
@@ -2156,6 +2206,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JRadioButtonMenuItem steptime75;
     private javax.swing.ButtonGroup steptimeGroup;
     private javax.swing.JMenuItem tutorial;
+    javax.swing.JMenuItem undoMenuItem;
     private javax.swing.JMenuItem updateDataModel;
     private javax.swing.JLabel updateInfoLabel;
     private javax.swing.JPanel updateInfoPanel;

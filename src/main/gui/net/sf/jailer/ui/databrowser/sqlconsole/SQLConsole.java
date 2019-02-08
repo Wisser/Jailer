@@ -147,7 +147,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private Session session;
     MetaDataSource metaDataSource;
     private RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
-    private final MetaDataBasedSQLCompletionProvider provider;
+	private final MetaDataBasedSQLCompletionProvider provider;
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
     private final Reference<DataModel> datamodel;
     private final ExecutionContext executionContext;
@@ -2339,7 +2339,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	CancellationHandler.cancel(this);
     	queue.add(STOP);
 	}
-	
+
+	/**
+	 * Gets the editor pane.
+	 * 
+	 * @return the editor pane
+	 */
+    public RSyntaxTextAreaWithSQLSyntaxStyle getEditorPane() {
+		return editorPane;
+	}
+
 	protected abstract void onContentStateChange(File file, boolean dirty);
 
 	static private ImageIcon runIcon;

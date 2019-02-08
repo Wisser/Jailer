@@ -43,6 +43,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 	private DataModel dataModel;
 	private boolean ok;
 	private ParameterSelector parameterSelector;
+	private String initialTemplate = "";
 	
 	/** Creates new form ColumnMapperDialog */
 	public ColumnMapperDialog(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter) {
@@ -111,6 +112,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		invalidate();
 		try {
 			mappingField.setText(XmlUtil.build(table.getXmlTemplateAsDocument(null)));
+			initialTemplate = mappingField.getText();
 		} catch (Exception e) {
 			try {
 				// try again with default template,
@@ -269,8 +271,12 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		try {
 			Document doc = XmlUtil.parse(mappingField.getText());
 			mappingField.setText(XmlUtil.build(doc));
-			table.setXmlTemplate(mappingField.getText());
-			ok = true;
+			if (!initialTemplate.equals(mappingField.getText())) {
+				table.setXmlTemplate(mappingField.getText());
+				ok = true;
+			} else {
+				ok = false;
+			}
 			setVisible(false);
 		} catch (Exception e) {
 			UIUtil.showException(parent, "Syntax Error", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);

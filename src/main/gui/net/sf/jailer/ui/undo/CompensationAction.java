@@ -13,35 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer;
+package net.sf.jailer.ui.undo;
 
 /**
- * The Jailer Version.
- * 
- * @author Ralf Wisser
+ * Compensates a change.
  */
-public class JailerVersion {
+public abstract class CompensationAction {
 
-	/**
-	 * The Jailer version.
-	 */
-	public static final String VERSION = "8.3.1.1";
-
-	/**
-	 * The Jailer working tables version.
-	 */
-	public static final int WORKING_TABLE_VERSION = 4;
-
-	/**
-	 * The Jailer application name.
-	 */
-	public static final String APPLICATION_NAME = "Jailer";
-
-	/**
-	 * Prints version.
-	 */
-	public static void main(String[] args) {
-		System.out.print(VERSION);
+	final int prio;
+	final String what;
+	final String where;
+	
+	public CompensationAction(int prio, String what, String where) {
+		this.prio = prio;
+		this.what = what;
+		this.where = where;
 	}
+	
+	/**
+	 * Compensates a change.
+	 */
+	public abstract void run();
 
 }

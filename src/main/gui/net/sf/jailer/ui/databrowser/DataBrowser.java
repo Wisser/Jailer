@@ -28,6 +28,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DropTarget;
@@ -877,7 +878,7 @@ public class DataBrowser extends javax.swing.JFrame {
         };
 
         navigationTree.getSelectionModel().addTreeSelectionListener(treeListener);
-        initDnD();
+        initDnD(this);
     }
 
     private Map<JRadioButtonMenuItem, Integer> rowLimitButtonToLimit = new HashMap<JRadioButtonMenuItem, Integer>();
@@ -3636,6 +3637,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		String title = tabName + (sqlConsoleNr > 1? " (" + sqlConsoleNr + ")" : "") + " ";
 
 		final SQLConsoleWithTitle sqlConsole = new SQLConsoleWithTitle(session, metaDataSource, datamodel, executionContext, title, titleLbl);
+		initDnD(sqlConsole.getEditorPane());
 		sqlConsoles.add(sqlConsole);
 		
 		try {
@@ -3897,8 +3899,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
 	}
 
-	private void initDnD() {
-		new DropTarget(this, new DropTargetListener() {
+	private void initDnD(Component target) {
+		new DropTarget(target, new DropTargetListener() {
 			@Override
 			public void drop(DropTargetDropEvent dtde) {
 				try {

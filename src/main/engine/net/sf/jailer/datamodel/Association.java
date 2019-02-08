@@ -607,17 +607,25 @@ public class Association extends ModelElement {
 		return true;
 	}
 
-	public void setOrResetFKNullFilter(boolean set) {
+	public boolean setOrResetFKNullFilter(boolean set) {
+		boolean changed = false;
 		Map<Column, Column> sdMap = createSourceToDestinationKeyMapping();
 		for (Column c: sdMap.keySet()) {
 			if (set) {
+				if (c.getFilter() == null || !"null".equals(c.getFilter().getExpression())) {
+					changed = true;
+				}
 				c.setFilter(new Filter("null", null, false, null));
 			} else {
+				if (c.getFilter() != null) {
+					changed = true;
+				}
 				c.setFilter(null);
 			}
 		}
 		getDataModel().deriveFilters();
 		getDataModel().version++;
+		return changed;
 	}
 
 }

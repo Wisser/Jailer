@@ -365,6 +365,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			refreshFilterPane();
 			parent.extractionModelEditor.refresh(false, false, true, true);
 			parent.extractionModelEditor.markDirty();
+			parent.extractionModelEditor.resetUndoStack();
 		}
 
 		@Override
@@ -1273,6 +1274,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		getDataModel().version++;
 		parent.extractionModelEditor.refresh(false, false, true, true);
 		parent.extractionModelEditor.markDirty();
+		parent.extractionModelEditor.resetUndoStack();
 	}
 	
 	/**

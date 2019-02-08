@@ -18,7 +18,6 @@ package net.sf.jailer.ui;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -126,7 +125,7 @@ public class Environment {
 		public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
 			try {
 				Files.copy(file, sourcePath == null ? targetPath : targetPath.resolve(sourcePath.relativize(file)));
-			} catch (FileAlreadyExistsException e) {
+			} catch (Exception e) {
 				// ignore
 			}
 			return FileVisitResult.CONTINUE;

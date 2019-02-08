@@ -60,6 +60,7 @@ import net.sf.jailer.ui.ExtractionModelEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
+import net.sf.jailer.ui.undo.CompensationAction;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.Action;
@@ -834,9 +835,7 @@ public class GraphicalDataModelView extends JPanel {
 		restrictAll.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "Disable each association with '" + model.getDisplayName(table) + "'?\n(except dependencies)?", "Add restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-					modelEditor.ignoreAll(table);
-				}
+				modelEditor.ignoreAll(table);
 			}
 		});
 		restrictAll.setEnabled(modelEditor.isIgnoreAllApplicable(table));
@@ -845,9 +844,7 @@ public class GraphicalDataModelView extends JPanel {
 		removeRestrictions.addActionListener(new ActionListener () {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "Remove all restrictions from associations with '" + model.getDisplayName(table) + "'?", "Remove restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-					modelEditor.removeAllRestrictions(table);
-				}
+				modelEditor.removeAllRestrictions(table);
 			}
 		});
 		JMenuItem htmlRender = new JMenuItem("Open HTML Render");
@@ -927,12 +924,7 @@ public class GraphicalDataModelView extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.FALSE.equals(table.upsert)) {
-						table.upsert = false;
-						synchronized (visualization) {
-							visualization.invalidateAll();
-							display.invalidate();
-							modelEditor.markDirty();
-						}
+						changeExportMode(false, table);
 					}
 				}
 			});
@@ -943,12 +935,7 @@ public class GraphicalDataModelView extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.TRUE.equals(table.upsert)) {
-						table.upsert = true;
-						synchronized (visualization) {
-							visualization.invalidateAll();
-							display.invalidate();
-							modelEditor.markDirty();
-						}
+						changeExportMode(true, table);
 					}
 				}
 			});
@@ -958,12 +945,7 @@ public class GraphicalDataModelView extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (table.upsert != null) {
-						table.upsert = null;
-						synchronized (visualization) {
-							visualization.invalidateAll();
-							display.invalidate();
-							modelEditor.markDirty();
-						}
+						changeExportMode(null, table);
 					}
 				}
 			});
@@ -991,12 +973,7 @@ public class GraphicalDataModelView extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.TRUE.equals(table.excludeFromDeletion)) {
-						table.excludeFromDeletion = true;
-						synchronized (visualization) {
-							visualization.invalidateAll();
-							display.invalidate();
-							modelEditor.markDirty();
-						}
+						changeExcludeFromDeletion(true, table);
 					}
 				}
 			});
@@ -1007,12 +984,7 @@ public class GraphicalDataModelView extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (!Boolean.FALSE.equals(table.excludeFromDeletion)) {
-						table.excludeFromDeletion = false;
-						synchronized (visualization) {
-							visualization.invalidateAll();
-							display.invalidate();
-							modelEditor.markDirty();
-						}
+						changeExcludeFromDeletion(false, table);
 					}
 				}
 			});
@@ -1022,12 +994,7 @@ public class GraphicalDataModelView extends JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (table.excludeFromDeletion != null) {
-						table.excludeFromDeletion = null;
-						synchronized (visualization) {
-							visualization.invalidateAll();
-							display.invalidate();
-							modelEditor.markDirty();
-						}
+						changeExcludeFromDeletion(null, table);
 					}
 				}
 			});
@@ -1057,6 +1024,38 @@ public class GraphicalDataModelView extends JPanel {
 		}
 		
 		return popup;
+	}
+
+	protected void changeExcludeFromDeletion(Boolean mode, final Table table) {
+		final Boolean old = table.excludeFromDeletion;
+		table.excludeFromDeletion = mode;
+		synchronized (visualization) {
+			visualization.invalidateAll();
+			display.invalidate();
+			modelEditor.markDirty();
+		}
+		modelEditor.getUndoManager().push(new CompensationAction(1, "changed exclude mode (" + (old == null? "Default" : old? "Yes" : "No") + ")", model.getDisplayName(table)) {
+			@Override
+			public void run() {
+				changeExcludeFromDeletion(old, table);
+			}
+		});;
+	}
+
+	private void changeExportMode(Boolean mode, final Table table) {
+		final Boolean old = table.upsert;
+		table.upsert = mode;
+		synchronized (visualization) {
+			visualization.invalidateAll();
+			display.invalidate();
+			modelEditor.markDirty();
+		}
+		modelEditor.getUndoManager().push(new CompensationAction(1, "changed export mode(" + (old == null? "Default" : !old? "Insert" : "Upsert") + ")", model.getDisplayName(table)) {
+			@Override
+			public void run() {
+				changeExportMode(old, table);
+			}
+		});;
 	}
 
 	/**
@@ -1705,6 +1704,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * Extention of {@link ZoomToFitControl}.
 	 */
 	private final class ZoomToFitControlExtension extends ZoomToFitControl {
+
 		private final DataModel model;
 		private final long duration;
 
@@ -1713,6 +1713,17 @@ public class GraphicalDataModelView extends JPanel {
 			super(group, margin, duration, button);
 			this.duration = duration;
 			this.model = model;
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					modelEditor.exportButton.grabFocus();
+				}
+			});
+			super.mousePressed(e);
 		}
 
 		@Override
