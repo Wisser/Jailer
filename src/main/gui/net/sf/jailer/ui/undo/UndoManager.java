@@ -230,7 +230,7 @@ public class UndoManager {
 				gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
 				gridBagConstraints.weightx = 1;
 				gridBagConstraints.weighty = 0;
-				label = new JLabel("   " + (Boolean.TRUE.equals(line[1])? "Undo" : "Redo") + "   ");
+				label = new JLabel("   " + (Boolean.TRUE.equals(line[1])? "Undone" : "Redone") + "   ");
 				label.setFont(bold2);
 				label.setBackground(Boolean.TRUE.equals(line[2])? new Color(200, 255, 90, a) : new Color(90, 255, 200, a));
 				label.setForeground(fg);
