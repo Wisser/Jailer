@@ -2,15 +2,18 @@ rm -rf ~/tmp/jailer*
 rm -rf ~/tmp/dbeauty*
 rm -rf ~/tmp/$1
 rm -rf ~/tmp/$1.co
+mkdir C:/tmp/jailer
+mkdir C:/tmp/dbeauty
 mkdir ~/tmp/jailer
 mkdir ~/tmp/$1
 mkdir ~/tmp/$1.co
 cd ~/tmp/$1.co
 git clone --depth 1 https://github.com/Wisser/Jailer.git
 cd ..
+
 mv $1.co/Jailer/* jailer
 cd jailer
-find -iname ".git" -exec rm -rf '{}' \;
+
 sed "s/stateOffset = 100/stateOffset = 0/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
 ant package
 sed "s/stateOffset = 0/stateOffset = 100/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
@@ -18,32 +21,34 @@ sed "s/stateOffset = 0/stateOffset = 100/g" src/main/gui/net/sf/jailer/ui/Enviro
 rm -rf docs/api
 rm -rf out
 
-rm -rf ~/.wine/drive_c/tmp/jailer
-cp -r . ~/.wine/drive_c/tmp/jailer/
-rm -rf ~/.wine/drive_c/tmp/jailer/admin
+rm -rf C:/tmp/jailer
+cp -r . C:/tmp/jailer
+rm -rf C:/tmp/jailer/admin
 
 sed s/%VERSION%/$1/g admin/Jailer.nsi > admin/tmp.nsi
 cd admin
-wine ~/nsis-3.03/makensis.exe tmp.nsi
+makensis tmp.nsi
 cd ..
 rm admin/tmp.nsi
 
-rm -rf ~/.wine/drive_c/tmp/dbeauty
-cp -r . ~/.wine/drive_c/tmp/dbeauty/
-rm -rf ~/.wine/drive_c/tmp/dbeauty/admin
+rm -rf C:/tmp/dbeauty
+cp -r . C:/tmp/dbeauty/
+rm -rf C:/tmp/dbeauty/admin
 
 sed s/%VERSION%/$1/g admin/dbeauty.nsi > admin/tmp.nsi
 cd admin
-wine ~/nsis-3.03/makensis.exe tmp.nsi
+makensis tmp.nsi
+
 cd ..
 rm admin/tmp.nsi
 
 sed s/%VERSION%/$1/g admin/Jailer.nsi > admin/tmp.nsi
-wine ~/nsis-3.03/makensis.exe admin/tmp.nsi
+makensis admin/tmp.nsi
 rm admin/tmp.nsi
 
 mv admin/*nstall* ..
 
+dos2unix *.sh
 chmod a+x *.sh
 
 zip -r docs/admin.zip admin
