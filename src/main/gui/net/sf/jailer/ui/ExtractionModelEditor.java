@@ -279,12 +279,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			public void undo() {
 				super.undo();
 				updateView();
+				clearMessageBox();
 			}
 
 			@Override
 			public void redo() {
 				super.redo();
 				updateView();
+				clearMessageBox();
 			}
 		};
 		
@@ -2982,7 +2984,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 	public void resetUndoStack() {
 		undoManager.reset();
-		// TODO: reduce usage
 	}
 
 	/**
@@ -3135,6 +3136,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private JComponent messageBox;
 	
 	public void addMessageBox(JComponent messageBox) {
+		undoManager.hideView();
 		clearMessageBox();
 		this.messageBox = messageBox;
 		messagePanel.add(this.messageBox);

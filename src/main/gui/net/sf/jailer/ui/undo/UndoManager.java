@@ -394,4 +394,9 @@ public class UndoManager {
 		updateView();
 	}
 
+	public void hideView() {
+		protocol.clear();
+		updateView();
+	}
+
 }
