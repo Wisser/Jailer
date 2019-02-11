@@ -55,6 +55,7 @@ import javax.swing.table.TableColumn;
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -956,9 +957,22 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, null, w);
 			if (session != null) {
 				session.shutDown();
-//				if (DBMS.forDBMS(null) == dataSource.dbms) {
-//					// TODO: warn once about unknown DBMS
-//				}
+				try {
+					if (!warned) {
+						if (DBMS.forDBMS(null) == dataSource.dbms) {
+							warned = true;
+							JOptionPane.showMessageDialog(parent,
+								"Jailer is not configured for DBMS \"" + session.getMetaData().getDatabaseProductName() + "\"\n" +
+								"The results may not be optimal.\nFor assistance please contact:\n" + 
+								"\n" + 
+								"Help desk: https://sourceforge.net/p/jailer/discussion\n" + 
+								"Mail: rwisser@users.sourceforge.net",
+								"Unknown DBMS", JOptionPane.WARNING_MESSAGE);
+						}
+					}
+				} catch (Throwable e) {
+					UIUtil.showException(null, "Error", e);
+				}
 				return true;
 			}
 			return false;
@@ -972,6 +986,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 
+	private static boolean warned = false;
+	
 	/**
 	 * Gets all DB schemas.
 	 * 
