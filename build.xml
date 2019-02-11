@@ -39,7 +39,7 @@ available targets:
 	<target name="compile-engine" depends="clean">
 		<delete file="${JAR-ENGINE}" />
 		<mkdir dir="${COMPILE_DIR}" />
-		<javac destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/engine" debug="on" deprecation="off" encoding="ISO-8859-1">
+		<javac source="1.7" target="1.7" destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/engine" debug="on" deprecation="off" encoding="ISO-8859-1">
 			<classpath>
 				<path refid="default.classpath" />
 			</classpath>
@@ -65,7 +65,7 @@ available targets:
 	<target name="compile-gui" depends="compile-engine">
 		<delete file="${JAR}" />
 		<mkdir dir="${COMPILE_DIR}" />
-		<javac destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/gui" debug="on" deprecation="off" encoding="ISO-8859-1">
+		<javac source="1.7" target="1.7" destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/gui" debug="on" deprecation="off" encoding="ISO-8859-1">
 			<classpath>
 				<path refid="default.classpath" />
 			</classpath>
@@ -120,7 +120,7 @@ available targets:
 
 	<target name="compile-test" depends="compile-engine">
 		<mkdir dir="${TEST_DIR}" />
-		<javac destdir="${TEST_DIR}" srcdir="${SRC_DIR}/test" debug="on" deprecation="off" encoding="ISO-8859-1">
+		<javac source="1.7" target="1.7" destdir="${TEST_DIR}" srcdir="${SRC_DIR}/test" debug="on" deprecation="off" encoding="ISO-8859-1">
 			<classpath>
 				<path refid="test.classpath" />
 			</classpath>
