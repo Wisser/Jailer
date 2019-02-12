@@ -1,4 +1,4 @@
-8.4
+8.4.1
   - Undo/Redo functionality.
   - Fixed an error in the analysis of views.
 
