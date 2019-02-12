@@ -861,10 +861,15 @@ public class Session {
 		return mData;
 	}
 
+	protected boolean down = false;
+	
 	/**
 	 * Closes all connections.
 	 */
 	public void shutDown() throws SQLException {
+		synchronized (this) {
+			down = true;
+		}
 		_log.info("closing connection...");
 		for (Connection con: connections) {
 			con.close();
@@ -872,7 +877,11 @@ public class Session {
 		closeTemporaryTableSession();
 		_log.info("connection closed");
 	}
-	
+
+	public synchronized boolean isDown() {
+		return down;
+	}
+
 	/**
 	 * Rolls back and closes all connections.
 	 */

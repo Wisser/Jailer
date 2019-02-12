@@ -187,6 +187,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		private boolean finished;
 		private final ResultSet inputResultSet;
 		private final RowBrowser parentBrowser;
+		private Session theSession;
 		public boolean closureLimitExceeded = false;
 		
 		public LoadJob(int limit, String andCond, RowBrowser parentBrowser, boolean selectDistinct) {
@@ -217,6 +218,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		public void run() {
 			int l;
 			synchronized (this) {
+				theSession = session;
 				l = limit;
 				if (isCanceled) {
 					CancellationHandler.reset(this);
@@ -263,7 +265,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (e != null) {
 						updateMode("error", null);
 						unhide();
-						UIUtil.showException(BrowserContentPane.this, "Error", e);
+						if (theSession == null || !theSession.isDown()) {
+							UIUtil.showException(BrowserContentPane.this, "Error", e);
+						} else {
+							theSession = null;
+						}
 					} else {
 						Set<String> prevIDs = new TreeSet<String>();
 						long prevHash = 0;
