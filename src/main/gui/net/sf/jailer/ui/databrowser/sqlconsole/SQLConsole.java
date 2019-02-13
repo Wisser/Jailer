@@ -695,7 +695,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             localStatus.numStatements++;
             status.updateView(false);
             statement = session.getConnection().createStatement();
-            CancellationHandler.reset(SQLConsole.this);
+			if (session.dbms != null) {
+				if (session.dbms.getFetchSize() != null) {
+					statement.setFetchSize(session.dbms.getFetchSize());
+				}
+			}
+			CancellationHandler.reset(SQLConsole.this);
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
             sqlStatement = 

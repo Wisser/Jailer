@@ -814,7 +814,8 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
             </entry>
         </typeReplacement>
         <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
-        
+        <fetchSize>1000</fetchSize>
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
         

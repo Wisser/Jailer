@@ -127,6 +127,7 @@ public class DBMS {
 		this.procedureDetailNeedsSpecificName = other.procedureDetailNeedsSpecificName;
 		this.limitTransactionSize = other.limitTransactionSize;
 		this.defaultSchemaQuery = other.defaultSchemaQuery;
+		this.fetchSize = fetchSize;
 	}
 
 	/**
@@ -314,6 +315,8 @@ public class DBMS {
 	private String packageSourceQuery;
 	private String packageNamesQuery;
 	private String defaultSchemaQuery;
+	
+	private Integer fetchSize = null;
 
 	private List<DatabaseObjectRenderingDescription> objectRenderers = new ArrayList<DatabaseObjectRenderingDescription>();
 	private boolean procedureDetailNeedsSpecificName = false;
@@ -1089,6 +1092,24 @@ public class DBMS {
 	 */
 	public void setLimitTransactionSize(LimitTransactionSizeInfo incremenalInsertInfo) {
 		this.limitTransactionSize = incremenalInsertInfo;
+	}
+
+	/**
+	 * Gets fetch size.
+	 * 
+	 * @return fetch size
+	 */
+	public Integer getFetchSize() {
+		return fetchSize;
+	}
+
+	/**
+	 * Sets fetch size.
+	 * 
+	 * @param fetchSize fetch size
+	 */
+	public void setFetchSize(Integer fetchSize) {
+		this.fetchSize = fetchSize;
 	}
 
 	/* (non-Javadoc)
