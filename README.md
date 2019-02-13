@@ -19,7 +19,12 @@ Jailer is a tool for database subsetting and relational data browsing.
  - Data Browsing. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
  - SQL Console with code completion, syntax highlighting and database metadata visualization.
 
- 
+## Prerequisites
+
+ - Java JRE 7 (or above)
+   Important: due to HiDPI graphics support, Java JRE 11 (or above) is strongly recommended.
+ - JDBC-driver for your RDBMS
+
 ## News
 
  - 2019-02-01   The new "Model Migration Tool" allows you to easily find and edit the newly added associations if the data model has been extended after the last change to this extraction model.
