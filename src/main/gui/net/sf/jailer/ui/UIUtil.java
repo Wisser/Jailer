@@ -675,6 +675,9 @@ public class UIUtil {
                 t = t.getCause();
             }
         }
+    	if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException) {
+            context = EXCEPTION_CONTEXT_USER_ERROR;
+        }
         if (t instanceof SqlException) {
             String message = ((SqlException) t).message;
             String sql = ((SqlException) t).sqlStatement;
