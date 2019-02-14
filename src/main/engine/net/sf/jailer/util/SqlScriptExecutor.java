@@ -375,6 +375,12 @@ public class SqlScriptExecutor {
 									}
 								}
 							} catch (SQLException e) {
+								try {
+									// [bugs:#37] PostreSQL: transactional execution
+									session.getConnection().rollback();
+								} catch (SQLException e1) {
+									// ignore
+								}
 								// drop may fail
 								if (!finalTryMode && !startsWithDrop) {
 									// fix for bug [2946477]
@@ -385,12 +391,6 @@ public class SqlScriptExecutor {
 										}
 										throw new RuntimeException(e);
 									}
-								}
-								try {
-									// [bugs:#37] PostreSQL: transactional execution
-									session.getConnection().commit();
-								} catch (SQLException e1) {
-									// ignore
 								}
 							} finally {
 								session.setSilent(silent);
