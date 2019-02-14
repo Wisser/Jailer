@@ -1,3 +1,7 @@
+8.4.1.1
+  - Transactional import did not roll back the transaction in case of an error.
+  - Minor bug fixes.
+
 8.4.1
   - Undo/Redo functionality.
   - Fixed an error in the analysis of views.
