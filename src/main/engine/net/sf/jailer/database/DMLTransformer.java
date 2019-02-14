@@ -656,6 +656,9 @@ public class DMLTransformer extends AbstractResultSetReader {
 				}
 				boolean f = true;
 				StringBuffer where = new StringBuffer("");
+				if (table.getNonVirtualPKColumns(session).isEmpty()) {
+					throw new DataModel.NoPrimaryKeyException(table);
+				}
 				for (Column pk: table.getNonVirtualPKColumns(session)) {
 					if (!f) {
 						where.append(" and ");
