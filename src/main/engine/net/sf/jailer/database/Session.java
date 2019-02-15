@@ -903,6 +903,13 @@ public class Session {
 				_log.warn(e.getMessage());
 			}
 		}
+		if (temporaryTableSession != null) {
+			try {
+				temporaryTableSession.rollback();
+			} catch(SQLException e) {
+				_log.warn(e.getMessage());
+			}
+		 }
 		connection = new ThreadLocal<Connection>();
 	}
 	
@@ -913,6 +920,13 @@ public class Session {
 		for (Connection con: connections) {
 			try {
 				con.commit();
+			} catch(SQLException e) {
+				_log.warn(e.getMessage());
+			}
+		}
+		if (temporaryTableSession != null) {
+			try {
+				temporaryTableSession.commit();
 			} catch(SQLException e) {
 				_log.warn(e.getMessage());
 			}

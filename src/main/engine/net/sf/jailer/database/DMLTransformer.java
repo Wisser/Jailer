@@ -349,7 +349,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 			}
 			if (table.getUpsert() || upsertOnly) {
 				if (table.getNonVirtualPKColumns(session).isEmpty()) {
-					throw new DataModel.NoPrimaryKeyException(table);
+					throw new DataModel.NoPrimaryKeyException(table, "has no primary key. Upsert statement can not be generated.");
 				}
 
 				Map<String, String> val = new HashMap<String, String>();
@@ -657,7 +657,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				boolean f = true;
 				StringBuffer where = new StringBuffer("");
 				if (table.getNonVirtualPKColumns(session).isEmpty()) {
-					throw new DataModel.NoPrimaryKeyException(table);
+					throw new DataModel.NoPrimaryKeyException(table, "has no primary key. Update statement to import CLOB/BLOB/XML can not be generated.");
 				}
 				for (Column pk: table.getNonVirtualPKColumns(session)) {
 					if (!f) {
