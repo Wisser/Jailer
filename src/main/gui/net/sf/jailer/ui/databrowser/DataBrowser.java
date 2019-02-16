@@ -28,6 +28,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DropTarget;
@@ -41,6 +42,7 @@ import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -76,6 +78,7 @@ import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -230,6 +233,7 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
+        initMenu();
         
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, "B");
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
@@ -3765,7 +3769,25 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		}
     }//GEN-LAST:event_saveScriptMenuItemActionPerformed
-
+    
+	private void initMenu() {
+		int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+		if (mask != InputEvent.CTRL_MASK) {
+			for (int i = 0; i < menuBar.getMenuCount(); ++i) {
+				JMenu menu = menuBar.getMenu(i);
+				for (int j = 0; j < menu.getItemCount(); ++j) {
+					JMenuItem item = menu.getItem(j);
+					if (item != null) {
+						KeyStroke accelerator = item.getAccelerator();
+						if (accelerator != null) {
+							item.setAccelerator(KeyStroke.getKeyStroke(accelerator.getKeyCode(), mask, accelerator.isOnKeyRelease()));
+						}
+					}
+				}
+			}
+		}
+	}
+	
     private void saveScriptAsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveScriptAsMenuItemActionPerformed
 		SQLConsole sqlConsole = getCurrentSQLConsole();
 		if (sqlConsole != null) {
