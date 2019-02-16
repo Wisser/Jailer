@@ -3010,10 +3010,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
 		String sql = "Select ";
 		final Quoting quoting = new Quoting(session);
-		
-		// TODO
-		if (quoting != null) throw new SQLException();
-		
 		final Set<String> pkColumnNames = new HashSet<String>();
 		final Set<String> parentPkColumnNames = new HashSet<String>();
 		final boolean selectParentPK = association != null && parentRows != null && parentRows.size() > 1;
