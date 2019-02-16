@@ -143,6 +143,8 @@ public class SqlScriptExecutor {
 		private final ExecutorService exec;
 		private final Semaphore semaphore;
 
+		// TODO use pqueue, order statements according to involved tables
+		
 		public BoundedExecutor(ExecutorService exec, int bound) {
 			this.exec = exec;
 			this.semaphore = new Semaphore(bound);
