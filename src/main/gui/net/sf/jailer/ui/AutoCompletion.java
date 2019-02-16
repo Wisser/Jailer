@@ -72,7 +72,7 @@ public class AutoCompletion extends PlainDocument {
 				// ignore delete key
 				case KeyEvent.VK_DELETE:
 					e.consume();
-					detailsComboBox.getToolkit().beep();
+//					detailsComboBox.getToolkit().beep();
 					break;
 				}
 			}
@@ -137,7 +137,7 @@ public class AutoCompletion extends PlainDocument {
 			} else {
 				// User hit backspace with the cursor positioned on the
 				// start => beep
-				comboBox.getToolkit().beep(); // when available use:
+//				comboBox.getToolkit().beep(); // when available use:
 												// UIManager.getLookAndFeel().provideErrorFeedback(comboBox);
 			}
 			highlightCompletedText(offs);
