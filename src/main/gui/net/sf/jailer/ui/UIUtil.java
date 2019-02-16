@@ -80,6 +80,7 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
+import jdk.nashorn.internal.runtime.Context.ThrowErrorManager;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.JailerVersion;
@@ -630,6 +631,9 @@ public class UIUtil {
 
     public static Object EXCEPTION_CONTEXT_USER_ERROR = new Object();
 
+	// TODO QS provisorium, remove after QS
+    public static Session theSession;
+
     /**
      * Shows an exception.
      * 
@@ -710,7 +714,18 @@ public class UIUtil {
             
             final int MAX_CL = 1000;
             
-            String iMsg = msg.toString() + "\n" + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
+            String sts = "";
+            // TODO QS provisorium, remove after QS
+            try {
+            	if (theSession != null) {
+            		long ts = System.currentTimeMillis();
+            		sts += Math.min(ts - theSession.getSessionStartTimestamp(), 99999) + "/"
+                    	+ (Session.getLastSessionStartTimestamp() == null? "" : ("" + Math.min((ts - Session.getLastSessionStartTimestamp()), 99999)));
+            	}
+            } catch (Throwable tr) {
+            	// ignore
+            }
+			String iMsg = msg.toString() + "\n" + sts + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
             if (iMsg.length() > MAX_CL) {
             	iMsg = iMsg.substring(0, MAX_CL);
             }
