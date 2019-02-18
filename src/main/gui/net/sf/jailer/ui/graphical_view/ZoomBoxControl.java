@@ -35,6 +35,8 @@ import prefuse.visual.VisualItem;
  */
 public class ZoomBoxControl extends AbstractZoomControl {
 	
+	// TODO: don*t zoom if zoom box is to small
+	
 	/**
 	 * Label of Zoom-box item.
 	 */
