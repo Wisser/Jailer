@@ -561,17 +561,11 @@ public class DataBrowser extends javax.swing.JFrame {
 
             @Override
             protected void updateMenu(LayoutMode layoutMode) {
-                if (layoutMode == Desktop.LayoutMode.TINY) {
-                    tinyLayoutRadioButtonMenuItem.setSelected(true);
-                } else if (layoutMode == Desktop.LayoutMode.SMALL) {
-                    smallLayoutRadioButtonMenuItem.setSelected(true);
-                } else if (layoutMode == Desktop.LayoutMode.MEDIUM) {
-                    mediumLayoutRadioButtonMenuItem.setSelected(true);
-                } else if (layoutMode == Desktop.LayoutMode.LARGE) {
-                    largeLayoutRadioButtonMenuItem.setSelected(true);
-                } else if (layoutMode == Desktop.LayoutMode.THUMBNAIL) {
-                    thumbnailLayoutRadioButtonMenuItem.setSelected(true);
-                }
+            	tinyLayoutRadioButtonMenuItem.setSelected(layoutMode == Desktop.LayoutMode.TINY);
+            	smallLayoutRadioButtonMenuItem.setSelected(layoutMode == Desktop.LayoutMode.SMALL);
+            	mediumLayoutRadioButtonMenuItem.setSelected(layoutMode == Desktop.LayoutMode.MEDIUM);
+            	largeLayoutRadioButtonMenuItem.setSelected(layoutMode == Desktop.LayoutMode.LARGE);
+            	thumbnailLayoutRadioButtonMenuItem.setSelected(layoutMode == Desktop.LayoutMode.THUMBNAIL);
             }
 
             @Override

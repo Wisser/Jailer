@@ -460,7 +460,7 @@ public abstract class Desktop extends JDesktopPane {
 				internalFrame.setVisible(true);
 				Rectangle r = layout(rowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
 				internalFrame.setBounds(r);
-				desktopAnimation.scrollRectToVisible(internalFrame.getBounds());
+				desktopAnimation.scrollRectToVisible(internalFrame.getBounds(), false);
 				try {
 					internalFrame.setSelected(true);
 				} catch (PropertyVetoException e) {
@@ -2497,7 +2497,7 @@ public abstract class Desktop extends JDesktopPane {
 			int h = (int) (BROWSERTABLE_DEFAULT_HEIGHT * layoutMode.factor);
 			Rectangle r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
 			// iFrame.setBounds(r);
-			desktopAnimation.setIFrameBounds(iFrame, root.getUserObject().browserContentPane, r);
+			desktopAnimation.setIFrameBounds(iFrame, root.getUserObject().browserContentPane, r, false);
 		}
 		for (Node<RowBrowser> child : root.getChildren()) {
 			arrangeNodes(child);
@@ -2517,7 +2517,6 @@ public abstract class Desktop extends JDesktopPane {
 
 		try {
 			UIUtil.setWaitCursor(this);
-			
 			this.layoutMode = layoutMode;
 			Map<Rectangle, double[]> newPrecBounds = new HashMap<Rectangle, double[]>();
 			for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {
@@ -2537,18 +2536,16 @@ public abstract class Desktop extends JDesktopPane {
 					pBounds = new double[] { pBounds[0] * scale, pBounds[1] * scale, pBounds[2] * scale, pBounds[3] * scale };
 				}
 				newBounds = new Rectangle((int) pBounds[0], (int) pBounds[1], (int) pBounds[2], (int) pBounds[3]);
-				desktopAnimation.setIFrameBoundsImmediately(rb.internalFrame, rb.browserContentPane, newBounds);
-				// rb.internalFrame.setBounds(newBounds);
-				// rb.browserContentPane.adjustRowTableColumnsWidth();
+				desktopAnimation.setIFrameBounds(rb.internalFrame, rb.browserContentPane, newBounds, true);
 				rb.browserContentPane.sortColumnsCheckBox.setVisible(!LayoutMode.TINY.equals(layoutMode));
 				newPrecBounds.put(newBounds, pBounds);
 			}
 			precBounds = newPrecBounds;
 			manager.resizeDesktop();
-	
+
 			Rectangle vr = new Rectangle(Math.max(0, (int) (fixed.x * scale - getVisibleRect().width / 2)), Math.max(0,
 					(int) (fixed.y * scale - getVisibleRect().height / 2)), getVisibleRect().width, getVisibleRect().height);
-			desktopAnimation.scrollRectToVisibleImmediately(vr);
+			desktopAnimation.scrollRectToVisible(vr, true);
 			updateMenu(layoutMode);
 			adjustClosure(null, null);
 		} finally {
@@ -3096,7 +3093,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 			this.scrollToCenter(root.internalFrame);
 		} else {
-			this.desktopAnimation.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
+			this.desktopAnimation.scrollRectToVisible(new Rectangle(0, 0, 1, 1), false);
 		}
 	}
 
@@ -3316,7 +3313,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		Rectangle r = new Rectangle(x, y, Math.max(1, w), Math.max(1, h));
 		Rectangle vr = new Rectangle(postAnimationDesktopnSize != null? postAnimationDesktopnSize : currentDesktopnSize == null? getScrollPane().getViewport().getPreferredSize() : currentDesktopnSize);
-		desktopAnimation.scrollRectToVisible(r.intersection(vr));
+		desktopAnimation.scrollRectToVisible(r.intersection(vr), false);
 	}
 
 	/**

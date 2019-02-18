@@ -37,6 +37,7 @@ import net.sf.jailer.ui.UIUtil;
 public class DesktopAnimation {
 	
 	private final double DURATION = 750;
+	private final double FAST_LINEAR_DURATION = DURATION / 4;
 	private final Desktop desktop;
 
 	/**
@@ -44,6 +45,12 @@ public class DesktopAnimation {
 	 */
 	abstract class Animation {
 		private long startTime;
+		public final boolean fastLinear;
+		
+		public Animation(boolean fastLinear) {
+			this.fastLinear = fastLinear;
+		}
+		
 		public void start() {
 			startTime = System.currentTimeMillis();
 			stopScrolling = false;
@@ -79,7 +86,8 @@ public class DesktopAnimation {
 		private final int initialHeight;
 		private final Rectangle scrollTo;
 
-		public ScrollTo(Rectangle scrollTo, Point scrollFrom, int initialWidth, int initialHeight) {
+		public ScrollTo(Rectangle scrollTo, Point scrollFrom, int initialWidth, int initialHeight, boolean fastLinear) {
+			super(fastLinear);
 			this.scrollFrom = scrollFrom;
 			this.initialWidth = initialWidth;
 			this.initialHeight = initialHeight;
@@ -108,17 +116,20 @@ public class DesktopAnimation {
 	class MoveIFrame extends Animation {
 		private final JInternalFrame iFrame;
 		private final Rectangle moveTo;
-		private final Rectangle moveFrom;
+		private Rectangle moveFrom;
 		private final BrowserContentPane browserContentPane;
 	
-		public MoveIFrame(JInternalFrame iFrame, BrowserContentPane browserContentPane, Rectangle moveTo) {
+		public MoveIFrame(JInternalFrame iFrame, BrowserContentPane browserContentPane, Rectangle moveTo, boolean fastLinear) {
+			super(fastLinear);
 			this.iFrame = iFrame;
 			this.browserContentPane = browserContentPane;
 			this.moveTo = moveTo;
-			this.moveFrom = iFrame.getBounds();
 		}
 
 		public boolean animate(double f) {
+			if (moveFrom == null) {
+				moveFrom = iFrame.getBounds();
+			}
 			int wx = wAvg(f, moveFrom.x, moveTo.x);
 			int wy = wAvg(f, moveFrom.y, moveTo.y);
 			int ww = wAvg(f, moveFrom.width, moveTo.width);
@@ -128,7 +139,7 @@ public class DesktopAnimation {
 			} else {
 				iFrame.setBounds(wx, wy, ww, wh);
 			}
-			if (f == 1.0) {
+			if (f == 1.0 || fastLinear) {
 				browserContentPane.adjustRowTableColumnsWidth();
 			}
 			return !(wx == moveTo.x && wy == moveTo.y && ww == moveTo.width && wh == moveTo.height);
@@ -139,10 +150,12 @@ public class DesktopAnimation {
 	 * Performs an animation step for each animation. 
 	 */
 	public boolean animate() {
+		final long currentTimeMillis = System.currentTimeMillis();
 		boolean result = false;
 		for (Iterator<Entry<Object, Animation>> i = animations.entrySet().iterator(); i.hasNext(); ) {
 			Animation animation = i.next().getValue();
-			double f = (System.currentTimeMillis() - animation.startTime) / DURATION;
+			double duration = animation.fastLinear? FAST_LINEAR_DURATION : DURATION;
+			double f = (currentTimeMillis - animation.startTime) / duration;
 			double fs;
 
 			if (f > 1.0) {
@@ -154,7 +167,7 @@ public class DesktopAnimation {
 				fs = sig(f * (-M1 + M2) + M1);
 			}
 
-			if (!animation.animate(fs)) {
+			if (!animation.animate(animation.fastLinear? f : fs)) {
 				i.remove();
 				continue;
 			}
@@ -177,7 +190,7 @@ public class DesktopAnimation {
 	 * 
 	 * @param vr the location
 	 */
-	public void scrollRectToVisible(Rectangle vr) {
+	public void scrollRectToVisible(Rectangle vr, boolean fastLinear) {
 		Rectangle svr = desktop.getScrollPane().getViewport().getViewRect();
 		if (!svr.contains(vr)) {
 			int mx = vr.x + vr.width / 2;
@@ -194,7 +207,7 @@ public class DesktopAnimation {
 			if (my > svr.y + svr.height) {
 				my = svr.y + svr.height;
 			}
-			startAnimation(desktop, new ScrollTo(vr, new Point(mx, my), 2 * Math.min(mx - svr.x, svr.x + svr.width - mx), 2 * Math.min(my - svr.y, svr.y + svr.height - my)));
+			startAnimation(desktop, new ScrollTo(vr, new Point(mx, my), 2 * Math.min(mx - svr.x, svr.x + svr.width - mx), 2 * Math.min(my - svr.y, svr.y + svr.height - my), fastLinear));
 		} else {
 			waiting.remove(desktop);
 			animations.remove(desktop);
@@ -219,8 +232,8 @@ public class DesktopAnimation {
 	 * @param browserContentPane the content pane
 	 * @param r new bounds
 	 */
-	public void setIFrameBounds(JInternalFrame iFrame, BrowserContentPane browserContentPane, Rectangle r) {
-		startAnimation(iFrame, new MoveIFrame(iFrame, browserContentPane, r));
+	public void setIFrameBounds(JInternalFrame iFrame, BrowserContentPane browserContentPane, Rectangle r, boolean rescale) {
+		startAnimation(iFrame, new MoveIFrame(iFrame, browserContentPane, r, rescale));
 	}
 
 	/**
@@ -238,11 +251,11 @@ public class DesktopAnimation {
 	}
 
 	public Rectangle getIFrameBounds(JInternalFrame iFrame) {
-		Animation animation = animations.get(iFrame);
+		Animation animation = waiting.get(iFrame);
 		if (animation instanceof MoveIFrame) {
 			return ((MoveIFrame) animation).moveTo;
 		}
-		animation = waiting.get(iFrame);
+		animation = animations.get(iFrame);
 		if (animation instanceof MoveIFrame) {
 			return ((MoveIFrame) animation).moveTo;
 		}

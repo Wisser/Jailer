@@ -4046,9 +4046,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	public void adjustRowTableColumnsWidth() {
+		adjustRowTableColumnsWidth(false);
+	}
+	
+	public void adjustRowTableColumnsWidth(boolean fast) {
 		DefaultTableModel dtm = (DefaultTableModel) rowsTable.getModel();
-		int MAXLINES = 2000;
-		if (rowsTable.getColumnCount() > 0) {
+		int MAXLINES = 400;
+		if (fast) {
+			MAXLINES = 10;
+		} else if (rowsTable.getColumnCount() > 0) {
 			MAXLINES = Math.max(10 * MAXLINES / rowsTable.getColumnCount(), 10);
 		}
 		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
