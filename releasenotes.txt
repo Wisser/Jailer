@@ -1,4 +1,4 @@
-8.4.1.2
+8.4.2
   - Transactional import did not roll back the transaction in case of an error.
   - improved HiDPI Support
   - Minor bug fixes.
