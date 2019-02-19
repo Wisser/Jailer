@@ -164,8 +164,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		restrictedDependenciesView = new RestrictedDependenciesListDialog(this) {
 			private static final long serialVersionUID = -7426280043553389753L;
 			@Override
-			protected Table getRoot() {
-				return extractionModelEditor == null? null : extractionModelEditor.root;
+			protected List<Table> getRoots() {
+				return extractionModelEditor == null? new ArrayList<>() : Arrays.asList(extractionModelEditor.root);
 			}
 			@Override
 			protected DataModel getDataModel() {

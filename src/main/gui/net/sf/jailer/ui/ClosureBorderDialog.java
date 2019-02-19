@@ -20,6 +20,7 @@ import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.jailer.datamodel.Association;
@@ -139,13 +140,15 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
 	 * Refreshes view after model changes.
 	 */
 	public void refresh() {
-		Table root = getRoot();
+		List<Table> roots = getRoots();
 		DataModel datamodel = getDataModel();
-		 if (root != null && datamodel != null) {
-			rootNameLabel.setText(datamodel.getDisplayName(root));
+		if (roots != null && !roots.isEmpty() && datamodel != null) {
 			Set<Association> border = new HashSet<Association>();
-			Set<Table> closure = root.closure(new HashSet<Table>(), true);
-			// TODO: consider all subject tables, change wording in tabbed pane (show all subect tables there)
+			Set<Table> closure = new HashSet<>();
+			for (Table root: roots) {
+				closure.addAll(root.closure(closure, true));
+			}
+			rootNameLabel.setText(datamodel.getDisplayName(roots.get(0)) + (roots.size() <= 1? "": (" and additional subjects (" + (roots.size() - 1) + ")")));
 			for (Table table: closure) {
 				for (Association association: table.associations) {
 					if (association.isIgnored() && !closure.contains(association.destination)) {
@@ -161,7 +164,7 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
 		}
 	}
 
-	protected abstract Table getRoot();
+	protected abstract List<Table> getRoots();
 	protected abstract DataModel getDataModel();
 	protected abstract void onSelect(Association association);
 

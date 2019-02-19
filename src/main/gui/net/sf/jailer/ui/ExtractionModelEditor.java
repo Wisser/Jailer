@@ -314,8 +314,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		closureBorderView = new ClosureBorderDialog(this.extractionModelFrame, true) {
 			private static final long serialVersionUID = -7426280043553389753L;
 			@Override
-			protected Table getRoot() {
-				return root;
+			protected List<Table> getRoots() {
+				ArrayList<Table> roots = new ArrayList<Table>();
+				roots.add(subject);
+				for (AdditionalSubject as: extractionModel.additionalSubjects) {
+					if (as.getSubject() != subject) {
+						roots.add(as.getSubject());
+					}
+				}
+				return roots;
 			}
 			@Override
 			protected DataModel getDataModel() {
@@ -823,6 +830,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private void updateAdditionalSubjectsButton() {
 		int n = extractionModel.additionalSubjects.size();
 		additionalSubjectsButton.setText("Additional Subjects" + (n > 0? " (" + n + ")" : ""));
+		if (extractionModelFrame != null && closureBorderView != null) {
+			closureBorderView.refresh();
+		}
 	}
 
 	/**
