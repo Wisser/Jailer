@@ -165,7 +165,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			private static final long serialVersionUID = -7426280043553389753L;
 			@Override
 			protected List<Table> getRoots() {
-				return extractionModelEditor == null? new ArrayList<>() : Arrays.asList(extractionModelEditor.root);
+				return extractionModelEditor == null? new ArrayList<Table>() : Arrays.asList(extractionModelEditor.root);
 			}
 			@Override
 			protected DataModel getDataModel() {
