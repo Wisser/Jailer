@@ -35,8 +35,6 @@ import prefuse.visual.VisualItem;
  */
 public class ZoomBoxControl extends AbstractZoomControl {
 	
-	// TODO: don*t zoom if zoom box is to small
-	
 	/**
 	 * Label of Zoom-box item.
 	 */
@@ -146,7 +144,10 @@ public class ZoomBoxControl extends AbstractZoomControl {
 		if ( UILib.isButtonPressed(e, button) ) {
 			if (down != null && current != null) {
 				Display display = (Display)e.getComponent();
-				DisplayLib.fitViewToBounds(display, getZoomBoxBounds(200), 500);
+				Rectangle2D bounds = new Rectangle2D.Double();
+				if (getZoomBoxBounds(bounds, 200)) {
+					DisplayLib.fitViewToBounds(display, bounds, 500);
+				}
 			}
 			hideZoomBox();
 		}
@@ -184,16 +185,15 @@ public class ZoomBoxControl extends AbstractZoomControl {
 	 * 
 	 * @return bounding rectangle of zoom box
 	 */
-	private Rectangle2D getZoomBoxBounds(double minWidth) {
-		Rectangle2D bounds = new Rectangle2D.Double();
-		
-		if (down == null || current == null) {
+	private boolean getZoomBoxBounds(Rectangle2D bounds, double minWidth) {
+		double LB = 3;
+		if (down == null || current == null || Math.max(Math.abs(down.getX() - current.getX()), Math.abs(down.getY() - current.getY())) < LB) {
 			bounds.setRect(0, 0, 0, 0);
+			return false;
 		} else {
 			bounds.setRect(Math.min(down.getX(), current.getX()), Math.min(down.getY(), current.getY()), Math.max(minWidth, Math.abs(down.getX() - current.getX())), Math.max(minWidth, Math.abs(down.getY() - current.getY())));
+			return true;
 		}
-		
-		return bounds;
 	}
 	
 	/**
@@ -217,13 +217,15 @@ public class ZoomBoxControl extends AbstractZoomControl {
 
 		@Override
 		protected Shape getRawShape(VisualItem item) {
-			Rectangle2D bounds = getZoomBoxBounds(1);
+			Rectangle2D bounds = new Rectangle2D.Double();
+			getZoomBoxBounds(bounds, 1);
 			return rectangle(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
 		}
 
 		@Override
 		public void setBounds(VisualItem item) {
-			Rectangle2D bounds = getZoomBoxBounds(1);
+			Rectangle2D bounds = new Rectangle2D.Double();
+			getZoomBoxBounds(bounds, 1);
 			item.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
 		}
 		
