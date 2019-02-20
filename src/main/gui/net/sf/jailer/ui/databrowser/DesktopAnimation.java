@@ -274,7 +274,7 @@ public class DesktopAnimation {
 		final Component fDesktopAncestor = desktopAncestor;
 		UIUtil.setWaitCursor(desktopAncestor);
 		waiting.put(key, animation);
-		UIUtil.invokeLater(12, new Runnable() {
+		UIUtil.invokeLater(4, new Runnable() {
 			@Override
 			public void run() {
 				UIUtil.resetWaitCursor(fDesktopAncestor);
