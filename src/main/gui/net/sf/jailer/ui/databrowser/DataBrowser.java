@@ -800,7 +800,7 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         
         setLocation(40 + c * 32, 40 + c * 32);
-        setSize(980, 840);
+        setSize(980, 640);
         
         UIUtil.fit(this);
         
