@@ -1866,8 +1866,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             UIUtil.showException(this, "Error", e);
         } finally {
     		extractionModelEditor.extractionModelFile = extractionModelFile;
-    		extractionModelEditor.needsSave = needsSave;
-        	extractionModelEditor.extractionModelFrame.updateTitle(needsSave);
+    		extractionModelEditor.needsSave |= needsSave;
+        	extractionModelEditor.extractionModelFrame.updateTitle(extractionModelEditor.needsSave);
         	reload.setEnabled(extractionModelEditor.extractionModelFile != null && needsSave);
         	if (tmpFile != null) {
         		tmpFile.delete();

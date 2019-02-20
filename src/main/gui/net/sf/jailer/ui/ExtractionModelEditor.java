@@ -64,6 +64,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -73,6 +74,7 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -255,22 +257,34 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		};
 		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame, parametersGetter);
+		boolean isNew;
 		if (extractionModelFile == null || !new File(extractionModelFile).exists()) {
 			needsSave = extractionModelFile != null;
 			dataModel = new DataModel(executionContext);
 			extractionModel = new ExtractionModel(dataModel, executionContext);
 			executionContext.getLayoutStorage().removeAll();
+			isNew = true;
 		} else {
 			extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>(), new HashMap<String, String>(), executionContext);
 			executionContext.getLayoutStorage().restore(extractionModelFile);
+			isNew = false;
 		}
 		subject = extractionModel.subject;
 		dataModel = extractionModel.dataModel;
 		if (subject == null && dataModel != null && !dataModel.getTables().isEmpty()) {
 			subject = dataModel.getTables().iterator().next();
 			needsSave = true;
+			if (!isNew && extractionModel.subject == null && extractionModel.getSubjectTableName() != null) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						JOptionPane.showMessageDialog(extractionModelFrame,
+								"Subject table \"" + extractionModel.getSubjectTableName() + "\" does not exist.\n");
+					}
+				});
+			}
 		}
-	
+
 		boolean saveNeedsSave = needsSave;
 		initComponents();
 		

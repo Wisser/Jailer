@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -468,14 +469,18 @@ public class DataModel {
 						}
 						// order columns
 						if (!columnOrderPrio.isEmpty()) {
+							final Map<Column, ColumnOrderPriority> prio = new IdentityHashMap<>();
+							for (Column column: columns) {
+								prio.put(column, columnOrderPrio.get(Quoting.normalizeIdentifier(column.name)));
+							}
 							Collections.sort(columns, new Comparator<Column>() {
 								@Override
 								public int compare(Column a, Column b) {
-									ColumnOrderPriority prioA = columnOrderPrio.get(Quoting.normalizeIdentifier(a.name));
-									ColumnOrderPriority prioB = columnOrderPrio.get(Quoting.normalizeIdentifier(b.name));
+									ColumnOrderPriority prioA = prio.get(a);
+									ColumnOrderPriority prioB = prio.get(b);
 									if (prioA != prioB) {
 										if (prioA == ColumnOrderPriority.HI) {
-											return -1;
+ 											return -1;
 										} else if (prioA == ColumnOrderPriority.LO) {
 											return 1;
 										} else {

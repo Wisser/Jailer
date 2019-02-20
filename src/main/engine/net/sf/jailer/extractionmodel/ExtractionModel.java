@@ -199,9 +199,10 @@ public class ExtractionModel {
 		DataModel dataModel = new DataModel(sourceSchemaMapping, executionContext, true);
 		Table subject = getTable(dataModel, SqlUtil.mappedSchema(sourceSchemaMapping, subjectLine.cells.get(0)));
 		if (subject == null) {
-			String message = location + ": unknown subject table " + subjectLine.cells.get(0);
+			subjectTableName = subjectLine.cells.get(0);
+			String message = location + ": unknown subject table " + subjectTableName;
 			if (failOnMissingSubject) {
-				throw new RuntimeException(message);
+				throw new IncompatibleModelException(message);
 			} else {
 				_log.warn(message);
 			}
@@ -456,6 +457,22 @@ public class ExtractionModel {
 	 */
 	public String getCondition() {
 		return condition;
+	}
+
+	private String subjectTableName;
+
+	public String getSubjectTableName() {
+		return subjectTableName;
+	}
+	
+	public static class IncompatibleModelException extends RuntimeException {
+		
+		public IncompatibleModelException(String message) {
+			super(message);
+		}
+
+		private static final long serialVersionUID = -4612042345601502761L;
+		
 	}
 	
 }

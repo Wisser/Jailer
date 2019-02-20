@@ -45,6 +45,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -1785,10 +1786,20 @@ public class ExportDialog extends javax.swing.JDialog {
 		}
 		if (err) {
 			JOptionPane.showMessageDialog(this, "Unfilled mandatory fields", "Error", JOptionPane.ERROR_MESSAGE);
-		} else if (createWorkingTables()) {
-			isOk = true;
-			lastConfirmInsert = confirmInsert.isSelected();
-			setVisible(false);
+		} else {
+			UIUtil.setWaitCursor(this);
+			boolean cwt;
+			try {
+				cwt = createWorkingTables();
+			} finally {
+				UIUtil.resetWaitCursor(this);
+			}
+			if (cwt) {
+				UIUtil.resetWaitCursor(this);
+				isOk = true;
+				lastConfirmInsert = confirmInsert.isSelected();
+				setVisible(false);
+			}
 		}
 	}//GEN-LAST:event_jButton1ActionPerformed
 

@@ -87,6 +87,7 @@ import net.sf.jailer.JailerVersion;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.extractionmodel.ExtractionModel.IncompatibleModelException;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.Row;
@@ -670,7 +671,7 @@ public class UIUtil {
         		context = null;
         	}
         }
-    	if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException) {
+    	if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException || t instanceof IncompatibleModelException) {
             context = EXCEPTION_CONTEXT_USER_ERROR;
         }
         t.printStackTrace();
@@ -679,7 +680,7 @@ public class UIUtil {
                 t = t.getCause();
             }
         }
-    	if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException) {
+    	if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException || t instanceof IncompatibleModelException) {
             context = EXCEPTION_CONTEXT_USER_ERROR;
         }
         if (t instanceof SqlException) {
