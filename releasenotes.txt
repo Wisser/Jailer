@@ -1,11 +1,11 @@
-8.4.3
-  - Transactional import did not roll back the transaction in case of an error.
-  - improved HiDPI Support
-  - Minor bug fixes.
+8.5
+  - Undo/Redo functionality.
+  - improved HiDPI Support.
 
 8.4.1
-  - Undo/Redo functionality.
+  - Transactional import did not roll back the transaction in case of an error.
   - Fixed an error in the analysis of views.
+  - Minor bug fixes.
 
 8.3.1
   - New "Model Migration Tool" allows you to easily find and edit the newly added associations
