@@ -146,7 +146,9 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
 			Set<Association> border = new HashSet<Association>();
 			Set<Table> closure = new HashSet<>();
 			for (Table root: roots) {
-				closure.addAll(root.closure(closure, true));
+				if (root != null) {
+					closure.addAll(root.closure(closure, true));
+				}
 			}
 			rootNameLabel.setText(datamodel.getDisplayName(roots.get(0)) + (roots.size() <= 1? "": (" and additional subjects (" + (roots.size() - 1) + ")")));
 			for (Table table: closure) {
