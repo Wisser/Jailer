@@ -330,10 +330,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			@Override
 			protected List<Table> getRoots() {
 				ArrayList<Table> roots = new ArrayList<Table>();
-				roots.add(subject);
+				if (subject != null) {
+					roots.add(subject);
+				}
 				for (AdditionalSubject as: extractionModel.additionalSubjects) {
 					if (as.getSubject() != subject) {
-						roots.add(as.getSubject());
+						if (as.getSubject() != null) {
+							roots.add(as.getSubject());
+						}
 					}
 				}
 				return roots;
