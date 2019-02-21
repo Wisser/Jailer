@@ -305,6 +305,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
         detailsPanel.setLayout(new java.awt.GridBagLayout());
 
+        detailsComboBox.setMaximumRowCount(20);
         detailsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
