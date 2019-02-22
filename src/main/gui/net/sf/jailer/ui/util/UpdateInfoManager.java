@@ -66,7 +66,7 @@ public class UpdateInfoManager {
 			        String inputLine = in.readLine();
 			        in.close();
 			        
-			        if (inputLine != null && !inputLine.trim().isEmpty() && inIntervall) {
+			        if (inputLine != null && !inputLine.trim().isEmpty()) {
 			        	final String[] versions = inputLine.trim().split(",");
 			        	String currentVersion = JailerVersion.VERSION.replaceFirst("(\\d+\\.\\d+\\.\\d+)(\\.\\d+$)", "$1").replaceFirst("\\.0$", "");
 			        	for (String version: versions) {
@@ -75,17 +75,20 @@ public class UpdateInfoManager {
 			        		}
 			        	}
 			        	if (isValid(versions[0].trim())) {
-			        		Thread.sleep(DELAY);
-							ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(lastTSFile));
-							out.writeLong(System.currentTimeMillis());
-							out.close();
-							SwingUtilities.invokeLater(new Runnable() {
-								@Override
-								public void run() {
-									infoLabel.setText("Release " + versions[0].trim() + " available");
-									ui.setVisible(true);
-								}
-							});
+			        		currentDownloadableRelease = versions[0].trim();
+			        		if (inIntervall) {
+				        		Thread.sleep(DELAY);
+								ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(lastTSFile));
+								out.writeLong(System.currentTimeMillis());
+								out.close();
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										infoLabel.setText("Release " + versions[0].trim() + " available");
+										ui.setVisible(true);
+									}
+								});
+			        		}
 			        	}
 			        }
 				} catch (Throwable t) {
@@ -101,6 +104,8 @@ public class UpdateInfoManager {
 	private static boolean isValid(String version) {
 		return version.matches("\\d+\\.\\d+(\\.\\d+)?");
 	}
+
+	public static String currentDownloadableRelease = null;
 
 	public static void download() {
 		try {

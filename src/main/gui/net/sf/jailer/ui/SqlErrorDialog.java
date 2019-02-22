@@ -40,6 +40,7 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.UISettings;
+import net.sf.jailer.ui.util.UpdateInfoManager;
 
 /**
  * Shows SQL-Exception.
@@ -66,6 +67,8 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 			}
 		}
 		initComponents();
+		
+		updateInfoPanel.setVisible(false);
 		
 		JScrollPane jScrollPane1 = new JScrollPane();
 		jScrollPane1.setViewportView(sqlEditorPane);
@@ -99,6 +102,11 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 				sendButton.addKeyListener(keyListener);
 				jButton1.setVisible(false);
 			}
+		}
+
+		if (sendButton.isVisible() && UpdateInfoManager.currentDownloadableRelease != null) {
+			updateInfoLabel.setText("Release " + UpdateInfoManager.currentDownloadableRelease + " available");
+			updateInfoPanel.setVisible(true);
 		}
 
 		message = message.trim();
@@ -178,6 +186,9 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         sendButton = new javax.swing.JButton();
+        updateInfoPanel = new javax.swing.JPanel();
+        updateInfoLabel = new javax.swing.JLabel();
+        downloadButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("SQL Statement failed");
@@ -202,8 +213,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
         copyButton.setText("Copy to Clipboard");
         copyButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 copyButtonActionPerformed(evt);
             }
         });
@@ -239,39 +249,70 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
         jButton1.setText(" Close ");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel2.add(jButton1, gridBagConstraints);
 
         sendButton.setText("Report and Close");
         sendButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sendButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel2.add(sendButton, gridBagConstraints);
+
+        updateInfoPanel.setBackground(new java.awt.Color(255, 255, 236));
+        updateInfoPanel.setLayout(new java.awt.GridBagLayout());
+
+        updateInfoLabel.setText("Release x available");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
+        updateInfoPanel.add(updateInfoLabel, gridBagConstraints);
+
+        downloadButton.setText("Download");
+        downloadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downloadButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        updateInfoPanel.add(downloadButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        jPanel2.add(updateInfoPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         getContentPane().add(jPanel2, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
+        updateInfoPanel.setVisible(false);
+        UpdateInfoManager.download();
+    }//GEN-LAST:event_downloadButtonActionPerformed
 
 	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton1ActionPerformed
 		setVisible(false);
@@ -305,6 +346,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton copyButton;
+    private javax.swing.JButton downloadButton;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
@@ -313,6 +355,8 @@ public class SqlErrorDialog extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel messagePanel;
     private javax.swing.JButton sendButton;
+    private javax.swing.JLabel updateInfoLabel;
+    private javax.swing.JPanel updateInfoPanel;
     // End of variables declaration//GEN-END:variables
 
     private final RSyntaxTextArea sqlEditorPane;
