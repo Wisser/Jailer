@@ -1,4 +1,4 @@
-8.5
+8.5.1
   - Undo/Redo functionality.
   - improved HiDPI Support.
 
