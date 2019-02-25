@@ -80,7 +80,6 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import jdk.nashorn.internal.runtime.Context.ThrowErrorManager;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.JailerVersion;
@@ -876,7 +875,7 @@ public class UIUtil {
         System.exit(0);
     }
 
-    private static void sendIssue(final String type, final String issue) {
+    public static void sendIssue(final String type, final String issue) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {

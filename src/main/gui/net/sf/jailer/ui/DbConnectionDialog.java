@@ -961,13 +961,15 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					if (!warned) {
 						if (DBMS.forDBMS(null) == dataSource.dbms) {
 							warned = true;
+							final String title = "Unknown DBMS";
 							JOptionPane.showMessageDialog(parent,
 								"Jailer is not configured for DBMS \"" + session.getMetaData().getDatabaseProductName() + "\"\n" +
 								"The results may not be optimal.\nFor assistance please contact:\n" + 
 								"\n" + 
 								"Help desk: https://sourceforge.net/p/jailer/discussion\n" + 
 								"Mail: rwisser@users.sourceforge.net",
-								"Unknown DBMS", JOptionPane.WARNING_MESSAGE);
+								title, JOptionPane.WARNING_MESSAGE);
+							UIUtil.sendIssue(title, ci.url);
 						}
 					}
 				} catch (Throwable e) {

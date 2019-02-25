@@ -14,6 +14,7 @@ import java.util.Date;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import net.sf.jailer.JailerVersion;
@@ -28,7 +29,7 @@ public class UpdateInfoManager {
 	private static final String LAST_TS_FILE = ".lastcuats";
 	private static boolean checked = false;
 
-	public static void checkUpdateAvailability(final JComponent ui, final JLabel infoLabel, final String modul) {
+	public static void checkUpdateAvailability(final JComponent ui, final JLabel infoLabel, final JMenuItem downloadMenuItem, final String modul) {
 		ui.setVisible(false);
 
 		if (checked) {
@@ -76,6 +77,14 @@ public class UpdateInfoManager {
 			        	}
 			        	if (isValid(versions[0].trim())) {
 			        		currentDownloadableRelease = versions[0].trim();
+			        		SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									if (downloadMenuItem != null) {
+										downloadMenuItem.setText("Download Release " + versions[0].trim());
+									}
+								}
+							});
 			        		if (inIntervall) {
 				        		Thread.sleep(DELAY);
 								ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(lastTSFile));

@@ -235,7 +235,7 @@ public class DataBrowser extends javax.swing.JFrame {
         initComponents();
         initMenu();
         
-        UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, "B");
+        UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, downloadMenuItem, "B");
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
 		initRowLimitButtons();
         autoLayoutMenuItem.setSelected(inAutoLayoutMode());
