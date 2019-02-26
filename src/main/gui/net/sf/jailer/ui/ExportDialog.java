@@ -45,7 +45,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -251,6 +250,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			fields.put("scopeGlobal", scopeGlobal);
 			fields.put("scopeSession", scopeSession);
 			fields.put("orderByPK", orderByPKCheckbox);
+			fields.put("useRowIds", useRowIds);
 			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
 				fields.put("$" + e.getKey(), e.getValue());
 			}
@@ -305,7 +305,13 @@ public class ExportDialog extends javax.swing.JDialog {
 			initSourceSchemaMapping(dataModel, fields, defaults);
 			initIsolationLevel(session);
 			initScopeButtons(session);
-			
+
+			useRowIds.setSelected(false);
+			if (session.dbms.getRowidName() == null) {
+				useRowIds.setSelected(true);
+				useRowIds.setVisible(false);
+			}
+
 			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
 			
 			theSettings.restore(settingsContext, settingsContextSecondaryKey);
@@ -332,11 +338,6 @@ public class ExportDialog extends javax.swing.JDialog {
 			}
 			if (rowsPerThread.getText().length() == 0) {
 				rowsPerThread.setText("50");
-			}
-			
-			useRowIds.setSelected(true);
-			if (session.dbms.getRowidName() == null) {
-				useRowIds.setVisible(false);
 			}
 			
 			if (additionalSubjects.isEmpty()) {
@@ -2037,7 +2038,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		if (orderByPKCheckbox.isSelected()) {
 			args.add("-order-by-pk");
 		}
-		if (!useRowIds.isSelected()) {
+		if (!useRowIds.isSelected() && useRowIds.isVisible()) {
 			args.add("-no-rowid");
 		}
 		if (scriptFormat == ScriptFormat.SQL) {
