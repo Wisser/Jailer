@@ -676,10 +676,6 @@ public class SubsettingEngine {
 					if (association.source.equals(association.destination)) {
 						i.remove();
 					} else if (!existingEdges.contains(association.getId())) {
-						if (association.isInsertDestinationBeforeSource()) {
-							_log.info("irrelevant dependency: " + datamodel.getDisplayName(association.source) + " -> "
-									+ datamodel.getDisplayName(association.destination));
-						}
 						i.remove();
 					}
 				}
