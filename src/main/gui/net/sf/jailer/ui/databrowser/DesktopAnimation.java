@@ -129,7 +129,9 @@ public class DesktopAnimation {
 		public boolean animate(double f) {
 			if (moveFrom == null) {
 				moveFrom = iFrame.getBounds();
-				browserContentPane.adjustRowTableColumnsWidth();
+				if (Math.abs(moveFrom.width - moveTo.width) > 2) {
+					browserContentPane.adjustRowTableColumnsWidth();
+				}
 			}
 			int wx = wAvg(f, moveFrom.x, moveTo.x);
 			int wy = wAvg(f, moveFrom.y, moveTo.y);
@@ -141,7 +143,9 @@ public class DesktopAnimation {
 				iFrame.setBounds(wx, wy, ww, wh);
 			}
 			if (f == 1.0) {
-				browserContentPane.adjustRowTableColumnsWidth();
+				if (Math.abs(moveFrom.width - moveTo.width) > 2) {
+					browserContentPane.adjustRowTableColumnsWidth();
+				}
 			}
 			return !(wx == moveTo.x && wy == moveTo.y && ww == moveTo.width && wh == moveTo.height);
 		}
