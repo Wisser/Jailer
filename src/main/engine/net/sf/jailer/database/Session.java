@@ -249,9 +249,6 @@ public class Session {
 		this.schema = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUser : "";
 		this.temporaryTableScope = scope;
 		
-		initLastSessionStartTimestamp();
-		initSessionStartTimestamp();
-		
 		connectionFactory = new ConnectionFactory() {
 			private Connection defaultConnection = null;
 			private Random random = new Random();
@@ -1049,27 +1046,6 @@ public class Session {
 	 */
 	public void setSessionProperty(Class<?> owner, String name, Object property) {
 		sessionProperty.put(owner.getName() + "." + name, property);
-	}
-	
-	// stores start time of session, provisorily, helps QS
-	// TODO remove if QS is done
-	private static Long lastSessionStartTimestamp = null;
-	private long sessionStartTimestamp;
-	
-	private static synchronized void initLastSessionStartTimestamp() {
-		Session.lastSessionStartTimestamp = System.currentTimeMillis();
-	}
-
-	public static synchronized Long getLastSessionStartTimestamp() {
-		return lastSessionStartTimestamp;
-	}
-
-	private synchronized void initSessionStartTimestamp() {
-		this.sessionStartTimestamp = System.currentTimeMillis();
-	}
-
-	public synchronized long getSessionStartTimestamp() {
-		return sessionStartTimestamp;
 	}
 
 	/**
