@@ -266,9 +266,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						updateMode("error", null);
 						unhide();
 						if (theSession == null || !theSession.isDown()) {
-							UIUtil.theSession = theSession;
 							UIUtil.showException(BrowserContentPane.this, "Error", e);
-							UIUtil.theSession = null;
 						} else {
 							theSession = null;
 						}
