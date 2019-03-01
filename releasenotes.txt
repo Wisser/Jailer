@@ -1,3 +1,6 @@
+8.5.2
+  - Minor bug fixes.
+
 8.5.1
   - Undo/Redo functionality.
   - improved HiDPI Support.
