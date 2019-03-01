@@ -22,7 +22,7 @@ import net.sf.jailer.ui.Environment;
 
 public class UpdateInfoManager {
 
-	private static final String versionURL = "http://jailer.sourceforge.net/currentVersion.php";
+	private static final String versionURL = "http://jailer.sourceforge.net/currentVersion2.php"; // TODO
 	private static final String downloadURL = "https://sourceforge.net/projects/jailer/files/";
 	private static final long CHECK_INTERVALL = 1000L * 60 * 60 * 46;
 	private static final long DELAY = 1000L * 10;
@@ -57,12 +57,15 @@ public class UpdateInfoManager {
 						uuid = String.valueOf(System.currentTimeMillis() % 1000000); // UUID.randomUUID().toString();
 						UISettings.store("uuid", uuid);
 					}
+					Object stat0 = UISettings.restore("stat0");
+					UISettings.store("stat0", null);
 					String content = HttpUtil.get(versionURL
 							+ "?jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")"
 							+ "&modul=" + URLEncoder.encode(modul, "UTF-8")
 							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
 							+ "&uuid=" + URLEncoder.encode(uuid.toString(), "UTF-8")
-							+ "&version=" + URLEncoder.encode(JailerVersion.VERSION, "UTF-8"));
+							+ "&version=" + URLEncoder.encode(JailerVersion.VERSION, "UTF-8")
+							+ (stat0 != null? "&s=" + stat0 : ""));
 					BufferedReader in = new BufferedReader(new StringReader(content));
 			        String inputLine = in.readLine();
 			        in.close();

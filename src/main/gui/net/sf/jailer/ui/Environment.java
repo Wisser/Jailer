@@ -28,6 +28,7 @@ import java.util.Random;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.render.HtmlDataModelRenderer;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.LogUtil;
 
 /**
@@ -39,6 +40,7 @@ public class Environment {
 
 	private static File home = null;
 	public static Locale initialLocal = Locale.ENGLISH;
+	public static long startTime = System.currentTimeMillis();
 
 	public static void init() {
 		String osName = System.getProperty("os.name");
@@ -88,6 +90,15 @@ public class Environment {
 				+ (new File(".multiuser").exists() ? 2 : 0) + (new File("..", "dbeauty").exists() ? 4 : 0)
 				+ (!testCreateTempFile() ? 8 : 0)
 				+ stateOffset;
+		Runtime.getRuntime().addShutdownHook(new Thread("cleanup") {
+			@Override
+			public void run() {
+				if (startTime != 0) {
+					UISettings.store("stat0", (System.currentTimeMillis() - startTime) / 1000 / 60);
+				}
+				startTime = 0;
+			}
+		});
 	}
 
 	private static boolean copyIfNotExists(String f) throws IOException {
