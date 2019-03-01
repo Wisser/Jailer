@@ -22,7 +22,7 @@ import net.sf.jailer.ui.Environment;
 
 public class UpdateInfoManager {
 
-	private static final String versionURL = "http://jailer.sourceforge.net/currentVersion2.php"; // TODO
+	private static final String versionURL = "http://jailer.sourceforge.net/currentVersion.php";
 	private static final String downloadURL = "https://sourceforge.net/projects/jailer/files/";
 	private static final long CHECK_INTERVALL = 1000L * 60 * 60 * 46;
 	private static final long DELAY = 1000L * 10;
