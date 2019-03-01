@@ -191,6 +191,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		
 		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext), "editor");
 		extractionModelEditor.extractionModelFile = extractionModelFile;
+		restrictedDependenciesView.refresh();
 		pack();
 		updateTitle(extractionModelEditor.needsSave);
 		if (initDbConnectionDialog != null) {
