@@ -118,7 +118,7 @@
             </Component>
           </SubComponents>
         </Container>
-        <Component class="javax.swing.JLabel" name="jLabel14">
+        <Component class="javax.swing.JLabel" name="templateDetailsTypeLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="Type  (optional) "/>
           </Properties>
