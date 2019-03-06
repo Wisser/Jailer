@@ -65,7 +65,8 @@ public class UpdateInfoManager {
 							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
 							+ "&uuid=" + URLEncoder.encode(uuid.toString(), "UTF-8")
 							+ "&version=" + URLEncoder.encode(JailerVersion.VERSION, "UTF-8")
-							+ (stat0 != null? "&s=" + stat0 : ""));
+							+ (stat0 != null? "&s=" + stat0 : "")
+							+ UISettings.restoreStats());
 					BufferedReader in = new BufferedReader(new StringReader(content));
 			        String inputLine = in.readLine();
 			        in.close();

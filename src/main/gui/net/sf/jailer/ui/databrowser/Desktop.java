@@ -118,6 +118,7 @@ import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -629,6 +630,10 @@ public abstract class Desktop extends JDesktopPane {
 			row = origParent.browserContentPane.rows.get(parentRowIndex);
 		}
 		
+		if (reload) {
+			++UISettings.s5;
+		}
+
 		final BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, row, parent == null || parentRowIndex >= 0 ? null : parent.browserContentPane.rows,
 				association, parentFrame, rowsClosure, selectDistinct, reload, executionContext) {
 
@@ -994,6 +999,7 @@ public abstract class Desktop extends JDesktopPane {
 			tableBrowser.color2 = getAssociationColor2(association);
 		}
 		tableBrowsers.add(tableBrowser);
+		UISettings.s2 = Math.max(tableBrowsers.size(), UISettings.s2);
 
 		initIFrame(jInternalFrame, browserContentPane);
 		
@@ -2689,6 +2695,9 @@ public abstract class Desktop extends JDesktopPane {
 			storeSession(filename);
 			
 			DataModel newModel = new DataModel(schemamapping, executionContext, false);
+			if (datamodel != null) {
+				UISettings.s1 = Math.max(UISettings.s1, newModel.getTables().size());
+			}
 			datamodel.set(newModel);
 			
 			onNewDataModel();

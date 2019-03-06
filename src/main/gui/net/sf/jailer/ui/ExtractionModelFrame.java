@@ -1278,6 +1278,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								ddlArgs.add("create-ddl");
 								dbConnectionDialog.addDbArgs(ddlArgs);
 								ddlArgs.add(jmFile);
+								++UISettings.s6;
 								if (exportDialog.isIndependentWorkingTablesSelected()) {
 									ddlArgs.add("-independent-working-tables");
 									String delFile = exportDialog.getDeleteFileName();

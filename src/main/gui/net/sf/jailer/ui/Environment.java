@@ -95,6 +95,7 @@ public class Environment {
 			public void run() {
 				if (startTime != 0) {
 					UISettings.store("stat0", (System.currentTimeMillis() - startTime) / 1000 / 60);
+					UISettings.storeStats();
 				}
 				startTime = 0;
 			}

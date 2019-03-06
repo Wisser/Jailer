@@ -123,6 +123,7 @@ import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.ui.util.SmallButton;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CsvFile;
@@ -693,6 +694,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         try {
             status.numStatements++;
             localStatus.numStatements++;
+            UISettings.s3++;
             status.updateView(false);
             statement = session.getConnection().createStatement();
 			if (session.dbms != null) {

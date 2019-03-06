@@ -99,5 +99,27 @@ public class UISettings  {
 		loadUISettings();
 		return properties.get(name);
 	}
+
+	public static int s1, s2, s3, s4, s5, s6, s7, s8, s9;
 	
+	public synchronized static void storeStats() {
+		int i = 1;
+		StringBuilder sb = new StringBuilder();
+		for (int s: new int[] { s1, s2, s3, s4, s5, s6, s7, s8, s9 }) {
+			if (s != 0) {
+				sb.append("&s" + i + "=" + s);
+			}
+			++i;
+		}
+		store("stats", sb.toString());
+	}
+	
+	public synchronized static String restoreStats() {
+		Object stats = restore("stats");
+		if (stats != null) {
+			return stats.toString();
+		}
+		return "";
+	}
+
 }

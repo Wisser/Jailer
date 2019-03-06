@@ -112,6 +112,7 @@ import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.undo.CompensationAction;
 import net.sf.jailer.ui.undo.UndoManager;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
 
@@ -271,6 +272,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		subject = extractionModel.subject;
 		dataModel = extractionModel.dataModel;
+		if (dataModel != null) {
+			UISettings.s1 = Math.max(UISettings.s1, dataModel.getTables().size());
+		}
 		if (subject == null && dataModel != null && !dataModel.getTables().isEmpty()) {
 			subject = dataModel.getTables().iterator().next();
 			needsSave = true;
@@ -2953,6 +2957,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		boolean resetFilter = dataModel.getRestrictionModel().addRestriction(source, association, condition, "GUI", true, new HashMap<String, String>());
 		pendingDecisionsPanel.decisionMade(association);
+		if (withWhere) {
+			++UISettings.s4;
+		}
 
 		undoManager.push(new CompensationAction(100, "".equals(oc)? "removed restriction" : ("true".equals(oc) || "ignore".equals(oc))? "disabled assocation" : "added restriction", withWhere? dataModel.getDisplayName(association.destination) : null) {
 			@Override
