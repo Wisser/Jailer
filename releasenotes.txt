@@ -1,3 +1,6 @@
+8.5.3
+  - Column order in the display can be defined not only globally but also for each table.
+
 8.5.2
   - Minor bug fixes.
 
