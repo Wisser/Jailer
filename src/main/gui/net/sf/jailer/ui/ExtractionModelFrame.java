@@ -1821,8 +1821,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         executeAndReload(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
-	        	new ColumnOrderEditor(ExtractionModelFrame.this, extractionModelEditor.dataModel, executionContext);
-				return true;
+	        	return new ColumnOrderEditor(ExtractionModelFrame.this, null, extractionModelEditor.dataModel, executionContext).wasOk();
 			}
         });
     }//GEN-LAST:event_columnOrderItemActionPerformed

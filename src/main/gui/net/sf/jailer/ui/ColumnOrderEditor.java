@@ -68,6 +68,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 	private Table currentTable;
 	private final ExecutionContext executionContext;
 	private Map<String, DataModel.ColumnOrderPriority> columnOrderPrio;
+	private boolean ok = false;
 	
 	private static final String TYPE_PK = "PK";
 	private static final String TYPE_FK = "FK";
@@ -75,12 +76,12 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 	private static final String ALL_TABLES = "all tables";
 
     /**
-     * Creates new form ConstraintChecker
-     * @param scriptFile file to load, if not <code>null</code>
+     * Creates new form.
      */
-    public ColumnOrderEditor(JFrame owner, DataModel dataModel, ExecutionContext executionContext) {
+    public ColumnOrderEditor(JFrame owner, Table currentTable, DataModel dataModel, ExecutionContext executionContext) {
         this.dataModel = dataModel;
-    	this.executionContext = executionContext;
+    	this.currentTable = currentTable;
+        this.executionContext = executionContext;
     	
     	initComponents();
         
@@ -278,6 +279,14 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 		
 		tablesComboBox.setModel(new DefaultComboBoxModel<String>(tableList.toArray(new String[0])));
 		
+		if (currentTable != null) {
+			String dn = dataModel.getDisplayName(currentTable);
+			int i = tableList.indexOf(dn);
+			if (i >= 0) {
+				tablesComboBox.setSelectedIndex(i);
+			}
+		}
+		
 		AutoCompletion.enable(tablesComboBox);
 		
 		tablesComboBox.addActionListener(new ActionListener() {
@@ -447,6 +456,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
     		dataModel.columnOrderPrio.clear();
     		dataModel.columnOrderPrio.putAll(columnOrderPrio);
 			dataModel.saveColumnOrderPrio();
+			ok = true;
 	    	dialog.dispose();
 		} catch (FileNotFoundException e) {
 			UIUtil.showException(this, "Error", e);
@@ -490,6 +500,10 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 				column.setWidth(column.getPreferredWidth());
 			}
 		}
+	}
+
+	public boolean wasOk() {
+		return ok;
 	}
 
 }
