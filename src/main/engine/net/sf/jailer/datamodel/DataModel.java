@@ -470,8 +470,13 @@ public class DataModel {
 						// order columns
 						if (!columnOrderPrio.isEmpty()) {
 							final Map<Column, ColumnOrderPriority> prio = new IdentityHashMap<>();
+							String prefix = line.cells.get(0).trim().length() == 0? "" : (line.cells.get(0).trim() + ".");
 							for (Column column: columns) {
-								prio.put(column, columnOrderPrio.get(Quoting.normalizeIdentifier(column.name)));
+								ColumnOrderPriority columnOrderPriority = columnOrderPrio.get(prefix + Quoting.normalizeIdentifier(column.name));
+								if (columnOrderPriority == null) {
+									columnOrderPriority = columnOrderPrio.get(Quoting.normalizeIdentifier(column.name));
+								}
+								prio.put(column, columnOrderPriority);
 							}
 							Collections.sort(columns, new Comparator<Column>() {
 								@Override
