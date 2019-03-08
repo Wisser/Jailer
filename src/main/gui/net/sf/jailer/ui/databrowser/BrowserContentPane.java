@@ -557,7 +557,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		initComponents();
 		loadingCauseLabel.setVisible(false);
-		
+		sortColumnsCheckBox.setVisible(false);
+
 		andCondition = new JComboBox();
 		andCondition.setEditable(true);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -572,6 +573,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		dropA.setText(null);
 		dropA.setIcon(dropDownIcon);
 		sqlLabel1.setIcon(dropDownIcon);
+		sortColumnsLabel.setIcon(dropDownIcon);
 		dropA.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -1134,6 +1136,87 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (selectDistinct != null) {
 			selectDistinctCheckBox.setSelected(selectDistinct);
 		}
+		sortColumnsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+			private JPopupMenu popup;
+			private boolean in = false;
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				loadButton.grabFocus();
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						popup = new JPopupMenu();
+						JCheckBoxMenuItem natural = new JCheckBoxMenuItem("Natural column order ");
+						natural.setSelected(!sortColumnsCheckBox.isSelected());
+						natural.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								sortColumnsCheckBox.setSelected(false);
+								sortColumnsCheckBoxActionPerformed(null);
+								sortColumnsLabel.setText("natural order");
+							}
+						});
+						popup.add(natural);
+						JCheckBoxMenuItem sorted = new JCheckBoxMenuItem("Alphabetical column order ");
+						sorted.setSelected(sortColumnsCheckBox.isSelected());
+						sorted.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								sortColumnsCheckBox.setSelected(true);
+								sortColumnsCheckBoxActionPerformed(null);
+								sortColumnsLabel.setText("A-Z order");
+							}
+						});
+						popup.add(sorted);
+						popup.addSeparator();
+						JMenuItem changeOrder = new JMenuItem("Change natural column order ");
+						changeOrder.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								sortColumnsCheckBox.setSelected(false);
+								sortColumnsCheckBoxActionPerformed(null);
+								sortColumnsLabel.setText("natural order");
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										changeColumnOrder(table);
+									}
+								});
+							}
+						});
+						popup.add(changeOrder);
+						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+							@Override
+							public void propertyChange(PropertyChangeEvent evt) {
+								if (Boolean.FALSE.equals(evt.getNewValue())) {
+									popup = null;
+									updateBorder();
+								}
+							}
+						});
+						UIUtil.showPopup(sortColumnsPanel, 0, sortColumnsPanel.getHeight(), popup);
+					}
+				});
+			}
+
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				in = true;
+				updateBorder();
+			}
+
+			@Override
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				in = false;
+				updateBorder();
+			}
+
+			private void updateBorder() {
+				sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
+						: javax.swing.border.BevelBorder.RAISED));
+			}
+		});
 		updateTableModel(0, false, false);
 
 		suppressReload = false;
@@ -4127,6 +4210,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sortColumnsCheckBox = new javax.swing.JCheckBox();
         rowsCount = new javax.swing.JLabel();
         selectDistinctCheckBox = new javax.swing.JCheckBox();
+        sortColumnsPanel = new javax.swing.JPanel();
+        sortColumnsLabel = new javax.swing.JLabel();
         loadingPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         cancelLoadButton = new javax.swing.JButton();
@@ -4226,7 +4311,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel6.add(selectDistinctCheckBox, gridBagConstraints);
+
+        sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        sortColumnsPanel.setLayout(new javax.swing.BoxLayout(sortColumnsPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        sortColumnsLabel.setText("  natural order ");
+        sortColumnsPanel.add(sortColumnsLabel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        jPanel6.add(sortColumnsPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -4871,6 +4968,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     javax.swing.JScrollPane singleRowViewScrollPane;
     private javax.swing.JPanel singleRowViewScrollPaneContainer;
     public javax.swing.JCheckBox sortColumnsCheckBox;
+    private javax.swing.JLabel sortColumnsLabel;
+    public javax.swing.JPanel sortColumnsPanel;
     private javax.swing.JLabel sqlLabel1;
     javax.swing.JPanel sqlPanel;
     private javax.swing.JPanel tablePanel;
@@ -5075,6 +5174,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract MetaDataSource getMetaDataSource();
 	protected abstract void deselectChildrenIfNeededWithoutReload();
 	protected abstract int getReloadLimit();
+	protected void changeColumnOrder(Table table) {
+	}
 	
 	public interface RunnableWithPriority extends Runnable {
 		int getPriority();

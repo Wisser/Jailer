@@ -627,6 +627,11 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void updateBookmarksMenu() {
 		        new BookmarksPanel(DataBrowser.this, bookmarkMenu, desktop, executionContext).updateBookmarksMenu();
 			}
+
+			@Override
+			protected void changeColumnOrder(Table table) {
+				openColumnOrderEditor(table);
+			}
         };
         new BookmarksPanel(this, bookmarkMenu, desktop, executionContext).updateBookmarksMenu();
 
@@ -3817,18 +3822,23 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_analyseSQLMenuItem1ActionPerformed
 
     private void columnOrderItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnOrderItemActionPerformed
-        try {
-        	new ColumnOrderEditor(this, datamodel.get(), executionContext);
-			removeMetaDataSource(session);
-            desktop.reloadDataModel(desktop.schemaMapping);
-            dataModelViewFrame = null;
-            updateDataModelView(null);
-            updateStatusBar();
-            askForDataModel();
+        openColumnOrderEditor(null);
+    }//GEN-LAST:event_columnOrderItemActionPerformed
+
+	private void openColumnOrderEditor(Table table) {
+		try {
+        	if (new ColumnOrderEditor(this, table, datamodel.get(), executionContext).wasOk()) {
+				removeMetaDataSource(session);
+	            desktop.reloadDataModel(desktop.schemaMapping);
+	            dataModelViewFrame = null;
+	            updateDataModelView(null);
+	            updateStatusBar();
+	            askForDataModel();
+        	}
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e);
 		}
-    }//GEN-LAST:event_columnOrderItemActionPerformed
+	}
 
 //    private static final String AUTOLAYOUT_SETTINGS_FILE = ".autolayout";
     

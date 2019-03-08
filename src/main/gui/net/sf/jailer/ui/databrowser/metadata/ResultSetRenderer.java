@@ -81,6 +81,7 @@ public class ResultSetRenderer extends javax.swing.JPanel {
         loadJob.run();
         JComponent rTabContainer = rb.getRowsTableContainer();
         rb.sortColumnsCheckBox.setVisible(false);
+        rb.sortColumnsPanel.setVisible(false);
         renderPanel.add(rTabContainer);
         rb.resetRowsTableContainer();
         renderPanel.repaint();

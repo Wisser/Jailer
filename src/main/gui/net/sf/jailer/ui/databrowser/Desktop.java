@@ -970,6 +970,11 @@ public abstract class Desktop extends JDesktopPane {
 				return Desktop.this.getRowLimit();
 			}
 
+			@Override
+			protected void changeColumnOrder(Table table) {
+				Desktop.this.changeColumnOrder(table);
+			}
+
 		};
 
 		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
@@ -2543,7 +2548,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				newBounds = new Rectangle((int) pBounds[0], (int) pBounds[1], (int) pBounds[2], (int) pBounds[3]);
 				desktopAnimation.setIFrameBounds(rb.internalFrame, rb.browserContentPane, newBounds, true);
-				rb.browserContentPane.sortColumnsCheckBox.setVisible(!LayoutMode.TINY.equals(layoutMode));
+				rb.browserContentPane.sortColumnsPanel.setVisible(!LayoutMode.TINY.equals(layoutMode) && !LayoutMode.THUMBNAIL.equals(layoutMode));
 				newPrecBounds.put(newBounds, pBounds);
 			}
 			precBounds = newPrecBounds;
@@ -3301,7 +3306,8 @@ public abstract class Desktop extends JDesktopPane {
 	protected abstract SQLConsole getSqlConsole(boolean switchToConsole);
 	protected abstract boolean isDesktopVisible();
 	protected abstract void checkAnchorRetension();
-
+	protected abstract void changeColumnOrder(Table table);
+	
 	/**
 	 * Scrolls an iFrame to the center of the desktop.
 	 */
