@@ -273,7 +273,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		subject = extractionModel.subject;
 		dataModel = extractionModel.dataModel;
 		if (dataModel != null) {
-			UISettings.s1 = Math.max(UISettings.s1, dataModel.getTables().size());
+			UISettings.dmStats(dataModel);
 		}
 		if (subject == null && dataModel != null && !dataModel.getTables().isEmpty()) {
 			subject = dataModel.getTables().iterator().next();

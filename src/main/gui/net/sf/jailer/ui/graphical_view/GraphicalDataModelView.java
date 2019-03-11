@@ -60,6 +60,7 @@ import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.undo.CompensationAction;
+import net.sf.jailer.ui.util.UISettings;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.Action;
@@ -1371,6 +1372,7 @@ public class GraphicalDataModelView extends JPanel {
 			n.setString("tooltip", tooltip);
 			tableNodes.put(table, n);
 			++tableNodesVersion;
+			++UISettings.s9;
 			return true;
 		}
 		return false;

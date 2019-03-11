@@ -22,6 +22,7 @@ import javax.swing.DefaultComboBoxModel;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.CsvFile.LineFilter;
@@ -186,6 +187,9 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 			if (selectedSchema != null && selectedSchema.equalsIgnoreCase(defaultSchema)) {
 				isDefaultSchema[0] = true;
 			}
+		}
+		if (ok) {
+			++UISettings.s7;
 		}
 		return ok;
 	}

@@ -20,9 +20,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Environment;
 
 /**
@@ -117,9 +121,25 @@ public class UISettings  {
 	public synchronized static String restoreStats() {
 		Object stats = restore("stats");
 		if (stats != null) {
+			store("stats", null);
 			return stats.toString();
 		}
 		return "";
+	}
+
+	public static void dmStats(DataModel dataModel) {
+		if (dataModel != null) {
+			s1 = Math.max(UISettings.s1, dataModel.getTables().size());
+			ArrayList<Integer> nc = new ArrayList<Integer>();
+			for (Table table: dataModel.getTables()) {
+				nc.add(table.getColumns().size());
+			}
+			if (!nc.isEmpty()) {
+				Collections.sort(nc);
+				int mid = Math.min(Math.max(nc.size() / 2, 0), nc.size() - 1);
+				s8 = Math.min(nc.get(mid), 999) + 1000 * nc.get(nc.size() - 1);
+			}
+		}
 	}
 
 }
