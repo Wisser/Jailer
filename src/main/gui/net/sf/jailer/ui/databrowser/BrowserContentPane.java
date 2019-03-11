@@ -4644,7 +4644,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
-        loadButton.setText(" Reload ");
+        loadButton.setText("Reload");
         loadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadButtonActionPerformed(evt);
