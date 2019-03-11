@@ -2786,6 +2786,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	public void expand() {
 		graphView.expandAll(false, true);
+		++UISettings.s9;
 		expandPathsToVisibleTables();
 	}
 
@@ -2794,6 +2795,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	public void expandAllVisibleTables() {
 		graphView.expandAll(true, true);
+		++UISettings.s9;
 		expandPathsToVisibleTables();
 	}
 	

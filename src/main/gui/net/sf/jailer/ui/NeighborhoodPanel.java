@@ -43,6 +43,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
+import net.sf.jailer.ui.util.UISettings;
 
 /**
  * Neighborhood Panel.
@@ -188,6 +189,7 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
 					@Override
 					protected void onLeftClick(MouseEvent e) {
 						if (!graphView.isTableVisible(t)) {
+							++UISettings.s9;
 							graphView.showTable(table, t);
 							initTableList(dataModel, table, hideIgnored, graphView);
 							createTableLinks(dataModel, table, graphView, hideIgnored);

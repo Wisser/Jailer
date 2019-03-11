@@ -76,6 +76,7 @@ import net.sf.jailer.ui.pathfinder.PathFinder;
 import net.sf.jailer.ui.pathfinder.PathFinder.Result;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.SqlUtil;
 
@@ -679,6 +680,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 								while (!toSelect.isEmpty()) {
 									Table dest = toSelect.pop();
 									if (!ClosureView.this.extractionModelEditor.graphView.isTableVisible(dest)) {
+										++UISettings.s9;
 										ClosureView.this.extractionModelEditor.graphView.showTable(source, dest);
 									}
 									source = dest;

@@ -392,6 +392,7 @@ public class GraphicalDataModelView extends JPanel {
 						GraphicalDataModelView.this.modelEditor.captureLayout();
 						try {
 							if (expandedTables.contains(table)) {
+								++UISettings.s9;
 								collapseTable(theGraph, table, false);
 								display.pan(1, 0);
 								display.pan(0, 1);
@@ -401,6 +402,7 @@ public class GraphicalDataModelView extends JPanel {
 								visualization.invalidateAll();
 								display.invalidate();
 							} else {
+								++UISettings.s9;
 								expandTable(theGraph, table, null, true, null);
 								visualization.invalidateAll();
 								display.invalidate();
@@ -1372,7 +1374,6 @@ public class GraphicalDataModelView extends JPanel {
 			n.setString("tooltip", tooltip);
 			tableNodes.put(table, n);
 			++tableNodesVersion;
-			++UISettings.s9;
 			return true;
 		}
 		return false;
