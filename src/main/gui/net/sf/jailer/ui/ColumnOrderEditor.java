@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,6 +45,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -160,6 +163,24 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 		columnOrderTable.setDefaultEditor(Boolean.class, anEditor);
 		
 		columnOrderTable.setModel(columnOrderModel);
+		columnOrderTable.setRowSorter(new TableRowSorter<TableModel>(columnOrderTable.getModel()) {
+			@Override
+			protected boolean useToString(int column) {
+				return false;
+			}
+
+			@Override
+		    public void toggleSortOrder(int column) {
+		        List<? extends SortKey> sortKeys = getSortKeys();
+		        if (sortKeys.size() > 0) {
+		            if (sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING) {
+		                setSortKeys(null);
+		                return;
+		            }
+		        }
+		        super.toggleSortOrder(column);
+		    }
+		});
 		columnOrderTable.setRowSelectionAllowed(false);
 		
 		final TableCellRenderer defaultTableCellRenderer = columnOrderTable.getDefaultRenderer(String.class);
@@ -209,7 +230,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 			Set<String> pks = new HashSet<String>();
 			Set<String> fks = new HashSet<String>();
 			
-			Map<String, Integer> columnsCount = new TreeMap<String, Integer>();
+			Map<String, Integer> columnsCount = currentTable != null? new LinkedHashMap<String, Integer>() : new TreeMap<String, Integer>();
 			for (Table table: dataModel.getTables()) {
 				if (currentTable == null || currentTable == table) {
 					for (Column column: table.getColumns()) {
@@ -257,10 +278,11 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 			columnOrderTable.getColumnModel().getColumn(3).setCellRenderer(renderer);
 			columnOrderTable.getColumnModel().getColumn(4).setCellRenderer(renderer);
 			columnOrderTable.setDefaultRenderer(Object.class, renderer);
-			columnOrderTable.setAutoCreateRowSorter(true);
-			List<SortKey> keys = new ArrayList<SortKey>();
-			keys.add(new SortKey(1, SortOrder.DESCENDING));
-			columnOrderTable.getRowSorter().setSortKeys(keys);
+			if (currentTable == null) {
+				List<SortKey> keys = new ArrayList<SortKey>();
+				keys.add(new SortKey(1, SortOrder.DESCENDING));
+				columnOrderTable.getRowSorter().setSortKeys(keys);
+			}
 			adjustTableColumnsWidth();
 		} finally {
 			UIUtil.resetWaitCursor(owner);

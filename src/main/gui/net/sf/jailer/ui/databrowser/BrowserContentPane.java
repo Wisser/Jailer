@@ -1176,7 +1176,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							public void actionPerformed(ActionEvent e) {
 								sortColumnsCheckBox.setSelected(false);
 								sortColumnsCheckBoxActionPerformed(null);
-								sortColumnsLabel.setText("natural order");
+								sortColumnsLabel.setText("Natural column order");
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
