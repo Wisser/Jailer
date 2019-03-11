@@ -2700,10 +2700,8 @@ public abstract class Desktop extends JDesktopPane {
 			storeSession(filename);
 			
 			DataModel newModel = new DataModel(schemamapping, executionContext, false);
-			if (datamodel != null) {
-				UISettings.s1 = Math.max(UISettings.s1, newModel.getTables().size());
-			}
 			datamodel.set(newModel);
+			UISettings.dmStats(newModel);
 			
 			onNewDataModel();
 

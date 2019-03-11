@@ -1154,7 +1154,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							public void actionPerformed(ActionEvent e) {
 								sortColumnsCheckBox.setSelected(false);
 								sortColumnsCheckBoxActionPerformed(null);
-								sortColumnsLabel.setText("natural order");
+								sortColumnsLabel.setText("Natural column order");
 							}
 						});
 						popup.add(natural);
@@ -1165,7 +1165,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							public void actionPerformed(ActionEvent e) {
 								sortColumnsCheckBox.setSelected(true);
 								sortColumnsCheckBoxActionPerformed(null);
-								sortColumnsLabel.setText("A-Z order");
+								sortColumnsLabel.setText("A-Z column order");
 							}
 						});
 						popup.add(sorted);
@@ -4317,7 +4317,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         sortColumnsPanel.setLayout(new javax.swing.BoxLayout(sortColumnsPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        sortColumnsLabel.setText("  natural order ");
+        sortColumnsLabel.setText("Natural column order");
         sortColumnsPanel.add(sortColumnsLabel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
