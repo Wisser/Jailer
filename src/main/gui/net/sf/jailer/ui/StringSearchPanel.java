@@ -197,13 +197,21 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	
 	private void updateList() {
 		DefaultListModel<String> matches = new DefaultListModel<String>();
-		String searchText = searchTextField.getText().trim().toUpperCase(Locale.ENGLISH);
+		String text = searchTextField.getText();
+		boolean withPrefix = !text.startsWith(" ");
+		boolean withSuffix = !text.endsWith(" ");
+		String searchText = text.trim().toUpperCase(Locale.ENGLISH);
 		DefaultComboBoxModel<String> model = (DefaultComboBoxModel) combobox.getModel();
 		int size = model.getSize();
 		for (int i = 0; i < size; ++i) {
 			String item = model.getElementAt(i);
 			if (!item.isEmpty()) {
-				if (searchText.isEmpty() || item.toUpperCase(Locale.ENGLISH).contains(searchText)) {
+				if (searchText.isEmpty() 
+						|| withPrefix && withSuffix && item.toUpperCase(Locale.ENGLISH).contains(searchText)
+						|| !withPrefix && withSuffix && item.toUpperCase(Locale.ENGLISH).startsWith(searchText)
+						|| withPrefix && !withSuffix && item.toUpperCase(Locale.ENGLISH).endsWith(searchText)
+						|| !withPrefix && !withSuffix && item.toUpperCase(Locale.ENGLISH).equals(searchText)
+						) {
 					matches.addElement(item);
 					if (!showAll && matches.getSize() > MAX_LIST_LENGTH) {
 						showAllLabel = "show all ...";
