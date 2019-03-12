@@ -37,7 +37,6 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.util.CellContentConverter;
-import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Quoting;
 
 /**

@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
-import java.nio.channels.ReadPendingException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

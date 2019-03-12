@@ -2,7 +2,6 @@ package net.sf.jailer.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Properties;
