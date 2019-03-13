@@ -2073,7 +2073,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					protected void onSelect(DbConnectionDialog connectionDialog, ExecutionContext executionContext) {
 						ExtractionModelFrame extractionModelFrame = null;
 						try {
-							extractionModelFrame = createFrame(finalFile, true, true, connectionDialog, executionContext);
+							extractionModelFrame = createFrame(null, true, true, connectionDialog, executionContext);
 							final ExtractionModelFrame finalExtractionModelFrame = extractionModelFrame;
 							SwingUtilities.invokeLater(new Runnable() {
 								@Override
