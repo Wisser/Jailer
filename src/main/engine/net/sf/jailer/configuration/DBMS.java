@@ -127,7 +127,7 @@ public class DBMS {
 		this.procedureDetailNeedsSpecificName = other.procedureDetailNeedsSpecificName;
 		this.limitTransactionSize = other.limitTransactionSize;
 		this.defaultSchemaQuery = other.defaultSchemaQuery;
-		this.fetchSize = fetchSize;
+		this.fetchSize = other.fetchSize;
 	}
 
 	/**

@@ -847,7 +847,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			ResultSet resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%", true, false, tableType);
 			
 			List<String> nonNullColumns = new ArrayList<String>();
-			boolean hasNullable = false;
 			while (resultSet.next()) {
 				int type = resultSet.getInt(5);
 				if (resultSet.getInt(11) == DatabaseMetaData.columnNoNulls) {
@@ -870,10 +869,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 							type == Types.TINYINT ||
 							type == Types.VARCHAR
 						)) {
-						hasNullable = true;
 					}
-				} else {
-					hasNullable = true;
 				}
 			}
 			resultSet.close();
@@ -915,16 +911,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					return true;
 				}
 			}
-			
-//			if (!hasNullable && "TABLE".equalsIgnoreCase(tableType)) {
-//				if (nonNullColumns.size() <= 6) {
-//					for (int i = 1; i <= nonNullColumns.size(); ++i) {
-//						pk.put(i, new Column(quoting.quote(nonNullColumns.get(i - 1)), "", 0, -1));
-//					}
-//					return true;
-//				}
-//			}
-//			
 			return false;
 		} catch (Exception e) {
 			_log.error(e.getMessage(), e);
