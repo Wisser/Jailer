@@ -114,7 +114,6 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
-import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
