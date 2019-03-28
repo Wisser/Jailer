@@ -1730,6 +1730,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public JPopupMenu createSqlPopupMenu(final Row parentrow, final int rowIndex, final int x, final int y, boolean forNavTree, final Component parentComponent) {
 		JPopupMenu popup = new JPopupMenu();
 		
+		JMenuItem rebase = new JMenuItem("Start Navigation here");
+		popup.add(rebase);
+		rebase.setEnabled(getParentBrowser() != null);
+		rebase.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				rebase();
+			}
+		});
+		popup.addSeparator();
 		JMenuItem qb = new JMenuItem("Query Builder");
 		qb.setAccelerator(KS_QUERYBUILDER);
 		popup.add(qb);
@@ -1936,7 +1946,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return count + 1;
 	}
 
-	private void closeSubTree(BrowserContentPane cp, boolean closeThisToo) {
+	protected void closeSubTree(BrowserContentPane cp, boolean closeThisToo) {
 		for (RowBrowser c: cp.getChildBrowsers()) {
 			closeSubTree(c.browserContentPane, true);
 		}
@@ -5176,7 +5186,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract int getReloadLimit();
 	protected void changeColumnOrder(Table table) {
 	}
-	
+	protected void rebase() {
+	}
+	protected RowBrowser copy(RowBrowser tableBrowser, Association association, Row parentRow, RowBrowser childToIgnore, boolean newParent) {
+		return null;
+	}
+	protected RowBrowser getRowBrowser() {
+		return null;
+	};
+
 	public interface RunnableWithPriority extends Runnable {
 		int getPriority();
 	};
