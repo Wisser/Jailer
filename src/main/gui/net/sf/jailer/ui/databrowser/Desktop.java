@@ -989,9 +989,11 @@ public abstract class Desktop extends JDesktopPane {
 					parent = this;
 				}
 				UIUtil.setWaitCursor(parent);
+				boolean oldSuppressUpdateMenu = suppressUpdateMenu;
 				try {
 					Desktop.noArrangeLayoutOnNewTableBrowser = true;
 					Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = true;
+					suppressUpdateMenu = true;
 					
 					RowBrowser newBrowser = copy(null, null, null, null, true);
 					RowBrowser newChildBrowser = newBrowser;
@@ -1026,6 +1028,8 @@ public abstract class Desktop extends JDesktopPane {
 				} catch (Throwable t) {
 					UIUtil.showException(parent, "Error", t);
 				} finally {
+					suppressUpdateMenu = oldSuppressUpdateMenu;
+					updateMenu();
 					Desktop.noArrangeLayoutOnNewTableBrowser = false;
 					Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = false;
 					UIUtil.resetWaitCursor(parent);
@@ -1111,8 +1115,19 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			public void internalFrameClosing(InternalFrameEvent e) {
-				if (tableBrowser.browserContentPane.closeWithChildren(jInternalFrame)) {
-					onLayoutChanged(false, false);
+				boolean update = false;
+				boolean oldSuppressUpdateMenu = suppressUpdateMenu;
+				try {
+					suppressUpdateMenu = true;
+					if (tableBrowser.browserContentPane.closeWithChildren(jInternalFrame)) {
+						onLayoutChanged(false, false);
+						update = true;
+					}
+				} finally {
+					suppressUpdateMenu = oldSuppressUpdateMenu;
+					if (update) {
+						updateMenu();
+					}
 				}
 			}
 
@@ -2854,7 +2869,12 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	private boolean suppressUpdateMenu = false;
+	
 	void updateMenu() {
+		if (suppressUpdateMenu) {
+			return;
+		}
 		boolean hasTableBrowser = false;
 		boolean hasIFrame = false;
 
