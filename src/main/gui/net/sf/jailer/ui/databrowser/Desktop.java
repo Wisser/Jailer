@@ -1022,6 +1022,7 @@ public abstract class Desktop extends JDesktopPane {
 							onLayoutChanged(false, true);
 						}
 					});
+					UISettings.s7 += 1000;
 					closeSubTree(root, true);
 				} catch (Throwable t) {
 					UIUtil.showException(parent, "Error", t);
