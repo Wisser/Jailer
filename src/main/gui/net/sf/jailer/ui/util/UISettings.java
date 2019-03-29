@@ -78,13 +78,6 @@ public class UISettings  {
 		loadUISettings();
 		properties.put(name, value);
 		File file = Environment.newFile(FILENAME);
-		if (file.exists()) {
-			try {
-				file.delete();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
 		try {
 			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
 			out.writeObject(properties);
