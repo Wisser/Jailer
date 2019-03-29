@@ -1398,7 +1398,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			File file = saveRestrictions();
 			args.add(file.getAbsolutePath());
 			UIUtil.runJailer(this, args, false, true, false, true, null, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, executionContext);
-			BrowserLauncher.openURL(Environment.newFile(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table))).getPath());
+			BrowserLauncher.openURL(Environment.newFile(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table))).toURI());
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}

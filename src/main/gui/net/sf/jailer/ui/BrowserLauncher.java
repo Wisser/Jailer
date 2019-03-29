@@ -15,8 +15,7 @@
  */
 package net.sf.jailer.ui;
 
-import java.io.File;
-import java.lang.reflect.Method;
+import java.awt.Desktop;
 import java.net.URI;
 
 /**
@@ -30,36 +29,7 @@ public class BrowserLauncher {
 	 * @param uri the uri to open
 	 */
 	public static void openURL(URI uri) throws Exception {
-		Class<?> desktop = Class.forName("java.awt.Desktop");
-		if (desktop != null) {
-			Method getDesktop = desktop.getMethod("getDesktop");
-			Method browse = desktop.getMethod("browse", URI.class);
-			if (getDesktop != null && browse != null) {
-				browse.invoke(getDesktop.invoke(null), uri);
-				return;
-			}
-		}
-	}
-
-	/**
-	 * Opens URL in browser.
-	 * 
-	 * @param url the url to open
-	 */
-	public static void openURL(String url) {
-		try {
-			Class<?> desktop = Class.forName("java.awt.Desktop");
-			if (desktop != null) {
-				Method getDesktop = desktop.getMethod("getDesktop");
-				Method browse = desktop.getMethod("browse", URI.class);
-				if (getDesktop != null && browse != null) {
-					browse.invoke(getDesktop.invoke(null), new File(url)
-							.toURI());
-					return;
-				}
-			}
-		} catch (Exception e) {
-		}
+		Desktop.getDesktop().browse(uri);
 	}
 
 }
