@@ -989,11 +989,9 @@ public abstract class Desktop extends JDesktopPane {
 					parent = this;
 				}
 				UIUtil.setWaitCursor(parent);
-				boolean oldSuppressUpdateMenu = suppressUpdateMenu;
 				try {
 					Desktop.noArrangeLayoutOnNewTableBrowser = true;
 					Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = true;
-					suppressUpdateMenu = true;
 					
 					RowBrowser newBrowser = copy(null, null, null, null, true);
 					RowBrowser newChildBrowser = newBrowser;
@@ -1028,8 +1026,6 @@ public abstract class Desktop extends JDesktopPane {
 				} catch (Throwable t) {
 					UIUtil.showException(parent, "Error", t);
 				} finally {
-					suppressUpdateMenu = oldSuppressUpdateMenu;
-					updateMenu();
 					Desktop.noArrangeLayoutOnNewTableBrowser = false;
 					Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = false;
 					UIUtil.resetWaitCursor(parent);
@@ -1115,19 +1111,8 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			public void internalFrameClosing(InternalFrameEvent e) {
-				boolean update = false;
-				boolean oldSuppressUpdateMenu = suppressUpdateMenu;
-				try {
-					suppressUpdateMenu = true;
-					if (tableBrowser.browserContentPane.closeWithChildren(jInternalFrame)) {
-						onLayoutChanged(false, false);
-						update = true;
-					}
-				} finally {
-					suppressUpdateMenu = oldSuppressUpdateMenu;
-					if (update) {
-						updateMenu();
-					}
+				if (tableBrowser.browserContentPane.closeWithChildren(jInternalFrame)) {
+					onLayoutChanged(false, false);
 				}
 			}
 
@@ -2869,22 +2854,30 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private boolean suppressUpdateMenu = false;
+	private AtomicBoolean updateMenuPending = new AtomicBoolean(false);
 	
 	void updateMenu() {
-		if (suppressUpdateMenu) {
+		if (updateMenuPending.get()) {
 			return;
 		}
-		boolean hasTableBrowser = false;
-		boolean hasIFrame = false;
-
-		for (RowBrowser rb : tableBrowsers) {
-			hasIFrame = true;
-			if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
-				hasTableBrowser = true;
+		UIUtil.invokeLater(1, new Runnable() {
+			@Override
+			public void run() {
+				updateMenuPending.set(false);
+				
+				boolean hasTableBrowser = false;
+				boolean hasIFrame = false;
+		
+				for (RowBrowser rb : tableBrowsers) {
+					hasIFrame = true;
+					if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
+						hasTableBrowser = true;
+					}
+				}
+				updateMenu(hasTableBrowser, hasIFrame);
 			}
-		}
-		updateMenu(hasTableBrowser, hasIFrame);
+		});
+		updateMenuPending.set(true);
 	}
 
 	protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
