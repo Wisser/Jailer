@@ -29,6 +29,7 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ListEditor;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.util.UISettings;
 
 /**
  * Bookmarks panel.
@@ -344,6 +345,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 				b.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
+						UISettings.s6 += 1000;
 						desktop.restoreSession(null, new File(getBookmarksFolder(), nb));
 						new File(getBookmarksFolder(), nb).setLastModified(System.currentTimeMillis());
 						updateBookmarksMenu();
