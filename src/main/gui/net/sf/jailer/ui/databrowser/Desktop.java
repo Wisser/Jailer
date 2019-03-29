@@ -2626,7 +2626,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				newBounds = new Rectangle((int) pBounds[0], (int) pBounds[1], (int) pBounds[2], (int) pBounds[3]);
 				desktopAnimation.setIFrameBounds(rb.internalFrame, rb.browserContentPane, newBounds, true);
-				rb.browserContentPane.sortColumnsPanel.setVisible(!LayoutMode.TINY.equals(layoutMode) && !LayoutMode.THUMBNAIL.equals(layoutMode));
+				rb.browserContentPane.sortColumnsPanel.setVisible(LayoutMode.SMALL.factor <= layoutMode.factor);
 				newPrecBounds.put(newBounds, pBounds);
 			}
 			precBounds = newPrecBounds;
