@@ -76,7 +76,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 	private static final String TYPE_PK = "PK";
 	private static final String TYPE_FK = "FK";
 	private static final String TYPE_FK_PK = "FK+PK";
-	private static final String ALL_TABLES = "all tables";
+	private static final String ALL_TABLES = "(all tables)";
 
     /**
      * Creates new form.
@@ -90,10 +90,6 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         
     	initTablesCombobox();
     	
-		Font infoFont = jinfoLabe.getFont();
-		infoFont = new Font(infoFont.getName(), infoFont.getStyle(), (int) (infoFont.getSize() * 1.2));
-		jinfoLabe.setFont(infoFont);
-	
 		columnOrderPrio = new TreeMap<String, DataModel.ColumnOrderPriority>(dataModel.columnOrderPrio);
 		
 		updateTableModel(owner, dataModel);
@@ -429,6 +425,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
+        jinfoLabe.setFont(jinfoLabe.getFont().deriveFont(jinfoLabe.getFont().getSize()+2f));
         jinfoLabe.setText("Define the rendering position of columns in table:  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -437,6 +434,8 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel3.add(jinfoLabe, gridBagConstraints);
 
+        tablesComboBox.setFont(tablesComboBox.getFont().deriveFont(tablesComboBox.getFont().getSize()+2f));
+        tablesComboBox.setMaximumRowCount(20);
         tablesComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
