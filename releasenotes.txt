@@ -1,3 +1,6 @@
+8.5.5
+  - Minor bug fixes.
+
 8.5.4
   - The table from which the navigation starts can now be changed at any time in the data browser.
   - Improved data browser performance.
