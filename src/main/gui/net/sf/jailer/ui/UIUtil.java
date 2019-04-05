@@ -88,6 +88,7 @@ import net.sf.jailer.database.SqlException;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.IncompatibleModelException;
 import net.sf.jailer.progress.ProgressListener;
+import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
@@ -711,7 +712,21 @@ public class UIUtil {
             
             final int MAX_CL = 1000;
             
-			String iMsg = msg.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
+            // TODO QA 331
+        	if (BrowserContentPane.closedConEx != null) {
+        		if (BrowserContentPane.closedConEx.getMessage() != null && BrowserContentPane.closedConEx.getMessage().toLowerCase().contains("is closed")) {
+        	        sw = new StringWriter();
+        	        pw = new PrintWriter(sw);
+        	        BrowserContentPane.closedConEx.printStackTrace(pw);
+        	        if (BrowserContentPane.closedConExTS != null) {
+        	        	msg.append(" " + (System.currentTimeMillis() - BrowserContentPane.closedConExTS));
+        	        }
+        			BrowserContentPane.closedConEx = null;
+        			BrowserContentPane.closedConExTS = null;
+        		}
+        	}
+            
+            String iMsg = msg.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
             if (iMsg.length() > MAX_CL) {
             	iMsg = iMsg.substring(0, MAX_CL);
             }

@@ -60,6 +60,7 @@ import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -957,6 +958,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, null, w);
 			if (session != null) {
 				session.shutDown();
+				try {
+					UISettings.s10 = ci.url.replaceAll("[^:]*:([^:]*):.*", "$1");
+					UISettings.s10 = UISettings.s10.substring(0, Math.min(UISettings.s10.length(), 100));
+				} catch (Throwable t) {
+					// ignore
+				}
 				try {
 					if (!warned) {
 						if (DBMS.forDBMS(null) == dataSource.dbms) {

@@ -98,6 +98,7 @@ public class UISettings  {
 	}
 
 	public static int s1, s2, s3, s4, s5, s6, s7, s8, s9;
+	public static String s10;
 	
 	public synchronized static void storeStats() {
 		int i = 1;
@@ -108,9 +109,12 @@ public class UISettings  {
 			}
 			++i;
 		}
+		if (s10 != null) {
+			sb.append("&s10=" + s10);
+		}
 		store("stats", sb.toString());
 	}
-	
+
 	public synchronized static String restoreStats() {
 		Object stats = restore("stats");
 		if (stats != null) {

@@ -236,6 +236,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				synchronized (rows) {
 					exception = e;
 				}
+				// TODO QA 331
+				closedConEx = closedConExTL.get();
+				closedConExTS = closedConExTSTL.get();
 			} catch (CancellationException e) {
 				Session._log.info("cancelled");
 				CancellationHandler.reset(this);
@@ -3072,9 +3075,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	private void reloadRows(ResultSet inputResultSet, InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, LoadJob loadJob, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
-		reloadRows0(inputResultSet, inlineViewStyle, andCond, parentRows, rows, loadJob, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
+		// TODO QA 331
+		try {
+			reloadRows0(inputResultSet, inlineViewStyle, andCond, parentRows, rows, loadJob, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
+		} catch (SQLException e) {
+			// TODO QA 331
+			if (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed")) {
+				closedConExTL.set(e);
+				closedConExTSTL.set(System.currentTimeMillis());
+			}
+			throw e;
+		}
 	}
 
+	// TODO QA 331
+	public static ThreadLocal<Long> closedConExTSTL = new ThreadLocal<Long>();
+	public static ThreadLocal<Exception> closedConExTL = new ThreadLocal<Exception>();
+	public static Long closedConExTS;
+	public static Exception closedConEx;
+	
 	/**
 	 * Gets qualified table name.
 	 * 

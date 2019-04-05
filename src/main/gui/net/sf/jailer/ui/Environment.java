@@ -80,7 +80,7 @@ public class Environment {
 			if (!testCreateTempFile()) {
 				UIUtil.showException(null, "Error", new IllegalStateException("No write permission on "
 						+ new File(".").getAbsolutePath() + " \n"
-						+ "To setup multi-user mode, create a (empty) file \".multiuser\" in the this folder. "
+						+ "To setup multi-user mode, create a (empty) file \".multiuser\" in this folder. "
 						+ "All model and settings files are then stored in a folder named \".jailer\" in the user's home directory."));
 				System.exit(-1);
 			}
