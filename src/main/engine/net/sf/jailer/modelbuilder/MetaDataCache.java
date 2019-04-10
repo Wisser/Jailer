@@ -174,7 +174,7 @@ public class MetaDataCache {
 			
 			while (rs.next()) {
 				Object[] row = new Object[numCol];
-				for (int i = 1; i < numCol; ++i) {
+				for (int i = 1; i <= numCol; ++i) {
 					if (i >= 22 && DBMS.MSSQL.equals(session.dbms)) {
 						row[i - 1] = null;
 					} else {
