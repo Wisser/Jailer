@@ -128,13 +128,18 @@ public class UISettings  {
 		if (dataModel != null) {
 			s1 = Math.max(UISettings.s1, dataModel.getTables().size());
 			ArrayList<Integer> nc = new ArrayList<Integer>();
+			int numA = 0;
 			for (Table table: dataModel.getTables()) {
 				nc.add(table.getColumns().size());
+				if (table.associations != null) {
+					numA += table.associations.size();
+				}
 			}
 			if (!nc.isEmpty()) {
 				Collections.sort(nc);
 				int mid = Math.min(Math.max(nc.size() / 2, 0), nc.size() - 1);
 				s8 = Math.min(nc.get(mid), 999) + 1000 * nc.get(nc.size() - 1);
+				s5 = (s5 % 1000) + 1000 * (numA / 2);
 			}
 		}
 	}
