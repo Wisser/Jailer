@@ -156,7 +156,6 @@ public class AssociationProposer {
 		st.accept(new APStatementVisitor());
 		closeEquations();
 		proposeJoinConditions();
-		sqlStatement = st.toString();
 		return null;
 	}
 
