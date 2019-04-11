@@ -1479,19 +1479,3 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	
 }
 
-
-// TODO
-//build-model-wo-merge org.postgresql.Driver
-//jdbc:postgresql://localhost:5433/rnea rnea "<password>" -jdbcjar
-//"lib\postgresql-42.2.0.jre7.jar" -schema ME -qualifyNames -datamodel
-//"datamodel\Postgresql"
-//
-//Jailer 8.5.4
-//
-//java.lang.RuntimeException: duplicate association name: job_inst_exec_fk
-//   at net.sf.jailer.datamodel.DataModel.<init>(DataModel.java:570)
-//   at net.sf.jailer.modelbuilder.ModelBuilder.build(ModelBuilder.java:276)
-//   at net.sf.jailer.Jailer.jailerMain(Jailer.java:271)
-//   at net.sf.jailer.ui.UIUtil$5.run(UIUtil.java:506)
-//   at java.base/java.lang.Thread.run(Unknown Source)
-

@@ -65,6 +65,11 @@ public class RowCounter {
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime, null);
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
+				// TODO QA 331
+				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+					BrowserContentPane.closedConExTL.set((Exception) e);
+					BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
+				}
 				if (System.currentTimeMillis() >= maxTime) {
 					return new RowCount(-1, true);
 				}
@@ -78,6 +83,11 @@ public class RowCounter {
 						return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime, inlineViewStyle);
 					}
 				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
+					// TODO QA 331
+					if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+						BrowserContentPane.closedConExTL.set((Exception) e);
+						BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
+					}
 					if (System.currentTimeMillis() >= maxTime) {
 						return new RowCount(-1, true);
 					}
@@ -87,6 +97,11 @@ public class RowCounter {
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime, null);
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
+				// TODO QA 331
+				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+					BrowserContentPane.closedConExTL.set((Exception) e);
+					BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
+				}
 				if (System.currentTimeMillis() >= maxTime) {
 					return new RowCount(-1, true);
 				}
@@ -95,6 +110,11 @@ public class RowCounter {
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100, maxTime, null);
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
+				// TODO QA 331
+				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+					BrowserContentPane.closedConExTL.set((Exception) e);
+					BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
+				}
 				if (System.currentTimeMillis() >= maxTime) {
 					return new RowCount(-1, true);
 				}
@@ -103,6 +123,11 @@ public class RowCounter {
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40, maxTime, null);
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
+				// TODO QA 331
+				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+					BrowserContentPane.closedConExTL.set((Exception) e);
+					BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
+				}
 				if (System.currentTimeMillis() >= maxTime) {
 					return new RowCount(-1, true);
 				}
@@ -113,6 +138,11 @@ public class RowCounter {
 		try {
 			return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime, null);
 		} catch (Throwable e) { // embedded DBMS may throw non-SQLException
+			// TODO QA 331
+			if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+				BrowserContentPane.closedConExTL.set((Exception) e);
+				BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
+			}
 			if (System.currentTimeMillis() >= maxTime) {
 				return new RowCount(-1, true);
 			}
@@ -157,6 +187,11 @@ public class RowCounter {
 					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, session.dbms.getSqlLimitSuffix(), selectDistinct, maxTime, inlineViewStyle);
 					loaded = true;
 				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
+					// TODO QA 331
+					if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+						BrowserContentPane.closedConExTL.set((Exception) e);
+						BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
+					}
 					if (System.currentTimeMillis() >= maxTime) {
 						return new RowCount(-1, true);
 					}
@@ -171,6 +206,11 @@ public class RowCounter {
 					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, true, null, selectDistinct, maxTime, inlineViewStyle);
 					loaded = true;
 				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
+					// TODO QA 331
+					if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+						BrowserContentPane.closedConExTL.set((Exception) e);
+						BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
+					}
 					if (System.currentTimeMillis() >= maxTime) {
 						return new RowCount(-1, true);
 					}

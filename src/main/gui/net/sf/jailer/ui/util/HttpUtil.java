@@ -45,7 +45,6 @@ public class HttpUtil {
             
             input.close();
 	    } catch (Exception err) {
-	    	err.printStackTrace(); // TODO
 	       // ignore
 	    }
 		return result.toString();
