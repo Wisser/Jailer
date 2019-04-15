@@ -45,6 +45,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -121,9 +122,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
+import jdk.nashorn.internal.runtime.Context.ThrowErrorManager;
 import net.coderazzi.filters.gui.AutoChoices;
 import net.coderazzi.filters.gui.TableFilterHeader;
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.JailerVersion;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
@@ -259,6 +262,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					exception = e;
 				}
 			}
+
+			sendClosedConEx();
+			// TODO QA 331
+			closedConExTL.remove();
+
 			reconnectIfConnectionIsInvalid();
 			CancellationHandler.reset(this);
 			SwingUtilities.invokeLater(new Runnable() {
@@ -2639,10 +2647,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						} else {
 							RowCounter rc = new RowCounter(table, association, r, session, rowIdSupport);
 							try {
-								rowCount = rc.countRows(getAndConditionText(), context, MAX_RC + 1, false);
+								String andConditionText = getAndConditionText();
+								rowCount = rc.countRows(andConditionText, context, MAX_RC + 1, false);
 							} catch (SQLException e) {
 								rowCount = new RowCount(-1, true);
 							}
+
+							sendClosedConEx();
+							
 							rowCountCache.put(key, new Pair<RowCount, Long>(rowCount, System.currentTimeMillis() + MAX_ROWCOUNTCACHE_RETENTION_TIME));
 						}
 						
@@ -3105,7 +3117,30 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public static ThreadLocal<Exception> closedConExTL = new ThreadLocal<Exception>();
 	public static Long closedConExTS;
 	public static Exception closedConEx;
-	
+	private static boolean closedConExSent = false;
+
+	private synchronized void sendClosedConEx() {
+		// TODO QA 331
+		try {
+			Exception ex = closedConExTL.get();
+			if (ex != null && !closedConExSent
+					&& !session.getConnection().isValid(0)
+					) {
+				closedConExSent = true;
+				StringWriter sw = new StringWriter();
+		        PrintWriter pw = new PrintWriter(sw);
+		        ex.printStackTrace(pw);
+		        String iMsg = JailerVersion.VERSION + "\n" + sw.toString();
+		        if (iMsg.length() > 1000) {
+		        	iMsg = iMsg.substring(0, 1000);
+		        }
+		        UIUtil.sendIssue("internal", iMsg);
+			}
+		} catch (Throwable t) {
+			// ignore
+		}
+	}
+
 	/**
 	 * Gets qualified table name.
 	 * 
