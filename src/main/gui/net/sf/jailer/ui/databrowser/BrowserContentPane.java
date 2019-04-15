@@ -214,6 +214,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 
+		private void reconnectIfConnectionIsInvalid() {
+			try {
+				if (inputResultSet == null && !session.getConnection().isValid(0)) {
+					session.reconnect();
+				}
+			} catch (Throwable t) {
+				// ignore
+			}
+		}
+		
 		@Override
 		public void run() {
 			int l;
@@ -226,6 +236,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			rowCountCache.clear();
+			reconnectIfConnectionIsInvalid();
 			try {
 				reloadRows(inputResultSet, andCond, rows, this, l + 1, selectDistinct);
 				CancellationHandler.checkForCancellation(this);
@@ -248,6 +259,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					exception = e;
 				}
 			}
+			reconnectIfConnectionIsInvalid();
 			CancellationHandler.reset(this);
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override

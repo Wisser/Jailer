@@ -319,13 +319,21 @@ public class Session {
 	/**
 	 * Closes current connection and opens a new one.
 	 */
-	public void reconnect() throws SQLException {
+	public void reconnect() {
 		Connection con = connection.get();
 		if (con != null) {
 			if (temporaryTableScope == WorkingTableScope.TRANSACTION_LOCAL) {
-				con.commit();
+				try {
+					con.commit();
+				} catch (SQLException e) {
+					// ignore
+				}
 			}
-			con.close();
+			try {
+				con.close();
+			} catch (SQLException e) {
+				// ignore
+			}
 			connection.set(null);
 			if (con == temporaryTableSession) {
 				temporaryTableSession = null;
@@ -334,9 +342,17 @@ public class Session {
 		}
 		if (temporaryTableSession != null) {
 			if (temporaryTableScope == WorkingTableScope.TRANSACTION_LOCAL) {
-				temporaryTableSession.commit();
+				try {
+					temporaryTableSession.commit();
+				} catch (SQLException e) {
+					// ignore
+				}
 			}
-			temporaryTableSession.close();
+			try {
+				temporaryTableSession.close();
+			} catch (SQLException e) {
+				// ignore
+			}
 			temporaryTableSession = null;
 		}
 	}
