@@ -687,6 +687,9 @@ public class UIUtil {
 					((SqlException) t).isFormatted()? message : lineWrap(message, 120).toString(), sql, ((SqlException) t).isFormatted(), true, null);
             return;
         }
+        if (t instanceof CancellationException) {
+        	return;
+        }
         String message = t.getMessage();
         if (message == null || "".equals(message.trim())) {
             message = t.getClass().getName();

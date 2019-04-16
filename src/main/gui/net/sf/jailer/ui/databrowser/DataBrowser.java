@@ -545,6 +545,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
         if (dbConnectionDialog != null) {
             createSession(dbConnectionDialog);
+            if (session == null) {
+            	return;
+            }
         }
         desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog, anchorManager, executionContext) {
             @Override
@@ -3970,6 +3973,10 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 		});
+	}
+	
+	public boolean isReady() {
+		return session != null;
 	}
 	
 	private DesktopAnchorManager anchorManager; 

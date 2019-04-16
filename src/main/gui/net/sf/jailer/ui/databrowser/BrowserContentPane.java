@@ -249,21 +249,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					return;
 				}
 			}
+			
+			boolean reconnectAndRetry = false;
+			
 			rowCountCache.clear();
-			boolean reconnected = reconnectIfConnectionIsInvalid(true);
 			try {
-				if (reconnected) {
-					new Quoting(session); // fail-fast
-				}
 				reloadRows(inputResultSet, andCond, rows, this, l + 1, selectDistinct);
 				CancellationHandler.checkForCancellation(this);
 				synchronized (this) {
 					finished = true;
 				}
 			} catch (SQLException e) {
-				synchronized (rows) {
-					exception = e;
-				}
+				reconnectAndRetry = true;
 				// TODO QA 331
 				closedConEx = closedConExTL.get();
 				closedConExTS = closedConExTSTL.get();
@@ -272,8 +269,36 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				CancellationHandler.reset(this);
 				return;
 			} catch (Throwable e) {
-				synchronized (rows) {
-					exception = e;
+				reconnectAndRetry = true;
+			}
+
+			if (reconnectAndRetry) {
+				rowCountCache.clear();
+				boolean reconnected = reconnectIfConnectionIsInvalid(true);
+				try {
+					if (reconnected) {
+						new Quoting(session); // fail-fast
+					}
+					reloadRows(inputResultSet, andCond, rows, this, l + 1, selectDistinct);
+					CancellationHandler.checkForCancellation(this);
+					synchronized (this) {
+						finished = true;
+					}
+				} catch (SQLException e) {
+					synchronized (rows) {
+						exception = e;
+					}
+					// TODO QA 331
+					closedConEx = closedConExTL.get();
+					closedConExTS = closedConExTSTL.get();
+				} catch (CancellationException e) {
+					Session._log.info("cancelled");
+					CancellationHandler.reset(this);
+					return;
+				} catch (Throwable e) {
+					synchronized (rows) {
+						exception = e;
+					}
 				}
 			}
 

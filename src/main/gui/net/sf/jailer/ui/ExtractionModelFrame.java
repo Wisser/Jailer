@@ -1082,9 +1082,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			DataBrowser dataBrowser;
 			try {
 				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, true, executionContext);
-				dataBrowser.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-				dataBrowser.setExtendedState(Frame.MAXIMIZED_BOTH);
-				dataBrowser.setVisible(true);
+				if (dataBrowser.isReady()) {
+					dataBrowser.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+					dataBrowser.setExtendedState(Frame.MAXIMIZED_BOTH);
+					dataBrowser.setVisible(true);
+				}
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
 			}

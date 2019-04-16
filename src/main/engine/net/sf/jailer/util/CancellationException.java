@@ -16,7 +16,7 @@
 package net.sf.jailer.util;
 
 /**
- * Signals that an operation has been canceled.
+ * Signals that an operation has been cancelled.
  * 
  * @author Ralf Wisser
  */
