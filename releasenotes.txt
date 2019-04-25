@@ -1,3 +1,6 @@
+8.6.1
+  - View execution plans for DB2 LUW.
+
 8.6
   - The data browser automatically reconnects when the connection is lost.
   - Minor bug fixes.
