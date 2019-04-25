@@ -717,6 +717,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             boolean hasUpdateCount = true;
             ResultSet sqlPlusResultSet = null;
             if (explain) {
+            	if (session.dbms.getExplainCreateExplainTable() != null) {
+            		Statement createStatement = session.getConnection().createStatement();
+            		try {
+            			createStatement.execute(session.dbms.getExplainCreateExplainTable());
+            		} catch (Exception e) {
+        				// ignore
+        			} finally {
+            			try {
+            				createStatement.close();
+            			} catch (Exception e) {
+            				// ignore
+            			}
+            		}
+            	}
             	synchronized (this) {
             		stmtId = "Jailer" + (nextPlanID++ % 8);
 				}
