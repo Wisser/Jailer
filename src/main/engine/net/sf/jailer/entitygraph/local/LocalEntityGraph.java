@@ -134,6 +134,12 @@ public class LocalEntityGraph extends EntityGraph {
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
 			String value = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
 			if (allUPK || isUPKColumn(columnNames[i - 1])) {
+				if (DBMS.POSTGRESQL.equals(remoteSession.dbms)) {
+					String columnTypeName = resultSetMetaData.getColumnTypeName(i);
+					if (columnTypeName != null && columnTypeName.length() > 0) {
+						value += "::" + columnTypeName;
+					}
+				}
 				// value = cellContentConverter.toSql(value);
 				value = "'" + localDBMSConfiguration.convertToStringLiteral(value) + "'";
 			}
