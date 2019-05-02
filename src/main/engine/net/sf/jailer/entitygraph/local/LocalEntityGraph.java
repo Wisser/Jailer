@@ -113,6 +113,17 @@ public class LocalEntityGraph extends EntityGraph {
 			return new CellContentConverter(resultSetMetaData, localSession, localSession.dbms);
 		}
 		
+		@Override
+		public void close() throws SQLException {
+			if (DBMS.POSTGRESQL.equals(remoteSession.dbms)) {
+				if (statementBuilder.size() == 1) {
+					process("(Select " + statementBuilder.getItems().get(0) + " Union Select " + statementBuilder.getItems().get(0) + ") " + name);
+				}
+			} else {
+				super.close();
+			}
+		}
+		
 	}
 
 	private abstract class LocalInlineViewBuilder extends InlineViewBuilder {
@@ -134,12 +145,6 @@ public class LocalEntityGraph extends EntityGraph {
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
 			String value = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
 			if (allUPK || isUPKColumn(columnNames[i - 1])) {
-				if (DBMS.POSTGRESQL.equals(remoteSession.dbms)) {
-					String columnTypeName = resultSetMetaData.getColumnTypeName(i);
-					if (columnTypeName != null && columnTypeName.length() > 0) {
-						value += "::" + columnTypeName;
-					}
-				}
 				// value = cellContentConverter.toSql(value);
 				value = "'" + localDBMSConfiguration.convertToStringLiteral(value) + "'";
 			}

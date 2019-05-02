@@ -143,6 +143,13 @@ public class StatementBuilder {
 	}
 	
 	/**
+	 * Returns the items of the current statement.
+	 */
+	public List<String> getItems() {
+		return body;
+	}
+	
+	/**
 	 * Gets the maximal size of a body-list.
 	 */
 	public int getMaxBodySize() {

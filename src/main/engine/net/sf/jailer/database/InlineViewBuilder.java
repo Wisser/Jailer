@@ -44,7 +44,7 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 	 */
 	protected final String name;
 
-	private final StatementBuilder statementBuilder;
+	protected final StatementBuilder statementBuilder;
 
 	protected ResultSetMetaData resultSetMetaData = null;
 
