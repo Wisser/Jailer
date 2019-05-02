@@ -1,4 +1,4 @@
-8.6.1
+8.6.2
   - View execution plans for DB2 LUW.
   - Fixed "ERROR: failed to find conversion function from unknown to text"
     that could occur with PostgreSQL in connection with the "local database" scope. 

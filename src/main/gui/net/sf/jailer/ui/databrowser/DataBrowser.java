@@ -947,18 +947,19 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
     private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
-        if (session != null) {
-            try {
-                session.shutDown();
-                session = null;
-            } catch (Exception e) {
-                // ignore
-            }
-        }
         ConnectionInfo connection = dbConnectionDialog.currentConnection;
         BasicDataSource dataSource = new BasicDataSource(connection.driverClass, connection.url, connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
-        session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), this);
-        if (session != null) {
+        SessionForUI newSession = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), this);
+        if (newSession != null) {
+            if (session != null) {
+                try {
+                    session.shutDown();
+                    session = null;
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        	session = newSession;
 	        List<String> args = new ArrayList<String>();
 	        dbConnectionDialog.addDbArgs(args);
 	        session.setCliArguments(args);
@@ -3350,7 +3351,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private Runnable createMetaDataPanel;
 
     private void onNewSession(Session newSession) {
-    	if (session == null) {
+    	if (newSession == null) {
     		return;
     	}
 
