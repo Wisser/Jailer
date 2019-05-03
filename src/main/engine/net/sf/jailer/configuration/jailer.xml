@@ -471,7 +471,7 @@ union all
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <defaultSchemaQuery>Select DATABASE()</defaultSchemaQuery>
-		<estimatedRowCountQuery>select TABLE_NAME, CARDINALITY from INFORMATION_SCHEMA.STATISTICS where TABLE_SCHEMA = '%s'</estimatedRowCountQuery>
+		<estimatedRowCountQuery>select TABLE_NAME, max(CARDINALITY) from INFORMATION_SCHEMA.STATISTICS where TABLE_SCHEMA = '%s' group by TABLE_NAME</estimatedRowCountQuery>
 		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
         
 		<virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'</virtualColumnsQuery>
