@@ -1046,9 +1046,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 	private void save() {
 		try {
 			if (needsSave) {
-				save(tables, DataModel.getTablesFile(executionContext), "# Name; Upsert; Primary key; ; Author");
-				save(associations, DataModel.getAssociationsFile(executionContext), "# Table A; Table B; First-insert; Cardinality (opt); Join-condition; Name; Author");
-				save(new ArrayList<Line>(columns.values()), DataModel.getColumnsFile(executionContext), "# Table; Columns");
+				save(sort(tables, 0), DataModel.getTablesFile(executionContext), "# Name; Upsert; Primary key; ; Author");
+				save(sort(associations, 5), DataModel.getAssociationsFile(executionContext), "# Table A; Table B; First-insert; Cardinality (opt); Join-condition; Name; Author");
+				save(sort(new ArrayList<Line>(columns.values()), 0), DataModel.getColumnsFile(executionContext), "# Table; Columns");
 				saveTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(executionContext));
 				saveTableList(Arrays.asList(JailerVersion.VERSION), DataModel.getVersionFile(executionContext));
 				saveDisplayNames();
@@ -1059,6 +1059,15 @@ public class DataModelEditor extends javax.swing.JDialog {
 			UIUtil.showException(this, "Error", t);
 		}
 		setVisible(false);
+	}
+	
+	private ArrayList<Line> sort(List<Line> lines, int keyColumn) throws Exception {
+		Map<String, Line> destLines = new TreeMap<String, CsvFile.Line>();
+		
+		for (Line line: lines) {
+			destLines.put(line.cells.get(keyColumn), line);
+		}
+		return new ArrayList<Line>(destLines.values());
 	}
 	
 	/**
