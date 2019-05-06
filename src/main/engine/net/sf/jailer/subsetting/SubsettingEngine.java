@@ -1636,13 +1636,19 @@ public class SubsettingEngine {
 			_log.info("tables to check: " + new PrintUtil().tableSetAsString(tablesToCheck, null));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			final Set<Table> tablesToCheckNextTime = new HashSet<Table>();
+			Map<Table, Long> entityCounts = new HashMap<Table, Long>();
 			for (final Table table : tablesToCheck) {
 				for (final Association a : table.associations) {
 					if (emptyTables.contains(table)) {
 						continue;
 					}
 					if (!a.reversalAssociation.isIgnored()) {
-						if (entityGraph.countEntities(table) == 0) {
+						Long entityCount = entityCounts.get(table);
+						if (entityCount == null) {
+							entityCount = entityGraph.countEntities(table);
+							entityCounts.put(table, entityCount);
+						}
+						if (entityCount == 0) {
 							emptyTables.add(table);
 							continue;
 						}
