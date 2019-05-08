@@ -470,7 +470,7 @@ public class UIUtil {
                                 }).start();
                                 outputView.dialog.setTitle("Jailer Console - cancelling...");
                                 if (progressListener != null) {
-                                    progressListener.newStage("cancelling", true, true);
+                                    progressListener.newStage("cancelling...", true, true);
                                 }
                                 outputView.getCancelButton().setEnabled(false);
                                 cancelled = true;

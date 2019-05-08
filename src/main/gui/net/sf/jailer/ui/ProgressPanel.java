@@ -18,16 +18,24 @@ package net.sf.jailer.ui;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import net.sf.jailer.database.DMLTransformer;
 
@@ -70,8 +78,16 @@ public class ProgressPanel extends javax.swing.JPanel {
 			explainedRowsLabel.setVisible(false);
 			explainedRowsTitelLabel.setVisible(false);
 		}
+		stepLabelColor = stepLabel.getForeground();
+		initialStepLabelColor = stepLabelColor;
+		stepLabel.addPropertyChangeListener("text", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				onNewStep();
+			}
+		});
 	}
-	
+
 	private Map<String, JLabel> reductionLabels = new HashMap<String, JLabel>();
 	
 	public void updateRowsReductionPerTable(Map<String, Long> rowsReductionPerTable) {
@@ -280,9 +296,8 @@ public class ProgressPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel2.add(stepLabel, gridBagConstraints);
 
         jLabel5.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
@@ -475,7 +490,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 	public void onCancel() {
 		inCancellingStep = true;
 		stepLabel.setText("cancelling...");
-		stepLabel.setForeground(Color.RED);
+		setStepLabelForeground(Color.RED);
     }
 
 	public boolean inCancellingStep = false;
@@ -517,6 +532,50 @@ public class ProgressPanel extends javax.swing.JPanel {
     private javax.swing.JPanel rowsPerTablePanel;
     public javax.swing.JLabel stepLabel;
     // End of variables declaration//GEN-END:variables
+    
+	protected void onNewStep() {
+		if (timer == null && stepLabel.getText().endsWith("...")) {
+			startTimer();
+		}
+	}
+
+    private Timer timer;
+    private boolean isOn;
+    private Color stepLabelColor;
+    private Color initialStepLabelColor;
+
+    public void setStepLabelForeground(Color color) {
+    	stepLabel.setForeground(color);
+    	stepLabelColor = color;
+	}
+    
+    private void startTimer() {
+    	Window window = SwingUtilities.getWindowAncestor(this);
+    	if (window == null || !window.isVisible()) {
+    		return;
+    	}
+		timer = new Timer(500, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				timer = null;
+				if (isOn) {
+					isOn = false;
+					if (stepLabel.getText().endsWith("...")) {
+						stepLabel.setForeground(initialStepLabelColor);
+						startTimer();
+					} else {
+						stepLabel.setForeground(stepLabelColor);
+					}
+				} else {
+					stepLabel.setForeground(Color.red);
+					isOn = true;
+					startTimer();
+				}
+			}
+		});
+		timer.setRepeats(false);
+		timer.start();
+	}
 
 	private static final long serialVersionUID = -2750282839722695036L;
 }

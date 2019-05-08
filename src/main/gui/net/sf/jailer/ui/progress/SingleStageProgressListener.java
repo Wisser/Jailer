@@ -164,7 +164,7 @@ public class SingleStageProgressListener implements ProgressListener {
 								if (!progressPanel.inCancellingStep || isErrorStage) {
 									progressPanel.stepLabel.setText(currentStep);
 									if (isErrorStage) {
-										progressPanel.stepLabel.setForeground(Color.RED);
+										progressPanel.setStepLabelForeground(Color.RED);
 									}
 								}
 								long t = System.currentTimeMillis();
