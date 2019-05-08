@@ -1,3 +1,6 @@
+8.6.3
+  - Minor bug fixes.
+
 8.6.2
   - View execution plans for DB2 LUW.
   - Fixed "ERROR: failed to find conversion function from unknown to text"
