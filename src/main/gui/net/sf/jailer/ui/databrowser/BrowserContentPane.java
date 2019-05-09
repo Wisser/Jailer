@@ -1841,6 +1841,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), session); }});
 			}
 		});
+		Row row = null;
+		if (rows != null && rows.size() == 1) {
+			row = rows.get(0);
+		}
+		JMenuItem insertNewRow = createInsertChildMenu(row, x, y);
+		sqlDml.add(insertNewRow);
 		JMenuItem delete = new JMenuItem("Deletes");
 		sqlDml.add(delete);
 		delete.addActionListener(new ActionListener() {
@@ -2019,7 +2025,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private JMenu createInsertChildMenu(Row row, final int x, final int y) {
 		JScrollMenu insertNewRow = new JScrollMenu("Insert Child");
-		if (table == null || table.getName() == null) {
+		if (row == null || table == null || table.getName() == null) {
 			insertNewRow.setEnabled(false);
 			return insertNewRow;
 		}
@@ -3143,7 +3149,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			reloadRows0(inputResultSet, inlineViewStyle, andCond, parentRows, rows, loadJob, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
 		} catch (SQLException e) {
 			// TODO QA 331
-			if (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed")) {
+			if (e.getMessage() == null || !e.getMessage().toLowerCase().contains(" closed")) {
 				closedConExTL.set(e);
 				closedConExTSTL.set(System.currentTimeMillis());
 			}
