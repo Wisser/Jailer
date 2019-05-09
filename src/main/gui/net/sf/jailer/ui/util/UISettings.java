@@ -52,7 +52,7 @@ public class UISettings  {
 	private static final String FILENAME = ".uisettings";
 
 	@SuppressWarnings("unchecked")
-	private static void loadUISettings() {
+	private static synchronized void loadUISettings() {
 		if (properties == null) {
 			properties = new HashMap<String, Object>();
 			File file = Environment.newFile(FILENAME);

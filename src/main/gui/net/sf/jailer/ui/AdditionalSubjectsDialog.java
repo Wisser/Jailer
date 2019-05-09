@@ -264,7 +264,12 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			isolated.add(sub);
 		}
 
-		Set<Table> closure = subject.closure(true);
+		Set<Table> closure;
+		if (subject != null) {
+			closure = subject.closure(true);
+		} else {
+			closure = new HashSet<Table>();
+		}
 
 		remainingIsolated.clear();
 		remainingIsolated.addAll(remaining);
