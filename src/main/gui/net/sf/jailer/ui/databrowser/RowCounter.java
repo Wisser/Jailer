@@ -66,7 +66,7 @@ public class RowCounter {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime, null);
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				// TODO QA 331
-				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains(" closed"))) {
 					BrowserContentPane.closedConExTL.set((Exception) e);
 					BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
 				}
@@ -84,7 +84,7 @@ public class RowCounter {
 					}
 				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 					// TODO QA 331
-					if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+					if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains(" closed"))) {
 						BrowserContentPane.closedConExTL.set((Exception) e);
 						BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
 					}
@@ -98,7 +98,7 @@ public class RowCounter {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime, null);
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				// TODO QA 331
-				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains(" closed"))) {
 					BrowserContentPane.closedConExTL.set((Exception) e);
 					BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
 				}
@@ -111,7 +111,7 @@ public class RowCounter {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100, maxTime, null);
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				// TODO QA 331
-				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains(" closed"))) {
 					BrowserContentPane.closedConExTL.set((Exception) e);
 					BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
 				}
@@ -124,7 +124,7 @@ public class RowCounter {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40, maxTime, null);
 			} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 				// TODO QA 331
-				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+				if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains(" closed"))) {
 					BrowserContentPane.closedConExTL.set((Exception) e);
 					BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
 				}
@@ -139,7 +139,7 @@ public class RowCounter {
 			return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime, null);
 		} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 			// TODO QA 331
-			if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+			if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains(" closed"))) {
 				BrowserContentPane.closedConExTL.set((Exception) e);
 				BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
 			}
@@ -188,7 +188,7 @@ public class RowCounter {
 					loaded = true;
 				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 					// TODO QA 331
-					if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+					if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains(" closed"))) {
 						BrowserContentPane.closedConExTL.set((Exception) e);
 						BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
 					}
@@ -207,7 +207,7 @@ public class RowCounter {
 					loaded = true;
 				} catch (Throwable e) { // embedded DBMS may throw non-SQLException
 					// TODO QA 331
-					if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains("is closed"))) {
+					if (e instanceof SQLException && (e.getMessage() == null || !e.getMessage().toLowerCase().contains(" closed"))) {
 						BrowserContentPane.closedConExTL.set((Exception) e);
 						BrowserContentPane.closedConExTSTL.set(System.currentTimeMillis());
 					}

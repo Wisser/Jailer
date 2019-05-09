@@ -718,7 +718,7 @@ public class UIUtil {
             // TODO QA 331
         	try {
 	            if (BrowserContentPane.closedConEx != null) {
-	        		if (BrowserContentPane.closedConEx.getMessage() == null || !BrowserContentPane.closedConEx.getMessage().toLowerCase().contains("is closed")) {
+	        		if (BrowserContentPane.closedConEx.getMessage() == null || !BrowserContentPane.closedConEx.getMessage().toLowerCase().contains(" closed")) {
 	        	        sw = new StringWriter();
 	        	        pw = new PrintWriter(sw);
 	        	        BrowserContentPane.closedConEx.printStackTrace(pw);
