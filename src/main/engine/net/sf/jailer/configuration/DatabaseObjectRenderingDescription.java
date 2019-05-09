@@ -159,7 +159,7 @@ public class DatabaseObjectRenderingDescription {
 			ImageIcon icon = icons.get(getIconURL());
 			if (icon == null) {
 				try {
-		            icon = new ImageIcon(getClass().getResource(getIconURL()));
+		            icon = new ImageIcon(DatabaseObjectRenderingDescription.class.getResource(getIconURL()));
 		        } catch (Exception e) {
 		        }
 			}
