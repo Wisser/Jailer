@@ -45,7 +45,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -125,7 +124,6 @@ import javax.swing.tree.DefaultTreeModel;
 import net.coderazzi.filters.gui.AutoChoices;
 import net.coderazzi.filters.gui.TableFilterHeader;
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.JailerVersion;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
@@ -261,9 +259,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			} catch (SQLException e) {
 				reconnectAndRetry = true;
-				// TODO QA 331
-				closedConEx = closedConExTL.get();
-				closedConExTS = closedConExTSTL.get();
 			} catch (CancellationException e) {
 				Session._log.info("cancelled");
 				CancellationHandler.reset(this);
@@ -288,9 +283,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					synchronized (rows) {
 						exception = e;
 					}
-					// TODO QA 331
-					closedConEx = closedConExTL.get();
-					closedConExTS = closedConExTSTL.get();
 				} catch (CancellationException e) {
 					Session._log.info("cancelled");
 					CancellationHandler.reset(this);
@@ -301,10 +293,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 			}
-
-			sendClosedConEx();
-			// TODO QA 331
-			closedConExTL.remove();
 
 			reconnectIfConnectionIsInvalid(false);
 			CancellationHandler.reset(this);
@@ -2697,9 +2685,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							} catch (SQLException e) {
 								rowCount = new RowCount(-1, true);
 							}
-
-							sendClosedConEx();
-							
 							rowCountCache.put(key, new Pair<RowCount, Long>(rowCount, System.currentTimeMillis() + MAX_ROWCOUNTCACHE_RETENTION_TIME));
 						}
 						
@@ -3144,46 +3129,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	private void reloadRows(ResultSet inputResultSet, InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, LoadJob loadJob, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
-		// TODO QA 331
-		try {
-			reloadRows0(inputResultSet, inlineViewStyle, andCond, parentRows, rows, loadJob, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
-		} catch (SQLException e) {
-			// TODO QA 331
-			if (e.getMessage() == null || !e.getMessage().toLowerCase().contains(" closed")) {
-				closedConExTL.set(e);
-				closedConExTSTL.set(System.currentTimeMillis());
-			}
-			throw e;
-		}
-	}
-
-	// TODO QA 331
-	public static ThreadLocal<Long> closedConExTSTL = new ThreadLocal<Long>();
-	public static ThreadLocal<Exception> closedConExTL = new ThreadLocal<Exception>();
-	public static Long closedConExTS;
-	public static Exception closedConEx;
-	private static boolean closedConExSent = false;
-
-	private synchronized void sendClosedConEx() {
-		// TODO QA 331
-		try {
-			Exception ex = closedConExTL.get();
-			if (ex != null && !closedConExSent
-					&& !session.getConnection().isValid(0)
-					) {
-				closedConExSent = true;
-				StringWriter sw = new StringWriter();
-		        PrintWriter pw = new PrintWriter(sw);
-		        ex.printStackTrace(pw);
-		        String iMsg = JailerVersion.VERSION + "\n" + sw.toString();
-		        if (iMsg.length() > 1000) {
-		        	iMsg = iMsg.substring(0, 1000);
-		        }
-		        UIUtil.sendIssue("internal", iMsg);
-			}
-		} catch (Throwable t) {
-			// ignore
-		}
+		reloadRows0(inputResultSet, inlineViewStyle, andCond, parentRows, rows, loadJob, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
 	}
 
 	/**
