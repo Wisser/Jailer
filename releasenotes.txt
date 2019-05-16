@@ -1,3 +1,6 @@
+8.6.4
+  - Minor UI improvements.
+
 8.6.3
   - Minor bug fixes.
 
