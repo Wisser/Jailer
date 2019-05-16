@@ -567,6 +567,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
             @Override
             protected void updateMenu(LayoutMode layoutMode) {
+            	zoomInMenuItem.setEnabled(layoutMode != Desktop.LayoutMode.LARGE);
+            	zoomOutMenuItem.setEnabled(layoutMode != Desktop.LayoutMode.THUMBNAIL);
             	tinyLayoutRadioButtonMenuItem.setSelected(layoutMode == Desktop.LayoutMode.TINY);
             	smallLayoutRadioButtonMenuItem.setSelected(layoutMode == Desktop.LayoutMode.SMALL);
             	mediumLayoutRadioButtonMenuItem.setSelected(layoutMode == Desktop.LayoutMode.MEDIUM);
@@ -1176,6 +1178,9 @@ public class DataBrowser extends javax.swing.JFrame {
         layoutMenuItem = new javax.swing.JMenuItem();
         autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
+        zoomInMenuItem = new javax.swing.JMenuItem();
+        zoomOutMenuItem = new javax.swing.JMenuItem();
+        jSeparator15 = new javax.swing.JPopupMenu.Separator();
         thumbnailLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         tinyLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         smallLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
@@ -1913,6 +1918,25 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(autoLayoutMenuItem);
         menuWindow.add(jSeparator5);
+
+        zoomInMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_PLUS, java.awt.event.InputEvent.CTRL_MASK));
+        zoomInMenuItem.setText("Zoom In (Mouse Wheel Up)");
+        zoomInMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                zoomInMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(zoomInMenuItem);
+
+        zoomOutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_MINUS, java.awt.event.InputEvent.CTRL_MASK));
+        zoomOutMenuItem.setText("Zoom Out (Mouse Wheel Down)");
+        zoomOutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                zoomOutMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(zoomOutMenuItem);
+        menuWindow.add(jSeparator15);
 
         thumbnailLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_MASK));
         thumbnailLayoutRadioButtonMenuItem.setText("Thumbnail Layout");
@@ -2658,6 +2682,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator12;
     private javax.swing.JPopupMenu.Separator jSeparator13;
     private javax.swing.JPopupMenu.Separator jSeparator14;
+    private javax.swing.JPopupMenu.Separator jSeparator15;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
@@ -2711,6 +2736,8 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel updateInfoPanel;
     private javax.swing.JMenu view;
     private javax.swing.JTabbedPane workbenchTabbedPane;
+    private javax.swing.JMenuItem zoomInMenuItem;
+    private javax.swing.JMenuItem zoomOutMenuItem;
     // End of variables declaration//GEN-END:variables
 
     /**
@@ -3903,6 +3930,14 @@ public class DataBrowser extends javax.swing.JFrame {
     private void downloadMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadMenuItemActionPerformed
         UpdateInfoManager.download();
     }//GEN-LAST:event_downloadMenuItemActionPerformed
+
+    private void zoomInMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomInMenuItemActionPerformed
+        desktop.zoom(1);
+    }//GEN-LAST:event_zoomInMenuItemActionPerformed
+
+    private void zoomOutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomOutMenuItemActionPerformed
+        desktop.zoom(-1);
+    }//GEN-LAST:event_zoomOutMenuItemActionPerformed
 
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();

@@ -2694,10 +2694,10 @@ public abstract class Desktop extends JDesktopPane {
 		if (inRescaleMode(currentTime)) {
 			int d = 0;
 			if (e.getWheelRotation() < 0) {
-				d = -1;
+				d = 1;
 			}
 			if (e.getWheelRotation() > 0) {
-				d = 1;
+				d = -1;
 			}
 			if (d != 0) {
 				for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {
@@ -3543,7 +3543,14 @@ public abstract class Desktop extends JDesktopPane {
 	public void setAnimationEnabled(boolean animationEnabled) {
 		this.animationEnabled = animationEnabled;
 	}
-	
+
+	public void zoom(int d) {
+		d += layoutMode.ordinal();
+		if (d >= 0 && d < LayoutMode.values().length) {
+			rescaleLayout(LayoutMode.values()[d], null);
+		}
+	}
+
 	/**
 	 * Maximum number of concurrent DB connections.
 	 */

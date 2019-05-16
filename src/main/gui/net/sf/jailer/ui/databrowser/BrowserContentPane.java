@@ -1638,7 +1638,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				});
 
 				if (!currentSelectedRowCondition.equals("") 
-						&& currentSelectedRowCondition.equals(getAndConditionText())
+						// && currentSelectedRowCondition.equals(getAndConditionText())
 						&& rows.size() == 1) {
 					JMenuItem sr = new JMenuItem("Deselect Row");
 					popup.insert(sr, 0);
@@ -1891,16 +1891,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				showInNewWindow();
 			}
 		});
-		JMenuItem al = new JMenuItem("Append Layout...");
-		popup.add(al);
-		al.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				appendLayout();
-			}
-		});
-		
-		popup.addSeparator();
+
+//		JMenuItem al = new JMenuItem("Append Layout...");
+//		popup.add(al);
+//		al.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				appendLayout();
+//			}
+//		});
+//		
+//		popup.addSeparator();
+
 		JMenuItem m = new JMenuItem("Hide (Minimize)");
 		popup.add(m);
 		m.addActionListener(new ActionListener() {
@@ -3966,7 +3968,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		} else {
 			final boolean deselect = !currentSelectedRowCondition.equals("") 
-				&& currentSelectedRowCondition.equals(getAndConditionText())
+				// && currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
 			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, session) {
 				@Override
