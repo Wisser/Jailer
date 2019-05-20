@@ -313,7 +313,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         jPanel3.add(StringSearchPanel.createSearchButton(extractionModelFrame, subjectTable, "Find Table", null), gridBagConstraints);
 		
