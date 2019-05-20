@@ -17,10 +17,12 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -94,23 +96,23 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		JComponent create(StringSearchPanel searchPanel);
 	}
 
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess) {
+	public static JButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, false);
 	}
 
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, boolean alternativeIcon) {
+	public static JButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, boolean alternativeIcon) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, null, alternativeIcon);
 	}
 	
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, boolean alternativeIcon) {
+	public static JButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, boolean alternativeIcon) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, null, null, null, alternativeIcon, null, true);
 	}
 	
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel) {
+	public static JButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, false, null, true);
 	}
 
-	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton) {
+	public static JButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton) {
 		final JButton button = new JButton();
 		button.setIcon(UIUtil.scaleIcon(button, alternativeIcon? icon2 : icon));
 		button.setToolTipText("Find Table");
@@ -183,8 +185,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		result = null;
 	}
 
-	public void find(Frame owner, Object titel, int x, int y, boolean locateUnderButton) {
-		dialog = new EscapableDialog(owner, String.valueOf(titel), false) {
+	public void find(Window owner, Object titel, int x, int y, boolean locateUnderButton) {
+		dialog = owner instanceof Dialog? new EscapableDialog((Dialog) owner, String.valueOf(titel), false) {
+		} : new EscapableDialog((Frame) owner, String.valueOf(titel), false) {
 		};
 		dialog.setUndecorated(true);
 		dialog.addWindowFocusListener(new WindowFocusListener() {
@@ -223,22 +226,22 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		plugInPanel.setVisible(false);
 		
 		dialog.pack();
+		double mh = 440;
+		double f = searchList.getModel().getSize() / 20.0;
+		if (f < 1) {
+			mh = Math.max(240, mh * f);
+		}
+		int height = Math.max(dialog.getHeight(), (int) mh);
 		if (!locateUnderButton) {
-			y = Math.max(1, y - Math.max(dialog.getHeight() + 20, 440));
+			y = Math.max(1, y - height);
 		}
 		dialog.setLocation(x, y);
 		int minWidth = metaDataSource == null? 300 : 500;
 		if (pv) {
 			minWidth *= 2;
 		}
-		dialog.setSize(Math.max(minWidth, dialog.getWidth()), Math.min(Math.max(dialog.getHeight() + 20, 440), 600));
-		int h = dialog.getHeight();
+		dialog.setSize(Math.max(minWidth, dialog.getWidth()), Math.min(height, 600));
 		UIUtil.fit(dialog);
-		if (h > dialog.getHeight()) {
-			dialog.setLocation(x, y - (h - dialog.getHeight()));
-			dialog.setSize(Math.max(minWidth, dialog.getWidth()), Math.min(Math.max(dialog.getHeight() + 20, 400), 600));
-			UIUtil.fit(dialog);
-		}
 		plugInPanel.setVisible(pv);
 
 		result = null;
@@ -605,9 +608,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         cancelLoadiingButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
-        okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
         searchTextField = new javax.swing.JTextField();
+        okButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         searchList = new javax.swing.JList<>();
         schemaPanel = new javax.swing.JPanel();
@@ -635,19 +639,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        okButton.setText(" Ok ");
-        okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                okButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(okButton, gridBagConstraints);
-
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -661,14 +652,36 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
         searchTextField.setText("jTextField1");
+        searchTextField.setToolTipText("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n</html>\n\n");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel4.add(searchTextField, gridBagConstraints);
+        searchTextField.getAccessibleContext().setAccessibleDescription("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n</html>\n\n");
+
+        okButton.setText("  Ok  ");
+        okButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        jPanel4.add(okButton, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        add(searchTextField, gridBagConstraints);
+        add(jPanel4, gridBagConstraints);
 
         searchList.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -784,6 +797,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel loadingPanel;
