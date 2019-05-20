@@ -128,7 +128,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				        	Point buttonLocation = button.getLocationOnScreen();
 				        	Point location;
 				        	if (locateUnderButton) {
-				        		location = new Point(buttonLocation.x, buttonLocation.y + button.getHeight());
+				        		location = new Point(buttonLocation.x + button.getWidth(), buttonLocation.y);
 				        	} else {
 				        		location = buttonLocation;
 				        	}
