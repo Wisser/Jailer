@@ -1,5 +1,5 @@
 8.6.4
-  - Minor UI improvements.
+  - Modal dialogues were replaced by non-modal ones.
 
 8.6.3
   - Minor bug fixes.

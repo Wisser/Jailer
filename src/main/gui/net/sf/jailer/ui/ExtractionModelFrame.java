@@ -2086,14 +2086,22 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 										UIUtil.showException(finalExtractionModelFrame, "Error", e);
 									}
 									if (withStartupWizzard) {
-										StartupWizzardDialog suw = new StartupWizzardDialog(finalExtractionModelFrame);
-										if (suw.loadModel) {
-											finalExtractionModelFrame.loadActionPerformed(null);
-										}
-										if (suw.newModelWithRestrictions) {
-											finalExtractionModelFrame.extractionModelEditor.ignoreAll(null);
-											finalExtractionModelFrame.extractionModelEditor.extractionModelFrame.updateTitle(finalExtractionModelFrame.extractionModelEditor.needsSave);
-										}
+										StartupWizzardDialog suw = new StartupWizzardDialog(finalExtractionModelFrame) {
+											@Override
+											protected void onClose() {
+												try {
+													if (loadModel) {
+														finalExtractionModelFrame.loadActionPerformed(null);
+													}
+													if (newModelWithRestrictions) {
+														finalExtractionModelFrame.extractionModelEditor.ignoreAll(null);
+														finalExtractionModelFrame.extractionModelEditor.extractionModelFrame.updateTitle(finalExtractionModelFrame.extractionModelEditor.needsSave);
+													}
+												} catch (Exception e) {
+													UIUtil.showException(finalExtractionModelFrame, "Error", e);
+												}
+											}
+										};
 									}
 								}
 							});

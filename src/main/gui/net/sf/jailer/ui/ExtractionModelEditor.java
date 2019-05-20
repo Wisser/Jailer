@@ -225,12 +225,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Multi-line editor for subject condition.
 	 */
-	private ConditionEditor subjectConditionEditor;
+	private NonModalConditionEditor subjectConditionEditor;
 
 	/**
 	 * Multi-line editor for restriction condition.
 	 */
-	private ConditionEditor restrictionConditionEditor;
+	private NonModalConditionEditor restrictionConditionEditor;
 	
 	/**
 	 * The execution context.
@@ -313,7 +313,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         jPanel3.add(StringSearchPanel.createSearchButton(extractionModelFrame, subjectTable, "Find Table", null), gridBagConstraints);
 		
@@ -757,9 +757,30 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		modelPath.setText(modelpath);
 		
-		subjectConditionEditor = new ConditionEditor(extractionModelFrame, parametersGetter, dataModel);
+		subjectConditionEditor = new NonModalConditionEditor(extractionModelFrame, parametersGetter, dataModel) {
+			@Override
+			protected void consume(String cond) {
+				if (cond != null) {
+					if (!condition.getText().equals(NonModalConditionEditor.toSingleLine(cond))) {
+						condition.setText(NonModalConditionEditor.toSingleLine(cond));
+						needsSave = true;
+						ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
+					}
+				}
+			}
+		};
 		subjectConditionEditor.setTitle("Subject condition");
-		restrictionConditionEditor = new ConditionEditor(extractionModelFrame, parametersGetter, dataModel);
+		restrictionConditionEditor = new NonModalConditionEditor(extractionModelFrame, parametersGetter, dataModel) {
+			@Override
+			protected void consume(String cond) {
+				if (cond != null) {
+					if (!restrictionEditor.restriction.getText().equals(NonModalConditionEditor.toSingleLine(cond))) {
+						restrictionEditor.restriction.setText(NonModalConditionEditor.toSingleLine(cond));
+						onApply(true);
+					}
+				}
+			}
+		};
 		restrictionConditionEditor.setTitle("Restriction");
 		openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		openSubjectConditionEditor.setText(null);
@@ -773,14 +794,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (currentAssociation != null && restrictionEditor.restriction.isEditable()) {
-					String cond = restrictionConditionEditor.edit(restrictionEditor.restriction.getText(), "Table A", "A", currentAssociation.source, "Table B", "B", currentAssociation.destination, true, false);
-					if (cond != null) {
-						if (!restrictionEditor.restriction.getText().equals(ConditionEditor.toSingleLine(cond))) {
-							restrictionEditor.restriction.setText(ConditionEditor.toSingleLine(cond));
-							onApply(true);
-						}
-					}
-					restrictionEditor.openRestrictionConditionEditor.setIcon(conditionEditorSelectedIcon);
+					restrictionConditionEditor.edit(restrictionEditor.restriction, restrictionEditor.restriction.getText(), "Table A", "A", currentAssociation.source, "Table B", "B", currentAssociation.destination, true, false);
 				}
 			}
 			
@@ -802,15 +816,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				String cond = subjectConditionEditor.edit(condition.getText(), "Subject", "T", subject, null, null, null, false, true);
-				if (cond != null) {
-					if (!condition.getText().equals(ConditionEditor.toSingleLine(cond))) {
-						condition.setText(ConditionEditor.toSingleLine(cond));
-						needsSave = true;
-						ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
-					}
-					openSubjectConditionEditor.setIcon(conditionEditorSelectedIcon);
-				}
+				subjectConditionEditor.edit(condition, condition.getText(), "Subject", "T", subject, null, null, null, false, true);
 			}
 			
 			@Override
@@ -1252,7 +1258,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jLabel5.setText(" as T ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 0;
         jPanel3.add(jLabel5, gridBagConstraints);
 
@@ -1274,7 +1280,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(additionalSubjectsButton, gridBagConstraints);
 
@@ -1287,7 +1293,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         jPanel3.add(jPanel7, gridBagConstraints);
@@ -1358,7 +1364,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         jPanel3.add(jPanel10, gridBagConstraints);

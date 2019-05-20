@@ -889,7 +889,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			loc = getCurrentStatementLocation(eosLines);
 		}
 		updateMenuItems(loc != null && !isTextEmpty(loc.a, loc.b));
-		runBlock.setEnabled(allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
+		runBlock.setEnabled(!withExecuteActions || (allowRun && loc != null && !isTextEmpty(loc.a, loc.b)));
 		explain.setEnabled(canExplain() && allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
 		runAll.setEnabled(allowRun && RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
 		if (allowRun && setLineHighlights) {

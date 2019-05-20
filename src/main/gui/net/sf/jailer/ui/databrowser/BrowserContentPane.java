@@ -102,6 +102,8 @@ import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
@@ -1060,30 +1062,44 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTableScrollPane.addMouseListener(rowTableListener);
 		singleRowViewScrollContentPanel.addMouseListener(rowTableListener);
 		
+		((JTextField) andCondition.getEditor().getEditorComponent()).addCaretListener(new CaretListener() {
+			@Override
+			public void caretUpdate(CaretEvent e) {
+				System.out.println(e);
+			}
+		});
+		
+		dropA.setVisible(false);
+		dropB.setVisible(false);
+		
 		openEditorButton.setIcon(UIUtil.scaleIcon(this, conditionEditorIcon));
 		openEditorButton.setText(null);
 		openEditorButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final Point pos = new Point(openEditorButton.getX(), openEditorButton.getY() + openEditorButton.getHeight());
-				SwingUtilities.convertPointToScreen(pos, openEditorButton.getParent());
+				final Point pos = new Point(andCondition.getX(), andCondition.getY() + andCondition.getHeight());
+				SwingUtilities.convertPointToScreen(pos, andCondition.getParent());
 				loadButton.grabFocus();
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						if (andConditionEditor == null) {
-							andConditionEditor = new ConditionEditor(parentFrame, null, dataModel);
+							andConditionEditor = new DBConditionEditor(parentFrame, dataModel) {
+								@Override
+								protected void consume(String cond) {
+									if (cond != null) {
+										if (!getAndConditionText().equals(ConditionEditor.toSingleLine(cond))) {
+											setAndCondition(ConditionEditor.toSingleLine(cond), true);
+											loadButton.grabFocus();
+											reloadRows();
+										}
+									}
+									openEditorLabel.setIcon(conditionEditorSelectedIcon);
+								}
+							};
 						}
 						andConditionEditor.setLocationAndFit(pos);
-						String cond = andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
-						if (cond != null) {
-							if (!getAndConditionText().equals(ConditionEditor.toSingleLine(cond))) {
-								setAndCondition(ConditionEditor.toSingleLine(cond), true);
-								loadButton.grabFocus();
-								reloadRows();
-							}
-						}
-						openEditorLabel.setIcon(conditionEditorSelectedIcon);
+						andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
 					}
 				});
 			}
@@ -1356,7 +1372,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			
 			jLabel6.setVisible(false);
 			dropB.setVisible(false);
-			andLabel.setText(" Where ");
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 8;
 			gridBagConstraints.gridy = 4;
@@ -4313,6 +4328,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         menuPanel = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
+        openEditorButton = new javax.swing.JButton();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -4323,7 +4339,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        andLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         rrPanel = new javax.swing.JPanel();
@@ -4334,7 +4349,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel9 = new javax.swing.JPanel();
         dropA = new javax.swing.JLabel();
         dropB = new javax.swing.JLabel();
-        openEditorButton = new javax.swing.JButton();
+        jPanel14 = new javax.swing.JPanel();
+        wherejLabel = new javax.swing.JLabel();
 
         andCondition.setEditable(true);
         andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -4724,17 +4740,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         jPanel7.add(loadButton, gridBagConstraints);
 
+        openEditorButton.setText("Where");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        jPanel7.add(openEditorButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.gridwidth = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         menuPanel.add(jPanel7, gridBagConstraints);
 
         onPanel.setMinimumSize(new java.awt.Dimension(66, 17));
         onPanel.setLayout(new java.awt.BorderLayout());
 
-        on.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
+        on.setFont(on.getFont().deriveFont(on.getFont().getStyle() | java.awt.Font.BOLD));
         on.setText("jLabel3");
         onPanel.add(on, java.awt.BorderLayout.CENTER);
 
@@ -4743,27 +4765,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         menuPanel.add(onPanel, gridBagConstraints);
 
         joinPanel.setMinimumSize(new java.awt.Dimension(66, 17));
         joinPanel.setLayout(new java.awt.GridBagLayout());
 
-        join.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
+        join.setFont(join.getFont().deriveFont(join.getFont().getStyle() | java.awt.Font.BOLD));
         join.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         joinPanel.add(join, gridBagConstraints);
 
-        jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel6.setText(" as B  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         joinPanel.add(jLabel6, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4778,14 +4800,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel10.setMinimumSize(new java.awt.Dimension(66, 17));
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
-        from.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
+        from.setFont(from.getFont().deriveFont(from.getFont().getStyle() | java.awt.Font.BOLD));
         from.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         jPanel10.add(from, gridBagConstraints);
 
-        jLabel5.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel5.setText(" as A");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4793,6 +4814,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel10.add(jLabel5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4802,7 +4824,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         menuPanel.add(jPanel10, gridBagConstraints);
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel1.setText(" Join ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -4810,7 +4831,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         menuPanel.add(jLabel1, gridBagConstraints);
 
-        jLabel4.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel4.setText(" On ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -4819,15 +4839,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         menuPanel.add(jLabel4, gridBagConstraints);
 
-        andLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
-        andLabel.setText(" Where ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        menuPanel.add(andLabel, gridBagConstraints);
-
-        jLabel3.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel3.setText(" From ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -4914,11 +4925,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 5;
         menuPanel.add(dropB, gridBagConstraints);
 
-        openEditorButton.setText("jButton1");
+        jPanel14.setLayout(new java.awt.GridBagLayout());
+
+        wherejLabel.setText(" Where ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        jPanel14.add(wherejLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 8;
-        menuPanel.add(openEditorButton, gridBagConstraints);
+        menuPanel.add(jPanel14, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -4977,7 +4995,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JComboBox andCondition;
-    javax.swing.JLabel andLabel;
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
     private javax.swing.JButton deselectButton;
@@ -5002,6 +5019,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel13;
+    private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -5042,10 +5060,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel sqlLabel1;
     javax.swing.JPanel sqlPanel;
     private javax.swing.JPanel tablePanel;
+    private javax.swing.JLabel wherejLabel;
     // End of variables declaration//GEN-END:variables
 
 	JPanel thumbnail;
-	private ConditionEditor andConditionEditor;
+	private DBConditionEditor andConditionEditor;
 	private ImageIcon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;
 	{
@@ -5322,12 +5341,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				} else {
 					toolTip = sb.toString();
 				}
-				andLabel.setToolTipText(UIUtil.toHTML(toolTip, 0));
+				wherejLabel.setToolTipText(UIUtil.toHTML(toolTip, 0));
 			} else {
-				andLabel.setToolTipText(null);
+				wherejLabel.setToolTipText(null);
 			}
 		} else {
-			andLabel.setToolTipText(null);
+			wherejLabel.setToolTipText(null);
 		}
 	}
 

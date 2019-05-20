@@ -84,7 +84,9 @@ public class ParameterSelector extends javax.swing.JPanel {
 						}
 						lastRow = row;
 						if (row == 0) {
+							hasOpenDialog = true;
 							String newParameter = JOptionPane.showInputDialog(parent, "Parameter", "New Parameter", JOptionPane.QUESTION_MESSAGE);
+							hasOpenDialog = false;
 							if (newParameter != null) {
 								newParameter = newParameter.trim();
 								String np = "";
@@ -195,4 +197,9 @@ public class ParameterSelector extends javax.swing.JPanel {
 	// End of variables declaration//GEN-END:variables
 	
 	private static final long serialVersionUID = 5153763345779925099L;
+	private boolean hasOpenDialog = false;
+	
+	public boolean hasOpenDialog() {
+		return hasOpenDialog;
+	}
 }
