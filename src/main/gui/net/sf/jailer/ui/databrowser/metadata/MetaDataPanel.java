@@ -64,7 +64,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -73,6 +72,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
@@ -132,7 +132,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private final DataModel dataModel;
     private final MetaDataDetailsPanel metaDataDetailsPanel;
     private final Frame parent;
-    private final JButton searchButton;
+    private final JToggleButton searchButton;
     private final ExecutionContext executionContext;
     
     private final Object CATEGORY_VIEWS = new String("Views");

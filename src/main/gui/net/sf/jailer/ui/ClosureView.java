@@ -62,6 +62,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -164,7 +165,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
 		final javax.swing.JComboBox comboBox1 = searchComboBox;
-        JButton searchButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox1, "Find Table", new Runnable() {
+        JToggleButton searchButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox1, "Find Table", new Runnable() {
 			@Override
 			public void run() {
 				findButtonActionPerformed(null);
@@ -200,7 +201,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			source = getDataModel().getTableByDisplayName((String) currentSelection);
 		}
         final javax.swing.JComboBox comboBox = findPathComboBox;
-        JButton stFindButtonButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox, 
+        JToggleButton stFindButtonButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox, 
     		new Object() {
 				public String toString() {
 					Table source = null;

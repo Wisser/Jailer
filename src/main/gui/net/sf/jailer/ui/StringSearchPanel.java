@@ -53,7 +53,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -61,6 +61,7 @@ import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -96,24 +97,24 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		JComponent create(StringSearchPanel searchPanel);
 	}
 
-	public static JButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess) {
+	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, false);
 	}
 
-	public static JButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, boolean alternativeIcon) {
+	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, boolean alternativeIcon) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, null, alternativeIcon);
 	}
 	
-	public static JButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, boolean alternativeIcon) {
+	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, boolean alternativeIcon) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, null, null, null, alternativeIcon, null, true);
 	}
 	
-	public static JButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel) {
+	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, false, null, true);
 	}
 
-	public static JButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton) {
-		final JButton button = new JButton();
+	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton) {
+		final JToggleButton button = new JToggleButton();
 		button.setIcon(UIUtil.scaleIcon(button, alternativeIcon? icon2 : icon));
 		button.setToolTipText("Find Table");
 		button.addActionListener(new ActionListener() {
@@ -131,7 +132,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				        	} else {
 				        		location = buttonLocation;
 				        	}
-							StringSearchPanel searchPanel = new StringSearchPanel(comboBox, metaDataSource, dataModel, prepare, onSuccess);
+							StringSearchPanel searchPanel = new StringSearchPanel(button, comboBox, metaDataSource, dataModel, prepare, onSuccess);
 							if (additionalComponentFactory != null) {
 								searchPanel.plugInPanel.add(additionalComponentFactory.create(searchPanel), java.awt.BorderLayout.CENTER);
 							} else {
@@ -171,7 +172,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		return button;
 	}
 
-	private static void updateEnabledState(JButton button, JComboBox comboBox) {
+	private static void updateEnabledState(JToggleButton button, JComboBox comboBox) {
 		button.setEnabled(comboBox.getModel().getSize() > 1 || comboBox.getModel().getSize() == 1 && !"".equals(comboBox.getModel().getElementAt(0)));
 	}
 
@@ -183,6 +184,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			}
 		}
 		result = null;
+		button.setSelected(false);
 	}
 
 	public void find(Window owner, Object titel, int x, int y, boolean locateUnderButton) {
@@ -219,7 +221,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			}
 		});
 		
-
 		dialog.getContentPane().add(this);
 		
 		boolean pv = plugInPanel.isVisible();
@@ -245,6 +246,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		plugInPanel.setVisible(pv);
 
 		result = null;
+		button.setSelected(true);
 		dialog.setVisible(true);
 	}
 	
@@ -288,14 +290,17 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private final DataModel dataModel;
 	private final javax.swing.JComboBox combobox;
 	private final Runnable onSuccess;
+	private final JToggleButton button;
 	
     /**
      * Creates new form StringSearchPanel
+     * @param button 
      * @param dataModel 
      * @param metaDataSource 
      * @param prepare 
      */
-    public StringSearchPanel(javax.swing.JComboBox combobox, MetaDataSource metaDataSource, DataModel dataModel, Prepare prepare, final Runnable onSuccess) {
+    public StringSearchPanel(JToggleButton button, javax.swing.JComboBox combobox, MetaDataSource metaDataSource, DataModel dataModel, Prepare prepare, final Runnable onSuccess) {
+    	this.button = button;
     	this.combobox = combobox;
     	this.dataModel = dataModel;
     	this.metaDataSource = metaDataSource;
@@ -606,12 +611,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         loadingPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        cancelLoadiingButton = new javax.swing.JButton();
+        cancelLoadiingButton = new javax.swing.JToggleButton();
         jPanel1 = new javax.swing.JPanel();
-        cancelButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JToggleButton();
         jPanel4 = new javax.swing.JPanel();
         searchTextField = new javax.swing.JTextField();
-        okButton = new javax.swing.JButton();
+        okButton = new javax.swing.JToggleButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         searchList = new javax.swing.JList<>();
         schemaPanel = new javax.swing.JPanel();
@@ -620,7 +625,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         visPanel = new javax.swing.JPanel();
-        selectAllButton = new javax.swing.JButton();
+        selectAllButton = new javax.swing.JToggleButton();
         plugInPanel = new javax.swing.JPanel();
 
         loadingPanel.setBackground(java.awt.Color.white);
@@ -790,8 +795,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JButton cancelLoadiingButton;
+    private javax.swing.JToggleButton cancelButton;
+    private javax.swing.JToggleButton cancelLoadiingButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -801,12 +806,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel loadingPanel;
-    private javax.swing.JButton okButton;
+    private javax.swing.JToggleButton okButton;
     private javax.swing.JPanel plugInPanel;
     private javax.swing.JPanel schemaPanel;
     private javax.swing.JList<String> searchList;
     private javax.swing.JTextField searchTextField;
-    private javax.swing.JButton selectAllButton;
+    private javax.swing.JToggleButton selectAllButton;
     private javax.swing.JPanel visPanel;
     // End of variables declaration//GEN-END:variables
     

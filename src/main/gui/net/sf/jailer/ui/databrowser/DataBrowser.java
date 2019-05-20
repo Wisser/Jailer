@@ -2740,7 +2740,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem zoomOutMenuItem;
     // End of variables declaration//GEN-END:variables
 
-    private JButton searchButton;
+    private JToggleButton searchButton;
     
     /**
      * Sets Look&Feel.
