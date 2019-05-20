@@ -69,7 +69,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 4, 0);
-        jPanel2.add(StringSearchPanel.createSearchButton(parent, tableComboBox, "Open Table", new Runnable() {
+        jPanel2.add(StringSearchPanel.createSearchButton(this, tableComboBox, "Open Table", new Runnable() {
 			@Override
 			public void run() {
 				okButtonActionPerformed(null);
