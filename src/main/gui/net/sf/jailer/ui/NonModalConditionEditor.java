@@ -557,7 +557,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		if (locator != null) {
 			Point locationLocation = locator.getLocationOnScreen();
         	Point location;
-        	location = new Point(locationLocation.x, locationLocation.y + locator.getHeight());
+        	location = new Point(locationLocation.x, locationLocation.y);
         	setLocationAndFit(location);
 		}
 		

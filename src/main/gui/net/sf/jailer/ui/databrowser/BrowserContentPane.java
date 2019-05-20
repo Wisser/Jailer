@@ -1076,7 +1076,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		openEditorButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final Point pos = new Point(andCondition.getX(), andCondition.getY() + andCondition.getHeight());
+				final Point pos = new Point(andCondition.getX(), andCondition.getY());
 				SwingUtilities.convertPointToScreen(pos, andCondition.getParent());
 				loadButton.grabFocus();
 				SwingUtilities.invokeLater(new Runnable() {
@@ -1093,10 +1093,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 											reloadRows();
 										}
 									}
-									openEditorLabel.setIcon(conditionEditorSelectedIcon);
+									openEditorButton.setSelected(false);
 								}
 							};
 						}
+						openEditorButton.setSelected(true);
 						andConditionEditor.setLocationAndFit(pos);
 						andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
 					}
@@ -4327,7 +4328,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         menuPanel = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
-        openEditorButton = new javax.swing.JButton();
+        openEditorButton = new javax.swing.JToggleButton();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -5037,7 +5038,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel noRowsFoundPanel;
     private javax.swing.JLabel on;
     private javax.swing.JPanel onPanel;
-    private javax.swing.JButton openEditorButton;
+    private javax.swing.JToggleButton openEditorButton;
     private javax.swing.JLabel openEditorLabel;
     private javax.swing.JPanel pendingNonpendingPanel;
     private javax.swing.JLabel relatedRowsLabel;

@@ -121,7 +121,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				UIUtil.setWaitCursor(button);
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(4, new Runnable() {
 					@Override
 					public void run() {
 				        try {
