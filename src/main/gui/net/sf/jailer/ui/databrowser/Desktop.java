@@ -105,7 +105,6 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.KnownIdentifierMap;
-import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.QueryBuilderDialog;
@@ -778,7 +777,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected QueryBuilderDialog.Relationship createQBRelations(boolean withParents) {
 				QueryBuilderDialog.Relationship root = new QueryBuilderDialog.Relationship();
-				root.whereClause = ConditionEditor.toMultiLine(getAndConditionText().trim()); // .replaceAll("(\r|\n)+", " ");
+				root.whereClause = (getAndConditionText().trim()); // .replaceAll("(\r|\n)+", " ");
 				if (root.whereClause.length() == 0) {
 					root.whereClause = null;
 				}
@@ -801,7 +800,7 @@ public abstract class Desktop extends JDesktopPane {
 					child.children.addAll(rb.browserContentPane.createQBChildrenRelations(childRB, false));
 					child.parent = r;
 					r.children.add(0, child);
-					child.whereClause = ConditionEditor.toMultiLine(rb.browserContentPane.getAndConditionText().trim()).replaceAll("(\r|\n)+", " ");
+					child.whereClause = (rb.browserContentPane.getAndConditionText().trim()).replaceAll("(\r|\n)+", " ");
 					if (child.whereClause.length() == 0) {
 						child.whereClause = null;
 					}
@@ -842,7 +841,7 @@ public abstract class Desktop extends JDesktopPane {
 										.size() == 1);
 						if (true) { // all || !singleRowParent) {
 							QueryBuilderDialog.Relationship child = new QueryBuilderDialog.Relationship();
-							child.whereClause = ConditionEditor.toMultiLine(rb.browserContentPane.getAndConditionText().trim()).replaceAll("(\r|\n)+", " ");
+							child.whereClause = (rb.browserContentPane.getAndConditionText().trim()).replaceAll("(\r|\n)+", " ");
 							child.joinOperator = QueryBuilderDialog.JoinOperator.LeftJoin;
 							if (child.whereClause.length() == 0) {
 								child.whereClause = null;

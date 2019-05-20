@@ -680,7 +680,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (cond.equals("1=1")) {
 			cond = "";
 		}
-		condition.setText(ConditionEditor.toSingleLine(cond));
+		condition.setText((cond));
 		condition.addKeyListener(new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
@@ -761,8 +761,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			@Override
 			protected void consume(String cond) {
 				if (cond != null) {
-					if (!condition.getText().equals(NonModalConditionEditor.toSingleLine(cond))) {
-						condition.setText(NonModalConditionEditor.toSingleLine(cond));
+					if (!condition.getText().equals((cond))) {
+						condition.setText((cond));
 						needsSave = true;
 						ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
 					}
@@ -774,8 +774,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			@Override
 			protected void consume(String cond) {
 				if (cond != null) {
-					if (!restrictionEditor.restriction.getText().equals(NonModalConditionEditor.toSingleLine(cond))) {
-						restrictionEditor.restriction.setText(NonModalConditionEditor.toSingleLine(cond));
+					if (!restrictionEditor.restriction.getText().equals((cond))) {
+						restrictionEditor.restriction.setText((cond));
 						onApply(true);
 					}
 				}
@@ -1007,7 +1007,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * @return current subject condition
 	 */
 	public String getSubjectCondition() {
-		return ConditionEditor.toMultiLine(condition.getText());
+		return (condition.getText());
 	}
 	
 	/**
@@ -1964,7 +1964,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				restrictionCondition = restrictionCondition.substring(1, restrictionCondition.length() - 1);
 			}
 			initialRestrictionCondition = association.isIgnored()? null : restrictionCondition;
-			restrictionEditor.restriction.setText(restrictionCondition == null? "" : ConditionEditor.toSingleLine(restrictionCondition));
+			restrictionEditor.restriction.setText(restrictionCondition == null? "" : (restrictionCondition));
 			if (association.isIgnored()) {
 				restrictionEditor.ignore.getModel().setSelected(true);
 			} else {
@@ -2047,7 +2047,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						condition = "";
 					}
 				} else {
-					condition = ConditionEditor.toMultiLine(restrictionEditor.restriction.getText()).trim();
+					condition = (restrictionEditor.restriction.getText()).trim();
 				}
 			}
 			addRestriction(currentAssociation.source, currentAssociation, condition, true);
@@ -2713,7 +2713,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				return true;
 			}
 			String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
-			dataModel.save(fileName, stable, ConditionEditor.toMultiLine(condition.getText()), scriptFormat, currentRestrictionDefinitions, null, extractionModel.additionalSubjects, currentModelSubfolder);
+			dataModel.save(fileName, stable, (condition.getText()), scriptFormat, currentRestrictionDefinitions, null, extractionModel.additionalSubjects, currentModelSubfolder);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Could not save " + new File(fileName).getName(), e);
 			return false;

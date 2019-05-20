@@ -182,8 +182,6 @@ public class SizeGrip extends JPanel {
 	@Override
 	public void updateUI() {
 		super.updateUI();
-		// TODO: Key off of Aqua LaF, not just OS X, as this size grip looks
-		// bad on other LaFs on Mac such as Nimbus.
 		if (System.getProperty("os.name").contains("OS X")) {
 			if (osxSizeGrip==null) {
 				osxSizeGrip = createOSXSizeGrip();

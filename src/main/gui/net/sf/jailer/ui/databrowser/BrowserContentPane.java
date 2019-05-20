@@ -143,7 +143,6 @@ import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet.MemorizedResultSetMetaData;
 import net.sf.jailer.subsetting.ScriptFormat;
-import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
@@ -670,7 +669,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				Component render = acRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (render instanceof JLabel) {
 					if (value != null && value.toString().trim().length() > 0) {
-						String tooltip = ConditionEditor.toMultiLine(value.toString());
+						String tooltip = (value.toString());
 						((JLabel) render).setToolTipText(UIUtil.toHTML(tooltip, 200));
 					} else {
 						((JLabel) render).setToolTipText(null);
@@ -699,7 +698,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
 						String value = f.getText();
 						if (value != null && value.toString().trim().length() > 0) {
-							String tooltip = ConditionEditor.toMultiLine(value.toString());
+							String tooltip = (value.toString());
 							andCondition.setToolTipText(UIUtil.toHTML(tooltip, 200));
 						} else {
 							andCondition.setToolTipText(null);
@@ -837,7 +836,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         rowsTableScrollPane.setViewportView(rowsTable);
 		rowsTable.setAutoscrolls(false);
 
-		setAndCondition(ConditionEditor.toSingleLine(condition), true);
+		setAndCondition((condition), true);
 		from.setText(table == null? "" : this.dataModel.getDisplayName(table));
 		adjustGui();
 		rowsTable.setShowGrid(false);
@@ -1088,8 +1087,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								@Override
 								protected void consume(String cond) {
 									if (cond != null) {
-										if (!getAndConditionText().equals(ConditionEditor.toSingleLine(cond))) {
-											setAndCondition(ConditionEditor.toSingleLine(cond), true);
+										if (!getAndConditionText().equals((cond))) {
+											setAndCondition((cond), true);
 											loadButton.grabFocus();
 											reloadRows();
 										}
@@ -3315,7 +3314,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				whereExists = true;
 			}
 			if (andCond.trim().length() > 0) {
-				sql += (whereExists ? " and" : " Where") + " (" + ConditionEditor.toMultiLine(andCond) + ")";
+				sql += (whereExists ? " and" : " Where") + " (" + (andCond) + ")";
 			}
 			olapPrefix += " From (";
 			if (useOLAPLimitation) {

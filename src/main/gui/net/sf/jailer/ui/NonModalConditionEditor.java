@@ -491,7 +491,6 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	 * @return new condition or <code>null</code>, if user canceled the editor
 	 */
 	public void edit(JComponent locator, String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
-		condition = toMultiLine(condition);
 		if (Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
 			condition = new BasicFormatterImpl().format(condition);
 		}
@@ -620,57 +619,6 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         }
 	}
 
-	/**
-	 * Converts multi-line text into single line presentation.
-	 */
-	public static String toSingleLine(String s) {
-		return s;
-		// TODO this doesn't seem to work
-//		StringBuilder sb = new StringBuilder();
-//		for (int i = 0; i < s.length(); ++i) {
-//			char c = s.charAt(i);
-//			if (c == '\\') {
-//				sb.append("\\\\");
-//			} else if (c == '\n') {
-//				sb.append("\\n");
-//			} else if (c == '\r') {
-//				sb.append("\\r");
-//			} else {
-//				sb.append(c);
-//			}
-//		}
-//		return sb.toString();
-	}
-
-	/**
-	 * Converts single line presentation into multi-line text.
-	 */
-	public static String toMultiLine(String s) {
-		return s;
-		// TODO this doesn't seem to work
-//		StringBuilder sb = new StringBuilder();
-//		boolean esc = false;
-//		for (int i = 0; i < s.length(); ++i) {
-//			char c = s.charAt(i);
-//			if (c == '\\') {
-//				if (esc) {
-//					esc = false;
-//				} else {
-//					esc = true;
-//					continue;
-//				}
-//			}
-//			if (esc && c == 'n') {
-//				c = '\n';
-//			} else if (esc && c == 'r') {
-//				c = '\r';
-//			}
-//			sb.append(c);
-//			esc = false;
-//		}
-//		return sb.toString();
-	}
-	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JPanel addOnPanel;
     private javax.swing.JButton cancelButton;

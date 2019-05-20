@@ -368,9 +368,9 @@ public class ExportDialog extends javax.swing.JDialog {
 			
 			subjectTable.setText(subject.getName());
 			if (subjectCondition.equals(previousInitialSubjectCondition)) {
-				where.setText(ConditionEditor.toSingleLine(previousSubjectCondition));
+				where.setText((previousSubjectCondition));
 			} else {
-				where.setText(ConditionEditor.toSingleLine(subjectCondition));
+				where.setText((subjectCondition));
 			}
 			
 			browseInsertButton.setIcon(loadIcon);
@@ -439,8 +439,8 @@ public class ExportDialog extends javax.swing.JDialog {
 				public void mouseClicked(java.awt.event.MouseEvent evt) {
 					String cond = subjectConditionEditor.edit(where.getText(), "Subject", "T", subject, null, null, null, false, true);
 					if (cond != null) {
-						if (!where.getText().equals(ConditionEditor.toSingleLine(cond))) {
-							where.setText(ConditionEditor.toSingleLine(cond));
+						if (!where.getText().equals((cond))) {
+							where.setText((cond));
 						}
 						openWhereEditor.setIcon(conditionEditorSelectedIcon);
 					}
@@ -2070,7 +2070,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		
 		if (!where.getText().equals(subjectCondition)) {
 			args.add("-where");
-			args.add(ConditionEditor.toMultiLine(where.getText()).replace('\n', ' ').replace('\r', ' '));
+			args.add((where.getText()).replace('\n', ' ').replace('\r', ' '));
 		}
 
 		args.add("-format");
