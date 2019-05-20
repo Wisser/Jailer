@@ -293,7 +293,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
         gridBagConstraints.weightx = 0;
-        JButton searchButton = StringSearchPanel.createSearchButton(this, tablesComboBox, "Open Table Browser", new Runnable() {
+        searchButton = StringSearchPanel.createSearchButton(this, tablesComboBox, "Open Table Browser", new Runnable() {
 			@Override
 			public void run() {
 				openTableButtonActionPerformed(null);
@@ -2740,6 +2740,8 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem zoomOutMenuItem;
     // End of variables declaration//GEN-END:variables
 
+    private JButton searchButton;
+    
     /**
      * Sets Look&Feel.
      * 
@@ -3153,7 +3155,7 @@ public class DataBrowser extends javax.swing.JFrame {
                             }
                             return;
                         } else {
-                            openNewTableBrowser(false);
+                            searchButton.doClick(1);
                         }
                     }
                 }
