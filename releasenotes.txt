@@ -1,5 +1,6 @@
 8.6.4
   - Modal dialogues were replaced by non-modal ones.
+  - Creation of the data model files has been revised.
 
 8.6.3
   - Minor bug fixes.
