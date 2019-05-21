@@ -1046,7 +1046,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	private void save() {
 		try {
 			if (needsSave) {
-				save(sort(tables, 0), DataModel.getTablesFile(executionContext), "# Name; Upsert; Primary key; ; Author");
+				save(sort(tables, 0), DataModel.getTablesFile(executionContext), "# Name; Upsert; Primary Key; ; Author");
 				save(sort(associations, 5), DataModel.getAssociationsFile(executionContext), "# Table A; Table B; First-insert; Cardinality (opt); Join-condition; Name; Author");
 				save(sort(new ArrayList<Line>(columns.values()), 0), DataModel.getColumnsFile(executionContext), "# Table; Columns");
 				saveTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(executionContext));
