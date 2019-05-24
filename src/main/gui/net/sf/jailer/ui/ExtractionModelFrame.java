@@ -1931,6 +1931,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		try {
 			start(args);
 		} catch (Throwable t) {
+			t.printStackTrace();
 			UIUtil.showException(null, "Error", t);
 		}
 	}
@@ -1942,6 +1943,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		try {
 			Environment.init();
 		} catch (Throwable e) {
+			e.printStackTrace();
 			UIUtil.showException(null, "Error", e);
 			return;
 		}
@@ -1954,6 +1956,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		try {
 			CommandLineInstance.init(args);
 		} catch (Exception e) {
+			e.printStackTrace();
 			UIUtil.showException(null, "Illegal arguments", e);
 			return;
 		}
@@ -2003,6 +2006,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					}
 					createFrame(file, true, null);
 				} catch (Throwable e) {
+					e.printStackTrace();
 					UIUtil.showException(null, "Error", e);
 				}
 			}

@@ -2372,7 +2372,8 @@ public class DataBrowser extends javax.swing.JFrame {
         try {
             start(args);
         } catch (Throwable t) {
-            UIUtil.showException(null, "Error", t);
+        	t.printStackTrace();
+        	UIUtil.showException(null, "Error", t);
         }
     }
     
@@ -2384,6 +2385,7 @@ public class DataBrowser extends javax.swing.JFrame {
         try {
         	Environment.init();
         } catch (Throwable e) {
+        	e.printStackTrace();
 			UIUtil.showException(null, "Error", e);
 			return;
 		}
@@ -2397,6 +2399,7 @@ public class DataBrowser extends javax.swing.JFrame {
         try {
             CommandLineInstance.init(args);
         } catch (Exception e) {
+        	e.printStackTrace();
             UIUtil.showException(null, "Illegal arguments", e);
             return;
         }
