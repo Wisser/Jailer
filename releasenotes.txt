@@ -1,3 +1,6 @@
+8.7.1
+  - SQL Console is now robust against outdated metadata.
+
 8.7
   - Modal dialogues were replaced by non-modal ones.
   - Creation of the data model files has been revised.

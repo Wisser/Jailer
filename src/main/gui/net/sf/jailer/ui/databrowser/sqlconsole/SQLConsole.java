@@ -773,19 +773,27 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final ResultSet metaDataResultSet = theMetaDataResultSet;
                 final String finalResultSetType = resultSetType;
 				final Integer limit = (Integer) limitComboBox.getSelectedItem();
-                final List<Table> resultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
+                List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
                 Table resultType = null;
-                if (resultTypes != null && !resultTypes.isEmpty()) {
-                    if (resultTypes.size() == 1) {
-                        resultType = resultTypes.get(0);
+                if (nfResultTypes != null && !nfResultTypes.isEmpty()) {
+                    if (nfResultTypes.size() == 1) {
+                        resultType = nfResultTypes.get(0);
                     }
 					int columnCount = metaData.getColumnCount();
-                    for (Table table: resultTypes) {
+                    for (Table table: nfResultTypes) {
                         while (table.getColumns().size() < columnCount) {
                             table.getColumns().add(new net.sf.jailer.datamodel.Column(null, "", 0, -1));
                         }
                     }
                 }
+                if (resultType != null) {
+                	if (resultType.getColumns().size() > metaData.getColumnCount()) {
+                		// stale meta data
+                		resultType = null;
+                		nfResultTypes = null;
+                	}
+                }
+                final List<Table> resultTypes = nfResultTypes;
                 final MemorizedResultSet metaDataDetails = new MemorizedResultSet(resultSet, limit, session, SQLConsole.this) {
             		@Override
                 	protected Object convertCellContent(Object object) {
