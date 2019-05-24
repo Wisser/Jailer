@@ -143,8 +143,9 @@ public class MemorizedResultSet implements ResultSet {
 		Object c;
 		if (columnIndex > row.length) {
 			c = null;
+		} else {
+			c = row[columnIndex - 1];
 		}
-		c = row[columnIndex - 1];
 		wasNull = c == null;
 		return c;
 	}
