@@ -1,12 +1,7 @@
-8.6.4
+8.7
   - Modal dialogues were replaced by non-modal ones.
   - Creation of the data model files has been revised.
-
-8.6.3
-  - Minor bug fixes.
-
-8.6.2
-  - View execution plans for DB2 LUW.
+  - Execution plans for DB2 LUW.
   - Fixed "ERROR: failed to find conversion function from unknown to text"
     that could occur with PostgreSQL in connection with the "local database" scope. 
 
