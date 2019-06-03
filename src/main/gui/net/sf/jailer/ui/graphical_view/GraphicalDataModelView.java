@@ -1387,7 +1387,7 @@ public class GraphicalDataModelView extends JPanel {
 			List<Table> toCheck = new ArrayList<Table>();
 			toCheck.add(destination);
 			addEdges(theGraph, source, null, toCheck, false, new HashSet<Table>(toCheck));
-			checkForExpansion(theGraph, model.getTables(), true);
+			checkForExpansion(theGraph, toCheck, false);
 		}
 	}
 	
