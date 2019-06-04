@@ -53,12 +53,21 @@ public class UpdateInfoManager {
 					}
 					
 					Object uuid = UISettings.restore("uuid");
+					boolean isNew = false;
 					if (uuid == null) {
-						uuid = String.valueOf(System.currentTimeMillis() % 1000000); // UUID.randomUUID().toString();
+						uuid = String.valueOf(System.currentTimeMillis() % 1000000);
 						UISettings.store("uuid", uuid);
+						isNew = true;
 					}
 					Object stat0 = UISettings.restore("stat0");
 					UISettings.store("stat0", null);
+					Object uimCnt = UISettings.restore("UIM-Cnt");
+					if (uimCnt instanceof Long) {
+						uimCnt = new Long(((Long) uimCnt) + 1);
+					} else {
+						uimCnt = new Long(isNew? 1 : 10000);
+					}
+					UISettings.store("UIM-Cnt", uimCnt);
 					String content = HttpUtil.get(versionURL
 							+ "?jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")"
 							+ "&modul=" + URLEncoder.encode(modul, "UTF-8")
@@ -66,6 +75,7 @@ public class UpdateInfoManager {
 							+ "&uuid=" + URLEncoder.encode(uuid.toString(), "UTF-8")
 							+ "&version=" + URLEncoder.encode(JailerVersion.VERSION, "UTF-8")
 							+ (stat0 != null? "&s=" + stat0 : "")
+							+ ("&c=" + uimCnt)
 							+ UISettings.restoreStats());
 					BufferedReader in = new BufferedReader(new StringReader(content));
 			        String inputLine = in.readLine();
