@@ -161,7 +161,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        detailsPanel.add(StringSearchPanel.createSearchButton(parent, detailsComboBox, "Find Table", null), gridBagConstraints);
+        detailsPanel.add(StringSearchPanel.createSearchButton(null, detailsComboBox, "Find Table", null), gridBagConstraints);
 
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 1;
@@ -187,7 +187,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			}
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				ConditionEditor conditionEditor = new ConditionEditor(AdditionalSubjectsDialog.this.parent, parametersGetter, AdditionalSubjectsDialog.this.extractionModel.dataModel);
+				ConditionEditor conditionEditor = new ConditionEditor(AdditionalSubjectsDialog.this.parent, parametersGetter, AdditionalSubjectsDialog.this.extractionModel.dataModel, null);
 				Object item = detailsComboBox.getSelectedItem();
 				conditionEditor.setTitle("");
 				Table table = null;

@@ -111,7 +111,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		JCheckBox checkBox;
 
 		private FilterConditionEditor(Frame parent, ParametersGetter parametersGetter) {
-			super(parent, parametersGetter, getDataModel());
+			super(parent, parametersGetter, getDataModel(), "Filter Expression");
 		}
 
 		public String edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean withColumnsDropDown) {

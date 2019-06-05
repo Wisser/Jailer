@@ -62,7 +62,7 @@ public class ConditionEditor extends EscapableDialog {
 	private DataModelBasedSQLCompletionProvider provider;
 
 	/** Creates new form ConditionEditor */
-	public ConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel) {
+	public ConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel, String altTitel) {
 		super(parent, true);
 		initComponents();
 		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
@@ -81,7 +81,7 @@ public class ConditionEditor extends EscapableDialog {
 		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 0;
-		JLabel where = new JLabel(" Where");
+		JLabel where = new JLabel(" " + (altTitel != null? altTitel : "Where"));
 		where.setForeground(new Color(0, 0, 255));
 		jPanel1.add(where, gridBagConstraints);
 		

@@ -138,7 +138,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							} else {
 								searchPanel.plugInPanel.setVisible(false);
 							}
-							searchPanel.find(owner, titel, location.x, location.y, locateUnderButton);
+							Window ownerWindow = owner;
+							if (ownerWindow == null) {
+								ownerWindow = SwingUtilities.getWindowAncestor(comboBox);
+							}
+							searchPanel.find(ownerWindow, titel, location.x, location.y, locateUnderButton);
 				        } finally {
 				        	UIUtil.resetWaitCursor(button);
 				        }
