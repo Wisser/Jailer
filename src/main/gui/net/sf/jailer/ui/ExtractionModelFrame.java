@@ -1757,7 +1757,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}//GEN-LAST:event_steptime500ActionPerformed
 
 	private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-		openFilterEditor(null);
+		openFilterEditor(extractionModelEditor.root);
 	}//GEN-LAST:event_jMenuItem2ActionPerformed
 
 	private void exportDisplayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDisplayActionPerformed

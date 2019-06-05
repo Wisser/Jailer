@@ -317,6 +317,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         jPanel3.add(StringSearchPanel.createSearchButton(extractionModelFrame, subjectTable, "Find Table", null), gridBagConstraints);
 		
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        focusPanel.add(StringSearchPanel.createSearchButton(extractionModelFrame, rootTable, "Focus on Table", null), gridBagConstraints);
+        
 		ItemListener aListener = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent arg0) {
@@ -1136,7 +1141,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         focusLabelPanel.add(jLabel9);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         focusPanel.add(focusLabelPanel, gridBagConstraints);
 
