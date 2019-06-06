@@ -48,6 +48,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
@@ -199,7 +200,11 @@ public class GraphicalDataModelView extends JPanel {
 		this.modelEditor = modelEditor;
 		this.root = subject;
 
-		tableRenderer = new TableRenderer(model, this);
+		tableRenderer = new TableRenderer(model, this) {
+			@Override
+			protected void afterRendering(Table table, Rectangle2D bounds) {
+			}
+		};
 		final Set<Table> initiallyVisibleTables = new HashSet<Table>();
 		if (subject != null) {
 			Map<String, double[]> positions = executionContext.getLayoutStorage().getPositions(subject.getName());
@@ -217,7 +222,14 @@ public class GraphicalDataModelView extends JPanel {
 		// create a new, empty visualization for our data
 		visualization = new Visualization();
 		
-		final ZoomBoxControl zoomBoxControl = new ZoomBoxControl();
+		final ZoomBoxControl zoomBoxControl = new ZoomBoxControl() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				super.mouseReleased(e);
+				resetScrollTimer();
+			}
+			
+		};
 		
 		// --------------------------------------------------------------------
 		// set up the renderers
@@ -343,6 +355,7 @@ public class GraphicalDataModelView extends JPanel {
 		display.addControlListener(new DragControl() {
 			@Override
 			public void itemClicked(VisualItem item, MouseEvent e) {
+				resetScrollTimer();
 				Table table = model.getTable(item.getString("label"));
 				if (SwingUtilities.isLeftMouseButton(e)) {
 					if (table != null && e.getClickCount() == 1) {
@@ -374,6 +387,7 @@ public class GraphicalDataModelView extends JPanel {
 
 			@Override
 			public void itemPressed(VisualItem item, MouseEvent e) {
+				resetScrollTimer();
 				if (UILib.isButtonPressed(e, LEFT_MOUSE_BUTTON)) {
 					Association association = (Association) item.get("association");
 					if (association != null) {
@@ -417,6 +431,7 @@ public class GraphicalDataModelView extends JPanel {
 			
 			@Override
 			public void itemReleased(VisualItem item, MouseEvent e) {
+				resetScrollTimer();
 				// fix after drag
 				super.itemReleased(item, e);
 				if (!SwingUtilities.isLeftMouseButton(e)) return;
@@ -425,14 +440,18 @@ public class GraphicalDataModelView extends JPanel {
 				}
 			}
 		});
-		display.addControlListener(new PanControl());
+		display.addControlListener(new PanControl() {
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				resetScrollTimer();
+				super.mouseDragged(e);
+			}
+		});
 		display.addControlListener(zoomBoxControl);
-		display.addControlListener(new WheelZoomControl(){
-			/**
-			 * @see java.awt.event.MouseWheelListener#mouseWheelMoved(java.awt.event.MouseWheelEvent)
-			 */
+		display.addControlListener(new WheelZoomControl() {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
+				resetScrollTimer();
 				Display display = (Display)e.getComponent();
 				Point p = e.getPoint();
 				zoom(display, p,
@@ -1238,6 +1257,7 @@ public class GraphicalDataModelView extends JPanel {
 							expandTable(theGraph, path.get(i).source, path.get(i), false, null);
 							expandTable(theGraph, path.get(i).destination, path.get(i), false, null);
 						}
+						startScrollTimer(selectedAssociation.destination, 50, 6);
 					}
 					invalidate();
 				}
@@ -1245,6 +1265,92 @@ public class GraphicalDataModelView extends JPanel {
 		}
 	}
 	
+	private Table currentScrollDestination = null;
+	private Object currentScrollBounds = null;
+	
+	private void resetScrollTimer() {
+		synchronized (visualization) {
+			currentScrollDestination = null;
+			currentScrollBounds = null;
+		}
+	}
+
+	private void startScrollTimer(final Table destination, int delay, final int cd) {
+		if (cd > 0) {
+			currentScrollDestination = destination;
+			Timer timer = new Timer(delay, new ActionListener() {
+				@SuppressWarnings("rawtypes")
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					synchronized (visualization) {
+						if (destination == currentScrollDestination) {
+							Iterator items = visualization.items(BooleanLiteral.TRUE);
+							while (items.hasNext()) {
+								VisualItem item = (VisualItem)items.next();
+								if (item.canGetString("label") ) {
+									String tableName;
+									tableName = item.getString("label");
+									if (tableName != null) {
+										if (tableName.equals(destination.getName())) {
+											if (display.isTranformInProgress()) {
+												startScrollTimer(destination, 50, cd);
+												return;
+											}
+											Point2D tl = new Point2D.Double(0, 0);
+											Point2D br = new Point2D.Double(display.getWidth(), display.getHeight());
+											
+											Rectangle2D iBounds = item.getBounds();
+											Point2D d1 = display.getTransform().transform(new Point2D.Double(iBounds.getMinX(), iBounds.getMinY()), null);
+											Point2D d2 = display.getTransform().transform(new Point2D.Double(iBounds.getMaxX(), iBounds.getMaxY()), null);
+											int b = 40;
+											Rectangle2D bounds = new Rectangle2D.Double(d1.getX() - b, d1.getY() - b, d2.getX() - d1.getX() + 2 * b, d2.getY() - d1.getY() + 2 * b);
+
+											if (currentScrollBounds != null && currentScrollBounds.equals(iBounds)) {
+												return;
+											} else {
+												currentScrollBounds = iBounds.clone();
+											}
+											
+											double dx = 0;
+											double dy = 0;
+											
+											double d = tl.getX() - bounds.getMinX();
+											if (d > 0) {
+												dx = d;
+											} else {
+												d = br.getX() - bounds.getMaxX();
+												if (d < 0) {
+													dx = d;
+												}
+											}
+											d = tl.getY() - bounds.getMinY();
+											if (d > 0) {
+												dy = d;
+											} else {
+												d = br.getY() - bounds.getMaxY();
+												if (d < 0) {
+													dy = d;
+												}
+											}
+
+											if (dx != 0 || dy != 0) {
+												display.animatePan(dx, dy, 500);
+											}
+											startScrollTimer(destination, 510, cd - 1);
+											break;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			});
+			timer.setRepeats(false);
+			timer.start();
+		}
+	}
+
 	/**
 	 * Gets shortest path from root to a given table.
 	 * 
@@ -1747,6 +1853,7 @@ public class GraphicalDataModelView extends JPanel {
 		 * Zooms to fit.
 		 */
 		public void zoomToFit(long dur) {
+			resetScrollTimer();
 			Visualization vis = display.getVisualization();
 			synchronized (visualization) {
 				Rectangle2D bounds = vis.getBounds(Visualization.ALL_ITEMS);

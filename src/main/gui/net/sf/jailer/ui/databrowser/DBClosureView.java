@@ -52,7 +52,6 @@ import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -125,6 +124,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 			    	Table r = path.get(i);
 			    	String tabName = getDataModel().getDisplayName(r);
 			        selectCell(result.expand && i == path.size() - 1, tabName, r);
+			        if (i == path.size() - 1) {
+			        	scrollTableCellToVisible(tabName);
+			        }
 			    }
 			}
 		}
@@ -1340,6 +1342,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private void findButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findButtonActionPerformed
         Object toFind = searchComboBox.getSelectedItem();
         find((String) toFind);
+        scrollTableCellToVisible((String) toFind);
     }//GEN-LAST:event_findButtonActionPerformed
 
     private void findPathComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPathComboBoxActionPerformed
@@ -1354,6 +1357,14 @@ public abstract class DBClosureView extends javax.swing.JDialog {
             if (cellInfo != null) {
                 selectTableCell(cellInfo.column, cellInfo.row);
             }
+        }
+    }
+
+    private void scrollTableCellToVisible(String toFind) {
+    	CellInfo cellInfo = this.cellInfo.get(toFind);
+        if (cellInfo != null) {
+	    	Rectangle cellRect = closureTable.getCellRect(cellInfo.row, cellInfo.column, true);
+			closureTable.scrollRectToVisible(new Rectangle(cellRect.x, Math.max(cellRect.y - cellRect.height, 0), cellRect.width, cellRect.height * 3));
         }
     }
 

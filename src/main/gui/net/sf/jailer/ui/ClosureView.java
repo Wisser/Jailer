@@ -1650,11 +1650,12 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			CellInfo cellInfo = this.cellInfo.get(toFind);
 			if (cellInfo != null) {
 				selectTableCell(cellInfo.column, cellInfo.row);
+				scrollTableCellToVisible(cellInfo.column, cellInfo.row);
 			}
 		}
     }//GEN-LAST:event_findButtonActionPerformed
 
-    private void findPathComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPathComboBoxActionPerformed
+	private void findPathComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPathComboBoxActionPerformed
     }//GEN-LAST:event_findPathComboBoxActionPerformed
 
     private void findPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPathButtonActionPerformed
@@ -1715,6 +1716,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				CellInfo ci = cellInfo.get(getDataModel().getDisplayName(table));
 				if (ci != null) {
 					selectTableCell(ci.column, ci.row);
+					scrollTableCellToVisible(ci.column, ci.row);
 				}
 			}
 		}
@@ -1739,6 +1741,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		refreshAssociationView(getSelectedTable());
 		repaintClosureView();
 	}
+
+    private void scrollTableCellToVisible(int column, int row) {
+    	Rectangle cellRect = closureTable.getCellRect(row, column, true);
+		closureTable.scrollRectToVisible(new Rectangle(cellRect.x, Math.max(cellRect.y - cellRect.height, 0), cellRect.width, cellRect.height * 3));
+    }
 
 	protected abstract void repaintClosureView();
 

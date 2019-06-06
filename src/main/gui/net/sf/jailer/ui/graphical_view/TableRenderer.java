@@ -59,7 +59,7 @@ import prefuse.visual.VisualItem;
  * 
  * @author Ralf Wisser
  */
-public class TableRenderer extends AbstractShapeRenderer {
+public abstract class TableRenderer extends AbstractShapeRenderer {
 	
 	protected ImageFactory m_images = null;
 	protected String m_delim = "\n";
@@ -467,6 +467,9 @@ public class TableRenderer extends AbstractShapeRenderer {
 						76);
 			}
 			paint(g, item, fillColor, shape, itemStroke != null? itemStroke : new BasicStroke(isSelected? 1 : 0), isSelected? RENDER_TYPE_DRAW_AND_FILL : RENDER_TYPE_FILL);
+			if (table != null) {
+				afterRendering(table, shape.getBounds2D());
+			}
 		}
 
 		// now render the image and text
@@ -1189,6 +1192,8 @@ public class TableRenderer extends AbstractShapeRenderer {
 			g.setStroke(origStroke);
 		}
 	}
+	
+	protected abstract void afterRendering(Table table, Rectangle2D bounds);
 
 	// images
 	private Image excludeFromDeletionImage = null;
