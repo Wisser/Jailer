@@ -51,7 +51,7 @@ public class Environment {
 			}
 		}
 		initialLocal = Locale.getDefault();
-		Locale.setDefault(Locale.ENGLISH);
+		Locale.setDefault(Locale.ENGLISH); // TODO find a better solution than setting the default location
 		if (new File(".singleuser").exists() // legacy
 				|| new File(".multiuser").exists()) {
 			home = new File(System.getProperty("user.home"), ".jailer");
