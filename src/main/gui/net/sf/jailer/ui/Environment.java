@@ -28,7 +28,6 @@ import java.util.Random;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.render.HtmlDataModelRenderer;
-import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.LogUtil;
 
 /**
@@ -40,7 +39,6 @@ public class Environment {
 
 	private static File home = null;
 	public static Locale initialLocal = Locale.ENGLISH;
-	public static long startTime = System.currentTimeMillis();
 
 	public static void init() {
 		String osName = System.getProperty("os.name");
@@ -80,7 +78,7 @@ public class Environment {
 			if (!testCreateTempFile()) {
 				UIUtil.showException(null, "Error", new IllegalStateException("No write permission on "
 						+ new File(".").getAbsolutePath() + " \n"
-						+ "To setup multi-user mode, create a (empty) file \".multiuser\" in this folder. "
+						+ "To setup multi-user mode, create a (empty) file named \".multiuser\" in this folder. "
 						+ "All model and settings files are then stored in a folder named \".jailer\" in the user's home directory."));
 				System.exit(-1);
 			}
@@ -90,16 +88,6 @@ public class Environment {
 				+ (new File(".multiuser").exists() ? 2 : 0) + (new File("..", "dbeauty").exists() ? 4 : 0)
 				+ (!testCreateTempFile() ? 8 : 0)
 				+ stateOffset;
-		Runtime.getRuntime().addShutdownHook(new Thread("cleanup") {
-			@Override
-			public void run() {
-				if (startTime != 0) {
-					UISettings.store("stat0", (System.currentTimeMillis() - startTime) / 1000 / 60);
-					UISettings.storeStats();
-				}
-				startTime = 0;
-			}
-		});
 	}
 
 	private static boolean copyIfNotExists(String f) throws IOException {
