@@ -1,3 +1,6 @@
+8.7.2
+  - Selected tables are automatically scrolled into the visible area of the display.
+
 8.7.1
   - SQL Console is now robust against outdated metadata.
   - Fixed: Associations between visible tables were not always visible.
