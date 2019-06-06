@@ -1,6 +1,9 @@
 package net.sf.jailer.ui.util;
 
+import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +19,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.ui.Environment;
@@ -68,6 +72,7 @@ public class UpdateInfoManager {
 						uimCnt = new Long(isNew? 1 : 10000);
 					}
 					UISettings.store("UIM-Cnt", uimCnt);
+					startShutdownHook();
 					String content = HttpUtil.get(versionURL
 							+ "?jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")"
 							+ "&modul=" + URLEncoder.encode(modul, "UTF-8")
@@ -109,6 +114,31 @@ public class UpdateInfoManager {
 									public void run() {
 										infoLabel.setText("Release " + versions[0].trim() + " available");
 										ui.setVisible(true);
+										startAnimationTimer(ui);
+									}
+
+									int t;
+									Color startColor = ui.getBackground();
+
+									private void startAnimationTimer(final JComponent ui) {
+										Timer timer = new Timer(50, new ActionListener() {
+											@Override
+											public void actionPerformed(ActionEvent e) {
+												++t;
+												Color destColor = new Color(255, 210, 180);
+												double f = 0.5 * (1 + Math.sin(2 * Math.PI * t / 30.0));
+												ui.setBackground(new Color(mid(f, startColor.getRed(), destColor.getRed()), mid(f, startColor.getGreen(), destColor.getGreen()), mid(f, startColor.getBlue(), destColor.getBlue())));
+												
+												if (ui.isVisible()) {
+													startAnimationTimer(ui);
+												}
+											}
+											private int mid(double f, int s, int d) {
+												return (int) (s + f * (d - s));
+											}
+										});
+										timer.setRepeats(false);
+										timer.start();
 									}
 								});
 			        		}
@@ -117,6 +147,21 @@ public class UpdateInfoManager {
 				} catch (Throwable t) {
 					// ignore
 				}
+			}
+
+			private void startShutdownHook() {
+				Runtime.getRuntime().addShutdownHook(new Thread("cleanup") {
+					long startTime = System.currentTimeMillis();
+					
+					@Override
+					public void run() {
+						if (startTime != 0) {
+							UISettings.store("stat0", (System.currentTimeMillis() - startTime) / 1000 / 60);
+							UISettings.storeStats();
+						}
+						startTime = 0;
+					}
+				});
 			}
 		};
 		Thread checkThread = new Thread(check);
