@@ -112,8 +112,7 @@ public class XmlDocumentComparator {
 				return false;
 			}
 		}
-		// TODO: check attributes too
-		
+
 		boolean docContainsPart = true;
 		for (int i = 0; i < part.getChildNodes().getLength(); ++i) {
 			if (!(part.getChildNodes().item(i) instanceof Element)) continue; 
