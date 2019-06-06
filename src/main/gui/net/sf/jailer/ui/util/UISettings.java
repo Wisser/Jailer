@@ -78,12 +78,20 @@ public class UISettings  {
 		loadUISettings();
 		properties.put(name, value);
 		File file = Environment.newFile(FILENAME);
-		try {
-			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
-			out.writeObject(properties);
-			out.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+		for (int retry = 0; retry < 4; ++retry) {
+			try {
+				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+				out.writeObject(properties);
+				out.close();
+				return;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// ignore
+			}
 		}
 	}
 
