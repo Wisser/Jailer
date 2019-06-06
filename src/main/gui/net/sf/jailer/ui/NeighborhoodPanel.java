@@ -194,6 +194,11 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
 							initTableList(dataModel, table, hideIgnored, graphView);
 							createTableLinks(dataModel, table, graphView, hideIgnored);
 						}
+						if (e.getClickCount() > 1) {
+							graphView.selectTable(t);
+						} else {
+							graphView.startScrollTimer(t);
+						}
 					}
 				});
     			jPanel.setLayout(new FlowLayout(0, 0, 0));

@@ -1257,7 +1257,7 @@ public class GraphicalDataModelView extends JPanel {
 							expandTable(theGraph, path.get(i).source, path.get(i), false, null);
 							expandTable(theGraph, path.get(i).destination, path.get(i), false, null);
 						}
-						startScrollTimer(selectedAssociation.destination, 50, 6);
+						startScrollTimer(selectedAssociation.destination);
 					}
 					invalidate();
 				}
@@ -1273,6 +1273,10 @@ public class GraphicalDataModelView extends JPanel {
 			currentScrollDestination = null;
 			currentScrollBounds = null;
 		}
+	}
+
+	public void startScrollTimer(final Table destination) {
+		startScrollTimer(destination, 50, 10);
 	}
 
 	private void startScrollTimer(final Table destination, int delay, final int cd) {

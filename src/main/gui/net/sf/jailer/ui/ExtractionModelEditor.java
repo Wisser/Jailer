@@ -2631,6 +2631,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						TreePath treePath = new TreePath(toSelect.getPath());
 						tree.setSelectionPath(treePath);
 						tree.scrollPathToVisible(treePath);
+						if (association != null) {
+							graphView.startScrollTimer(association.destination);
+						}
 						return true;
 					}
 					tree.setModel(getModel(association));
