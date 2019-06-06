@@ -1303,7 +1303,7 @@ public class GraphicalDataModelView extends JPanel {
 											Point2D d1 = display.getTransform().transform(new Point2D.Double(iBounds.getMinX(), iBounds.getMinY()), null);
 											Point2D d2 = display.getTransform().transform(new Point2D.Double(iBounds.getMaxX(), iBounds.getMaxY()), null);
 											int b = 40;
-											Rectangle2D bounds = new Rectangle2D.Double(d1.getX() - b, d1.getY() - b, d2.getX() - d1.getX() + 2 * b, d2.getY() - d1.getY() + 2 * b);
+											Rectangle2D bounds = new Rectangle2D.Double(d1.getX() - b, d1.getY() - b, d2.getX() - d1.getX() + 2 * b, Math.min(20, d2.getY() - d1.getY()) + 2 * b);
 
 											if (currentScrollBounds != null && currentScrollBounds.equals(iBounds)) {
 												return;
