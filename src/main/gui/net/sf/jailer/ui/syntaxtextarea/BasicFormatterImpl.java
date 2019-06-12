@@ -119,7 +119,7 @@ public class BasicFormatterImpl {
 
 		public FormatProcess(String sql) {
 			tokens = new StringTokenizer(
-					sql.replaceAll("(?i)(\\b(?:insert|update|delete|select)\\b)(\\s*\\()", "$1" + FUNCTION_SUFFIX + "$2"),
+					sql.replaceAll("(?i)(\\b(?:insert|update|delete)\\b)(\\s*\\()", "$1" + FUNCTION_SUFFIX + "$2"),
 					"()+*/-=<>'`\"[], \n\r\f\t",
 					true
 			);
