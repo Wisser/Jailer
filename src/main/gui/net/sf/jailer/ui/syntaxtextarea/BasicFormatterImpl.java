@@ -114,10 +114,12 @@ public class BasicFormatterImpl {
 		String lastToken;
 		String token;
 		String lcToken;
+		
+		private final String FUNCTION_SUFFIX = "_DUI_FUNCTION_SUFFIX_1029039456";
 
 		public FormatProcess(String sql) {
 			tokens = new StringTokenizer(
-					sql,
+					sql.replaceAll("(?i)(\\b(?:insert|update|delete|select)\\b)(\\s*\\()", "$1" + FUNCTION_SUFFIX + "$2"),
 					"()+*/-=<>'`\"[], \n\r\f\t",
 					true
 			);
@@ -263,7 +265,8 @@ public class BasicFormatterImpl {
 					.replace("\f", FREP)
 					.trim()
 					.replaceAll("\\s*\\n", "\n")
-					.replace(FREP, "\f");
+					.replace(FREP, "\f")
+					.replace(FUNCTION_SUFFIX, "");
 		}
 
 		private void commaAfterOn() {
