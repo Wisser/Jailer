@@ -115,10 +115,8 @@ public class LocalEntityGraph extends EntityGraph {
 		
 		@Override
 		public void close() throws SQLException {
-			if (DBMS.POSTGRESQL.equals(remoteSession.dbms)) {
-				if (statementBuilder.size() == 1) {
-					process("(Select " + statementBuilder.getItems().get(0) + " Union Select " + statementBuilder.getItems().get(0) + ") " + name);
-				}
+			if (DBMS.POSTGRESQL.equals(remoteSession.dbms) && statementBuilder.size() == 1) {
+				process("(Select " + statementBuilder.getItems().get(0) + " Union Select " + statementBuilder.getItems().get(0) + ") " + name);
 			} else {
 				super.close();
 			}
