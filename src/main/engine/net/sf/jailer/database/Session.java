@@ -492,7 +492,11 @@ public class Session {
 						theConnection.setAutoCommit(false);
 						return executeQuery(theConnection, sqlQuery, reader, alternativeSQL, context, limit, timeout, false);
 					} finally {
-						theConnection.commit();
+						try {
+							theConnection.commit();
+						} catch (SQLException e) {
+							_log.warn("commit failed", e);
+						}
 						theConnection.setAutoCommit(true);
 					}
 				}
