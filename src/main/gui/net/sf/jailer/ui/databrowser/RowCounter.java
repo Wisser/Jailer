@@ -344,7 +344,7 @@ public class RowCounter {
 				@Override
 				public void close() {
 				}
-			}, null, context, 0, timeout);
+			}, null, context, 0, timeout, false);
 		}
 		return rc[0];
 	}
