@@ -386,7 +386,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		resultSet = getTables(session, metaData, introspectionSchema, tableNamePattern, types.toArray(new String[0]));
 		List<String> tableNames = new ArrayList<String>();
 		while (resultSet.next()) {
-			String tableName = resultSet.getString(3) + "X";
+			String tableName = resultSet.getString(3);
 			if (resultSet.getString(4) != null && types.contains(resultSet.getString(4).toUpperCase())) {
 				if (isValidName(tableName, session)) {
 					tableName = quoting.quote(tableName);
