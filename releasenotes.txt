@@ -1,5 +1,7 @@
 8.7.3
   - Fix: the working table scope "local" did not work correctly with PostgreSQL.
+  - Cursor-based result sets have been activated under PostgreSQL.
+    Retrieving the entire ResultSet at once led to out-of-memory errors.
 
 8.7.2
   - Selected tables are automatically scrolled into the visible area of the display.
