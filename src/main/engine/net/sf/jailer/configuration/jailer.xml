@@ -366,6 +366,7 @@ union all
                 <value>true</value>
             </entry>
         </jdbcProperties>
+		<!-- <fetchSize>-2147483648</fetchSize> -->  <!-- setFetchSize(Integer.MIN_VALUE) should enable result set streaming -->
         <statisticRenovator>
             <scriptFileName>script/mysql/update_statistics.sql</scriptFileName>
         </statisticRenovator>

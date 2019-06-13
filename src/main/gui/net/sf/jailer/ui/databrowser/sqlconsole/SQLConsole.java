@@ -691,12 +691,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         String sqlStatement = null;
         String stmtId = null;
         TreeMap<Integer, Integer> positionOffsets = new TreeMap<Integer, Integer>();
-        try {
-            status.numStatements++;
+        Connection resetAutoCommitConnection = null;
+		try {
+	        Connection connection = session.getConnection();
+	        if (!explain && session.dbms.equals(DBMS.POSTGRESQL)) {
+	            if (connection.getAutoCommit()) {
+	            	connection.setAutoCommit(false);
+	            	resetAutoCommitConnection = connection;
+	            }
+	        }
+	        status.numStatements++;
             localStatus.numStatements++;
             UISettings.s3++;
             status.updateView(false);
-            statement = session.getConnection().createStatement();
+            statement = connection.createStatement();
 			if (session.dbms != null) {
 				if (session.dbms.getFetchSize() != null) {
 					statement.setFetchSize(session.dbms.getFetchSize());
@@ -718,7 +726,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             ResultSet sqlPlusResultSet = null;
             if (explain) {
             	if (session.dbms.getExplainCreateExplainTable() != null) {
-            		Statement createStatement = session.getConnection().createStatement();
+            		Statement createStatement = connection.createStatement();
             		try {
             			createStatement.execute(session.dbms.getExplainCreateExplainTable());
             		} catch (Exception e) {
@@ -738,7 +746,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 	statement.execute(String.format(session.dbms.getExplainPrepare(), sqlStatement, stmtId));
                 	statement.close();
             	}
-                statement = session.getConnection().createStatement();
+                statement = connection.createStatement();
             	hasResultSet = statement.execute(String.format(session.dbms.getExplainQuery(), sqlStatement, stmtId));
             } else {
             	sqlPlusResultSet = sqlPlusSupport.executeSQLPLusQuery(sqlStatement);
@@ -1110,10 +1118,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					}
             	}
             }
+            if (resetAutoCommitConnection != null) {
+            	try {
+					resetAutoCommitConnection.setAutoCommit(true);
+				} catch (SQLException e) {
+					// ignore
+				}
+            }
         }
     }
 
 	private boolean executeStatementWithLimit(Statement statement, String sqlStatement, Session session) throws SQLException {
+		// TODO
 		if (DBMS.MySQL.equals(session.dbms)) {
 			try {
 				return statement.execute("(" + sqlStatement + "\n) limit " + (1 + (Integer) limitComboBox.getSelectedItem()));
