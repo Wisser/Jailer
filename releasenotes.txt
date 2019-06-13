@@ -1,9 +1,9 @@
 8.7.3
-  - TBD
+  - Fix: the working table scope "local" did not work correctly with PostgreSQL.
 
 8.7.2
   - Selected tables are automatically scrolled into the visible area of the display.
-  - Fix: not all associations between two visible tables were always displayed.
+  - Fix: not all associations between two visible tables were always visible.
 
 8.7.1
   - SQL Console is now robust against outdated metadata.
