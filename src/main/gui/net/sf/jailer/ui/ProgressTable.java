@@ -762,5 +762,7 @@ public class ProgressTable extends JTable {
 		}
 	}
 
+	// TODO: render links as curves instead of lines
+	
 	private static final long serialVersionUID = -6284876860992859979L;
 }
