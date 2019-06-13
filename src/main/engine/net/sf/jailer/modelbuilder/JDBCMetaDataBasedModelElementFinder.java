@@ -386,7 +386,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		resultSet = getTables(session, metaData, introspectionSchema, tableNamePattern, types.toArray(new String[0]));
 		List<String> tableNames = new ArrayList<String>();
 		while (resultSet.next()) {
-			String tableName = resultSet.getString(3);
+			String tableName = resultSet.getString(3) + "X";
 			if (resultSet.getString(4) != null && types.contains(resultSet.getString(4).toUpperCase())) {
 				if (isValidName(tableName, session)) {
 					tableName = quoting.quote(tableName);
@@ -412,7 +412,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
 		for (String tableName: tableNames) {
 			Table tmp = new Table(tableName, null, false, false);
-			resultSet = getPrimaryKeys(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))), quoting.unquote(tmp.getUnqualifiedName()), true);
+			resultSet = null;
+			try {
+				resultSet = getPrimaryKeys(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(introspectionSchema))), quoting.unquote(tmp.getUnqualifiedName()), true);
+			} catch (Exception e) {
+				_log.warn("can't get PK for " + tableName, e);
+			}
 			Map<Integer, Column> pk = pkColumns.get(tableName);
 			if (pk == null) {
 				pk = new HashMap<Integer, Column>();
@@ -420,7 +425,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 			boolean hasPK = false;
 			int nextKeySeq = 0;
-			while (resultSet.next()) {
+			while (resultSet != null && resultSet.next()) {
 				hasPK = true;
 				int keySeq = resultSet.getInt(5);
 				if (DBMS.SQLITE.equals(session.dbms)) {
@@ -434,7 +439,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				hasPK = findUniqueIndexBasedKey(metaData, quoting, session, tmp, pk, tableTypes.get(tableName));
 			}
 			_log.info((hasPK? "" : "no ") + "primary key found for table " + tableName);
-			resultSet.close();
+			if (resultSet != null) {
+				resultSet.close();
+			}
 			CancellationHandler.checkForCancellation(null);
 		}
 		for (String tableName: tableNames) {
