@@ -790,7 +790,6 @@ public class ProgressTable extends JTable {
 		}
 	}
 
-	// TODO: render links as curves instead of lines
 	// TODO: open warning dialog if number of collected rows differs from numer of exported rows
 
 	private static final long serialVersionUID = -6284876860992859979L;
