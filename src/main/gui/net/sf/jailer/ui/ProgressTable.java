@@ -26,6 +26,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -702,12 +703,32 @@ public class ProgressTable extends JTable {
 		float ta;
 		float baseX, baseY;
 
+		int mx1, my1;
+		int mx2, my2;
+		
+		if (xx < x) {
+			mx1 = yy - y;
+			my1 = x - xx;
+			mx2 = y - yy;
+			my2 = xx - x;
+		} else {
+			mx1 = y - yy;
+			my1 = xx - x;
+			mx2 = yy - y;
+			my2 = x - xx;
+		}
+		double f = 0.1;
+		mx1 = (int) (mx1 * f + (x + xx) * 0.5);
+		my1 = (int) (my1 * f + (y + yy) * 0.5);
+		mx2 = (int) (mx2 * f + (x + xx) * 0.5);
+		my2 = (int) (my2 * f + (y + yy) * 0.5);
+
 		xPoints[0] = xx;
 		yPoints[0] = yy;
 
 		// build the line vector
-		vecLine[0] = (float) xPoints[0] - x;
-		vecLine[1] = (float) yPoints[0] - y;
+		vecLine[0] = (float) xPoints[0] - (x == xx? x : mx2);
+		vecLine[1] = (float) yPoints[0] - (x == xx? y : my2);
 
 		// build the arrow base vector - normal to the line
 		vecLeft[0] = -vecLine[1];
@@ -728,7 +749,14 @@ public class ProgressTable extends JTable {
 		xPoints[2] = (int) (baseX - th * vecLeft[0]);
 		yPoints[2] = (int) (baseY - th * vecLeft[1]);
 
-		g.drawLine(x, y, (int) baseX, (int) baseY);
+		if (x == xx) {
+			g.drawLine(x, y, (int) baseX, (int) baseY);
+		} else {
+			Path2D.Double path = new Path2D.Double();
+			path.moveTo(x, y);
+			path.curveTo(mx1, my1, mx2, my2, (int) baseX, (int) baseY);
+			g.draw(path);
+		}
 		g.fillPolygon(xPoints, yPoints, 3);
 	}
 
