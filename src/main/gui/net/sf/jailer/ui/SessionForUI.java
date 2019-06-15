@@ -27,7 +27,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
@@ -68,7 +67,7 @@ public class SessionForUI extends Session {
 				} catch (Throwable e) {
 					exception.set(e);
 				}
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						session.connectionDialog.setVisible(false);

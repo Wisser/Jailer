@@ -735,7 +735,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     	if ("DDL".equals(template) && mdTables.size() > 1) {
                     		cancelLoading.set(false);
                     		withWaitDialog = true;
-	                    	SwingUtilities.invokeLater(new Runnable() {
+	                    	UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
 									JDialog dialog;
@@ -766,7 +766,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			                    		}
 			                    	}
 				        		}
-		                    	SwingUtilities.invokeLater(new Runnable() {
+		                    	UIUtil.invokeLater(new Runnable() {
 									@Override
 									public void run() {
 			                    		if (!cancelLoading.get()) {
@@ -1029,13 +1029,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                                 updateDataModelView(table);
                             }
                         }
-                        SwingUtilities.invokeLater(new Runnable() {
+                        UIUtil.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                SwingUtilities.invokeLater(new Runnable() {
+                                UIUtil.invokeLater(new Runnable() {
                                     @Override
                                     public void run() {
-                                        SwingUtilities.invokeLater(new Runnable() {
+                                        UIUtil.invokeLater(new Runnable() {
                                             @Override
                                             public void run() {
                                             	UIUtil.setWaitCursor(MetaDataPanel.this);
@@ -1142,7 +1142,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         JDBCMetaDataBasedModelElementFinder.resetCaches(metaDataSource.getSession());
         setOutline(new ArrayList<OutlineInfo>(), -1);
         proceduresPerSchema.clear();
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtil.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -1353,10 +1353,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 									}
 									leafs = leafList;
 								}
-						        SwingUtilities.invokeLater(new Runnable() {
+						        UIUtil.invokeLater(new Runnable() {
 						            @Override
 						            public void run() {
-								        SwingUtilities.invokeLater(new Runnable() {
+								        UIUtil.invokeLater(new Runnable() {
 								            @Override
 								            public void run() {
 								            	Window wa = SwingUtilities.getWindowAncestor(MetaDataPanel.this);
@@ -1393,7 +1393,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 metaDataTree.expandPath(path);
                 metaDataTree.getSelectionModel().setSelectionPath(path);
                 if (scrollToNode) {
-                	SwingUtilities.invokeLater(new Runnable() {
+                	UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 							scrollToNode(path);
@@ -1599,7 +1599,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	        		splitPane.setDividerLocation(splitPane.getHeight() - prefHeight);
 	        	}
     		}
-    		SwingUtilities.invokeLater(new Runnable() {
+    		UIUtil.invokeLater(new Runnable() {
 	            @Override
 	            public void run() {
 	                TreePath path = metaDataTree.getSelectionPath();

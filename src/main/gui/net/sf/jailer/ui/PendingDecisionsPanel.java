@@ -33,7 +33,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -135,7 +134,7 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 			return;
 		}
 		updatePending = true;
-		SwingUtilities.invokeLater(new Runnable() {
+		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				try {

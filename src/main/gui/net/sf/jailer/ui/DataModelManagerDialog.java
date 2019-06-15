@@ -51,7 +51,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -258,7 +257,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 			@Override
 			public void windowClosed(WindowEvent e) {
-		        SwingUtilities.invokeLater(new Runnable() {
+		        UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						UIUtil.checkTermination();
@@ -386,7 +385,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				final int i = modelList.indexOf(currentModel);
 				if (i >= 0) {
 					dataModelsTable.getSelectionModel().setSelectionInterval(i, i);
-					SwingUtilities.invokeLater(new Runnable() {
+					UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 							Rectangle cellRect = dataModelsTable.getCellRect(i, 1, true);

@@ -108,8 +108,8 @@ import net.sf.jailer.modelbuilder.KnownIdentifierMap;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.QueryBuilderDialog;
-import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
@@ -319,7 +319,7 @@ public abstract class Desktop extends JDesktopPane {
 						for (final RowBrowser rb : tableBrowsers) {
 							if (rb.internalFrame.isSelected()) {
 								rb.browserContentPane.rowsTable.grabFocus();
-								SwingUtilities.invokeLater(new Runnable() {
+								UIUtil.invokeLater(new Runnable() {
 									@Override
 									public void run() {
 										rb.browserContentPane.openQueryBuilder(true);

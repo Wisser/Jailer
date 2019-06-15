@@ -28,6 +28,7 @@ import java.util.Random;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.render.HtmlDataModelRenderer;
+import net.sf.jailer.ui.util.AWTWatchdog;
 import net.sf.jailer.util.LogUtil;
 
 /**
@@ -88,6 +89,7 @@ public class Environment {
 				+ (new File(".multiuser").exists() ? 2 : 0) + (new File("..", "dbeauty").exists() ? 4 : 0)
 				+ (!testCreateTempFile() ? 8 : 0)
 				+ stateOffset;
+		AWTWatchdog.start();
 	}
 
 	private static boolean copyIfNotExists(String f) throws IOException {

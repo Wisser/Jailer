@@ -93,6 +93,7 @@ import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.util.AWTWatchdog;
 import net.sf.jailer.ui.util.HttpUtil;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
@@ -404,7 +405,7 @@ public class UIUtil {
                         synchronized (buffer) {
                             ready[0] = false;
                         }
-                        SwingUtilities.invokeLater(new Runnable() {
+                        UIUtil.invokeLater(new Runnable() {
                             @Override
 							public void run() {
                                 synchronized (buffer) {
@@ -516,7 +517,7 @@ public class UIUtil {
                             fin[0] = true;
                         }
                     }
-                    SwingUtilities.invokeLater(new Runnable() {
+                    UIUtil.invokeLater(new Runnable() {
                         @Override
 						public void run() {
                             synchronized (UIUtil.class) {
@@ -1033,7 +1034,7 @@ public class UIUtil {
     			}
     		}
 		});
-    	SwingUtilities.invokeLater(new Runnable() {
+    	UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				setPopupActive(true);
@@ -1042,13 +1043,23 @@ public class UIUtil {
 		});
 	}
 
+    public static void invokeLater(final Runnable runnable) {
+    	invokeLater(1, runnable);
+    }
+
     public static void invokeLater(final int ticks, final Runnable runnable) {
 		SwingUtilities.invokeLater(new Runnable() {
 			int count = ticks;
 			@Override
 			public void run() {
-				if (--count <= 0) {
-					runnable.run();
+				--count;
+				if (count <= 0) {
+					try {
+						AWTWatchdog.setStarttime(System.currentTimeMillis());
+						runnable.run();
+					} finally {
+						AWTWatchdog.setStarttime(0);
+					}
 				} else {
 					SwingUtilities.invokeLater(this);			
 				}

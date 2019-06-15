@@ -61,6 +61,7 @@ import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
 
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.util.Pair;
@@ -966,7 +967,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 							}
 							pending.set(false);
 							if (!stopped.get()) {
-								SwingUtilities.invokeLater(new Runnable() {
+								UIUtil.invokeLater(new Runnable() {
 									@Override
 									public void run() {
 										updateMenuItemState(true, true);

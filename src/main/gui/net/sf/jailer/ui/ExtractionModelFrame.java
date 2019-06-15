@@ -2081,7 +2081,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						try {
 							extractionModelFrame = createFrame(null, true, true, connectionDialog, executionContext);
 							final ExtractionModelFrame finalExtractionModelFrame = extractionModelFrame;
-							SwingUtilities.invokeLater(new Runnable() {
+							UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
 									try {
@@ -2145,7 +2145,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		extractionModelEditor.graphView.updateTableDetailsMode();
 		extractionModelEditor.graphView.toggleShowDetails(table);
 		extractionModelEditor.graphView.selectTable(table);
-		SwingUtilities.invokeLater(new Runnable() {
+		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				extractionModelEditor.graphView.zoomToFit(0);

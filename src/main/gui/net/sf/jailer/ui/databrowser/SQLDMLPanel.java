@@ -126,7 +126,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			}
 		});
 		
-		SwingUtilities.invokeLater(new Runnable() {
+		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				sqlConsoleButton.grabFocus();

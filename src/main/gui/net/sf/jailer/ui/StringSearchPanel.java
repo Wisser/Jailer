@@ -53,7 +53,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JToggleButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -480,7 +479,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	}
 		
 		if (loadVis) {
-			SwingUtilities.invokeLater(new Runnable() {
+			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					selectSchemas(vis);
@@ -529,7 +528,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private AtomicBoolean loadingDialogisVisible = new AtomicBoolean(false);
 
 	private void selectSchemas(final List<MDSchema> schemas) {
-		SwingUtilities.invokeLater(new Runnable() {
+		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				final List<MDSchema> toLoad = new ArrayList<MDSchema>();
@@ -565,7 +564,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 								}
 								setCheckboxState(checkboxPerSchema.get(schema), schema, false, true);
 							}
-							SwingUtilities.invokeLater(new Runnable() {
+							UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
 									loadingDialog.setVisible(false);
@@ -574,7 +573,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						}
 		
 						private void setCheckboxState(final JCheckBox checkBox, final MDSchema schema, final boolean waitingState, final boolean selected) {
-							SwingUtilities.invokeLater(new Runnable() {
+							UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
 									checkBox.setForeground(waitingState? Color.red : null);

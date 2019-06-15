@@ -48,7 +48,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -251,7 +250,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
 			loadButton.setVisible(false);
 			emptyLineCheckBox.setSelected(true);
 			emptyLineCheckBox.setVisible(false);
-			SwingUtilities.invokeLater(new Runnable() {
+			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					loadSQLScript(scriptFile);
@@ -391,7 +390,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
 							}
 						}
 						bufferedReader.close();
-						SwingUtilities.invokeLater(new Runnable() {
+						UIUtil.invokeLater(new Runnable() {
 							@Override
 							public void run() {
 								addResult(1000L, sort(associationProposer.pickUpNewAssociations()), sort(associationProposer.pickUpKnownAssociations()), null);
@@ -421,7 +420,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
 						final Throwable fe = e;
 						final String title = "Error in file \"" + file.getName() + "\" at line " + lineNr;
 						final Object exceptionContext = (e instanceof IOException || e instanceof FileNotFoundException)? UIUtil.EXCEPTION_CONTEXT_USER_ERROR : null;
-						SwingUtilities.invokeLater(new Runnable() {
+						UIUtil.invokeLater(new Runnable() {
 							@Override
 							public void run() {
 								UIUtil.showException(AssociationProposerView.this, title, fe, exceptionContext);
@@ -441,7 +440,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
     private final int MAX_ERRORS = 1000;
 
     private void addResult(final long progess, final List<Association> associations, final List<Association> knownAssociations, final String error) {
-    	SwingUtilities.invokeLater(new Runnable() {
+    	UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 		    	if (error != null) {

@@ -36,7 +36,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -291,7 +290,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 		queue.add(new Runnable() {
 			@Override
 			public void run() {
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						progressLabel.setVisible(false);
@@ -343,7 +342,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
     private List<Problem> problems = new ArrayList<Problem>();
     
     private void addResult(final Association a, final long count, final String checkQuery, final SQLException exception, final String where) {
-    	SwingUtilities.invokeLater(new Runnable() {
+    	UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 		    	if (count > 0 || exception != null) {

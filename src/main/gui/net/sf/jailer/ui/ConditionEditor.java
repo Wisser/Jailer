@@ -35,7 +35,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
-import javax.swing.SwingUtilities;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -476,7 +475,7 @@ public class ConditionEditor extends EscapableDialog {
 				provider.addAlias(table2alias, table2);
 			}
 		}
-		SwingUtilities.invokeLater(new Runnable() {
+		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				editorPane.grabFocus();

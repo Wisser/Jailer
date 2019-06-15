@@ -36,7 +36,6 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import net.sf.jailer.ui.ExtractionModelEditor;
@@ -82,7 +81,7 @@ public class UndoManager {
 	private void open() {
 		if (!isOpen) {
 			isOpen = true;
-			SwingUtilities.invokeLater(new Runnable() {
+			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					isOpen = false;

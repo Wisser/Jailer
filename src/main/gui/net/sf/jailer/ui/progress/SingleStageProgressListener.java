@@ -141,7 +141,7 @@ public class SingleStageProgressListener implements ProgressListener {
 			private void updateRowTable(final ProgressTable progressTable,
 					final ProgressPanel progressPanel, final long startTime,
 					final long[] nextUpdateTS, final boolean fUpdate) {
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						if (fUpdate) {
@@ -408,7 +408,7 @@ public class SingleStageProgressListener implements ProgressListener {
 		this.lastRowIsUptodate = false;
 		this.cleanupLastLine = true;
 		if (isFinalStage || isErrorStage) {
-			SwingUtilities.invokeLater(new Runnable() {
+			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					synchronized (SingleStageProgressListener.class) {

@@ -74,7 +74,6 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -279,7 +278,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			subject = dataModel.getTables().iterator().next();
 			needsSave = true;
 			if (!isNew && extractionModel.subject == null && extractionModel.getSubjectTableName() != null) {
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						JOptionPane.showMessageDialog(extractionModelFrame,

@@ -334,7 +334,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			public void componentShown(ComponentEvent e) {
 				layeredPaneContent.setSize(jLayeredPane1.getSize());
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						desktopSplitPane.setDividerLocation(0.75);
@@ -2478,13 +2478,13 @@ public class DataBrowser extends javax.swing.JFrame {
             }
             dataBrowser.dispose();
         }
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-		        SwingUtilities.invokeLater(new Runnable() {
+		        UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-					SwingUtilities.invokeLater(new Runnable() {
+					UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 					        dataBrowser.toFront();
@@ -2506,7 +2506,7 @@ public class DataBrowser extends javax.swing.JFrame {
                     final DataModel datamodel;
                     datamodel = new DataModel(executionContext);
                 	final DataBrowser databrowser = new DataBrowser(datamodel, null, "", null, false, executionContext);
-                    SwingUtilities.invokeLater(new Runnable() {
+                    UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 			                try {
@@ -2990,7 +2990,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (detailsAndBorderBrowserTabbedPane.getSelectedComponent() != dataModelPanel) {
 			return;
 		}
-		SwingUtilities.invokeLater(new Runnable() {
+		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -3407,7 +3407,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						defaultSchema.loadTables(true, null, new Runnable() {
 							@Override
 							public void run() {
-								SwingUtilities.invokeLater(new Runnable() {
+								UIUtil.invokeLater(new Runnable() {
 									@Override
 									public void run() {
 										if (createMetaDataPanel != null) {

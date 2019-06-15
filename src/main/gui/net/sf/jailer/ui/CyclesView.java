@@ -373,7 +373,7 @@ public class CyclesView extends javax.swing.JDialog {
 										path.add(path.remove(0));
 									}
 									final int numCycles = cycles.size();
-									SwingUtilities.invokeLater(new Runnable() {
+									UIUtil.invokeLater(new Runnable() {
 										@Override
 										public void run() {
 											findCyclesDialog.label.setText("       " + numCycles + " cycles found so far....     ");
@@ -404,7 +404,7 @@ public class CyclesView extends javax.swing.JDialog {
 							return 0;
 						}
 					});
-					SwingUtilities.invokeLater(new Runnable() {
+					UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 							findCyclesDialog.setVisible(false);
@@ -417,7 +417,7 @@ public class CyclesView extends javax.swing.JDialog {
 						}
 					});
 				} catch (final Throwable t) {
-					SwingUtilities.invokeLater(new Runnable() {
+					UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 							UIUtil.showException(CyclesView.this, "Error", t);

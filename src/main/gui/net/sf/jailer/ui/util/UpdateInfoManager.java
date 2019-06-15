@@ -18,11 +18,11 @@ import java.util.Date;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.ui.Environment;
+import net.sf.jailer.ui.UIUtil;
 
 public class UpdateInfoManager {
 
@@ -96,7 +96,7 @@ public class UpdateInfoManager {
 			        	}
 			        	if (isValid(versions[0].trim())) {
 			        		currentDownloadableRelease = versions[0].trim();
-			        		SwingUtilities.invokeLater(new Runnable() {
+			        		UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
 									if (downloadMenuItem != null) {
@@ -109,7 +109,7 @@ public class UpdateInfoManager {
 								ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(lastTSFile));
 								out.writeLong(System.currentTimeMillis());
 								out.close();
-								SwingUtilities.invokeLater(new Runnable() {
+								UIUtil.invokeLater(new Runnable() {
 									@Override
 									public void run() {
 										infoLabel.setText("Release " + versions[0].trim() + " available");

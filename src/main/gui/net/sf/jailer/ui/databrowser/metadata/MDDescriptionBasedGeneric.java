@@ -36,7 +36,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -48,6 +47,7 @@ import net.sf.jailer.configuration.DatabaseObjectRenderingDescription;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -155,7 +155,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 						}
 					} catch (SQLException e) {
 						final String message = e.getMessage();
-						SwingUtilities.invokeLater(new Runnable() {
+						UIUtil.invokeLater(new Runnable() {
 							@Override
 							public void run() {
 								panel.removeAll();
@@ -166,7 +166,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 						});
 						return;
 					}
-					SwingUtilities.invokeLater(new Runnable() {
+					UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 							ResultSetRenderer details;

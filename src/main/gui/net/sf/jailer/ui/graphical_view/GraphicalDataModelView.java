@@ -58,6 +58,7 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.ExpansionLimitMessage;
 import net.sf.jailer.ui.ExtractionModelEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.undo.CompensationAction;
@@ -1828,7 +1829,7 @@ public class GraphicalDataModelView extends JPanel {
 
 		@Override
 		public void mousePressed(MouseEvent e) {
-			SwingUtilities.invokeLater(new Runnable() {
+			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					modelEditor.exportButton.grabFocus();
@@ -1956,7 +1957,7 @@ public class GraphicalDataModelView extends JPanel {
 										} catch (InterruptedException e) {
 											// ignore
 										}
-										SwingUtilities.invokeLater(new Runnable() {
+										UIUtil.invokeLater(new Runnable() {
 											@Override
 											public void run() {
 												if (modelEditor.graphView == GraphicalDataModelView.this) {

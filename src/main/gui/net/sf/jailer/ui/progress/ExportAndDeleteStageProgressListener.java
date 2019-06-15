@@ -17,14 +17,13 @@ package net.sf.jailer.ui.progress;
 
 import java.util.Set;
 
-import javax.swing.SwingUtilities;
-
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.ui.ProgressPanel;
 import net.sf.jailer.ui.ProgressTable;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.CancellationException;
 
 /**
@@ -90,7 +89,7 @@ public class ExportAndDeleteStageProgressListener implements ProgressListener {
 	private synchronized void switchToDeleteTab() {
 		if (!switched && currentProgressListener == deleteProgressListener) {
 			switched = true;
-			SwingUtilities.invokeLater(new Runnable() {
+			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					progressPanel.switchToDeleteTab();

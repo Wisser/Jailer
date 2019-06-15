@@ -149,8 +149,8 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.QueryBuilderDialog;
-import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
@@ -220,7 +220,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (inputResultSet == null) {
 					if (!session.getConnection().isValid(0)) {
 						if (updateMode) {
-							SwingUtilities.invokeLater(new Runnable() {
+							UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
 									loadingLabel.setText("reconnecting...");
@@ -297,7 +297,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			reconnectIfConnectionIsInvalid(false);
 			CancellationHandler.reset(this);
-			SwingUtilities.invokeLater(new Runnable() {
+			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					Throwable e;
@@ -788,7 +788,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				rowsTable.grabFocus();
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						openQueryBuilder(true);
@@ -800,7 +800,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				rowsTable.grabFocus();
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						openQueryBuilder(false);
@@ -1079,7 +1079,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				final Point pos = new Point(andCondition.getX(), andCondition.getY());
 				SwingUtilities.convertPointToScreen(pos, andCondition.getParent());
 				loadButton.grabFocus();
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						if (andConditionEditor == null) {
@@ -1116,7 +1116,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				@Override
 				public void mousePressed(MouseEvent e) {
 					loadButton.grabFocus();
-					SwingUtilities.invokeLater(new Runnable() {
+					UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 							popup = createPopupMenu(null, -1, 0, 0, false);
@@ -1161,7 +1161,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				loadButton.grabFocus();
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						Point loc = sqlPanel.getLocationOnScreen();
@@ -1209,7 +1209,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				loadButton.grabFocus();
-				SwingUtilities.invokeLater(new Runnable() {
+				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						popup = new JPopupMenu();
@@ -1243,7 +1243,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								sortColumnsCheckBox.setSelected(false);
 								sortColumnsCheckBoxActionPerformed(null);
 								sortColumnsLabel.setText("Natural column order");
-								SwingUtilities.invokeLater(new Runnable() {
+								UIUtil.invokeLater(new Runnable() {
 									@Override
 									public void run() {
 										changeColumnOrder(table);
@@ -1777,7 +1777,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					setEditMode(!isEditMode);
 					updateTableModel();
 					if (repaint != null) {
-						SwingUtilities.invokeLater(repaint);
+						UIUtil.invokeLater(repaint);
 					}
 				}
 			});
@@ -2707,7 +2707,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						
 						final RowCount count = rowCount;
 						
-						SwingUtilities.invokeLater(new Runnable() {
+						UIUtil.invokeLater(new Runnable() {
 							@Override
 							public void run() {
 								String cs = " " + (count.count < 0? "?" : (count.count > MAX_RC)? (">" + MAX_RC) : count.isExact? count.count : (">" + count.count)) + " ";
@@ -3714,7 +3714,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 											CancellationHandler.reset(context);
 											cancelLoadButton.removeActionListener(listener);
 										}
-										SwingUtilities.invokeLater(new Runnable() {
+										UIUtil.invokeLater(new Runnable() {
 											@Override
 											public void run() {
 												if (exception != null && !(exception instanceof CancellationException)) {
@@ -3861,7 +3861,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			                	sk.add(new SortKey(defaultSortColumn, SortOrder.ASCENDING));
 			                }
 							setSortKeys(sk);
-							SwingUtilities.invokeLater(new Runnable() {
+							UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
 									sortChildren();
@@ -3948,7 +3948,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									if (chBr.browserContentPane.rowsTable != null) {
 										final RowSorter chSorter = chBr.browserContentPane.rowsTable.getRowSorter();
 										if (chSorter instanceof TableRowSorter) {
-											SwingUtilities.invokeLater(new Runnable() {
+											UIUtil.invokeLater(new Runnable() {
 												@Override
 												public void run() {
 													((TableRowSorter) chSorter).sort();

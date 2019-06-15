@@ -101,8 +101,8 @@ import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.QueryBuilderDialog;
-import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
@@ -499,7 +499,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         }
                         pending.set(false);
                         if (!stopped.get()) {
-                            SwingUtilities.invokeLater(new Runnable() {
+                            UIUtil.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
                                     updateOutline(true);
@@ -558,7 +558,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 public void run() {
                     running.set(true);
                     updatingStatus.set(false);
-                    SwingUtilities.invokeLater(new Runnable() {
+                    UIUtil.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             editorPane.updateMenuItemState();
@@ -653,7 +653,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         status.running = false;
                         running.set(false);
                         status.updateView(true);
-                        SwingUtilities.invokeLater(new Runnable() {
+                        UIUtil.invokeLater(new Runnable() {
                             @Override
                             public void run() {
                                 editorPane.updateMenuItemState(true, false);
@@ -844,7 +844,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final Table finalResultType = resultType;
                 final boolean finalLoadButtonIsVisible = loadButtonIsVisible;
                 
-                SwingUtilities.invokeLater(new Runnable() {
+                UIUtil.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         final BrowserContentPane rb = new ResultContentPane(datamodel.get(), finalResultType, "", session, null, null,
@@ -880,7 +880,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
                             @Override
 							public void actionPerformed(java.awt.event.ActionEvent evt) {
-                            	SwingUtilities.invokeLater(new Runnable() {
+                            	UIUtil.invokeLater(new Runnable() {
 									@Override
 									public void run() {
 		                            	updateColumnsAndTextView(rb, tabContentPanel);
@@ -1030,7 +1030,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 if (isDDLStatement(sql)) {
                     status.withDDL = true;
                 }
-                SwingUtilities.invokeLater(new Runnable() {
+                UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 		            	removeLastErrorTab();
@@ -1094,7 +1094,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 queue.clear();
             }
             status.updateView(false);
-            SwingUtilities.invokeLater(new Runnable() {
+            UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 		            if (origTabContentPanel != null) {
@@ -1363,7 +1363,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             if (force || !updatingStatus.get()) {
                 updatingStatus.set(true);
                 
-                SwingUtilities.invokeLater(new Runnable() {
+                UIUtil.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -2108,7 +2108,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         } catch (Exception e) {
             logger.info("error", e);
         }
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 		        historyComboBox.setModel(historyComboboxModel());
@@ -2127,7 +2127,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         } catch (Exception e) {
             logger.info("error", e);
         }
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 				historyComboBox.setModel(historyComboboxModel());
@@ -2307,7 +2307,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         initialContentSize = editorPane.getDocument().getLength();
         initialContentHash = editorPane.getText().hashCode();
         consoleContainerPanel.setVisible(false);
-        SwingUtilities.invokeLater(new Runnable() {
+        UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
 		        consoleContainerPanel.setVisible(true);

@@ -35,7 +35,6 @@ import java.util.Set;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -172,7 +171,7 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
 								}
 								@Override
 								public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-									SwingUtilities.invokeLater(new Runnable() {
+									UIUtil.invokeLater(new Runnable() {
 										@Override
 										public void run() {
 											initTableList(dataModel, table, hideIgnored, graphView);
