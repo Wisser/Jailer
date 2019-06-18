@@ -956,7 +956,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			BasicDataSource dataSource = new BasicDataSource(ci.driverClass, ci.url, ci.user, ci.password, 0, urls);
 			Window w = parent instanceof Window? (Window) parent : SwingUtilities.getWindowAncestor(parent);
 			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, null, w);
+			String databaseProductName = null;
 			if (session != null) {
+				try {
+					databaseProductName = session.getMetaData().getDatabaseProductName();
+				} catch (Throwable t) {
+					// ignore
+				}
 				session.shutDown();
 				try {
 					UISettings.s10 = ci.url.replaceAll("[^:]*:([^:]*):.*", "$1");
@@ -970,7 +976,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 							warned = true;
 							final String title = "Unknown DBMS";
 							JOptionPane.showMessageDialog(parent,
-								"Jailer is not configured for DBMS \"" + session.getMetaData().getDatabaseProductName() + "\"\n" +
+								"Jailer is not configured for DBMS \"" + databaseProductName + "\"\n" +
 								"The results may not be optimal.\nFor assistance please contact:\n" + 
 								"\n" + 
 								"Help desk: https://sourceforge.net/p/jailer/discussion\n" + 
