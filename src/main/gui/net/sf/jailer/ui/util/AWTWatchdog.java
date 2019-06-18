@@ -73,6 +73,8 @@ public class AWTWatchdog {
 		}
 	}
 
+	// TODO: show latest "net..jailer" + use invokelater-probes instead
+
 	protected static String sendThreadDump() {
 		ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
 		for (ThreadInfo ti : threadMxBean.dumpAllThreads(true, true)) {
