@@ -353,7 +353,186 @@ union all
     <dbms>
         <id>MySQL</id>
         <displayName>MySQL</displayName>
-        <urlPattern>jdbc:mysql.*|jdbc:mariadb.*</urlPattern>
+        <urlPattern>jdbc:mysql.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>FROM_DUAL</upsertMode>
+        </sqlDialect>
+        <jdbcProperties>
+            <entry>
+                <key>noDatetimeStringSync</key>
+                <value>true</value>
+            </entry>
+        </jdbcProperties>
+		<!-- <fetchSize>-2147483648</fetchSize> -->  <!-- setFetchSize(Integer.MIN_VALUE) should enable result set streaming -->
+        <statisticRenovator>
+            <scriptFileName>script/mysql/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>TINYINT</key>
+                <value>INT</value>
+            </entry>
+            <entry>
+                <key>SMALLINT</key>
+                <value>INT</value>
+            </entry>
+            <entry>
+                <key>MEDIUMINT</key>
+                <value>INT</value>
+            </entry>
+            <entry>
+                <key>INT</key>
+                <value>BIGINT</value>
+            </entry>
+            <entry>
+                <key>INTEGER</key>
+                <value>BIGINT</value>
+            </entry>
+            <entry>
+                <key>tinyint</key>
+                <value>int</value>
+            </entry>
+            <entry>
+                <key>smallint</key>
+                <value>int</value>
+            </entry>
+            <entry>
+                <key>mediumint</key>
+                <value>int</value>
+            </entry>
+            <entry>
+                <key>int</key>
+                <value>bigint</value>
+            </entry>
+            <entry>
+                <key>integer</key>
+                <value>bigint</value>
+            </entry>
+        </typeReplacement>
+        <stringLiteralEscapeSequences>
+            <entry>
+                <key>\0</key>
+                <value>\0</value>
+            </entry>
+            <entry>
+                <key>'</key>
+                <value>\'</value>
+            </entry>
+            <entry>
+                <key>"</key>
+                <value>\"</value>
+            </entry>
+            <entry>
+                <key>\n</key>
+                <value>\n</value>
+            </entry>
+            <entry>
+                <key>\r</key>
+                <value>\r</value>
+            </entry>
+            <entry>
+                <key>\t</key>
+                <value>\t</value>
+            </entry>
+            <entry>
+                <key>\b</key>
+                <value>\b</value>
+            </entry>
+            <entry>
+                <key>\26</key>
+                <value>\Z</value>
+            </entry>
+            <entry>
+                <key>\\</key>
+                <value>\\</value>
+            </entry>
+        </stringLiteralEscapeSequences>
+        <sqlLimitSuffix>LIMIT 0, %s</sqlLimitSuffix>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+
+        <limitTransactionSize>
+        	<limit>30000</limit>
+        	<statementSuffix>limit %1$s</statementSuffix>
+        </limitTransactionSize>
+
+        <identityInserts>false</identityInserts>
+        <emptyBLOBValue>BINARY ''</emptyBLOBValue>
+        <emptyCLOBValue>''</emptyCLOBValue>
+        <emptyNCLOBValue>''</emptyNCLOBValue>
+        <toBlob>0x%s</toBlob>
+        <toClob>'%s'</toClob>
+        <toNClob>'%s'</toNClob>
+        <embeddedLobSizeLimit>32000</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <defaultSchemaQuery>Select DATABASE()</defaultSchemaQuery>
+		<estimatedRowCountQuery>select TABLE_NAME, max(CARDINALITY) from INFORMATION_SCHEMA.STATISTICS where TABLE_SCHEMA = '%s' group by TABLE_NAME</estimatedRowCountQuery>
+		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
+        
+		<virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'</virtualColumnsQuery>
+<!--
+        <importedKeysQuery>SELECT PKCU.TABLE_SCHEMA, null, PKCU.TABLE_NAME, PKCU.COLUMN_NAME, KCU.TABLE_SCHEMA, null, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,        null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU    ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU    ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG        AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA       AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME AND PKCU.TABLE_NAME = RC.REFERENCED_TABLE_NAME AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION  WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'  ORDER BY KCU.ORDINAL_POSITION</importedKeysQuery>
+        <primaryKeysQuery>SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME   FROM   INFORMATION_SCHEMA.TABLE_CONSTRAINTS C   JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU     ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA   AND KCU.TABLE_NAME = C.TABLE_NAME    AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME   WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'       AND  KCU.TABLE_SCHEMA = '${SCHEMA}'   ORDER BY KCU.ORDINAL_POSITION</primaryKeysQuery>
+-->
+        <nullableContraint>NULL</nullableContraint>
+        <identifierQuoteString>`</identifierQuoteString>
+        <ddlQuery>SHOW CREATE ${type} `${schema}`.`${table}`</ddlQuery>
+        <explainPrepare></explainPrepare>
+        <explainQuery>explain %1$s</explainQuery>
+        <explainCleanup></explainCleanup>
+        <functionSourceQuery>SHOW CREATE FUNCTION %1$s.%2$s</functionSourceQuery>
+        <procedureSourceQuery>SHOW CREATE PROCEDURE %1$s.%2$s</procedureSourceQuery>
+        <constraintsQuery>
+Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
+(
+	Select concat('pk_', KCU.TABLE_NAME) CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'PK' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 1 TYPEPOS
+    From 
+        INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
+    join
+        INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
+            ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG
+            AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA
+            AND KCU.TABLE_NAME = C.TABLE_NAME
+            AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME
+    where
+        C.CONSTRAINT_TYPE = 'PRIMARY KEY'
+        AND KCU.TABLE_SCHEMA = '%1$s'
+union all
+	Select C.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'Unique' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 2 TYPEPOS
+    From 
+        INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
+    join
+        INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
+            ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG
+            AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA
+            AND KCU.TABLE_NAME = C.TABLE_NAME
+            AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME
+    where
+        C.CONSTRAINT_TYPE = 'UNIQUE'
+        AND KCU.TABLE_SCHEMA = '%1$s'
+) pk order by TYPEPOS, CNAME, TNAME, POS, COLNAME
+		</constraintsQuery>
+        <objectRenderers>
+       		<name>Triggers</name>
+        	<iconURL>/net/sf/jailer/ui/resource/triggers.png</iconURL>
+			<itemDescription>
+	        	<iconURL>/net/sf/jailer/ui/resource/trigger.png</iconURL>
+			</itemDescription>
+			<listQuery>SHOW TRIGGERS FROM %1$s</listQuery>
+		</objectRenderers>
+    </dbms>
+
+    <!-- for MySQL -->
+    <dbms>
+        <id>MySQL</id>
+        <displayName>MariaDB</displayName>
+        <urlPattern>jdbc:mariadb.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
