@@ -528,9 +528,9 @@ union all
 		</objectRenderers>
     </dbms>
 
-    <!-- for MySQL -->
+    <!-- for MariaDB -->
     <dbms>
-        <id>MySQL</id>
+        <id>MariaDB</id>
         <displayName>MariaDB</displayName>
         <urlPattern>jdbc:mariadb.*</urlPattern>
         <sqlDialect>
