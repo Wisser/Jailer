@@ -1044,7 +1044,7 @@ public class UIUtil {
 	}
 
     public static void invokeLater(final Runnable runnable) {
-    	invokeLater(1, runnable);
+    	SwingUtilities.invokeLater(runnable);
     }
 
     public static void invokeLater(final int ticks, final Runnable runnable) {
@@ -1054,12 +1054,7 @@ public class UIUtil {
 			public void run() {
 				--count;
 				if (count <= 0) {
-					try {
-						AWTWatchdog.setStarttime(System.currentTimeMillis());
-						runnable.run();
-					} finally {
-						AWTWatchdog.setStarttime(0);
-					}
+					runnable.run();
 				} else {
 					SwingUtilities.invokeLater(this);			
 				}

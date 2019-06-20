@@ -7,7 +7,11 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.regex.Pattern;
 
+import javax.swing.SwingUtilities;
+
+import net.sf.jailer.JailerVersion;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.ui.UIUtil;
 
@@ -32,7 +36,6 @@ public class AWTWatchdog {
 						} catch (InterruptedException e) {
 							// ignore
 						}
-						
 						long st = getStarttime();
 						if (st != 0 && st + MAX_DELAY < System.currentTimeMillis()) {
 							if (!issueSent) {
@@ -45,7 +48,7 @@ public class AWTWatchdog {
 							        t.printStackTrace(pw);
 							        dump = sw.toString();
 								}
-								dump = "AWT-Thread hanging: " + dump;
+								dump = JailerVersion.VERSION + " " + dump;
 								Session._log.error(dump);
 								final int MAX_CL = 1000;
 					            String iMsg = dump;
@@ -63,6 +66,16 @@ public class AWTWatchdog {
 								return;
 							}
 						}
+						if (st == 0) {
+							setStarttime(System.currentTimeMillis());
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									setStarttime(0);
+								}
+							});
+						}
+						
 					}
 				}
 			}, "AWT-WD");
@@ -73,12 +86,10 @@ public class AWTWatchdog {
 		}
 	}
 
-	// TODO: show latest "net..jailer" + use invokelater-probes instead
-
 	protected static String sendThreadDump() {
 		ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
 		for (ThreadInfo ti : threadMxBean.dumpAllThreads(true, true)) {
-			if (ti.getThreadName() != null && ti.getThreadName().toLowerCase().startsWith("awt-ev")) {
+			if (ti.getThreadName() != null && ti.getThreadName().toLowerCase().startsWith("awt-event")) {
 
 				StringBuilder sb = new StringBuilder(
 						"\"" + ti.getThreadName() + "\"" + " Id=" + ti.getThreadId() + " " + ti.getThreadState());
@@ -95,8 +106,11 @@ public class AWTWatchdog {
 					sb.append(" (in native)");
 				}
 				sb.append('\n');
+				final String pck = "net.sf.jailer";
+				final String pckPtrn = "net\\.sf\\.jailer";
+				final String mrk = "nonjlrmrk";
 				int i = 0;
-				for (; i < ti.getStackTrace().length && i < 100; i++) {
+				for (; i < ti.getStackTrace().length; i++) {
 					StackTraceElement ste = ti.getStackTrace()[i];
 					sb.append("\tat " + ste.toString());
 					sb.append('\n');
@@ -125,6 +139,9 @@ public class AWTWatchdog {
 							sb.append('\n');
 						}
 					}
+					if (i == 0 && !ste.toString().contains(pck)) {
+						sb.append(mrk);
+					}
 				}
 				if (i < ti.getStackTrace().length) {
 					sb.append("\t...");
@@ -142,8 +159,9 @@ public class AWTWatchdog {
 				}
 				sb.append('\n');
 
-				System.err.print("Error: AWT-Thread hanging: " + sb.toString());
-				return sb.toString();
+				String dump = Pattern.compile(mrk + "(?d)(.*?)\\bat " + pckPtrn, Pattern.DOTALL).matcher(sb.toString()).replaceFirst("... at " + pck + ".");
+				System.err.print("Error: AWT-Thread hanging: " + dump);
+				return dump;
 			}
 		}
 		return "no awt-thread?";
@@ -155,7 +173,7 @@ public class AWTWatchdog {
 		return starttime;
 	}
 
-	public synchronized static void setStarttime(long starttime) {
+	private synchronized static void setStarttime(long starttime) {
 		AWTWatchdog.starttime = starttime;
 	}
 
