@@ -350,7 +350,6 @@ public class ProgressTable extends JTable {
 		
 		boolean isVisible = r.y <= visible.y + visible.height;
 		return isVisible;
-//		return visible.y <= r.y && visible.y + visible.height >= r.y + r.height;
 	}
 
 	/**
@@ -717,7 +716,7 @@ public class ProgressTable extends JTable {
 			mx2 = yy - y;
 			my2 = x - xx;
 		}
-		double f = 0.1;
+		double f = 0.07;
 		mx1 = (int) (mx1 * f + (x + xx) * 0.5);
 		my1 = (int) (my1 * f + (y + yy) * 0.5);
 		mx2 = (int) (mx2 * f + (x + xx) * 0.5);

@@ -1154,6 +1154,4 @@ public class DBMS {
 		return true;
 	}
 
-	// TODO: separate config for redshift and mariadb
-
 }

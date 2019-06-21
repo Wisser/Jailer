@@ -1,4 +1,4 @@
-8.7.4
+8.7.5
   - Fix for ticket 39 "Oracle queries are going failed". https://sourceforge.net/p/jailer/bugs/39/ 
 
 8.7.3
