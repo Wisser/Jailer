@@ -1,5 +1,6 @@
 8.7.5
   - Fix for ticket 39 "Oracle queries are going failed". https://sourceforge.net/p/jailer/bugs/39/ 
+  - Minor bug fixes.
 
 8.7.3
   - Fix: the working table scope "local" did not work correctly with PostgreSQL.
