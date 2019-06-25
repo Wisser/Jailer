@@ -159,7 +159,7 @@ public class AWTWatchdog {
 				}
 				sb.append('\n');
 
-				String dump = Pattern.compile(mrk + "(?d)(.*?)\\bat " + pckPtrn, Pattern.DOTALL).matcher(sb.toString()).replaceFirst("... at " + pck + ".");
+				String dump = Pattern.compile(mrk + "(?d)(.*?)\\b" + pckPtrn, Pattern.DOTALL).matcher(sb.toString()).replaceFirst(".. at " + pck);
 				System.err.print("Error: AWT-Thread hanging: " + dump);
 				return dump;
 			}
