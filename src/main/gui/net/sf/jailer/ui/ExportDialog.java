@@ -2006,7 +2006,6 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add(toFileName(delete.getText().trim()));
 		}
 		if (checkPKs.isSelected()) {
-			// TODO add explicit checkPK button/tool
 			args.add("-check-primary-keys");
 		}
 		if (insertIncrementally.isSelected()) {
