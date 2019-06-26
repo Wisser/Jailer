@@ -1,4 +1,4 @@
-# Name; Upsert; Primary key; ; Author
+# Name; Upsert; Primary Key; ; Author
 BONUS; N; ENAME VARCHAR(10); JOB VARCHAR(9); ; Demo; ; 
 DEPARTMENT; N; DEPTNO INTEGER; ; Demo; ; 
 EMPLOYEE; N; EMPNO INTEGER; ; Demo; ; 
