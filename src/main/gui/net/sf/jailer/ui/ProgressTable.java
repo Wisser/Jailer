@@ -691,8 +691,8 @@ public class ProgressTable extends JTable {
 	 *            The y location of the "head" of the arrow
 	 */
 	private void drawArrow(Graphics2D g, int x, int y, int xx, int yy) {
-		float arrowWidth = 6.0f;
-		float theta = 0.423f;
+		float arrowWidth = 8.0f;
+		float theta = 0.623f;
 		int[] xPoints = new int[3];
 		int[] yPoints = new int[3];
 		float[] vecLine = new float[2];
@@ -716,14 +716,15 @@ public class ProgressTable extends JTable {
 			mx2 = yy - y;
 			my2 = x - xx;
 		}
-		double f = 0.07;
+		double f = 0.03;
 		mx1 = (int) (mx1 * f + (x + xx) * 0.5);
 		my1 = (int) (my1 * f + (y + yy) * 0.5);
+		f = 0.04;
 		mx2 = (int) (mx2 * f + (x + xx) * 0.5);
 		my2 = (int) (my2 * f + (y + yy) * 0.5);
 
 		xPoints[0] = xx;
-		yPoints[0] = yy;
+		yPoints[0] = yy + 4;
 
 		// build the line vector
 		vecLine[0] = (float) xPoints[0] - (x == xx? x : mx2);
@@ -749,7 +750,7 @@ public class ProgressTable extends JTable {
 		yPoints[2] = (int) (baseY - th * vecLeft[1]);
 
 		if (x == xx) {
-			g.drawLine(x, y, (int) baseX, (int) baseY);
+			g.drawLine(x, y + 2, (int) baseX, (int) baseY);
 		} else {
 			Path2D.Double path = new Path2D.Double();
 			path.moveTo(x, y + 4);
