@@ -401,7 +401,7 @@ public class SingleStageProgressListener implements ProgressListener {
 	 *            the stage
 	 */
 	@Override
-	public synchronized void newStage(String stage, boolean isErrorStage, final boolean isFinalStage) {
+	public synchronized void newStage(String stage, final boolean isErrorStage, final boolean isFinalStage) {
 		this.currentStep = stage;
 		this.isErrorStage = isErrorStage;
 		this.stopClock = isFinalStage;
@@ -417,7 +417,7 @@ public class SingleStageProgressListener implements ProgressListener {
 						readjustColumnWidth = true;
 					}
 					addOrUpdateRows();
-					if (forExportStage && isFinalStage) {
+					if (forExportStage && isFinalStage && !isErrorStage) {
 						if (!warned && exportedRows.get() != finalCollectedRows) {
 							warned = true;
 							String message =
