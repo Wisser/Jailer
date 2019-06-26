@@ -137,7 +137,13 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				}
 			});
 		}
-		setCurrentRow(rowIndex, showSpinner);
+        if (jScrollPane1.getHorizontalScrollBar() != null) {
+        	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
+        }
+        if (jScrollPane1.getVerticalScrollBar() != null) {
+        	jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
+        }
+        setCurrentRow(rowIndex, showSpinner);
 	}
 
 	private final Font font = new JLabel().getFont();

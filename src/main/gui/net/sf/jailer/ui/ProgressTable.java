@@ -752,7 +752,7 @@ public class ProgressTable extends JTable {
 			g.drawLine(x, y, (int) baseX, (int) baseY);
 		} else {
 			Path2D.Double path = new Path2D.Double();
-			path.moveTo(x, y);
+			path.moveTo(x, y + 4);
 			path.curveTo(mx1, my1, mx2, my2, (int) baseX, (int) baseY);
 			g.draw(path);
 		}
@@ -788,8 +788,6 @@ public class ProgressTable extends JTable {
 			col.setMaxWidth(w);
 		}
 	}
-
-	// TODO: open warning dialog if number of collected rows differs from numer of exported rows
 
 	private static final long serialVersionUID = -6284876860992859979L;
 }

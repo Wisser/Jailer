@@ -51,9 +51,10 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
 	private static final long serialVersionUID = -6737420167295938488L;
 
-	/** Creates new form SqlErrorDialog */
+	/** Creates new form SqlErrorDialog 
+	 * @param isWarning */
 	@SuppressWarnings("serial")
-	public SqlErrorDialog(Window parent, String message, String sql, boolean isFormatted, boolean sqlError, String title) {
+	public SqlErrorDialog(Window parent, String message, String sql, boolean isFormatted, boolean sqlError, String title, boolean isWarning) {
 		super(parent, ModalityType.APPLICATION_MODAL);
 		this.sqlError = sqlError;
 		this.message = message;
@@ -67,6 +68,11 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 			}
 		}
 		initComponents();
+
+		if (isWarning) {
+			jPanel1.setVisible(false);
+			copyButton.setVisible(false);
+		}
 		
 		updateInfoPanel.setVisible(false);
 		
@@ -242,6 +248,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.ipadx = 1;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.5;
         getContentPane().add(jScrollPane2, gridBagConstraints);
 

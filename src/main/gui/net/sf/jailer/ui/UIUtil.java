@@ -631,7 +631,8 @@ public class UIUtil {
     }
 
     public static Object EXCEPTION_CONTEXT_USER_ERROR = new Object();
-
+    public static Object EXCEPTION_CONTEXT_USER_WARNING = new Object();
+    
     /**
      * Shows an exception.
      * 
@@ -684,7 +685,17 @@ public class UIUtil {
             String message = ((SqlException) t).message;
             String sql = ((SqlException) t).sqlStatement;
 			new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent),
-					((SqlException) t).isFormatted()? message : lineWrap(message, 120).toString(), sql, ((SqlException) t).isFormatted(), true, null);
+					((SqlException) t).isFormatted()? message : lineWrap(message, 120).toString(), sql, ((SqlException) t).isFormatted(), true, null, false);
+			if (message != null && message.startsWith("-")) {
+				if (sql != null && sql.startsWith("-")) {
+					final int MAX_CL = 1000;
+		            String iMsg = message.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION;
+		            if (iMsg.length() > MAX_CL) {
+		            	iMsg = iMsg.substring(0, MAX_CL);
+		            }
+					sendIssue("internal", iMsg);
+				}
+			}
             return;
         }
         if (t instanceof CancellationException) {
@@ -722,7 +733,7 @@ public class UIUtil {
         }
 
         new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent), msg.toString(),
-                contextDesc, false, false, context == EXCEPTION_CONTEXT_USER_ERROR ? title : null);
+                contextDesc, false, false, context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_USER_WARNING? title : null, context == EXCEPTION_CONTEXT_USER_WARNING);
     }
 
     private static StringBuilder lineWrap(String message, int maxwidth) {

@@ -401,13 +401,14 @@ public class SingleStageProgressListener implements ProgressListener {
 	 *            the stage
 	 */
 	@Override
-	public synchronized void newStage(String stage, boolean isErrorStage, boolean isFinalStage) {
+	public synchronized void newStage(String stage, boolean isErrorStage, final boolean isFinalStage) {
 		this.currentStep = stage;
 		this.isErrorStage = isErrorStage;
 		this.stopClock = isFinalStage;
 		this.lastRowIsUptodate = false;
 		this.cleanupLastLine = true;
 		if (isFinalStage || isErrorStage) {
+			final long finalCollectedRows = collectedRows;
 			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -416,10 +417,23 @@ public class SingleStageProgressListener implements ProgressListener {
 						readjustColumnWidth = true;
 					}
 					addOrUpdateRows();
+					if (forExportStage && isFinalStage) {
+						if (!warned && exportedRows.get() != finalCollectedRows) {
+							warned = true;
+							String message =
+									"Warning: The number of rows collected (" + finalCollectedRows + ") differs from that of the exported ones (" + exportedRows.get() + ").\n \n" +
+									"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique and never null.\n \n" +
+									"It is recommended to check the integrity of the primary keys\n" +
+									"To do this, select the option \"Check primary key\" in the export dialog.";
+							UIUtil.showException(progressTable, "Warning", new RuntimeException(message), UIUtil.EXCEPTION_CONTEXT_USER_WARNING);
+						}
+					}
 				}
 			});
 		}
 	}
+
+	private boolean warned = false;
 
 	private boolean confirmInsert() {
 		StringBuilder sb = new StringBuilder();
