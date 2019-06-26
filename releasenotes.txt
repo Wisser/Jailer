@@ -1,3 +1,6 @@
+8.7.6
+  - A warning message appears if the number of collected rows differs from the number of exported ones.
+
 8.7.5
   - Fix for ticket 39 "Oracle queries are going failed". https://sourceforge.net/p/jailer/bugs/39/ 
   - Minor bug fixes.
