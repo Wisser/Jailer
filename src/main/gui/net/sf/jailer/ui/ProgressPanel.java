@@ -166,6 +166,8 @@ public class ProgressPanel extends javax.swing.JPanel {
 		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.weighty = 1.0;
 		rowsPerTablePanel.add(l, gridBagConstraints);
+		
+		rowsPerTablePanel.repaint();
 	}
 
 	private int currentlySelectedRow = -1;
