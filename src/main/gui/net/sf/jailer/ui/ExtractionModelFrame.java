@@ -1308,11 +1308,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								}
 								
 								dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
-								String tableInConflict = ddlCreator.getTableInConflict(dataSource, dataSource.dbms);
+								String tableInConflict = exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)? ddlCreator.getTableInConflict(dataSource, dataSource.dbms) : null;
 								if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
 									JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
-								}
-								else {
+								} else {
 									if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 										"Automatic creation of working-tables failed!\n" +
 										"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n" +
@@ -1329,6 +1328,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 											progressListener.stop();
 										}
 									}
+								}
+								try {
+									exportDialog.dispose();
+								} catch (Throwable t) {
+									// ignore
 								}
 							}
 						}

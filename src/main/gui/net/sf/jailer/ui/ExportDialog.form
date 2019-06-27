@@ -475,7 +475,7 @@
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="80" green="80" red="80" type="rgb"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="  (no write-access required)"/>
+                        <Property name="text" type="java.lang.String" value="  (no update-privilege required)"/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
