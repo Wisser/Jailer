@@ -62,7 +62,6 @@ import net.sf.jailer.JailerVersion;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
-import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -801,16 +800,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				DataModel dataModel = new DataModel(executionContext);
 				AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, dataModel, executionContext);
 				boolean[] isDefaultSchema = new boolean[1];
-				String[] defaultSchema = new String[1];
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				List<String> schemas;
-				try {
-					CancellationHandler.reset(null);
-					schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
-				} finally {
-					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				}
-				if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
+				if (analyseOptionsDialog.edit(dbConnectionDialog, isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
 					String schema = analyseOptionsDialog.getSelectedSchema();
 					if (schema != null) {
 						args.add("-schema");

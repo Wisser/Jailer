@@ -15,14 +15,18 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.CardLayout;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.UISettings;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.CsvFile.LineFilter;
@@ -44,18 +48,42 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 	private int numAssociations = 0;
 	private int numManTables = 0;
 	private int numManAssociations = 0;
-	
+
+	@SuppressWarnings("serial")
+	private final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(
+			this, "Retrieving schema names...") {
+
+		@Override
+		protected void onError(Throwable error) {
+			UIUtil.showException(this, "Error", error);
+			AnalyseOptionsDialog.this.setVisible(false);
+			AnalyseOptionsDialog.this.dispose();
+		}
+
+		@Override
+		protected void onCancellation() {
+			AnalyseOptionsDialog.this.setVisible(false);
+			AnalyseOptionsDialog.this.dispose();
+		}
+
+	};
+
+	private final Object LOCK = new Object();
+
 	/**
 	 * true if user clicks OK button.
 	 */
 	private boolean ok;
-	
+
 	/** Creates new form AnalyseOptionsDialog 
 	 */
 	public AnalyseOptionsDialog(java.awt.Frame parent, DataModel dataModel, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
 		initComponents();
-		
+
+        jPanel4.add(concurrentTaskControl, "cctc");
+        ((CardLayout) jPanel4.getLayout()).show(jPanel4, "cctc");
+        
 		AutoCompletion.enable(schemaComboBox);
 		
 		List<Line> tables = new CsvFile(new File(DataModel.getTablesFile(executionContext))).getLines();
@@ -147,49 +175,80 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		analyseSynonyms.setSelected(withSynonyms);
 	}
 
-	public boolean edit(List<String> schemas, String defaultSchema, boolean[] isDefaultSchema, String currentUser) {
-		return edit(schemas, defaultSchema, null, isDefaultSchema, currentUser);
+	public boolean edit(DbConnectionDialog dbConnectionDialog, boolean[] isDefaultSchema, String currentUser) throws Exception {
+		return edit(dbConnectionDialog, null, isDefaultSchema, currentUser);
 	}
 
-	public boolean edit(List<String> schemas, String defaultSchema, String initiallySelectedSchema, boolean[] isDefaultSchema, String currentUser) {
-		isDefaultSchema[0] = false;
-		if (schemas.size() == 1) {
-			if (schemas.get(0).equalsIgnoreCase(currentUser)) {
-				isDefaultSchema[0] = true;
-			}
+	public boolean edit(final DbConnectionDialog dbConnectionDialog, final String initiallySelectedSchema, final boolean[] isDefaultSchema, final String currentUser) throws Exception {
+		final String[] defaultSchemaF = new String[1];
+		final List<String> schemas;
+		synchronized (LOCK) {
+			schemas = new ArrayList<String>();
 		}
-		if (schemas.isEmpty()) {
-			isDefaultSchema[0] = true;
-			schemaLabel.setVisible(false);
-			schemaComboBox.setVisible(false);
-		} else {
-			DefaultComboBoxModel model = new DefaultComboBoxModel(schemas.toArray());
-			schemaComboBox.setModel(model);
-			if (initiallySelectedSchema != null) {
-				schemaComboBox.setSelectedItem(initiallySelectedSchema);
-			} else if (defaultSchema != null) {
-				schemaComboBox.setSelectedItem(defaultSchema);
+		concurrentTaskControl.start(new ConcurrentTaskControl.Task() {
+			@Override
+			public void run() throws Throwable {
+				CancellationHandler.reset(null);
+				List<String> dbSchemas = dbConnectionDialog.getDBSchemas(defaultSchemaF);
+				synchronized (LOCK) {
+					schemas.addAll(dbSchemas);
+				}
+
+				UIUtil.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String defaultSchema;
+						synchronized (LOCK) {
+							defaultSchema = defaultSchemaF[0];
+							isDefaultSchema[0] = false;
+							if (schemas.size() == 1) {
+								if (schemas.get(0).equalsIgnoreCase(currentUser)) {
+									isDefaultSchema[0] = true;
+								}
+							}
+							if (schemas.isEmpty()) {
+								isDefaultSchema[0] = true;
+								schemaLabel.setVisible(false);
+								schemaComboBox.setVisible(false);
+							} else {
+								DefaultComboBoxModel model = new DefaultComboBoxModel(schemas.toArray());
+								schemaComboBox.setModel(model);
+								if (initiallySelectedSchema != null) {
+									schemaComboBox.setSelectedItem(initiallySelectedSchema);
+								} else if (defaultSchema != null) {
+									schemaComboBox.setSelectedItem(defaultSchema);
+								}
+							}
+
+					        ((CardLayout) jPanel4.getLayout()).show(jPanel4, "main");
+							okButton.grabFocus();
+						}
+					}
+				});
 			}
-		}
+		});
+
 		ok = false;
-		okButton.grabFocus();
 		
 		pack();
 		setVisible(true);
 
-		if (ok) {
-			selectedSchema = null;
-			if (!schemas.isEmpty()) {
-				if (schemaComboBox.getSelectedItem() instanceof String) {
-					selectedSchema = (String) schemaComboBox.getSelectedItem();
+		synchronized (LOCK) {
+			String defaultSchema = defaultSchemaF[0];
+			if (ok) {
+				selectedSchema = null;
+				if (!schemas.isEmpty()) {
+					if (schemaComboBox.getSelectedItem() instanceof String) {
+						selectedSchema = (String) schemaComboBox.getSelectedItem();
+					}
+				}
+				if (selectedSchema != null && selectedSchema.equalsIgnoreCase(defaultSchema)) {
+					isDefaultSchema[0] = true;
 				}
 			}
-			if (selectedSchema != null && selectedSchema.equalsIgnoreCase(defaultSchema)) {
-				isDefaultSchema[0] = true;
+			if (ok) {
+				++UISettings.s7;
 			}
-		}
-		if (ok) {
-			++UISettings.s7;
 		}
 		return ok;
 	}
@@ -220,6 +279,8 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jPanel4 = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         removeCurrentTablesCheckBox = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
@@ -240,6 +301,10 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Analyze Database");
         getContentPane().setLayout(new java.awt.GridBagLayout());
+
+        jPanel4.setLayout(new java.awt.CardLayout());
+
+        jPanel5.setLayout(new java.awt.GridBagLayout());
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED), "Preparation"));
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -320,7 +385,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
-        getContentPane().add(jPanel2, gridBagConstraints);
+        jPanel5.add(jPanel2, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -355,20 +420,20 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
-        getContentPane().add(jPanel1, gridBagConstraints);
+        jPanel5.add(jPanel1, gridBagConstraints);
 
         schemaLabel.setText(" Analyze schema ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
-        getContentPane().add(schemaLabel, gridBagConstraints);
+        jPanel5.add(schemaLabel, gridBagConstraints);
 
         schemaComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        getContentPane().add(schemaComboBox, gridBagConstraints);
+        jPanel5.add(schemaComboBox, gridBagConstraints);
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED), "Analyse tables and ..."));
         jPanel3.setLayout(new java.awt.GridBagLayout());
@@ -430,7 +495,17 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
-        getContentPane().add(jPanel3, gridBagConstraints);
+        jPanel5.add(jPanel3, gridBagConstraints);
+
+        jPanel4.add(jPanel5, "main");
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        getContentPane().add(jPanel4, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -452,11 +527,13 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 	private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 		ok = true;
 		setVisible(false);
+		dispose();
 	}//GEN-LAST:event_okButtonActionPerformed
 
 	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
 		ok = false;
 		setVisible(false);
+		dispose();
 	}//GEN-LAST:event_cancelButtonActionPerformed
 
 	private void analyseAliasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyseAliasActionPerformed
@@ -481,6 +558,8 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JCheckBox keepManAssociationsCheckBox;
     private javax.swing.JCheckBox keepManTablesCheckBox;
     private javax.swing.JButton okButton;

@@ -83,7 +83,6 @@ import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
-import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.PrintUtil;
 
 /**
@@ -1156,16 +1155,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					
 						AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(ExtractionModelFrame.this, extractionModelEditor.dataModel, executionContext);
 						boolean[] isDefaultSchema = new boolean[1];
-						String[] defaultSchema = new String[1];
-						UIUtil.setWaitCursor(ExtractionModelFrame.this);
-						List<String> schemas;
-						try {
-							CancellationHandler.reset(null);
-							schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
-						} finally {
-							UIUtil.resetWaitCursor(ExtractionModelFrame.this);
-						}
-						if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
+						if (analyseOptionsDialog.edit(dbConnectionDialog, isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
 							String schema = analyseOptionsDialog.getSelectedSchema();
 							if (schema != null) {
 								args.add("-schema");

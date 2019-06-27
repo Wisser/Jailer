@@ -2560,16 +2560,7 @@ public class DataBrowser extends javax.swing.JFrame {
             analyseOptionsDialog.setInitiallyWithViews(withViews);
             analyseOptionsDialog.setInitiallyWithSynonyms(withSynonyms);
             boolean[] isDefaultSchema = new boolean[1];
-            String[] defaultSchema = new String[1];
-            List<String> schemas;
-            UIUtil.setWaitCursor(this);
-            try {
-				CancellationHandler.reset(null);
-                schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
-            } finally {
-            	UIUtil.resetWaitCursor(this);
-            }
-            if (analyseOptionsDialog.edit(schemas, defaultSchema[0], schemaName == null? null : Quoting.staticUnquote(schemaName), isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
+            if (analyseOptionsDialog.edit(dbConnectionDialog, schemaName == null? null : Quoting.staticUnquote(schemaName), isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
                 String schema = analyseOptionsDialog.getSelectedSchema();
                 if (schema != null) {
                     args.add("-schema");
