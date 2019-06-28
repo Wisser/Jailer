@@ -467,35 +467,35 @@ public class DataModel {
 						} catch (Exception e) {
 							// ignore
 						}
-						// order columns
-						if (!columnOrderPrio.isEmpty()) {
-							final Map<Column, ColumnOrderPriority> prio = new IdentityHashMap<>();
-							String prefix = line.cells.get(0).trim().length() == 0? "" : (line.cells.get(0).trim() + ".");
-							for (Column column: columns) {
-								ColumnOrderPriority columnOrderPriority = columnOrderPrio.get(prefix + Quoting.normalizeIdentifier(column.name));
-								if (columnOrderPriority == null) {
-									columnOrderPriority = columnOrderPrio.get(Quoting.normalizeIdentifier(column.name));
-								}
-								prio.put(column, columnOrderPriority);
+					}
+					// order columns
+					if (!columnOrderPrio.isEmpty()) {
+						final Map<Column, ColumnOrderPriority> prio = new IdentityHashMap<>();
+						String prefix = line.cells.get(0).trim().length() == 0? "" : (line.cells.get(0).trim() + ".");
+						for (Column column: columns) {
+							ColumnOrderPriority columnOrderPriority = columnOrderPrio.get(prefix + Quoting.normalizeIdentifier(column.name));
+							if (columnOrderPriority == null) {
+								columnOrderPriority = columnOrderPrio.get(Quoting.normalizeIdentifier(column.name));
 							}
-							Collections.sort(columns, new Comparator<Column>() {
-								@Override
-								public int compare(Column a, Column b) {
-									ColumnOrderPriority prioA = prio.get(a);
-									ColumnOrderPriority prioB = prio.get(b);
-									if (prioA != prioB) {
-										if (prioA == ColumnOrderPriority.HI) {
- 											return -1;
-										} else if (prioA == ColumnOrderPriority.LO) {
-											return 1;
-										} else {
-											return prioB == ColumnOrderPriority.HI? 1 : -1;
-										}
-									}
-									return 0;
-								}
-							});
+							prio.put(column, columnOrderPriority);
 						}
+						Collections.sort(columns, new Comparator<Column>() {
+							@Override
+							public int compare(Column a, Column b) {
+								ColumnOrderPriority prioA = prio.get(a);
+								ColumnOrderPriority prioB = prio.get(b);
+								if (prioA != prioB) {
+									if (prioA == ColumnOrderPriority.HI) {
+											return -1;
+									} else if (prioA == ColumnOrderPriority.LO) {
+										return 1;
+									} else {
+										return prioB == ColumnOrderPriority.HI? 1 : -1;
+									}
+								}
+								return 0;
+							}
+						});
 					}
 					Table table = tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
 					if (table != null) {

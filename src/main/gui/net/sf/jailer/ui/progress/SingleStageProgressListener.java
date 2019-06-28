@@ -30,7 +30,6 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -70,6 +69,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	 * Today.
 	 */
 	private int today = -1, lastUpdated = -1;
+	
 	private boolean lastRowIsUptodate = false;
 	private boolean readjustColumnWidth = false;
 	
@@ -97,6 +97,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	private long timeDelay = 0;
 	private final Set<String> targetSchemaSet;
 	private final boolean forExportStage;
+	private final boolean checkPK;
 
 	/**
 	 * Constructor.
@@ -105,13 +106,14 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	 *            table showing collected rows
 	 * @param targetSchemaSet 
 	 */
-	public SingleStageProgressListener(final ProgressTable progressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet, boolean forExportStage) {
+	public SingleStageProgressListener(final ProgressTable progressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet, boolean forExportStage, boolean checkPK) {
 		this.progressTable = progressTable;
 		this.dataModel = dataModel;
 		this.confirm = confirm;
 		this.targetSchemaSet = targetSchemaSet;
 		this.forExportStage = forExportStage;
 		this.stopClock = !forExportStage;
+		this.checkPK = checkPK;
 		Thread thread = new Thread(new Runnable() {
 
 			@Override
@@ -422,7 +424,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 						readjustColumnWidth = true;
 					}
 					addOrUpdateRows();
-					if (forExportStage && isFinalStage && !isErrorStage) {
+					if (checkPK && forExportStage && isFinalStage && !isErrorStage) {
 						if (!warned && exportedRows.get() != finalCollectedRows) {
 							warned = true;
 							String message =

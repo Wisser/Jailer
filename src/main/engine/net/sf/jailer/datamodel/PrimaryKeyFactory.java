@@ -205,7 +205,7 @@ public class PrimaryKeyFactory {
 				toIgnore.add(table);
 			}
 		}
-		
+
 		executionContext.setUpkDomain(upkDomain);
 	}
 

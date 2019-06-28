@@ -942,7 +942,11 @@ public class Session {
 		}
 		_log.info("closing connection...");
 		for (Connection con: connections) {
-			con.close();
+			try {
+				con.close();
+			} catch (Exception e) {
+				// ignore
+			}
 		}
 		closeTemporaryTableSession();
 		_log.info("connection closed");
@@ -1028,7 +1032,7 @@ public class Session {
 				temporaryTableSession.close();
 			}
 		} catch(SQLException e) {
-			_log.error("can't close connection", e);
+			_log.warn("can't close connection", e);
 		}
 		temporaryTableSession = null;
 	}

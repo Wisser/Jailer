@@ -45,14 +45,14 @@ public abstract class ExportAndDeleteStageProgressListener implements ProgressLi
 	 *            table showing collected rows
 	 * @param targetSchemaSet 
 	 */
-	public ExportAndDeleteStageProgressListener(final ProgressTable exportProgressTable, final ProgressTable deleteProgressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet) {
-		this.exportProgressListener = new SingleStageProgressListener(exportProgressTable, progressPanel, dataModel, confirm, targetSchemaSet, true) {
+	public ExportAndDeleteStageProgressListener(final ProgressTable exportProgressTable, final ProgressTable deleteProgressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet, boolean checkPK) {
+		this.exportProgressListener = new SingleStageProgressListener(exportProgressTable, progressPanel, dataModel, confirm, targetSchemaSet, true, checkPK) {
 			@Override
 			protected void validatePrimaryKeys() {
 				ExportAndDeleteStageProgressListener.this.validatePrimaryKeys();
 			}
 		};
-		this.deleteProgressListener = new SingleStageProgressListener(deleteProgressTable, progressPanel, dataModel, confirm, targetSchemaSet, false) {
+		this.deleteProgressListener = new SingleStageProgressListener(deleteProgressTable, progressPanel, dataModel, confirm, targetSchemaSet, false, checkPK) {
 			@Override
 			protected void validatePrimaryKeys() {
 				ExportAndDeleteStageProgressListener.this.validatePrimaryKeys();
