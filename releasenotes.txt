@@ -1,6 +1,7 @@
 8.7.6
   - New feature "Check Primary Keys" makes it possible to check the user-defined primary keys for uniqueness.
   - A warning message appears if the number of collected rows differs from the number of exported ones.
+  - The performance of the preparation for the subsetting-process has been improved.
   - UI improvements.
 
 8.7.5
