@@ -922,6 +922,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	private static final long serialVersionUID = -3983034803834547687L;
 
-	// TODO allow loading of *.jm file directly
+	// TODO allow loading of .jm file directly
 
 }
