@@ -31,7 +31,7 @@ import net.sf.jailer.util.CancellationException;
  * 
  * @author Ralf Wisser
  */
-public class ExportAndDeleteStageProgressListener implements ProgressListener {
+public abstract class ExportAndDeleteStageProgressListener implements ProgressListener {
 
 	private final SingleStageProgressListener exportProgressListener;
 	private final SingleStageProgressListener deleteProgressListener;
@@ -46,8 +46,18 @@ public class ExportAndDeleteStageProgressListener implements ProgressListener {
 	 * @param targetSchemaSet 
 	 */
 	public ExportAndDeleteStageProgressListener(final ProgressTable exportProgressTable, final ProgressTable deleteProgressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet) {
-		this.exportProgressListener = new SingleStageProgressListener(exportProgressTable, progressPanel, dataModel, confirm, targetSchemaSet, true);
-		this.deleteProgressListener = new SingleStageProgressListener(deleteProgressTable, progressPanel, dataModel, confirm, targetSchemaSet, false);
+		this.exportProgressListener = new SingleStageProgressListener(exportProgressTable, progressPanel, dataModel, confirm, targetSchemaSet, true) {
+			@Override
+			protected void validatePrimaryKeys() {
+				ExportAndDeleteStageProgressListener.this.validatePrimaryKeys();
+			}
+		};
+		this.deleteProgressListener = new SingleStageProgressListener(deleteProgressTable, progressPanel, dataModel, confirm, targetSchemaSet, false) {
+			@Override
+			protected void validatePrimaryKeys() {
+				ExportAndDeleteStageProgressListener.this.validatePrimaryKeys();
+			}
+		};
 		this.progressPanel = progressPanel;
 		currentProgressListener = exportProgressListener;
 	}
@@ -114,4 +124,6 @@ public class ExportAndDeleteStageProgressListener implements ProgressListener {
 		deleteProgressListener.stop();
 	}
 
+	protected abstract void validatePrimaryKeys();
+	
 }

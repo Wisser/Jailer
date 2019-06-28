@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -151,7 +152,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         AnimationController.registerWindow(this, new AnimationController.AnimationControl() {
 			@Override
 			public void setEnabled(boolean enabled) {
-				extractionModelEditor.graphView.setAnimationEnabled(enabled);
+				if (extractionModelEditor != null && extractionModelEditor.graphView != null) {
+					extractionModelEditor.graphView.setAnimationEnabled(enabled);
+				}
 			}
 		});
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
@@ -342,6 +345,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         analyzeSQLMenuItem = new javax.swing.JMenuItem();
         jSeparator15 = new javax.swing.JPopupMenu.Separator();
         modelMigrationMenuItem = new javax.swing.JMenuItem();
+        checkPKMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         undoMenuItem = new javax.swing.JMenuItem();
         redoMenuItem = new javax.swing.JMenuItem();
@@ -604,6 +608,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu1.add(modelMigrationMenuItem);
+
+        checkPKMenuItem.setText("Check Primary Keys");
+        checkPKMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkPKMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(checkPKMenuItem);
 
         jMenuBar2.add(jMenu1);
 
@@ -1131,11 +1143,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			@Override
 			public Boolean call() {
 				try {
+		        	UIUtil.setWaitCursor(ExtractionModelFrame.this);
 					String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
-					DataModelEditor dataModelEditor = new DataModelEditor(ExtractionModelFrame.this, merge, false, toEdit, null, null, modelname, null, executionContext);
+					DataModelEditor dataModelEditor = new DataModelEditor(ExtractionModelFrame.this, merge, false, toEdit, null, null, modelname, null, dbConnectionDialog, executionContext);
 					dataModelEditor.setVisible(true);
 				} catch (Exception e) {
 					UIUtil.showException(ExtractionModelFrame.this, "Error", e);
+				} finally {
+		        	UIUtil.resetWaitCursor(ExtractionModelFrame.this);
 				}
 				return true;
 			}
@@ -1169,7 +1184,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							if (UIUtil.runJailer(ExtractionModelFrame.this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
 								ModelBuilder.assocFilter = null;
 								String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
-								DataModelEditor dataModelEditor = new DataModelEditor(ExtractionModelFrame.this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, executionContext);
+								DataModelEditor dataModelEditor = new DataModelEditor(ExtractionModelFrame.this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, dbConnectionDialog, executionContext);
 								if (dataModelEditor.dataModelHasChanged()) {
 									dataModelEditor.setVisible(true);
 								}
@@ -1262,11 +1277,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	
 							String jmFile = extractionModelEditor.extractionModelFile != null? extractionModelEditor.extractionModelFile : tmpFileName;
 							
-							ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, executionContext);
+							ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, executionContext);
 							session.shutDown();
 							if (exportDialog.isOk()) {
 								exportDialog.fillCLIArgs(args);
-								List<String> ddlArgs = new ArrayList<String>();
+								final List<String> ddlArgs = new ArrayList<String>();
 								ddlArgs.add("create-ddl");
 								dbConnectionDialog.addDbArgs(ddlArgs);
 								ddlArgs.add(jmFile);
@@ -1294,7 +1309,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								
 								DDLCreator ddlCreator = new DDLCreator(cDDLExecutionContext);
 								if (!cDDLExecutionContext.isIndependentWorkingTables()) {
-									PrimaryKeyFactory.createUPKScope(jmFile, cDDLExecutionContext);
+									PrimaryKeyFactory.createUPKScope(tmpFileName != null? tmpFileName : jmFile, cDDLExecutionContext);
 								}
 								
 								dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
@@ -1309,9 +1324,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 										"Continue Data Export?", dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, true, false, true, executionContext)) {
 										ProgressTable progressTable = new ProgressTable();
 										ProgressTable progressTableForDelete = new ProgressTable();
-										ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript(), exportDialog.explain.isSelected());
+										final ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript(), exportDialog.explain.isSelected());
 										boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
-										ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet());
+										ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet()) {
+											@Override
+											protected void validatePrimaryKeys() {
+												try {
+													UIUtil.validatePrimaryKeys(SwingUtilities.getWindowAncestor(progressPanel), new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs()), new TreeSet<Table>(extractionModelEditor.dataModel.getTables()));
+												} catch (Exception e) {
+													UIUtil.showException(ExtractionModelFrame.this, "Error", e);
+												}
+											}
+										};
 										try {
 											UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false /* !exportDialog.explain.isSelected() */, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), progressListener, progressPanel, true, true, false, executionContext);
 										} finally {
@@ -1479,19 +1503,19 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void loadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadActionPerformed
 		try {
 			String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".jm", this, false, true, false);
-			if (modelFile != null && !toFront(modelFile)) {
-				String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
-				if (extractionModelEditor.extractionModelFile == null && !extractionModelEditor.needsSave
-						&& currentModelSubfolder != null && currentModelSubfolder.equals(ExtractionModel.loadDatamodelFolder(modelFile, executionContext))) {
-					load(modelFile);
-				} else {
-					try {
-						UIUtil.setWaitCursor(this);
+			try {
+				UIUtil.setWaitCursor(this);
+				if (modelFile != null && !toFront(modelFile)) {
+					String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
+					if (extractionModelEditor.extractionModelFile == null && !extractionModelEditor.needsSave
+							&& currentModelSubfolder != null && currentModelSubfolder.equals(ExtractionModel.loadDatamodelFolder(modelFile, executionContext))) {
+						load(modelFile);
+					} else {
 						createFrame(modelFile, false, executionContext);
-					} finally {
-						UIUtil.resetWaitCursor(this);
 					}
 				}
+			} finally {
+				UIUtil.resetWaitCursor(this);
 			}
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
@@ -1850,6 +1874,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         extractionModelEditor.redoChange();
     }//GEN-LAST:event_redoMenuItemActionPerformed
 
+    private void checkPKMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkPKMenuItemActionPerformed
+    	try {
+    		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Check Primary Keys")) {
+    			updateMenuItems();
+    			BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
+    			UIUtil.validatePrimaryKeys(this, dataSource, new TreeSet<Table>(extractionModelEditor.dataModel.getTables()));
+    		}
+		} catch (Exception e) {
+			// ignore
+		} 
+    }//GEN-LAST:event_checkPKMenuItemActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -2149,6 +2185,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem analyzeSQLMenuItem;
+    javax.swing.JMenuItem checkPKMenuItem;
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JMenuItem columnOrderItem;
     private javax.swing.JCheckBoxMenuItem connectDb;

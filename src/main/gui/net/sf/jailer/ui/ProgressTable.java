@@ -297,7 +297,7 @@ public class ProgressTable extends JTable {
 		if (!(graphics instanceof Graphics2D))
 			return;
 		Graphics2D g2d = (Graphics2D) graphics;
-		Color color = new Color(0, 80, 255, 120);
+		Color color = new Color(0, 80, 255, 80);
 		Color selColor = new Color(255, 0, 0, 120);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		int[] x = new int[2];

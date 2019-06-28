@@ -28,6 +28,9 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.PrimaryKey;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 
@@ -36,8 +39,8 @@ import net.sf.jailer.util.CsvFile.Line;
  *
  * @author Ralf Wisser
  */
-public class TableEditor extends javax.swing.JDialog {
-	
+public abstract class TableEditor extends javax.swing.JDialog {
+
 	/**
 	 * All tables (as csv-lines).
 	 */
@@ -63,6 +66,19 @@ public class TableEditor extends javax.swing.JDialog {
 	private static class ColumnModel {
 		Column column;
 		boolean isPk;
+	}
+	
+	private Table table;
+	
+	private void updateTable(List<ColumnModel> model) {
+		List<Column> pkColumns = new ArrayList<Column>();
+		for (ColumnModel cm: model) {
+			if (cm.isPk) {
+				pkColumns.add(cm.column);
+			}
+		}
+		PrimaryKey primaryKey = new PrimaryKeyFactory(null).createPrimaryKey(pkColumns, null);
+		table = new Table(nameField.getText().trim(), primaryKey, false, false);
 	}
 	
 	@SuppressWarnings("serial")
@@ -165,6 +181,20 @@ public class TableEditor extends javax.swing.JDialog {
 			element.isPk = primaryKey1.isSelected();
 		}
 
+		/**
+		 * Reacts on model changes.
+		 */
+		protected void onModelUpdate() {
+			checkPKButton.setEnabled(false);
+			for (ColumnModel cm: model) {
+				if (cm.isPk) {
+					checkPKButton.setEnabled(true);
+					break;
+				}
+			}
+			updateTable(model);
+		}
+
 		@Override
 		protected Object[] toColumnList(ColumnModel element, int index) {
 			String type = toSql(element.column);
@@ -189,7 +219,7 @@ public class TableEditor extends javax.swing.JDialog {
 		}
 
 	};
-	
+
 	/** 
 	 * Creates new form TableEditor
 	 * 
@@ -206,7 +236,7 @@ public class TableEditor extends javax.swing.JDialog {
 		this.displayNames = displayNames;
 		initComponents();
 		warnPanel.setVisible(false);
-		setSize(600, 400);
+		setSize(600, 500);
 		setLocation(parent.getLocation().x + parent.getSize().width/2 - getSize().width/2,
 				parent.getLocation().y + parent.getSize().height/2 - getSize().height/2);
 		
@@ -259,7 +289,7 @@ public class TableEditor extends javax.swing.JDialog {
         jButton1 = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
-        jLabel5 = new javax.swing.JLabel();
+        checkPKButton = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
         excludeFromDeletion = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
@@ -504,7 +534,7 @@ public class TableEditor extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
@@ -514,7 +544,7 @@ public class TableEditor extends javax.swing.JDialog {
         jLabel3.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         jLabel3.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -529,26 +559,34 @@ public class TableEditor extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel1.add(jButton2, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 40;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        getContentPane().add(jPanel1, gridBagConstraints);
-
-        jLabel5.setText(" ");
+        checkPKButton.setText("Check Primary Key");
+        checkPKButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkPKButtonActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        getContentPane().add(jLabel5, gridBagConstraints);
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        jPanel1.add(checkPKButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 40;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        getContentPane().add(jPanel1, gridBagConstraints);
 
         jLabel6.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -618,7 +656,7 @@ public class TableEditor extends javax.swing.JDialog {
 
         jLabel12.setFont(jLabel12.getFont().deriveFont(jLabel12.getFont().getSize()+1f));
         jLabel12.setForeground(new java.awt.Color(205, 0, 0));
-        jLabel12.setText("<html>Primary key has been changed. <br>\nPlease keep in mind that the PK must be unique and never <i>null</i>. <br>\nIt is recommended to check the integrity of the PK.<br>\nTo do that, please select the option \"check primary keys\" in the export dialog.\n</html>");
+        jLabel12.setText("<html>Primary key has been changed. <br> Please keep in mind that the PK must be unique and never <i>null</i>. <br> It is recommended to check the integrity of the PK.<br> To do that, please select the option \"check primary keys\" in the export dialog or use the button below. </html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -741,7 +779,13 @@ public class TableEditor extends javax.swing.JDialog {
 	private void columnPrecKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnPrecKeyTyped
 		
 	}//GEN-LAST:event_columnPrecKeyTyped
-	
+
+    private void checkPKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkPKButtonActionPerformed
+    	checkPK(table);
+    }//GEN-LAST:event_checkPKButtonActionPerformed
+
+	protected abstract void checkPK(Table table);
+
 	private boolean isOk;
 	private Line currentTableLine;
 	private Line currentColumnLine;
@@ -808,6 +852,15 @@ public class TableEditor extends javax.swing.JDialog {
 		}
 		columnListEditor.setModel(columnModel);
 		
+		checkPKButton.setEnabled(false);
+		for (ColumnModel cm: columnModel) {
+			if (cm.isPk) {
+				checkPKButton.setEnabled(true);
+				break;
+			}
+		}
+		updateTable(columnModel);
+
 		setVisible(true);
 		boolean excludeSet = excludeFromDeletion.isSelected();
 
@@ -902,6 +955,7 @@ public class TableEditor extends javax.swing.JDialog {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton checkPKButton;
     private javax.swing.JPanel columnDetailsPanel;
     private javax.swing.JCheckBox columnIsIdentity;
     private javax.swing.JCheckBox columnIsNullable;
@@ -921,7 +975,6 @@ public class TableEditor extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;

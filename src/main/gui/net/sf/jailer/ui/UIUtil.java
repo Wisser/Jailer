@@ -58,6 +58,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -83,9 +84,12 @@ import org.apache.log4j.Logger;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.JailerVersion;
+import net.sf.jailer.database.BasicDataSource;
+import net.sf.jailer.database.PrimaryKeyValidator;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel.IncompatibleModelException;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
@@ -93,11 +97,13 @@ import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.HttpUtil;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CycleFinder;
+import net.sf.jailer.util.JobManager;
 
 /**
  * Some utility methods.
@@ -455,18 +461,14 @@ public class UIUtil {
                     	cancelled = true;
                     }
                     if (cancelled && f) {
+                        cancel();
                         JOptionPane.showMessageDialog(outputView.dialog, "Cancellation in progress...", "Cancellation",
                                 JOptionPane.INFORMATION_MESSAGE);
                     } else if (exp[0] == null && !fin[0] && !cancelled) {
                         if (JOptionPane.showConfirmDialog(outputView.dialog, "Cancel operation?", "Cancellation",
                                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                             if (!outputView.hasFinished) {
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        CancellationHandler.cancel(null);
-                                    }
-                                }).start();
+                                cancel();
                                 outputView.dialog.setTitle("Jailer Console - cancelling...");
                                 if (progressListener != null) {
                                     progressListener.newStage("cancelling...", true, true);
@@ -477,6 +479,16 @@ public class UIUtil {
                         }
                     }
                 }
+				private void cancel() {
+					Thread thread = new Thread(new Runnable() {
+					    @Override
+					    public void run() {
+					        CancellationHandler.cancel(null);
+					    }
+					});
+					thread.setDaemon(true);
+					thread.start();
+				}
             });
             new Thread(new Runnable() {
                 @Override
@@ -659,6 +671,22 @@ public class UIUtil {
      *            the exception
      */
     public static void showException(Component parent, String title, Throwable t, Object context) {
+    	showException(parent, title, t, context, null);
+    }
+
+    /**
+     * Shows an exception.
+     * 
+     * @param parent
+     *            parent component of option pane
+     * @param title
+     *            title of option pane
+     * @param context
+     *            optional context object. String or Session is supported.
+     * @param t
+     *            the exception
+     */
+    public static void showException(Component parent, String title, Throwable t, Object context, JComponent additionalControl) {
         if (context == EXCEPTION_CONTEXT_USER_ERROR) {
         	if (t instanceof IndexOutOfBoundsException
         			|| t instanceof NullPointerException
@@ -683,18 +711,18 @@ public class UIUtil {
         if (t instanceof SqlException) {
             String message = ((SqlException) t).message;
             String sql = ((SqlException) t).sqlStatement;
-			new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent),
-					((SqlException) t).isFormatted()? message : lineWrap(message, 120).toString(), sql, ((SqlException) t).isFormatted(), true, null, false);
-			if (message != null && message.startsWith("-")) {
-				if (sql != null && sql.startsWith("-")) {
+			if (message != null) {
+				if (sql != null) {
 					final int MAX_CL = 1000;
-		            String iMsg = message.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION;
+		            String iMsg = message.toString() + "\n" + JailerVersion.VERSION + "\n" + sql;
 		            if (iMsg.length() > MAX_CL) {
 		            	iMsg = iMsg.substring(0, MAX_CL);
 		            }
-					sendIssue("internal", iMsg);
+					sendIssue("internalSQL", iMsg);
 				}
 			}
+			new SqlErrorDialog(parent == null ? null : parent instanceof Window? (Window) parent : SwingUtilities.getWindowAncestor(parent),
+					((SqlException) t).isFormatted()? message : lineWrap(message, 120).toString(), sql, ((SqlException) t).isFormatted(), true, null, false, additionalControl);
             return;
         }
         if (t instanceof CancellationException) {
@@ -731,8 +759,8 @@ public class UIUtil {
 			sendIssue("internal", iMsg);
         }
 
-        new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent), msg.toString(),
-                contextDesc, false, false, context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_USER_WARNING? title : null, context == EXCEPTION_CONTEXT_USER_WARNING);
+        new SqlErrorDialog(parent == null ? null : parent instanceof Window? (Window) parent : SwingUtilities.getWindowAncestor(parent), msg.toString(),
+                contextDesc, false, false, context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_USER_WARNING? title : null, context == EXCEPTION_CONTEXT_USER_WARNING, additionalControl);
     }
 
     private static StringBuilder lineWrap(String message, int maxwidth) {
@@ -1105,6 +1133,55 @@ public class UIUtil {
 	 */
 	public static void prepareUI() {
 		new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);	
+	}
+
+	/**
+	 * Calls the {@link PrimaryKeyValidator}.
+	 * @param i 
+	 */
+	@SuppressWarnings("serial")
+	public static void validatePrimaryKeys(final Window windowAncestor, final BasicDataSource basicDataSource, final Set<Table> tables) {
+		final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(null, 
+				"<html>"
+				+ "Checking the primary key definitions in the data model <br>for uniqueness...</html>".replace(" ", "&nbsp;")) {
+				@Override
+				protected void onError(Throwable error) {
+					UIUtil.showException(windowAncestor, "Error", error);
+					closeWindow();
+				}
+				@Override
+				protected void onCancellation() {
+					closeWindow();
+					CancellationHandler.cancel(null);
+				}
+			};
+		ConcurrentTaskControl.openInModalDialog(windowAncestor, concurrentTaskControl, 
+			new ConcurrentTaskControl.Task() {
+				@Override
+				public void run() throws Throwable {
+					Session session = new Session(basicDataSource, basicDataSource.dbms, null);
+					JobManager jobManager = new JobManager(tables.size() > 1? 4 : 1);
+					try {
+						new PrimaryKeyValidator().validatePrimaryKey(session, tables, false, jobManager);
+					} finally {
+						session.shutDown();
+						jobManager.shutdown();
+					}
+					invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							JOptionPane.showMessageDialog(windowAncestor, tables.size() == 1? "The primary key definition is valid." : "All primary key definitions are valid.");
+							concurrentTaskControl.closeWindow();
+						}
+					});
+				}
+		}, "Checking Primary Keys...");
+		invokeLater(4, new Runnable() {
+			@Override
+			public void run() {
+				CancellationHandler.reset(null);
+			}
+		});
 	}
 
 	/**

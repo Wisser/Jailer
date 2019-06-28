@@ -95,7 +95,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
  			return null;
  		}
 
- 		UISettings.s6 += 1000000;
+ 		UISettings.s6 += 100000;
 
  		return name;
     }

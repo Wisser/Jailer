@@ -145,17 +145,20 @@ public class ExportDialog extends javax.swing.JDialog {
 	private static boolean lastConfirmInsert = false;
 	private final String extractionModelFileName;
 	private final String jmFile;
+	private final String tmpFileName;
 	private final ExecutionContext executionContext;
 
 	/** Creates new form DbConnectionDialog 
 	 * @param showCmd 
 	 * @param jmFile 
+	 * @param tmpFileName 
 	 * @param args */
-	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, ExecutionContext executionContext) {
+	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, ExecutionContext executionContext) {
 		super(parent, true);
 		this.executionContext = executionContext;
 		this.extractionModelFileName = extractionModelFileName;
 		this.jmFile = jmFile;
+		this.tmpFileName = tmpFileName;
 		this.subjectCondition = subjectCondition;
 		this.dataModel = dataModel;
 		this.subject = subject;
@@ -1836,7 +1839,7 @@ public class ExportDialog extends javax.swing.JDialog {
 				"  - execute the Jailer-DDL manually (jailer_ddl.sql)\n";
 		try {
 			if (!cDDLExecutionContext.isIndependentWorkingTables()) {
-				PrimaryKeyFactory.createUPKScope(jmFile, cDDLExecutionContext);
+				PrimaryKeyFactory.createUPKScope(tmpFileName != null? tmpFileName : jmFile, cDDLExecutionContext);
 			}
 			dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
 			String tableInConflict = getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)? ddlCreator.getTableInConflict(dataSource, dataSource.dbms) : null;

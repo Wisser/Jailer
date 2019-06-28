@@ -123,7 +123,7 @@ public class DragControl extends ControlAdapter implements TableListener {
             if ( resetItem ) item.setFixed(wasFixed);
         }
         Display d = (Display)e.getSource();
-        d.setCursor(Cursor.getDefaultCursor());
+        d.setCursor(null); // d.setCursor(Cursor.getDefaultCursor());
     } //
     
     /**

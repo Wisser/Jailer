@@ -16,6 +16,9 @@
 package net.sf.jailer.ui.progress;
 
 import java.awt.Color;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +29,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -44,7 +49,7 @@ import net.sf.jailer.util.CancellationException;
  * 
  * @author Ralf Wisser
  */
-public class SingleStageProgressListener implements ProgressListener {
+public abstract class SingleStageProgressListener implements ProgressListener {
 
 	/**
 	 * Table showing collected rows.
@@ -423,9 +428,22 @@ public class SingleStageProgressListener implements ProgressListener {
 							String message =
 									"Warning: The number of rows collected (" + finalCollectedRows + ") differs from that of the exported ones (" + exportedRows.get() + ").\n \n" +
 									"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique and never null.\n \n" +
-									"It is recommended to check the integrity of the primary keys\n" +
-									"To do this, select the option \"Check primary key\" in the export dialog.";
-							UIUtil.showException(progressTable, "Warning", new RuntimeException(message), UIUtil.EXCEPTION_CONTEXT_USER_WARNING);
+									"It is recommended to check the integrity of the primary keys.\n" +
+									"To do this, use the button below \nor select the option \"Check primary key\" in the export dialog.";
+							final JButton button = new JButton("Check Primary Keys");
+							button.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									Window window = SwingUtilities.getWindowAncestor(button);
+									if (window != null) {
+										window.setVisible(false);
+										window.dispose();
+									}
+									validatePrimaryKeys();
+								}
+							});
+							
+							UIUtil.showException(progressTable, "Warning", new RuntimeException(message), UIUtil.EXCEPTION_CONTEXT_USER_WARNING, button);
 						}
 					}
 				}
@@ -433,6 +451,8 @@ public class SingleStageProgressListener implements ProgressListener {
 		}
 	}
 
+	protected abstract void validatePrimaryKeys();
+	
 	private boolean warned = false;
 
 	private boolean confirmInsert() {

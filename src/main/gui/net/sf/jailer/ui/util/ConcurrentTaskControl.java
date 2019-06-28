@@ -19,6 +19,9 @@ import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
+
 import net.sf.jailer.ui.UIUtil;
 
 /**
@@ -36,30 +39,32 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
     public ConcurrentTaskControl(Window parent, String info) {
         initComponents();
         infoLabel.setText(info);
-        parent.addWindowListener(new WindowListener() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				cancel();
-			}
-			@Override
-			public void windowOpened(WindowEvent e) {
-			}
-			@Override
-			public void windowIconified(WindowEvent e) {
-			}
-			@Override
-			public void windowDeiconified(WindowEvent e) {
-			}
-			@Override
-			public void windowDeactivated(WindowEvent e) {
-			}
-			@Override
-			public void windowClosing(WindowEvent e) {
-			}
-			@Override
-			public void windowActivated(WindowEvent e) {
-			}
-		});
+        if (parent != null) {
+        	parent.addWindowListener(new WindowListener() {
+				@Override
+				public void windowClosed(WindowEvent e) {
+					cancel();
+				}
+				@Override
+				public void windowOpened(WindowEvent e) {
+				}
+				@Override
+				public void windowIconified(WindowEvent e) {
+				}
+				@Override
+				public void windowDeiconified(WindowEvent e) {
+				}
+				@Override
+				public void windowDeactivated(WindowEvent e) {
+				}
+				@Override
+				public void windowClosing(WindowEvent e) {
+				}
+				@Override
+				public void windowActivated(WindowEvent e) {
+				}
+			});
+        }
     }
 
     /**
@@ -76,13 +81,13 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        infoLabel.setFont(infoLabel.getFont().deriveFont(infoLabel.getFont().getSize()+4f));
         infoLabel.setText("<html>1<br>2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
         add(infoLabel, gridBagConstraints);
 
         cancelButton.setText("Cancel");
@@ -106,8 +111,10 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
     private boolean cancelled;
     
     private void cancel() {
-		cancelled = true;
-		onCancellation();
+    	if (!cancelled) {
+			cancelled = true;
+			onCancellation();
+    	}
 	}
 
 	/**
@@ -134,6 +141,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 			public void run() {
 				try {
 					task.run();
+					cancelled = true;
 				} catch (final Throwable e) {
 					if (!cancelled) {
 						UIUtil.invokeLater(new Runnable() {
@@ -168,4 +176,52 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel infoLabel;
     // End of variables declaration//GEN-END:variables
+
+    private ConcurrentTaskControl master;
+    
+	public static void openInModalDialog(Window windowAncestor, final ConcurrentTaskControl concurrentTaskControl, final Task task, String title) {
+		final JDialog dialog = new JDialog(windowAncestor);
+		dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+		dialog.setModal(true);
+		dialog.setTitle(title);
+		
+		ConcurrentTaskControl control = new ConcurrentTaskControl(dialog, concurrentTaskControl.infoLabel.getText()) {
+			@Override
+			protected void onError(Throwable error) {
+				concurrentTaskControl.onError(error);
+			}
+			@Override
+			protected void onCancellation() {
+				concurrentTaskControl.onCancellation();
+			}
+		};
+		concurrentTaskControl.master = control;
+		
+		dialog.getContentPane().add(control);
+		dialog.pack();
+		// dialog.setSize(440, 200);
+ 		dialog.setLocation(windowAncestor.getX() + (windowAncestor.getWidth() - dialog.getWidth()) / 2, Math.max(0, windowAncestor.getY() + (windowAncestor.getHeight() - dialog.getHeight()) / 2));
+ 		UIUtil.fit(dialog);
+ 		
+ 		control.start(new Task() {
+			@Override
+			public void run() throws Throwable {
+				task.run();
+			}
+ 		});
+ 		
+		dialog.setVisible(true);
+	}
+
+	/**
+	 * Closes the window containing this component.
+	 */
+	public void closeWindow() {
+		Window window = SwingUtilities.getWindowAncestor(master != null? master : this);
+		if (window != null) {
+			window.setVisible(false);
+			window.dispose();
+		}
+	}
+
 }

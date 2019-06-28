@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
@@ -60,6 +61,7 @@ import net.coderazzi.filters.gui.AutoChoices;
 import net.coderazzi.filters.gui.TableFilterHeader;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
+import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.KnownIdentifierMap;
@@ -127,7 +129,12 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
-	
+
+	/**
+	 * For PK checks.
+	 */
+	private DbConnectionDialog dbConnectionDialog;
+
 	/** 
 	 * Creates new form DataModelEditor.
 	 * 
@@ -135,8 +142,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * @param assocFilter 
 	 * @param tableFilter 
 	 */
-	public DataModelEditor(java.awt.Frame parent, boolean merge, boolean initiallyDirty, final Table toEdit, LineFilter tableFilter, LineFilter assocFilter, String modelname, String modelnameSuggestion, ExecutionContext executionContext) throws Exception {
+	public DataModelEditor(java.awt.Frame parent, boolean merge, boolean initiallyDirty, final Table toEdit, LineFilter tableFilter, LineFilter assocFilter, String modelname, String modelnameSuggestion, DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
+		this.dbConnectionDialog = dbConnectionDialog;
 		this.executionContext = executionContext;
 		
 		KnownIdentifierMap knownIdentifierMap = createKnownIdentifierMap();
@@ -457,7 +465,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				if (toEdit != null) {
 					for (Line l: tables) {
 						if (toEdit.getName().equals(l.cells.get(0))) {
-							if (new TableEditor(DataModelEditor.this, displayNames, tables, associations, excludeFromDeletion).edit(l, columns)) {
+							if (new DETableEditor(DataModelEditor.this, displayNames, tables, associations, excludeFromDeletion).edit(l, columns)) {
 								markDirty();
 								resetTableTableModel();
 								repaint();
@@ -881,7 +889,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 			cells.add("");
 		}
 		CsvFile.Line line = new CsvFile.Line("?", cells);
-		if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion).edit(line, columns)) {
+		if (new DETableEditor(this, displayNames, tables, associations, excludeFromDeletion).edit(line, columns)) {
 			tables.add(0, line);
 			resetTableTableModel();
 			markDirty();
@@ -892,7 +900,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	private void editTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editTableActionPerformed
 		if (tablesTable.getSelectedRow() >= 0) {
 			CsvFile.Line line = tables.get(tablesTable.getRowSorter().convertRowIndexToModel(tablesTable.getSelectedRow()));
-			if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion).edit(line, columns)) {
+			if (new DETableEditor(this, displayNames, tables, associations, excludeFromDeletion).edit(line, columns)) {
 				markDirty();
 				resetTableTableModel();
 				repaint();
@@ -961,6 +969,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * @return model for tables-list component
 	 */
 	private TableModel createTablesListModel() {
+		@SuppressWarnings("serial")
 		DefaultTableModel tablesTableModel = new DefaultTableModel(new Object[] { "Name", "Primary Key" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
@@ -999,6 +1008,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * @return model for associations-list component
 	 */
 	private TableModel createAssociationsListModel() {
+		@SuppressWarnings("serial")
 		DefaultTableModel associationsTableModel = new DefaultTableModel(new Object[] { "A", "B", "Condition", "Type", "Cardinality", "Name" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
@@ -1178,6 +1188,30 @@ public class DataModelEditor extends javax.swing.JDialog {
 		}
 		return a.equals(b);
 	}
+
+	@SuppressWarnings("serial")
+	private class DETableEditor extends TableEditor {
+
+		public DETableEditor(Dialog parent, Map<String, String> displayNames, Collection<Line> tables,
+				List<Line> associations, List<String> excludeFromDeletionList) {
+			super(parent, displayNames, tables, associations, excludeFromDeletionList);
+		}
+
+		@Override
+		protected void checkPK(Table table) {
+			try {
+				if (!dbConnectionDialog.isConnected) {
+					dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, JailerVersion.APPLICATION_NAME, executionContext);
+				}
+	    		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Check Primary Keys")) {
+	    			BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
+	    			UIUtil.validatePrimaryKeys(DataModelEditor.this, dataSource, Collections.singleton(table));
+	    		}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	};
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable associationsTable;

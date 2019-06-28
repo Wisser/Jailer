@@ -130,7 +130,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	/**
 	 * The parent frame.
 	 */
-	private final java.awt.Frame parent;
+	private final Window parent;
 	
 	private final ExecutionContext executionContext;
 	
@@ -143,6 +143,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		return connect(reason, false);
 	}
 
+	private boolean located = false;
+	
 	/**
 	 * Gets connection to DB.
 	 * 
@@ -152,6 +154,18 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		boolean oldIsConnected = isConnected;
 		ConnectionInfo oldCurrentConnection = currentConnection;
 		try {
+			if (!located) {
+				pack();
+				setSize(Math.max(710, getWidth()), 450);
+				if (parent != null && parent.isVisible()) {
+					int os = parent.getWidth() > 800? 0 : 80;
+					setLocation(os + parent.getX() + (parent.getWidth() - getWidth()) / 2, Math.max(0, os + parent.getY() + (parent.getHeight() - getHeight()) / 2));			
+				} else {
+					setLocation(100, 150);
+				}
+				UIUtil.initPeer();
+				located = true;
+			}
 			setTitle((reason == null ? "" : (reason + " - ")) + "Connect.");
 			sortConnectionList();
 			refresh();
@@ -173,7 +187,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private final boolean dataModelAware;
 	
 	/** Creates new form DbConnectionDialog */
-	public DbConnectionDialog(java.awt.Frame parent, DbConnectionDialog other, String applicationName, ExecutionContext executionContext) {
+	public DbConnectionDialog(Window parent, DbConnectionDialog other, String applicationName, ExecutionContext executionContext) {
 		this(parent, applicationName, other.infoBar == null? null : new InfoBar(other.infoBar), executionContext);
 		this.isConnected = other.isConnected;
 		this.connectionList = other.connectionList;
@@ -191,7 +205,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * 
 	 * @param applicationName application name. Used to create the name of the demo database alias. 
 	 */
-	public DbConnectionDialog(java.awt.Frame parent, String applicationName, InfoBar infoBar, ExecutionContext executionContext) {
+	public DbConnectionDialog(Window parent, String applicationName, InfoBar infoBar, ExecutionContext executionContext) {
 		this(parent, applicationName, infoBar, executionContext, true);
 	}
 	
@@ -200,8 +214,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * 
 	 * @param applicationName application name. Used to create the name of the demo database alias. 
 	 */
-	public DbConnectionDialog(java.awt.Frame parent, String applicationName, InfoBar infoBar, ExecutionContext executionContext, boolean dataModelAware) {
-		super(parent, true);
+	public DbConnectionDialog(Window parent, String applicationName, InfoBar infoBar, ExecutionContext executionContext, boolean dataModelAware) {
+		super(parent);
+		setModal(true);
 		this.executionContext = executionContext;
 		this.parent = parent;
 		this.infoBar = infoBar;
@@ -320,11 +335,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 		});
 		
-		setLocation(100, 150);
-		pack();
-		setSize(Math.max(710, getWidth()), 450);
 		refresh();
-		UIUtil.initPeer();
 	}
 
 	/**
@@ -903,13 +914,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			root = mainPanel;
 		}
 		try {
-			root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			UIUtil.setWaitCursor(root);
 			if (testConnection(mainPanel, currentConnection)) {
 				isConnected = true;
 				onConnect(currentConnection);
 			}
 		} finally {
-			root.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.resetWaitCursor(root);
 		}
 	}
 

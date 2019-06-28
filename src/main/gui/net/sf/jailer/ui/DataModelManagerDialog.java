@@ -814,7 +814,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
 						ModelBuilder.assocFilter = null;
 						String modelname = dataModel.getName();
-						DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, executionContext);
+						DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, dbConnectionDialog, executionContext);
 						if (dataModelEditor.dataModelHasChanged()) {
 							dataModelEditor.setVisible(true);
 						}
@@ -868,7 +868,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	 */
 	private void edit(String modelFolder) {
 		try {
-			DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelDetails.get(modelFolder == null? "" : modelFolder).a, null, executionContext);
+			DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelDetails.get(modelFolder == null? "" : modelFolder).a, null, dbConnectionDialog, executionContext);
 			dataModelEditor.setVisible(true);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);

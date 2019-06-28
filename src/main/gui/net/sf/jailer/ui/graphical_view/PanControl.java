@@ -103,7 +103,7 @@ public class PanControl extends ControlAdapter {
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if ( UILib.isButtonPressed(e, m_button) ) {
-			e.getComponent().setCursor(Cursor.getDefaultCursor());
+			e.getComponent().setCursor(null); // e.getComponent().setCursor(Cursor.getDefaultCursor());
 			m_xDown = -1;
 			m_yDown = -1;
 			m_DownValid = false;

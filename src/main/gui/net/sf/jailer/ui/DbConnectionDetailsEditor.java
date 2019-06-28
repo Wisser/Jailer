@@ -16,7 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
-import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.URI;
@@ -82,17 +82,18 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 	/** Creates new form DbConnectionDialog 
 	 * @param forNew */
-	public DbConnectionDetailsEditor(java.awt.Frame parent, final String jdbcHelpURL, boolean forNew) {
+	public DbConnectionDetailsEditor(Window parent, final String jdbcHelpURL, boolean forNew) {
 		this(parent, jdbcHelpURL, forNew, null, false);
 	}
 
-	private final Frame parent;
+	private final Window parent;
 	
 	/** Creates new form DbConnectionDialog 
 	 * @param forNew 
 	 * @param b */
-	public DbConnectionDetailsEditor(java.awt.Frame parent, final String jdbcHelpURL, boolean forNew, InfoBar infoBar, boolean needsTest) {
-		super(parent, true);
+	public DbConnectionDetailsEditor(Window parent, final String jdbcHelpURL, boolean forNew, InfoBar infoBar, boolean needsTest) {
+		super(parent);
+		setModal(true);
 		this.parent = parent;
 		this.needsTest = needsTest;
 		initComponents();
@@ -111,7 +112,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			UIUtil.replace(infoBarLabel, new InfoBar("Edit Connection",
 					"Edit connection credentials for the database.", null));
 		}
-		setLocation(120, 170);
 		loadButton1.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -176,6 +176,11 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton4.setIcon(loadIcon);
 		pack();
 		setSize(Math.max(570, getWidth()), getHeight());
+		if (parent != null) {
+			setLocation(parent.getX() + (parent.getWidth() - getWidth()) / 2, Math.max(0, parent.getY() + (parent.getHeight() - getHeight()) / 2));			
+		} else {
+			setLocation(120, 170);
+		}
 		UIUtil.initPeer();
 	 }
 

@@ -17,7 +17,7 @@ import net.sf.jailer.ui.UIUtil;
 
 public class AWTWatchdog {
 
-	private static final long MAX_DELAY = 10000;
+	private static final long MAX_DELAY = 8000;
 
 	public static void start() {
 		try {
@@ -78,7 +78,7 @@ public class AWTWatchdog {
 						
 					}
 				}
-			}, "AWT-WD");
+			}, "JAWT-WD");
 			watchdog.setDaemon(true);
 			watchdog.start();
 		} catch (Exception e) {
