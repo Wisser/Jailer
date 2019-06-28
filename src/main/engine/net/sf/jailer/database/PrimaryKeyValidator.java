@@ -104,6 +104,7 @@ public class PrimaryKeyValidator {
 			});
 		}
 		jobManager.executeJobs(jobs);
+		CancellationHandler.checkForCancellation(null);
 		throwIfErrorFound();
 	}
 
@@ -178,4 +179,6 @@ public class PrimaryKeyValidator {
 		errorStatements.append("- " + sql + "\n");
 	}
 
+	// TODO check PKs if collected rows != exported rows != collected ones if caled via cli
+	
 }
