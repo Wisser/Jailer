@@ -28,7 +28,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -117,11 +116,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * The "Cycle View" dialog.
 	 */
 	final CyclesView cycleViewDialog;
-
-	/**
-	 * File in which plaf-setting is stored.
-	 */
-	private static final String PLAFSETTING = ".plaf2.ui";
 
 	/**
 	 * The execution context.
@@ -1092,6 +1086,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			updateMenuItems();
 			DataBrowser dataBrowser;
 			try {
+				UIUtil.setWaitCursor(this);
 				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, true, executionContext);
 				if (dataBrowser.isReady()) {
 					dataBrowser.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -1100,34 +1095,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				}
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
+			} finally {
+				UIUtil.resetWaitCursor(this);
 			}
-		}
-	}
-
-	/**
-	 * Sets Look&Feel.
-	 * 
-	 * @param plaf the l&f
-	 */
-	private void setPLAF(String plaf) {
-		try {
-			UIManager.setLookAndFeel(plaf);
-			SwingUtilities.updateComponentTreeUI(this);
-			try {
-				File file = new File(PLAFSETTING);
-				file.delete();
-			} catch (Exception e) {
-			}
-			try {
-				File plafSetting = new File(PLAFSETTING);
-				PrintWriter out = new PrintWriter(plafSetting);
-				out.println(plaf);
-				out.close();
-			} catch (Exception x) {
-			}
-		}
-		catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
 		}
 	}
 
