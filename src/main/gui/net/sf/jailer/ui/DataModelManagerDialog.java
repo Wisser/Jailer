@@ -104,7 +104,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	/** 
 	 * Creates new.
 	 */
-	public DataModelManagerDialog(String applicationName) {
+	public DataModelManagerDialog(String applicationName, boolean withLoadJMButton) {
 		this.applicationName = applicationName;
 		initComponents();
 
@@ -114,15 +114,25 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
+		InfoBar infoBarJM = new InfoBar("Load Extraction Model", 
+				"\n",
+				"Load an extraction model.");
+		UIUtil.replace(infoBarLabel2, infoBarJM);
+
 		infoBarConnection = new InfoBar("Database Connection", 
 				"Select a connection to the database.\n" +
 				"\n \n \n",
 				"Select a database to work with.");
+
+		if (!withLoadJMButton) {
+			jTabbedPane1.remove(loadJMPanel);
+		}
 		
 		try {
 			ImageIcon imageIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.png"));
 			setIconImage(imageIcon.getImage());
 			infoBar.setIcon(imageIcon);
+			infoBarJM.setIcon(imageIcon);
 			infoBarConnection.setIcon(imageIcon);
 		} catch (Throwable t) {
 			try {
@@ -523,6 +533,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         analyzeButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
         infoBarLabel = new javax.swing.JLabel();
+        loadJMPanel = new javax.swing.JPanel();
+        infoBarLabel2 = new javax.swing.JLabel();
+        loadExtractionModelButton = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JSeparator();
         jPanel5 = new javax.swing.JPanel();
         connectionDialogPanel = new javax.swing.JPanel();
 
@@ -546,8 +560,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         browseButton.setText("Browse..");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
@@ -573,8 +586,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         jButton2.setText(" Cancel ");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
@@ -587,8 +599,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         okButton.setText(" OK ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -596,7 +607,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         jPanel2.add(okButton, gridBagConstraints);
 
@@ -635,8 +645,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         newButton.setText(" New ");
         newButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newButtonActionPerformed(evt);
             }
         });
@@ -649,8 +658,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         editButton.setText(" Edit ");
         editButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
             }
         });
@@ -663,8 +671,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         analyzeButton.setText(" Analyze Database ");
         analyzeButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 analyzeButtonActionPerformed(evt);
             }
         });
@@ -677,8 +684,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         deleteButton.setText(" Delete ");
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
             }
         });
@@ -704,6 +710,39 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel1.add(infoBarLabel, gridBagConstraints);
 
         jTabbedPane1.addTab("Data Model", jPanel1);
+
+        loadJMPanel.setLayout(new java.awt.GridBagLayout());
+
+        infoBarLabel2.setText("info bar");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        loadJMPanel.add(infoBarLabel2, gridBagConstraints);
+
+        loadExtractionModelButton.setText("Load Extraction Model");
+        loadExtractionModelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadExtractionModelButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        loadJMPanel.add(loadExtractionModelButton, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
+        loadJMPanel.add(jSeparator2, gridBagConstraints);
+
+        jTabbedPane1.addTab("Extraction Model", loadJMPanel);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
@@ -848,6 +887,23 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
        	}
     }//GEN-LAST:event_browseButtonActionPerformed
 
+    private void loadExtractionModelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadExtractionModelButtonActionPerformed
+		try {
+			String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".jm", this, false, true, false);
+			if (modelFile != null) {
+				UIUtil.setWaitCursor(this);
+				onLoadExtractionmodel(modelFile, executionContext);
+				setVisible(false);
+				dispose();
+			}
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+		} finally {
+			UIUtil.resetWaitCursor(this);
+		}
+		UIUtil.checkTermination();
+    }//GEN-LAST:event_loadExtractionModelButtonActionPerformed
+
 	/**
 	 * Opens file chooser.
 	 */
@@ -883,19 +939,21 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		activateCurrentModel();
 		
 		hasSelectedModel = true;
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		store();
+		UIUtil.setWaitCursor(this);
 		try {
+			store();
 			onSelect(null, executionContext);
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
+		} finally {
+			UIUtil.resetWaitCursor(this);
 		}
-		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		setVisible(false);
 		dispose();
 	}// GEN-LAST:event_okButtonActionPerformed
 
 	protected abstract void onSelect(DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext);
+	protected abstract void onLoadExtractionmodel(String modelFile, ExecutionContext executionContext2);
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton analyzeButton;
@@ -905,6 +963,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton deleteButton;
     private javax.swing.JButton editButton;
     private javax.swing.JLabel infoBarLabel;
+    private javax.swing.JLabel infoBarLabel2;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -914,14 +973,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JButton loadExtractionModelButton;
+    private javax.swing.JPanel loadJMPanel;
     private javax.swing.JComboBox locationComboBox;
     private javax.swing.JButton newButton;
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
 
 	private static final long serialVersionUID = -3983034803834547687L;
-
-	// TODO allow loading of .jm file directly
 
 }

@@ -2500,7 +2500,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private static void createFrame() {
         DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(DataBrowserContext.getAppName(true)
-                + " - Relational Data Browser") {
+                + " - Relational Data Browser", false) {
             @Override
             protected void onSelect(final DbConnectionDialog connectionDialog, final ExecutionContext executionContext) {
                 try {
@@ -2521,6 +2521,10 @@ public class DataBrowser extends javax.swing.JFrame {
                     UIUtil.showException(null, "Error", e);
                 }
             }
+			@Override
+			protected void onLoadExtractionmodel(String modelFile, ExecutionContext executionContext2) {
+				// nothing to do
+			}
 			private static final long serialVersionUID = 1L;
         };
         dataModelManagerDialog.setVisible(true);

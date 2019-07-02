@@ -2074,7 +2074,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file, executionContext), executionContext);
 				createFrame(finalFile, true, true, null, executionContext);
 			} else {
-				DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + " - Database Subsetting Tool") {
+				DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + " - Database Subsetting Tool", true) {
+					@Override
+					protected void onLoadExtractionmodel(String modelFile, ExecutionContext executionContext) {
+						createFrame(modelFile, false, executionContext);
+					}
 					@Override
 					protected void onSelect(DbConnectionDialog connectionDialog, ExecutionContext executionContext) {
 						ExtractionModelFrame extractionModelFrame = null;
