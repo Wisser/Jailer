@@ -24,9 +24,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import net.sf.jailer.api.Subsetter;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.progress.ProgressListenerRegistry;
+import net.sf.jailer.subsetting.InconsistentSubsettingResultException;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.LayoutStorage;
@@ -84,6 +86,7 @@ public class ExecutionContext {
 		this.embedded = other.embedded;
 		this.checkPrimaryKeys = other.checkPrimaryKeys;
 		this.insertIncrementally = other.insertIncrementally;
+		this.abortInCaseOfInconsistency = other.abortInCaseOfInconsistency;
 		this.independentWorkingTables = other.independentWorkingTables;
 		this.upkDomain = other.upkDomain;
 // don't share progressListenerRegistry, was: this.progressListenerRegistry = other.progressListenerRegistry;
@@ -563,6 +566,24 @@ public class ExecutionContext {
 	}
 
 	/**
+	 * @return if <code>true</code>, {@link Subsetter#execute(String, File)} throws an
+	 *         {@link InconsistentSubsettingResultException} if the result is inconsistent
+	 *         due to insufficient transaction isolation
+	 */
+	public boolean isAbortInCaseOfInconsistency() {
+		return abortInCaseOfInconsistency;
+	}
+
+	/**
+	 * @param abortInCaseOfInconsitency if <code>true</code>, {@link Subsetter#execute(String, File)} throws an
+	 *         {@link InconsistentSubsettingResultException} if the result is inconsistent
+	 *         due to insufficient transaction isolation
+	 */
+	public void setAbortInCaseOfInconsistency(boolean abortInCaseOfInconsitency) {
+		this.abortInCaseOfInconsistency = abortInCaseOfInconsitency;
+	}
+
+	/**
 	 * Is the subsetter embedded into an application?
 	 */
 	public boolean isEmbedded() {
@@ -830,6 +851,9 @@ public class ExecutionContext {
 	// collects the rows using multiple insert operations with a limited number of rows per operation
 	private boolean insertIncrementally = false;
 
+	// abort the process if the result is inconsistent due to insufficient transaction isolation
+	private boolean abortInCaseOfInconsistency = false;
+	
 	// schema in which the import-filter mapping tables will be created
 	private String importFilterMappingTableSchema = "";
 
@@ -939,6 +963,7 @@ public class ExecutionContext {
 		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
 		checkPrimaryKeys = commandLine.checkPrimaryKeys;
 		insertIncrementally = commandLine.insertIncrementally;
+		abortInCaseOfInconsistency = commandLine.abortInCaseOfInconsistency;
 	}
 
 	private Map<String, String> copy(Map<String, String> map) {

@@ -21,8 +21,10 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.jailer.datamodel.DataModel;
@@ -40,6 +42,11 @@ public class UISettings  {
 	 * Name of property (boolean) holding the PLAF setting.
 	 */
 	public static final String USE_NATIVE_PLAF = "USE_NATIVE_PLAF";
+
+	/**
+	 * Name of property holding the "recent files".
+	 */
+	public static final String RECENT_FILES = "RECENT_FILES";
 
 	/**
 	 * Persistent properties.
@@ -152,4 +159,23 @@ public class UISettings  {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public static List<File> loadRecentFiles() {
+		Object files = restore(RECENT_FILES);
+		if (files instanceof Collection) {
+			return (List<File>) files;
+		}
+		return new ArrayList<File>();
+	}
+
+	public static void addRecentFile(File file) {
+		final int MAX_FILES = 100;
+		List<File> files = loadRecentFiles();
+		files.remove(file);
+		files.add(0, file);
+		if (MAX_FILES < files.size()) {
+			files.remove(files.size() - 1);
+		}
+		store(RECENT_FILES, files);
+	}
 }

@@ -756,6 +756,7 @@ public class LocalEntityGraph extends EntityGraph {
 						orderBy,
 						reader);
 				executionContext.getProgressListenerRegistry().fireExported(table, rc);
+				addExportedCount(rc);
 			}
 		});
 	}
@@ -815,6 +816,7 @@ public class LocalEntityGraph extends EntityGraph {
 						sqlQuery + orderBy,
 						reader);
 				executionContext.getProgressListenerRegistry().fireExported(table, rc);
+				addExportedCount(rc);
 			}
 		});
 	}
@@ -888,6 +890,7 @@ public class LocalEntityGraph extends EntityGraph {
 				rc[0] += lrc;
 				if (fireProgressEvents) {
 					executionContext.getProgressListenerRegistry().fireExported(table, lrc);
+					addExportedCount(lrc);
 				}
 			}
 		});
@@ -1086,7 +1089,7 @@ public class LocalEntityGraph extends EntityGraph {
 			final int setId = getNextSetId();
 			
 			final long[] rc = new long[1];
-			
+
 			String selectEB = 
 					"Select " + upkColumnList(association.destination, "EB", "") + " from " + dmlTableReference(ENTITY, localSession) + " EB " +
 					"Where " + (deletedEntitiesAreMarked? "EB.birthday>=0 and " : "") +
@@ -1097,12 +1100,14 @@ public class LocalEntityGraph extends EntityGraph {
 				@Override
 				protected void process(String inlineView) throws SQLException {
 				
+					String sep = upkMatch(association.source).isEmpty()? "" : ", ";
+					
 					String selectSource =
-							"Select distinct " + upkColumnList(association.destination, "EB", "") + ", " + pkList(association.source, sourceAlias, "") + " from " + inlineView + " " +
+							"Select distinct " + upkColumnList(association.destination, "EB", "") + sep + pkList(association.source, sourceAlias, "") + " from " + inlineView + " " +
 									"join " + quoting.requote(association.destination.getName()) + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB", "", false) + " " +
 									"join " + quoting.requote(association.source.getName()) + " " + sourceAlias + " " + " on " + jc;
 
-					remoteSession.executeQuery(selectSource, new LocalInlineViewBuilder("EBA", upkColumnList(association.destination, null, "EB") + ", " + upkColumnList(association.source, "A"), true) {
+					remoteSession.executeQuery(selectSource, new LocalInlineViewBuilder("EBA", upkColumnList(association.destination, null, "EB") + sep + upkColumnList(association.source, "A"), true) {
 						
 						@Override
 						protected void process(String inlineView) throws SQLException {
@@ -1123,7 +1128,7 @@ public class LocalEntityGraph extends EntityGraph {
 									"Select distinct " + setId + ", " + typeName(association.destination) + ", " + upkColumnList(association.destination, "EBA", "EB") + 
 									" from " + inlineView + (deletedEntitiesAreMarked? " join " : " left join ") + dmlTableReference(ENTITY, localSession) + " EA" + 
 									" on EA.r_entitygraph=" + graphID + " and EA.type=" + typeName(association.source) + "" +
-									" and " + eBAEqualsEA +
+									(eBAEqualsEA.length() > 0? " and " + eBAEqualsEA : "") +
 									" Where " + (deletedEntitiesAreMarked? "EA.birthday=-1" : "EA.type is null");
 									
 							String remove = "Insert into " + dmlTableReference(ENTITY_SET_ELEMENT, localSession) + 
@@ -1222,6 +1227,7 @@ public class LocalEntityGraph extends EntityGraph {
 				}
 				long rc = remoteSession.executeQuery(select, reader);
 				executionContext.getProgressListenerRegistry().fireExported(table, rc);
+				addExportedCount(rc);
 			}
 		});
 	}

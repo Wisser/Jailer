@@ -39,6 +39,7 @@ import net.sf.jailer.database.TemporaryTableManager;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.Quoting;
@@ -143,13 +144,17 @@ public class DDLCreator {
 		String template = "script" + File.separator + "ddl-template.sql";
 		String contraint = pkColumnConstraint(session);
 		Map<String, String> typeReplacement = targetDBMS(session).getTypeReplacement();
-		String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
+		PrimaryKey upk = rowIdSupport.getUniversalPrimaryKey();
+		if (upk.getColumns().isEmpty()) {
+			throw new DataModel.NoPrimaryKeyException(null);
+		}
+		String universalPrimaryKey = upk.toSQL(null, contraint, typeReplacement);
 		Map<String, String> arguments = new HashMap<String, String>();
 		arguments.put("upk", universalPrimaryKey);
 		arguments.put("upk-hash", "" + ((universalPrimaryKey + targetDBMS(session).getTableProperties()).hashCode()));
-		arguments.put("pre", rowIdSupport.getUniversalPrimaryKey().toSQL("PRE_", contraint, typeReplacement));
-		arguments.put("from", rowIdSupport.getUniversalPrimaryKey().toSQL("FROM_", contraint, typeReplacement));
-		arguments.put("to", rowIdSupport.getUniversalPrimaryKey().toSQL("TO_", contraint, typeReplacement));
+		arguments.put("pre", upk.toSQL("PRE_", contraint, typeReplacement));
+		arguments.put("from", upk.toSQL("FROM_", contraint, typeReplacement));
+		arguments.put("to", upk.toSQL("TO_", contraint, typeReplacement));
 		arguments.put("version", "" + JailerVersion.WORKING_TABLE_VERSION);
 		arguments.put("constraint", contraint);
 
@@ -187,15 +192,15 @@ public class DDLCreator {
 		Map<String, List<String>> listArguments = new HashMap<String, List<String>>();
 		if (indexType == 0) {
 			// full index
-			listArguments.put("column-list", Collections.singletonList(", " + rowIdSupport.getUniversalPrimaryKey().columnList(null)));
-			listArguments.put("column-list-from", Collections.singletonList(", " + rowIdSupport.getUniversalPrimaryKey().columnList("FROM_")));
-			listArguments.put("column-list-to", Collections.singletonList(", " + rowIdSupport.getUniversalPrimaryKey().columnList("TO_")));
+			listArguments.put("column-list", Collections.singletonList(", " + upk.columnList(null)));
+			listArguments.put("column-list-from", Collections.singletonList(", " + upk.columnList("FROM_")));
+			listArguments.put("column-list-to", Collections.singletonList(", " + upk.columnList("TO_")));
 		} else if (indexType == 1) {
 			// single column indexes
 			List<String> cl = new ArrayList<String>();
 			List<String> clFrom = new ArrayList<String>();
 			List<String> clTo = new ArrayList<String>();
-			for (Column c : rowIdSupport.getUniversalPrimaryKey().getColumns()) {
+			for (Column c : upk.getColumns()) {
 				cl.add(", " + c.name);
 				clFrom.add(", FROM_" + c.name);
 				clTo.add(", FROM_" + c.name);

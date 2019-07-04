@@ -32,6 +32,7 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.subsetting.ExportStatistic;
+import net.sf.jailer.subsetting.InconsistentSubsettingResultException;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.subsetting.SubsettingEngine;
 
@@ -118,6 +119,8 @@ public class Subsetter {
 	 * @param exportScriptFile the export-script file (compressed if it ends with '.zip' or '.gz')
 	 * 
 	 * @return export statistic
+	 * 
+	 * @throws InconsistentSubsettingResultException if {@link ExecutionContext#isAbortInCaseOfInconsistency()} and the number of exported rows differs from that of the collected ones
 	 */
 	public ExportStatistic execute(String whereClause, File exportScriptFile) throws SQLException, IOException {
 		return execute(whereClause, exportScriptFile, null);
@@ -131,6 +134,8 @@ public class Subsetter {
 	 * @param deleteScriptFile the delete-script file (compressed if it ends with '.zip' or '.gz'), optional
 	 * 
 	 * @return export statistic
+	 * 
+	 * @throws InconsistentSubsettingResultException if {@link ExecutionContext#isAbortInCaseOfInconsistency()} and the number of exported rows differs from that of the collected ones
 	 */
 	public ExportStatistic execute(String whereClause, File exportScriptFile, File deleteScriptFile) throws SQLException, IOException {
 		try {
@@ -641,6 +646,22 @@ public class Subsetter {
 	 */
 	public Map<String, String> getSourceSchemaMapping() {
 		return executionContext.getSourceSchemaMapping();
+	}
+
+	/**
+	 * If <code>true</code>, the Subsetter throws an 
+	 * 
+	 * @return if <code>true</code>, abort the process if the result is inconsistent due to insufficient transaction isolation
+	 */
+	public boolean isAbortInCaseOfInconsistency() {
+		return executionContext.isAbortInCaseOfInconsistency();
+	}
+
+	/**
+	 * @param abortInCaseOfInconsitency if <code>true</code>, abort the process if the result is inconsistent due to insufficient transaction isolation
+	 */
+	public void setAbortInCaseOfInconsistency(boolean abortInCaseOfInconsitency) {
+		executionContext.setAbortInCaseOfInconsistency(abortInCaseOfInconsitency);
 	}
 
 	/**

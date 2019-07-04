@@ -254,6 +254,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			}
 		}
 		executionContext.getProgressListenerRegistry().fireExported(table, rc);
+		addExportedCount(rc);
 	}
 
 	/**

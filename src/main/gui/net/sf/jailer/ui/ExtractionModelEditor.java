@@ -268,6 +268,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>(), new HashMap<String, String>(), executionContext);
 			executionContext.getLayoutStorage().restore(extractionModelFile);
 			isNew = false;
+			UISettings.addRecentFile(new File(extractionModelFile));
 		}
 		subject = extractionModel.subject;
 		dataModel = extractionModel.dataModel;

@@ -32,12 +32,12 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 
 	@Override
 	protected MDSchema getDefaultSchema(MetaDataSource metaDataSource) {
-		return metaDataSource.getDefaultSchema();
+		return metaDataSource.isInitialized()? metaDataSource.getDefaultSchema() : null;
 	}
 
 	@Override
 	protected MDSchema findSchema(MetaDataSource metaDataSource, String name) {
-		return metaDataSource.find(name);
+		return metaDataSource.isInitialized()?  metaDataSource.find(name) : null;
 	}
 
 	@Override

@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
 
@@ -63,7 +64,7 @@ public class MetaDataSource {
 	 * Schemas.
 	 */
 	private List<MDSchema> schemas = new ArrayList<MDSchema>();
-	
+
 	/**
 	 * Constructor.
 	 * 
@@ -78,7 +79,6 @@ public class MetaDataSource {
 		this.quoting = new Quoting(session);
 		
 		initTableMapping(dataModel);
-		readSchemas();
 	}
 
 	private void initTableMapping(DataModel dataModel) {
@@ -102,8 +102,18 @@ public class MetaDataSource {
 		}
 		return Quoting.staticUnquote(schema) + "." + Quoting.staticUnquote(t.getUnqualifiedName());
 	}
+
+	private AtomicBoolean initialized = new AtomicBoolean(false);
+
+	public boolean isInitialized() {
+		return initialized.get();
+	}
 	
-	private void readSchemas() {
+	private synchronized void readSchemas() {
+		if (initialized.get()) {
+			return;
+		}
+
 		Object md = new Object();
 		try {
 			md = session.getMetaData();
@@ -124,6 +134,7 @@ public class MetaDataSource {
 				}
 			}
 		}
+		initialized.set(true);
 	}
 
 	ResultSet readTables(String schemaPattern) throws SQLException {
@@ -138,7 +149,8 @@ public class MetaDataSource {
 	/**
 	 * @return the schemas
 	 */
-	public List<MDSchema> getSchemas() {
+	public synchronized List<MDSchema> getSchemas() {
+		readSchemas();
 		return schemas;
 	}
 
@@ -157,7 +169,7 @@ public class MetaDataSource {
 	/**
 	 * Removes all chached data.
 	 */
-	public void clear() {
+	public synchronized void clear() {
     	for (MDSchema mdSchema: schemas) {
     		mdSchema.setValid(false);
     	}
@@ -165,7 +177,8 @@ public class MetaDataSource {
     	mDTableToTable.clear();
     	tableToMDTable.clear();
     	schemaPerUnquotedNameUC.clear();
-		readSchemas();
+    	initialized.set(false);
+    	readSchemas();
 	}
 
 	/**

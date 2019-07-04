@@ -529,6 +529,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				orderBy,
 				reader, withExplicitCommit());
 		executionContext.getProgressListenerRegistry().fireExported(table, rc);
+		addExportedCount(rc);
 	}
 	
 	/**
@@ -567,6 +568,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				reader,
 				(!orderByPK? sqlQuery : null), null, 0, withExplicitCommit());
 		executionContext.getProgressListenerRegistry().fireExported(table, rc);
+		addExportedCount(rc);
 	}
 	
 	/**
@@ -604,6 +606,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		Session.ResultSetReader reader = getTransformerFactory().create(table);
 		long rc = readEntities(table, orderByPK, reader);
 		executionContext.getProgressListenerRegistry().fireExported(table, rc);
+		addExportedCount(rc);
 	}
 
 	/**
@@ -925,6 +928,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		}
 		long rc = session.executeQuery(select, reader, withExplicitCommit());
 		executionContext.getProgressListenerRegistry().fireExported(table, rc);
+		addExportedCount(rc);
 	}
 	
 	/**

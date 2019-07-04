@@ -568,4 +568,19 @@ public abstract class EntityGraph {
 		}
 	}
 
+	protected void addExportedCount(long count) {
+		Long cnt = (Long) getSession().getSessionProperty(EntityGraph.class, "ExportedCount");
+		if (cnt == null) {
+			cnt = count;
+		} else {
+			cnt += count;
+		}
+		getSession().setSessionProperty(EntityGraph.class, "ExportedCount", cnt);
+	}
+
+	public long getExportedCount() {
+		Long cnt = (Long) getSession().getSessionProperty(EntityGraph.class, "ExportedCount");
+		return cnt == null? 0 : cnt;
+	}
+
 }

@@ -45,6 +45,7 @@ public class SessionForUI extends Session {
 	 * @param dbms the DBMS
 	 */
 	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, final Window w) throws SQLException {
+		Session.setThreadSharesConnection();
 		final SessionForUI session = new SessionForUI(dataSource, dbms, isolationLevel);
 		final AtomicReference<Connection> con = new AtomicReference<Connection>();
 		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();

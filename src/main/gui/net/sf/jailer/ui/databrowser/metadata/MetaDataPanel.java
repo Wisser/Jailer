@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.ComboBoxModel;
@@ -76,6 +77,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -1136,43 +1138,83 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         }
     }
 
+    private int inResetCount = 0;
+	private static AtomicInteger pendingCount = new AtomicInteger();
+
     public void reset() {
-    	final Window wa = SwingUtilities.getWindowAncestor(this);
-    	UIUtil.setWaitCursor(wa != null? wa : refreshButton);
-        JDBCMetaDataBasedModelElementFinder.resetCaches(metaDataSource.getSession());
+    	if (pendingCount.get() > 0) {
+    		return;
+    	}
+    	inResetCount++;
+    	refreshButton.setEnabled(false);
+    	final AtomicBoolean waitStateIsResetted = new AtomicBoolean(false);
+    	Timer timer = new Timer(100, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!waitStateIsResetted.get()) {
+					setOrResetWaitState(true);
+				}
+			}
+		});
+		timer.setRepeats(false);
+		timer.start();
+		
+    	JDBCMetaDataBasedModelElementFinder.resetCaches(metaDataSource.getSession());
         setOutline(new ArrayList<OutlineInfo>(), -1);
         proceduresPerSchema.clear();
-        UIUtil.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    MDTable selectedTable = null;
-                    if (metaDataTree.getSelectionPath() != null) {
-                        Object last = metaDataTree.getSelectionPath().getLastPathComponent();
-                        if (last instanceof DefaultMutableTreeNode) {
-                            final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
-                            if (uo instanceof MDTable) {
-                                selectedTable = (MDTable) uo;
-                            }
-                        }
-                    }
-                    metaDataSource.clear();
-                    metaDataDetailsPanel.reset();
-                    updateTreeModel(metaDataSource);
-                    if (selectedTable != null) {
-                        MDSchema schema = metaDataSource.find(selectedTable.getSchema().getName());
-                        if (schema != null) {
-                            MDTable table = schema.find(selectedTable.getName());
-                            if (table != null) {
-                                select(table);
-                            }
-                        }
-                    }
-                } finally {
-                	UIUtil.resetWaitCursor(wa != null? wa : refreshButton);
+
+        MDTable selectedTable = null;
+        if (metaDataTree.getSelectionPath() != null) {
+            Object last = metaDataTree.getSelectionPath().getLastPathComponent();
+            if (last instanceof DefaultMutableTreeNode) {
+                final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
+                if (uo instanceof MDTable) {
+                    selectedTable = (MDTable) uo;
                 }
             }
-        });
+        }
+        final MDTable finalSelectedTable = selectedTable;
+
+		pendingCount.incrementAndGet();
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Session.setThreadSharesConnection();
+					synchronized (metaDataSource) {
+						pendingCount.getAndDecrement();
+						metaDataSource.clear();
+					}
+				} finally {
+			        UIUtil.invokeLater(new Runnable() {
+			            @Override
+			            public void run() {
+		                	if (--inResetCount <= 0) {
+				            	try {
+				                    metaDataDetailsPanel.reset();
+				                    updateTreeModel(metaDataSource);
+				                    if (finalSelectedTable != null) {
+				                        MDSchema schema = metaDataSource.find(finalSelectedTable.getSchema().getName());
+				                        if (schema != null) {
+				                            MDTable table = schema.find(finalSelectedTable.getName());
+				                            if (table != null) {
+				                                select(table);
+				                            }
+				                        }
+				                    }
+				                } finally {
+				                	refreshButton.setEnabled(true);
+				                	setOrResetWaitState(false);
+				                	waitStateIsResetted.set(true);
+				                }
+		                	}
+			            }
+			        });
+				}
+			}
+		});
+		thread.setDaemon(true);
+		thread.start();
     }
 
     public void select(Table table) {
@@ -1786,6 +1828,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     protected abstract void updateDataModelView(Table table);
     protected abstract void setCaretPosition(int position);
 	protected abstract void appendScript(String script, boolean execute);
+	protected abstract void setOrResetWaitState(boolean set);
 
     public void onSelectTable() {
         Object item = tablesComboBox.getSelectedItem();

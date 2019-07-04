@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -252,7 +253,7 @@ public class DataBrowser extends javax.swing.JFrame {
         tableTreesTabbedPane.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-		        if (createMetaDataPanel != null && tableTreesTabbedPane.getSelectedComponent() == tablesPanel) {
+		        if (createMetaDataPanel != null && tableTreesTabbedPane.getSelectedComponent() == tablesCardPanel) {
 					UIUtil.invokeLater(10, new Runnable() {
 						@Override
 						public void run() {
@@ -1105,7 +1106,12 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationTreeScrollPane = new javax.swing.JScrollPane();
         navigationTree = new javax.swing.JTree();
         openTableButton = new javax.swing.JButton();
+        tablesCardPanel = new javax.swing.JPanel();
         tablesPanel = new javax.swing.JPanel();
+        jPanel6 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTree1 = new javax.swing.JTree();
+        refreshButton = new javax.swing.JButton();
         detailsAndBorderBrowserTabbedPane = new javax.swing.JTabbedPane();
         jPanel7 = new javax.swing.JPanel();
         metaDataViewPanel = new javax.swing.JPanel();
@@ -1449,8 +1455,43 @@ public class DataBrowser extends javax.swing.JFrame {
 
         tableTreesTabbedPane.addTab("Navigation", navigationPanel);
 
+        tablesCardPanel.setLayout(new java.awt.CardLayout());
+
         tablesPanel.setLayout(new java.awt.BorderLayout());
-        tableTreesTabbedPane.addTab("Database", tablesPanel);
+        tablesCardPanel.add(tablesPanel, "tables");
+
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("loading database meta data...");
+        jTree1.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        jTree1.setSelectionModel(null);
+        jScrollPane2.setViewportView(jTree1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel6.add(jScrollPane2, gridBagConstraints);
+
+        refreshButton.setText("Refresh");
+        refreshButton.setToolTipText("Refresh Database Meta Data Cache");
+        refreshButton.setEnabled(false);
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel6.add(refreshButton, gridBagConstraints);
+
+        tablesCardPanel.add(jPanel6, "loading");
+
+        tableTreesTabbedPane.addTab("Database", tablesCardPanel);
 
         jSplitPane4.setLeftComponent(tableTreesTabbedPane);
 
@@ -2137,7 +2178,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	        } else {
 	        	SQLConsole sqlConsole = getCurrentSQLConsole();
 	        	if (sqlConsole != null) {
-	        		tableTreesTabbedPane.setSelectedComponent(tablesPanel);
+	        		tableTreesTabbedPane.setSelectedComponent(tablesCardPanel);
 	        		sqlConsole.grabFocus();
 	        		sqlConsole.update();
 	        	}
@@ -2675,8 +2716,10 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
@@ -2696,6 +2739,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane4;
     private javax.swing.JTable jTable1;
+    private javax.swing.JTree jTree1;
     private javax.swing.JMenu jviewMenu;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
     private javax.swing.JPanel layeredPaneContent;
@@ -2719,6 +2763,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem newWindowMenuItem;
     private javax.swing.JButton openTableButton;
     private javax.swing.JMenuItem reconnectMenuItem;
+    private javax.swing.JButton refreshButton;
     private javax.swing.JMenuItem restoreSessionItem;
     private javax.swing.JMenu rowLimitMenu;
     private javax.swing.JMenuItem saveScriptAsMenuItem;
@@ -2730,6 +2775,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JRadioButtonMenuItem smallLayoutRadioButtonMenuItem;
     private javax.swing.JMenuItem storeSessionItem;
     private javax.swing.JTabbedPane tableTreesTabbedPane;
+    private javax.swing.JPanel tablesCardPanel;
     private javax.swing.JPanel tablesPanel;
     private javax.swing.JRadioButtonMenuItem thumbnailLayoutRadioButtonMenuItem;
     private javax.swing.JRadioButtonMenuItem tinyLayoutRadioButtonMenuItem;
@@ -3005,7 +3051,7 @@ public class DataBrowser extends javax.swing.JFrame {
                     	dataModelViewFrame.select(table);
                     } else {
                     	Table toSelect = null;
-                    	if (lastFocusTable != null && tableTreesTabbedPane.getSelectedComponent() == tablesPanel) {
+                    	if (lastFocusTable != null && tableTreesTabbedPane.getSelectedComponent() == tablesCardPanel) {
                     		toSelect = datamodel.get().getTable(lastFocusTable.getName());
                     	}
                     	if (toSelect == null) {
@@ -3401,26 +3447,35 @@ public class DataBrowser extends javax.swing.JFrame {
 				metaDataSource = getMetaDataSource(newSession);
 				if (metaDataSource == null || Boolean.TRUE.equals(session.getSessionProperty(DataBrowser.class, "removeMetaDataSource"))) {
 					metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
-					final MDSchema defaultSchema = metaDataSource.getDefaultSchema();
-					if (defaultSchema != null) {
-						// tigger reading meta data asynchronously
-						defaultSchema.loadTables(true, null, new Runnable() {
-							@Override
-							public void run() {
-								UIUtil.invokeLater(new Runnable() {
+					final MetaDataSource finalMetaDataSource = metaDataSource;
+					Thread thread = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							Session.setThreadSharesConnection();
+							final MDSchema defaultSchema = finalMetaDataSource.getDefaultSchema();
+							if (defaultSchema != null) {
+								// trigger reading meta data asynchronously
+								defaultSchema.loadTables(true, null, new Runnable() {
 									@Override
 									public void run() {
-										if (createMetaDataPanel != null) {
-											createMetaDataPanel.run();
-										}
-										if (metaDataPanel != null) {
-											metaDataPanel.refresh();
-										}
+										UIUtil.invokeLater(new Runnable() {
+											@Override
+											public void run() {
+												if (createMetaDataPanel != null) {
+													createMetaDataPanel.run();
+												}
+												if (metaDataPanel != null) {
+													metaDataPanel.refresh();
+												}
+											}
+										});
 									}
 								});
 							}
-						});
-					}
+						}
+					});
+					thread.setDaemon(true);
+					thread.start();
 					metaDataPanel = null;
 				}
 				session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", null);
@@ -3446,8 +3501,10 @@ public class DataBrowser extends javax.swing.JFrame {
 				e.printStackTrace();
 			}
 
+			((CardLayout) tablesCardPanel.getLayout()).show(tablesCardPanel, "loading");
+
 			final MetaDataSource fMetaDataSource = metaDataSource;
-			createMetaDataPanel = new Runnable() {
+			final Runnable createMetaDataPanelImmediately = new Runnable() {
 				@Override
 				public void run() {
 					if (metaDataPanel == null) {
@@ -3588,14 +3645,42 @@ public class DataBrowser extends javax.swing.JFrame {
 							protected void setCaretPosition(int position) {
 								getCurrentSQLConsole().setCaretPosition(position);
 							}
+
+							@Override
+							protected void setOrResetWaitState(boolean set) {
+								((CardLayout) tablesCardPanel.getLayout()).show(tablesCardPanel, set? "loading" : "tables");
+							}
 						};
 					}
 					session.setSessionProperty(getClass(), "metaDataPanel", metaDataPanel);
 					tablesPanel.add(metaDataPanel, java.awt.BorderLayout.CENTER);
+					((CardLayout) tablesCardPanel.getLayout()).show(tablesCardPanel, "tables");
+				}
+			};
+			createMetaDataPanel = new Runnable() {
+				@Override
+				public void run() {
+					Thread thread = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							Session.setThreadSharesConnection();
+
+							// trigger loading meta data
+							fMetaDataSource.getSchemas();
+							
+							UIUtil.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									createMetaDataPanelImmediately.run();
+								}
+							});
+						}
+					});
+					thread.setDaemon(true);
+					thread.start();
 					createMetaDataPanel = null;
 				}
 			};
-
 			if (tableTreesTabbedPane.getSelectedComponent() == tablesPanel) {
 				createMetaDataPanel.run();
 			}
@@ -3953,6 +4038,9 @@ public class DataBrowser extends javax.swing.JFrame {
             // ignore
         }
     }//GEN-LAST:event_checkPKMenuItemActionPerformed
+
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+    }//GEN-LAST:event_refreshButtonActionPerformed
 
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();

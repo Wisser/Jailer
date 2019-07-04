@@ -604,6 +604,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         editButton = new javax.swing.JButton();
         copy = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
         infoBarLabel = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -666,7 +667,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(16, 4, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
         jPanel3.add(newButton, gridBagConstraints);
 
         editButton.setText(" Edit ");
@@ -707,6 +708,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
         jPanel3.add(deleteButton, gridBagConstraints);
+
+        jLabel1.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 9;
+        jPanel3.add(jLabel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
@@ -1114,6 +1121,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JButton editButton;
     private javax.swing.JLabel infoBarLabel;
     private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;

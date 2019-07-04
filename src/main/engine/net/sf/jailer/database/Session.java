@@ -256,7 +256,11 @@ public class Session {
 			public synchronized Connection getConnection() throws SQLException {
 				@SuppressWarnings("resource")
 				Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;
-				
+
+				if (con == null && Boolean.TRUE.equals(sharesConnection.get())) {
+					con = defaultConnection;
+				}
+
 				if (con == null) {
 					try {
 						con = dataSource.getConnection();
@@ -940,7 +944,7 @@ public class Session {
 		synchronized (this) {
 			down = true;
 		}
-		_log.info("closing connection...");
+		_log.info("closing connections... (" + connections.size() + ")");
 		for (Connection con: connections) {
 			try {
 				con.close();
@@ -1160,6 +1164,12 @@ public class Session {
 			return false;
 		}
 		return true;
+	}
+
+	private final static ThreadLocal<Boolean> sharesConnection = new ThreadLocal<Boolean>();
+	
+	public static void setThreadSharesConnection() {
+		sharesConnection.set(true);
 	}
 
 }

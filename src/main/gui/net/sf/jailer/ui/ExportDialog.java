@@ -72,7 +72,7 @@ import net.sf.jailer.util.Quoting;
  *
  * @author Ralf Wisser
  */
-public class ExportDialog extends javax.swing.JDialog {
+public abstract class ExportDialog extends javax.swing.JDialog {
 
 	/**
 	 * true iff ok-button was clicked.
@@ -1791,6 +1791,11 @@ public class ExportDialog extends javax.swing.JDialog {
 		if (err) {
 			JOptionPane.showMessageDialog(this, "Unfilled mandatory fields", "Error", JOptionPane.ERROR_MESSAGE);
 		} else {
+			if (useRowIds.isVisible() && !useRowIds.isSelected()) {
+				if (!checkForPKs()) {
+					return;
+				}
+			}
 			UIUtil.setWaitCursor(this);
 			boolean cwt;
 			try {
@@ -1805,6 +1810,8 @@ public class ExportDialog extends javax.swing.JDialog {
 			}
 		}
 	}//GEN-LAST:event_jButton1ActionPerformed
+
+	protected abstract boolean checkForPKs();
 
 	private boolean createWorkingTables() {
 		List<String> ddlArgs = new ArrayList<String>();
@@ -2349,7 +2356,5 @@ public class ExportDialog extends javax.swing.JDialog {
 			e.printStackTrace();
 		}
 	}
-
-	private static final long serialVersionUID = 952553009821662964L;
 
 }

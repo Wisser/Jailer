@@ -885,7 +885,7 @@ public class DataModel {
 		private static final long serialVersionUID = 4523935351640139649L;
 		public final Table table;
 		public NoPrimaryKeyException(Table table, String message) {
-			super("Table '" + table.getName() + "' " + message);
+			super((table == null? "Subject table " : ("Table '" + table.getName() + "' ")) + message);
 			this.table = table;
 		}
 		public NoPrimaryKeyException(Table table) {

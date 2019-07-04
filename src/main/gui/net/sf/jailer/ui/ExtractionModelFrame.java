@@ -1193,7 +1193,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		return file;
 	}
 	
-	public void openExportDialog(boolean checkRI, Runnable onDataModelUpdate) {
+	public void openExportDialog(boolean checkRI, final Runnable onDataModelUpdate) {
 		String tmpFileName = null;
 		try {
 			if (checkRI && extractionModelEditor.dataModel != null && !ScriptFormat.XML.equals(extractionModelEditor.scriptFormat)) {
@@ -1231,9 +1231,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs()); 
 						Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), this);
 
+						final Set<Table> toCheck = new HashSet<Table>();
 						if (session != null) {
 							if (extractionModelEditor.dataModel != null) {
-								Set<Table> toCheck = new HashSet<Table>();
 								if (extractionModelEditor.extractionModel != null) {
 									if (extractionModelEditor.extractionModel.additionalSubjects != null) {
 										for (AdditionalSubject as: extractionModelEditor.extractionModel.additionalSubjects) {
@@ -1242,12 +1242,35 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									}
 								}
 								toCheck.add(extractionModelEditor.subject);
-								extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, session.dbms.getRowidName() != null);
+								extractionModelEditor.dataModel.checkForPrimaryKey(new HashSet<Table>(toCheck), session.dbms.getRowidName() != null);
 							}
 	
 							String jmFile = extractionModelEditor.extractionModelFile != null? extractionModelEditor.extractionModelFile : tmpFileName;
 							
-							ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, executionContext);
+							@SuppressWarnings("serial")
+							ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, executionContext) {
+								@Override
+								protected boolean checkForPKs() {
+									try {
+										extractionModelEditor.dataModel.checkForPrimaryKey(new HashSet<Table>(toCheck), false);
+									} catch (Exception e) {
+										if (e instanceof DataModel.NoPrimaryKeyException) {
+											if (JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, new Object[] { "Edit Table", "Cancel" }, null) == 0) {
+												dispose();
+												setVisible(false);
+												openDataModelEditor(((NoPrimaryKeyException) e).table == null? extractionModelEditor.subject : ((NoPrimaryKeyException) e).table, false);
+												if (onDataModelUpdate != null) {
+													onDataModelUpdate.run();
+												}
+											}
+										} else {
+											UIUtil.showException(this, "Error", e);
+										}
+										return false;
+									}
+									return true;
+								}
+							};
 							session.shutDown();
 							if (exportDialog.isOk()) {
 								exportDialog.fillCLIArgs(args);
@@ -1326,7 +1349,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		} catch (Exception e) {
 			if (e instanceof DataModel.NoPrimaryKeyException) {
 				if (JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, new Object[] { "Edit Table", "Cancel" }, null) == 0) {
-					openDataModelEditor(((NoPrimaryKeyException) e).table, false);
+					openDataModelEditor(((NoPrimaryKeyException) e).table == null? extractionModelEditor.subject : ((NoPrimaryKeyException) e).table, false);
 					if (onDataModelUpdate != null) {
 						onDataModelUpdate.run();
 					}

@@ -62,6 +62,7 @@ import net.sf.jailer.JailerVersion;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -115,8 +116,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		UIUtil.replace(infoBarLabel, infoBar);
 		
 		InfoBar infoBarJM = new InfoBar("Load Extraction Model", 
-				"\n",
-				"Load an extraction model.");
+				"\n \n \n \n",
+				"Load a recently used model or choose a model file.");
 		UIUtil.replace(infoBarLabel2, infoBarJM);
 
 		infoBarConnection = new InfoBar("Database Connection", 
@@ -211,6 +212,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		});
 		
+		initJMTable();
+		
 		updateLocationComboboxModel();
 		locationComboBox.setSelectedItem(executionContext.getDatamodelFolder());
 		final ListCellRenderer<String> renderer = locationComboBox.getRenderer();
@@ -284,6 +287,84 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		refresh();
 		UIUtil.initPeer();
 		okButton.grabFocus();
+	}
+
+	private final List<File> fileList = new ArrayList<File>();
+
+	private void initJMTable() {
+		try {
+			fileList.addAll(UISettings.loadRecentFiles());
+		} catch (Exception e) {
+			// ignore
+		}
+		Object[][] data = new Object[fileList.size()][];
+		int i = 0;
+		for (File file: fileList) {
+			try {
+				if (file.exists()) {
+					data[i++] = new Object[] { file.getName(), file.getAbsoluteFile().getParent() };
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		DefaultTableModel tableModel = new DefaultTableModel(data, new String[] { "Name", "Path" }) {
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+			private static final long serialVersionUID = 1535384744352159695L;
+		};
+		jmFilesTable.setModel(tableModel);
+
+		final TableCellRenderer defaultTableCellRenderer = jmFilesTable
+				.getDefaultRenderer(String.class);
+		jmFilesTable.setShowGrid(false);
+		jmFilesTable.setDefaultRenderer(Object.class,
+				new TableCellRenderer() {
+					@Override
+					public Component getTableCellRendererComponent(
+							JTable table, Object value, boolean isSelected,
+							boolean hasFocus, int row, int column) {
+						Component render = defaultTableCellRenderer
+								.getTableCellRendererComponent(table, value,
+										false, hasFocus, row, column);
+						if (render instanceof JLabel) {
+							final Color BG1 = new Color(255, 255, 255);
+							final Color BG2 = new Color(242, 255, 242);
+							if (!isSelected) {
+								((JLabel) render)
+									.setBackground((row % 2 == 0) ? BG1
+											: BG2);
+							} else {
+								((JLabel) render).setBackground(new Color(160, 200, 255));
+							}
+							((JLabel) render).setForeground(column == 0? Color.black : Color.gray);
+						}
+						return render;
+					}
+				});
+		jmOkButton.setEnabled(false);
+		jmFilesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		jmFilesTable.getSelectionModel().addListSelectionListener(
+				new ListSelectionListener() {
+					@Override
+					public void valueChanged(ListSelectionEvent evt) {
+						jmOkButton.setEnabled(jmFilesTable.getSelectedRow() >= 0);
+					}
+				});
+		jmFilesTable.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent me) {
+				JTable table =(JTable) me.getSource();
+				Point p = me.getPoint();
+				int row = table.rowAtPoint(p);
+				if (me.getClickCount() >= 2) {
+					table.getSelectionModel().setSelectionInterval(row, row);
+					jmOkButtonActionPerformed(null);
+				}
+			}
+		});
 	}
 
 	private void initConnectionDialog() {
@@ -536,7 +617,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         loadJMPanel = new javax.swing.JPanel();
         infoBarLabel2 = new javax.swing.JLabel();
         loadExtractionModelButton = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JSeparator();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jmFilesTable = new javax.swing.JTable();
+        jmOkButton = new javax.swing.JButton();
+        jmCancelButton = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         connectionDialogPanel = new javax.swing.JPanel();
 
@@ -607,6 +691,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         jPanel2.add(okButton, gridBagConstraints);
 
@@ -717,10 +802,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         loadJMPanel.add(infoBarLabel2, gridBagConstraints);
 
-        loadExtractionModelButton.setText("Load Extraction Model");
+        loadExtractionModelButton.setText("Choose File...");
         loadExtractionModelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadExtractionModelButtonActionPerformed(evt);
@@ -730,17 +816,59 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         loadJMPanel.add(loadExtractionModelButton, gridBagConstraints);
+
+        jScrollPane3.setBorder(javax.swing.BorderFactory.createTitledBorder("Recent Files"));
+
+        jmFilesTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(jmFilesTable);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
-        loadJMPanel.add(jSeparator2, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        loadJMPanel.add(jScrollPane3, gridBagConstraints);
+
+        jmOkButton.setText(" OK ");
+        jmOkButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jmOkButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        loadJMPanel.add(jmOkButton, gridBagConstraints);
+
+        jmCancelButton.setText(" Cancel ");
+        jmCancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jmCancelButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
+        loadJMPanel.add(jmCancelButton, gridBagConstraints);
 
         jTabbedPane1.addTab("Extraction Model", loadJMPanel);
 
@@ -904,6 +1032,32 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		UIUtil.checkTermination();
     }//GEN-LAST:event_loadExtractionModelButtonActionPerformed
 
+    private void jmOkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmOkButtonActionPerformed
+		if (jmFilesTable.getSelectedRow() >= 0) {
+			final File file = fileList.get(jmFilesTable.getSelectedRow());
+			UIUtil.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						UIUtil.setWaitCursor(DataModelManagerDialog.this);
+						onLoadExtractionmodel(file.getPath(), executionContext);
+						setVisible(false);
+						dispose();
+					} catch (Throwable t) {
+						UIUtil.showException(DataModelManagerDialog.this, "Error", t);
+					} finally {
+						UIUtil.resetWaitCursor(DataModelManagerDialog.this);
+					}
+					UIUtil.checkTermination();
+				}
+			});
+		}
+	}//GEN-LAST:event_jmOkButtonActionPerformed
+
+    private void jmCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmCancelButtonActionPerformed
+		close();
+    }//GEN-LAST:event_jmCancelButtonActionPerformed
+
 	/**
 	 * Opens file chooser.
 	 */
@@ -972,9 +1126,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JButton jmCancelButton;
+    private javax.swing.JTable jmFilesTable;
+    private javax.swing.JButton jmOkButton;
     private javax.swing.JButton loadExtractionModelButton;
     private javax.swing.JPanel loadJMPanel;
     private javax.swing.JComboBox locationComboBox;

@@ -365,11 +365,13 @@ public class QueryTypeAnalyser {
 									if (tableName.getPivot() != null) {
 										unknownTable();
 									} else {
-										MDSchema mdSchema;
-										if (schema == null) {
-											mdSchema = metaDataSource.getDefaultSchema();
-										} else {
-											mdSchema = metaDataSource.find(schema);
+										MDSchema mdSchema = null;
+										if (metaDataSource.isInitialized()) {
+											if (schema == null) {
+												mdSchema = metaDataSource.getDefaultSchema();
+											} else {
+												mdSchema = metaDataSource.find(schema);
+											}
 										}
 										if (mdSchema != null) {
 											MDTable mdTable = mdSchema.find(name);

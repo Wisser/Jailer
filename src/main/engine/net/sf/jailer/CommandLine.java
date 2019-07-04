@@ -161,7 +161,10 @@ public class CommandLine {
 
 	@Option(name="-limit-transaction-size", usage="collects the rows using multiple insert operations with a limited number of rows per operation")
 	boolean insertIncrementally = false;
-	
+
+	@Option(name="-abortInCaseOfInconsistency", usage="abort the process if the result is inconsistent due to insufficient transaction isolation")
+	boolean abortInCaseOfInconsistency = false;
+
 	@Argument
 	public List<String> arguments = new ArrayList<String>();
 

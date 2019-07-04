@@ -226,7 +226,7 @@ public class SubsettingEngine {
 			appendCommentHeader(line);
 			_log.info(line);
 		}
-		
+
 		appendCommentHeader("");
 		boolean isFiltered = false;
 		for (Table t : new TreeSet<Table>(totalProgress)) {
@@ -1420,6 +1420,7 @@ public class SubsettingEngine {
 		setEntityGraph(graph);
 		setDataModel(extractionModel.dataModel);
 		EntityGraph exportedEntities = null;
+		long exportedCount = 0;
 		
 		try {
 			runstats();
@@ -1457,7 +1458,7 @@ public class SubsettingEngine {
 					writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session, "exporting rows", startTimestamp, afterCollectionTimestamp);
 				}
 			}
-			
+			exportedCount = entityGraph.getExportedCount();
 			if (deleteScriptFileName != null) {
 				executionContext.getProgressListenerRegistry().fireNewStage("delete", false, false);
 				executionContext.getProgressListenerRegistry().fireNewStage("delete-reduction", false, false);
@@ -1536,6 +1537,19 @@ public class SubsettingEngine {
 		}
 		shutDown();
 		
+		if (scriptFormat != ScriptFormat.XML && exportStatistic.getTotal() != exportedCount) {
+			String message =
+						"The number of rows collected (" + exportStatistic.getTotal() + ") differs from that of the exported ones (" + exportedCount + ").\n" +
+						"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique and never null.\n" +
+						"It is recommended to check the integrity of the primary keys.\n" +
+						"To do this, use the cli/api-argument \"-check-primary-keys\".";
+			if (executionContext.isAbortInCaseOfInconsistency()) {
+				throw new InconsistentSubsettingResultException(message);
+			} else {
+				System.err.println(message);
+			}
+		}
+
 		return exportStatistic;
 	}
 
@@ -1579,30 +1593,6 @@ public class SubsettingEngine {
 		
 		final Map<Table, Long> removedEntities = new HashMap<Table, Long>();
 
-		// do not check tables in first step having exactly one 1:1 or 1:n
-		// association
-		// from another table
-		Set<Table> dontCheckInitially = new HashSet<Table>();
-		for (Table table: allTables) {
-			int n = 0;
-			boolean check = false;
-			for (Association a: table.associations) {
-				if (!a.reversalAssociation.isIgnored()) {
-					if (tabuTables.contains(a.destination)) {
-						check = true;
-					} else if (a.reversalAssociation.getCardinality() == Cardinality.ONE_TO_MANY
-							|| a.reversalAssociation.getCardinality() == Cardinality.ONE_TO_ONE) {
-						++n;
-					} else {
-						check = true;
-					}
-				}
-			}
-			if ((!check) && n == 1) {
-				dontCheckInitially.add(table);
-			}
-		}
-
 		int today = 1;
 		executionContext.getProgressListenerRegistry().firePrepareExport();
 
@@ -1624,8 +1614,6 @@ public class SubsettingEngine {
 		Set<Table> emptyTables = new HashSet<Table>();
 
 		Set<Table> tablesToCheck = new HashSet<Table>(allTables);
-		_log.info("don't check initially: " + new PrintUtil().tableSetAsString(dontCheckInitially, null));
-		tablesToCheck.removeAll(dontCheckInitially);
 
 		boolean firstStep = true;
 		final Set<Table> roots = new HashSet<Table>();
