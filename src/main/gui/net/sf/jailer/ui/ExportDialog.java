@@ -1997,6 +1997,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		return independentWorkingTables.isSelected();
 	}
 
+	public boolean insertScripFileNameFieldIsEmpty() {
+		return insert.getText().trim().length() == 0;
+	}
+	
 	/**
 	 * Fills field content into cli-args.
 	 * 

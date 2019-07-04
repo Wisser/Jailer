@@ -1537,7 +1537,7 @@ public class SubsettingEngine {
 		}
 		shutDown();
 		
-		if (scriptFormat != ScriptFormat.XML && exportStatistic.getTotal() != exportedCount) {
+		if (scriptFile != null && scriptFormat != ScriptFormat.XML && exportStatistic.getTotal() != exportedCount) {
 			String message =
 						"The number of rows collected (" + exportStatistic.getTotal() + ") differs from that of the exported ones (" + exportedCount + ").\n" +
 						"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique and never null.\n" +
