@@ -1,9 +1,5 @@
-8.7.7
-  - New feature "Check Primary Keys" makes it possible to check the user-defined primary keys for uniqueness.
-  - A warning message appears if the number of collected rows differs from the number of exported ones.
-  - The performance of the preparation for the subsetting-process has been improved.
-  - Extraction models can now be loaded in the Data Model Manager dialog.
-  - UI improvements.
+8.7.8
+  - Fixed a bug that caused the creation of a delete script to generate syntactically incorrect SQL statements when a table without a primary key exists.
 
 8.7.5
   - Fix for ticket 39 "Oracle queries are going failed". https://sourceforge.net/p/jailer/bugs/39/ 
