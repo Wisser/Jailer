@@ -449,6 +449,10 @@ public class ExtractionModel {
 		if (dmf.size() > 0) {
 			return dmf.get(0).cells.get(0);
 		}
+		List<CsvFile.Line> csv = new CsvFile(new File(fileName), "export modus").getLines();
+		if (csv.isEmpty()) {
+			throw new RuntimeException(fileName + "' is not a valid Jailer extraction model");
+		}
 		return null;
 	}
 
