@@ -1479,8 +1479,23 @@ public class SubsettingEngine {
 				}
 				datamodel.transpose();
 			}
+
+			if (scriptFile != null && scriptFormat != ScriptFormat.XML && exportStatistic.getTotal() != exportedCount) {
+				String message =
+							"The number of rows collected (" + exportStatistic.getTotal() + ") differs from that of the exported ones (" + exportedCount + ").\n" +
+							"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique and never null.\n" +
+							"It is recommended to check the integrity of the primary keys.\n" +
+							"To do this, use the cli/api-argument \"-check-primary-keys\".";
+				if (executionContext.isAbortInCaseOfInconsistency()) {
+					throw new InconsistentSubsettingResultException(message);
+				} else {
+					System.err.println(message);
+				}
+			}
+
 			entityGraph.truncate(executionContext, true);
 			entityGraph.delete();
+			entityGraph.getSession().commitAll();
 			entityGraph.close();
 		} catch (CancellationException e) {
 			try {
@@ -1516,6 +1531,7 @@ public class SubsettingEngine {
 						_log.info("skipping clean up of temporary tables");
 					}
 				}
+				entityGraph.getSession().rollbackAll();
 				entityGraph.close();
 				shutDown();
 			} catch (Throwable t) {
@@ -1537,19 +1553,6 @@ public class SubsettingEngine {
 		}
 		shutDown();
 		
-		if (scriptFile != null && scriptFormat != ScriptFormat.XML && exportStatistic.getTotal() != exportedCount) {
-			String message =
-						"The number of rows collected (" + exportStatistic.getTotal() + ") differs from that of the exported ones (" + exportedCount + ").\n" +
-						"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique and never null.\n" +
-						"It is recommended to check the integrity of the primary keys.\n" +
-						"To do this, use the cli/api-argument \"-check-primary-keys\".";
-			if (executionContext.isAbortInCaseOfInconsistency()) {
-				throw new InconsistentSubsettingResultException(message);
-			} else {
-				System.err.println(message);
-			}
-		}
-
 		return exportStatistic;
 	}
 
