@@ -1052,6 +1052,11 @@ public abstract class Desktop extends JDesktopPane {
 				return tb;
 			}
 
+			@Override
+			protected boolean shouldShowLoadErrors() {
+				return isDesktopVisible();
+			}
+
 		};
 
 		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
