@@ -317,7 +317,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						updateMode("error", null);
 						unhide();
 						if (theSession == null || !theSession.isDown()) {
-							UIUtil.showException(BrowserContentPane.this, "Error", e);
+							if (!showingLoadErrorNow) {
+								try {
+									showingLoadErrorNow = true;
+									UIUtil.showException(BrowserContentPane.this, "Error", e);	
+								} finally {
+									showingLoadErrorNow = false;
+								}
+							}
 						} else {
 							theSession = null;
 						}
@@ -5538,7 +5545,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		return true;
 	}
-
+	
+	private boolean showingLoadErrorNow = false;
+	
 	private Map<Integer, Table> typePerColumn = new HashMap<Integer, Table>();
 	private Map<Table, int[]> pkColumnIndexes = new HashMap<Table, int[]>();
 
