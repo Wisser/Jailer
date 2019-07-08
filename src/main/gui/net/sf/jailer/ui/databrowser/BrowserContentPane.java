@@ -5279,7 +5279,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected RowBrowser getRowBrowser() {
 		return null;
 	};
-	protected abstract boolean shouldShowLoadErrors();
+	protected boolean shouldShowLoadErrors() {
+		return true;
+	}
 	
 	public interface RunnableWithPriority extends Runnable {
 		int getPriority();
