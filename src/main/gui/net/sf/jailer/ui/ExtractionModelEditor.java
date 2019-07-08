@@ -2709,6 +2709,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (save(file)) {
 			needsSave = false;
 			extractionModelFrame.updateTitle(needsSave);
+			UISettings.addRecentFile(new File(file));
 			return true;
 		}
 		return false;
