@@ -317,7 +317,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						updateMode("error", null);
 						unhide();
 						if (theSession == null || !theSession.isDown()) {
-							if (!showingLoadErrorNow) {
+							if (!showingLoadErrorNow && shouldShowLoadErrors()) {
 								try {
 									showingLoadErrorNow = true;
 									UIUtil.showException(BrowserContentPane.this, "Error", e);	
@@ -5279,7 +5279,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected RowBrowser getRowBrowser() {
 		return null;
 	};
-
+	protected abstract boolean shouldShowLoadErrors();
+	
 	public interface RunnableWithPriority extends Runnable {
 		int getPriority();
 	};
