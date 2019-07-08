@@ -5549,7 +5549,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return true;
 	}
 	
-	private boolean showingLoadErrorNow = false;
+	private static boolean showingLoadErrorNow = false;
 	
 	private Map<Integer, Table> typePerColumn = new HashMap<Integer, Table>();
 	private Map<Table, int[]> pkColumnIndexes = new HashMap<Table, int[]>();
