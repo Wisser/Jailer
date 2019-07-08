@@ -42,7 +42,7 @@ public class APIExample {
 			new BasicDataSource(
 					"org.h2.Driver", "jdbc:h2:demo-scott", "sa", "",
 					POOL_SIZE,
-					new File("lib/h2-1.3.175.jar")),
+					new File("lib/h2-1.4.199.jar")),
 			null,
 			APIExample.class.getResource("Demo-Scott"),
 			APIExample.class.getResource("Demo-Scott.jm"),
@@ -54,7 +54,7 @@ public class APIExample {
 			new BasicDataSource(
 				"org.h2.Driver", "jdbc:h2:demo-scott-subset", "sa", "",
 				10,
-				new File("lib/h2-1.3.175.jar")));
+				new File("lib/h2-1.4.199.jar")));
 
 	/**
 	 * Exports data related with employee "SCOTT"
