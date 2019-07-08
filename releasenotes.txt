@@ -4,7 +4,9 @@
   - The performance of the preparation for the subsetting-process has been improved.
   - Extraction models can now be loaded from the "Data Model Manager" dialog.
   - Updated local database to H2 1.4.199.
-  - Improved error handling in data browser.
+  - Improved error handling in the data browser.
+    If the same error occurs multiple times because it affects multiple table browsers,
+    it will be displayed only once.
 
 8.7.8
   - Fixed a bug that caused the creation of a delete script to generate syntactically incorrect SQL statements when a table without a primary key exists.
