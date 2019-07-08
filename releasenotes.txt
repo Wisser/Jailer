@@ -3,6 +3,7 @@
   - A warning message appears if the number of collected rows differs from the number of exported ones.
   - The performance of the preparation for the subsetting-process has been improved.
   - Extraction models can now be loaded from the "Data Model Manager" dialog.
+  - Updated local database to H2 1.4.199.
 
 8.7.8
   - Fixed a bug that caused the creation of a delete script to generate syntactically incorrect SQL statements when a table without a primary key exists.
