@@ -63,8 +63,9 @@ public class Environment {
 				copyIfNotExists("datamodel");
 				copyIfNotExists("extractionmodel");
 				copyIfNotExists("layout");
-				copyIfNotExists("demo-scott.h2.db");
+				copyIfNotExists("demo-scott-1.4.mv.db");
 				copyIfNotExists("demo-sakila-1.4.mv.db");
+				copyIfNotExists("demo-scott-subset-1.4.mv.db");
 				copyIfNotExists("example");
 
 				configuration.setTempFileFolder(newFile("tmp").getPath());
