@@ -26,7 +26,7 @@ import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.subsetting.ScriptFormat;
 
 /**
- * Jailer API Example.  <br>
+ * Jailer API Example. <br>
  * 
  * Extracts some data from the "demo-scott-1.4" database
  * and imports it into another database "demo-scott-subset-1.4".
