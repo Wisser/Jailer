@@ -28,8 +28,8 @@ import net.sf.jailer.subsetting.ScriptFormat;
 /**
  * Jailer API Example.  <br>
  * 
- * Extracts some data from the "demo-scott" database
- * and imports it into another database "demo-scott-subset".
+ * Extracts some data from the "demo-scott-1.4" database
+ * and imports it into another database "demo-scott-subset-1.4".
  */
 public class APIExample {
 	

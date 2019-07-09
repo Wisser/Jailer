@@ -137,8 +137,8 @@
                               <br />
                               The example is included in the
                               jailer-engine-<i>version</i>.jar. It extracts some data
-                              from the "demo-scott" database and imports it into another
-                              database "demo-scott-subset".<br />
+                              from the "demo-scott-1.4" database and imports it into another
+                              database "demo-scott-subset-1.4".<br />
 
                               <ul>
                                 <li>Packages<br />
@@ -154,132 +154,54 @@
 
                                   <div style=
                                   'background:#FFFFFF; font-family: Courier New, Courier; font-size: 10pt; COLOR: #000000; padding-bottom: 0px; padding-left: 0px; padding-right: 0px; padding-top: 0px;'>
+                                  
+<pre style="color:#000000;background:#ffffff;"><span style="color:#800000; font-weight:bold; ">public</span> <span style="color:#800000; font-weight:bold; ">class</span> APIExample <span style="color:#800080; ">{</span>
+	
+	<span style="color:#696969; ">// JDBC connection pool size</span>
+	<span style="color:#800000; font-weight:bold; ">private</span> <span style="color:#800000; font-weight:bold; ">static</span> <span style="color:#800000; font-weight:bold; ">final</span> <span style="color:#bb7977; ">int</span> POOL_SIZE <span style="color:#808030; ">=</span> <span style="color:#008c00; ">10</span><span style="color:#800080; ">;</span>
+
+	<span style="color:#696969; ">// The subsetter</span>
+	<span style="color:#800000; font-weight:bold; ">private</span> <span style="color:#800000; font-weight:bold; ">static</span> Subsetter subsetter <span style="color:#808030; ">=</span> 
+		<span style="color:#800000; font-weight:bold; ">new</span> Subsetter<span style="color:#808030; ">(</span>
+			<span style="color:#800000; font-weight:bold; ">new</span> BasicDataSource<span style="color:#808030; ">(</span>
+					<span style="color:#0000e6; ">"org.h2.Driver"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"jdbc:h2:"</span> <span style="color:#808030; ">+</span> <span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"demo-scott-1.4"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>getAbsolutePath<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"sa"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">""</span><span style="color:#808030; ">,</span>
+					POOL_SIZE<span style="color:#808030; ">,</span>
+					<span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"lib/h2-1.4.199.jar"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span>
+			<span style="color:#800000; font-weight:bold; ">null</span><span style="color:#808030; ">,</span>
+			APIExample<span style="color:#808030; ">.</span>class<span style="color:#808030; ">.</span>getResource<span style="color:#808030; ">(</span><span style="color:#0000e6; ">"Demo-Scott"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span>
+			APIExample<span style="color:#808030; ">.</span>class<span style="color:#808030; ">.</span>getResource<span style="color:#808030; ">(</span><span style="color:#0000e6; ">"Demo-Scott.jm"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span>
+			ScriptFormat<span style="color:#808030; ">.</span>SQL<span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+	
+	<span style="color:#696969; ">// The importer</span>
+	<span style="color:#800000; font-weight:bold; ">private</span> <span style="color:#800000; font-weight:bold; ">static</span> Importer importer <span style="color:#808030; ">=</span>
+		<span style="color:#800000; font-weight:bold; ">new</span> Importer<span style="color:#808030; ">(</span>
+			<span style="color:#800000; font-weight:bold; ">new</span> BasicDataSource<span style="color:#808030; ">(</span>
+				<span style="color:#0000e6; ">"org.h2.Driver"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"jdbc:h2:"</span> <span style="color:#808030; ">+</span> <span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"demo-scott-subset-1.4"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>getAbsolutePath<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"sa"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">""</span><span style="color:#808030; ">,</span>
+				<span style="color:#008c00; ">10</span><span style="color:#808030; ">,</span>
+				<span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"lib/h2-1.4.199.jar"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+
+	<span style="color:#3f5fbf; ">/**</span>
+<span style="color:#3f5fbf; ">	 </span><span style="color:#7f9fbf; font-weight:bold; ">*</span><span style="color:#3f5fbf; "> Exports data related with employee "SCOTT"</span>
+<span style="color:#3f5fbf; ">	 </span><span style="color:#7f9fbf; font-weight:bold; ">*</span><span style="color:#3f5fbf; "> and imports it into another database.</span>
+<span style="color:#3f5fbf; ">	 */</span>
+	<span style="color:#800000; font-weight:bold; ">public</span> <span style="color:#800000; font-weight:bold; ">static</span> <span style="color:#bb7977; ">void</span> main<span style="color:#808030; ">(</span><span style="color:#bb7977; font-weight:bold; ">String</span><span style="color:#808030; ">[</span><span style="color:#808030; ">]</span> args<span style="color:#808030; ">)</span> <span style="color:#800000; font-weight:bold; ">throws</span> <span style="color:#bb7977; font-weight:bold; ">SQLException</span><span style="color:#808030; ">,</span> <span style="color:#bb7977; font-weight:bold; ">IOException</span> <span style="color:#800080; ">{</span>
+		<span style="color:#bb7977; font-weight:bold; ">File</span> exportScriptFile <span style="color:#808030; ">=</span> Configuration<span style="color:#808030; ">.</span>getInstance<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>createTempFile<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+		
+		subsetter<span style="color:#808030; ">.</span>setUpsertOnly<span style="color:#808030; ">(</span><span style="color:#800000; font-weight:bold; ">true</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span> <span style="color:#696969; ">// overwrite previous data</span>
+		subsetter<span style="color:#808030; ">.</span>execute<span style="color:#808030; ">(</span><span style="color:#0000e6; ">"NAME='SCOTT'"</span><span style="color:#808030; ">,</span> exportScriptFile<span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+		
+		importer<span style="color:#808030; ">.</span>execute<span style="color:#808030; ">(</span>exportScriptFile<span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+		
+		exportScriptFile<span style="color:#808030; ">.</span>delete<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+	<span style="color:#800080; ">}</span>
+
+<span style="color:#800080; ">}</span>
+</pre>
+                                  
                                   <br />
-                                    <strong><font color=
-                                    '#7F0055'>package</font></strong>&nbsp;net.sf.jailer.api_example;<br />
-
-                                    <br />
-                                    <strong><font color=
-                                    '#7F0055'>import</font></strong>&nbsp;java.io.File;<br />
-
-                                    <strong><font color=
-                                    '#7F0055'>import</font></strong>&nbsp;java.io.IOException;<br />
-
-                                    <strong><font color=
-                                    '#7F0055'>import</font></strong>&nbsp;java.sql.SQLException;<br />
-
-                                    <br />
-                                    <strong><font color=
-                                    '#7F0055'>import</font></strong>&nbsp;net.sf.jailer.api.Importer;<br />
-
-                                    <strong><font color=
-                                    '#7F0055'>import</font></strong>&nbsp;net.sf.jailer.api.Subsetter;<br />
-
-                                    <strong><font color=
-                                    '#7F0055'>import</font></strong>&nbsp;net.sf.jailer.configuration.Configuration;<br />
-
-                                    <strong><font color=
-                                    '#7F0055'>import</font></strong>&nbsp;net.sf.jailer.database.BasicDataSource;<br />
-
-                                    <strong><font color=
-                                    '#7F0055'>import</font></strong>&nbsp;net.sf.jailer.subsetting.ScriptFormat;<br />
-
-                                    <br />
-                                    <font color='#2040A0'>/**<br />
-                                    &nbsp;*&nbsp;Jailer&nbsp;API&nbsp;Example.&nbsp;&nbsp;<br />
-
-                                    &nbsp;*&nbsp;<br />
-                                    &nbsp;*&nbsp;Extracts&nbsp;some&nbsp;data&nbsp;from&nbsp;the&nbsp;"demo-scott"&nbsp;database<br />
-
-                                    &nbsp;*&nbsp;and&nbsp;imports&nbsp;it&nbsp;into&nbsp;another&nbsp;database&nbsp;"demo-scott-subset".<br />
-
-                                    &nbsp;*/</font><br />
-                                    <strong><font color=
-                                    '#7F0055'>public</font></strong>&nbsp;<strong><font color='#7F0055'>class</font></strong>&nbsp;APIExample&nbsp;{<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<br />
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
-                                    '#3F7F5F'>//&nbsp;JDBC&nbsp;connection&nbsp;pool&nbsp;size</font><br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-                                    '#7F0055'>private</font></strong>&nbsp;<strong><font color='#7F0055'>static</font></strong>&nbsp;<strong><font color='#7F0055'>final</font></strong>&nbsp;<strong><font color='#7F0055'>int</font></strong>&nbsp;POOL_SIZE&nbsp;=&nbsp;10;<br />
-
-                                    <br />
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
-                                    '#3F7F5F'>//&nbsp;The&nbsp;subsetter</font><br />
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-                                    '#7F0055'>private</font></strong>&nbsp;<strong><font color='#7F0055'>static</font></strong>&nbsp;Subsetter&nbsp;subsetter&nbsp;=&nbsp;<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7F0055'>new</font></strong>&nbsp;Subsetter(<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7F0055'>new</font></strong>&nbsp;BasicDataSource(<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#2A00FF'>"org.h2.Driver"</font>,&nbsp;<font color='#2A00FF'>"jdbc:h2:demo-scott"</font>,&nbsp;<font color='#2A00FF'>"sa"</font>,&nbsp;<font color='#2A00FF'>""</font>,<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POOL_SIZE,<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7F0055'>new</font></strong>&nbsp;File(<font color='#2A00FF'>"lib/h2-1.3.175.jar"</font>)),<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7F0055'>null</font></strong>,<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APIExample.<strong><font color='#7F0055'>class</font></strong>.getResource(<font color='#2A00FF'>"Demo-Scott"</font>),<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APIExample.<strong><font color='#7F0055'>class</font></strong>.getResource(<font color='#2A00FF'>"Demo-Scott.csv"</font>),<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScriptFormat.SQL);<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<br />
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
-                                    '#3F7F5F'>//&nbsp;The&nbsp;importer</font><br />
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-                                    '#7F0055'>private</font></strong>&nbsp;<strong><font color='#7F0055'>static</font></strong>&nbsp;Importer&nbsp;importer&nbsp;=<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7F0055'>new</font></strong>&nbsp;Importer(<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7F0055'>new</font></strong>&nbsp;BasicDataSource(<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#2A00FF'>"org.h2.Driver"</font>,&nbsp;<font color='#2A00FF'>"jdbc:h2:demo-scott-subset"</font>,&nbsp;<font color='#2A00FF'>"sa"</font>,&nbsp;<font color='#2A00FF'>""</font>,<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10,<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7F0055'>new</font></strong>&nbsp;File(<font color='#2A00FF'>"lib/h2-1.3.175.jar.jar"</font>)));<br />
-
-                                    <br />
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
-                                    '#2040A0'>/**<br />
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Exports&nbsp;data&nbsp;related&nbsp;with&nbsp;employee&nbsp;"SCOTT"<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;and&nbsp;imports&nbsp;it&nbsp;into&nbsp;another&nbsp;database.<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/</font><br />
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-                                    '#7F0055'>public</font></strong>&nbsp;<strong><font color='#7F0055'>static</font></strong>&nbsp;<strong><font color='#7F0055'>void</font></strong>&nbsp;main(String[]&nbsp;args)&nbsp;<strong><font color='#7F0055'>throws</font></strong>&nbsp;SQLException,&nbsp;IOException&nbsp;{<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File&nbsp;exportScriptFile&nbsp;=&nbsp;Configuration.getInstance().createTempFile();<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subsetter.setUpsertOnly(<strong><font color='#7F0055'>true</font></strong>);&nbsp;<font color='#3F7F5F'>//&nbsp;overwrite&nbsp;previous&nbsp;data</font><br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subsetter.execute(<font color='#2A00FF'>"NAME='SCOTT'"</font>,&nbsp;exportScriptFile);<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;importer.execute(exportScriptFile);<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exportScriptFile.delete();<br />
-
-                                    &nbsp;&nbsp;&nbsp;&nbsp;}<br />
-                                    <br />
-                                    }<br />
 
                                     <div style=
                                     'text-align:right;BORDER-TOP: #ccc 1px dashed'>
-                                      <a href=
-                                      "http://www.togotutor.com/code-to-html/java-to-html.php"
-                                      target="_blank">Code Formatted by ToGoTutor</a>
                                     </div>
                                   </div>
                                 </li>
