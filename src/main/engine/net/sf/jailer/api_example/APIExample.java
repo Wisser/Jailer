@@ -40,9 +40,9 @@ public class APIExample {
 	private static Subsetter subsetter = 
 		new Subsetter(
 			new BasicDataSource(
-					"org.h2.Driver", "jdbc:h2:demo-scott", "sa", "",
+					"org.h2.Driver", "jdbc:h2:" + new File("demo-scott-1.4").getAbsolutePath(), "sa", "",
 					POOL_SIZE,
-					new File("lib/h2-1.3.175.jar")),
+					new File("lib/h2-1.4.199.jar")),
 			null,
 			APIExample.class.getResource("Demo-Scott"),
 			APIExample.class.getResource("Demo-Scott.jm"),
@@ -52,9 +52,9 @@ public class APIExample {
 	private static Importer importer =
 		new Importer(
 			new BasicDataSource(
-				"org.h2.Driver", "jdbc:h2:demo-scott-subset", "sa", "",
+				"org.h2.Driver", "jdbc:h2:" + new File("demo-scott-subset-1.4").getAbsolutePath(), "sa", "",
 				10,
-				new File("lib/h2-1.3.175.jar")));
+				new File("lib/h2-1.4.199.jar")));
 
 	/**
 	 * Exports data related with employee "SCOTT"
