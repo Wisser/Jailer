@@ -630,12 +630,12 @@ public class UIUtil {
         }
         for (int i = 0; i < args.size(); ++i) {
             String arg = args.get(i);
-            if (arg.startsWith("-") && (arg.equals(user) || arg.equals(password))) {
-            	arglist.append(" -");
-            }
             if (i == pwi) {
-                arglist.append(" \"<password>\"");
+                arglist.append(" - \"<password>\"");
             } else {
+                if (arg.startsWith("-") && arg.equals(user)) {
+                	arglist.append(" -");
+                }
                 if ("".equals(arg) || arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*")
                         || arg.contains("?") || arg.contains("|") || arg.contains("$") || arg.contains("\"")
                         || arg.contains("'") || arg.contains("\\") || arg.contains(";") || arg.contains("&")) {
