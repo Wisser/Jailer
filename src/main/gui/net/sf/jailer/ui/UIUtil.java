@@ -630,6 +630,9 @@ public class UIUtil {
         }
         for (int i = 0; i < args.size(); ++i) {
             String arg = args.get(i);
+            if (arg.startsWith("-") && (arg.equals(user) || arg.equals(password))) {
+            	arglist.append(" -");
+            }
             if (i == pwi) {
                 arglist.append(" \"<password>\"");
             } else {
