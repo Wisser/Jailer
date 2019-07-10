@@ -15,6 +15,10 @@
  */
 package net.sf.jailer;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -34,8 +38,32 @@ public class CommandLineParser {
 	public static CommandLine parse(String[] args, boolean silent) throws Exception {
 		CommandLine commandLine = new CommandLine();
 		try {
+			List<String> theArgs = new ArrayList<String>();
+			
+			final String ESC_PREFIX = "((!JAILER_MINUS_ESC!!)";
+
+			int i = 0;
+			while (i < args.length) {
+				String arg = args[i];
+				if ("-".equals(arg) && i < args.length - 1) {
+					theArgs.add(ESC_PREFIX + args[++i]);
+				} else {
+					theArgs.add(arg);
+				}
+				++i;
+			}
+
 			CmdLineParser cmdLineParser = new CmdLineParser(commandLine);
-			cmdLineParser.parseArgument(args);
+			cmdLineParser.parseArgument(theArgs.toArray(new String[0]));
+			List<String> escapedWords = new ArrayList<String>();
+			for (String arg: commandLine.arguments) {
+				if (arg.startsWith(ESC_PREFIX)) {
+					escapedWords.add(arg.substring(ESC_PREFIX.length()));
+				} else {
+					escapedWords.add(arg);
+				}
+			}
+			commandLine.arguments = escapedWords;
 			if (commandLine.arguments.isEmpty()) {
 				if (!silent) {
 					printUsage();

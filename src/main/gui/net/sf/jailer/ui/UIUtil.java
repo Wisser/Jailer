@@ -372,10 +372,22 @@ public class UIUtil {
         JDialog dialog = new JDialog(ownerOfConsole);
         List<String> args = new ArrayList<String>(cliArgs);
         final StringBuffer arglist = createCLIArgumentString(user, password, args, executionContext);
-        final String[] argsarray = new String[args.size()];
-        int i = 0;
+        final List<String> argslist = new ArrayList<String>();
+        boolean esc = true;
         for (String arg : args) {
-            argsarray[i++] = arg.trim();
+        	if (esc && arg.startsWith("-")) {
+        		if (arg.equals(user) || arg.equals(password)) {
+        			argslist.add("-");
+        		} else {
+        			esc = false;
+        		}
+        	}
+            argslist.add(arg);
+        }
+        final String[] argsarray = new String[argslist.size()];
+        int i = 0;
+        for (String arg : argslist) {
+        	argsarray[i++] = arg;
         }
         final JailerConsole outputView = new JailerConsole(ownerOfConsole, dialog, showLogfileButton,
                 showExplainLogButton, progressPanel, fullSize);
