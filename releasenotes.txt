@@ -5,6 +5,7 @@
   - Extraction models can now be loaded from the "Data Model Manager" dialog.
   - It was not possible to pass user / password via cli when it starts with '-'
   - Updated local database to H2 1.4.199.
+  - The fonts selection in the GUI has been standardized.
   - Improved error handling in the data browser.
     If the same error occurs multiple times because it affects multiple table browsers,
     it will be displayed only once.
