@@ -553,8 +553,10 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="modelName">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Dialog" size="12" style="0"/>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font component="modelName" property="font" relativeSize="true" size="1"/>
+                          </FontInfo>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Data Model &quot;Demo&quot;"/>
                       </Properties>
@@ -566,8 +568,10 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="modelPath">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Dialog" size="12" style="0"/>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font component="modelPath" property="font" relativeSize="true" size="1"/>
+                          </FontInfo>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="80" green="80" id="gray" palette="1" red="80" type="palette"/>
@@ -603,8 +607,10 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="dependsOn">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Dialog" size="12" style="0"/>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font component="dependsOn" property="font" relativeSize="true" size="1"/>
+                          </FontInfo>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="0" green="0" red="aa" type="rgb"/>
@@ -614,8 +620,10 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="hasDependent">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Dialog" size="12" style="0"/>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font component="hasDependent" property="font" relativeSize="true" size="1"/>
+                          </FontInfo>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="0" green="70" red="0" type="rgb"/>
@@ -625,8 +633,10 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="associatedWith">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Dialog" size="12" style="0"/>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font component="associatedWith" property="font" relativeSize="true" size="1"/>
+                          </FontInfo>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="ff" green="64" red="0" type="rgb"/>
@@ -636,8 +646,10 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="ignored">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Dialog" size="12" style="0"/>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font component="ignored" property="font" relativeSize="true" size="1"/>
+                          </FontInfo>
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="99" green="99" red="99" type="rgb"/>
@@ -665,8 +677,10 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="schemaName">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Dialog" size="12" style="0"/>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font component="schemaName" property="font" relativeSize="true" size="1"/>
+                          </FontInfo>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Schema"/>
                       </Properties>
@@ -696,8 +710,10 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="connectivityState">
                       <Properties>
-                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                          <Font name="Dialog" size="12" style="0"/>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
+                          <FontInfo relative="true">
+                            <Font component="connectivityState" property="font" relativeSize="true" size="1"/>
+                          </FontInfo>
                         </Property>
                         <Property name="text" type="java.lang.String" value="offline"/>
                       </Properties>

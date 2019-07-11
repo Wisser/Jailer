@@ -21,6 +21,7 @@ import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FileDialog;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -1218,6 +1219,16 @@ public class UIUtil {
 
 	public static String format(long number) {
 		return NumberFormat.getInstance().format(number);
+	}
+
+	private static Font defaultFont = null;
+	
+	public static Font defaultTitleFont() {
+		if (defaultFont == null) {
+			defaultFont = new JLabel().getFont();
+			defaultFont = defaultFont.deriveFont(defaultFont.getStyle() | Font.BOLD);
+		}
+		return defaultFont;
 	}
 
 }

@@ -4454,7 +4454,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel13.setOpaque(false);
         jPanel13.setLayout(new java.awt.GridBagLayout());
 
-        loadingCauseLabel.setFont(new java.awt.Font("DejaVu Sans", 0, 14)); // NOI18N
+        loadingCauseLabel.setFont(loadingCauseLabel.getFont().deriveFont(loadingCauseLabel.getFont().getSize()+3f));
         loadingCauseLabel.setForeground(new java.awt.Color(141, 16, 16));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -4464,7 +4464,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel13.add(loadingCauseLabel, gridBagConstraints);
 
-        loadingLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
+        loadingLabel.setFont(loadingLabel.getFont().deriveFont(loadingLabel.getFont().getStyle() | java.awt.Font.BOLD, loadingLabel.getFont().getSize()+3));
         loadingLabel.setForeground(new java.awt.Color(141, 16, 16));
         loadingLabel.setText("loading...     ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4676,7 +4676,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
-        jLabel10.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
+        jLabel10.setFont(jLabel10.getFont().deriveFont(jLabel10.getFont().getStyle() | java.awt.Font.BOLD, jLabel10.getFont().getSize()+3));
         jLabel10.setForeground(new java.awt.Color(141, 16, 16));
         jLabel10.setText("Error");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4692,7 +4692,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jLabel8.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
+        jLabel8.setFont(jLabel8.getFont().deriveFont(jLabel8.getFont().getStyle() | java.awt.Font.BOLD, jLabel8.getFont().getSize()+3));
         jLabel8.setForeground(new java.awt.Color(141, 16, 16));
         jLabel8.setText("Cancelled");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4710,7 +4710,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel8.setLayout(new java.awt.GridBagLayout());
 
-        jLabel11.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
+        jLabel11.setFont(jLabel11.getFont().deriveFont(jLabel11.getFont().getStyle() | java.awt.Font.BOLD, jLabel11.getFont().getSize()+3));
         jLabel11.setForeground(new java.awt.Color(141, 16, 16));
         jLabel11.setText("pending...");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4918,14 +4918,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         menuPanel.add(jPanel9, gridBagConstraints);
 
-        dropA.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
+        dropA.setFont(dropA.getFont().deriveFont(dropA.getFont().getStyle() | java.awt.Font.BOLD, dropA.getFont().getSize()+2));
         dropA.setText("drop");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
         menuPanel.add(dropA, gridBagConstraints);
 
-        dropB.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
+        dropB.setFont(dropB.getFont().deriveFont(dropB.getFont().getStyle() | java.awt.Font.BOLD, dropB.getFont().getSize()+2));
         dropB.setText("drop");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;

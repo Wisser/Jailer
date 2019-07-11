@@ -939,6 +939,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			gridBagConstraints.gridy = 0;
 			gridBagConstraints.weightx = 1;
 			gridBagConstraints.weighty = 0;
+			gridBagConstraints.insets = new Insets(2, 0, 0, 0);
 			gridBagConstraints.fill = GridBagConstraints.BOTH;
 			
 			panel2.add(jPanel3, gridBagConstraints);
@@ -948,7 +949,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			gridBagConstraints.weightx = 1;
 			gridBagConstraints.weighty = 1;
 			gridBagConstraints.fill = GridBagConstraints.BOTH;
-			gridBagConstraints.insets = new Insets(4, 0, 0, 0);
+			gridBagConstraints.insets = new Insets(0, 0, 0, 0);
 			panel2.add(jPanel4, gridBagConstraints);
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 0;
@@ -956,7 +957,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			gridBagConstraints.weightx = 1;
 			gridBagConstraints.weighty = 0;
 			gridBagConstraints.fill = GridBagConstraints.BOTH;
-			gridBagConstraints.insets = new Insets(4, 0, 0, 0);
+			gridBagConstraints.insets = new Insets(0, 0, 0, 0);
 //			panel2.add(inspectorHolder, gridBagConstraints);
 			
 			editorPanel.removeAll();
@@ -970,7 +971,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				gridBagConstraints.weightx = 1;
 				gridBagConstraints.weighty = 0.6;
 				gridBagConstraints.fill = GridBagConstraints.BOTH;
-				gridBagConstraints.insets = new Insets(4, 0, 0, 0);
+				gridBagConstraints.insets = new Insets(0, 0, 0, 0);
 				panel2.add(xmlMappingPanel, gridBagConstraints);
 //				editorPanel.add(xmlMappingPanel);
 				((GridLayout) editorPanel.getLayout()).setRows(1);
@@ -1046,6 +1047,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         rightBorderPanel = new javax.swing.JPanel();
         messagePanel = new javax.swing.JPanel();
         neighborHolderPanel = new javax.swing.JPanel();
+        jPanel6 = new javax.swing.JPanel();
         toolPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         editorPanel = new javax.swing.JPanel();
@@ -1223,9 +1225,20 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jSplitPane2.setTopComponent(layeredPane);
 
-        toolPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Closure", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(82, 86, 125))); // NOI18N
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        toolPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Closure", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIUtil.defaultTitleFont()));
         toolPanel.setLayout(new java.awt.BorderLayout());
-        jSplitPane2.setBottomComponent(toolPanel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel6.add(toolPanel, gridBagConstraints);
+
+        jSplitPane2.setBottomComponent(jPanel6);
 
         jPanel12.add(jSplitPane2, java.awt.BorderLayout.CENTER);
 
@@ -1237,7 +1250,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.setLayout(new java.awt.GridLayout(1, 4));
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIUtil.defaultTitleFont()));
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
         jLabel8.setText(" ");
@@ -1378,7 +1391,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel4.setLayout(new java.awt.BorderLayout(0, 4));
 
-        jPanel14.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(82, 86, 125))); // NOI18N
+        jPanel14.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIUtil.defaultTitleFont()));
         jPanel14.setLayout(new java.awt.BorderLayout());
 
         jScrollPane1.setAutoscrolls(true);
@@ -1404,7 +1417,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.add(jPanel4);
 
-        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIUtil.defaultTitleFont()));
         xmlMappingPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText(" Aggregation ");
@@ -1510,7 +1523,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende1.setLayout(new java.awt.GridBagLayout());
 
-        modelName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        modelName.setFont(modelName.getFont().deriveFont(modelName.getFont().getSize()+1f));
         modelName.setText("Data Model \"Demo\"");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1519,7 +1532,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
         legende1.add(modelName, gridBagConstraints);
 
-        modelPath.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        modelPath.setFont(modelPath.getFont().deriveFont(modelPath.getFont().getSize()+1f));
         modelPath.setForeground(java.awt.Color.gray);
         modelPath.setText("/home/jailer/datamodel/");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1541,22 +1554,22 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
-        dependsOn.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        dependsOn.setFont(dependsOn.getFont().deriveFont(dependsOn.getFont().getSize()+1f));
         dependsOn.setForeground(new java.awt.Color(170, 0, 0));
         dependsOn.setText(" depends on (has parent) ");
         legende.add(dependsOn);
 
-        hasDependent.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        hasDependent.setFont(hasDependent.getFont().deriveFont(hasDependent.getFont().getSize()+1f));
         hasDependent.setForeground(new java.awt.Color(0, 112, 0));
         hasDependent.setText("   has dependent (has child) ");
         legende.add(hasDependent);
 
-        associatedWith.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        associatedWith.setFont(associatedWith.getFont().deriveFont(associatedWith.getFont().getSize()+1f));
         associatedWith.setForeground(new java.awt.Color(0, 100, 255));
         associatedWith.setText("   associated with");
         legende.add(associatedWith);
 
-        ignored.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        ignored.setFont(ignored.getFont().deriveFont(ignored.getFont().getSize()+1f));
         ignored.setForeground(new java.awt.Color(153, 153, 153));
         ignored.setText("   disabled ");
         legende.add(ignored);
@@ -1571,7 +1584,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende2.setLayout(new java.awt.GridBagLayout());
 
-        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        connectivityState.setFont(connectivityState.getFont().deriveFont(connectivityState.getFont().getSize()+1f));
         connectivityState.setText("offline");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -3277,6 +3290,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;

@@ -199,8 +199,7 @@
                   <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                     <EmptyBorder/>
                   </Border>
-                  <Font PropertyName="font" name="DejaVu Sans" size="12" style="0"/>
-                  <Color PropertyName="color" blue="7d" green="52" red="56" type="rgb"/>
+                  <Connection PropertyName="font" code="UIUtil.defaultTitleFont()" type="code"/>
                 </TitledBorder>
               </Border>
             </Property>

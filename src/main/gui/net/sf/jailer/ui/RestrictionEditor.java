@@ -196,22 +196,22 @@ public class RestrictionEditor extends javax.swing.JPanel {
         columnsA.setText("V");
         jPanel4.add(columnsA);
 
-        source.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        source.setFont(source.getFont().deriveFont(source.getFont().getSize()+1f));
         source.setText("jLabel3");
         jPanel4.add(source);
 
-        type.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        type.setFont(type.getFont().deriveFont(type.getFont().getSize()+1f));
         type.setText("jLabel3");
         jPanel4.add(type);
 
-        cardinality.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        cardinality.setFont(cardinality.getFont().deriveFont(cardinality.getFont().getSize()+1f));
         cardinality.setText("jLabel3");
         jPanel4.add(cardinality);
 
         columnsB.setText("V");
         jPanel4.add(columnsB);
 
-        destination.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        destination.setFont(destination.getFont().deriveFont(destination.getFont().getSize()+1f));
         destination.setText("jLabel3");
         jPanel4.add(destination);
 
@@ -228,7 +228,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jLabel1.setText("on");
         jPanel5.add(jLabel1);
 
-        joinCondition.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        joinCondition.setFont(joinCondition.getFont().deriveFont(joinCondition.getFont().getSize()+1f));
         joinCondition.setText("jLabel5");
         jPanel5.add(joinCondition);
 

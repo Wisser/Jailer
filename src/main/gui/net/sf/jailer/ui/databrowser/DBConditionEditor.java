@@ -225,7 +225,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        table1name.setFont(new java.awt.Font("DejaVu Sans", 0, 12)); // NOI18N
+        table1name.setFont(table1name.getFont().deriveFont(table1name.getFont().getSize()+1f));
         table1name.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -234,7 +234,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         jPanel2.add(table1name, gridBagConstraints);
 
-        table1dropDown.setFont(new java.awt.Font("DejaVu Sans", 0, 12)); // NOI18N
+        table1dropDown.setFont(table1dropDown.getFont().deriveFont(table1dropDown.getFont().getSize()+1f));
         table1dropDown.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;

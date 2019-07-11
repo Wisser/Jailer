@@ -468,7 +468,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         jPanel13.setOpaque(false);
         jPanel13.setLayout(new java.awt.GridBagLayout());
 
-        loadingCauseLabel.setFont(new java.awt.Font("DejaVu Sans", 0, 14)); // NOI18N
+        loadingCauseLabel.setFont(loadingCauseLabel.getFont().deriveFont(loadingCauseLabel.getFont().getSize()+3f));
         loadingCauseLabel.setForeground(new java.awt.Color(141, 16, 16));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -478,7 +478,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel13.add(loadingCauseLabel, gridBagConstraints);
 
-        loadingLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
+        loadingLabel.setFont(loadingLabel.getFont().deriveFont(loadingLabel.getFont().getStyle() | java.awt.Font.BOLD, loadingLabel.getFont().getSize()+3));
         loadingLabel.setForeground(new java.awt.Color(141, 16, 16));
         loadingLabel.setText("loading...     ");
         gridBagConstraints = new java.awt.GridBagConstraints();
