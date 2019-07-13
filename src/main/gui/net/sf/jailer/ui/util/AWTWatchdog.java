@@ -167,6 +167,9 @@ public class AWTWatchdog {
 		return "no awt-thread?";
 	}
 
+	// TODO compress stacktrace and increase http-get-max-size
+	// TODO: more non-jailer context
+
 	private static long starttime = 0;
 
 	private synchronized static long getStarttime() {

@@ -5712,4 +5712,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return value;
 	}
 
+	// TODO cntrl-enter in modified "where"-combobox put old content into SQL-console
+	
 }
