@@ -108,7 +108,14 @@ public class AWTWatchdog {
 				int i = 0;
 				for (; i < ti.getStackTrace().length; i++) {
 					StackTraceElement ste = ti.getStackTrace()[i];
-					sb.append("\tat " + ste.toString());
+					
+					String s = ste.getClassName() + "." + ste.getMethodName() + "(" +
+			             (ste.isNativeMethod() ? "Native Method)" :
+			              (ste.getFileName() != null &&ste.getLineNumber() >= 0 ?
+			            		  ste.getFileName() + ":" + ste.getLineNumber() + ")" :
+			                (ste.getFileName() != null ?  "" + ste.getFileName() + ")" : "Unknown Source)")));
+					
+					sb.append(" at " + s);
 					sb.append('\n');
 					if (i == 0 && ti.getLockInfo() != null) {
 						Thread.State ts = ti.getThreadState();
