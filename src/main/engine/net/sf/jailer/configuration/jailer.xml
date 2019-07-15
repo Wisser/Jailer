@@ -51,7 +51,7 @@
     <dbms>
         <id>ORACLE</id>
         <displayName>Oracle</displayName>
-        <urlPattern>jdbc:oracle.*</urlPattern>
+        <urlPattern>jdbc:oracle.*|jdbc:ibm:oracle.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
