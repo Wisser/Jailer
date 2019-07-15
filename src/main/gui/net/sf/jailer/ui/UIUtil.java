@@ -729,11 +729,7 @@ public class UIUtil {
             String sql = ((SqlException) t).sqlStatement;
 			if (message != null) {
 				if (sql != null) {
-					final int MAX_CL = 1000;
 		            String iMsg = message.toString() + "\n" + JailerVersion.VERSION + "\n" + sql;
-		            if (iMsg.length() > MAX_CL) {
-		            	iMsg = iMsg.substring(0, MAX_CL);
-		            }
 					sendIssue("internalSQL", iMsg);
 				}
 			}
@@ -767,11 +763,7 @@ public class UIUtil {
             contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
             contextDesc += "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
             
-            final int MAX_CL = 1000;
             String iMsg = msg.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
-            if (iMsg.length() > MAX_CL) {
-            	iMsg = iMsg.substring(0, MAX_CL);
-            }
 			sendIssue("internal", iMsg);
         }
 
@@ -923,12 +915,21 @@ public class UIUtil {
 			@Override
 			public void run() {
 		    	try {
-		    		// TODO post?
-		    		// TODO limit encoded parameter length
-					HttpUtil.get("http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + URLEncoder.encode(issue, "UTF-8")
-						+ "&uuid=" + URLEncoder.encode(String.valueOf(UISettings.restore("uuid")), "UTF-8")
-						+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
-						+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")");
+					final int MAX_CL = 1400;
+					int maxEIssueLength = 4 * MAX_CL;
+					String url;
+					do {
+						String eIssue = URLEncoder.encode(issue, "UTF-8");
+			            if (eIssue.length() > maxEIssueLength) {
+			            	eIssue = eIssue.substring(0, maxEIssueLength);
+			            }
+						url = "http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + eIssue
+							+ "&uuid=" + URLEncoder.encode(String.valueOf(UISettings.restore("uuid")), "UTF-8")
+							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
+							+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")";
+						maxEIssueLength -= 10;
+					} while (url.length() > MAX_CL && maxEIssueLength > 100);
+					HttpUtil.get(url);
 				} catch (UnsupportedEncodingException e) {
 					// ignore
 				}

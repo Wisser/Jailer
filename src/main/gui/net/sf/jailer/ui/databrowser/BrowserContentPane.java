@@ -795,7 +795,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				rowsTable.grabFocus();
-				UIUtil.invokeLater(new Runnable() {
+				UIUtil.invokeLater(8, new Runnable() {
 					@Override
 					public void run() {
 						openQueryBuilder(true);
@@ -1067,14 +1067,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTable.addMouseListener(rowTableListener);
 		rowsTableScrollPane.addMouseListener(rowTableListener);
 		singleRowViewScrollContentPanel.addMouseListener(rowTableListener);
-		
-		((JTextField) andCondition.getEditor().getEditorComponent()).addCaretListener(new CaretListener() {
-			@Override
-			public void caretUpdate(CaretEvent e) {
-				System.out.println(e);
-			}
-		});
-		
+
 		dropA.setVisible(false);
 		dropB.setVisible(false);
 		
@@ -1362,6 +1355,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	String getAndConditionText() {
+		if (andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
+			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
+			return f.getText();
+		}
 		Object sel = andCondition.getSelectedItem();
 		if (sel == null) {
 			return "";
@@ -5712,6 +5709,4 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return value;
 	}
 
-	// TODO cntrl-enter in modified "where"-combobox put old content into SQL-console
-	
 }

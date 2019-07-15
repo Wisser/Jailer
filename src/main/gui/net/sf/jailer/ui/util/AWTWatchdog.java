@@ -50,11 +50,7 @@ public class AWTWatchdog {
 								}
 								dump = JailerVersion.VERSION + " " + dump;
 								Session._log.error(dump);
-								final int MAX_CL = 1000;
 					            String iMsg = dump;
-					            if (iMsg.length() > MAX_CL) {
-					            	iMsg = iMsg.substring(0, MAX_CL);
-					            }
 								UIUtil.sendIssue("AWTHanging", iMsg);
 								issueSent = true;
 							}
@@ -166,9 +162,6 @@ public class AWTWatchdog {
 		}
 		return "no awt-thread?";
 	}
-
-	// TODO compress stacktrace and increase http-get-max-size
-	// TODO: more non-jailer context
 
 	private static long starttime = 0;
 
