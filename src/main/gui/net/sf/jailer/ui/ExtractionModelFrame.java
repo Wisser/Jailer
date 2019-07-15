@@ -2109,6 +2109,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							extractionModelFrame = createFrame(null, true, true, connectionDialog, executionContext);
 							final ExtractionModelFrame finalExtractionModelFrame = extractionModelFrame;
 							UIUtil.invokeLater(new Runnable() {
+								@SuppressWarnings("serial")
 								@Override
 								public void run() {
 									try {
@@ -2117,7 +2118,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 										UIUtil.showException(finalExtractionModelFrame, "Error", e);
 									}
 									if (withStartupWizzard) {
-										StartupWizzardDialog suw = new StartupWizzardDialog(finalExtractionModelFrame) {
+										new StartupWizzardDialog(finalExtractionModelFrame) {
 											@Override
 											protected void onClose() {
 												try {
