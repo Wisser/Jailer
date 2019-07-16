@@ -236,10 +236,13 @@ public class BasicDataSource implements DataSource {
 		List<DBMS> cs = Configuration.getInstance().getDBMS();
 		List<String> rwUrls = new ArrayList<String>();
 		rwUrls.add(dbUrl);
-		for (UrlRewriteRule rule: Configuration.getInstance().getUrlRewriteRules()) {
-			String rwUrl = dbUrl.replaceAll(rule.getPattern(), rule.getReplacement());
-			if (!rwUrl.equals(dbUrl)) {
-				rwUrls.add(rwUrl);
+		List<UrlRewriteRule> urlRewriteRules = Configuration.getInstance().getUrlRewriteRules();
+		if (urlRewriteRules != null) {
+			for (UrlRewriteRule rule: urlRewriteRules) {
+				String rwUrl = dbUrl.replaceAll(rule.getPattern(), rule.getReplacement());
+				if (!rwUrl.equals(dbUrl)) {
+					rwUrls.add(rwUrl);
+				}
 			}
 		}
 		for (String rwUrl: rwUrls) {
