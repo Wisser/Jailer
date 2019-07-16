@@ -59,3 +59,9 @@ rm $1.zip
 zip -r jailer_$1.zip jailer
 cp -r jailer dbeauty
 zip -r dbeauty_$1.zip dbeauty 
+
+# Web upload
+# cd docs
+# scp -r * rwisser,jailer@web.sf.net:/home/groups/j/ja/jailer/htdocs/
+# scp -r * rwisser,jailer@web.sf.net:/home/groups/j/ja/jailer/htdocs/doc/
+
