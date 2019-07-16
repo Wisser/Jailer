@@ -54,6 +54,7 @@ public class SessionForUI extends Session {
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
+				Session.setThreadSharesConnection();
 				try {
 					Connection newCon = session.connectionFactory.getConnection();
 					if (session.cancelled.get()) {
