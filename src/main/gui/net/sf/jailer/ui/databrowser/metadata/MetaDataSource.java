@@ -231,6 +231,32 @@ public class MetaDataSource {
     	return table;
     }
 
+    public MDSchema getSchemaOfTable(Table table) {
+    	MDSchema defaultSchema = getDefaultSchema();
+    	if (defaultSchema != null) {
+    		String schemaName = Quoting.staticUnquote(table.getSchema(defaultSchema.getName()));
+    		String schemaNameUC = schemaName.toUpperCase(Locale.ENGLISH);
+
+    		MDSchema schemaExact = null;
+    		MDSchema schemaIC = null;
+    		for (MDSchema schema: getSchemas()) {
+    			if (schema.getName().equals(schemaName)) {
+    				schemaExact = schema;
+    				break;
+    			}
+    			if (schema.getName().toUpperCase(Locale.ENGLISH).equals(schemaNameUC)) {
+    				schemaIC = schema;
+    			}
+    		}
+    		if (schemaExact != null) {
+    			return schemaExact;
+    		} else if (schemaIC != null) {
+    			return schemaIC;
+    		}
+    	}
+    	return null;
+    }
+    
     public MDTable toMDTable(Table table) {
     	if (tableToMDTable.containsKey(table)) {
     		return tableToMDTable.get(table);

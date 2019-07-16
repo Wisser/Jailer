@@ -1198,7 +1198,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				                        if (schema != null) {
 				                            MDTable table = schema.find(finalSelectedTable.getName());
 				                            if (table != null) {
-				                                select(table);
+				                            	select(table);
 				                            }
 				                        }
 				                    }
@@ -1218,9 +1218,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
 
     public void select(Table table) {
-        select(metaDataSource.toMDTable(table));
+    	MDSchema mdSchema = metaDataSource.getSchemaOfTable(table);
+    	if (mdSchema != null && !mdSchema.isLoaded()) {
+    		mdSchema.loadTables(true, null, null);
+    		return;
+    	}
+    	select(metaDataSource.toMDTable(table));
     }
-    
+
     public void select(MDTable mdTable) {
         if (mdTable != null) {
             TreePath path = find(metaDataTree.getModel().getRoot(), mdTable);
