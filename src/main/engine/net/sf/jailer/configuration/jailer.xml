@@ -47,11 +47,24 @@
     <!-- additional SQL keywords -->
 	<additionalSQLKeywords>sensitive, datetime</additionalSQLKeywords>
 
+	<!-- IBM JDBC Connector -->
+	<urlRewriteRule>
+		<pattern>^jdbc:ibm:(.*)$</pattern>
+		<replacement>jdbc:$1</replacement>
+	</urlRewriteRule>
+
+	<!-- other rules
+	<urlRewriteRule>
+		<pattern></pattern>
+		<replacement></replacement>
+	</urlRewriteRule>
+	-->
+
     <!-- for Oracle -->
     <dbms>
         <id>ORACLE</id>
         <displayName>Oracle</displayName>
-        <urlPattern>jdbc:oracle.*|jdbc:ibm:oracle.*</urlPattern>
+        <urlPattern>jdbc:oracle.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>

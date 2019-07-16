@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.Configuration.UrlRewriteRule;
 import net.sf.jailer.configuration.DBMS;
 
 /**
@@ -231,40 +233,50 @@ public class BasicDataSource implements DataSource {
 			return perUrl.get(dbUrl);
 		}
 		DBMS defaultDBMS = DBMS.forDBMS(null);
-		List<DBMS> cs = Configuration.getInstance().getDBMS();  
-		for (DBMS c: cs) {
-			if (Pattern.matches(c.getUrlPattern(), dbUrl)) {
-				boolean ok = true;
-				if (c.getTestQuery() != null) {
-					Connection connection = null;
-					Statement st = null;
-					try {
-						connection = getConnection(defaultDBMS, false);
-						st = connection.createStatement();
-						ResultSet rs = st.executeQuery(c.getTestQuery());
-						while (rs.next()) {
-						}
-						rs.close();
-					} catch (SQLException e) {
-						ok = false;
-					} finally {
-						if (st != null) {
-							try {
-								st.close();
-							} catch (SQLException e) {
+		List<DBMS> cs = Configuration.getInstance().getDBMS();
+		List<String> rwUrls = new ArrayList<String>();
+		rwUrls.add(dbUrl);
+		for (UrlRewriteRule rule: Configuration.getInstance().getUrlRewriteRules()) {
+			String rwUrl = dbUrl.replaceAll(rule.getPattern(), rule.getReplacement());
+			if (!rwUrl.equals(dbUrl)) {
+				rwUrls.add(rwUrl);
+			}
+		}
+		for (String rwUrl: rwUrls) {
+			for (DBMS c: cs) {
+				if (Pattern.matches(c.getUrlPattern(), rwUrl)) {
+					boolean ok = true;
+					if (c.getTestQuery() != null) {
+						Connection connection = null;
+						Statement st = null;
+						try {
+							connection = getConnection(defaultDBMS, false);
+							st = connection.createStatement();
+							ResultSet rs = st.executeQuery(c.getTestQuery());
+							while (rs.next()) {
 							}
-						}
-						if (connection != null) {
-							try {
-								connection.close();
-							} catch (SQLException e) {
+							rs.close();
+						} catch (SQLException e) {
+							ok = false;
+						} finally {
+							if (st != null) {
+								try {
+									st.close();
+								} catch (SQLException e) {
+								}
+							}
+							if (connection != null) {
+								try {
+									connection.close();
+								} catch (SQLException e) {
+								}
 							}
 						}
 					}
-				}
-				if (ok) {
-					perUrl.put(dbUrl, c);
-					return c;
+					if (ok) {
+						perUrl.put(dbUrl, c);
+						return c;
+					}
 				}
 			}
 		}
