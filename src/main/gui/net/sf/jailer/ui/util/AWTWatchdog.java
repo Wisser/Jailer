@@ -142,7 +142,7 @@ public class AWTWatchdog {
 							sb.append('\n');
 						}
 					}
-					if (i == 0 && !ste.toString().contains(pck)) {
+					if (i == 2 && !ste.toString().contains(pck)) {
 						sb.append(mrk);
 					}
 				}
@@ -162,8 +162,13 @@ public class AWTWatchdog {
 				}
 				sb.append('\n');
 
-				String dump = Pattern.compile(mrk + "(?d)(.*?)\\b" + pckPtrn, Pattern.DOTALL).matcher(sb.toString()).replaceFirst(".. at " + pck);
-				System.err.print("Error: AWT-Thread hanging: " + dump);
+				String dump = Pattern.compile(mrk + "(?d)([^\\n]*\\n[^\\n]*\\n)(.*?)\\b" + pckPtrn, Pattern.DOTALL).matcher(sb.toString()).replaceFirst("..$1at " + pck);
+				dump = dump
+						.replace(" at java.", "atj..")
+						.replace(" at javax.swing.", "atjs..")
+						.replace(" at net.sf.jailer.", "atn..")
+						.replaceAll("\\s*(\\n)\\s*", "$1");
+				System.err.print("Error: AWT-Thread hanging: " + sb);
 				return dump;
 			}
 		}
