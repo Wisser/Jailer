@@ -345,7 +345,8 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		URI url;
 		try {
 			int MAX_LENGTH = 1000;
-			String issue = (sqlError ? message + "\n\n" : "") + sqlEditorPane.getText();
+			String issue = (sqlError ? message + "\n\n" : "")
+					+ (sqlEditorPane.getText().replaceAll("\\s+", " "));
 			if (issue.length() > MAX_LENGTH) {
 				issue = issue.substring(0, MAX_LENGTH);
 			}
