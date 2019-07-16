@@ -764,7 +764,13 @@ public class UIUtil {
             contextDesc += "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
             
             String iMsg = msg.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
-			sendIssue("internal", iMsg);
+            iMsg = iMsg
+            		.replaceAll("\\bat [^\\n]*/", "at ")
+            		.replaceAll("\\bat java.", "atj..")
+					.replaceAll("\\bat javax.swing.", "atjs..")
+					.replaceAll("\\bat net.sf.jailer.", "atn..")
+					.replaceAll("\\s*(\\n)\\s*", "$1");
+            sendIssue("internal", iMsg);
         }
 
         new SqlErrorDialog(parent == null ? null : parent instanceof Window? (Window) parent : SwingUtilities.getWindowAncestor(parent), msg.toString(),
