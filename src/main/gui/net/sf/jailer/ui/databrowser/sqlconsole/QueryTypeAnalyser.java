@@ -374,7 +374,13 @@ public class QueryTypeAnalyser {
 											}
 										}
 										if (mdSchema != null) {
-											MDTable mdTable = mdSchema.find(name);
+											MDTable mdTable;
+											if (!mdSchema.isLoaded()) {
+												mdSchema.loadTables(true, null, null);
+												mdTable = null;
+									    	} else {
+									    		mdTable = mdSchema.find(name);
+									    	}
 											if (mdTable != null) {
 												result.put(tableName.getAlias() != null? tableName.getAlias().getName() : mdTable.getName(), mdTable);
 											} else {
