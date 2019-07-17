@@ -921,7 +921,7 @@ public class UIUtil {
 			@Override
 			public void run() {
 		    	try {
-					final int MAX_CL = 1400;
+					final int MAX_CL = 1300;
 					int maxEIssueLength = 4 * MAX_CL;
 					String url;
 					do {
