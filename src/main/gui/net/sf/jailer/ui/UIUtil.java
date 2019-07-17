@@ -801,7 +801,7 @@ public class UIUtil {
      */
     public static void initPeer() {
         try {
-            Thread.sleep(200);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
         }
     }

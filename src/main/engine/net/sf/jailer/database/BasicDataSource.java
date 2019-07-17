@@ -250,6 +250,7 @@ public class BasicDataSource implements DataSource {
 				if (Pattern.matches(c.getUrlPattern(), rwUrl)) {
 					boolean ok = true;
 					if (c.getTestQuery() != null) {
+						// TODO don't connect in AWT-Thread
 						Connection connection = null;
 						Statement st = null;
 						try {
