@@ -1306,11 +1306,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								}
 								
 								dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
-								String tableInConflict = exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)? ddlCreator.getTableInConflict(dataSource, dataSource.dbms) : null;
+								String tableInConflict = exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)? UIUtil.getDDLTableInConflict(ddlCreator, ExtractionModelFrame.this, dataSource, dataSource.dbms) : null;
 								if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
 									JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 								} else {
-									if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+									if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || UIUtil.isDDLUptodate(ddlCreator, ExtractionModelFrame.this, dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 										"Automatic creation of working-tables failed!\n" +
 										"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n" +
 										"or try another \"Working table schema\"\n\n" +
@@ -1323,7 +1323,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 											@Override
 											protected void validatePrimaryKeys() {
 												try {
-													UIUtil.validatePrimaryKeys(SwingUtilities.getWindowAncestor(progressPanel), new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs()), new TreeSet<Table>(extractionModelEditor.dataModel.getTables()));
+													UIUtil.validatePrimaryKeys(SwingUtilities.getWindowAncestor(progressPanel), UIUtil.createBasicDataSource(ExtractionModelFrame.this, ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs()), new TreeSet<Table>(extractionModelEditor.dataModel.getTables()));
 												} catch (Exception e) {
 													UIUtil.showException(ExtractionModelFrame.this, "Error", e);
 												}
@@ -1871,7 +1871,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	try {
     		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Check Primary Keys")) {
     			updateMenuItems();
-    			BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
+    			BasicDataSource dataSource = UIUtil.createBasicDataSource(this, dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
     			UIUtil.validatePrimaryKeys(this, dataSource, new TreeSet<Table>(extractionModelEditor.dataModel.getTables()));
     		}
 		} catch (Exception e) {

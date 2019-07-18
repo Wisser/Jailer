@@ -531,6 +531,12 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				refresh(table);
 			}
 		});
+		if (jScrollPane2.getHorizontalScrollBar() != null) {
+        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
+        }
+        if (jScrollPane2.getVerticalScrollBar() != null) {
+        	jScrollPane2.getVerticalScrollBar().setUnitIncrement(16);
+        }
 		initTabbedPane();
 		setLocation(100, 100);
 		setSize(500, 500);
@@ -1340,18 +1346,26 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					}
 				}
 				Collections.sort(assocList, new Comparator<String>() {
+					private Map<String, Association> assocs = getDataModel().namedAssociations;
 					@Override
 					public int compare(String o1, String o2) {
-						Association a1 = getDataModel().namedAssociations.get(o1);
-						Association a2 = getDataModel().namedAssociations.get(o2);
-						String n1 = "", n2 = "";
+						Association a1 = assocs.get(o1);
+						Association a2 = assocs.get(o2);
+						String n11 = "", n21 = "";
+						String n12 = "", n22 = "";
 						if (a1 != null) {
-							n1 = a1.source.getName() + "," + a1.destination.getName();
+							n11 = a1.source.getName();
+							n12 = a1.destination.getName();
 						}
 						if (a2 != null) {
-							n2 = a2.source.getName() + "," + a2.destination.getName();
+							n21 = a2.source.getName();
+							n22 = a2.destination.getName();
 						}
-						return n1.compareTo(n2);
+						int r = n11.compareTo(n21);
+						if (r == 0) {
+							r = n12.compareTo(n22);
+						}
+						return r;
 					}
 				});
 				if (!assocList.isEmpty()) {

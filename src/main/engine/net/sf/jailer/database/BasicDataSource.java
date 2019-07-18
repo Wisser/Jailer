@@ -250,7 +250,6 @@ public class BasicDataSource implements DataSource {
 				if (Pattern.matches(c.getUrlPattern(), rwUrl)) {
 					boolean ok = true;
 					if (c.getTestQuery() != null) {
-						// TODO don't connect in AWT-Thread
 						Connection connection = null;
 						Statement st = null;
 						try {
@@ -290,6 +289,34 @@ public class BasicDataSource implements DataSource {
 
 	private final List<Connection> pool = Collections.synchronizedList(new LinkedList<Connection>());
 	
+	public static boolean findDBMSNeedsConnection(String dbUrl) {
+		if (perUrl.containsKey(dbUrl)) {
+			return false;
+		}
+		List<DBMS> cs = Configuration.getInstance().getDBMS();
+		List<String> rwUrls = new ArrayList<String>();
+		rwUrls.add(dbUrl);
+		List<UrlRewriteRule> urlRewriteRules = Configuration.getInstance().getUrlRewriteRules();
+		if (urlRewriteRules != null) {
+			for (UrlRewriteRule rule: urlRewriteRules) {
+				String rwUrl = dbUrl.replaceAll(rule.getPattern(), rule.getReplacement());
+				if (!rwUrl.equals(dbUrl)) {
+					rwUrls.add(rwUrl);
+				}
+			}
+		}
+		for (String rwUrl: rwUrls) {
+			for (DBMS c: cs) {
+				if (Pattern.matches(c.getUrlPattern(), rwUrl)) {
+					if (c.getTestQuery() != null) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Creates a new connection.
 	 * 

@@ -1848,12 +1848,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			if (!cDDLExecutionContext.isIndependentWorkingTables()) {
 				PrimaryKeyFactory.createUPKScope(tmpFileName != null? tmpFileName : jmFile, cDDLExecutionContext);
 			}
-			dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
-			String tableInConflict = getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)? ddlCreator.getTableInConflict(dataSource, dataSource.dbms) : null;
+			dataSource = UIUtil.createBasicDataSource(this, ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
+			String tableInConflict = getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)? UIUtil.getDDLTableInConflict(ddlCreator, ExportDialog.this, dataSource, dataSource.dbms) : null;
 			if (tableInConflict != null && getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
 				JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 			} else {
-				if (!getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, isUseRowId(), getWorkingTableSchema())) {
+				if (!getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || UIUtil.isDDLUptodate(ddlCreator, ExportDialog.this, dataSource, dataSource.dbms, isUseRowId(), getWorkingTableSchema())) {
 					return true;
 				} else {
 					try {

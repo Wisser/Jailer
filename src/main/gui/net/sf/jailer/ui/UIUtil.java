@@ -52,6 +52,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,12 +87,14 @@ import org.apache.log4j.Logger;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.JailerVersion;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.PrimaryKeyValidator;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.extractionmodel.ExtractionModel.IncompatibleModelException;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
@@ -715,7 +719,9 @@ public class UIUtil {
     	if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException || t instanceof IncompatibleModelException) {
             context = EXCEPTION_CONTEXT_USER_ERROR;
         }
-        t.printStackTrace();
+    	if (!(t instanceof CancellationException)) {
+            t.printStackTrace();
+    	}
         if (!(t instanceof ClassNotFoundException)) {
             while (t.getCause() != null && t != t.getCause() && !(t instanceof SqlException)) {
                 t = t.getCause();
@@ -1238,6 +1244,37 @@ public class UIUtil {
 			defaultFont = defaultFont.deriveFont(defaultFont.getStyle() | Font.BOLD);
 		}
 		return defaultFont;
+	}
+
+	public static String getDDLTableInConflict(final DDLCreator ddlCreator, Window window, final BasicDataSource dataSource, final DBMS dbms) throws Exception {
+		return ConcurrentTaskControl.call(window, new Callable<String>() {
+			@Override
+			public String call() throws Exception {
+				return ddlCreator.getTableInConflict(dataSource, dbms);
+			}
+		}, "validate working tables...");
+	}
+
+	public static boolean isDDLUptodate(final DDLCreator ddlCreator, Window window, final BasicDataSource dataSource,
+			final DBMS dbms, final boolean useRowId, final String workingTableSchema) throws Exception {
+		return ConcurrentTaskControl.call(window, new Callable<Boolean>() {
+			@Override
+			public Boolean call() throws Exception {
+				return ddlCreator.isUptodate(dataSource, dbms, useRowId, workingTableSchema);
+			}
+		}, "validate working tables...");
+	}
+
+	public static BasicDataSource createBasicDataSource(Window window, final String driverClassName, final String dbUrl, final String dbUser, final String dbPassword, final int maxPoolSize, final URL... jdbcDriverURL) throws Exception {
+		if (!BasicDataSource.findDBMSNeedsConnection(dbUrl)) {
+			return new BasicDataSource(driverClassName, dbUrl, dbUser, dbPassword, maxPoolSize, jdbcDriverURL);
+		}
+		return ConcurrentTaskControl.call(window, new Callable<BasicDataSource>() {
+			@Override
+			public BasicDataSource call() throws Exception {
+				return new BasicDataSource(driverClassName, dbUrl, dbUser, dbPassword, maxPoolSize, jdbcDriverURL);
+			}
+		}, "connecting...");
 	}
 
 }

@@ -18,11 +18,15 @@ package net.sf.jailer.ui.util;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.util.CancellationException;
 
 /**
  * Controls a concurrent task.
@@ -222,6 +226,56 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 			window.setVisible(false);
 			window.dispose();
 		}
+	}
+
+	/**
+	 * Calls a {@link Callable} in a separate thread while showing a modal dialog.
+	 */
+	public static <T> T call(Window window, final Callable<T> call, String info) throws Exception {
+		final AtomicReference<Exception> exception = new AtomicReference<Exception>();
+		final AtomicReference<T> result = new AtomicReference<T>();
+		final AtomicBoolean done = new AtomicBoolean(false);
+		final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(window, info) {
+			@Override
+			protected void onError(Throwable error) {
+				if (error instanceof Exception) {
+					exception.set((Exception) error);
+				} else {
+					exception.set(new RuntimeException(error));
+				}
+				closeWindow();
+			}
+			@Override
+			protected void onCancellation() {
+				exception.set(new CancellationException());
+				closeWindow();
+			}
+		};
+		
+		ConcurrentTaskControl.openInModalDialog(window, concurrentTaskControl, new ConcurrentTaskControl.Task() {
+			@Override
+			public void run() throws Throwable {
+				try {
+					result.set(call.call());
+					done.set(true);
+				} finally {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							concurrentTaskControl.closeWindow();
+						}
+					});
+				}
+			}
+		}, info);
+		
+		if (exception.get() != null) {
+			throw exception.get();
+		}
+		if (!done.get()) {
+			throw new CancellationException();
+		}
+		return result.get();
 	}
 
 }

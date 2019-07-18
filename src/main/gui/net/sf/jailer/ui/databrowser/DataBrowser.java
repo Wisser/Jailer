@@ -951,7 +951,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
         ConnectionInfo connection = dbConnectionDialog.currentConnection;
-        BasicDataSource dataSource = new BasicDataSource(connection.driverClass, connection.url, connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
+        BasicDataSource dataSource = UIUtil.createBasicDataSource(this, connection.driverClass, connection.url, connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
         SessionForUI newSession = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), this);
         if (newSession != null) {
             if (session != null) {
@@ -4031,7 +4031,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private void checkPKMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkPKMenuItemActionPerformed
         try {
             if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Check Primary Keys")) {
-                BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
+                BasicDataSource dataSource = UIUtil.createBasicDataSource(this, dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
                 UIUtil.validatePrimaryKeys(this, dataSource, new TreeSet<Table>(datamodel.get().getTables()));
             }
         } catch (Exception e) {

@@ -448,6 +448,4 @@ public class DDLCreator {
 		}
 	}
 
-	// TODO should never called from AWT thread
-
 }

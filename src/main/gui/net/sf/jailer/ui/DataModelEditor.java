@@ -1204,11 +1204,11 @@ public class DataModelEditor extends javax.swing.JDialog {
 					dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, JailerVersion.APPLICATION_NAME, executionContext);
 				}
 	    		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Check Primary Keys")) {
-	    			BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
+	    			BasicDataSource dataSource = UIUtil.createBasicDataSource(this, dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
 	    			UIUtil.validatePrimaryKeys(DataModelEditor.this, dataSource, Collections.singleton(table));
 	    		}
 			} catch (Exception e) {
-				e.printStackTrace();
+				// ignore
 			}
 		}
 	};
