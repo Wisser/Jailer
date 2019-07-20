@@ -1392,7 +1392,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private static String assocToolTip(String condition, Association assoc) {
-		return "<html>" + UIUtil.toHTMLFragment(condition, 0) + "<br><hr>" + UIUtil.toHTML(assoc.getName(), 0) + "</html>";
+		return "<html>" + UIUtil.toHTMLFragment(condition, 0) + "<br><hr>"
+				+ UIUtil.toHTML(assoc.reversed? assoc.reversalAssociation.getName() : assoc.getName(), 0) + "</html>";
 	}
 
 	private class AllNonEmptyItem extends JMenuItem {
