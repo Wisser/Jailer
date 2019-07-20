@@ -1387,8 +1387,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					.getUnrestrictedJoinCondition());
 			updateWhereField();
 			join.setToolTipText(join.getText());
-			on.setToolTipText(on.getText());
+			on.setToolTipText(assocToolTip(on.getText(), this.association));
 		}
+	}
+
+	private static String assocToolTip(String condition, Association assoc) {
+		return "<html>" + UIUtil.toHTMLFragment(condition, 0) + "<br><hr>" + UIUtil.toHTML(assoc.getName(), 0) + "</html>";
 	}
 
 	private class AllNonEmptyItem extends JMenuItem {
@@ -2633,7 +2637,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			++l;
 
 			final JMenuItem item = new JMenuItem("  " + (name.substring(1)) + "   ");
-			item.setToolTipText(association.getUnrestrictedJoinCondition());
+			item.setToolTipText(assocToolTip(association.getUnrestrictedJoinCondition(), association));
 			final JLabel countLabel = new JLabel(". >99999 ") {
 				@Override
 				public void paint(Graphics g) {

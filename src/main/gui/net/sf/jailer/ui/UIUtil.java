@@ -950,7 +950,11 @@ public class UIUtil {
     }
 
     public static String toHTML(String plainText, int maxLineLength) {
-        plainText = plainText.trim();
+    	return "<html>" + toHTMLFragment(plainText, maxLineLength);
+    }
+
+    public static String toHTMLFragment(String plainText, int maxLineLength) {
+    	        plainText = plainText.trim();
         if (maxLineLength > 0) {
             StringBuilder sb = new StringBuilder();
             int MAXLINES = 50;
@@ -969,8 +973,7 @@ public class UIUtil {
             }
             plainText = sb.toString();
         }
-        return "<html>" + 
-                plainText
+        return plainText
                 .replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
