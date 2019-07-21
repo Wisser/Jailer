@@ -1569,7 +1569,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			} else {
 				c = '3';
 			}
-			String name = c + a.getDataModel().getDisplayName(a.destination) + (n > 1 ? " on " + a.getName() : "");
+			String name = c + a.getDataModel().getDisplayName(a.destination) + (n > 1 ? " (" + (a.reversed? a.reversalAssociation.getName() : a.getName()) + ")": "");
 			assList.add(name);
 			assMap.put(name, a);
 		}
