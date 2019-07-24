@@ -23,6 +23,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.sql.SQLException;
@@ -31,14 +33,21 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.text.BadLocationException;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -129,7 +138,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 			try {
 				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
 				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-				new SQLAutoCompletion(provider, editorPane);
+				sqlAutoCompletion = new SQLAutoCompletion(provider, editorPane);
 			} catch (SQLException e) {
 			}
 		}
@@ -511,6 +520,58 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	}
 	
 	public final RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
+	private SQLAutoCompletion sqlAutoCompletion;
+
+	public static void initialObserve(final JTextField textfield, final Runnable open) {
+		InputMap im = textfield.getInputMap();
+		@SuppressWarnings("serial")
+		Action a = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				open.run();
+			}
+		};
+		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
+		im.put(ks, a);
+		ActionMap am = textfield.getActionMap();
+		am.put(a, a);
+	}
+
+	public void observe(final JTextField textfield, final Runnable open) {
+		InputMap im = textfield.getInputMap();
+		@SuppressWarnings("serial")
+		Action a = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String origText = textfield.getText();
+				String caretMarker;
+				for (int suffix = 0; ; suffix++) {
+					caretMarker = "CARET" + suffix;
+					if (!origText.contains(caretMarker)) {
+						break;
+					}
+				}
+				try {
+					textfield.getDocument().insertString(textfield.getCaretPosition(), caretMarker, null);
+				} catch (BadLocationException e1) {
+					e1.printStackTrace();
+				}
+				open.run();
+				textfield.setText(origText);
+				String text = editorPane.getText();
+				int i = text.indexOf(caretMarker);
+				if (i >= 0) {
+					editorPane.setText(text.substring(0, i) + text.substring(i + caretMarker.length()));
+					editorPane.setCaretPosition(i);
+				}
+				sqlAutoCompletion.doCompletion();
+			}
+		};
+		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
+		im.put(ks, a);
+		ActionMap am = textfield.getActionMap();
+		am.put(a, a);
+	}
 
 	protected abstract void consume(String cond);
 	

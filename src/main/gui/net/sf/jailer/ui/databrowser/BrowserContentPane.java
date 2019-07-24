@@ -1073,35 +1073,61 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		openEditorButton.setIcon(UIUtil.scaleIcon(this, conditionEditorIcon));
 		openEditorButton.setText(null);
+		
+		final Runnable openConditionEditor = new Runnable() {
+			@Override
+			public void run() {
+				openConditionEditor();
+			}
+
+			public void openConditionEditor() {
+				if (andConditionEditor == null) {
+					andConditionEditor = new DBConditionEditor(parentFrame, dataModel) {
+						@Override
+						protected void consume(String cond) {
+							if (cond != null) {
+								if (!getAndConditionText().equals((cond))) {
+									setAndCondition((cond), true);
+									loadButton.grabFocus();
+									reloadRows();
+								}
+							}
+							openEditorButton.setSelected(false);
+						}
+					};
+					if (andCondition.getEditor().getEditorComponent() instanceof JTextField) {
+						andConditionEditor.observe((JTextField) andCondition.getEditor().getEditorComponent(), new Runnable() {
+							@Override
+							public void run() {
+								openConditionEditor();
+							}
+						});
+					}
+				}
+				openEditorButton.setSelected(true);
+				final Point pos = new Point(andCondition.getX(), andCondition.getY());
+				SwingUtilities.convertPointToScreen(pos, andCondition.getParent());
+				andConditionEditor.setLocationAndFit(pos);
+				andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
+			}
+		};
+		
 		openEditorButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final Point pos = new Point(andCondition.getX(), andCondition.getY());
-				SwingUtilities.convertPointToScreen(pos, andCondition.getParent());
 				loadButton.grabFocus();
 				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						if (andConditionEditor == null) {
-							andConditionEditor = new DBConditionEditor(parentFrame, dataModel) {
-								@Override
-								protected void consume(String cond) {
-									if (cond != null) {
-										if (!getAndConditionText().equals((cond))) {
-											setAndCondition((cond), true);
-											loadButton.grabFocus();
-											reloadRows();
-										}
-									}
-									openEditorButton.setSelected(false);
-								}
-							};
-						}
-						openEditorButton.setSelected(true);
-						andConditionEditor.setLocationAndFit(pos);
-						andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
+						openConditionEditor.run();
 					}
 				});
+			}
+		});
+		DBConditionEditor.initialObserve((JTextField) andCondition.getEditor().getEditorComponent(), new Runnable() {
+			@Override
+			public void run() {
+				openConditionEditor.run();
 			}
 		});
 		relatedRowsLabel.setIcon(UIUtil.scaleIcon(this, relatedRowsIcon));

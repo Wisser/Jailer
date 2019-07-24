@@ -789,6 +789,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionConditionEditor.setTitle("Restriction");
 		openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		openSubjectConditionEditor.setText(null);
+		restrictionConditionEditor.observe(restrictionEditor.restriction, new Runnable() {
+			@Override
+			public void run() {
+				if (currentAssociation != null && restrictionEditor.restriction.isEditable()) {
+					restrictionConditionEditor.edit(restrictionEditor.restriction, restrictionEditor.restriction.getText(), "Table A", "A", currentAssociation.source, "Table B", "B", currentAssociation.destination, true, false);
+				}
+			}
+		});
 		restrictionEditor.openRestrictionConditionEditor.setIcon(conditionEditorIcon);
 		restrictionEditor.openRestrictionConditionEditor.setText(null);
 		restrictionEditor.openRestrictionConditionEditor.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -832,6 +840,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		   }
+		});
+		subjectConditionEditor.observe(condition, new Runnable() {
+			@Override
+			public void run() {
+				subjectConditionEditor.edit(condition, condition.getText(), "Subject", "T", subject, null, null, null, false, true);
+			}
 		});
 		
 		leftButton.setIcon(leftIcon);
