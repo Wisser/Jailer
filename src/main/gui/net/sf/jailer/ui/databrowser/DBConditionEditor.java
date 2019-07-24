@@ -526,9 +526,13 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		InputMap im = textfield.getInputMap();
 		@SuppressWarnings("serial")
 		Action a = new AbstractAction() {
+			boolean done = false;
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				open.run();
+				if (!done) {
+					done = true;
+					open.run();
+				}
 			}
 		};
 		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
