@@ -73,6 +73,7 @@ import net.sf.jailer.util.SqlUtil;
 public abstract class DBConditionEditor extends EscapableDialog {
 
 	private boolean ok;
+	private boolean escaped;
 	private ParameterSelector parameterSelector;
 	private DataModelBasedSQLCompletionProvider provider;
 
@@ -85,6 +86,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		addWindowFocusListener(new WindowFocusListener() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
+				ok = !escaped;
 				setVisible(false);
 			}
 			@Override
@@ -164,7 +166,13 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		   }
 		});
 	}
-	
+
+	@Override
+	protected void escapePressed() {
+		escaped = true;
+		super.escapePressed();
+	}
+
 	/**
 	 * Opens a drop-down box which allows the user to select columns for restriction definitions.
 	 */
@@ -221,6 +229,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
         table1dropDown = new javax.swing.JLabel();
         toSubQueryButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         gripPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -237,7 +246,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
         table1name.setFont(table1name.getFont().deriveFont(table1name.getFont().getSize()+1f));
         table1name.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
@@ -246,7 +255,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
         table1dropDown.setFont(table1dropDown.getFont().deriveFont(table1dropDown.getFont().getSize()+1f));
         table1dropDown.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel2.add(table1dropDown, gridBagConstraints);
@@ -259,7 +268,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -276,8 +285,20 @@ public abstract class DBConditionEditor extends EscapableDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         jPanel2.add(okButton, gridBagConstraints);
+
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel2.add(cancelButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -296,7 +317,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         jPanel3.add(gripPanel, gridBagConstraints);
 
-        jLabel2.setText("<html>  <i>Ctrl+Space</i> for code completion. <i>Ctrl+Enter</i> for Ok.</html>");
+        jLabel2.setText("<html>  <i>Ctrl+Space</i> for code completion. <i>Ctrl+Enter</i> for Ok. <i>Esc</i> for Cancel.</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 20;
@@ -376,6 +397,11 @@ public abstract class DBConditionEditor extends EscapableDialog {
         }
     }//GEN-LAST:event_toSubQueryButtonActionPerformed
 
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        escaped = true;
+        setVisible(false);
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
 	private Table table1, table2;
 	private String table1alias, table2alias;
 	private boolean addPseudoColumns;
@@ -413,6 +439,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 			toSubQueryButton.setEnabled(false);
 		}
 		ok = false;
+		escaped = false;
 		editorPane.setText(condition);
 		editorPane.setCaretPosition(0);
 		editorPane.discardAllEdits();
@@ -495,6 +522,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelButton;
     private javax.swing.JPanel gripPanel;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -547,28 +575,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		Action a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String origText = textfield.getText();
-				String caretMarker;
-				for (int suffix = 0; ; suffix++) {
-					caretMarker = "CARET" + suffix;
-					if (!origText.contains(caretMarker)) {
-						break;
-					}
-				}
-				try {
-					textfield.getDocument().insertString(textfield.getCaretPosition(), caretMarker, null);
-				} catch (BadLocationException e1) {
-					e1.printStackTrace();
-				}
-				open.run();
-				textfield.setText(origText);
-				String text = editorPane.getText();
-				int i = text.indexOf(caretMarker);
-				if (i >= 0) {
-					editorPane.setText(text.substring(0, i) + text.substring(i + caretMarker.length()));
-					editorPane.setCaretPosition(i);
-				}
-				sqlAutoCompletion.doCompletion();
+				doCompletion(textfield, open);
 			}
 		};
 		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
@@ -576,9 +583,39 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		ActionMap am = textfield.getActionMap();
 		am.put(a, a);
 	}
+	
+	public void doCompletion(final JTextField textfield, final Runnable open) {
+		String origText = textfield.getText();
+		String caretMarker;
+		for (int suffix = 0; ; suffix++) {
+			caretMarker = "CARET" + suffix;
+			if (!origText.contains(caretMarker)) {
+				break;
+			}
+		}
+		try {
+			textfield.getDocument().insertString(textfield.getCaretPosition(), caretMarker, null);
+		} catch (BadLocationException e1) {
+			e1.printStackTrace();
+		}
+		open.run();
+		textfield.setText(origText);
+		String text = editorPane.getText();
+		int i = text.indexOf(caretMarker);
+		if (i >= 0) {
+			editorPane.setText(text.substring(0, i) + text.substring(i + caretMarker.length()));
+			editorPane.setCaretPosition(i);
+		}
+		UIUtil.invokeLater(1, new Runnable() {
+			@Override
+			public void run() {
+				sqlAutoCompletion.doCompletion();
+			}
+		});
+	}
 
 	protected abstract void consume(String cond);
-	
+
 	private static final long serialVersionUID = -5169934807182707970L;
 
 }

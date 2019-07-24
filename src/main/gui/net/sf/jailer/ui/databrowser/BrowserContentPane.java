@@ -318,11 +318,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						unhide();
 						if (theSession == null || !theSession.isDown()) {
 							if (!showingLoadErrorNow && shouldShowLoadErrors()) {
-								try {
-									showingLoadErrorNow = true;
-									UIUtil.showException(BrowserContentPane.this, "Error", e);	
-								} finally {
-									showingLoadErrorNow = false;
+								if (getRowBrowser() != null && getRowBrowser().internalFrame != null && getRowBrowser().internalFrame.isVisible()) {
+									try {
+										showingLoadErrorNow = true;
+										UIUtil.showException(BrowserContentPane.this, "Error", e);	
+									} finally {
+										showingLoadErrorNow = false;
+									}
 								}
 							}
 						} else {
@@ -1081,6 +1083,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			public void openConditionEditor() {
+				openEditorButton.setSelected(true);
+				final Point pos = new Point(andCondition.getX(), andCondition.getY());
+				SwingUtilities.convertPointToScreen(pos, andCondition.getParent());
+				andConditionEditor.setLocationAndFit(pos);
+				andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
+			}
+		};
+
+		final Runnable createConditionEditor = new Runnable() {
+			@Override
+			public void run() {
+				createConditionEditor();
+			}
+
+			public void createConditionEditor() {
 				if (andConditionEditor == null) {
 					andConditionEditor = new DBConditionEditor(parentFrame, dataModel) {
 						@Override
@@ -1096,19 +1113,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					};
 					if (andCondition.getEditor().getEditorComponent() instanceof JTextField) {
-						andConditionEditor.observe((JTextField) andCondition.getEditor().getEditorComponent(), new Runnable() {
-							@Override
-							public void run() {
-								openConditionEditor();
-							}
-						});
+						andConditionEditor.observe((JTextField) andCondition.getEditor().getEditorComponent(), openConditionEditor);
 					}
 				}
-				openEditorButton.setSelected(true);
-				final Point pos = new Point(andCondition.getX(), andCondition.getY());
-				SwingUtilities.convertPointToScreen(pos, andCondition.getParent());
-				andConditionEditor.setLocationAndFit(pos);
-				andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
 			}
 		};
 		
@@ -1119,17 +1126,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
+						createConditionEditor.run();
 						openConditionEditor.run();
 					}
 				});
 			}
 		});
-		DBConditionEditor.initialObserve((JTextField) andCondition.getEditor().getEditorComponent(), new Runnable() {
-			@Override
-			public void run() {
-				openConditionEditor.run();
-			}
-		});
+		if (andCondition.getEditor().getEditorComponent() instanceof JTextField) {
+			DBConditionEditor.initialObserve((JTextField) andCondition.getEditor().getEditorComponent(), new Runnable() {
+				@Override
+				public void run() {
+					createConditionEditor.run();
+					andConditionEditor.doCompletion((JTextField) andCondition.getEditor().getEditorComponent(), openConditionEditor);
+				}
+			});
+		}
 		relatedRowsLabel.setIcon(UIUtil.scaleIcon(this, relatedRowsIcon));
 		relatedRowsLabel.setFont(relatedRowsLabel.getFont().deriveFont(relatedRowsLabel.getFont().getSize() * 1.1f));
 		if (createPopupMenu(null, -1, 0, 0, false).getComponentCount() == 0) {
