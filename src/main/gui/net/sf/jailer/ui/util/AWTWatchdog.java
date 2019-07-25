@@ -168,7 +168,6 @@ public class AWTWatchdog {
 						.replace(" at javax.swing.", "atjs..")
 						.replace(" at net.sf.jailer.", "atn..")
 						.replaceAll("\\s*(\\n)\\s*", "$1");
-				System.err.print("Error: AWT-Thread hanging: " + sb);
 				return dump;
 			}
 		}
