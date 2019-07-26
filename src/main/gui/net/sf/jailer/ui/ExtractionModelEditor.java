@@ -1687,7 +1687,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		currentAssociation.setAggregationSchema(aggregationSchema);
 		markDirty();
 		updateSketch();
-		undoManager.push(new CompensationAction(1, "changed aggregation", dataModel.getDisplayName(association.destination)) {
+		undoManager.push(new CompensationAction(1, "changed aggregation", "changed aggregation", dataModel.getDisplayName(association.destination)) {
 			@Override
 			public void run() {
 				setAggregationSchema(association, old);
@@ -2282,7 +2282,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		markDirty();
 		updateSketch();
 		xmlTagApply.setEnabled(false);
-		undoManager.push(new CompensationAction(1, "changed tag", dataModel.getDisplayName(association.destination)) {
+		undoManager.push(new CompensationAction(1, "changed tag", "changed tag", dataModel.getDisplayName(association.destination)) {
 			@Override
 			public void run() {
 				setAggregationTagName(association, old);
@@ -2316,7 +2316,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private void changeSubject(Table newSubject) {
 		if (newSubject != null && newSubject != subject) {
 			final Table oldSubject = subject;
-			undoManager.push(new CompensationAction(1, "changed subject", dataModel.getDisplayName(oldSubject)) {
+			undoManager.push(new CompensationAction(1, "changed subject", "changed subject", dataModel.getDisplayName(oldSubject)) {
 				@Override
 				public void run() {
 					subjectTable.setSelectedItem(dataModel.getDisplayName(oldSubject));
@@ -2359,7 +2359,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		markDirty();
 		updateAdditionalSubjectsButton();
 		pendingDecisionsPanel.updateView();
-		undoManager.push(new CompensationAction(1, "changed additional subjects", null) {
+		undoManager.push(new CompensationAction(1, "changed additional subjects", "changed additional subjects", null) {
 			@Override
 			public void run() {
 				changeAdditionalSubjects(oldSubjects);
@@ -3005,7 +3005,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			++UISettings.s4;
 		}
 
-		undoManager.push(new CompensationAction(100, "".equals(oc)? "removed restriction" : ("true".equals(oc) || "ignore".equals(oc))? "disabled assocation" : "added restriction", withWhere? dataModel.getDisplayName(association.destination) : null) {
+		undoManager.push(new CompensationAction(
+				100,
+				"".equals(condition)? "removed restriction" : ("true".equals(condition) || "ignore".equals(condition))? "disabled assocation" : "added restriction",
+				"".equals(oc)? "removed restriction" : ("true".equals(oc) || "ignore".equals(oc))? "disabled assocation" : "added restriction",
+				withWhere? dataModel.getDisplayName(association.destination) : null) {
 			@Override
 			public void run() {
 				addRestriction(source, association, oldRestriction, withWhere);
@@ -3013,7 +3017,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		});
 		
 		if (resetFilter) {
-			undoManager.push(new CompensationAction(0, null, null) {
+			undoManager.push(new CompensationAction(0, null, null, null) {
 				@Override
 				public void run() {
 					setOrResetFKNullFilter(association, true);
@@ -3053,7 +3057,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		table.setXmlTemplate(template);
 		updateSketch();
 		markDirty();
-		undoManager.push(new CompensationAction(1, "changed XML template", dataModel.getDisplayName(table)) {
+		undoManager.push(new CompensationAction(1, "changed XML template", "changed XML template", dataModel.getDisplayName(table)) {
 			@Override
 			public void run() {
 				changeXmlTemplate(table, old);
@@ -3251,7 +3255,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     private void setOrResetFKNullFilter(final Association association, final boolean set) {
     	if (association.setOrResetFKNullFilter(set)) {
-    		undoManager.push(new CompensationAction(1, set? "set filter" : "removed filter", dataModel.getDisplayName(association.source)) {
+    		undoManager.push(new CompensationAction(1, !set? "set filter" : "removed filter", set? "set filter" : "removed filter", dataModel.getDisplayName(association.source)) {
     			@Override
     			public void run() {
     				setOrResetFKNullFilter(association, !set);

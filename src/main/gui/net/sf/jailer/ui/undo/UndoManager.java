@@ -81,10 +81,15 @@ public class UndoManager {
 	private void open() {
 		if (!isOpen) {
 			isOpen = true;
+			final boolean protokoll = !undoing && !redoing;
 			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					isOpen = false;
+					if (protokoll && !undoStack.isEmpty()) {
+						toProtokoll(undoStack.getLast(), false, ProtokollItemType.DONE);
+						updateView();
+					}
 				}
 			});
 		}
@@ -93,7 +98,7 @@ public class UndoManager {
 	private static class CompositeAction extends CompensationAction {
 		
 		public CompositeAction() {
-			super(0, null, null);
+			super(0, null, null, null);
 		}
 
 		List<CompensationAction> actions = new ArrayList<>();
@@ -178,10 +183,9 @@ public class UndoManager {
 			Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
 
 			int y = 1;
-			int a = 70;
-			
+
 			Color fg = new Color(0, 0, 0);
-			Color bg = new Color(255, 255, 255, a);
+			Color bg = new Color(255, 255, 255, 70);
 			for (Object[] line: protocol) {
 				JPanel panel = new JPanel(new GridBagLayout());
 				panel.setOpaque(false);
@@ -226,12 +230,12 @@ public class UndoManager {
 				gridBagConstraints = new GridBagConstraints();
 				gridBagConstraints.gridx = 2;
 				gridBagConstraints.gridy = y;
-				gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
 				gridBagConstraints.weightx = 1;
 				gridBagConstraints.weighty = 0;
-				label = new JLabel("   " + ((Boolean.TRUE.equals(line[2])? "Undone" : "Redone")) + "   ");
+				label = new JLabel(" " + (((ProtokollItemType) line[2]).name) + "  ");
 				label.setFont(bold2);
-				label.setBackground(Boolean.TRUE.equals(line[2])? new Color(150, 255, 0, a) : new Color(0, 255, 180, a));
+				label.setBackground(((ProtokollItemType) line[2]).color);
 				label.setForeground(fg);
 				label.setOpaque(true);
 				label.setBorder(BorderFactory.createEtchedBorder());
@@ -263,7 +267,25 @@ public class UndoManager {
 	
 	private Long retentionStartTime;
 	
-	private void toProtokoll(CompensationAction action, boolean asUndo) {
+	private enum ProtokollItemType {
+		UNDO(new Color(150, 255, 0, 70), "Undone"),
+		REDO(new Color(0, 255, 230, 70), "Redone"),
+		DONE(new Color(100, 255, 100, 70), "Done");
+		
+		public final Color color;
+		public final String name;
+		
+		ProtokollItemType(Color color, String name) {
+			this.color = color;
+			this.name = name;
+		}
+	}
+	
+	private void toProtokoll(CompensationAction action, ProtokollItemType type) {
+		toProtokoll(action, true, type);
+	}
+
+	private void toProtokoll(CompensationAction action, boolean positive, ProtokollItemType type) {
 		String count = null;
 		String what;
 		String where;
@@ -282,7 +304,7 @@ public class UndoManager {
 			for (CompensationAction a: actions) {
 				if (a.prio == prio) {
 					++l;
-					what = a.what;
+					what = positive? a.whatToCompensate : a.whatHasDone;
 					if (a.where != null) {
 						Integer c = whereCount.get(a.where);
 						if (c == null) {
@@ -305,10 +327,10 @@ public class UndoManager {
 				count = "  x " + l;
 			}
 		} else {
-			what = action.what;
+			what = positive? action.whatToCompensate : action.whatHasDone;
 			where = action.where;
 		}
-		protocol.add(new Object[] { what == null? "" : what, where, asUndo, count } );
+		protocol.add(new Object[] { what == null? "" : what, where, type, count } );
 		if (protocol.size() > MAX_PROTOCOL_SIZE) {
 			protocol.removeFirst();
 		}
@@ -344,7 +366,7 @@ public class UndoManager {
 			redoStack.add(new CompositeAction());
 			if (!undoStack.isEmpty()) {
 				CompensationAction action = undoStack.removeLast();
-				toProtokoll(action, true);
+				toProtokoll(action, ProtokollItemType.UNDO);
 				action.run();
 			}
 			cleanupStack(redoStack);
@@ -364,7 +386,7 @@ public class UndoManager {
 			undoStack.add(new CompositeAction());
 			if (!redoStack.isEmpty()) {
 				CompensationAction action = redoStack.removeLast();
-				toProtokoll(action, false);
+				toProtokoll(action, ProtokollItemType.REDO);
 				action.run();
 			}
 			cleanupStack(undoStack);
