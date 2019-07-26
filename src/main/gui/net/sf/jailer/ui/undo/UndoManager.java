@@ -179,8 +179,7 @@ public class UndoManager {
 			font = font.deriveFont(font.getSize() * 1.1f);
 		    Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
 		    Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-		    Font bold2 = bold.deriveFont(font.getSize() * 1.1f);
-			Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
+		    Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
 
 			int y = 1;
 
@@ -234,7 +233,7 @@ public class UndoManager {
 				gridBagConstraints.weightx = 1;
 				gridBagConstraints.weighty = 0;
 				label = new JLabel(" " + (((ProtokollItemType) line[2]).name) + "  ");
-				label.setFont(bold2);
+				label.setFont(font);
 				label.setBackground(((ProtokollItemType) line[2]).color);
 				label.setForeground(fg);
 				label.setOpaque(true);
@@ -268,9 +267,9 @@ public class UndoManager {
 	private Long retentionStartTime;
 	
 	private enum ProtokollItemType {
-		UNDO(new Color(150, 255, 0, 70), "Undone"),
-		REDO(new Color(0, 255, 230, 70), "Redone"),
-		DONE(new Color(100, 255, 100, 70), "Done");
+		UNDO(new Color(150, 255, 0, 70), "Undo"),
+		REDO(new Color(0, 255, 230, 70), "Redo"),
+		DONE(new Color(220, 255, 220, 70), "Done");
 		
 		public final Color color;
 		public final String name;

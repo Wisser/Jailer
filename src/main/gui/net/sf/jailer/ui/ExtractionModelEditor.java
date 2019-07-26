@@ -2107,6 +2107,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			addRestriction(association.source, association, condition, false);
 			graphView.setSelection(association);
 		}
+		afterAddRestriction();
+	}
+
+	public void afterAddRestriction() {
+		markDirty();
+		initRestrictionEditor(currentAssociation, currentNode);
+		graphView.resetExpandedState();
 		tree.repaint();
 		graphView.display.invalidate();
 		restrictionsTable.setModel(restrictionTableModel());
@@ -2870,14 +2877,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 //				}
 			}
 		}
-		markDirty();
-		tree.repaint();
-		restrictionsTable.setModel(restrictionTableModel());
-		initRestrictionEditor(currentAssociation, currentNode);
-		graphView.resetExpandedState();
-		closureView.refresh();
-		closureBorderView.refresh();
-		extractionModelFrame.restrictedDependenciesView.refresh();
+		afterAddRestriction();
 	}
 	 
 	/**
@@ -2913,14 +2913,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 		}
-		markDirty();
-		tree.repaint();
-		restrictionsTable.setModel(restrictionTableModel());
-		initRestrictionEditor(currentAssociation, currentNode);
-		graphView.resetExpandedState();
-		closureView.refresh();
-		closureBorderView.refresh();
-		extractionModelFrame.restrictedDependenciesView.refresh();
+		afterAddRestriction();
 	}
 	 
 	/**
@@ -2948,14 +2941,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	public void ignorAssociation(Association association) {
 		addRestriction(association.source, association, "false", false);
-		markDirty();
-		tree.repaint();
-		restrictionsTable.setModel(restrictionTableModel());
-		initRestrictionEditor(currentAssociation, currentNode);
-		graphView.resetExpandedState();
-		closureView.refresh();
-		closureBorderView.refresh();
-		extractionModelFrame.restrictedDependenciesView.refresh();
+		afterAddRestriction();
 	}
 
 	/**
@@ -2963,14 +2949,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	public void removeRestriction(Association association) {
 		addRestriction(association.source, association, "", true);
-		markDirty();
-		tree.repaint();
-		restrictionsTable.setModel(restrictionTableModel());
-		initRestrictionEditor(currentAssociation, currentNode);
-		graphView.resetExpandedState();
-		closureView.refresh();
-		closureBorderView.refresh();
-		extractionModelFrame.restrictedDependenciesView.refresh();
+		afterAddRestriction();
 	}
 
 	/**
@@ -2980,6 +2959,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		graphView.zoomToFit();
 	}
 
+	private boolean afterAddRestrictionCallPending = false;
+	
 	/**
 	 * Adds a restriction to a association.
 	 * 
@@ -3013,6 +2994,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			@Override
 			public void run() {
 				addRestriction(source, association, oldRestriction, withWhere);
+				if (!afterAddRestrictionCallPending) {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							afterAddRestrictionCallPending = false;
+							afterAddRestriction();
+						}
+					});
+					afterAddRestrictionCallPending = true;
+				}
 			}
 		});
 		
@@ -3255,7 +3246,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     private void setOrResetFKNullFilter(final Association association, final boolean set) {
     	if (association.setOrResetFKNullFilter(set)) {
-    		undoManager.push(new CompensationAction(1, !set? "set filter" : "removed filter", set? "set filter" : "removed filter", dataModel.getDisplayName(association.source)) {
+    		undoManager.push(new CompensationAction(1, set? "set filter" : "removed filter", !set? "set filter" : "removed filter", dataModel.getDisplayName(association.source)) {
     			@Override
     			public void run() {
     				setOrResetFKNullFilter(association, !set);
