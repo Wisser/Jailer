@@ -789,6 +789,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionConditionEditor.setTitle("Restriction");
 		openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		openSubjectConditionEditor.setText(null);
+		restrictionConditionEditor.observe(restrictionEditor.restriction, new Runnable() {
+			@Override
+			public void run() {
+				if (currentAssociation != null && restrictionEditor.restriction.isEditable()) {
+					restrictionConditionEditor.edit(restrictionEditor.restriction, restrictionEditor.restriction.getText(), "Table A", "A", currentAssociation.source, "Table B", "B", currentAssociation.destination, true, false);
+				}
+			}
+		});
 		restrictionEditor.openRestrictionConditionEditor.setIcon(conditionEditorIcon);
 		restrictionEditor.openRestrictionConditionEditor.setText(null);
 		restrictionEditor.openRestrictionConditionEditor.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -832,6 +840,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		   }
+		});
+		subjectConditionEditor.observe(condition, new Runnable() {
+			@Override
+			public void run() {
+				subjectConditionEditor.edit(condition, condition.getText(), "Subject", "T", subject, null, null, null, false, true);
+			}
 		});
 		
 		leftButton.setIcon(leftIcon);
@@ -1673,7 +1687,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		currentAssociation.setAggregationSchema(aggregationSchema);
 		markDirty();
 		updateSketch();
-		undoManager.push(new CompensationAction(1, "changed aggregation", dataModel.getDisplayName(association.destination)) {
+		undoManager.push(new CompensationAction(1, "changed aggregation", "changed aggregation", dataModel.getDisplayName(association.destination)) {
 			@Override
 			public void run() {
 				setAggregationSchema(association, old);
@@ -2093,6 +2107,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			addRestriction(association.source, association, condition, false);
 			graphView.setSelection(association);
 		}
+		afterAddRestriction();
+	}
+
+	public void afterAddRestriction() {
+		markDirty();
+		initRestrictionEditor(currentAssociation, currentNode);
+		graphView.resetExpandedState();
 		tree.repaint();
 		graphView.display.invalidate();
 		restrictionsTable.setModel(restrictionTableModel());
@@ -2268,7 +2289,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		markDirty();
 		updateSketch();
 		xmlTagApply.setEnabled(false);
-		undoManager.push(new CompensationAction(1, "changed tag", dataModel.getDisplayName(association.destination)) {
+		undoManager.push(new CompensationAction(1, "changed tag", "changed tag", dataModel.getDisplayName(association.destination)) {
 			@Override
 			public void run() {
 				setAggregationTagName(association, old);
@@ -2302,7 +2323,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private void changeSubject(Table newSubject) {
 		if (newSubject != null && newSubject != subject) {
 			final Table oldSubject = subject;
-			undoManager.push(new CompensationAction(1, "changed subject", dataModel.getDisplayName(oldSubject)) {
+			undoManager.push(new CompensationAction(1, "changed subject", "changed subject", dataModel.getDisplayName(oldSubject)) {
 				@Override
 				public void run() {
 					subjectTable.setSelectedItem(dataModel.getDisplayName(oldSubject));
@@ -2345,7 +2366,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		markDirty();
 		updateAdditionalSubjectsButton();
 		pendingDecisionsPanel.updateView();
-		undoManager.push(new CompensationAction(1, "changed additional subjects", null) {
+		undoManager.push(new CompensationAction(1, "changed additional subjects", "changed additional subjects", null) {
 			@Override
 			public void run() {
 				changeAdditionalSubjects(oldSubjects);
@@ -2856,14 +2877,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 //				}
 			}
 		}
-		markDirty();
-		tree.repaint();
-		restrictionsTable.setModel(restrictionTableModel());
-		initRestrictionEditor(currentAssociation, currentNode);
-		graphView.resetExpandedState();
-		closureView.refresh();
-		closureBorderView.refresh();
-		extractionModelFrame.restrictedDependenciesView.refresh();
+		afterAddRestriction();
 	}
 	 
 	/**
@@ -2899,14 +2913,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 		}
-		markDirty();
-		tree.repaint();
-		restrictionsTable.setModel(restrictionTableModel());
-		initRestrictionEditor(currentAssociation, currentNode);
-		graphView.resetExpandedState();
-		closureView.refresh();
-		closureBorderView.refresh();
-		extractionModelFrame.restrictedDependenciesView.refresh();
+		afterAddRestriction();
 	}
 	 
 	/**
@@ -2934,14 +2941,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	public void ignorAssociation(Association association) {
 		addRestriction(association.source, association, "false", false);
-		markDirty();
-		tree.repaint();
-		restrictionsTable.setModel(restrictionTableModel());
-		initRestrictionEditor(currentAssociation, currentNode);
-		graphView.resetExpandedState();
-		closureView.refresh();
-		closureBorderView.refresh();
-		extractionModelFrame.restrictedDependenciesView.refresh();
+		afterAddRestriction();
 	}
 
 	/**
@@ -2949,14 +2949,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	public void removeRestriction(Association association) {
 		addRestriction(association.source, association, "", true);
-		markDirty();
-		tree.repaint();
-		restrictionsTable.setModel(restrictionTableModel());
-		initRestrictionEditor(currentAssociation, currentNode);
-		graphView.resetExpandedState();
-		closureView.refresh();
-		closureBorderView.refresh();
-		extractionModelFrame.restrictedDependenciesView.refresh();
+		afterAddRestriction();
 	}
 
 	/**
@@ -2966,6 +2959,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		graphView.zoomToFit();
 	}
 
+	private boolean afterAddRestrictionCallPending = false;
+	
 	/**
 	 * Adds a restriction to a association.
 	 * 
@@ -2991,15 +2986,29 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			++UISettings.s4;
 		}
 
-		undoManager.push(new CompensationAction(100, "".equals(oc)? "removed restriction" : ("true".equals(oc) || "ignore".equals(oc))? "disabled assocation" : "added restriction", withWhere? dataModel.getDisplayName(association.destination) : null) {
+		undoManager.push(new CompensationAction(
+				100,
+				"".equals(condition)? "removed restriction" : ("true".equals(condition) || "ignore".equals(condition))? "disabled assocation" : "added restriction",
+				"".equals(oc)? "removed restriction" : ("true".equals(oc) || "ignore".equals(oc))? "disabled assocation" : "added restriction",
+				withWhere? dataModel.getDisplayName(association.destination) : null) {
 			@Override
 			public void run() {
 				addRestriction(source, association, oldRestriction, withWhere);
+				if (!afterAddRestrictionCallPending) {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							afterAddRestrictionCallPending = false;
+							afterAddRestriction();
+						}
+					});
+					afterAddRestrictionCallPending = true;
+				}
 			}
 		});
 		
 		if (resetFilter) {
-			undoManager.push(new CompensationAction(0, null, null) {
+			undoManager.push(new CompensationAction(0, null, null, null) {
 				@Override
 				public void run() {
 					setOrResetFKNullFilter(association, true);
@@ -3039,7 +3048,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		table.setXmlTemplate(template);
 		updateSketch();
 		markDirty();
-		undoManager.push(new CompensationAction(1, "changed XML template", dataModel.getDisplayName(table)) {
+		undoManager.push(new CompensationAction(1, "changed XML template", "changed XML template", dataModel.getDisplayName(table)) {
 			@Override
 			public void run() {
 				changeXmlTemplate(table, old);
@@ -3237,7 +3246,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     private void setOrResetFKNullFilter(final Association association, final boolean set) {
     	if (association.setOrResetFKNullFilter(set)) {
-    		undoManager.push(new CompensationAction(1, set? "set filter" : "removed filter", dataModel.getDisplayName(association.source)) {
+    		undoManager.push(new CompensationAction(1, set? "set filter" : "removed filter", !set? "set filter" : "removed filter", dataModel.getDisplayName(association.source)) {
     			@Override
     			public void run() {
     				setOrResetFKNullFilter(association, !set);

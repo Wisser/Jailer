@@ -21,12 +21,14 @@ package net.sf.jailer.ui.undo;
 public abstract class CompensationAction {
 
 	final int prio;
-	final String what;
+	final String whatHasDone;
+	final String whatToCompensate;
 	final String where;
 	
-	public CompensationAction(int prio, String what, String where) {
+	public CompensationAction(int prio, String whatHasDone, String whatToCompensate, String where) {
 		this.prio = prio;
-		this.what = what;
+		this.whatHasDone = whatHasDone;
+		this.whatToCompensate = whatToCompensate;
 		this.where = where;
 	}
 	

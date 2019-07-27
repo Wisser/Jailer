@@ -24,6 +24,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.sql.SQLException;
@@ -32,8 +34,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -41,6 +47,9 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.text.BadLocationException;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -64,6 +73,7 @@ import net.sf.jailer.util.SqlUtil;
 public abstract class NonModalConditionEditor extends EscapableDialog {
 
 	private boolean ok;
+	private boolean escaped;
 	private ParameterSelector parameterSelector;
 	private DataModelBasedSQLCompletionProvider provider;
 
@@ -79,6 +89,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		init(parametersGetter, dataModel);
 	}
 
+	@SuppressWarnings("serial")
 	private void init(ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel) {
 		setUndecorated(true);
 		initComponents();
@@ -87,6 +98,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
 				if (parameterSelector != null && !parameterSelector.hasOpenDialog()) {
+					ok = !escaped;
 					setVisible(false);
 				}
 			}
@@ -140,7 +152,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 			try {
 				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
 				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-				new SQLAutoCompletion(provider, editorPane);
+				sqlAutoCompletion = new SQLAutoCompletion(provider, editorPane);
 			} catch (SQLException e) {
 			}
 		}
@@ -239,7 +251,6 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        cancelButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         paramsPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
@@ -254,16 +265,10 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         table2name = new javax.swing.JLabel();
         table2dropDown = new javax.swing.JLabel();
         toSubQueryButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         gripPanel = new javax.swing.JPanel();
-
-        cancelButton.setText(" Cancel ");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -305,10 +310,9 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
         jPanel3.add(okButton, gridBagConstraints);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
@@ -380,6 +384,19 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         jPanel3.add(toSubQueryButton, gridBagConstraints);
 
+        cancelButton.setText(" Cancel ");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel3.add(cancelButton, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 20;
@@ -391,7 +408,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setText("<html>  <i>Ctrl+Space</i> for code completion. <i>Ctrl+Enter</i> for Ok.</html>");
+        jLabel2.setText("<html>  <i>Ctrl+Space</i> for code completion. <i>Ctrl+Enter</i> for Ok.<i>Esc</i> for Cancel.</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -433,7 +450,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	}//GEN-LAST:event_okButtonActionPerformed
 
 	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-		ok = false;
+		escaped = true;
 		setVisible(false);
 	}//GEN-LAST:event_cancelButtonActionPerformed
 
@@ -528,6 +545,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 			toSubQueryButton.setEnabled(false);
 		}
 		ok = false;
+		escaped = false;
 		editorPane.setText(condition);
 		editorPane.setCaretPosition(0);
 		editorPane.discardAllEdits();
@@ -560,6 +578,12 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		}
 		
 		setVisible(true);
+	}
+
+	@Override
+	protected void escapePressed() {
+		escaped = true;
+		super.escapePressed();
 	}
 
 	/**
@@ -651,6 +675,48 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	}
 	
 	public RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
+	private SQLAutoCompletion sqlAutoCompletion;
+	
+	public void observe(final JTextField textfield, final Runnable open) {
+		InputMap im = textfield.getInputMap();
+		@SuppressWarnings("serial")
+		Action a = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String origText = textfield.getText();
+				String caretMarker;
+				for (int suffix = 0; ; suffix++) {
+					caretMarker = "CARET" + suffix;
+					if (!origText.contains(caretMarker)) {
+						break;
+					}
+				}
+				try {
+					textfield.getDocument().insertString(textfield.getCaretPosition(), caretMarker, null);
+				} catch (BadLocationException e1) {
+					e1.printStackTrace();
+				}
+				open.run();
+				textfield.setText(origText);
+				String text = editorPane.getText();
+				int i = text.indexOf(caretMarker);
+				if (i >= 0) {
+					editorPane.setText(text.substring(0, i) + text.substring(i + caretMarker.length()));
+					editorPane.setCaretPosition(i);
+				}
+				UIUtil.invokeLater(1, new Runnable() {
+					@Override
+					public void run() {
+						sqlAutoCompletion.doCompletion();
+					}
+				});
+			}
+		};
+		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
+		im.put(ks, a);
+		ActionMap am = textfield.getActionMap();
+		am.put(a, a);
+	}
 
 	protected abstract void consume(String cond);
 	

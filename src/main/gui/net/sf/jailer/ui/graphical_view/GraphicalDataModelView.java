@@ -1055,7 +1055,11 @@ public class GraphicalDataModelView extends JPanel {
 			display.invalidate();
 			modelEditor.markDirty();
 		}
-		modelEditor.getUndoManager().push(new CompensationAction(1, "changed exclude mode (" + (old == null? "Default" : old? "Yes" : "No") + ")", model.getDisplayName(table)) {
+		modelEditor.getUndoManager().push(new CompensationAction(
+				1,
+				"changed exclude mode (" + (mode == null? "Default" : mode? "Yes" : "No") + ")",
+				"changed exclude mode (" + (old == null? "Default" : old? "Yes" : "No") + ")",
+				model.getDisplayName(table)) {
 			@Override
 			public void run() {
 				changeExcludeFromDeletion(old, table);
@@ -1071,7 +1075,11 @@ public class GraphicalDataModelView extends JPanel {
 			display.invalidate();
 			modelEditor.markDirty();
 		}
-		modelEditor.getUndoManager().push(new CompensationAction(1, "changed export mode(" + (old == null? "Default" : !old? "Insert" : "Upsert") + ")", model.getDisplayName(table)) {
+		modelEditor.getUndoManager().push(new CompensationAction(
+				1,
+				"changed export mode (" + (mode == null? "Default" : !mode? "Insert" : "Upsert") + ")",
+				"changed export mode (" + (old == null? "Default" : !old? "Insert" : "Upsert") + ")",
+				model.getDisplayName(table)) {
 			@Override
 			public void run() {
 				changeExportMode(old, table);

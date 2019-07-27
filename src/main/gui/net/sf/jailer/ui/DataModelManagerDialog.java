@@ -1003,6 +1003,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
        	String folder = choseFolder();
        	if (folder != null) {
+       		if (new File(folder, DataModel.TABLE_CSV_FILE).exists()) {
+       			JOptionPane.showMessageDialog(DataModelManagerDialog.this,
+						"\"" + folder + "\"\n" +
+       					"is a data model folder.\n\n" + 
+						"A base folder contains data model folders.", "Invalid Base Folder", JOptionPane.ERROR_MESSAGE);
+	   			return;
+       		}
        		new File(folder).mkdir();
        		executionContext.setDatamodelFolder(folder);
        		baseFolders.remove(folder);
@@ -1062,7 +1069,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	 * Opens file chooser.
 	 */
 	public String choseFolder() {
-		
 		JFileChooser fc = new JFileChooser();
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fc.setDialogTitle("Base Folder");
