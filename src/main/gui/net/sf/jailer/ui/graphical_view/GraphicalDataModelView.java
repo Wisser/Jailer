@@ -2139,7 +2139,8 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param usePath if <code>true</code>, immediately build query based on selected path
 	   */
 	public void openQueryBuilder(Table table, boolean usePath) {
-		new QueryBuilderDialog(this.modelEditor.extractionModelFrame).buildQuery(table, usePath, true, associationsOnPath, null, model, null, null, false);
+		QueryBuilderDialog queryBuilderDialog = new QueryBuilderDialog(this.modelEditor.extractionModelFrame);
+		queryBuilderDialog.buildQuery(table, usePath, true, associationsOnPath, null, model, null, null, false);
 	}
 
 	/**
