@@ -1081,7 +1081,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * 
 	 * @param root the table to open initially
 	 */
-	public void openDataBrowser(Table root, String condition) {
+	public DataBrowser openDataBrowser(Table root, String condition) {
 		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Data Browser")) {
 			updateMenuItems();
 			DataBrowser dataBrowser;
@@ -1093,12 +1093,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					dataBrowser.setExtendedState(Frame.MAXIMIZED_BOTH);
 					dataBrowser.setVisible(true);
 				}
+				return dataBrowser;
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
 			} finally {
 				UIUtil.resetWaitCursor(this);
 			}
 		}
+		return null;
 	}
 
 	private void openDataModelEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDataModelEditorActionPerformed
