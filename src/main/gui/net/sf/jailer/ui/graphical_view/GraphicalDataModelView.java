@@ -59,6 +59,7 @@ import net.sf.jailer.ui.ExpansionLimitMessage;
 import net.sf.jailer.ui.ExtractionModelEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.undo.CompensationAction;
@@ -2139,7 +2140,25 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param usePath if <code>true</code>, immediately build query based on selected path
 	   */
 	public void openQueryBuilder(Table table, boolean usePath) {
-		QueryBuilderDialog queryBuilderDialog = new QueryBuilderDialog(this.modelEditor.extractionModelFrame);
+		final QueryBuilderDialog queryBuilderDialog = new QueryBuilderDialog(this.modelEditor.extractionModelFrame);
+		queryBuilderDialog.sqlEditButton.setVisible(true);
+		queryBuilderDialog.sqlEditButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				final DataBrowser dataBrowser = modelEditor.extractionModelFrame.openDataBrowser(root, "");
+				if (dataBrowser != null) {
+					dataBrowser.getSqlConsole(true).appendStatement(queryBuilderDialog.getSQL() + UIUtil.LINE_SEPARATOR + ";", true);
+					queryBuilderDialog.setVisible(false);
+					queryBuilderDialog.dispose();
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							dataBrowser.toFront();
+						}
+					});
+				}
+			}
+		});
 		queryBuilderDialog.buildQuery(table, usePath, true, associationsOnPath, null, model, null, null, false);
 	}
 

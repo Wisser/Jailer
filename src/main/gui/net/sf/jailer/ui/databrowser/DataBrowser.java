@@ -4118,6 +4118,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		return session != null;
 	}
 	
+	public SQLConsole getSqlConsole(boolean switchToConsole) {
+		return desktop.getSqlConsole(switchToConsole);
+	}
+
 	private DesktopAnchorManager anchorManager; 
 	
 	private ImageIcon tableIcon;
