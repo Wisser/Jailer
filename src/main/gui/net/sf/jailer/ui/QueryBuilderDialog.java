@@ -162,7 +162,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel2 = new javax.swing.JPanel();
-        joinAWithBButton = new javax.swing.JButton();
         saveButton = new javax.swing.JButton();
         clipboardSingleLineButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
@@ -171,6 +170,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         clipboardButton = new javax.swing.JButton();
         sqlEditButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         distinctCheckBox = new javax.swing.JCheckBox();
@@ -190,20 +190,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
-
-        joinAWithBButton.setText(" Join selected Tables");
-        joinAWithBButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                joinAWithBButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
-        jPanel2.add(joinAWithBButton, gridBagConstraints);
 
         saveButton.setText(" Save ");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
@@ -229,7 +215,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 4);
         jPanel2.add(clipboardSingleLineButton, gridBagConstraints);
 
@@ -253,7 +238,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 6;
+        gridBagConstraints.gridwidth = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel2.add(jPanel4, gridBagConstraints);
 
@@ -276,10 +261,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridx = 7;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(sqlEditButton, gridBagConstraints);
 
@@ -290,11 +274,17 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 6;
+        gridBagConstraints.gridx = 8;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(cancelButton, gridBagConstraints);
+
+        jLabel4.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.weightx = 1.0;
+        jPanel2.add(jLabel4, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1252,11 +1242,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		if (usePath && !associationsOnPath.isEmpty()) {
 			createPathQuery(whereClauses);
 		}
-		if (associationsOnPath.isEmpty() || !showJoinButton) {
-			joinAWithBButton.setVisible(false);
-		} else {
-			joinAWithBButton.setVisible(true);
-		}
+
 		resetRelationshipsPanel();
 
 		List<JTextField> tf = new ArrayList<JTextField>();
@@ -1315,7 +1301,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		this.datamodel = datamodel;
 		subject = table;
 		rootRelationship = root;
-		joinAWithBButton.setVisible(false);
 		resetRelationshipsPanel();
 
 		List<JTextField> tf = new ArrayList<JTextField>();
@@ -1424,6 +1409,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -1435,7 +1421,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JButton joinAWithBButton;
     private javax.swing.JTextField mlmTextField;
     private javax.swing.JPanel relationshipsPanel;
     private javax.swing.JButton saveButton;
