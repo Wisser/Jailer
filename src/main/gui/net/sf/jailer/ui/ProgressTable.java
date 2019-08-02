@@ -646,6 +646,9 @@ public class ProgressTable extends JTable {
 	private double fitness(List<CellInfo> row, int maxParentRow) {
 		double f = 0;
 		int conflictCount[] = new int[MAX_TABLES_PER_LINE];
+		int lines = (int) Math.ceil(row.size() / (double) MAX_TABLES_PER_LINE);
+		int minX[] = new int[lines];
+		int maxX[] = new int[lines];
 
 		for (int x = row.size() - 1; x >= 0; --x) {
 			CellInfo cellInfo = row.get(x);
@@ -654,14 +657,27 @@ public class ProgressTable extends JTable {
 //			}
 			if (cellInfo != null && cellInfo.parents != null) {
 				for (CellInfo parent : cellInfo.parents) {
-					double xabs = (x % MAX_TABLES_PER_LINE) - parent.column;
+					int x0 = x % MAX_TABLES_PER_LINE;
+					int y0 = x / MAX_TABLES_PER_LINE;
+					double xabs = x0 - parent.column;
 					if (xabs == 0.0) {
 						f += MAX_TABLES_PER_LINE * MAX_TABLES_PER_LINE * conflictCount[parent.column]++;
 					}
-					double yabs = (x / MAX_TABLES_PER_LINE) + maxParentRow - parent.row;
+					double yabs = y0 + maxParentRow - parent.row;
 					f += xabs * xabs + yabs * yabs / 10;
+					if (y0 < lines) {
+						if (minX[y0] == 0 || minX[y0] >= x0) {
+							minX[y0] = x0 + 1;
+						}
+						if (maxX[y0] < x0) {
+							maxX[y0] = x0;
+						}
+					}
 				}
 			}
+		}
+		for (int y = 0; y < lines; ++y) {
+			f -= (maxX[y] - minX[y]) / (double) MAX_TABLES_PER_LINE;
 		}
 		return f;
 	}
