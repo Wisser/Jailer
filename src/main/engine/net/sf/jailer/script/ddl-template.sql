@@ -30,8 +30,6 @@ ${create-table}${schema}JAILER_ENTITY${table-suffix}
    birthday        INTEGER NOT NULL,
    type            INTEGER NOT NULL,
 
-   ${pre},
-   PRE_TYPE        INTEGER${constraint},
    orig_birthday   INTEGER${constraint},
    association     INTEGER${constraint}
 

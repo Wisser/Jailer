@@ -176,6 +176,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 			initComponents();
 			
+			explain.setVisible(false);
+			
 			if (jScrollPane2.getHorizontalScrollBar() != null) {
 	        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
 	        }
