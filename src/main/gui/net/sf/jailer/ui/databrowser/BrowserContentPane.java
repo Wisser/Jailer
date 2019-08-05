@@ -4923,7 +4923,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         rrPanel.add(relatedRowsPanel, gridBagConstraints);
 
-        sqlPanel.setBackground(new java.awt.Color(255, 243, 200));
+        sqlPanel.setBackground(new java.awt.Color(255, 243, 210));
         sqlPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         sqlPanel.setLayout(new java.awt.GridBagLayout());
 
