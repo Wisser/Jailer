@@ -35,6 +35,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -80,6 +82,7 @@ public class ProgressTable extends JTable {
 		public int row, column;
 		public List<CellInfo> parents;
 		public boolean inProgress = false;
+		public boolean hasSelectedChild = false;
 	};
 
 	/**
@@ -92,7 +95,29 @@ public class ProgressTable extends JTable {
 	 */
 	private Set<CellInfo> selectedCells = new HashSet<CellInfo>();
 	private String selectedTableName = null;
-
+	
+	private void setSelectedTableName(String tableName) {
+		selectedTableName = tableName;
+		for (List<CellInfo> cL : cellInfos) {
+			for (CellInfo cellInfo : cL) {
+				cellInfo.hasSelectedChild = false;
+			}
+		}
+		if (tableName != null) {
+			for (List<CellInfo> cL : cellInfos) {
+				for (CellInfo cellInfo : cL) {
+					if (tableName.contentEquals(cellInfo.tableName)) {
+						if (cellInfo.parents != null) {
+							for (CellInfo p: cellInfo.parents) {
+								p.hasSelectedChild = true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	/**
 	 * Total number of collected rows.
 	 */
@@ -102,41 +127,71 @@ public class ProgressTable extends JTable {
 	 * Cell render components.
 	 */
 	private final JPanel cellPanel = new JPanel();
+	private final JPanel layerdPane = new JPanel();
 	private final JLabel tableRender = new JLabel("");
 	private final JLabel numberRender = new JLabel("");
+	private final JLabel iconRender = new JLabel(" ");
+	private final Icon scaledSourceIcon;
 	
 	/** Creates new table */
 	public ProgressTable() {
 		setShowGrid(false);
 		setSurrendersFocusOnKeystroke(true);
 		
+		scaledSourceIcon = UIUtil.scaleIcon(iconRender, sourceIcon, 1.4);
+		
 		tableRender.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		numberRender.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		cellPanel.setLayout(new GridBagLayout());
+		layerdPane.setLayout(new GridBagLayout());
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 1;
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.weightx = 0;
+		gridBagConstraints.weighty = 0;
 		cellPanel.add(tableRender, gridBagConstraints);
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 1;
 		gridBagConstraints.gridy = 2;
 		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.weightx = 0;
+		gridBagConstraints.weighty = 0;
 		cellPanel.add(numberRender, gridBagConstraints);
-				
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridheight = 2;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		gridBagConstraints.weightx = 0;
+		gridBagConstraints.weighty = 0;
+		cellPanel.add(iconRender, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+		gridBagConstraints.weightx = 0;
+		gridBagConstraints.weighty = 0;
+		layerdPane.add(cellPanel, gridBagConstraints);
+
+//		layerdPane.setLayer(cellPanel, javax.swing.JLayeredPane.FRAME_CONTENT_LAYER);
+//		layerdPane.setLayer(iconRender, javax.swing.JLayeredPane.PALETTE_LAYER);
+
 		tableRender.setOpaque(true);
 		numberRender.setOpaque(true);
+		iconRender.setOpaque(true);
+		cellPanel.setOpaque(true);
 		setRowHeight(getRowHeight() * 3);
 
 		final Border defaultBorder = cellPanel.getBorder();
-		final Border selBorder = BorderFactory.createLineBorder(Color.BLACK, 2);
-		
+		final Border selBorder = BorderFactory.createLineBorder(Color.BLACK, 1);
+
 		setDefaultRenderer(Object.class, new TableCellRenderer() {
 			private Font font = new JLabel("normal").getFont();
 			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
@@ -149,18 +204,22 @@ public class ProgressTable extends JTable {
 				boolean fontIsSet = false;
 				tableRender.setForeground(Color.BLACK);
 				numberRender.setForeground(Color.BLACK);
-				cellPanel.setToolTipText(null);
-				cellPanel.setBorder(defaultBorder);
+				JPanel outer = layerdPane;
+				outer.setToolTipText(null);
+				outer.setBorder(defaultBorder);
 				if (value instanceof CellInfo) {
 					CellInfo cellInfo = (CellInfo) value;
 					
+					iconRender.setIcon(null);
 					if (cellInfo.tableName.equals(selectedTableName)) {
-						cellPanel.setBorder(selBorder);
+						outer.setBorder(selBorder);
+					} else if (cellInfo.hasSelectedChild) {
+						iconRender.setIcon(scaledSourceIcon);
 					}
 					
 					tableRender.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 					tableRender.setText(cellInfo.tableName);
-					cellPanel.setToolTipText(cellInfo.tableName);
+					outer.setToolTipText(cellInfo.tableName);
 					if (selectedCells.contains(cellInfo)) {
 						numberRender.setFont(bold);
 						tableRender.setFont(bold);
@@ -197,6 +256,7 @@ public class ProgressTable extends JTable {
 					tableRender.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 					tableRender.setText(" " + value);
 					numberRender.setText("");
+					iconRender.setIcon(null);
 				}
 				if (!fontIsSet) {
 					numberRender.setFont(kursiv);
@@ -204,8 +264,9 @@ public class ProgressTable extends JTable {
 				}
 				tableRender.setBackground(color);
 				numberRender.setBackground(color);
-				cellPanel.setBackground(color);
-				return cellPanel;
+				outer.setBackground(color);
+				iconRender.setBackground(color);
+				return outer;
 			}
 		});
 
@@ -220,7 +281,7 @@ public class ProgressTable extends JTable {
 					if (o instanceof CellInfo) {
 						CellInfo cellInfo = (CellInfo) o;
 						selectedCells.clear();
-						selectedTableName = cellInfo.tableName;
+						setSelectedTableName(cellInfo.tableName);
 						multiSelection = false;
 						selectCell(cellInfo);
 						repaint();
@@ -271,7 +332,7 @@ public class ProgressTable extends JTable {
 	public void selectAllCells(String tableName) {
 		multiSelection = true;
 		selectedCells.clear();
-		selectedTableName = tableName;
+		setSelectedTableName(tableName);
 		for (List<CellInfo> cL : cellInfos) {
 			for (CellInfo cellInfo : cL) {
 				if (cellInfo != null) {
@@ -396,7 +457,7 @@ public class ProgressTable extends JTable {
 				}
 				if (!f) {
 					selectedCells.clear();
-					selectedTableName = null;
+					setSelectedTableName(null);
 				}
 			}
 		}
@@ -791,7 +852,7 @@ public class ProgressTable extends JTable {
 			for (int r = 0; r < getRowCount(); r++) {
 				TableCellRenderer renderer = getCellRenderer(r, vColIndex);
 				Component comp = renderer.getTableCellRendererComponent(this, getValueAt(r, vColIndex), false, false, r, vColIndex);
-				if (comp != cellPanel || tableRender.getText().trim().length() > 0) {
+				if (comp != layerdPane || tableRender.getText().trim().length() > 0) {
 					isEmpty = false;
 					break;
 				}
@@ -803,6 +864,18 @@ public class ProgressTable extends JTable {
 				w = 10000;
 			}
 			col.setMaxWidth(w);
+		}
+	}
+
+	private static ImageIcon sourceIcon;
+	{
+		String dir = "/net/sf/jailer/ui/resource";
+		
+		// load images
+		try {
+			sourceIcon = new ImageIcon(getClass().getResource(dir + "/source.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

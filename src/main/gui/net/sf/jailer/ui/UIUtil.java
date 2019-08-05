@@ -981,11 +981,15 @@ public class UIUtil {
                 .replace(" ", "&nbsp;")
                 .replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
     }
-    
+
     public static ImageIcon scaleIcon(JComponent component, ImageIcon icon) {
+    	return scaleIcon(component, icon, 1);
+    }
+
+    public static ImageIcon scaleIcon(JComponent component, ImageIcon icon, double scaleFactor) {
         if (icon != null) {
         	int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
-        	double s = heigth / (double) icon.getIconHeight();
+        	double s = heigth * scaleFactor / (double) icon.getIconHeight();
         	try {
         		return new ImageIcon(icon.getImage().getScaledInstance((int)(icon.getIconWidth() * s), (int)(icon.getIconHeight() * s), Image.SCALE_SMOOTH));
         	} catch (Exception e) {
