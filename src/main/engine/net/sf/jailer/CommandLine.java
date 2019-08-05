@@ -57,7 +57,10 @@ public class CommandLine {
 	@Option(name="-c",usage="print restricted data-model with closures")
 	public boolean withClosures = false;
 	
-	@Option(name="-explain",usage="write export-explanation ('explain.log')")
+	@Option(name="-explain",usage="this option is no longer used")
+	public boolean dummyExplain;
+
+	// explain is always false
 	public boolean explain = false;
 
 	@Option(name="-u",usage="consider associations as un-directed")
