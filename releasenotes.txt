@@ -1,3 +1,6 @@
+8.8.3
+  - Fixed a bug that caused a Liquibase export not to work for Postgres TEXT columns.
+
 8.8.2
   - The layout optimizer of the export progress dialog has been improved.
   - The tutorial has been improved.
