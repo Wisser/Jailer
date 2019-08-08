@@ -519,7 +519,9 @@ public class SubsettingEngine {
 				return new LiquibaseXMLTransformer.Factory(transformerHandler,targetSession.getMetaData(), entityGraph, filepath,
 						executionContext.getXmlDatePattern(),
 						executionContext.getXmlTimePattern(),
-						executionContext.getXmlTimeStampPattern(), executionContext);
+						executionContext.getXmlTimeStampPattern(),
+						targetSession,
+						executionContext);
 			} else {
 				return new DMLTransformer.Factory(outputWriter, executionContext.getUpsertOnly(), executionContext.getNumberOfEntities(), targetSession, targetDBMSConfiguration(targetSession), executionContext);
 			}

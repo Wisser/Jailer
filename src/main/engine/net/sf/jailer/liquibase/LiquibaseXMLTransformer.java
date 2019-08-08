@@ -27,6 +27,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DBMS;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
@@ -68,6 +70,11 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	private final ExecutionContext executionContext;
 	
 	/**
+	 * The session.
+	 */
+	private Session session;
+	
+	/**
 	 * Factory.
 	 */
 	public static class Factory implements TransformerFactory {
@@ -79,6 +86,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		private final String datePattern;
 		private final String timePattern;
 		private final String timestampPattern;
+		private final Session session;
 		
 		/**
 		 * The execution context.
@@ -96,7 +104,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		 *            database meta data
 		 */
 		public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, 
-				EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, ExecutionContext executionContext) {
+				EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, Session session, ExecutionContext executionContext) {
 			this.executionContext = executionContext;
 			this.transformerHandler = transformerHandler;
 			this.entityGraph = entityGraph;
@@ -105,6 +113,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 			this.datePattern = datePattern;
 			this.timePattern = timePattern;
 			this.timestampPattern = timestampPattern;
+			this.session = session;
 		}
 		
 		/**
@@ -116,12 +125,12 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new LiquibaseXMLTransformer(table, transformerHandler, metaData, entityGraph, scriptFile, datePattern, timePattern, timestampPattern, executionContext);
+			return new LiquibaseXMLTransformer(table, transformerHandler, metaData, entityGraph, scriptFile, datePattern, timePattern, timestampPattern, session, executionContext);
 		}
 	}
 
 	private LiquibaseXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, 
-			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, ExecutionContext executionContext) throws SQLException {
+			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, Session session, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;
 		this.transformerHandler = transformerHandler;
 		this.entityGraph = entityGraph;
@@ -130,6 +139,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		this.datePattern = new SimpleDateFormat(datePattern);
 		this.timePattern = new SimpleDateFormat(timePattern);
 		this.timestampPattern = new SimpleDateFormat(timestampPattern);
+		this.session = session;
 	}
 	
 	
@@ -203,10 +213,12 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		singleRow.getObject(columncount);
 	
 		// special handling for sql server
-		if (columnType == Types.VARCHAR && precision.equals(Integer.MAX_VALUE)) {
-			columnType = Types.CLOB;
+		if (session.dbms == DBMS.MSSQL || session.dbms == DBMS.SYBASE) {
+			if (columnType == Types.VARCHAR && precision.equals(Integer.MAX_VALUE)) {
+				columnType = Types.CLOB;
+			}
 		}
-		
+
 		if (!singleRow.wasNull()){
 		
 			switch(columnType){
