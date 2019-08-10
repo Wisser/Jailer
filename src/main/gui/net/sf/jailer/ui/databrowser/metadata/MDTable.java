@@ -311,85 +311,89 @@ public class MDTable extends MDObject {
         thread.start();
     }
 
+    private static Object DDL_LOCK = new String("DDL_LOCK");
+    
     /**
      * Gets DDL of the table.
      * 
      * @return DDL of the table or <code>null</code>, if no DDL is available
      * @throws InterruptedException 
      */
-    public synchronized String getDDL() {
-        if (!ddlLoaded.get()) {
-            Session session = getSchema().getMetaDataSource().getSession();
-
-            String statement = session.dbms.getDdlCall();
-
-            if (statement != null) {
-                CallableStatement cStmt = null;
-                try {
-                    Connection connection = session.getConnection();
-                    cStmt = connection.prepareCall(statement.replace("${type}", isView? "VIEW" : "TABLE").replace("${table}", Quoting.staticUnquote(getName())).replace("${schema}", Quoting.staticUnquote(getSchema().getName())));
-                    cStmt.registerOutParameter(1, Types.VARCHAR);
-                    cStmt.execute();
-                    ddl = cStmt.getString(1).trim();
-                } catch (Exception e) {
-                	logger.info("error", e);
-                } finally {
-                    if (cStmt != null) {
-                        try {
-                            cStmt.close();
-                        } catch (SQLException e) {
-                        }
-                    }
-                }
-            }		
-            statement = session.dbms.getDdlQuery();
-            if (statement != null) {
-                Statement cStmt = null;
-                try {
-                    Connection connection = session.getConnection();
-                    cStmt = connection.createStatement();
-                    ResultSet rs = cStmt.executeQuery(statement.replace("${type}", isView? "VIEW" : "TABLE").replace("${table}", Quoting.staticUnquote(getName())).replace("${schema}", Quoting.staticUnquote(getSchema().getName())));
-                    if (rs.next()) {
-                        ddl = rs.getString(session.dbms.equals(DBMS.MySQL)? 2 : 1).trim();
-                    }
-                    rs.close();
-                } catch (Exception e) {
-                    // ignore
-                } finally {
-                    if (cStmt != null) {
-                        try {
-                            cStmt.close();
-                        } catch (SQLException e) {
-                        }
-                    }
-                }
-            }
-            if (ddl == null && isView) {
-            	String viewTextOrDDLQuery = session.dbms.getViewTextOrDDLQuery();
-    			if (viewTextOrDDLQuery != null) {
-    				String viewTextQuery = String.format(viewTextOrDDLQuery, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()));
-    				try {
-    					session.executeQuery(viewTextQuery, new Session.AbstractResultSetReader() {
-    						@Override
-    						public void readCurrentRow(ResultSet resultSet) throws SQLException {
-    							ddl = resultSet.getString(1);
-    						}
-    					});
-    				} catch (Exception e) {
-    					// ignore
-    				}
-    			}
-            }
-            if (ddl == null) {
-                try {
-                	ddl = createDDL();
-	            } catch (Exception e) {
-                	logger.info("error", e);
+    public String getDDL() {
+    	synchronized (DDL_LOCK) {
+	        if (!ddlLoaded.get()) {
+	            Session session = getSchema().getMetaDataSource().getSession();
+	
+	            String statement = session.dbms.getDdlCall();
+	
+	            if (statement != null) {
+	                CallableStatement cStmt = null;
+	                try {
+	                    Connection connection = session.getConnection();
+	                    cStmt = connection.prepareCall(statement.replace("${type}", isView? "VIEW" : "TABLE").replace("${table}", Quoting.staticUnquote(getName())).replace("${schema}", Quoting.staticUnquote(getSchema().getName())));
+	                    cStmt.registerOutParameter(1, Types.VARCHAR);
+	                    cStmt.execute();
+	                    ddl = cStmt.getString(1).trim();
+	                } catch (Exception e) {
+	                	logger.info("error", e);
+	                } finally {
+	                    if (cStmt != null) {
+	                        try {
+	                            cStmt.close();
+	                        } catch (SQLException e) {
+	                        }
+	                    }
+	                }
+	            }		
+	            statement = session.dbms.getDdlQuery();
+	            if (statement != null) {
+	                Statement cStmt = null;
+	                try {
+	                    Connection connection = session.getConnection();
+	                    cStmt = connection.createStatement();
+	                    ResultSet rs = cStmt.executeQuery(statement.replace("${type}", isView? "VIEW" : "TABLE").replace("${table}", Quoting.staticUnquote(getName())).replace("${schema}", Quoting.staticUnquote(getSchema().getName())));
+	                    if (rs.next()) {
+	                        ddl = rs.getString(session.dbms.equals(DBMS.MySQL)? 2 : 1).trim();
+	                    }
+	                    rs.close();
+	                } catch (Exception e) {
+	                    // ignore
+	                } finally {
+	                    if (cStmt != null) {
+	                        try {
+	                            cStmt.close();
+	                        } catch (SQLException e) {
+	                        }
+	                    }
+	                }
 	            }
-            }
-        }
-        ddlLoaded.set(true);
-        return ddl;
+	            if (ddl == null && isView) {
+	            	String viewTextOrDDLQuery = session.dbms.getViewTextOrDDLQuery();
+	    			if (viewTextOrDDLQuery != null) {
+	    				String viewTextQuery = String.format(viewTextOrDDLQuery, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()));
+	    				try {
+	    					session.executeQuery(viewTextQuery, new Session.AbstractResultSetReader() {
+	    						@Override
+	    						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+	    							ddl = resultSet.getString(1);
+	    						}
+	    					});
+	    				} catch (Exception e) {
+	    					// ignore
+	    				}
+	    			}
+	            }
+	            if (ddl == null) {
+	                try {
+	                	ddl = createDDL();
+		            } catch (Exception e) {
+	                	logger.info("error", e);
+		            }
+	            }
+	        }
+	        ddlLoaded.set(true);
+	        return ddl;
+    	}
     }
 
     /**
