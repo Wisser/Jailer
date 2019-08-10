@@ -335,7 +335,8 @@ public class Session {
 			}
 			try {
 				con.close();
-			} catch (SQLException e) {
+			// catch all because ucanaccess throws non-SQLException
+			} catch (Throwable e) { // SQLException e) {
 				// ignore
 			}
 			connection.set(null);
@@ -354,7 +355,8 @@ public class Session {
 			}
 			try {
 				temporaryTableSession.close();
-			} catch (SQLException e) {
+				// catch all because ucanaccess throws non-SQLException
+			} catch (Throwable e) { // SQLException e) {
 				// ignore
 			}
 			temporaryTableSession = null;
