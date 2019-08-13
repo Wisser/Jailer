@@ -41,6 +41,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.RowIdSupport;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
@@ -146,7 +147,14 @@ public class DDLCreator {
 		Map<String, String> typeReplacement = targetDBMS(session).getTypeReplacement();
 		PrimaryKey upk = rowIdSupport.getUniversalPrimaryKey();
 		if (upk.getColumns().isEmpty()) {
-			throw new DataModel.NoPrimaryKeyException(null);
+			Table table = null;
+			if (executionContext.getUpkDomain() != null) {
+				for (String tableName: executionContext.getUpkDomain()) {
+					table = dataModel.getTable(tableName);
+					break;
+				}
+			}
+			throw new DataModel.NoPrimaryKeyException(table);
 		}
 		String universalPrimaryKey = upk.toSQL(null, contraint, typeReplacement);
 		Map<String, String> arguments = new HashMap<String, String>();
