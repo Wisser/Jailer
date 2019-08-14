@@ -354,6 +354,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 
 				Map<String, String> val = new HashMap<String, String>();
 				StringBuffer valuesWONull = new StringBuffer("");
+				StringBuffer namedValuesWONull = new StringBuffer("");
 				StringBuffer columnsWONull = new StringBuffer("");
 				f = true;
 				for (int i = 1; i <= columnCount; ++i) {
@@ -382,10 +383,14 @@ public class DMLTransformer extends AbstractResultSetReader {
 					if (content != null) {
 						if (!f) {
 							valuesWONull.append(", ");
+							namedValuesWONull.append(", ");
 							columnsWONull.append(", ");
 						}
 						f = false;
 						valuesWONull.append(cVal);
+						namedValuesWONull.append(cVal);
+						namedValuesWONull.append(" ");
+						namedValuesWONull.append(columnLabel[i]);
 						columnsWONull.append(columnLabel[i]);
 					}
 				}
@@ -484,6 +489,28 @@ public class DMLTransformer extends AbstractResultSetReader {
 						writeToScriptFile(sb.build(), true);
 					}
 					sb.append(insertHead, item, ", ", terminator.toString());
+				} else if (currentDialect.getUpsertMode() == UPSERT_MODE.UNION_ALL) {
+					insertHead += "Select * From (\n Select ";
+					StringBuffer terminator = new StringBuffer(") as Q \nWhere not exists (Select * from " + qualifiedTableName(table) + " T "
+							+ "Where ");
+					terminator.append(whereForTerminator + ");\n");
+					
+					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
+					if (sb == null) {
+						sb = new StatementBuilder(maxBodySize);
+						upsertInsertStatementBuilder.put(insertHead, sb);
+					}
+				
+					String item;
+					if (sb.isEmpty()) {
+						item = namedValuesWONull.toString();	
+					} else {
+						item = valuesWONull.toString();
+					}
+					if (!sb.isAppendable(insertHead, item)) {
+						writeToScriptFile(sb.build(), true);
+					}
+					sb.append(insertHead, item, " union all \n Select ", terminator.toString());
 				} else {
 					String item = "Select " + valuesWONull + " From " + 
 						(currentDialect.getUpsertMode() == UPSERT_MODE.FROM_DUAL || 

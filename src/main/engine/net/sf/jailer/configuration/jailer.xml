@@ -371,7 +371,7 @@ union all
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
             <supportsMultiRowInserts>true</supportsMultiRowInserts>
-            <upsertMode>FROM_DUAL</upsertMode>
+            <upsertMode>UNION_ALL</upsertMode>
         </sqlDialect>
         <jdbcProperties>
             <entry>
@@ -550,7 +550,7 @@ union all
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
             <supportsMultiRowInserts>true</supportsMultiRowInserts>
-            <upsertMode>FROM_DUAL</upsertMode>
+            <upsertMode>UNION_ALL</upsertMode>
         </sqlDialect>
         <jdbcProperties>
             <entry>
@@ -1616,7 +1616,7 @@ union all
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
             <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
             <supportsMultiRowInserts>false</supportsMultiRowInserts>
-            <upsertMode>FROM_JL_DUAL</upsertMode>
+            <upsertMode>UNION_ALL</upsertMode>
         </sqlDialect>
         <typeReplacement>
             <entry>
@@ -1682,7 +1682,7 @@ union all
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
             <supportsMultiRowInserts>true</supportsMultiRowInserts>
-            <upsertMode>FROM_DUAL</upsertMode>
+            <upsertMode>UNION_ALL</upsertMode>
         </sqlDialect>
         <jdbcProperties>
             <entry>

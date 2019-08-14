@@ -92,6 +92,14 @@ public class MemorizedResultSet implements ResultSet {
 		prepareHook(rmd);
 		CellContentConverter cellContentConverter = new CellContentConverter(rmd, session, session.dbms);
 		final int numCol = projection == null? rmd.getColumnCount() : projection.length;
+		
+		final String[] names = new String[numCol];
+		final int[] types = new int[numCol];
+		for (int i = 1; i <= numCol; ++i) {
+			names[i - 1] = columnNames == null? rmd.getColumnName(projection == null? i : projection[i - 1]) : columnNames[i - 1];
+			types[i - 1] = rmd.getColumnType(projection == null? i : projection[i - 1]);
+		}
+
 		while (resultSet.next()) {
 			readRowHook(resultSet);
 			Object[] row = new Object[numCol];
@@ -105,13 +113,6 @@ public class MemorizedResultSet implements ResultSet {
 			if (cancellationContext != null) {
 				CancellationHandler.checkForCancellation(cancellationContext);
 			}
-		}
-
-		final String[] names = new String[numCol];
-		final int[] types = new int[numCol];
-		for (int i = 1; i <= numCol; ++i) {
-			names[i - 1] = columnNames == null? rmd.getColumnName(projection == null? i : projection[i - 1]) : columnNames[i - 1];
-			types[i - 1] = rmd.getColumnType(projection == null? i : projection[i - 1]);
 		}
 		resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types);
 	}
