@@ -82,7 +82,15 @@ public class Configuration {
 		}
 		return new File(file);
 	}
-	
+
+	public boolean isTempFile(File file) {
+		try {
+			return new File(getTempFileFolder()).equals(file.getParentFile()) && file.getName().startsWith("up-");
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
 	/**
 	 * The temporary files folder. Defaults to 'tmp'.
 	 */
@@ -291,4 +299,5 @@ public class Configuration {
 	static {
 		DBMS.values(); // trigger static init
 	}
+
 }

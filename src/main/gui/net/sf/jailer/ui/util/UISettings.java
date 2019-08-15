@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Environment;
@@ -162,20 +163,27 @@ public class UISettings  {
 	@SuppressWarnings("unchecked")
 	public static List<File> loadRecentFiles() {
 		Object files = restore(RECENT_FILES);
+		List<File> result = new ArrayList<File>();
 		if (files instanceof Collection) {
-			return (List<File>) files;
+			for (File file: (List<File>) files) {
+				if (!Configuration.getInstance().isTempFile(file)) {
+					result.add(file);
+				}
+			}
 		}
-		return new ArrayList<File>();
+		return result;
 	}
 
 	public static void addRecentFile(File file) {
-		final int MAX_FILES = 100;
-		List<File> files = loadRecentFiles();
-		files.remove(file);
-		files.add(0, file);
-		if (MAX_FILES < files.size()) {
-			files.remove(files.size() - 1);
+		if (!Configuration.getInstance().isTempFile(file)) {
+			final int MAX_FILES = 100;
+			List<File> files = loadRecentFiles();
+			files.remove(file);
+			files.add(0, file);
+			if (MAX_FILES < files.size()) {
+				files.remove(files.size() - 1);
+			}
+			store(RECENT_FILES, files);
 		}
-		store(RECENT_FILES, files);
 	}
 }
