@@ -1094,6 +1094,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 queue.clear();
             }
             status.updateView(false);
+            final Throwable finalError = error;
             UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -1103,6 +1104,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			            if (origTabContentPanel.loadButton != null) {
 			            	origTabContentPanel.loadButton.setEnabled(true);
 			            }
+		            }
+		            if (!(finalError instanceof SQLException || finalError instanceof CancellationException)) {
+		            	UIUtil.showException(SQLConsole.this, "Error", finalError);
 		            }
 				}
 			});
