@@ -386,9 +386,10 @@ public class DataModel {
 
 			// tables
 			File tabFile = new File(getTablesFile(executionContext));
-			InputStream nTablesFile = openModelFile(tabFile, false, executionContext);
+			StringBuilder resourceName = new StringBuilder();
+			InputStream nTablesFile = openModelFile(tabFile, resourceName, false, executionContext);
 			if (failOnMissingTables && nTablesFile == null) {
-				throw new RuntimeException("Data model folder not found: " + executionContext.getDataModelURL());
+				throw new RuntimeException("Data model not found: " + resourceName);
 			}
 			CsvFile tablesFile = new CsvFile(nTablesFile, null, tabFile.getPath(), null);
 			List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
@@ -955,10 +956,10 @@ public class DataModel {
 	}
 
 	private static InputStream openModelFile(File file, ExecutionContext executionContext) throws IOException {
-		return openModelFile(file, false, executionContext);
+		return openModelFile(file, new StringBuilder(), false, executionContext);
 	}
 
-	private static InputStream openModelFile(File file, boolean failOnIOException, ExecutionContext executionContext) throws IOException {
+	private static InputStream openModelFile(File file, StringBuilder resourceName, boolean failOnIOException, ExecutionContext executionContext) throws IOException {
 		try {
 			URL dataModelURL = executionContext.getDataModelURL();
 			URI uri = dataModelURL.toURI();
@@ -967,6 +968,7 @@ public class DataModel {
 				uriAsString += "/";
 			}
 			URI resolved = new URI(uriAsString + file.getName()); // uri.resolve(file.getName());
+			resourceName.append(resolved.toURL().toString());
 			return resolved.toURL().openStream();
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
