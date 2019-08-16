@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
@@ -84,6 +85,15 @@ public class TreeLayoutOptimizer<T> {
 			}
 		}
 
+		public void adjustPosition(double delta, double thres) {
+			if (position >= thres) {
+				position -= delta;
+			}
+			for (Node<T> child: children) {
+				child.adjustPosition(delta, thres);
+			}
+		}
+
 		public int getNodesCount() {
 			int count = 1;
 			for (Node<T> child: children) {
@@ -131,9 +141,23 @@ public class TreeLayoutOptimizer<T> {
 		optimizeChildrenOrder(root, System.currentTimeMillis(), MAX_OPTIM_TIME_MS, numNodes);
 		layoutTree(root, numNodes);
 		optimizeLeafs(root);
+		resolveOverlaps(root, root, new HashMap<Integer, Node<T>>());
 		root.adjustPosition(root.getMinPosition());
 	}
-	
+
+	private static <T> void resolveOverlaps(Node<T> node, Node<T> root, HashMap<Integer, Node<T>> pred) {
+		for (Node<T> child: node.children) {
+			if (pred.containsKey(child.level)) {
+				double delta = (pred.get(child.level).position + 1) - child.position;
+				if (delta > 0) {
+					root.adjustPosition(-delta, child.position);
+				}
+			}
+			pred.put(child.level, child);
+			resolveOverlaps(child, root, pred);
+		}
+	}
+
 	private static long MAX_OPTIM_TIME_MS = 1000;
 	
 	private static <T> double layoutTree(Node<T> root, int numNodes) {
