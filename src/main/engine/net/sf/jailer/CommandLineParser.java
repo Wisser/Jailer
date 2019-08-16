@@ -101,10 +101,10 @@ public class CommandLineParser {
 		System.out.println("    -where subject condition. Optional, overrides condition in extraction-model");
 		System.out.println("    -t prevents deletion of entities from 'tabu'-tables");
 		System.out.println();
-		System.out.println("  jailer create-ddl [-datamodel VAL] [-target-dbms <DBMS>] [-working-table-schema VAL] [<extractionn-model> -independent-working-tables] [-no-rowid]");
+		System.out.println("  jailer create-ddl [-datamodel VAL] [-target-dbms <DBMS>] [-working-table-schema VAL] [<extraction-model> -independent-working-tables] [-no-rowid]");
 		System.out.println("    creates the DDL for the working-tables and prints it to stdout");
 		System.out.println();
-		System.out.println("  jailer create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password> [<extractionn-model> -independent-working-tables] [-no-rowid]");
+		System.out.println("  jailer create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password> [<extraction-model> -independent-working-tables] [-no-rowid]");
 		System.out.println("    creates the DDL for the working-tables and executes it");
 		System.out.println();
 		System.out.println("  jailer build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password>");

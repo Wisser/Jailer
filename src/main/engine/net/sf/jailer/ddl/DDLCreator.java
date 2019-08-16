@@ -40,6 +40,7 @@ import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.PrintUtil;
@@ -77,7 +78,7 @@ public class DDLCreator {
 			session = new Session(dataSource, dbms, executionContext.getIsolationLevel());
 		}
 		try {
-			return createDDL(new DataModel(executionContext), session, temporaryTableScope, workingTableSchema);
+			return createDDL(new DataModel(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, true, null), session, temporaryTableScope, workingTableSchema);
 		} finally {
 			if (session != null) {
 				try { session.shutDown(); } catch (Exception e) { /* ignore */ }

@@ -73,7 +73,7 @@ public class RestrictionDefinition {
 	/**
 	 * Gets list of all restriction definition from {@link ExtractionModel}.
 	 * 
-	 * @param extractionnModel the extraction model
+	 * @param extractionModel the extraction model
 	 * @return all restriction definition from extractionModel 
 	 */
 	public static List<RestrictionDefinition> fromRestrictionModel(ExtractionModel extractionModel) {
