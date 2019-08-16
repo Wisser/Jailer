@@ -1,6 +1,7 @@
 8.8.3
   - Fixed a bug that caused a Liquibase export not to work for Postgres TEXT columns.
   - SQL Console didn't work with SQLite.
+  - The "Upsert" statements are generated for more compact.
   - Feature Request 65. https://sourceforge.net/p/jailer/feature-requests/65/
 
 8.8.2
