@@ -382,7 +382,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 					ResultSetReader scriptFileWriter = new DMLTransformer(mappingTable, dmlResultWriter, false, 1, targetSession, targetDBMSConfiguration, null, executionContext) {
 						@Override
 						protected String convertToSql(CellContentConverter cellContentConverter,
-								ResultSet resultSet, int i, Object content) throws SQLException {
+								ResultSet resultSet, int i, Object content, int callerId, String suffix) throws SQLException {
 							if (i == 1) {
 								// old value
 								String contentAsString = content != null? content.toString() : null;

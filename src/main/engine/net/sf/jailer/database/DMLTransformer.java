@@ -29,11 +29,13 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -44,6 +46,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.subsetting.TransformerFactory;
 import net.sf.jailer.util.Base64;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
@@ -269,6 +272,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 		return new Quoting(session);
 	}
 	
+	private Map<Integer, String> columnTypeFromDatamodel = new HashMap<Integer, String>();
+	
 	/**
 	 * Reads result-set and writes into export-script.
 	 */
@@ -340,7 +345,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				}
 				f = false;
 				String cVal = isSmallLob? (String) content : 
-					 convertToSql(cellContentConverter, resultSet, i, content);
+					 convertToSql(cellContentConverter, resultSet, i, content, 0, null);
 				if (!isSmallLob && content != null && emptyLobValue[i] != null) {
 					cVal = emptyLobValue[i];
 				}
@@ -357,6 +362,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				StringBuffer namedValuesWONull = new StringBuffer("");
 				StringBuffer columnsWONull = new StringBuffer("");
 				f = true;
+				boolean generateUpsertStatementsWithoutNulls = Configuration.getInstance().isGenerateUpsertStatementsWithoutNulls();
 				for (int i = 1; i <= columnCount; ++i) {
 					if (columnLabel[i] == null) {
 						continue;
@@ -365,14 +371,33 @@ public class DMLTransformer extends AbstractResultSetReader {
 					if (resultSet.wasNull()) {
 						content = null;
 					}
-					String cVal = convertToSql(cellContentConverter, resultSet, i, content);
+					String suffix = null;
 					if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration)) {
-						// explicit cast needed
 						int mdColumnType = getMetaData(resultSet).getColumnType(i);
-						if (mdColumnType == Types.TIME) {
-							cVal = "time " + cVal;
+						if (mdColumnType == Types.TIME || (!generateUpsertStatementsWithoutNulls && content == null)) { 
+							// explicit cast needed
+							if (mdColumnType == Types.OTHER) {
+								String type = null;
+								if (!columnTypeFromDatamodel.containsKey(i)) {
+									for (Column c: table.getColumns()) {
+										if (c.name != null && c.name.equalsIgnoreCase(columnLabel[i])) {
+											type = c.type;
+											break;
+										}
+									}
+									columnTypeFromDatamodel.put(i, type);
+								} else {
+									type = columnTypeFromDatamodel.get(i);
+								}
+								if (type != null) {
+									suffix = "::" + type;
+								}
+							} else {
+								suffix = "::" + getMetaData(resultSet).getColumnTypeName(i);
+							}
 						}
 					}
+					String cVal = convertToSql(cellContentConverter, resultSet, i, content, 1, suffix);
 					if (content != null && emptyLobValue[i] != null) {
 						cVal = smallLobsPerIndex.get(i);
 						if (cVal == null) {
@@ -380,7 +405,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 						}
 					}
 					val.put(columnLabel[i], cVal);
-					if (content != null) {
+					if (content != null || !generateUpsertStatementsWithoutNulls) {
 						if (!f) {
 							valuesWONull.append(", ");
 							namedValuesWONull.append(", ");
@@ -456,7 +481,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					if (sets.length() > 0) {
 						terminator.append("WHEN MATCHED THEN UPDATE SET " + sets + " ");
 					}
-					terminator.append("WHEN NOT MATCHED THEN INSERT (" + tSchema + ") VALUES(" + iSchema + ");\n");
+					terminator.append("WHEN NOT MATCHED THEN INSERT (" + tSchema + ") VALUES(" + iSchema + ");" + PrintUtil.LINE_SEPARATOR);
 
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -476,7 +501,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					insertHead += "Select * From (values ";
 					StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
-					terminator.append(whereForTerminator + ");\n");
+					terminator.append(whereForTerminator + ");" + PrintUtil.LINE_SEPARATOR);
 					
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -484,16 +509,16 @@ public class DMLTransformer extends AbstractResultSetReader {
 						upsertInsertStatementBuilder.put(insertHead, sb);
 					}
 				
-					String item = "(" + valuesWONull + ")";
+					String item = (maxBodySize > 1? PrintUtil.LINE_SEPARATOR + " " : "") + "(" + valuesWONull + ")";
 					if (!sb.isAppendable(insertHead, item)) {
 						writeToScriptFile(sb.build(), true);
 					}
 					sb.append(insertHead, item, ", ", terminator.toString());
 				} else if (currentDialect.getUpsertMode() == UPSERT_MODE.UNION_ALL) {
-					insertHead += "Select * From (\n Select ";
-					StringBuffer terminator = new StringBuffer(") as Q \nWhere not exists (Select * from " + qualifiedTableName(table) + " T "
+					insertHead += "Select * From (" + PrintUtil.LINE_SEPARATOR + " Select ";
+					StringBuffer terminator = new StringBuffer(") as Q " + PrintUtil.LINE_SEPARATOR + "Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
-					terminator.append(whereForTerminator + ");\n");
+					terminator.append(whereForTerminator + ");" + PrintUtil.LINE_SEPARATOR);
 					
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -510,7 +535,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					if (!sb.isAppendable(insertHead, item)) {
 						writeToScriptFile(sb.build(), true);
 					}
-					sb.append(insertHead, item, " union all \n Select ", terminator.toString());
+					sb.append(insertHead, item, " union all " + PrintUtil.LINE_SEPARATOR + " Select ", terminator.toString());
 				} else {
 					String item = "Select " + valuesWONull + " From " + 
 						(currentDialect.getUpsertMode() == UPSERT_MODE.FROM_DUAL || 
@@ -518,7 +543,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 								 "dual" : currentDialect.getUpsertMode() == UPSERT_MODE.FROM_SYSDUMMY1? "sysibm.sysdummy1" : SQLDialect.DUAL_TABLE);
 					StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
-					terminator.append(where + ");\n");
+					terminator.append(where + ");" + PrintUtil.LINE_SEPARATOR);
 					
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -550,18 +575,18 @@ public class DMLTransformer extends AbstractResultSetReader {
 						insert.append(columnLabel[i] + "=" + val.get(columnLabel[i]));
 					}
 					if (!f) {
-						insert.append(" Where " + whereWOAlias + ";\n");
+						insert.append(" Where " + whereWOAlias + ";" + PrintUtil.LINE_SEPARATOR);
 						writeToScriptFile(insert.toString(), true);
 					}
 				}
 			} else {
 				if (DBMS.DB2_ZOS.equals(targetDBMSConfiguration) && maxBodySize > 1) {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
-					String item = "\n Select " + valueList + " From sysibm.sysdummy1";
+					String item = PrintUtil.LINE_SEPARATOR + " Select " + valueList + " From sysibm.sysdummy1";
 					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
-					insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
+					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
 				} else if (DBMS.ORACLE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 					if (!insertStatementBuilder.isAppendable(insertSchema)) {
@@ -569,25 +594,25 @@ public class DMLTransformer extends AbstractResultSetReader {
 					}
 					String item;
 					if (insertStatementBuilder.isEmpty()) {
-						item = "\n Select " + namedValues + " From DUAL";	
+						item = PrintUtil.LINE_SEPARATOR + " Select " + namedValues + " From DUAL";	
 					} else {
-						item = "\n Select " + valueList + " From DUAL";
+						item = PrintUtil.LINE_SEPARATOR + " Select " + valueList + " From DUAL";
 					}
-					insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
+					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
 				} else if (DBMS.SQLITE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
-					String item = "\n Select " + valueList + " ";
+					String item = PrintUtil.LINE_SEPARATOR + " Select " + valueList + " ";
 					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
-					insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
+					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
 				} else {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
-					String item = (maxBodySize > 1? "\n " : "") + "(" + valueList + ")";
+					String item = (maxBodySize > 1? PrintUtil.LINE_SEPARATOR + " " : "") + "(" + valueList + ")";
 					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
-					insertStatementBuilder.append(insertSchema, item, ", ", ";\n");
+					insertStatementBuilder.append(insertSchema, item, ", ", ";" + PrintUtil.LINE_SEPARATOR);
 				}
 			}
 			
@@ -606,7 +631,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * @param content cell content
 	 * @return SQL literal
 	 */
-	protected String convertToSql(CellContentConverter cellContentConverter, ResultSet resultSet, int i, Object content) throws SQLException {
+	protected String convertToSql(CellContentConverter cellContentConverter, ResultSet resultSet, int i, Object content, int callerId, String suffix) throws SQLException {
 		String cVal = cellContentConverter.toSql(content);
 		Column column = selectionClause.get(i - 1);
 		Filter filter = column.getFilter();
@@ -621,12 +646,24 @@ public class DMLTransformer extends AbstractResultSetReader {
 			return content.toString();
 		}
 
+		if (suffix != null) {
+			cVal += suffix;
+		}
+
 		if (filter != null && filter.getReason() != null) {
-			return cVal + " /*" + filter.getReason() + "*/";
+			if (!seen.containsKey(callerId)) {
+				seen.put(callerId, new IdentityHashMap<Filter, Filter>());
+			}
+			if (!seen.get(callerId).containsKey(filter)) {
+				seen.get(callerId).put(filter, filter);
+				return cVal + " /*" + filter.getReason() + "*/";
+			}
 		}
 		
 		return cVal;
 	}
+
+	private Map<Integer, IdentityHashMap<Filter, Filter>> seen = new HashMap<Integer, IdentityHashMap<Filter,Filter>>();
 
 	/**
 	 * Gets qualified table name.
@@ -697,13 +734,13 @@ public class DMLTransformer extends AbstractResultSetReader {
 					++numberOfExportedLOBs;
 					flush();
 					SQLXML xml = (SQLXML) lob;
-					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "XML " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
+					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "XML " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + PrintUtil.LINE_SEPARATOR, false);
 					Reader in = xml.getCharacterStream();
 					int c;
 					StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 					while ((c = in.read()) != -1) {
 						if ((char) c == '\n') {
-							writeToScriptFile(line.toString() + "\\n\n", false);
+							writeToScriptFile(line.toString() + "\\n" + PrintUtil.LINE_SEPARATOR, false);
 							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 						} else {
 							if ((char) c == '\r') {
@@ -716,24 +753,24 @@ public class DMLTransformer extends AbstractResultSetReader {
 							}
 						}
 						if (line.length() >= 200) {
-							writeToScriptFile(line.toString() + "\n", false);
+							writeToScriptFile(line.toString() + PrintUtil.LINE_SEPARATOR, false);
 							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 						}
 					}
 					in.close();
-					writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
+					writeToScriptFile(line.toString() + PrintUtil.LINE_SEPARATOR + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "" + PrintUtil.LINE_SEPARATOR + "", false);
 				}
 				if (lob instanceof Clob) {
 					++numberOfExportedLOBs;
 					flush();
 					Clob clob = (Clob) lob;
-					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
+					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "" + PrintUtil.LINE_SEPARATOR + "", false);
 					Reader in = clob.getCharacterStream();
 					int c;
 					StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 					while ((c = in.read()) != -1) {
 						if ((char) c == '\n') {
-							writeToScriptFile(line.toString() + "\\n\n", false);
+							writeToScriptFile(line.toString() + "\\n" + PrintUtil.LINE_SEPARATOR, false);
 							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 						} else {
 							if ((char) c == '\r') {
@@ -746,18 +783,18 @@ public class DMLTransformer extends AbstractResultSetReader {
 							}
 						}
 						if (line.length() >= 200) {
-							writeToScriptFile(line.toString() + "\n", false);
+							writeToScriptFile(line.toString() + PrintUtil.LINE_SEPARATOR, false);
 							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 						}
 					}
 					in.close();
-					writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
+					writeToScriptFile(line.toString() + PrintUtil.LINE_SEPARATOR + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "" + PrintUtil.LINE_SEPARATOR + "", false);
 				}
 				if (lob instanceof Blob) {
 					++numberOfExportedLOBs;
 					flush();
 					Blob blob = (Blob) lob;
-					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
+					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "" + PrintUtil.LINE_SEPARATOR + "", false);
 					InputStream in = blob.getBinaryStream();
 					int b;
 					StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
@@ -766,13 +803,13 @@ public class DMLTransformer extends AbstractResultSetReader {
 					while ((b = in.read()) != -1) {
 						buffer[size++] = (byte) b;
 						if (size == buffer.length) {
-							writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, Base64.DONT_BREAK_LINES) + "\n", false);
+							writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, Base64.DONT_BREAK_LINES) + PrintUtil.LINE_SEPARATOR, false);
 							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 							size = 0;
 						}
 					}
 					in.close();
-					writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, 0, size, Base64.DONT_BREAK_LINES) + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
+					writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, 0, size, Base64.DONT_BREAK_LINES) + PrintUtil.LINE_SEPARATOR + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "" + PrintUtil.LINE_SEPARATOR + "", false);
 				}
 			}
 		}
@@ -801,7 +838,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		synchronized (scriptFileWriter) {
 			if (identityInsertTable != null) {
 				try {
-					scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;\n");
+					scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;" + PrintUtil.LINE_SEPARATOR);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -823,10 +860,10 @@ public class DMLTransformer extends AbstractResultSetReader {
 			if (tableHasIdentityColumn) {
 				if (identityInsertTable != table) {
 					if (identityInsertTable != null) {
-						scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;\n");
+						scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;" + PrintUtil.LINE_SEPARATOR);
 						identityInsertTable = null;
 					}
-					scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(table) + " ON;\n");
+					scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(table) + " ON;" + PrintUtil.LINE_SEPARATOR);
 					identityInsertTable = table;
 				}
 			}

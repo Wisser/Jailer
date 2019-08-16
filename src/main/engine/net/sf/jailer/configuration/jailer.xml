@@ -60,6 +60,12 @@
 	</urlRewriteRule>
 	-->
 
+	<!--
+		Also include 'null's in the generated upsert statements. 
+		Useful if a column contains 'null', but its default value is non-null.
+	<generateUpsertStatementsWithoutNulls>false</generateUpsertStatementsWithoutNulls>
+	-->
+
     <!-- for Oracle -->
     <dbms>
         <id>ORACLE</id>

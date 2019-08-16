@@ -146,6 +146,11 @@ public class Configuration {
 	 */
 	private String nullColumnPlaceholder = null;
 
+	/**
+	 * Generate upsert statements without nulls?
+	 */
+	private boolean generateUpsertStatementsWithoutNulls = true;
+
 	private int columnsPerIFMTable = 8;
 
 
@@ -294,6 +299,20 @@ public class Configuration {
 	 */
 	public void setColumnsPerIFMTable(int columnsPerIFMTable) {
 		this.columnsPerIFMTable = columnsPerIFMTable;
+	}
+
+	/**
+	 * @return generate upsert statements without nulls?
+	 */
+	public boolean isGenerateUpsertStatementsWithoutNulls() {
+		return generateUpsertStatementsWithoutNulls;
+	}
+
+	/**
+	 * @param generateUpsertStatementsWithoutNulls generate upsert statements without nulls?
+	 */
+	public void setGenerateUpsertStatementsWithoutNulls(boolean generateUpsertStatementsWithoutNulls) {
+		this.generateUpsertStatementsWithoutNulls = generateUpsertStatementsWithoutNulls;
 	}
 
 	static {
