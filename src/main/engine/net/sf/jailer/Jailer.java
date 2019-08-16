@@ -114,7 +114,7 @@ public class Jailer {
 		}
 		boolean ok = true;
 		try {
-			jailerMain(args, new StringBuffer(), null);
+			jailerMain(args, new StringBuffer(), null, true);
 		} catch (Throwable t) {
 			// Exception has already been logged
 			ok = false;
@@ -140,7 +140,7 @@ public class Jailer {
 	 * @param progressListener listens to progess events, may be <code>null</code>
 	 * @return <code>false</code> iff something went wrong
 	 */
-	public static boolean jailerMain(String[] args, StringBuffer warnings, ProgressListener progressListener) throws Exception {
+	public static boolean jailerMain(String[] args, StringBuffer warnings, ProgressListener progressListener, boolean fromCli) throws Exception {
 		CancellationHandler.reset(null);
 
 		try {
@@ -258,7 +258,9 @@ public class Jailer {
 				if ("datamodel".equals(commandLine.datamodelFolder) && extractionModelFileName == null
 						||
 					!"datamodel".equals(commandLine.datamodelFolder) && extractionModelFileName != null) {
-					throw new RuntimeException("Please specify either a data model (e.g., \"-datamodel datamodel/Demo-Scott\") or an extraction model.");
+					if (fromCli) {
+						throw new RuntimeException("Please specify either a data model (e.g., \"-datamodel datamodel/Demo-Scott\") or an extraction model.");
+					}
 				}
 				if (commandLine.arguments.size() >= 5) {
 					if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 5) {

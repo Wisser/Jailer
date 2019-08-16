@@ -533,7 +533,7 @@ public class UIUtil {
                             _log.info("arguments: " + arglist.toString().trim());
                         }
                         result[0] = Jailer.jailerMain(argsarray, disableWarnings ? new StringBuffer() : warnings,
-                                progressListener);
+                                progressListener, false);
                     } catch (Throwable t) {
                         synchronized (UIUtil.class) {
                             exp[0] = t;
