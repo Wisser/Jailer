@@ -111,6 +111,16 @@ public class DMLTransformer extends AbstractResultSetReader {
 	private final StatementBuilder insertStatementBuilder;
 	
 	/**
+	 * For building compact update-statements.
+	 */
+	private final StatementBuilder updateStatementBuilder;
+	
+	/**
+	 * Terminator of current {@link #updateStatementBuilder}
+	 */
+	private String updateStatementBuilderTerminator;
+	
+	/**
 	 * For building compact insert-parts of upsert-statements.
 	 */
 	private Map<String, StatementBuilder> upsertInsertStatementBuilder = new HashMap<String, StatementBuilder>();
@@ -244,6 +254,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		this.scriptFileWriter = scriptFileWriter;
 		this.currentDialect = targetDBMSConfiguration.getSqlDialect();
 		this.insertStatementBuilder = new StatementBuilder(currentDialect.isSupportsMultiRowInserts() || DBMS.ORACLE.equals(targetDBMSConfiguration) || DBMS.SQLITE.equals(targetDBMSConfiguration)? maxBodySize : 1);
+		this.updateStatementBuilder = new StatementBuilder(maxBodySize);
 		this.quoting = createQuoting(session);
 		this.importFilterTransformer = importFilterTransformer;
 		if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
@@ -374,7 +385,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					String suffix = null;
 					if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration)) {
 						int mdColumnType = getMetaData(resultSet).getColumnType(i);
-						if (mdColumnType == Types.TIME || (!generateUpsertStatementsWithoutNulls && content == null)) { 
+						if (mdColumnType == Types.TIME || (content == null && ((currentDialect.getUpdateMode() == UPDATE_MODE.PG || !generateUpsertStatementsWithoutNulls)))) { 
 							// explicit cast needed
 							if (mdColumnType == Types.OTHER) {
 								String type = null;
@@ -558,25 +569,142 @@ public class DMLTransformer extends AbstractResultSetReader {
 				}
 				
 				if (currentDialect.getUpsertMode() != UPSERT_MODE.MERGE || tableHasLobs) {
-					StringBuffer insert = new StringBuffer("");
-					insert.append("Update " + qualifiedTableName(table) + " set ");
-					f = true;
-					for (int i = 1; i <= columnCount; ++i) {
-						if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
-							continue;
+					if (currentDialect.getUpdateMode() == UPDATE_MODE.PG && session.dbms == DBMS.POSTGRESQL) {
+						StringBuilder item = new StringBuilder(" (");
+						StringBuilder terminator = new StringBuilder(") Q(");
+						StringBuilder head = new StringBuilder("Update " + qualifiedTableName(table) + " T set ");
+						StringBuilder set = new StringBuilder();
+						f = true;
+						for (int i = 1; i <= columnCount; ++i) {
+							if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
+								continue;
+							}
+							if (!generateUpsertStatementsWithoutNulls && val.get(columnLabel[i]) != null) {
+								if (emptyLobValue[i] != null && val.get(columnLabel[i]).startsWith("null::")) {
+									continue;
+								}
+							}
+							if (!isPrimaryKeyColumn(columnLabel[i])) {
+								if (set.length() > 0) {
+									set.append(", ");
+								}
+								set.append(columnLabel[i] + "=Q." + columnLabel[i]);
+							}
+							if (!f) {
+								terminator.append(", ");
+								item.append(", ");
+							}
+							f = false;
+							terminator.append(columnLabel[i]);
+							item.append(val.get(columnLabel[i]));
 						}
-						if (isPrimaryKeyColumn(columnLabel[i])) {
-							continue;
+						head.append(set).append(PrintUtil.LINE_SEPARATOR + "From (values" + PrintUtil.LINE_SEPARATOR);
+						item.append(")");
+						if (set.length() > 0) {
+							String headAsString = head.toString();
+							String itemAsString = item.toString();
+							if (!updateStatementBuilder.isAppendable(headAsString, itemAsString)) {
+								writeToScriptFile(updateStatementBuilder.build(), true);
+							}
+							updateStatementBuilder.append(
+									headAsString, 
+									itemAsString, 
+									", " + PrintUtil.LINE_SEPARATOR,
+									terminator + ")" + PrintUtil.LINE_SEPARATOR + "Where " + whereForTerminator + ";" + PrintUtil.LINE_SEPARATOR);
+						}
+					} else if (currentDialect.getUpdateMode() == UPDATE_MODE.MYSQL || currentDialect.getUpdateMode() == UPDATE_MODE.MSSQL) {
+						boolean ms = currentDialect.getUpdateMode() == UPDATE_MODE.MSSQL;
+						StringBuilder item = new StringBuilder(" Select ");
+						StringBuilder terminator = new StringBuilder();
+						StringBuilder columns = new StringBuilder();
+						StringBuilder set = new StringBuilder();
+						StringBuilder head = new StringBuilder(
+								ms? ("Update T ")
+								  : ("Update " + qualifiedTableName(table) + " T join (" + PrintUtil.LINE_SEPARATOR));
+						f = true;
+						boolean tf = true;
+						for (int i = 1; i <= columnCount; ++i) {
+							if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
+								continue;
+							}
+							if (!generateUpsertStatementsWithoutNulls && val.get(columnLabel[i]) != null) {
+								if (emptyLobValue[i] != null && val.get(columnLabel[i]).startsWith("null::")) {
+									continue;
+								}
+							}
+							if (!f) {
+								item.append(", ");
+								columns.append(", ");
+							}
+							f = false;
+							if (isPrimaryKeyColumn(columnLabel[i])) {
+								if (!tf) {
+									terminator.append(" and ");
+								}
+								tf = false;
+								terminator.append("T." + columnLabel[i] + "=Q." + columnLabel[i]);
+							} else {
+								if (set.length() > 0) {
+									set.append(", ");
+								}
+								set.append("T." + columnLabel[i] + "=Q." + columnLabel[i]);
+							}
+							item.append(val.get(columnLabel[i]));
+							if (!ms && updateStatementBuilder.isEmpty()) {
+								item.append(" " + columnLabel[i]);
+							}
+							if (ms) {
+								columns.append(columnLabel[i]);
+							}
+						}
+						if (set.length() > 0) {
+							if (ms) {
+								head.append("set " + set).append(PrintUtil.LINE_SEPARATOR).append("from " + qualifiedTableName(table) + " T join (").append(PrintUtil.LINE_SEPARATOR);
+							}
+							String headAsString = head.toString();
+							String itemAsString = item.toString();
+							if (!ms) {
+								terminator.append(PrintUtil.LINE_SEPARATOR);
+								terminator.append("set " + set);
+							}
+							terminator.append(";").append(PrintUtil.LINE_SEPARATOR);
+							String terminatorAsString = (ms? (") Q(" + columns + ") on ") : ") Q on ") + terminator.toString();
+							if (!terminatorAsString.equals(updateStatementBuilderTerminator) || !updateStatementBuilder.isAppendable(headAsString, itemAsString)) {
+								writeToScriptFile(updateStatementBuilder.build(), true);
+							}
+							updateStatementBuilderTerminator = terminatorAsString;
+							updateStatementBuilder.append(
+									headAsString, 
+									itemAsString, 
+									" union all " + PrintUtil.LINE_SEPARATOR,
+									terminatorAsString);
+						}
+					} else {
+						StringBuffer update = new StringBuffer("");
+						update.append("Update " + qualifiedTableName(table) + " set ");
+						f = true;
+						for (int i = 1; i <= columnCount; ++i) {
+							if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
+								continue;
+							}
+							if (!generateUpsertStatementsWithoutNulls && val.get(columnLabel[i]) != null) {
+								if (val.get(columnLabel[i]).startsWith("null::")) {
+									continue;
+								}
+							}
+							if (isPrimaryKeyColumn(columnLabel[i])) {
+								continue;
+							}
+							if (!f) {
+								update.append(", ");
+							}
+							f = false;
+							update.append(columnLabel[i] + "=" + val.get(columnLabel[i]));
 						}
 						if (!f) {
-							insert.append(", ");
+							update.append(" Where " + whereWOAlias + ";" + PrintUtil.LINE_SEPARATOR);
+							writeToScriptFile(update.toString(), true);
 						}
-						f = false;
-						insert.append(columnLabel[i] + "=" + val.get(columnLabel[i]));
-					}
-					if (!f) {
-						insert.append(" Where " + whereWOAlias + ";" + PrintUtil.LINE_SEPARATOR);
-						writeToScriptFile(insert.toString(), true);
 					}
 				}
 			} else {
@@ -821,6 +949,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	public void flush() {
 		try {
 			writeToScriptFile(insertStatementBuilder.build(), true);
+			writeToScriptFile(updateStatementBuilder.build(), true);
 			for (StatementBuilder sb: upsertInsertStatementBuilder.values()) {
 				writeToScriptFile(sb.build(), true);
 			}

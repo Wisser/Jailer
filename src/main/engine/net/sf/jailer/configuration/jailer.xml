@@ -235,6 +235,7 @@ union all
             <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
             <supportsMultiRowInserts>true</supportsMultiRowInserts>
             <upsertMode>DB2</upsertMode>
+            <updateMode>MSSQL</updateMode>
         </sqlDialect>
         <statisticRenovator>
             <scriptFileName>script/mssql/update_statistics.sql</scriptFileName>
@@ -378,6 +379,7 @@ union all
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
             <supportsMultiRowInserts>true</supportsMultiRowInserts>
             <upsertMode>UNION_ALL</upsertMode>
+            <updateMode>MYSQL</updateMode>
         </sqlDialect>
         <jdbcProperties>
             <entry>
@@ -557,6 +559,7 @@ union all
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
             <supportsMultiRowInserts>true</supportsMultiRowInserts>
             <upsertMode>UNION_ALL</upsertMode>
+            <updateMode>MYSQL</updateMode>
         </sqlDialect>
         <jdbcProperties>
             <entry>
@@ -1183,6 +1186,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
             <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
             <supportsMultiRowInserts>true</supportsMultiRowInserts>
             <upsertMode>DB2</upsertMode>
+            <updateMode>PG</updateMode>
         </sqlDialect>
         <statisticRenovator>
             <scriptFileName>script/postgres/update_statistics.sql</scriptFileName>

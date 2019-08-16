@@ -55,6 +55,11 @@ public class SQLDialect {
 	 * Upsert mode.
 	 */
 	private UPSERT_MODE upsertMode = UPSERT_MODE.FROM_JL_DUAL;
+	
+	/**
+	 * Update mode.
+	 */
+	private UPDATE_MODE updateMode = null;
 
 	/**
 	 * @return the needsValuesKeywordForDeletes
@@ -110,6 +115,20 @@ public class SQLDialect {
 	 */
 	public void setUpsertMode(UPSERT_MODE upsertMode) {
 		this.upsertMode = upsertMode;
+	}
+
+	/**
+	 * @return the update mode
+	 */
+	public UPDATE_MODE getUpdateMode() {
+		return updateMode;
+	}
+
+	/**
+	 * @param updateMode the update mode
+	 */
+	public void setUpdateMode(UPDATE_MODE updateMode) {
+		this.updateMode = updateMode;
 	}
 
 	/**
