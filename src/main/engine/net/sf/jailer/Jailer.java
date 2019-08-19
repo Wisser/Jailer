@@ -32,6 +32,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -259,8 +260,19 @@ public class Jailer {
 						||
 					!"datamodel".equals(commandLine.datamodelFolder) && extractionModelFileName != null) {
 					if (fromCli) {
-						throw new RuntimeException("Please specify either a data model (e.g., \"-datamodel datamodel/Demo-Scott\") or an extraction model.");
+						throw new RuntimeException("Please specify either a data model (e.g., \"-datamodel datamodel/Demo-Scott\") or an extraction model (But not both)");
 					}
+				}
+				if (commandLine.targetDBMS == null) {
+					List<DBMS> dbmss = Configuration.getInstance().getDBMS();
+					System.err.println("");
+					System.err.println("Warning: No DBMS specified (\"-target-dbms\". The worktables are potentially suboptimal. Perfomance could suffer. Known DBMS are:");
+					for (DBMS dbms: dbmss) {
+						if (dbms.getId() != null) {
+							System.err.println(dbms.getId());
+						}
+					}
+					System.err.println("");
 				}
 				if (commandLine.arguments.size() >= 5) {
 					if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 5) {

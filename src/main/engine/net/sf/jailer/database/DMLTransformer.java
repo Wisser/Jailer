@@ -369,6 +369,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				}
 
 				Map<String, String> val = new HashMap<String, String>();
+				Map<String, Boolean> valIsNull = new HashMap<String, Boolean>();
 				StringBuffer valuesWONull = new StringBuffer("");
 				StringBuffer namedValuesWONull = new StringBuffer("");
 				StringBuffer columnsWONull = new StringBuffer("");
@@ -415,6 +416,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 							cVal = emptyLobValue[i];
 						}
 					}
+					valIsNull.put(columnLabel[i], content == null);
 					val.put(columnLabel[i], cVal);
 					if (content != null || !generateUpsertStatementsWithoutNulls) {
 						if (!f) {
@@ -568,6 +570,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 					sb.append(insertHead, item, ", ", terminator.toString());
 				}
 				
+				// TODO refactoring, method is too long
+				
 				if (currentDialect.getUpsertMode() != UPSERT_MODE.MERGE || tableHasLobs) {
 					if (currentDialect.getUpdateMode() == UPDATE_MODE.PG && session.dbms == DBMS.POSTGRESQL) {
 						StringBuilder item = new StringBuilder(" (");
@@ -576,13 +580,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 						StringBuilder set = new StringBuilder();
 						f = true;
 						for (int i = 1; i <= columnCount; ++i) {
-							if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
+							if (columnLabel[i] == null || (emptyLobValue[i] != null && !valIsNull.get(columnLabel[i]))) {
 								continue;
-							}
-							if (!generateUpsertStatementsWithoutNulls && val.get(columnLabel[i]) != null) {
-								if (emptyLobValue[i] != null && val.get(columnLabel[i]).startsWith("null::")) {
-									continue;
-								}
 							}
 							if (!isPrimaryKeyColumn(columnLabel[i])) {
 								if (set.length() > 0) {
@@ -624,13 +623,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 						f = true;
 						boolean tf = true;
 						for (int i = 1; i <= columnCount; ++i) {
-							if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
+							if (columnLabel[i] == null || (emptyLobValue[i] != null && !valIsNull.get(columnLabel[i]))) {
 								continue;
-							}
-							if (!generateUpsertStatementsWithoutNulls && val.get(columnLabel[i]) != null) {
-								if (emptyLobValue[i] != null && val.get(columnLabel[i]).startsWith("null::")) {
-									continue;
-								}
 							}
 							if (!f) {
 								item.append(", ");
@@ -684,13 +678,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 						update.append("Update " + qualifiedTableName(table) + " set ");
 						f = true;
 						for (int i = 1; i <= columnCount; ++i) {
-							if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
+							if (columnLabel[i] == null || (emptyLobValue[i] != null && !valIsNull.get(columnLabel[i]))) {
 								continue;
-							}
-							if (!generateUpsertStatementsWithoutNulls && val.get(columnLabel[i]) != null) {
-								if (val.get(columnLabel[i]).startsWith("null::")) {
-									continue;
-								}
 							}
 							if (isPrimaryKeyColumn(columnLabel[i])) {
 								continue;

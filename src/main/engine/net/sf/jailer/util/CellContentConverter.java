@@ -50,6 +50,7 @@ public class CellContentConverter {
 	private final ResultSetMetaData resultSetMetaData;
 	private final Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 	private final Map<String, Integer> columnIndex = new HashMap<String, Integer>();
+	private final Map<Class<?>, Boolean> isPGObjectClass = new HashMap<Class<?>, Boolean>();
 	private final Session session;
 	private final DBMS configuration;
 	private final DBMS targetConfiguration;
@@ -129,18 +130,25 @@ public class CellContentConverter {
 		if (content instanceof Time) {
 			return "'" + content + "'";
 		}
-		if (DBMS.POSTGRESQL.equals(configuration) && content.getClass().getSimpleName().equals("PGobject")) {
-			try {
-				if (pgObjectGetType == null) {
-					pgObjectGetType = content.getClass().getMethod("getType");
+		if (DBMS.POSTGRESQL.equals(configuration)) {
+			Boolean isPGObject = isPGObjectClass.get(content.getClass());
+			if (isPGObject == null) {
+				isPGObject = content.getClass().getSimpleName().equals("PGobject");
+				isPGObjectClass.put(content.getClass(), isPGObject);
+			}
+			if (isPGObject) {
+				try {
+					if (pgObjectGetType == null) {
+						pgObjectGetType = content.getClass().getMethod("getType");
+					}
+					if ("varbit".equalsIgnoreCase((String) pgObjectGetType.invoke(content))) {
+						// PostgreSQL bit values
+						return "B'" + content + "'";
+					}
+					return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'";
+				} catch (Exception e) {
+					throw new RuntimeException(e);
 				}
-				if ("varbit".equalsIgnoreCase((String) pgObjectGetType.invoke(content))) {
-					// PostgreSQL bit values
-					return "B'" + content + "'";
-				}
-				return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'";
-			} catch (Exception e) {
-				throw new RuntimeException(e);
 			}
 		}
 		if (content instanceof UUID) {

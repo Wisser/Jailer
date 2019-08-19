@@ -73,6 +73,7 @@ public class DBMS {
 	 */
 	public DBMS(DBMS other) {
 		this.id = other.id;
+		this.familyId = other.familyId;
 		this.displayName = other.displayName;
 		this.urlPattern = other.urlPattern;
 		this.testQuery = other.testQuery;
@@ -181,6 +182,7 @@ public class DBMS {
 	}
 	
 	private String id;
+	private String familyId;
 	private String displayName;
 	
 	/**
@@ -929,6 +931,14 @@ public class DBMS {
 		this.id = id;
 	}
 
+	public String getFamilyId() {
+		return familyId;
+	}
+
+	public void setFamilyId(String familyId) {
+		this.familyId = familyId;
+	}
+
 	public String getDisplayName() {
 		return displayName;
 	}
@@ -1144,11 +1154,13 @@ public class DBMS {
 			return false;
 		}
 		DBMS other = (DBMS) obj;
-		if (id == null) {
-			if (other.id != null) {
+		String fid = familyId != null? familyId : id;
+		String otherFid = other.familyId != null? other.familyId : other.id;
+		if (fid == null) {
+			if (otherFid != null) {
 				return false;
 			}
-		} else if (!id.equals(other.id)) {
+		} else if (!fid.equals(otherFid)) {
 			return false;
 		}
 		return true;

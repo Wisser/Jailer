@@ -552,6 +552,7 @@ union all
     <!-- for MariaDB -->
     <dbms>
         <id>MariaDB</id>
+        <familyId>MySQL</familyId>
         <displayName>MariaDB</displayName>
         <urlPattern>jdbc:mariadb.*</urlPattern>
         <sqlDialect>
@@ -1229,7 +1230,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         <fetchSize>1000</fetchSize>
 
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
-        <tableProperties></tableProperties>
+        <tableProperties>CREATE UNLOGGED TABLE</tableProperties>
         
         <sessionTemporaryTableManager>
             <createIndexPrefix>CREATE INDEX </createIndexPrefix>
@@ -1331,6 +1332,7 @@ union all
     <!-- for Amazon Redshift -->
     <dbms>
         <id>Redshift</id>
+        <familyId>POSTGRESQL</familyId>
         <displayName>Redshift</displayName>
         <urlPattern>jdbc:redshift.*</urlPattern>
         <sqlDialect>
@@ -1380,7 +1382,7 @@ union all
         <fetchSize>1000</fetchSize>
 
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
-        <tableProperties></tableProperties>
+        <tableProperties>CREATE UNLOGGED TABLE</tableProperties>
         
         <sessionTemporaryTableManager>
             <createIndexPrefix>CREATE INDEX </createIndexPrefix>

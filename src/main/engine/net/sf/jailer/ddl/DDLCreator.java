@@ -108,9 +108,21 @@ public class DDLCreator {
 	 * Creates the DDL for the working-tables.
 	 */
 	public boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
+		try {
+			return createDDL(datamodel, session, temporaryTableScope, rowIdSupport, workingTableSchema, true);
+		} catch (SQLException e) {
+			// try without table property
+		}
+		return createDDL(datamodel, session, temporaryTableScope, rowIdSupport, workingTableSchema, false);
+	}
+
+	/**
+	 * Creates the DDL for the working-tables.
+	 */
+	public boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema, boolean withTableProperties) throws FileNotFoundException, IOException, SQLException {
 		uPKWasTooLong = false;
 		try {
-			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport, workingTableSchema);
+			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport, workingTableSchema, withTableProperties);
 		} catch (SQLException e) {
 			uPKWasTooLong = true;
 			try {
@@ -123,7 +135,7 @@ public class DDLCreator {
 		// reconnect and retry with another index type
 		session.reconnect();
 		try {
-			return createDDL(datamodel, session, temporaryTableScope, 1, rowIdSupport, workingTableSchema);
+			return createDDL(datamodel, session, temporaryTableScope, 1, rowIdSupport, workingTableSchema, withTableProperties);
 		} catch (SQLException e) {
 			try {
 				// [bugs:#37] PostreSQL: transactional execution
@@ -134,7 +146,7 @@ public class DDLCreator {
 		}
 		// reconnect and retry with another index type
 		session.reconnect();
-		return createDDL(datamodel, session, temporaryTableScope, 2, rowIdSupport, workingTableSchema);
+		return createDDL(datamodel, session, temporaryTableScope, 2, rowIdSupport, workingTableSchema, withTableProperties);
 	}
 
 	public static boolean uPKWasTooLong = false;
@@ -142,7 +154,7 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	private boolean createDDL(DataModel dataModel, Session session, WorkingTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
+	private boolean createDDL(DataModel dataModel, Session session, WorkingTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema, boolean withTableProperties) throws FileNotFoundException, IOException, SQLException {
 		String template = "script" + File.separator + "ddl-template.sql";
 		String contraint = pkColumnConstraint(session);
 		Map<String, String> typeReplacement = targetDBMS(session).getTypeReplacement();
@@ -160,7 +172,8 @@ public class DDLCreator {
 		String universalPrimaryKey = upk.toSQL(null, contraint, typeReplacement);
 		Map<String, String> arguments = new HashMap<String, String>();
 		arguments.put("upk", universalPrimaryKey);
-		arguments.put("upk-hash", "" + ((universalPrimaryKey + targetDBMS(session).getTableProperties()).hashCode()));
+		String tableProperties = targetDBMS(session).getTableProperties();
+		arguments.put("upk-hash", "" + ((universalPrimaryKey + tableProperties).hashCode()));
 		arguments.put("pre", upk.toSQL("PRE_", contraint, typeReplacement));
 		arguments.put("from", upk.toSQL("FROM_", contraint, typeReplacement));
 		arguments.put("to", upk.toSQL("TO_", contraint, typeReplacement));
@@ -189,10 +202,19 @@ public class DDLCreator {
 			arguments.put("index-table-prefix", tableManager.getIndexTablePrefix());
 			arguments.put("schema", schema + tableManager.getDdlTableReferencePrefix());
 		} else {
+			String suffix = "";
+			String prefix = "";
+			if (withTableProperties) {
+				prefix = tableProperties.replaceFirst("^\\s*CREATE\\s+(.*)\\s+TABLE\\s*$", "$1");
+				if (prefix.equals(tableProperties)) {
+					prefix = "";
+					suffix = tableProperties;
+				}
+			}
 			arguments.put("table-suffix", "");
 			arguments.put("drop-table", "DROP TABLE ");
-			arguments.put("create-table", "CREATE TABLE ");
-			arguments.put("create-table-suffix", targetDBMS(session).getTableProperties());
+			arguments.put("create-table", !"".equals(prefix)? "CREATE " + prefix + " TABLE " : "CREATE TABLE ");
+			arguments.put("create-table-suffix", suffix);
 			arguments.put("create-index", "CREATE INDEX ");
 			arguments.put("create-index-suffix", "");
 			arguments.put("index-table-prefix", "");
