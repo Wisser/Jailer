@@ -160,13 +160,22 @@ public class UISettings  {
 		}
 	}
 
+	private static boolean isSbeModel(File file) {
+		try {
+			File pFile = file.getParentFile();
+			return pFile != null && pFile.getName() != null && "by-example".equals(pFile.getName());
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	public static List<File> loadRecentFiles() {
 		Object files = restore(RECENT_FILES);
 		List<File> result = new ArrayList<File>();
 		if (files instanceof Collection) {
 			for (File file: (List<File>) files) {
-				if (!Configuration.getInstance().isTempFile(file)) {
+				if (!isSbeModel(file) && !Configuration.getInstance().isTempFile(file)) {
 					result.add(file);
 				}
 			}
@@ -175,7 +184,7 @@ public class UISettings  {
 	}
 
 	public static void addRecentFile(File file) {
-		if (!Configuration.getInstance().isTempFile(file)) {
+		if (!isSbeModel(file) && !Configuration.getInstance().isTempFile(file)) {
 			final int MAX_FILES = 100;
 			List<File> files = loadRecentFiles();
 			files.remove(file);
