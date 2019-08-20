@@ -252,7 +252,7 @@ public class MetaDataCache {
 					rowList.add(row);
 				}
 			});
-			if (rc == 0 && session.dbms != DBMS.ORACLE) {
+			if (rc == 0 && !DBMS.ORACLE.equals(session.dbms)) {
 				throw new SQLException("Nothing found. Fall back to JDBC meta data.");
 			}
 			_log.info(rc + " rows read");
