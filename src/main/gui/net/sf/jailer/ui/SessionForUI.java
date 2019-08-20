@@ -145,9 +145,7 @@ public class SessionForUI extends Session {
 	 */
 	@Override
 	public void shutDown() throws SQLException {
-		synchronized (this) {
-			down = true;
-		}
+		down.set(true);
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
