@@ -42,6 +42,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.log4j.Logger;
 
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 
@@ -521,7 +522,7 @@ public class SqlScriptExecutor {
 		final String column = clobLocator.substring(c1 + 1, c2).trim();
 		final String where = clobLocator.substring(c2 + 1).trim();
 		String line;
-		final File lobFile = new File("lob." + System.currentTimeMillis());
+		final File lobFile = Configuration.getInstance().createTempFile(); // new File("lob." + System.currentTimeMillis());
 		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8");
 		long length = 0;
 		while ((line = lineReader.readLine()) != null) {
@@ -575,7 +576,7 @@ public class SqlScriptExecutor {
 		final String column = xmlLocator.substring(c1 + 1, c2).trim();
 		final String where = xmlLocator.substring(c2 + 1).trim();
 		String line;
-		final File lobFile = new File("lob." + System.currentTimeMillis());
+		final File lobFile = Configuration.getInstance().createTempFile(); // new File("lob." + System.currentTimeMillis());
 		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8");
 		long length = 0;
 		while ((line = lineReader.readLine()) != null) {
@@ -630,7 +631,7 @@ public class SqlScriptExecutor {
 		final String column = clobLocator.substring(c1 + 1, c2).trim();
 		final String where = clobLocator.substring(c2 + 1).trim();
 		String line;
-		final File lobFile = new File("lob." + System.currentTimeMillis());
+		final File lobFile = Configuration.getInstance().createTempFile(); // new File("lob." + System.currentTimeMillis());
 		OutputStream out = new FileOutputStream(lobFile);
 		while ((line = lineReader.readLine()) != null) {
 			line = line.trim();
