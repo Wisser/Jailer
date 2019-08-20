@@ -573,7 +573,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				// TODO refactoring, method is too long
 				
 				if (currentDialect.getUpsertMode() != UPSERT_MODE.MERGE || tableHasLobs) {
-					if (currentDialect.getUpdateMode() == UPDATE_MODE.PG &&  DBMS.POSTGRESQL.equals(session.dbms)) {
+					if (currentDialect.getUpdateMode() == UPDATE_MODE.PG && DBMS.POSTGRESQL.equals(session.dbms)) {
 						StringBuilder item = new StringBuilder(" (");
 						StringBuilder terminator = new StringBuilder(") Q(");
 						StringBuilder head = new StringBuilder("Update " + qualifiedTableName(table) + " T set ");

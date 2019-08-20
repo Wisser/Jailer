@@ -213,7 +213,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		singleRow.getObject(columncount);
 	
 		// special handling for sql server
-		if (session.dbms == DBMS.MSSQL || session.dbms == DBMS.SYBASE) {
+		if (DBMS.MSSQL.equals(session.dbms) || DBMS.SYBASE.equals(session.dbms)) {
 			if (columnType == Types.VARCHAR && precision.equals(Integer.MAX_VALUE)) {
 				columnType = Types.CLOB;
 			}
