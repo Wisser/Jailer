@@ -4,6 +4,7 @@
   - Improved validation of CLI arguments.
   - The "Upsert" statements are generated for more compact.
   - Feature Request 65. https://sourceforge.net/p/jailer/feature-requests/65/
+  - Importing C/BLOBs did not work without write permission on the working directory.
 
 8.8.2
   - The layout optimizer of the export progress dialog has been improved.
