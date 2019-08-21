@@ -56,7 +56,7 @@ public class AnimationController {
 					}
 				}
 				for (Window window: windowControl.keySet()) {
-					windowControl.get(window).setEnabled(theActiveWindow == null || window.equals(theActiveWindow));
+					windowControl.get(window).setEnabled(theActiveWindow != null && window.equals(theActiveWindow));
 				}
 			}
 
