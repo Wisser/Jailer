@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer.ui;
+package net.sf.jailer.ui.commandline;
 
 import java.io.File;
 
-import net.sf.jailer.CommandLine;
-import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.ui.Environment;
 
 /**
  * Global (singleton) instance of the {@link ExecutionContext}.
@@ -31,24 +30,30 @@ public class CommandLineInstance {
 	/**
 	 * The singleton.
 	 */
-	private static CommandLine commandLine;
+	private static UICommandLine commandLine;
 	
 	/**
 	 * Gets the singleton.
 	 * 
 	 * @return the singleton
 	 */
-	public static CommandLine getInstance() {
+	public static UICommandLine getInstance() {
 		return commandLine;
+	}
+
+	public static ExecutionContext createExecutionContext() {
+		return new ExecutionContext(commandLine.rawschemamapping, commandLine.datamodelFolder);
 	}
 
 	/**
 	 * Sets the singleton.
 	 */
 	public static synchronized void init(String[] args) throws Exception {
-		commandLine = CommandLineParser.parse(args, true);
-		if (!new File(commandLine.datamodelFolder).isAbsolute()) {
-			commandLine.datamodelFolder = Environment.newFile(commandLine.datamodelFolder).getPath();
+		commandLine = UICommandLineParser.parse(args, true);
+		if (commandLine.datamodelFolder != null) {
+			if (!new File(commandLine.datamodelFolder).isAbsolute()) {
+				commandLine.datamodelFolder = Environment.newFile(commandLine.datamodelFolder).getPath();
+			}
 		}
 	}
 

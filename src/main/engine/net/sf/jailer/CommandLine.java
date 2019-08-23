@@ -99,7 +99,7 @@ public class CommandLine {
 	@Option(name="-where",usage="subject condition", metaVar="SQL-expression")
 	public String where = null;
 	
-	@Option(name="-schemamapping",usage="target schema map", metaVar="<from>=<to>[','<from>=<to>]*")
+	@Option(name="-schemamapping",usage="schema map", metaVar="schema-in-model=schema-in-db[','x=y]*")
 	public String rawschemamapping = null;
 	
 	@Option(name="-source-schemamapping",usage="source schema map", metaVar="<from>=<to>[','<from>=<to>]*")

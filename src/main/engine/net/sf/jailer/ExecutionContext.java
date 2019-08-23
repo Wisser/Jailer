@@ -102,6 +102,14 @@ public class ExecutionContext {
 	}
 
 	/**
+	 * Creates new context.
+	 */
+	public ExecutionContext(String rawschemamapping, String datamodelFolder) {
+		this.rawschemamapping = rawschemamapping;
+		this.datamodelFolder = datamodelFolder;
+	}
+
+	/**
 	 * If <code>true</code>, Use UTF-8 encoding
 	 *
 	 * @return <code>true</code> if Use UTF-8 encoding

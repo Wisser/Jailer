@@ -110,6 +110,7 @@ import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -121,7 +122,6 @@ import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.ColumnOrderEditor;
-import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
@@ -136,6 +136,7 @@ import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
+import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
@@ -2460,9 +2461,11 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         try {
             // create initial data-model files
-            File file = new File(DataModel.getDatamodelFolder(new ExecutionContext(CommandLineInstance.getInstance())));
-            if (!file.exists()) {
-                file.mkdir();
+        	if (CommandLineInstance.getInstance().datamodelFolder == null) {
+        		File file = new File(DataModel.getDatamodelFolder(CommandLineInstance.createExecutionContext()));
+        		if (!file.exists()) {
+        			file.mkdir();
+        		}
             }
         } catch (Exception e) {
         }
@@ -2546,7 +2549,7 @@ public class DataBrowser extends javax.swing.JFrame {
             protected void onSelect(final DbConnectionDialog connectionDialog, final ExecutionContext executionContext) {
                 try {
                     final DataModel datamodel;
-                    datamodel = new DataModel(executionContext);
+                    datamodel = new DataModel(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, true, null);;
                 	final DataBrowser databrowser = new DataBrowser(datamodel, null, "", null, false, executionContext);
                     UIUtil.invokeLater(new Runnable() {
 						@Override
@@ -2568,7 +2571,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 			private static final long serialVersionUID = 1L;
         };
-        dataModelManagerDialog.setVisible(true);
+        dataModelManagerDialog.start();
     }
 
     /**

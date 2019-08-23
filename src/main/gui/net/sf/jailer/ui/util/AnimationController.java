@@ -16,10 +16,14 @@
 package net.sf.jailer.ui.util;
 
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.Timer;
 
 /**
  * Ensures that only the focused top level window performs expensive animations.
@@ -34,6 +38,10 @@ public class AnimationController {
 
 	private static Map<Window, Boolean> windowIsActive = new HashMap<Window, Boolean>();
 	private static Map<Window, AnimationControl> windowControl = new HashMap<Window, AnimationControl>();
+	private static Window lastActiveWindow = null;
+	private static long nothingActiveSince = 0;
+	private static final int MAX_INACTIVITY = 2 * 60 * 1000;
+	private static Timer timer = null;
 
 	/**
 	 * Registers a new top level window.
@@ -41,25 +49,18 @@ public class AnimationController {
 	public static void registerWindow(final Window window, AnimationControl animationControl) {
 		windowIsActive.put(window, false);
 		windowControl.put(window, animationControl);
+		if (timer == null) {
+			timer = new Timer(50, new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					controlAnimation();
+				}
+			});
+			timer.setRepeats(true);
+			timer.setDelay(MAX_INACTIVITY / 8);
+			timer.start();
+		}
 		window.addWindowListener(new WindowListener() {
-
-			private void controlAnimation() {
-				Window theActiveWindow = null;
-				for (Window window: windowIsActive.keySet()) {
-					if (windowIsActive.get(window)) {
-						if (theActiveWindow == null) {
-							theActiveWindow = window;
-						} else {
-							theActiveWindow = null;
-							break;
-						}
-					}
-				}
-				for (Window window: windowControl.keySet()) {
-					windowControl.get(window).setEnabled(theActiveWindow == null || window.equals(theActiveWindow));
-				}
-			}
-
 			@Override
 			public void windowDeactivated(WindowEvent e) {
 				windowIsActive.put(window, false);
@@ -90,6 +91,30 @@ public class AnimationController {
 			public void windowClosing(WindowEvent e) {
 			}			
 		});
+	}
+
+	private static void controlAnimation() {
+		Window theActiveWindow = null;
+		for (Window window: windowIsActive.keySet()) {
+			if (windowIsActive.get(window)) {
+				if (theActiveWindow == null) {
+					theActiveWindow = window;
+				} else {
+					theActiveWindow = null;
+					break;
+				}
+			}
+		}
+		if (lastActiveWindow == null && theActiveWindow != null) {
+			nothingActiveSince = 0;
+		} else if (lastActiveWindow != null && theActiveWindow == null) {
+			nothingActiveSince = System.currentTimeMillis();
+		}
+		lastActiveWindow = theActiveWindow;
+		boolean stopAll = theActiveWindow == null && nothingActiveSince > 0 && System.currentTimeMillis() - nothingActiveSince > MAX_INACTIVITY;
+		for (Window window: windowControl.keySet()) {
+			windowControl.get(window).setEnabled(!stopAll && (theActiveWindow == null || window.equals(theActiveWindow)));
+		}
 	}
 
 }

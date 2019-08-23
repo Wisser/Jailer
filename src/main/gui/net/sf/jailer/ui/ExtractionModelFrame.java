@@ -57,7 +57,6 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
 
-import net.sf.jailer.CommandLine;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.configuration.Configuration;
@@ -78,6 +77,8 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
+import net.sf.jailer.ui.commandline.CommandLineInstance;
+import net.sf.jailer.ui.commandline.UICommandLine;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.ui.util.AnimationController;
@@ -1987,9 +1988,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
 		try {
 			// create initial data-model files
-			File file = new File(DataModel.getDatamodelFolder(new ExecutionContext(CommandLineInstance.getInstance())));
-			if (!file.exists()) {
-				file.mkdir();
+			if (CommandLineInstance.getInstance().datamodelFolder == null) {
+				File file = new File(DataModel.getDatamodelFolder(CommandLineInstance.createExecutionContext()));
+				if (!file.exists()) {
+					file.mkdir();
+				}
 			}
 		} catch (Exception e) {
 		}
@@ -2023,11 +2026,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				
 				String file = null;
 				try {
-					CommandLine commandLine = CommandLineInstance.getInstance();
+					UICommandLine commandLine = CommandLineInstance.getInstance();
 					if (commandLine.arguments != null) {
 						if (commandLine.arguments.size() > 0) {
 							file = commandLine.arguments.get(0);
-						}	
+						}
 					}
 					createFrame(file, true, null);
 				} catch (Throwable e) {
@@ -2092,7 +2095,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			final String finalFile = file;
 			if (file != null && new File(file).exists()) {
 				if (executionContext == null) {
-					executionContext = new ExecutionContext(CommandLineInstance.getInstance());
+					executionContext = CommandLineInstance.createExecutionContext();
 				} else {
 					executionContext = new ExecutionContext(executionContext);
 				}
@@ -2145,7 +2148,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					}
 					private static final long serialVersionUID = 1L;
 				};
-				dataModelManagerDialog.setVisible(true);
+				dataModelManagerDialog.start();
 			}
 		} catch (Exception e) {
 			UIUtil.showException(null, "Error", e);

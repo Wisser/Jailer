@@ -62,6 +62,7 @@ import net.sf.jailer.JailerVersion;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.Pair;
 
@@ -97,8 +98,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	 */
 	private List<String> baseFolders = new ArrayList<String>();;
 
-	private final ExecutionContext executionContext = new ExecutionContext(CommandLineInstance.getInstance());
-	
+	private final ExecutionContext executionContext = CommandLineInstance.createExecutionContext();
+
 	private DbConnectionDialog dbConnectionDialog;
 	private InfoBar infoBarConnection; 
 	
@@ -578,14 +579,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		if (currentBaseFolder == null || !new File(currentBaseFolder).exists()) {
 			currentBaseFolder = executionContext.getDatamodelFolder();
 		}
-		if (!baseFolders.contains(executionContext.getDatamodelFolder())) {
-			baseFolders.add(0, executionContext.getDatamodelFolder());
+		if (executionContext.getDatamodelFolder() != null) {
+			if (!baseFolders.contains(executionContext.getDatamodelFolder())) {
+				baseFolders.add(0, executionContext.getDatamodelFolder());
+			}
 		}
 		baseFolders.remove(currentBaseFolder);
 		baseFolders.add(0, currentBaseFolder);
 		executionContext.setDatamodelFolder(currentBaseFolder);
 	}
-	
+
 	/**
 	 * This method is called from within the constructor to initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is always
@@ -1088,6 +1091,17 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			dataModelEditor.setVisible(true);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
+		}
+	}
+
+	public void start() {
+		String datamodelFolder = CommandLineInstance.getInstance().datamodelFolder;
+		if (datamodelFolder != null) {
+			executionContext.setDatamodelFolder(new File(datamodelFolder).getParent());
+			executionContext.setCurrentModelSubfolder(new File(datamodelFolder).getName());
+			onSelect(dbConnectionDialog, executionContext);
+		} else {
+			setVisible(true);
 		}
 	}
 

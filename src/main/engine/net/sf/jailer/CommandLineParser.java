@@ -16,14 +16,13 @@
 package net.sf.jailer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
 /**
- * Parser for {@link ExecutionContext}.
+ * Parser for {@link CommandLine}.
  * 
  * @author Ralf Wisser
  */
