@@ -450,6 +450,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	/**
 	 * Parent row, or <code>null</code>.
+	 * 
+	 * TODO obsolete, remove
 	 */
 	Row parentRow;
 
@@ -2755,6 +2757,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		JMenu current = nav;
 		
+		final List<Row> pRows;
+		if (row == null) {
+			pRows = Collections.emptyList();
+		} else {
+			pRows = getSelectedRows(row);
+		}
+		String countCondition = toCondition(pRows);
+
 		int l = 0;
 		for (String name : assList) {
 			if (!name.startsWith(prefix)) {
@@ -2778,23 +2788,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			
 			boolean excludeFromANEmpty = false;
 			for (RowBrowser child: getChildBrowsers()) {
-				if (association == child.association) {
-					if (rowIndex < 0 && child.rowIndex < 0 || rowIndex == child.rowIndex) {
-						item.setFont(new Font(item.getFont().getName(), item.getFont().getStyle() | Font.ITALIC, item.getFont().getSize()));
-						excludeFromANEmpty = true;
-						break;
-					}
+				if (association == child.association &&
+						(child.browserContentPane.getAndConditionText().trim().length() == 0
+						|| child.browserContentPane.getAndConditionText().trim().equals(countCondition))) {
+					item.setFont(new Font(item.getFont().getName(), item.getFont().getStyle() | Font.ITALIC, item.getFont().getSize()));
+					excludeFromANEmpty = true;
+					break;
 				}
 			}
 			
 			final ActionListener itemAction = new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					highlightedRows.add(rowIndex);
 					if (navigateFromAllRows) {
 						navigateTo(association, -1, null);
 					} else {
-						navigateTo(association, rowIndex, row);
+						navigateTo(association, rowIndex, pRows);
 					}
 				}
 			};
@@ -2808,7 +2817,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				getRunnableQueue().add(new RunnableWithPriority() {
 					
 					final int MAX_RC = 1000;
-					
+
+					String andConditionText = getAndConditionText();
+
 					@Override
 					public int getPriority() {
 						return rowCountPriority;
@@ -2822,7 +2833,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							r = rows;
 							key = new Pair<String, Association>("", association);
 						} else {
-							r = Collections.singletonList(row);
+							r = pRows;
 							key = new Pair<String, Association>(row.nonEmptyRowId, association);
 						}
 	
@@ -2834,7 +2845,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						} else {
 							RowCounter rc = new RowCounter(table, association, r, session, rowIdSupport);
 							try {
-								String andConditionText = getAndConditionText();
 								rowCount = rc.countRows(andConditionText, context, MAX_RC + 1, false);
 							} catch (SQLException e) {
 								rowCount = new RowCount(-1, true);
@@ -5373,7 +5383,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return children;
 	}
 
-	protected abstract RowBrowser navigateTo(Association association, int rowIndex, Row row);
+	protected abstract RowBrowser navigateTo(Association association, int rowIndex, List<Row> pRows);
 
 	protected abstract void onContentChange(List<Row> rows, boolean reloadChildren);
 
@@ -5876,6 +5886,49 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 		return value;
+	}
+
+	public List<Row> getSelectedRows(Row additionalRow) {
+		final List<Row> toSelect = new ArrayList<Row>();
+		if (rowsClosure.currentClosureRootID.contains(additionalRow.nonEmptyRowId)) {
+			for (Row r: rows) {
+				if (!r.nonEmptyRowId.isEmpty() && 
+						(rowsClosure.currentClosureRootID.contains(r.nonEmptyRowId) || additionalRow == r)) {
+					toSelect.add(r);
+				}
+			}
+		} else {
+			toSelect.add(additionalRow);
+		}
+		return toSelect;
+	}
+
+	public String toCondition(List<Row> r) {
+		if (r == null) {
+			return "";
+		}
+		StringBuilder sb = new StringBuilder();
+		int neCount = 0;
+		for (Row row: r) {
+			if (row.rowId != null) {
+				neCount++;
+			}
+		}
+		for (Row row: r) {
+			if (row.rowId != null) {
+				if (sb.length() > 0) {
+					sb.append(" or ");
+				}
+				if (neCount > 1) {
+					sb.append("(");
+				}
+				sb.append(row.rowId);
+				if (neCount > 1) {
+					sb.append(")");
+				}
+			}
+		}
+		return sb.toString();
 	}
 
 }
