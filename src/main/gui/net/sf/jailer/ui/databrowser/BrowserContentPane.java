@@ -449,13 +449,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	Table table;
 
 	/**
-	 * Parent row, or <code>null</code>.
-	 * 
-	 * TODO obsolete, remove
-	 */
-	Row parentRow;
-
-	/**
 	 * The data model.
 	 */
 	private final DataModel dataModel;
@@ -502,13 +495,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Number of distinct rows;
 	 */
 	private int noDistinctRows;
-	
-	/**
-	 * Indexes of highlighted rows.
-	 * 
-	 * TODO reduce to navigation with predefined "where"
-	 */
-	Set<Integer> highlightedRows = new HashSet<Integer>();
 
 	/**
 	 * Indexes of primary key columns.
@@ -599,14 +585,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param association
 	 *            {@link Association} with parent row
 	 */
-	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, List<Row> parentRows,
+	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, List<Row> parentRows,
 			final Association association, final Frame parentFrame, RowsClosure rowsClosure,
 			Boolean selectDistinct, boolean reload, ExecutionContext executionContext) {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
 		this.rowIdSupport = new RowIdSupport(dataModel, session.dbms, executionContext);
-		this.parentRow = parentRow;
 		this.parentRows = parentRows;
 		this.association = association;
 		this.rowsClosure = rowsClosure;
@@ -870,9 +855,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color FG2 = new Color(0, 0, 255);
 			final Font font = new JLabel().getFont();
 			final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-			final Font bold = new Font(nonbold.getName(), nonbold.getStyle() | Font.BOLD, nonbold.getSize());
 			final Font italic = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC, nonbold.getSize());
-			final Font italicBold = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC | Font.BOLD, nonbold.getSize());
+//			final Font bold = new Font(nonbold.getName(), nonbold.getStyle() | Font.BOLD, nonbold.getSize());
+//			final Font italicBold = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC | Font.BOLD, nonbold.getSize());
 
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -959,9 +944,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					try {
 						((JLabel) render).setToolTipText(null);
 						if (isNull) {
-							((JLabel) render).setFont(highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? italicBold : italic);
+							((JLabel) render).setFont(
+									// highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? italicBold : 
+									italic);
 						} else {
-							((JLabel) render).setFont(highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? bold : nonbold);
+							((JLabel) render).setFont(
+									// highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? bold : 
+									nonbold);
 							String text = ((JLabel) render).getText();
 							if (text.indexOf('\n') >= 0) {
 								((JLabel) render).setToolTipText(UIUtil.toHTML(text, 200));
@@ -1267,7 +1256,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					@Override
 					public void run() {
 						Point loc = sqlPanel.getLocationOnScreen();
-						popup = createSqlPopupMenu(BrowserContentPane.this.parentRow, 0, (int) loc.getX(), (int) loc.getY(), false, BrowserContentPane.this);
+						popup = createSqlPopupMenu(0, (int) loc.getX(), (int) loc.getY(), false, BrowserContentPane.this);
 						setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-2, false);
 						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 							@Override
@@ -1923,7 +1912,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param forNavTree 
 	 * @param browserContentPane 
 	 */
-	public JPopupMenu createSqlPopupMenu(final Row parentrow, final int rowIndex, final int x, final int y, boolean forNavTree, final Component parentComponent) {
+	public JPopupMenu createSqlPopupMenu(final int rowIndex, final int x, final int y, boolean forNavTree, final Component parentComponent) {
 		JPopupMenu popup = new JPopupMenu();
 		
 		JMenuItem rebase = new JMenuItem("Start Navigation here");
@@ -3027,7 +3016,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		List<Row> pRows = parentRows;
 		if (pRows == null) {
-			pRows = Collections.singletonList(parentRow);
+			pRows = Collections.singletonList(null);
 		} else {
 			pRows = new ArrayList<Row>(pRows);
 		}
@@ -5485,7 +5474,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void updateWhereField() {
 		if (association != null) {
-			if (parentRow == null && parentRows != null && parentRows.size() > 0) {
+			if (parentRows != null && parentRows.size() > 0) {
 				StringBuilder sb = new StringBuilder();
 				for (int i = 0; i < parentRows.size(); ++i) {
 					if (i > 0) {
@@ -5515,7 +5504,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	public void convertToRoot() {
 		association = null;
-		parentRow = null;
 		parentRows = null;
 		rowsClosure.currentClosureRowIDs.clear();
 		adjustGui();

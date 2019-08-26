@@ -847,7 +847,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 UIUtil.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        final BrowserContentPane rb = new ResultContentPane(datamodel.get(), finalResultType, "", session, null, null,
+                        final BrowserContentPane rb = new ResultContentPane(datamodel.get(), finalResultType, "", session, null,
                                 null, null, new RowsClosure(), false, false, executionContext);
                         if (resultTypes != null && resultTypes.size() > 1) {
                             rb.setResultSetType(resultTypes);
@@ -1722,11 +1722,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     class ResultContentPane extends BrowserContentPane {
-        public ResultContentPane(DataModel dataModel, Table table, String condition, Session session, Row parentRow,
+        public ResultContentPane(DataModel dataModel, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
                 RowsClosure rowsClosure, Boolean selectDistinct,
                 boolean reload, ExecutionContext executionContext) {
-            super(dataModel, table, condition, session, parentRow, parentRows, association, parentFrame, 
+            super(dataModel, table, condition, session, parentRows, association, parentFrame, 
             		rowsClosure, selectDistinct, reload, executionContext);
             noSingleRowDetailsView = true;
             rowsTableScrollPane.setWheelScrollingEnabled(true);

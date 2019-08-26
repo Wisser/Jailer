@@ -243,7 +243,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	    	try {
 		    	final int tableNameColumnIndex = 3;
 		    	final Set<String> pkNames = Collections.synchronizedSet(new HashSet<String>());
-		    	final BrowserContentPane rb = new BrowserContentPane(datamodel.get(), null, "", session, null, null,
+		    	final BrowserContentPane rb = new BrowserContentPane(datamodel.get(), null, "", session, null,
 						null, null, new BrowserContentPane.RowsClosure(), false, false, executionContext) {
 		    		{
 		    			noSingleRowDetailsView = true;

@@ -2327,7 +2327,7 @@ public class DataBrowser extends javax.swing.JFrame {
                     navigationTree.setSelectionRow(row);
                     JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
                     if (popup != null) {
-                        JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true, navigationTreeScrollPane);
+                        JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(-1, 0, 0, true, navigationTreeScrollPane);
                         if (popup2.getComponentCount() > 0 && popup.getComponentCount() > 0) {
 	                        // popup.add(new JSeparator());
 	                    }
