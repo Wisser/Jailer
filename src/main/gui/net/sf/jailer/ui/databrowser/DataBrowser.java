@@ -820,7 +820,7 @@ public class DataBrowser extends javax.swing.JFrame {
         UIUtil.fit(this);
         
         if (root != null) {
-            final RowBrowser rb = desktop.addTableBrowser(null, null, 0, root, null, condition, null, null, true);
+            final RowBrowser rb = desktop.addTableBrowser(null, null, root, null, condition, null, null, true);
             if (rb != null && rb.internalFrame != null) {
                 UIUtil.invokeLater(10, new Runnable() {
                     @Override
@@ -2147,7 +2147,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private void openTableButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openTableButtonActionPerformed
     	if (tablesComboBox.getSelectedItem() != null) {
     		String tableName = tablesComboBox.getSelectedItem().toString();
-    		desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
+    		desktop.addTableBrowser(null, null, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
     		switchToDesktop();
     	}
     }//GEN-LAST:event_openTableButtonActionPerformed
@@ -2197,7 +2197,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected void openTableBrowser(Table source, String where) {
 				workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
-	    		desktop.addTableBrowser(null, null, 0, source, null, new BasicFormatterImpl().format(where), null, null, true);
+	    		desktop.addTableBrowser(null, null, source, null, new BasicFormatterImpl().format(where), null, null, true);
 			}
 
 			@Override
@@ -2371,7 +2371,7 @@ public class DataBrowser extends javax.swing.JFrame {
         new NewTableBrowser(this, datamodel.get(), offerAlternatives) {
             @Override
             void openTableBrowser(String tableName) {
-                desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
+                desktop.addTableBrowser(null, null, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
         		switchToDesktop();
            }
 
@@ -3095,7 +3095,7 @@ public class DataBrowser extends javax.swing.JFrame {
             JInternalFrame currentSelection = desktop.getSelectedFrame();
             for (AssociationModel a : selection) {
                 BrowserAssociationModel associationModel = (BrowserAssociationModel) a;
-                desktop.addTableBrowser(associationModel.getRowBrowser(), associationModel.getRowBrowser(), -1, associationModel.getAssociation().destination, associationModel.getAssociation(),
+                desktop.addTableBrowser(associationModel.getRowBrowser(), associationModel.getRowBrowser(), associationModel.getAssociation().destination, associationModel.getAssociation(),
                         "", null, null, true);
             }
             if (currentSelection != null) {
@@ -3516,7 +3516,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							protected void open(Table table) {
 								if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
 									if (workbenchTabbedPane.getSelectedComponent() != getCurrentSQLConsole()) {
-										desktop.addTableBrowser(null, null, 0, table, null, "", null, null, true);
+										desktop.addTableBrowser(null, null, table, null, "", null, null, true);
 									}
 								}
 								try {
