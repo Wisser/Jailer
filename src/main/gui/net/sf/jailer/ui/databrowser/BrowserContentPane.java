@@ -1820,8 +1820,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						openSQLDialog("Insert Row " + rowName, x, y, SQLDMLBuilder.buildInsert(table, toSelect, true, session));
 					}
 				});
-				// TODO toSelect instead of row
-				JMenuItem insertNewRow = createInsertChildMenu(row, x, y);
+				JMenuItem insertNewRow = createInsertChildMenu(toSelect, x, y);
 				sql.add(insertNewRow);
 				JMenuItem delete = new JMenuItem("Delete");
 				sql.add(delete);
@@ -1974,11 +1973,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				public String toString() { return SQLDMLBuilder.buildInsert(table, sortedAndFiltered(rows), false, session); }});
 			}
 		});
-		Row row = null;
-		if (rows != null && rows.size() == 1) {
-			row = rows.get(0);
-		}
-		JMenuItem insertNewRow = createInsertChildMenu(row, x, y);
+		JMenuItem insertNewRow = createInsertChildMenu(sortedAndFiltered(rows), x, y);
 		sqlDml.add(insertNewRow);
 		JMenuItem delete = new JMenuItem("Deletes");
 		sqlDml.add(delete);
@@ -2158,9 +2153,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 
-	private JMenu createInsertChildMenu(Row row, final int x, final int y) {
+	private JMenu createInsertChildMenu(List<Row> parents, final int x, final int y) {
 		JScrollMenu insertNewRow = new JScrollMenu("Insert Child");
-		if (row == null || table == null || table.getName() == null) {
+		if (parents == null || parents.isEmpty() || table == null || table.getName() == null) {
 			insertNewRow.setEnabled(false);
 			return insertNewRow;
 		}
@@ -2177,12 +2172,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		List<Association> assocs = new ArrayList<Association>();
-		Map<Association, Row> children = new HashMap<Association, Row>();
+		Map<Association, List<Row>> children = new HashMap<Association, List<Row>>();
 
 		if (tableAssociations != null) {
 			for (Association association: tableAssociations) {
-				Row child = createNewRow(row, table, association);
-				if (child != null) {
+				List<Row> child = createNewRow(parents, table, association);
+				if (child != null && !child.isEmpty()) {
 					assocs.add(association);
 					children.put(association, child);
 				}
@@ -2207,7 +2202,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			} else {
 				item = new JMenuItem(dName);
 			}
-			final Row child = children.get(association); 
+			final List<Row> child = children.get(association); 
 			item.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -5335,44 +5330,47 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Creates new row. Fills in foreign key.
 	 * 
-	 * @param parentrow row holding the primary key
+	 * @param parents rows holding the primary key
 	 * @param table the table of the new row
 	 * @return new row of table
 	 */
-	private Row createNewRow(Row parentrow, Table table, Association association) {
+	private List<Row> createNewRow(List<Row> parents, Table table, Association association) {
+		List<Row> children = new ArrayList<Row>();
 		try {
-			if (parentrow != null && association != null && !association.isInsertDestinationBeforeSource()) {
-				Map<Column, Column> sToDMap = association.createSourceToDestinationKeyMapping();
-				if (!sToDMap.isEmpty()) {
-					Row row = new Row("", null, new Object[association.destination.getColumns().size()]);
-					for (Map.Entry<Column, Column> e: sToDMap.entrySet()) {
-						int iS = -1;
-						for (int i = 0; i < table.getColumns().size(); ++i) {
-							if (Quoting.equalsIgnoreQuotingAndCase(e.getKey().name, table.getColumns().get(i).name)) {
-								iS = i;
+			if (parents != null && association != null && !association.isInsertDestinationBeforeSource()) {
+				for (Row par: parents) {
+					Map<Column, Column> sToDMap = association.createSourceToDestinationKeyMapping();
+					if (!sToDMap.isEmpty()) {
+						Row row = new Row("", null, new Object[association.destination.getColumns().size()]);
+						for (Map.Entry<Column, Column> e: sToDMap.entrySet()) {
+							int iS = -1;
+							for (int i = 0; i < table.getColumns().size(); ++i) {
+								if (Quoting.equalsIgnoreQuotingAndCase(e.getKey().name, table.getColumns().get(i).name)) {
+									iS = i;
+									break;
+								}
+							}
+							int iD = -1;
+							for (int i = 0; i < association.destination.getColumns().size(); ++i) {
+								if (Quoting.equalsIgnoreQuotingAndCase(e.getValue().name, association.destination.getColumns().get(i).name)) {
+									iD = i;
+									break;
+								}
+							}
+							if (iS >= 0 && iD >= 0) {
+								row.values[iD] = par.values[iS];
+							} else {
 								break;
 							}
 						}
-						int iD = -1;
-						for (int i = 0; i < association.destination.getColumns().size(); ++i) {
-							if (Quoting.equalsIgnoreQuotingAndCase(e.getValue().name, association.destination.getColumns().get(i).name)) {
-								iD = i;
-								break;
-							}
-						}
-						if (iS >= 0 && iD >= 0) {
-							row.values[iD] = parentrow.values[iS];
-						} else {
-							return null;
-						}
+						children.add(row);
 					}
-					return row;
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return null;
+		return children;
 	}
 
 	protected abstract RowBrowser navigateTo(Association association, int rowIndex, Row row);
