@@ -4,7 +4,6 @@ instdir=`dirname $0`
 cd $instdir
  
 LIB=lib
-CP=.:out:out/classes:out/jailer.jar
 
 # JDBC-driver
 # CP=$CP:<jdbc.jar>
