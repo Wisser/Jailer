@@ -102,14 +102,6 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * Creates new context.
-	 */
-	public ExecutionContext(String rawschemamapping, String datamodelFolder) {
-		this.rawschemamapping = rawschemamapping;
-		this.datamodelFolder = datamodelFolder;
-	}
-
-	/**
 	 * If <code>true</code>, Use UTF-8 encoding
 	 *
 	 * @return <code>true</code> if Use UTF-8 encoding
@@ -639,17 +631,22 @@ public class ExecutionContext {
 
 	private Map<String, String> schemaMapping;
 
-	public Map<String, String> getSchemaMapping() {
-		if (schemaMapping == null) {
-			schemaMapping = new HashMap<String, String>();
-			if (rawschemamapping != null) {
-				for (String item: rawschemamapping.split(",")) {
-					String[] fromTo = (" " + item + " ").split("=");
-					if (fromTo.length == 2) {
-						schemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
-					}
+	public static Map<String, String> getSchemaMapping(String rawschemamapping) {
+		Map<String, String> mapping = new HashMap<String, String>();
+		if (rawschemamapping != null) {
+			for (String item: rawschemamapping.split(",")) {
+				String[] fromTo = (" " + item + " ").split("=");
+				if (fromTo.length == 2) {
+					mapping.put(fromTo[0].trim(), fromTo[1].trim());
 				}
 			}
+		}
+		return mapping;
+	}
+	
+	public Map<String, String> getSchemaMapping() {
+		if (schemaMapping == null) {
+			schemaMapping = getSchemaMapping(rawschemamapping);
 		}
 		return schemaMapping;
 	}

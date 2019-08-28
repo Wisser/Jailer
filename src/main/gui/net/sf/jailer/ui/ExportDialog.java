@@ -72,6 +72,7 @@ import net.sf.jailer.util.Quoting;
  *
  * @author Ralf Wisser
  */
+@SuppressWarnings("serial")
 public abstract class ExportDialog extends javax.swing.JDialog {
 
 	/**
@@ -318,14 +319,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 
 			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
-			
+
 			theSettings.restore(settingsContext, settingsContextSecondaryKey);
 			for (JTextField field: defaults.keySet()) {
 				if (field.getText().length() == 0) {
 					field.setText(defaults.get(field));
 				}
 			}
-			
+
+			insert.setText(UIUtil.correctFileSeparator(insert.getText()));
+
 			if (scriptFormat == ScriptFormat.INTRA_DATABASE && insert.getText().trim().length() == 0) {
 				insert.setText("receipt.txt");
 			}
@@ -487,7 +490,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "serial" })
+	@SuppressWarnings({ "unchecked" })
 	private void initIsolationLevel(Session session) {
 		final Map<String, String> levels = new TreeMap<String, String>();
 		levels.put(String.valueOf(Connection.TRANSACTION_READ_COMMITTED), "Read committed");
@@ -524,7 +527,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		});
 	}
 
-	@SuppressWarnings({ "unchecked", "serial" })
+	@SuppressWarnings({ "unchecked" })
 	private void initTargetDBMS(Session session) {
 		if (scriptFormat == ScriptFormat.SQL) {
 			targetDBMSComboBox.setModel(new DefaultComboBoxModel<DBMS>(DBMS.values()));

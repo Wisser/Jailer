@@ -41,10 +41,6 @@ public class CommandLineInstance {
 		return commandLine;
 	}
 
-	public static ExecutionContext createExecutionContext() {
-		return new ExecutionContext(commandLine.rawschemamapping, commandLine.datamodelFolder);
-	}
-
 	/**
 	 * Sets the singleton.
 	 */
@@ -55,6 +51,10 @@ public class CommandLineInstance {
 				commandLine.datamodelFolder = Environment.newFile(commandLine.datamodelFolder).getPath();
 			}
 		}
+	}
+
+	public static void clear() {
+		commandLine = new UICommandLine();
 	}
 
 }

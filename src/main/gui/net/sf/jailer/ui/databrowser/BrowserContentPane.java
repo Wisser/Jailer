@@ -585,6 +585,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param association
 	 *            {@link Association} with parent row
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, List<Row> parentRows,
 			final Association association, final Frame parentFrame, RowsClosure rowsClosure,
 			Boolean selectDistinct, boolean reload, ExecutionContext executionContext) {
@@ -850,7 +851,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG3 = new Color(194, 228, 255);
 			final Color BG3_2 = new Color(184, 220, 255);
 			final Color BG4 = new Color(30, 200, 255);
-			final Color BG4_LIGHT = new Color(30, 200, 255, 50);
+			final Color BG4_LIGHT = new Color(30, 200, 255, 60);
 			final Color FG1 = new Color(155, 0, 0);
 			final Color FG2 = new Color(0, 0, 255);
 			final Font font = new JLabel().getFont();

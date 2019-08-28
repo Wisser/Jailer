@@ -98,16 +98,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	 */
 	private List<String> baseFolders = new ArrayList<String>();;
 
-	private final ExecutionContext executionContext = CommandLineInstance.createExecutionContext();
+	private final ExecutionContext executionContext = new ExecutionContext();
 
 	private DbConnectionDialog dbConnectionDialog;
 	private InfoBar infoBarConnection; 
+	private InfoBar infoBarRecUsedConnection; 
+	private final String tabPropertyName;
 	
 	/** 
 	 * Creates new.
 	 */
-	public DataModelManagerDialog(String applicationName, boolean withLoadJMButton) {
+	public DataModelManagerDialog(String applicationName, boolean withLoadJMButton, String module) {
 		this.applicationName = applicationName;
+		this.tabPropertyName = "DMMDPropTab" + module;
 		initComponents();
 
 		InfoBar infoBar = new InfoBar("Data Model Configuration", 
@@ -126,6 +129,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"\n \n \n",
 				"Select a database to work with.");
 
+		infoBarRecUsedConnection = new InfoBar("Recently used Database Connection", 
+				"Select a recently used connection to the database.\n" +
+				"\n \n \n",
+				"Select a database to work with.");
+
 		if (!withLoadJMButton) {
 			jTabbedPane1.remove(loadJMPanel);
 		}
@@ -136,12 +144,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			infoBar.setIcon(imageIcon);
 			infoBarJM.setIcon(imageIcon);
 			infoBarConnection.setIcon(imageIcon);
+			infoBarRecUsedConnection.setIcon(imageIcon);
 		} catch (Throwable t) {
 			try {
 				ImageIcon imageIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.gif"));
 				setIconImage(imageIcon.getImage());
 				infoBar.setIcon(imageIcon);
 				infoBarConnection.setIcon(imageIcon);
+				infoBarRecUsedConnection.setIcon(imageIcon);
 			} catch (Throwable t2) {
 			}
 		}
@@ -150,7 +160,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		loadModelList();
 		initTableModel();
-		initConnectionDialog();
+		initConnectionDialog(true);
+		initConnectionDialog(false);
 		
 		final TableCellRenderer defaultTableCellRenderer = dataModelsTable
 				.getDefaultRenderer(String.class);
@@ -287,6 +298,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		setSize(Math.max(740, getWidth()), 450);
 		refresh();
 		UIUtil.initPeer();
+
+		try {
+			Object tab = UISettings.restore(tabPropertyName);
+			if (tab instanceof Integer) {
+				jTabbedPane1.setSelectedIndex((Integer) tab);
+			}
+		} catch (Throwable t) {
+			// ignore
+		}
+
 		okButton.grabFocus();
 	}
 
@@ -368,8 +389,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		});
 	}
 
-	private void initConnectionDialog() {
-		dbConnectionDialog = new DbConnectionDialog(null, JailerVersion.APPLICATION_NAME, infoBarConnection, executionContext, false) {
+	private void initConnectionDialog(boolean all) {
+		DbConnectionDialog dialog = new DbConnectionDialog(null, JailerVersion.APPLICATION_NAME, all? infoBarConnection : infoBarRecUsedConnection, executionContext, false, !all) {
 			@Override
 			protected boolean isAssignedToDataModel(String dataModelFolder) {
 				return modelList.contains(dataModelFolder);
@@ -382,21 +403,28 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				} else {
 					DataModelManager.setCurrentModelSubfolder(currentConnection.dataModelFolder, executionContext);
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					onSelect(dbConnectionDialog, executionContext);
+					onSelect(this, executionContext);
+					UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 					DataModelManagerDialog.this.setVisible(false);
 					DataModelManagerDialog.this.dispose();
 				}
 			}
 		};
-		dbConnectionDialog.closeButton.addActionListener(new ActionListener() {
+		dialog.closeButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				close();
 			}
 		});
-		connectionDialogPanel.removeAll();
-		connectionDialogPanel.add(dbConnectionDialog.mainPanel);
+		if (all) {
+			dbConnectionDialog = dialog;
+			connectionDialogPanel.removeAll();
+			connectionDialogPanel.add(dialog.mainPanel);
+		} else {
+			recUsedConnectionDialogPanel.removeAll();
+			recUsedConnectionDialogPanel.add(dialog.mainPanel);
+		}
 	}
 	
 	private void updateLocationComboboxModel() {
@@ -511,7 +539,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				column.setPreferredWidth(width);
 			}
 			refreshButtons();
-			initConnectionDialog();
+			initConnectionDialog(true);
+			initConnectionDialog(false);
 		} finally {
 			inRefresh = false;
 		}
@@ -626,6 +655,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jmCancelButton = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         connectionDialogPanel = new javax.swing.JPanel();
+        jPanel6 = new javax.swing.JPanel();
+        recUsedConnectionDialogPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connect with DB");
@@ -888,6 +919,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Connection", jPanel5);
 
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        recUsedConnectionDialogPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel6.add(recUsedConnectionDialogPanel, gridBagConstraints);
+
+        jTabbedPane1.addTab("Recently used Connection", jPanel6);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1096,7 +1140,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	public void start() {
 		String datamodelFolder = CommandLineInstance.getInstance().datamodelFolder;
-		if (datamodelFolder != null) {
+		if (datamodelFolder != null && CommandLineInstance.getInstance().arguments.isEmpty()) {
 			executionContext.setDatamodelFolder(new File(datamodelFolder).getParent());
 			executionContext.setCurrentModelSubfolder(new File(datamodelFolder).getName());
 			onSelect(dbConnectionDialog, executionContext);
@@ -1117,6 +1161,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		try {
 			store();
 			onSelect(null, executionContext);
+			UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
@@ -1145,6 +1190,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
@@ -1157,6 +1203,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JComboBox locationComboBox;
     private javax.swing.JButton newButton;
     private javax.swing.JButton okButton;
+    private javax.swing.JPanel recUsedConnectionDialogPanel;
     // End of variables declaration//GEN-END:variables
 
 	private static final long serialVersionUID = -3983034803834547687L;

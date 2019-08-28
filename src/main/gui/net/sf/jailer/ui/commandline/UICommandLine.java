@@ -58,6 +58,12 @@ public class UICommandLine {
 	@Option(name="-password", usage="Database password.")
 	public String password = null;
 	
+	@Option(name="-bookmark", usage="Bookmark to open.")
+	public String bookmark = null;
+
+	@Option(name="-", usage="do not interpret the next word as an option, even if it begins with '-'. For example, if the username is \"-abc\", use \"- -abc\".")
+	public List<String> escapedWords = new ArrayList<String>();
+
 	@Argument
 	public List<String> arguments = new ArrayList<String>();
 

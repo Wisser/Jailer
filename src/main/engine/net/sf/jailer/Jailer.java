@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.sql.DataSource;
 
@@ -87,16 +88,18 @@ public class Jailer {
 	 * @param args arguments
 	 */
 	public static void main(String[] args) {
-		final Thread mainThread = Thread.currentThread();
+		final AtomicBoolean cleanUpFinished = new AtomicBoolean(false);
 		Thread shutdownHook;
 		Runtime.getRuntime().addShutdownHook(shutdownHook = new Thread("shutdown-hook") {
 			@Override
 			public void run() {
 				CancellationHandler.cancel(null);
-				try {
-					mainThread.join();
-				} catch (InterruptedException e) {
-					// ignore
+				while (!cleanUpFinished.get()) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		});
@@ -126,6 +129,7 @@ public class Jailer {
 				// ignore
 			}
 		}
+		cleanUpFinished.set(true);
 		if (!ok) {
 			System.exit(1);
 		}

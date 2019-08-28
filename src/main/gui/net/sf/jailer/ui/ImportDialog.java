@@ -130,7 +130,7 @@ public class ImportDialog extends javax.swing.JDialog {
 				.startsWith("windows")) {
 			cmd = "jailer.bat";
 		}
-		cliArea.setText(cmd + UIUtil.createPlainCLIArguments(user, password, args));
+		cliArea.setText(cmd + UIUtil.createPlainCLIArguments(user, password, args, true));
 		cliArea.setCaretPosition(0);
 		jScrollPane1.getViewport().setViewPosition(new Point(0, 0));
 	}

@@ -64,8 +64,14 @@ public class UICommandLineParser {
 				}
 			}
 			commandLine.arguments = escapedWords;
-			if (commandLine.arguments.size() > 1 || (commandLine.arguments.size() != 0 && !commandLine.arguments.get(0).toLowerCase().endsWith(".jm"))) {
-				throw new RuntimeException("Illegal arguments");
+			if (commandLine.arguments.size() > 1) {
+				throw new RuntimeException("Illegal arguments " + commandLine.arguments);
+			}
+			if (commandLine.arguments.size() == 1 && !commandLine.arguments.get(0).toLowerCase().endsWith(".jm")) {
+				throw new RuntimeException("'" + commandLine.arguments.get(0) + "' is not a valid extraction model file.");
+			}
+			if (commandLine.datamodelFolder == null && commandLine.arguments.isEmpty()) {
+				commandLine.url = null;
 			}
 			return commandLine;
 		} catch (Exception e) {
@@ -86,8 +92,9 @@ public class UICommandLineParser {
 		out.println("    Starts the Extraction Model Editor with default database connection and/or data model.\n" + 
 						   "    Loads the possibly specified extraction model.");
 		out.println();
-		out.println("  jailerDataBrowser.(sh|bat) [-jdbcjar <jdbc-jar>] [-datamodel <data model>] [-driver driver class name] [-url <jdbc-url>] [-user <db-user>] [-password <db-password>] [-schemamapping <mapping>]");
+		out.println("  jailerDataBrowser.(sh|bat) -datamodel <data model> [-jdbcjar <jdbc-jar>] [-driver driver class name] [-url <jdbc-url>] [-user <db-user>] [-password <db-password>] [-schemamapping <mapping>] [-bookmark <name>]");
 		out.println("    Starts the Data Browser with default database connection and/or data model.\n");
+		out.println("    Opens a bookmark (If the -bookmark option is specified).\n");
 		out.println();
 		out.println("options:");
 		CmdLineParser cmdLineParser = new CmdLineParser(new UICommandLine());

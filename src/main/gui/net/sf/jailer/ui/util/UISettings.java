@@ -21,7 +21,6 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +47,11 @@ public class UISettings  {
 	 * Name of property holding the "recent files".
 	 */
 	public static final String RECENT_FILES = "RECENT_FILES";
+
+	/**
+	 * Name of property holding the "recent connection aliases".
+	 */
+	public static final String RECENT_ALIASES = "RECENT_ALIASES";
 
 	/**
 	 * Persistent properties.
@@ -173,7 +177,7 @@ public class UISettings  {
 	public static List<File> loadRecentFiles() {
 		Object files = restore(RECENT_FILES);
 		List<File> result = new ArrayList<File>();
-		if (files instanceof Collection) {
+		if (files instanceof List) {
 			for (File file: (List<File>) files) {
 				if (!isSbeModel(file) && !Configuration.getInstance().isTempFile(file)) {
 					result.add(file);
@@ -195,4 +199,28 @@ public class UISettings  {
 			store(RECENT_FILES, files);
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	public static List<String> loadRecentConnectionAliases() {
+		Object files = restore(RECENT_ALIASES);
+		List<String> result = new ArrayList<String>();
+		if (files instanceof List) {
+			for (String alias: (List<String>) files) {
+				result.add(alias);
+			}
+		}
+		return result;
+	}
+	
+	public static void addRecentConnectionAliases(String alias) {
+		final int MAX_ALIASES = 100;
+		List<String> aliases = loadRecentConnectionAliases();
+		aliases.remove(alias);
+		aliases.add(0, alias);
+		if (MAX_ALIASES < aliases.size()) {
+			aliases.remove(aliases.size() - 1);
+		}
+		store(RECENT_ALIASES, aliases);
+	}
+
 }

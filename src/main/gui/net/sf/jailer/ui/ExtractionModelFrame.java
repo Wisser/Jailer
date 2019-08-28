@@ -196,6 +196,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		} else {
 			dbConnectionDialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, null, executionContext);
 		}
+        dbConnectionDialog.autoConnect();
 
 		updateMenuItems();
 
@@ -368,6 +369,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         queryBuilder = new javax.swing.JMenuItem();
         cycleView = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
+        createCLIItem = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         horizontalLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         jMenu4 = new javax.swing.JMenu();
@@ -801,6 +803,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu3.add(renderHtml);
 
+        createCLIItem.setText("Show Command Line");
+        createCLIItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createCLIItemActionPerformed(evt);
+            }
+        });
+        jMenu3.add(createCLIItem);
+
         jMenuBar2.add(jMenu3);
 
         jMenu5.setText("Settings");
@@ -1088,7 +1098,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			DataBrowser dataBrowser;
 			try {
 				UIUtil.setWaitCursor(this);
-				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, true, executionContext);
+				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, null, true, executionContext);
 				if (dataBrowser.isReady()) {
 					dataBrowser.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 					dataBrowser.setExtendedState(Frame.MAXIMIZED_BOTH);
@@ -1882,6 +1892,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		} 
     }//GEN-LAST:event_checkPKMenuItemActionPerformed
 
+    private void createCLIItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createCLIItemActionPerformed
+		new CLIPanel(dbConnectionDialog, false, extractionModelEditor.extractionModelFile, null, null, null, executionContext).open(this);;
+    }//GEN-LAST:event_createCLIItemActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -1989,7 +2003,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		try {
 			// create initial data-model files
 			if (CommandLineInstance.getInstance().datamodelFolder == null) {
-				File file = new File(DataModel.getDatamodelFolder(CommandLineInstance.createExecutionContext()));
+				File file = new File(DataModel.getDatamodelFolder(new ExecutionContext()));
 				if (!file.exists()) {
 					file.mkdir();
 				}
@@ -2036,9 +2050,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				} catch (Throwable e) {
 					e.printStackTrace();
 					UIUtil.showException(null, "Error", e);
+					UIUtil.checkTermination();
 				}
 			}
-
 		});
 	}
 	
@@ -2093,16 +2107,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	public static void createFrame(String file, final boolean withStartupWizzard, ExecutionContext executionContext) {
 		try {
 			final String finalFile = file;
-			if (file != null && new File(file).exists()) {
+			if (file != null) {
 				if (executionContext == null) {
-					executionContext = CommandLineInstance.createExecutionContext();
+					executionContext = new ExecutionContext();
 				} else {
 					executionContext = new ExecutionContext(executionContext);
 				}
 				DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file, executionContext), executionContext);
 				createFrame(finalFile, true, true, null, executionContext);
 			} else {
-				DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + " - Database Subsetting Tool", true) {
+				DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + " - Database Subsetting Tool", true, "S") {
 					@Override
 					protected void onLoadExtractionmodel(String modelFile, ExecutionContext executionContext) {
 						createFrame(modelFile, false, executionContext);
@@ -2112,6 +2126,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						ExtractionModelFrame extractionModelFrame = null;
 						try {
 							extractionModelFrame = createFrame(null, true, true, connectionDialog, executionContext);
+							CommandLineInstance.clear();
 							final ExtractionModelFrame finalExtractionModelFrame = extractionModelFrame;
 							UIUtil.invokeLater(new Runnable() {
 								@SuppressWarnings("serial")
@@ -2144,6 +2159,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							});
 						} catch (Exception e) {
 							UIUtil.showException(extractionModelFrame, "Error", e);
+							UIUtil.checkTermination();
 						}
 					}
 					private static final long serialVersionUID = 1L;
@@ -2152,6 +2168,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			}
 		} catch (Exception e) {
 			UIUtil.showException(null, "Error", e);
+			UIUtil.checkTermination();
 		}
 	}
 
@@ -2192,6 +2209,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JMenuItem columnOrderItem;
     private javax.swing.JCheckBoxMenuItem connectDb;
+    private javax.swing.JMenuItem createCLIItem;
     private javax.swing.JMenuItem cycleView;
     private javax.swing.JMenuItem dataExport;
     private javax.swing.JMenuItem dataImport;

@@ -121,6 +121,7 @@ import net.sf.jailer.ui.AssociationListUI.AssociationModel;
 import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.BrowserLauncher;
+import net.sf.jailer.ui.CLIPanel;
 import net.sf.jailer.ui.ColumnOrderEditor;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DataModelManager;
@@ -221,7 +222,7 @@ public class DataBrowser extends javax.swing.JFrame {
      * @param dbConnectionDialog
      *            DB-connection dialog
      */
-    public DataBrowser(final DataModel datamodel, final Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded, final ExecutionContext executionContext) throws Exception {
+    public DataBrowser(final DataModel datamodel, final Table root, String condition, DbConnectionDialog dbConnectionDialog, Map<String, String> schemaMapping, boolean embedded, final ExecutionContext executionContext) throws Exception {
         this.executionContext = executionContext;
         this.datamodel = new Reference<DataModel>(datamodel);
         this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext) : null;
@@ -551,7 +552,7 @@ public class DataBrowser extends javax.swing.JFrame {
             	return;
             }
         }
-        desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog, anchorManager, executionContext) {
+        desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog, schemaMapping == null? new HashMap<String, String>() : schemaMapping, anchorManager, executionContext) {
             @Override
             public void openSchemaAnalyzer() {
                 updateDataModel();
@@ -1180,8 +1181,8 @@ public class DataBrowser extends javax.swing.JFrame {
         dataImport = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JPopupMenu.Separator();
         createExtractionModelMenuItem = new javax.swing.JMenuItem();
-        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         consistencyCheckMenuItem = new javax.swing.JMenuItem();
+        createCLIItem = new javax.swing.JMenuItem();
         menuWindow = new javax.swing.JMenu();
         layoutMenuItem = new javax.swing.JMenuItem();
         autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
@@ -1936,7 +1937,6 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu2.add(createExtractionModelMenuItem);
-        jMenu2.add(jSeparator3);
 
         consistencyCheckMenuItem.setText("Check Consistency");
         consistencyCheckMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1945,6 +1945,14 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu2.add(consistencyCheckMenuItem);
+
+        createCLIItem.setText("Show Command Line");
+        createCLIItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createCLIItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(createCLIItem);
 
         menuBar.add(jMenu2);
 
@@ -2462,7 +2470,7 @@ public class DataBrowser extends javax.swing.JFrame {
         try {
             // create initial data-model files
         	if (CommandLineInstance.getInstance().datamodelFolder == null) {
-        		File file = new File(DataModel.getDatamodelFolder(CommandLineInstance.createExecutionContext()));
+        		File file = new File(DataModel.getDatamodelFolder(new ExecutionContext()));
         		if (!file.exists()) {
         			file.mkdir();
         		}
@@ -2505,11 +2513,8 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize, ExecutionContext executionContext, DataBrowser theDataBrowser) throws Exception {
-        final DataBrowser dataBrowser = theDataBrowser != null? theDataBrowser : new DataBrowser(datamodel, null, "", null, false, executionContext);
+        final DataBrowser dataBrowser = theDataBrowser != null? theDataBrowser : new DataBrowser(datamodel, null, "", null, ExecutionContext.getSchemaMapping(CommandLineInstance.getInstance().rawschemamapping), false, executionContext);
         dataBrowser.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-//		if (maximize) {
-//			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
-//		}
         dataBrowser.setVisible(true);
         dataBrowser.setExtendedState(Frame.MAXIMIZED_BOTH);
 
@@ -2518,6 +2523,7 @@ public class DataBrowser extends javax.swing.JFrame {
         } else {
             dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
         }
+        dbConnectionDialog.autoConnect();
         if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
     		dataBrowser.setConnection(dbConnectionDialog);
             if (dataBrowser.session != null) {
@@ -2532,11 +2538,18 @@ public class DataBrowser extends javax.swing.JFrame {
             	dataBrowser.dbConnectionDialog = dbConnectionDialog;
             }
             dataBrowser.dispose();
+            return dataBrowser;
         }
+        String bmName = CommandLineInstance.getInstance().bookmark;
+		final File bmFile = BookmarksPanel.getBookmarksFile(bmName, dataBrowser.executionContext);
         UIUtil.invokeLater(3, new Runnable() {
 			@Override
 			public void run() {
 		        dataBrowser.toFront();
+		        if (bmFile != null) {
+		        	dataBrowser.desktop.restoreSession(null, bmFile);
+		     		BookmarksPanel.setLastUsedBookmark(bmFile.getName(), dataBrowser.executionContext);
+		        }
 			}
 		});
         return dataBrowser;
@@ -2544,18 +2557,19 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private static void createFrame() {
         DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(DataBrowserContext.getAppName(true)
-                + " - Relational Data Browser", false) {
+                + " - Relational Data Browser", false, "B") {
             @Override
             protected void onSelect(final DbConnectionDialog connectionDialog, final ExecutionContext executionContext) {
                 try {
                     final DataModel datamodel;
                     datamodel = new DataModel(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, true, null);;
-                	final DataBrowser databrowser = new DataBrowser(datamodel, null, "", null, false, executionContext);
+                	final DataBrowser databrowser = new DataBrowser(datamodel, null, "", null, ExecutionContext.getSchemaMapping(CommandLineInstance.getInstance().rawschemamapping), false, executionContext);
                     UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 			                try {
 								openNewDataBrowser(datamodel, connectionDialog, true, executionContext, databrowser);
+								CommandLineInstance.clear();
 			                } catch (Exception e) {
 			                    UIUtil.showException(null, "Error", e);
 			                }
@@ -2563,6 +2577,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					});
                 } catch (Exception e) {
                     UIUtil.showException(null, "Error", e);
+                    UIUtil.checkTermination();
                 }
             }
 			@Override
@@ -2668,6 +2683,7 @@ public class DataBrowser extends javax.swing.JFrame {
     public javax.swing.JLabel connectivityState;
     private javax.swing.JMenuItem consistencyCheckMenuItem;
     private javax.swing.JPanel consoleDummyPanel;
+    private javax.swing.JMenuItem createCLIItem;
     private javax.swing.JMenuItem createExtractionModelMenuItem;
     private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem dataModelEditorjMenuItem;
@@ -2732,7 +2748,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator14;
     private javax.swing.JPopupMenu.Separator jSeparator15;
     private javax.swing.JPopupMenu.Separator jSeparator2;
-    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
@@ -3965,6 +3980,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 //    private static final String AUTOLAYOUT_SETTINGS_FILE = ".autolayout";
     
+	// TODO remove
 	private boolean inAutoLayoutMode() {
 		return true;
 //		File file = Environment.newFile(AUTOLAYOUT_SETTINGS_FILE);
@@ -3982,6 +3998,7 @@ public class DataBrowser extends javax.swing.JFrame {
 //		}
 	}
 
+	// TODO remove
 	private void setAutoLayoutMode(boolean selected) {
 //		try {
 //			File file = Environment.newFile(AUTOLAYOUT_SETTINGS_FILE);
@@ -4044,6 +4061,36 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
     }//GEN-LAST:event_refreshButtonActionPerformed
+
+    private void createCLIItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createCLIItemActionPerformed
+    	StringBuilder mapping = new StringBuilder();
+		for (String schema: desktop.schemaMapping.keySet()) {
+			String to = desktop.schemaMapping.get(schema).trim();
+			if (!schema.equals(to)) {
+				if (mapping.length() > 0) {
+					mapping.append(",");
+				}
+				mapping.append(schema + "=" + to);
+			}
+		}
+    	String bookmark = BookmarksPanel.getLastUsedBookmark(executionContext);
+    	if (bookmark != null) {
+    		bookmark = bookmarkName(bookmark);
+    	}
+		List<String> bookmarks = new ArrayList<String>();
+		for (StringBuilder sb: BookmarksPanel.loadBookmarks(executionContext)) {
+			bookmarks.add(bookmarkName(sb.toString()));
+		}
+		new CLIPanel(dbConnectionDialog, true, null, mapping.toString(), bookmarks, bookmark, executionContext).open(this);
+    }//GEN-LAST:event_createCLIItemActionPerformed
+
+    private String bookmarkName(String bookmarkFileName) {
+		if (bookmarkFileName.endsWith(BookmarksPanel.BOOKMARKFILE_EXTENSION)) {
+			return bookmarkFileName.substring(0, bookmarkFileName.length() - BookmarksPanel.BOOKMARKFILE_EXTENSION.length());
+		} else {
+			return bookmarkFileName;
+		}
+	}
 
 	private MetaDataDetailsPanel metaDataDetailsPanel;
 	private List<SQLConsoleWithTitle> sqlConsoles = new ArrayList<SQLConsoleWithTitle>();

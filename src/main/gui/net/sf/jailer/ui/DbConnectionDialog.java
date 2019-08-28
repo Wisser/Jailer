@@ -17,7 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Window;
@@ -59,6 +58,8 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.ui.commandline.CommandLineInstance;
+import net.sf.jailer.ui.commandline.UICommandLine;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.ClasspathUtil;
@@ -185,6 +186,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private final InfoBar infoBar;
 	private final String currentModelSubfolder;
 	private final boolean dataModelAware;
+	private final boolean showOnlyRecentyUsedConnections;
 	
 	/** Creates new form DbConnectionDialog */
 	public DbConnectionDialog(Window parent, DbConnectionDialog other, String applicationName, ExecutionContext executionContext) {
@@ -206,15 +208,16 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * @param applicationName application name. Used to create the name of the demo database alias. 
 	 */
 	public DbConnectionDialog(Window parent, String applicationName, InfoBar infoBar, ExecutionContext executionContext) {
-		this(parent, applicationName, infoBar, executionContext, true);
+		this(parent, applicationName, infoBar, executionContext, true, false);
 	}
 	
 	/** 
 	 * Creates new form DbConnectionDialog
 	 * 
 	 * @param applicationName application name. Used to create the name of the demo database alias. 
+	 * @param showOnlyRecentyUsedConnections 
 	 */
-	public DbConnectionDialog(Window parent, String applicationName, InfoBar infoBar, ExecutionContext executionContext, boolean dataModelAware) {
+	public DbConnectionDialog(Window parent, String applicationName, InfoBar infoBar, ExecutionContext executionContext, boolean dataModelAware, boolean showOnlyRecentyUsedConnections) {
 		super(parent);
 		setModal(true);
 		this.executionContext = executionContext;
@@ -222,7 +225,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		this.infoBar = infoBar;
 		this.currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 		this.dataModelAware = dataModelAware;
-		loadConnectionList();
+		this.showOnlyRecentyUsedConnections = showOnlyRecentyUsedConnections;
+		loadConnectionList(showOnlyRecentyUsedConnections);
 		initComponents();
 		connectionsTable.setAutoCreateRowSorter(true);
 
@@ -236,6 +240,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		
 		newButton.setVisible(dataModelAware);
 		copy.setVisible(dataModelAware);
+		
+		if (showOnlyRecentyUsedConnections) {
+			editButton.setVisible(false);
+			deleteButton.setVisible(false);
+		}
 		
 		int i;
 		initTableModel();
@@ -438,6 +447,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * Stores the connections into the CONNECTIONS_FILE.
 	 */
 	private void store() {
+		if (showOnlyRecentyUsedConnections) {
+			return;
+		}
 		try {
 			File file = Environment.newFile(CONNECTIONS_FILE);
 			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
@@ -456,9 +468,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	
 	/**
 	 * Loads connection list.
+	 * @param showOnlyRecentyUsedConnections 
 	 */
 	@SuppressWarnings("unchecked")
-	private void loadConnectionList() {
+	private void loadConnectionList(boolean showOnlyRecentyUsedConnections) {
 		connectionList = new ArrayList<ConnectionInfo>();
 		currentConnection = null;
 		boolean ok = false;
@@ -487,6 +500,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						if (connectionInfo.jar4 == null) {
 							connectionInfo.jar4 = "";
 						}
+						connectionInfo.jar1 = UIUtil.correctFileSeparator(connectionInfo.jar1);
+						connectionInfo.jar2 = UIUtil.correctFileSeparator(connectionInfo.jar2);
+						connectionInfo.jar3 = UIUtil.correctFileSeparator(connectionInfo.jar3);
+						connectionInfo.jar4 = UIUtil.correctFileSeparator(connectionInfo.jar4);
 					}
 					preV4 = false;
 				} catch (Throwable t) {
@@ -555,10 +572,26 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			connectionList.add(ci);
 			store();
 		}
+		sortConnectionList();
+		
+		if (showOnlyRecentyUsedConnections) {
+			List<ConnectionInfo> recUsedConnectionList = new ArrayList<ConnectionInfo>();
+			
+			for (String alias: UISettings.loadRecentConnectionAliases()) {
+				for (ConnectionInfo ci: connectionList) {
+					if (ci.alias != null && ci.alias.equals(alias)) {
+						recUsedConnectionList.add(ci);
+						break;
+					}
+				}
+			}
+			
+			connectionList = recUsedConnectionList;
+		}
+
 		if (connectionList.size() == 1) {
 			currentConnection = connectionList.get(0);
 		}
-		sortConnectionList();
 	}
 
 	private void sortConnectionList() {
@@ -925,6 +958,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			if (testConnection(mainPanel, currentConnection)) {
 				isConnected = true;
 				onConnect(currentConnection);
+				if (currentConnection.alias != null && !"".equals(currentConnection.alias)) {
+					UISettings.addRecentConnectionAliases(currentConnection.alias);
+				}
 			}
 		} finally {
 			UIUtil.resetWaitCursor(root);
@@ -1139,7 +1175,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	private boolean isAssignedToDataModel(int row) {
-		if (row >= connectionList.size()) {
+		if (row < 0 || row >= connectionList.size()) {
 			return false;
 		}
 		String rowFN = connectionList.get(row).dataModelFolder;
@@ -1173,7 +1209,35 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         }
         return scaledWarnIcon;
     }
-    
+
+    /**
+     * Try to automatically connect to the db specified via CLI.
+     */
+	public void autoConnect() {
+		ConnectionInfo ci = new ConnectionInfo();
+		UICommandLine cli = CommandLineInstance.getInstance();
+		
+		ci.alias = cli.url;
+		ci.dataModelFolder = cli.datamodelFolder;
+		ci.driverClass = cli.driver;
+		ci.jar1 = cli.jdbcjar != null? cli.jdbcjar : "";
+		ci.jar2 = cli.jdbcjar2 != null? cli.jdbcjar2 : "";;
+		ci.jar3 = cli.jdbcjar3 != null? cli.jdbcjar3 : "";;
+		ci.jar4 = cli.jdbcjar4 != null? cli.jdbcjar4 : "";;
+		ci.url = cli.url;
+		ci.user = cli.user;
+		ci.password = cli.password;
+		
+		if (ci.driverClass != null
+				&& ci.url != null
+				&& ci.user != null) {
+			if (testConnection(parent, ci)) {
+				currentConnection = ci;
+				isConnected = true;
+			}
+		}
+	}
+
     // TODO: allow more than 4 jars
 
     private static ImageIcon warnIcon;

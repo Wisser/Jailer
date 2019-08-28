@@ -101,11 +101,13 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.RestrictionDefinition;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
@@ -260,7 +262,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		boolean isNew;
 		if (extractionModelFile == null || !new File(extractionModelFile).exists()) {
 			needsSave = extractionModelFile != null;
-			dataModel = new DataModel(executionContext);
+			dataModel = new DataModel(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, CommandLineInstance.getInstance().datamodelFolder != null, null);
 			extractionModel = new ExtractionModel(dataModel, executionContext);
 			executionContext.getLayoutStorage().removeAll();
 			isNew = true;

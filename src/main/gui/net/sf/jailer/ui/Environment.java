@@ -15,6 +15,9 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.AWTEvent;
+import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,6 +28,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Locale;
 import java.util.Random;
+
+import javax.swing.JOptionPane;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.render.HtmlDataModelRenderer;
@@ -42,6 +47,7 @@ public class Environment {
 	public static Locale initialLocal = Locale.ENGLISH;
 
 	public static void init() {
+		initUI();
 		String osName = System.getProperty("os.name");
 		if (osName != null) {
 			if (osName.toLowerCase().contains("mac os")) {
@@ -91,6 +97,30 @@ public class Environment {
 				+ (!testCreateTempFile() ? 8 : 0)
 				+ stateOffset;
 		AWTWatchdog.start();
+	}
+
+	private static void initUI() {
+		try {
+			EventQueue queue = Toolkit.getDefaultToolkit().getSystemEventQueue();
+			queue.push(new EventQueue() {
+				boolean active = true;
+				@Override
+				protected void dispatchEvent(AWTEvent newEvent) {
+			        try {
+			            super.dispatchEvent(newEvent);
+			        } catch (Throwable t) {
+			            if (active) {
+			            	active = false;
+			            	UIUtil.showException(null, "Error", t);
+			            } else {
+			            	throw t;
+			            }
+			        }
+			    }
+			});
+		} catch (Throwable t) {
+			// ignore
+		}
 	}
 
 	private static boolean copyIfNotExists(String f) throws IOException {

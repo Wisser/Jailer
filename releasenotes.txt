@@ -1,4 +1,10 @@
-8.8.3
+8.8.5
+  - https://github.com/Wisser/Jailer/issues/14
+    "[new feature] add command line options to bypass the data model selection dialog"
+  - https://github.com/Wisser/Jailer/issues/13
+    "Multiple table selection"
+
+8.8.4
   - Fixed a bug that caused a Liquibase export not to work for Postgres TEXT columns.
   - SQL Console didn't work with SQLite.
   - Improved validation of CLI arguments.

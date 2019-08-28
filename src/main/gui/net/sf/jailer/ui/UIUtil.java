@@ -54,6 +54,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.Files;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -621,14 +622,14 @@ public class UIUtil {
     public static StringBuffer createCLIArgumentString(String user, String password, List<String> args, ExecutionContext executionContext) {
         args.add("-datamodel");
         args.add(executionContext.getQualifiedDatamodelFolder());
-        return createPlainCLIArguments(user, password, args);
+        return createPlainCLIArguments(user, password, args, true);
     }
 
-    public static StringBuffer createPlainCLIArguments(String user, String password, List<String> args) {
+    public static StringBuffer createPlainCLIArguments(String user, String password, List<String> args, boolean escMinus) {
         final StringBuffer arglist = new StringBuffer();
         int pwi = -1;
         for (int i = args.size() - 1; i >= 0; --i) {
-            if (args.get(i) != null && args.get(i).equals(password) && password.length() > 0) {
+            if (args.get(i) != null && password != null && args.get(i).equals(password) && password.length() > 0) {
                 pwi = i;
                 break;
             }
@@ -636,9 +637,9 @@ public class UIUtil {
         for (int i = 0; i < args.size(); ++i) {
             String arg = args.get(i);
             if (i == pwi) {
-                arglist.append(" - \"<password>\"");
+                arglist.append((escMinus? " -" : "") + " \"<password>\"");
             } else {
-                if (arg.startsWith("-") && arg.equals(user)) {
+                if (escMinus && arg.startsWith("-") && user != null && arg.equals(user)) {
                 	arglist.append(" -");
                 }
                 if ("".equals(arg) || arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*")
@@ -1243,8 +1244,19 @@ public class UIUtil {
 		return NumberFormat.getInstance().format(number);
 	}
 
+	public static String correctFileSeparator(String fileName) {
+		if (fileName == null) {
+			return null;
+		}
+		if (File.separatorChar == '/') {
+			return fileName.replace('\\', File.separatorChar);
+		} else {
+			return fileName;
+		}
+	}
+
 	private static Font defaultFont = null;
-	
+
 	public static Font defaultTitleFont() {
 		if (defaultFont == null) {
 			defaultFont = new JLabel().getFont();

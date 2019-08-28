@@ -16,6 +16,7 @@
 package net.sf.jailer.extractionmodel;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -445,13 +446,17 @@ public class ExtractionModel {
 	}
 
 	public static String loadDatamodelFolder(String fileName, ExecutionContext executionContext) throws IOException {
-		List<CsvFile.Line> dmf = new CsvFile(new File(fileName), "datamodelfolder").getLines();
+		File csvFile = new File(fileName);
+		if (!csvFile.exists()) {
+			throw new FileNotFoundException("'" + fileName + "' does not exist");
+		}
+		List<CsvFile.Line> dmf = new CsvFile(csvFile, "datamodelfolder").getLines();
 		if (dmf.size() > 0) {
 			return dmf.get(0).cells.get(0);
 		}
-		List<CsvFile.Line> csv = new CsvFile(new File(fileName), "export modus").getLines();
+		List<CsvFile.Line> csv = new CsvFile(csvFile, "export modus").getLines();
 		if (csv.isEmpty()) {
-			throw new RuntimeException(fileName + "' is not a valid Jailer extraction model");
+			throw new RuntimeException("'" + fileName + "' is not a valid Jailer extraction model");
 		}
 		return null;
 	}

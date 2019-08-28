@@ -163,7 +163,7 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * Schema mapping.
 	 */
-	public final Map<String, String> schemaMapping = new TreeMap<String, String>();
+	public final Map<String, String> schemaMapping;
 
 	/**
 	 * DB session.
@@ -201,7 +201,7 @@ public abstract class Desktop extends JDesktopPane {
 	 *            DB-session
 	 * @param anchorManager 
 	 */
-	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, DataBrowser parentFrame, DbConnectionDialog dbConnectionDialog, DesktopAnchorManager anchorManager, ExecutionContext executionContext) {
+	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, DataBrowser parentFrame, DbConnectionDialog dbConnectionDialog, Map<String, String> schemaMapping, DesktopAnchorManager anchorManager, ExecutionContext executionContext) {
 		this.executionContext = executionContext;
 		this.anchorManager = anchorManager;
 		this.parentFrame = parentFrame;
@@ -209,6 +209,7 @@ public abstract class Desktop extends JDesktopPane {
 		this.jailerIcon = jailerIcon;
 		this.queryBuilderDialog = new QueryBuilderDialog(parentFrame);
 		this.dbConnectionDialog = dbConnectionDialog;
+		this.schemaMapping = schemaMapping;
 
 		this.desktopAnimation = new DesktopAnimation(this);
 		
@@ -633,7 +634,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected RowBrowser navigateTo(Association association, int rowIndex, List<Row> pRows) {  // TODO
+			protected RowBrowser navigateTo(Association association, int rowIndex, List<Row> pRows) {  // TODO remove rowIndex
 				return addTableBrowser(tableBrowser, tableBrowser, association.destination, association, toCondition(pRows), null, null, true);
 			}
 
@@ -2745,7 +2746,7 @@ public abstract class Desktop extends JDesktopPane {
 				SchemaMappingDialog schemaMappingDialog = new SchemaMappingDialog(parentFrame, datamodel.get(), dbConnectionDialog, session, mapping, executionContext);
 				mapping = schemaMappingDialog.getMapping();
 			}
-			if (mapping != null) {
+			if (mapping != null && !mapping.isEmpty()) {
 				SchemaMappingDialog.store(mapping, dbConnectionDialog);
 				schemaMapping.clear();
 				schemaMapping.putAll(mapping);
@@ -2856,7 +2857,7 @@ public abstract class Desktop extends JDesktopPane {
 		String sFile;
 		
 		if (bookmarksPanel != null) {
-			File startDir = bookmarksPanel.getBookmarksFolder();
+			File startDir = BookmarksPanel.getBookmarksFolder(executionContext);
 			sFile = bookmarksPanel.newBookmark(fnProp);
 			if (sFile != null) {
 				File f = new File(startDir, sFile + ".dbl");
