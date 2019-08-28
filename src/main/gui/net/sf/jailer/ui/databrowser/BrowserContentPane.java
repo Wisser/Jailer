@@ -2791,9 +2791,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (navigateFromAllRows) {
-						navigateTo(association, -1, null);
+						navigateTo(association, null);
 					} else {
-						navigateTo(association, rowIndex, pRows);
+						navigateTo(association, pRows);
 					}
 				}
 			};
@@ -5373,7 +5373,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return children;
 	}
 
-	protected abstract RowBrowser navigateTo(Association association, int rowIndex, List<Row> pRows);
+	protected abstract RowBrowser navigateTo(Association association, List<Row> pRows);
 
 	protected abstract void onContentChange(List<Row> rows, boolean reloadChildren);
 

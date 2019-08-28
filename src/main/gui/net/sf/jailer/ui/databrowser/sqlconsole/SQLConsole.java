@@ -1761,7 +1761,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         protected void onContentChange(List<Row> rows, boolean reloadChildren) {
         }
         @Override
-        protected RowBrowser navigateTo(Association association, int rowIndex, List<Row> pRows) {
+        protected RowBrowser navigateTo(Association association, List<Row> pRows) {
         	return null;
         }
         @Override

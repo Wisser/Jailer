@@ -244,7 +244,6 @@ public class DataBrowser extends javax.swing.JFrame {
 			UISettings.dmStats(datamodel);
 		}
 		initRowLimitButtons();
-        autoLayoutMenuItem.setSelected(inAutoLayoutMode());
         workbenchTabbedPane.setTabComponentAt(0, new JLabel("Desktop", desktopIcon, JLabel.LEFT));
         workbenchTabbedPane.setTabComponentAt(1, new JLabel("SQL Console ", sqlConsoleIcon, JLabel.LEFT));
         workbenchTabbedPane.setTabComponentAt(workbenchTabbedPane.getTabCount() - 1, new JLabel(addSqlConsoleIcon));
@@ -267,8 +266,6 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
 		});
-
-        autoLayoutMenuItem.setVisible(false);
 
         initialized = true;
 
@@ -604,7 +601,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			public void onLayoutChanged(boolean isLayouted, boolean scrollToCenter) {
-				if (!isLayouted && autoLayoutMenuItem.isSelected()) {
+				if (!isLayouted) {
 					arrangeLayout(scrollToCenter);
 				}
 			}
@@ -1185,7 +1182,6 @@ public class DataBrowser extends javax.swing.JFrame {
         createCLIItem = new javax.swing.JMenuItem();
         menuWindow = new javax.swing.JMenu();
         layoutMenuItem = new javax.swing.JMenuItem();
-        autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         zoomInMenuItem = new javax.swing.JMenuItem();
         zoomOutMenuItem = new javax.swing.JMenuItem();
@@ -1966,16 +1962,6 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuWindow.add(layoutMenuItem);
-
-        autoLayoutMenuItem.setSelected(true);
-        autoLayoutMenuItem.setText("Auto Layout");
-        autoLayoutMenuItem.setToolTipText("Automatically layout windows ");
-        autoLayoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                autoLayoutMenuItemActionPerformed(evt);
-            }
-        });
-        menuWindow.add(autoLayoutMenuItem);
         menuWindow.add(jSeparator5);
 
         zoomInMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_PLUS, java.awt.event.InputEvent.CTRL_MASK));
@@ -2672,7 +2658,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem analyseMenuItem;
     private javax.swing.JMenuItem analyseSQLMenuItem1;
     private javax.swing.JLabel associatedWith;
-    private javax.swing.JCheckBoxMenuItem autoLayoutMenuItem;
     private javax.swing.JMenu bookmarkMenu;
     private javax.swing.JPanel borderBrowserPanel;
     private javax.swing.JPanel borderBrowserTabPane;
@@ -3344,7 +3329,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		            		}
 		            		Association association = associations[i - 1];
 		            		if (association != null) {
-		            			nextRb = rb.browserContentPane.navigateTo(association, -1, null);
+		            			nextRb = rb.browserContentPane.navigateTo(association, null);
 		            			visibleTables = null;
 		            		} else {
 		            			break;
@@ -3978,43 +3963,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 	}
 
-//    private static final String AUTOLAYOUT_SETTINGS_FILE = ".autolayout";
-    
-	// TODO remove
-	private boolean inAutoLayoutMode() {
-		return true;
-//		File file = Environment.newFile(AUTOLAYOUT_SETTINGS_FILE);
-//		if (!file.exists()) {
-//			return true;
-//		}
-//		ObjectInputStream in;
-//		try {
-//			in = new ObjectInputStream(new FileInputStream(file));
-//			Object content = in.readObject();
-//			in.close();
-//			return Boolean.TRUE.equals(content);
-//		} catch (Exception e) {
-//			return true;
-//		}
-	}
-
-	// TODO remove
-	private void setAutoLayoutMode(boolean selected) {
-//		try {
-//			File file = Environment.newFile(AUTOLAYOUT_SETTINGS_FILE);
-//			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
-//			out.writeObject(autoLayoutMenuItem.isSelected());
-//			out.close();
-//		} catch (Exception e) {
-//			// ignore
-//		}
-	}
-
-	private void autoLayoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoLayoutMenuItemActionPerformed
-        setAutoLayoutMode(autoLayoutMenuItem.isSelected());
-    }//GEN-LAST:event_autoLayoutMenuItemActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         updateInfoPanel.setVisible(false);
     }//GEN-LAST:event_jButton1ActionPerformed
 

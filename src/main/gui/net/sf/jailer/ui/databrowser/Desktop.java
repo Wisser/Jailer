@@ -634,7 +634,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected RowBrowser navigateTo(Association association, int rowIndex, List<Row> pRows) {  // TODO remove rowIndex
+			protected RowBrowser navigateTo(Association association, List<Row> pRows) {
 				return addTableBrowser(tableBrowser, tableBrowser, association.destination, association, toCondition(pRows), null, null, true);
 			}
 
