@@ -729,6 +729,15 @@ public abstract class Desktop extends JDesktopPane {
 								for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
 									if (row.nonEmptyRowId.equals(rowToRowLink.childRow.nonEmptyRowId)) {
 										tableBrowser.parent.browserContentPane.findClosure(rowToRowLink.parentRow, closure, forward);
+										for (RowBrowser sibling : tableBrowsers) {
+											if (sibling.parent == tableBrowser.parent && sibling.browserContentPane != this) {
+												for (RowToRowLink sRowToRowLink: sibling.rowToRowLinks) {
+													if (rowToRowLink.parentRow.nonEmptyRowId.equals(sRowToRowLink.parentRow.nonEmptyRowId)) {
+														sibling.browserContentPane.findClosure(sRowToRowLink.childRow, closure, true);
+													}
+												}
+											}
+										}
 									}
 								}
 							}

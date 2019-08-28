@@ -1052,6 +1052,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						} else {
 							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(ri, false);
 						}
+					} else if (e.getComponent() == singleRowViewScrollContentPanel) {
+						if (getQueryBuilderDialog() != null) { // !SQL Console
+							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(0, false);
+						}
 					}
 				}
 			}
