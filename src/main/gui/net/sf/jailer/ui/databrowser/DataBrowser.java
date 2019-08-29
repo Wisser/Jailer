@@ -533,7 +533,7 @@ public class DataBrowser extends javax.swing.JFrame {
         }
 
         try {
-            setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.png"))).getImage());
+            setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailerlight.png"))).getImage());
         } catch (Throwable t) {
             try {
                 setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.gif"))).getImage());
@@ -2488,11 +2488,12 @@ public class DataBrowser extends javax.swing.JFrame {
 	                        
 	                        UIUtil.prepareUI();
 	                    } catch (Exception x) {
+	                    	UIUtil.showException(null, "Error", x);
 	                    }
             		}
             		createFrame();
             	} catch (Exception e) {
-            		e.printStackTrace();
+                	UIUtil.showException(null, "Error", e);
                 }
             }
         });

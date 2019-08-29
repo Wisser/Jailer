@@ -54,7 +54,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.file.Files;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1245,12 +1244,16 @@ public class UIUtil {
 	}
 
 	public static String correctFileSeparator(String fileName) {
-		if (fileName == null) {
-			return null;
-		}
-		if (File.separatorChar == '/') {
-			return fileName.replace('\\', File.separatorChar);
-		} else {
+		try {
+			if (fileName == null || new File(fileName).exists()) {
+				return fileName;
+			}
+			if (File.separatorChar == '/') {
+				return fileName.replace('\\', File.separatorChar);
+			} else {
+				return fileName;
+			}
+		} catch (Exception e) {
 			return fileName;
 		}
 	}

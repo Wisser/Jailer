@@ -89,6 +89,7 @@ public class ExecutionContext {
 		this.abortInCaseOfInconsistency = other.abortInCaseOfInconsistency;
 		this.independentWorkingTables = other.independentWorkingTables;
 		this.upkDomain = other.upkDomain;
+		this.currentConnectionAlias = other.currentConnectionAlias;
 // don't share progressListenerRegistry, was: this.progressListenerRegistry = other.progressListenerRegistry;
 	}
 
@@ -871,6 +872,8 @@ public class ExecutionContext {
 	
 	private boolean embedded = false;
 	private Set<String> upkDomain;
+
+	private String currentConnectionAlias;
 	
 	private ProgressListenerRegistry progressListenerRegistry = new ProgressListenerRegistry();
 
@@ -927,6 +930,14 @@ public class ExecutionContext {
 
 	public void setUpkDomain(Set<String> upkDomain) {
 		this.upkDomain = upkDomain;
+	}
+
+	public String getCurrentConnectionAlias() {
+		return currentConnectionAlias;
+	}
+
+	public void setCurrentConnectionAlias(String currentConnectionAlias) {
+		this.currentConnectionAlias = currentConnectionAlias;
 	}
 
 	private void copyCommandLineFields(CommandLine commandLine) {

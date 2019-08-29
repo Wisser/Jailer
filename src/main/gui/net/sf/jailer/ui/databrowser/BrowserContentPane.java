@@ -1054,6 +1054,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					} else if (e.getComponent() == singleRowViewScrollContentPanel) {
 						if (getQueryBuilderDialog() != null) { // !SQL Console
+							for (RowBrowser tb: getTableBrowser()) {
+								try {
+									tb.browserContentPane.isUpdatingTableModel = true;
+									tb.browserContentPane.rowsTable.clearSelection();
+								} finally {
+									tb.browserContentPane.isUpdatingTableModel = false;
+								}
+							}
 							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(0, false);
 						}
 					}

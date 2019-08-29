@@ -30,6 +30,8 @@ import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Environment;
+import net.sf.jailer.ui.databrowser.BookmarksPanel;
+import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 
 /**
  * Persists UI settings.
@@ -52,6 +54,16 @@ public class UISettings  {
 	 * Name of property holding the "recent connection aliases".
 	 */
 	public static final String RECENT_ALIASES = "RECENT_ALIASES";
+
+	/**
+	 * Name of property holding the "recent bookmarks".
+	 */
+	public static final String RECENT_BOOKMARKS = "RECENT_BOOKMARKS";
+	
+	/**
+	 * Maximum size of any "recent" list.
+	 */
+	private final static int MAX_RECENT_LIST_SIZE = 12;
 
 	/**
 	 * Persistent properties.
@@ -189,11 +201,10 @@ public class UISettings  {
 
 	public static void addRecentFile(File file) {
 		if (!isSbeModel(file) && !Configuration.getInstance().isTempFile(file)) {
-			final int MAX_FILES = 100;
 			List<File> files = loadRecentFiles();
 			files.remove(file);
 			files.add(0, file);
-			if (MAX_FILES < files.size()) {
+			if (MAX_RECENT_LIST_SIZE < files.size()) {
 				files.remove(files.size() - 1);
 			}
 			store(RECENT_FILES, files);
@@ -213,14 +224,38 @@ public class UISettings  {
 	}
 	
 	public static void addRecentConnectionAliases(String alias) {
-		final int MAX_ALIASES = 100;
 		List<String> aliases = loadRecentConnectionAliases();
 		aliases.remove(alias);
 		aliases.add(0, alias);
-		if (MAX_ALIASES < aliases.size()) {
+		if (MAX_RECENT_LIST_SIZE < aliases.size()) {
 			aliases.remove(aliases.size() - 1);
 		}
 		store(RECENT_ALIASES, aliases);
+	}
+
+
+	@SuppressWarnings("unchecked")
+	public static List<BookmarkId> loadRecentBookmarks() {
+		Object bookmarks = restore(RECENT_BOOKMARKS);
+		List<BookmarkId> result = new ArrayList<BookmarkId>();
+		if (bookmarks instanceof List) {
+			for (BookmarkId bm: (List<BookmarkId>) bookmarks) {
+				result.add(bm);
+			}
+		}
+		return result;
+	}
+	
+	public static void addRecentBookmarks(BookmarksPanel.BookmarkId bookmark) {
+		if (bookmark.connectionAlias != null && bookmark.datamodelFolder != null) {
+			List<BookmarkId> bookmarks = loadRecentBookmarks();
+			bookmarks.remove(bookmark);
+			bookmarks.add(0, bookmark);
+			if (MAX_RECENT_LIST_SIZE < bookmarks.size()) {
+				bookmarks.remove(bookmarks.size() - 1);
+			}
+			store(RECENT_BOOKMARKS, bookmarks);
+		}
 	}
 
 }

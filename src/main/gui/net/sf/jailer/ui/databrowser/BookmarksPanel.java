@@ -21,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import net.sf.jailer.ui.util.UISettings;
  * 
  * @author Ralf Wisser
  */
+@SuppressWarnings("serial")
 public class BookmarksPanel extends javax.swing.JPanel {
 
 	public static final String BOOKMARKFILE_EXTENSION = ".dbl";
@@ -100,6 +102,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 
  		UISettings.s6 += 100000;
 
+ 		UISettings.addRecentBookmarks(new BookmarkId(name, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias()));
  		setLastUsedBookmark(name, executionContext);
  		return name;
     }
@@ -339,14 +342,18 @@ public class BookmarksPanel extends javax.swing.JPanel {
      * @return folder containing bookmarks for current data model
      */
 	public static File getBookmarksFolder(ExecutionContext executionContext) {
-		String currentModelSubfolder = executionContext.getCurrentModelSubfolder();
+		return getBookmarksFolder(executionContext.getCurrentModelSubfolder());
+	}
+
+
+	private static File getBookmarksFolder(String currentModelSubfolder) {
 		if (currentModelSubfolder == null) {
 			currentModelSubfolder = "default";
 		}
 		return Environment.newFile("bookmark" + File.separator + new File(currentModelSubfolder).getName());
 	}
 
-    /**
+	/**
      * @param bookmark bookmark name
      * @return file containing bookmark with given name or <code>null</code>, if no such bookmark exists
      */
@@ -376,7 +383,8 @@ public class BookmarksPanel extends javax.swing.JPanel {
 			int count = 0;
 			for (StringBuilder nbSb: bookmarks) {
 				final String nb = nbSb.toString();
-				JMenuItem b = new JMenuItem(nb.replaceAll("\\.dbl$", ""));
+				final String bmName = nb.replaceAll("\\.dbl$", "");
+				JMenuItem b = new JMenuItem(bmName);
 				b.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -384,6 +392,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 						desktop.restoreSession(null, new File(getBookmarksFolder(executionContext), nb));
 						new File(getBookmarksFolder(executionContext), nb).setLastModified(System.currentTimeMillis());
 						updateBookmarksMenu();
+				 		UISettings.addRecentBookmarks(new BookmarkId(bmName, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias()));
 				 		setLastUsedBookmark(nb, executionContext);
 					}
 				});
@@ -396,14 +405,19 @@ public class BookmarksPanel extends javax.swing.JPanel {
 	}
 
 	public static List<StringBuilder> loadBookmarks(ExecutionContext executionContext) {
+		File bookmarksFolder = getBookmarksFolder(executionContext);
+		return loadBookmarks(bookmarksFolder, executionContext);
+	}
+
+	public static List<StringBuilder> loadBookmarks(final File bookmarksFolder, ExecutionContext executionContext) {
 		try {
-			final File bookmarksFolder = getBookmarksFolder(executionContext);
-			ArrayList<String> result = new ArrayList<String>(Arrays.asList(bookmarksFolder.list(new FilenameFilter() {
+			String[] fileList = bookmarksFolder.list(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String name) {
 					return name.endsWith(BOOKMARKFILE_EXTENSION);
 				}
-			})));
+			});
+			ArrayList<String> result = fileList != null? new ArrayList<String>(Arrays.asList(fileList)) : new ArrayList<String>();
 			Collections.sort(result, new Comparator<String>() {
 				@Override
 				public int compare(String o1, String o2) {
@@ -436,6 +450,74 @@ public class BookmarksPanel extends javax.swing.JPanel {
 
 	public static String setLastUsedBookmark(String lastUsedBookmark, ExecutionContext executionContext) {
 		return lastUsedBM.put(getBookmarksFolder(executionContext), lastUsedBookmark);
+	}
+
+	/**
+	 * Unique bookmark identifier.
+	 */
+	public static class BookmarkId implements Serializable {
+		public final String bookmark;
+		public final String datamodelFolder;
+		public final String connectionAlias;
+		
+		public BookmarkId(String bookmark, String datamodelFolder, String connectionAlias) {
+			this.bookmark = bookmark;
+			this.datamodelFolder = datamodelFolder;
+			this.connectionAlias = connectionAlias;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((bookmark == null) ? 0 : bookmark.hashCode());
+			result = prime * result + ((connectionAlias == null) ? 0 : connectionAlias.hashCode());
+			result = prime * result + ((datamodelFolder == null) ? 0 : datamodelFolder.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			BookmarkId other = (BookmarkId) obj;
+			if (bookmark == null) {
+				if (other.bookmark != null)
+					return false;
+			} else if (!bookmark.equals(other.bookmark))
+				return false;
+			if (connectionAlias == null) {
+				if (other.connectionAlias != null)
+					return false;
+			} else if (!connectionAlias.equals(other.connectionAlias))
+				return false;
+			if (datamodelFolder == null) {
+				if (other.datamodelFolder != null)
+					return false;
+			} else if (!datamodelFolder.equals(other.datamodelFolder))
+				return false;
+			return true;
+		}
+
+		private static final long serialVersionUID = -7491145126834345194L;
+	}
+
+	/**
+	 * Gets all bookmarks in a given data model.
+	 * 
+	 * @param model the data model
+	 * @return all bookmarks in a given data model folder
+	 */
+	public static List<String> getAllBookmarks(String model, ExecutionContext executionContext) {
+		List<String> result = new ArrayList<String>();
+		for (StringBuilder bm: loadBookmarks(getBookmarksFolder(model), executionContext)) {
+			result.add(bm.toString().replaceAll("\\.dbl$", ""));
+		}
+		return result;
 	}
 
 }

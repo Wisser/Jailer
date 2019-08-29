@@ -64,7 +64,11 @@ public class UICommandLine {
 	@Option(name="-", usage="do not interpret the next word as an option, even if it begins with '-'. For example, if the username is \"-abc\", use \"- -abc\".")
 	public List<String> escapedWords = new ArrayList<String>();
 
+	// Connection alias, to be set via DMMD
+	public String alias;
+
 	@Argument
 	public List<String> arguments = new ArrayList<String>();
+
 
 }

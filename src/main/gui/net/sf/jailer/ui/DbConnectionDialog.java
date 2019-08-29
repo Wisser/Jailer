@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Window;
@@ -124,6 +125,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private List<ConnectionInfo> connectionList;
 
 	/**
+	 * Gets list of available connections.
+	 */
+	public List<ConnectionInfo> getConnectionList() {
+		return connectionList;
+	}
+
+	/**
 	 * Currently selected connection.
 	 */
 	public ConnectionInfo currentConnection;
@@ -146,6 +154,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 	private boolean located = false;
 	
+	private Font font =  new JLabel("normal").getFont();
+	private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
+    private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+
 	/**
 	 * Gets connection to DB.
 	 * 
@@ -287,6 +299,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 							}
 						}
 						((JLabel) render).setToolTipText(String.valueOf(value));
+						render.setFont(column == 0? bold : normal);
 						return render;
 					}
 				});
@@ -427,8 +440,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			if (currentModelSubfolder == null && warnOnConnect) {
 				warnOnConnect = false;
 				jButton1.setEnabled(false);
-			} else {
-				jButton1.setEnabled(true);
 			}
 			jButton1.setIcon(!warnOnConnect? null : getScaledWarnIcon());
 		} finally {
@@ -666,6 +677,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         jPanel2.add(closeButton, gridBagConstraints);
 
         jButton1.setText(" Connect ");
+        jButton1.setEnabled(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -957,6 +969,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			UIUtil.setWaitCursor(root);
 			if (testConnection(mainPanel, currentConnection)) {
 				isConnected = true;
+				executionContext.setCurrentConnectionAlias(currentConnection.alias);
 				onConnect(currentConnection);
 				if (currentConnection.alias != null && !"".equals(currentConnection.alias)) {
 					UISettings.addRecentConnectionAliases(currentConnection.alias);
@@ -1217,7 +1230,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		ConnectionInfo ci = new ConnectionInfo();
 		UICommandLine cli = CommandLineInstance.getInstance();
 		
-		ci.alias = cli.url;
+		ci.alias = cli.alias != null? cli.alias : cli.url;
 		ci.dataModelFolder = cli.datamodelFolder;
 		ci.driverClass = cli.driver;
 		ci.jar1 = cli.jdbcjar != null? cli.jdbcjar : "";
@@ -1233,8 +1246,16 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				&& ci.user != null) {
 			if (testConnection(parent, ci)) {
 				currentConnection = ci;
+				executionContext.setCurrentConnectionAlias(currentConnection.alias);
 				isConnected = true;
 			}
+		}
+	}
+
+	public void selectFirstConnection() {
+		if (connectionsTable.getModel().getRowCount() > 0) {
+			connectionsTable.getSelectionModel().setSelectionInterval(0, 0);
+			jButton1.grabFocus();
 		}
 	}
 
