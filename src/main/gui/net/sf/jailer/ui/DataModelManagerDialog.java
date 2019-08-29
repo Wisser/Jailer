@@ -1625,7 +1625,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel recentlyUsedBookmarkPanel;
     // End of variables declaration//GEN-END:variables
 
-    // TODO "History" tab for module "S", (timestamp, data model, optional connection)
+    // TODO "History" tab for module "B", (timestamp, data model, optional connection)
     
 	private static final long serialVersionUID = -3983034803834547687L;
 
