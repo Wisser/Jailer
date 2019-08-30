@@ -3,6 +3,7 @@
     "[new feature] add command line options to bypass the data model selection dialog"
   - https://github.com/Wisser/Jailer/issues/13
     "Multiple table selection"
+  - The model selection dialog has been improved. Recently used connections/sessions/bookmarks can be reopened with a single click.
 
 8.8.4
   - Fixed a bug that caused a Liquibase export not to work for Postgres TEXT columns.
@@ -33,7 +34,7 @@
   - Fixed a bug that caused the creation of a delete script to generate syntactically incorrect SQL statements when a table without a primary key exists.
 
 8.7.5
-  - Fix for ticket 39 "Oracle queries are going failed". https://sourceforge.net/p/jailer/bugs/39/ 
+  - Fix for ticket 39 "Oracle queries are going failed". https://sourceforge.net/p/jailer/bugs/39/
   - Minor bug fixes.
 
 8.7.3
@@ -54,7 +55,7 @@
   - Creation of the data model files has been revised.
   - Execution plans for DB2 LUW.
   - Fixed "ERROR: failed to find conversion function from unknown to text"
-    that could occur with PostgreSQL in connection with the "local database" scope. 
+    that could occur with PostgreSQL in connection with the "local database" scope.
 
 8.6
   - The data browser automatically reconnects when the connection is lost.
@@ -81,7 +82,7 @@
 
 8.3.1
   - New "Model Migration Tool" allows you to easily find and edit the newly added associations
-    if the data model has been extended after the last change to this extraction model. 
+    if the data model has been extended after the last change to this extraction model.
 
 8.2.6
   - Fixed "#37 PostreSQL: transactional execution"
@@ -104,7 +105,7 @@
   - Fixed "#59 Retry Deadlock?"
   - Automatic adjustment of the number of database connections.
   - Improved error handling.
-  - URL of forum and manual pages on sourceforge have been corrected. 
+  - URL of forum and manual pages on sourceforge have been corrected.
 
 8.2.1
   - Intra-database export: automatic fallback to MERGE on tables without PK has been removed.
@@ -125,7 +126,7 @@
   - New export option "limit transaction sizes" reduces transaction sizes. (Feature request 51)
   - Improved indexing of working tables.
   - JSQLParser has been updated to version 1.3.
-  - Fix for bug 32 "SQL analyzer: duplicate associations" 
+  - Fix for bug 32 "SQL analyzer: duplicate associations"
 
 8.1.1
   - Increased initial responsiveness of the SQL Console.
@@ -239,7 +240,7 @@
   - Minor GUI Improvements and bug fixes.
 
 7.6.4
-  - Improved table meta data rendering. 
+  - Improved table meta data rendering.
 
 7.6.3
   - Asynchronous meta data loading.
@@ -315,7 +316,7 @@
   - Fix for "#20 OutOfMemoryError: Java heap space - Reply" (https://sourceforge.net/p/jailer/bugs/20/ )
 
 7.2
-  - Introduction of the "expansion limit" feature for improved navigation.  
+  - Introduction of the "expansion limit" feature for improved navigation.
   - Searchable combo boxes.
   - Extensions of extraction model files have been changes from "csv" to "jm".
 
@@ -329,7 +330,7 @@
 7.0.6
   - Data Browser will automatically reconnect if the connection is lost.
   - Minor bug fixes.
-  
+
 7.0.5
   - Fixed a bug concerning temporary-table support.
   - Fixed connection leak in data browser.
@@ -363,7 +364,7 @@
   - CLI usage didn't print options.
 
 6.7.3
-  - Improved performance of database meta-data access. 
+  - Improved performance of database meta-data access.
   - Minor bug fixes (Filter templates).
 
 6.7.2
@@ -432,7 +433,7 @@
   - Fixed a bug concerning NVARCHAR literals on MS SQL Server.
 
 6.1.3
-  - fixed an incompatibility with PostgreSQL JDBC Driver 9.1. 
+  - fixed an incompatibility with PostgreSQL JDBC Driver 9.1.
 
 6.1.2
   - Improved performance of the Data Browser.
@@ -459,7 +460,7 @@
     See https://sourceforge.net/p/jailer/discussion/700499/thread/a7f0af2c/
 
 6.0
-  - New "Export To" mode allows to export rows directly into a different schema in the same database. 
+  - New "Export To" mode allows to export rows directly into a different schema in the same database.
 
 5.6.1
   - Minor bug fixes.
@@ -473,7 +474,7 @@
 
 5.5.6
   - Minor bug fixes.
-  
+
 5.5.4
   - Minor bug fixes.
 
@@ -501,7 +502,7 @@
 5.4
   - Fixed an issue with exporting dependencies of Initial Tables. (thanks to Teddy Widom, https://sourceforge.net/p/jailer/discussion/700499/thread/60e83aef/)
   - -scope "LOCAL_DATABASE" now supports the pseudo-columns $DISTANCE and $IS_SUBJECT.
-  - Support for multiple subject-tables has been added. 
+  - Support for multiple subject-tables has been added.
 
 5.3.2
   - Files with ".sql.zip" suffix are no longer created GZIP files but ZIP files.
@@ -524,7 +525,7 @@
   - Better UI and improved navigation.
 
 5.0.2
-  - Viewing contents of CLOB and XML column types 
+  - Viewing contents of CLOB and XML column types
 
 5.0.1
   - Unicode support.
@@ -561,11 +562,11 @@
   - Fix for http://sourceforge.net/p/dbeauty/tickets/3/
 
 4.3.1
-  - Minor bug fixes. 
+  - Minor bug fixes.
 
 4.3
   - Data Browser has been improved.
-  - Fixed a performance issue related to ResultSet#getMetaData and Postgresql 9.1 JDBC driver. 
+  - Fixed a performance issue related to ResultSet#getMetaData and Postgresql 9.1 JDBC driver.
 
 4.2.4
   - added support for postgresql UUID type.
@@ -574,14 +575,14 @@
   - fixed an incompatibility with Java 8.
 
 4.2.2
-  - fixed a bug concerning MySQL's unsigned integer types. 
+  - fixed a bug concerning MySQL's unsigned integer types.
 
 4.2.1
   - fixed a bug concerning the determination of the universal-primary-key.
   - fixed a bug in file chooser window (thanks to oliver45)
 
 4.2
-  - added support for Liquibase file format (thanks to achimgrie) 
+  - added support for Liquibase file format (thanks to achimgrie)
 
 4.1
   - added support for Postgres HStore data type.
@@ -677,7 +678,7 @@
 3.7.4
   - moves new table browser to center of the desktop.
   - "Reconnect" and "New Window" menu items added.
-  
+
 3.7.3
   - Java 7 compatibility fix.
   - Desktop dragging.
@@ -714,7 +715,7 @@
 
 3.6.7
  - Added ability to edit data by automatically creating SQL/DML statements based on rows (Feature Request [3176294])
- - Improved syntax highlighting. 
+ - Improved syntax highlighting.
  - Integrated Schema Mapping Dialog into Data Browser.
 
 3.6.6
@@ -748,7 +749,7 @@
 
 3.5.8
  - bug fix for [ jailer-Bugs-3294893 ] Outer Join for selecting dependant entries and Oracle 10
-  mixing left joins and theta-style joins caused problems on oracle DBMS      	
+  mixing left joins and theta-style joins caused problems on oracle DBMS
 
 3.5.7
  - Further Data Browser GUI improvements.
@@ -780,7 +781,7 @@
  - Fix for rendering bug in closure view.
 
 3.4.9
- - SQL generator no longer uses the "from DUAL" idiom 
+ - SQL generator no longer uses the "from DUAL" idiom
    for single-row inserts on Oracle DBMS
 
 3.4.8
@@ -793,7 +794,7 @@
  - Added associations list view in closure-browser.
 
 3.4.5
- - Added dependency cycle analysis feature. 
+ - Added dependency cycle analysis feature.
  - Added support for data type 'YEAR' on MySQL.
  - minor bug fixes.
 
@@ -803,7 +804,7 @@
  - Improved error handling.
  - JDBC driver's jar files can now be specified via command line arguments.
  - new XML-attributes "j:if-not-null" and "j:if-null" can now be used in XML templates for case differentiation.
- 
+
 3.4.3
  - Added support for SQLite DBMS.
  - Added support for user-defined distinct types.
@@ -832,7 +833,7 @@
  - Added ability to define a placeholder for NULL columns in a DBUnit data set. [2953453]
 
 3.2.1
- - Added ability to change XML root tag name. 
+ - Added ability to change XML root tag name.
 
 3.2
  - Support for XML column type.
@@ -982,10 +983,10 @@
 
 2.5.4
  - explicit pattern for timestamp values in generated SQL scripts for oracle DBMS (using the to_timestamp function)
- - additional type options will now be removed from the result of DatabaseMetaData#getColumns 
+ - additional type options will now be removed from the result of DatabaseMetaData#getColumns
 
 2.5.3
- - bug fix: search timestamp pattern even if dummy values are already persisted 
+ - bug fix: search timestamp pattern even if dummy values are already persisted
 
 2.5.2
  - "show table details" is now initially switched off
@@ -1021,7 +1022,7 @@
 
 2.4.1.beta
  - basic multi-schema support
- - new feature "Expand all visible tables" 
+ - new feature "Expand all visible tables"
  - disabled associations are no longer hidden in tree view
  - minor bug fixes
 
@@ -1103,7 +1104,7 @@
 0.9.2
 - minor bugfixes.
 - improved documentation.
-- changed model file-format slightly, 
+- changed model file-format slightly,
   CSV files don't have a title-line anymore.
 - removed the 'scott'-model from jailer.zip,
   so that the tutorial can be done without resetting the model first.
