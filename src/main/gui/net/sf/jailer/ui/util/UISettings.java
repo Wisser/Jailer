@@ -61,6 +61,11 @@ public class UISettings  {
 	public static final String RECENT_BOOKMARKS = "RECENT_BOOKMARKS";
 	
 	/**
+	 * Name of property holding the last session.
+	 */
+	public static final String LAST_SESSION = "LAST_SESSION";
+
+	/**
 	 * Maximum size of any "recent" list.
 	 */
 	private final static int MAX_RECENT_LIST_SIZE = 12;
@@ -255,6 +260,19 @@ public class UISettings  {
 				bookmarks.remove(bookmarks.size() - 1);
 			}
 			store(RECENT_BOOKMARKS, bookmarks);
+		}
+	}
+
+	public static void storeLastSession(BookmarkId bookmark) {
+		store(LAST_SESSION, bookmark);
+	}
+
+	public static BookmarkId restoreLastSession() {
+		Object lastSession = restore(LAST_SESSION);
+		if (lastSession instanceof BookmarkId) {
+			return (BookmarkId) lastSession;
+		} else {
+			return null;
 		}
 	}
 

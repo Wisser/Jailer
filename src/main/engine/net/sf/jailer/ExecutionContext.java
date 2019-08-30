@@ -655,7 +655,7 @@ public class ExecutionContext {
 	/**
 	 * Sets source schema map
 	 *
-	 * @param rawsourceschemamapping
+	 * @param schemaMapping
 	 *            source schema map
 	 */
 	public void setSchemaMapping(Map<String, String> schemaMapping) {

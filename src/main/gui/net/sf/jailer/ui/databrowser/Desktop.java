@@ -2352,6 +2352,10 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	public boolean isEmpty() {
+		return tableBrowsers.isEmpty();
+	}
+	
 	public synchronized void stop() {
 		running = false;
 		desktops.remove(this);
@@ -2906,7 +2910,7 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * Stores browser session.
 	 */
-	private void storeSession(String sFile) throws IOException {
+	void storeSession(String sFile) throws IOException {
 		int i = 1;
 		Map<RowBrowser, Integer> browserNumber = new HashMap<Desktop.RowBrowser, Integer>();
 		for (RowBrowser rb : tableBrowsers) {
@@ -2941,7 +2945,7 @@ public abstract class Desktop extends JDesktopPane {
 			csv += 500 + "; " + rb.browserContentPane.selectDistinctCheckBox.isSelected() + "; ";
 
 			if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
-				csv += "T; " + CsvFile.encodeCell(rb.browserContentPane.table.getName()) + "; "
+				csv += "T; " + CsvFile.encodeCell(rb.browserContentPane.table.getOriginalName()) + "; "
 						+ (rb.association == null ? "" : CsvFile.encodeCell(rb.association.getName())) + "; ";
 			}
 			csv += rb.isHidden() + "; ";
@@ -3001,8 +3005,10 @@ public abstract class Desktop extends JDesktopPane {
 			Collection<RowBrowser> toBeLoaded = new ArrayList<Desktop.RowBrowser>();
 			List<String> unknownTables = new ArrayList<String>();
 			KnownIdentifierMap knownTablesMap = new KnownIdentifierMap();
+			Map<String, Table> originalNameToTable = new HashMap<String, Table>();
 			for (Table table: datamodel.get().getTables()) {
-				knownTablesMap.putTableName(table.getName());
+				knownTablesMap.putTableName(table.getOriginalName());
+				originalNameToTable.put(table.getOriginalName(), table);
 			}
 			for (CsvFile.Line l : lines) {
 				if (l.cells.get(0).equals("Layout")) {
@@ -3025,11 +3031,11 @@ public abstract class Desktop extends JDesktopPane {
 				boolean selectDistinct = Boolean.parseBoolean(l.cells.get(8));
 				RowBrowser rb = null;
 				if ("T".equals(l.cells.get(9))) {
-					Table table = datamodel.get().getTable(l.cells.get(10));
+					Table table = originalNameToTable.get(l.cells.get(10));
 					if (table == null) {
 						String kt = knownTablesMap.getTableName(l.cells.get(10));
 						if (kt != null) {
-							table = datamodel.get().getTable(kt);
+							table = originalNameToTable.get(kt);
 						}
 					}
 					if (table == null) {
@@ -3474,6 +3480,20 @@ public abstract class Desktop extends JDesktopPane {
 		if (d >= 0 && d < LayoutMode.values().length) {
 			rescaleLayout(LayoutMode.values()[d], null);
 		}
+	}
+
+	public String getRawSchemaMapping() {
+		StringBuilder mapping = new StringBuilder();
+		for (String schema: schemaMapping.keySet()) {
+			String to = schemaMapping.get(schema).trim();
+			if (!schema.equals(to)) {
+				if (mapping.length() > 0) {
+					mapping.append(",");
+				}
+				mapping.append(schema + "=" + to);
+			}
+		}
+		return mapping.toString();
 	}
 
 	/**

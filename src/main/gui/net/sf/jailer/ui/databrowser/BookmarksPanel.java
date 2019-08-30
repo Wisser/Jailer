@@ -102,7 +102,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 
  		UISettings.s6 += 100000;
 
- 		UISettings.addRecentBookmarks(new BookmarkId(name, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias()));
+ 		UISettings.addRecentBookmarks(new BookmarkId(name, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping()));
  		setLastUsedBookmark(name, executionContext);
  		return name;
     }
@@ -392,7 +392,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 						desktop.restoreSession(null, new File(getBookmarksFolder(executionContext), nb));
 						new File(getBookmarksFolder(executionContext), nb).setLastModified(System.currentTimeMillis());
 						updateBookmarksMenu();
-				 		UISettings.addRecentBookmarks(new BookmarkId(bmName, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias()));
+				 		UISettings.addRecentBookmarks(new BookmarkId(bmName, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping()));
 				 		setLastUsedBookmark(nb, executionContext);
 					}
 				});
@@ -459,11 +459,13 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		public final String bookmark;
 		public final String datamodelFolder;
 		public final String connectionAlias;
+		public final String rawSchemaMapping;
 		
-		public BookmarkId(String bookmark, String datamodelFolder, String connectionAlias) {
+		public BookmarkId(String bookmark, String datamodelFolder, String connectionAlias, String rawSchemaMapping) {
 			this.bookmark = bookmark;
 			this.datamodelFolder = datamodelFolder;
 			this.connectionAlias = connectionAlias;
+			this.rawSchemaMapping = rawSchemaMapping;
 		}
 
 		@Override

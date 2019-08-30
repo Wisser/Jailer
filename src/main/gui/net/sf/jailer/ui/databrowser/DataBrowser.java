@@ -56,6 +56,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -139,6 +140,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
+import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -667,6 +669,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
             @Override
             public void windowClosed(WindowEvent e) {
+            	storeLastSession();
                 desktop.stop();
                 UIUtil.checkTermination();
             }
@@ -1159,13 +1162,13 @@ public class DataBrowser extends javax.swing.JFrame {
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
         dataModelEditorjMenuItem = new javax.swing.JMenuItem();
+        schemaMappingMenuItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         columnOrderItem = new javax.swing.JMenuItem();
         jSeparator11 = new javax.swing.JPopupMenu.Separator();
         analyseSQLMenuItem1 = new javax.swing.JMenuItem();
         jSeparator10 = new javax.swing.JPopupMenu.Separator();
         showDataModelMenuItem = new javax.swing.JCheckBoxMenuItem();
-        schemaMappingMenuItem = new javax.swing.JMenuItem();
         checkPKMenuItem = new javax.swing.JMenuItem();
         jviewMenu = new javax.swing.JMenu();
         rowLimitMenu = new javax.swing.JMenu();
@@ -1831,6 +1834,14 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuTools.add(dataModelEditorjMenuItem);
+
+        schemaMappingMenuItem.setText("Schema Mapping");
+        schemaMappingMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                schemaMappingMenuItemActionPerformed(evt);
+            }
+        });
+        menuTools.add(schemaMappingMenuItem);
         menuTools.add(jSeparator2);
 
         columnOrderItem.setText("Column Ordering");
@@ -1858,14 +1869,6 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuTools.add(showDataModelMenuItem);
-
-        schemaMappingMenuItem.setText("Schema Mapping");
-        schemaMappingMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                schemaMappingMenuItemActionPerformed(evt);
-            }
-        });
-        menuTools.add(schemaMappingMenuItem);
 
         checkPKMenuItem.setText("Check Primary Keys");
         checkPKMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -2528,12 +2531,22 @@ public class DataBrowser extends javax.swing.JFrame {
             return dataBrowser;
         }
         String bmName = CommandLineInstance.getInstance().bookmark;
-		final File bmFile = BookmarksPanel.getBookmarksFile(bmName, dataBrowser.executionContext);
+		final File bmFile;
+		final boolean restoreLastSession;
+		if ("".equals(bmName)) {
+			bmFile = null;
+			restoreLastSession = true;
+		} else {
+			bmFile = BookmarksPanel.getBookmarksFile(bmName, dataBrowser.executionContext);
+			restoreLastSession = false;
+		}
         UIUtil.invokeLater(3, new Runnable() {
 			@Override
 			public void run() {
 		        dataBrowser.toFront();
-		        if (bmFile != null) {
+		        if (restoreLastSession) {
+		        	dataBrowser.desktop.restoreSession(null, Environment.newFile(LAST_SESSION_FILE));
+		        } else if (bmFile != null) {
 		        	dataBrowser.desktop.restoreSession(null, bmFile);
 		     		BookmarksPanel.setLastUsedBookmark(bmFile.getName(), dataBrowser.executionContext);
 		        }
@@ -2549,8 +2562,9 @@ public class DataBrowser extends javax.swing.JFrame {
             protected void onSelect(final DbConnectionDialog connectionDialog, final ExecutionContext executionContext) {
                 try {
                     final DataModel datamodel;
-                    datamodel = new DataModel(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, true, null);;
-                	final DataBrowser databrowser = new DataBrowser(datamodel, null, "", null, ExecutionContext.getSchemaMapping(CommandLineInstance.getInstance().rawschemamapping), false, executionContext);
+                    Map<String, String> schemaMapping = ExecutionContext.getSchemaMapping(CommandLineInstance.getInstance().rawschemamapping);
+					datamodel = new DataModel(null, null, schemaMapping, null, new PrimaryKeyFactory(executionContext), executionContext, true, null);
+                	final DataBrowser databrowser = new DataBrowser(datamodel, null, "", null, schemaMapping, false, executionContext);
                     UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
@@ -4013,16 +4027,7 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void createCLIItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createCLIItemActionPerformed
-    	StringBuilder mapping = new StringBuilder();
-		for (String schema: desktop.schemaMapping.keySet()) {
-			String to = desktop.schemaMapping.get(schema).trim();
-			if (!schema.equals(to)) {
-				if (mapping.length() > 0) {
-					mapping.append(",");
-				}
-				mapping.append(schema + "=" + to);
-			}
-		}
+    	String mapping = desktop.getRawSchemaMapping();
     	String bookmark = BookmarksPanel.getLastUsedBookmark(executionContext);
     	if (bookmark != null) {
     		bookmark = bookmarkName(bookmark);
@@ -4031,7 +4036,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		for (StringBuilder sb: BookmarksPanel.loadBookmarks(executionContext)) {
 			bookmarks.add(bookmarkName(sb.toString()));
 		}
-		new CLIPanel(dbConnectionDialog, true, null, mapping.toString(), bookmarks, bookmark, executionContext).open(this);
+		new CLIPanel(dbConnectionDialog, true, null, mapping, bookmarks, bookmark, executionContext).open(this);
     }//GEN-LAST:event_createCLIItemActionPerformed
 
     private String bookmarkName(String bookmarkFileName) {
@@ -4120,6 +4125,33 @@ public class DataBrowser extends javax.swing.JFrame {
 	
 	public SQLConsole getSqlConsole(boolean switchToConsole) {
 		return desktop.getSqlConsole(switchToConsole);
+	}
+
+	private static final String LAST_SESSION_FILE = ".lastsession";
+	
+	private void storeLastSession() {
+		if (!desktop.isEmpty()) {
+			BookmarkId bookmark;
+			try {
+				desktop.storeSession(Environment.newFile(LAST_SESSION_FILE).getPath());
+				bookmark = new BookmarkId(null, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping());
+			} catch (IOException e) {
+				bookmark = null;
+			}
+			UISettings.storeLastSession(bookmark);
+		}
+	}
+
+	public static Date getLastSessionDate() {
+		try {
+			long lastModified = Environment.newFile(LAST_SESSION_FILE).lastModified();
+			if (lastModified == 0) {
+				return null;
+			}
+			return new Date(lastModified);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private DesktopAnchorManager anchorManager; 

@@ -67,6 +67,7 @@ public class Environment {
 			Configuration configuration = Configuration.getInstance();
 			try {
 				copyIfNotExists("datamodel");
+				copyIfNotExists("bookmark");
 				copyIfNotExists("extractionmodel");
 				copyIfNotExists("layout");
 				copyIfNotExists("demo-scott-1.4.mv.db");
