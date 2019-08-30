@@ -50,4 +50,4 @@ CP="$CP;jailer.jar"
 
 echo $CP
 
-"$JAVA_HOME/bin/java" -Xmx1200M -cp $CP net.sf.jailer.ui.ExtractionModelFrame $@
+"$JAVA_HOME/bin/java" -Xmx1200M -cp $CP net.sf.jailer.ui.ExtractionModelFrame
