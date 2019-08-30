@@ -1,0 +1,6 @@
+Layout; MEDIUM
+1; ; ; 0; 240; 476; 460; 500; true; T; CUSTOMER; ; false; 
+2; 1; ; 586; 240; 476; 460; 500; true; T; RENTAL; inverse-FK_RENTAL_CUSTOMER; false; 
+3; 2; ; 1172; 6; 476; 460; 500; true; T; INVENTORY; FK_RENTAL_INVENTORY; true; 
+4; 3; ; 1172; 6; 476; 460; 500; true; T; FILM; FK_INVENTORY_FILM; false; 
+5; 2; ; 1172; 474; 476; 460; 500; true; T; PAYMENT; inverse-FK_PAYMENT_RENTAL; false; 
