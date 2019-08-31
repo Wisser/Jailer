@@ -387,6 +387,8 @@ public class CellContentConverter {
 		if (DBMS.POSTGRESQL.equals(configuration)) {
 			if (type == TYPE_POBJECT) {
 				return new PObjectWrapper(resultSet.getString(i), resultSetMetaData.getColumnTypeName(i));
+			} else if (object instanceof Double && Double.isNaN((double) object)) {
+				return "NaN";
 			} else if (object instanceof Boolean) {
 				String typeName = resultSetMetaData.getColumnTypeName(i);
 				if (typeName != null && typeName.toLowerCase().equals("bit")) {
