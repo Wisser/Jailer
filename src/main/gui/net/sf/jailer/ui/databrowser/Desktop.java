@@ -1503,14 +1503,16 @@ public abstract class Desktop extends JDesktopPane {
 				int linkAreaXMax = Math.max(visParent.internalFrame.getX() + visParent.internalFrame.getWidth(), internalFrame.getX());
 				int linkAreaYMax = Math.max(visParent.internalFrame.getY() + visParent.internalFrame.getHeight(), internalFrame.getY() + internalFrame.getHeight());
 				boolean allInvisible = false;
-				if (linkAreaXMin > visibleRect.getX() + visibleRect.getWidth()) {
-					allInvisible = true;
-				} else if (linkAreaYMin > visibleRect.getY() + visibleRect.getHeight()) {
-					allInvisible = true;
-				} else if (linkAreaXMax < visibleRect.getX()) {
-					allInvisible = true;
-				} else if (linkAreaYMax < visibleRect.getY()) {
-					allInvisible = true;
+				if (!isIconOrHidden(visParent.internalFrame) && !isIconOrHidden(internalFrame)) {
+					if (linkAreaXMin > visibleRect.getX() + visibleRect.getWidth()) {
+						allInvisible = true;
+					} else if (linkAreaYMin > visibleRect.getY() + visibleRect.getHeight()) {
+						allInvisible = true;
+					} else if (linkAreaXMax < visibleRect.getX()) {
+						allInvisible = true;
+					} else if (linkAreaYMax < visibleRect.getY()) {
+						allInvisible = true;
+					}
 				}
 
 				for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
@@ -1670,6 +1672,10 @@ public abstract class Desktop extends JDesktopPane {
 		return changed;
 	}
 
+	private boolean isIconOrHidden(JInternalFrame internalFrame) {
+		return internalFrame.isIcon() || !internalFrame.isVisible();
+	}
+
 	private long lastPTS = 0;
 
 	private static class Link {
@@ -1723,46 +1729,45 @@ public abstract class Desktop extends JDesktopPane {
 					for (RowBrowser tableBrowser : tableBrowsers) {
 						Map<String, List<Link>> links = new TreeMap<String, List<Link>>();
 						rbSourceToLinks.put(tableBrowser, links);
-						if (!tableBrowser.internalFrame.isIcon() && (tableBrowser.parent == null || !tableBrowser.parent.internalFrame.isIcon())) {
-							Color color1 = tableBrowser.color1;
-							Color color2 = tableBrowser.color2;
-							if (tableBrowser.parent != null && tableBrowser.rowToRowLinks.isEmpty()) {
-								String sourceRowID = ALL;
-								String destRowID = ALL;
+
+						Color color1 = tableBrowser.color1;
+						Color color2 = tableBrowser.color2;
+						if (tableBrowser.parent != null && tableBrowser.rowToRowLinks.isEmpty()) {
+							String sourceRowID = ALL;
+							String destRowID = ALL;
+							boolean inClosure = false;
+							
+							Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
+									tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure);
+							List<Link> l = links.get(sourceRowID);
+							if (l == null) {
+								l = new ArrayList<Link>();
+								links.put(sourceRowID, l);
+							}
+							l.add(link);
+						}
+						for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
+							if (rowToRowLink.visible && rowToRowLink.x1 >= 0) {
+								String sourceRowID = rowToRowLink.childRow.nonEmptyRowId;
+								String destRowID = rowToRowLink.parentRow.nonEmptyRowId;
 								boolean inClosure = false;
 								
-								Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
-										tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure);
+								if (tableBrowser.parent != null) {
+									if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.browserContentPane, rowToRowLink.childRow))) {
+										if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.parent.browserContentPane, rowToRowLink.parentRow))) {
+											inClosure = true;
+										}
+									}
+								}
+								
+								Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, rowToRowLink.x1, rowToRowLink.y1,
+										rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure);
 								List<Link> l = links.get(sourceRowID);
 								if (l == null) {
 									l = new ArrayList<Link>();
 									links.put(sourceRowID, l);
 								}
 								l.add(link);
-							}
-							for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
-								if (rowToRowLink.visible && rowToRowLink.x1 >= 0) {
-									String sourceRowID = rowToRowLink.childRow.nonEmptyRowId;
-									String destRowID = rowToRowLink.parentRow.nonEmptyRowId;
-									boolean inClosure = false;
-									
-									if (tableBrowser.parent != null) {
-										if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.browserContentPane, rowToRowLink.childRow))) {
-											if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.parent.browserContentPane, rowToRowLink.parentRow))) {
-												inClosure = true;
-											}
-										}
-									}
-									
-									Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, rowToRowLink.x1, rowToRowLink.y1,
-											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure);
-									List<Link> l = links.get(sourceRowID);
-									if (l == null) {
-										l = new ArrayList<Link>();
-										links.put(sourceRowID, l);
-									}
-									l.add(link);
-								}
 							}
 						}
 					}
@@ -1976,7 +1981,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private void renderActiveIFrameMarker(Graphics2D g2d) {
 		for (RowBrowser tableBrowser : tableBrowsers) {
-			if (tableBrowser.internalFrame.isSelected() && !tableBrowser.internalFrame.isIcon() && (tableBrowser.parent == null || !tableBrowser.parent.internalFrame.isIcon())) {
+			if (tableBrowser.internalFrame.isSelected() && !isIconOrHidden(tableBrowser.internalFrame)) {
 				int z = 20;
 				double alpha = (animationStep % z) / (double) z * 2 * Math.PI;
 				double f = Math.sin(alpha) / 2.0 + 0.5;
