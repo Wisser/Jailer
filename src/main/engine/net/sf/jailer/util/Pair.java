@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.util;
 
+import java.io.Serializable;
 
 /**
  * An ordered pair of objects (a, b).
@@ -27,7 +28,7 @@ package net.sf.jailer.util;
  * 
  * @author Ralf Wisser
  */
-public class Pair<A, B> {
+public class Pair<A, B> implements Serializable {
 
 	/**
 	 * The <b>a</b> object.
@@ -101,5 +102,7 @@ public class Pair<A, B> {
 	public String toString() {
 		return "Pair(" + a + ", " + b + ")";
 	}
+
+	private static final long serialVersionUID = -4954459907998487933L;
 
 }

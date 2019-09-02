@@ -2549,6 +2549,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		        } else if (bmFile != null) {
 		        	dataBrowser.desktop.restoreSession(null, bmFile);
 		     		BookmarksPanel.setLastUsedBookmark(bmFile.getName(), dataBrowser.executionContext);
+		     		bmFile.setLastModified(System.currentTimeMillis());
+					new BookmarksPanel(dataBrowser, dataBrowser.bookmarkMenu, dataBrowser.desktop, dataBrowser.executionContext).updateBookmarksMenu();
 		        }
 			}
 		});
@@ -4138,7 +4140,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			} catch (IOException e) {
 				bookmark = null;
 			}
-			UISettings.storeLastSession(bookmark);
+			UISettings.storeLastSession(bookmark, "B");
 		}
 	}
 

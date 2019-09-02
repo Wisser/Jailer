@@ -34,7 +34,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -116,6 +115,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private InfoBar infoBarBookmark;
 	private InfoBar infoBarRecUsedBookmark;
 	private final String tabPropertyName;
+	private final String module; // TODO define module enum
 
 	private Font font =  new JLabel("normal").getFont();
 	private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
@@ -127,6 +127,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	public DataModelManagerDialog(String applicationName, boolean withLoadJMButton, String module) {
 		this.applicationName = applicationName;
 		this.tabPropertyName = "DMMDPropTab" + module;
+		this.module = module;
 		initComponents();
 
 		InfoBar infoBar = new InfoBar("Data Model Configuration", 
@@ -167,7 +168,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		} else {
 			jTabbedPane1.remove(bookmarkPanel);
 			jTabbedPane1.remove(recentlyUsedBookmarkPanel);
-			restoreLastSessionButton.setVisible(false);
 		}
 
 		try {
@@ -341,13 +341,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		setLocation(70, 130);
 		pack();
-		setSize(Math.max(740, getWidth()), 490);
+		setSize(Math.max(840, getWidth()), 490);
 		refresh();
 		UIUtil.initPeer();
 
-		if (!withLoadJMButton) {
-			initRestoreLastSessionButton();
-		}
+		initRestoreLastSessionButton();
 
 		try {
 			Object tab = UISettings.restore(tabPropertyName);
@@ -384,12 +382,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}
 
 	private void initRestoreLastSessionButton() {
-		final BookmarkId lastSession = UISettings.restoreLastSession();
+		final boolean forEMEditor = "S".equals(module);
+		final BookmarkId lastSession = UISettings.restoreLastSession(module);
 		if (lastSession == null) {
 			restoreLastSessionButton.setEnabled(false);
 			return;
 		}
-		Date date = DataBrowser.getLastSessionDate();
+		Date date = forEMEditor? lastSession.date : DataBrowser.getLastSessionDate();
 		if (date == null || !modelList.contains(lastSession.datamodelFolder)) {
 			restoreLastSessionButton.setEnabled(false);
 			return;
@@ -401,21 +400,21 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				break;
 			}
 		}
-		if (connectionInfo == null) {
+		if (connectionInfo == null && !forEMEditor) {
 			restoreLastSessionButton.setEnabled(false);
 			return;
 		}
 		Pair<String, Long> details = modelDetails.get(lastSession.datamodelFolder);
 		restoreLastSessionButton.setToolTipText(
 				UIUtil.toHTML(
-					(details != null? details.a : lastSession.datamodelFolder) + "\n" +
-					connectionInfo.alias + " (" + connectionInfo.user + "@" + connectionInfo.url + ")\n" +
-					toDateAsString(date.getTime()), 0));
+					(lastSession.bookmark != null? (new File(lastSession.bookmark).getName()) : ((details != null? details.a : lastSession.datamodelFolder))) + "\n" +
+					(connectionInfo == null? "offline\n" : (connectionInfo.alias + " (" + connectionInfo.user + "@" + connectionInfo.url + ")\n")) +
+					UIUtil.toDateAsString(date.getTime()), 0));
 		final ConnectionInfo finalConnectionInfo = connectionInfo;
 		restoreLastSessionButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openBookmark(new BookmarkId("", lastSession.datamodelFolder, lastSession.connectionAlias, lastSession.rawSchemaMapping), finalConnectionInfo);
+				openBookmark(new BookmarkId(forEMEditor? lastSession.bookmark : "", lastSession.datamodelFolder, lastSession.connectionAlias, lastSession.rawSchemaMapping), finalConnectionInfo);
 				setVisible(false);
 				dispose();
 			}
@@ -473,15 +472,28 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			BookmarkId bookmark = bookmarksListModel.get(i);
 			Pair<String, Long> details = modelDetails.get(bookmark.datamodelFolder);
 			ConnectionInfo ci = ciOfBookmark.get(bookmark);
-			data[i] = new Object[] { 
-					bookmark.bookmark, 
-					details.a, 
-					bookmark.connectionAlias, 
-					ci.user, 
-					ci.url };
+			data[i] = onlyRecentlyUsed?
+					new Object[] { 
+						bookmark.bookmark, 
+						details.a, 
+						bookmark.connectionAlias, 
+						ci.user, 
+						ci.url,
+						UIUtil.toDateAsString(bookmark.date)
+					} :
+					new Object[] { 
+						bookmark.bookmark, 
+						details.a, 
+						bookmark.connectionAlias, 
+						ci.user, 
+						ci.url
+					};
 		}
 		
-		DefaultTableModel tableModel = new DefaultTableModel(data, new String[] { "Bookmark", "Data Model", "Connection", "User", "URL" }) {
+		DefaultTableModel tableModel = new DefaultTableModel(data, 
+				onlyRecentlyUsed? 
+						new String[] {"Bookmark", "Data Model", "Connection", "User", "URL", "Time"}
+							: new String[] { "Bookmark", "Data Model", "Connection", "User", "URL" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -536,7 +548,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				if (i >= 0 && i < bookmarksListModel.size()) {
 					BookmarkId bookmark = bookmarksListModel.get(i);
 					ConnectionInfo ci = ciOfBookmark.get(bookmark);
-					openBookmark(bookmark, ci);
+					openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
 					setVisible(false);
 					dispose();
 				}
@@ -559,14 +571,17 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		for (int i = 0; i < jTable.getColumnCount(); i++) {
 			TableColumn column = jTable.getColumnModel().getColumn(i);
-			int width = i == 0? 200 : 1;
+			int width = i == 0? 100 : 1;
 			Component comp = jTable.getDefaultRenderer(String.class).getTableCellRendererComponent(jTable, column.getHeaderValue(), false, false, 0, i);
 			width = Math.max(width, comp.getPreferredSize().width);
 
 			for (int line = 0; line < data.length; ++line) {
 				comp = jTable.getDefaultRenderer(String.class).getTableCellRendererComponent(jTable, 
 						data[line][i],false, false, line, i);
-				width = Math.max(width, Math.min(150, comp.getPreferredSize().width));
+				width = Math.max(width, Math.min(250, comp.getPreferredSize().width));
+			}
+			if (onlyRecentlyUsed && i == jTable.getColumnCount() - 1) {
+				width = Math.max(width, 150);
 			}
 			column.setPreferredWidth(width);
 		}
@@ -577,8 +592,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private final List<File> fileList = new ArrayList<File>();
 
 	private void initJMTable() {
+		Map<File, Date> timestamps = new HashMap<File, Date>();
 		try {
-			fileList.addAll(UISettings.loadRecentFiles());
+			for (Pair<File, Date> file: UISettings.loadRecentFiles()) {
+				fileList.add(file.a);
+				timestamps.put(file.a, file.b);
+			}
 		} catch (Exception e) {
 			// ignore
 		}
@@ -587,13 +606,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		for (File file: fileList) {
 			try {
 				if (file.exists()) {
-					data[i++] = new Object[] { file.getName(), file.getAbsoluteFile().getParent() };
+					data[i++] = new Object[] { file.getName(), file.getAbsoluteFile().getParent(), UIUtil.toDateAsString(timestamps.get(file)) };
 				}
 			} catch (Exception e) {
 				// ignore
 			}
 		}
-		DefaultTableModel tableModel = new DefaultTableModel(data, new String[] { "Name", "Path" }) {
+		DefaultTableModel tableModel = new DefaultTableModel(data, new String[] { "Name", "Path", "Time" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -638,6 +657,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 						jmOkButton.setEnabled(jmFilesTable.getSelectedRow() >= 0);
 					}
 				});
+		for (i = 0; i < jmFilesTable.getColumnCount(); i++) {
+			TableColumn column = jmFilesTable.getColumnModel().getColumn(i);
+			int width = i == 0? 200 : 1;
+			Component comp = jmFilesTable.getDefaultRenderer(String.class).getTableCellRendererComponent(jmFilesTable, column.getHeaderValue(), false, false, 0, i);
+			width = Math.max(width, comp.getPreferredSize().width);
+
+			for (int line = 0; line < data.length; ++line) {
+				comp = jmFilesTable.getDefaultRenderer(String.class).getTableCellRendererComponent(jmFilesTable, 
+						data[line][i],false, false, line, i);
+				width = Math.max(width, Math.min(150, comp.getPreferredSize().width));
+			}
+			column.setPreferredWidth(width);
+		}
 		jmFilesTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent me) {
@@ -666,7 +698,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				} else {
 					DataModelManager.setCurrentModelSubfolder(currentConnection.dataModelFolder, executionContext);
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-					onSelect(this, executionContext);
+					dbConnectionDialog.currentConnection = currentConnection;
+					dbConnectionDialog.isConnected = true;
+					onSelect(dbConnectionDialog, executionContext);
 					UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 					DataModelManagerDialog.this.setVisible(false);
@@ -727,7 +761,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		int i = 0;
 		for (String model: modelList) {
 			Pair<String, Long> details = modelDetails.get(model);
-			data[i++] = new Object[] { details == null? "" : details.a, model == null || model.length() == 0? "." : model, details == null? "" : toDateAsString(details.b) };
+			data[i++] = new Object[] { details == null? "" : details.a, model == null || model.length() == 0? "." : model, details == null? "" : UIUtil.toDateAsString(details.b) };
 		}
 		DefaultTableModel tableModel = new DefaultTableModel(data, new String[] { "Data Model", "Subfolder", "Last Modified" }) {
 			@Override
@@ -738,13 +772,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		};
 		dataModelsTable.setModel(tableModel);
 		return data;
-	}
-
-	private String toDateAsString(Long time) {
-		if (time == null) {
-			return "";
-		}
-		return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Environment.initialLocal).format(new Date(time));
 	}
 
 	private boolean inRefresh = false;
@@ -1642,19 +1669,25 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		try {
 			CommandLineInstance.getInstance().bookmark = bookmark.bookmark;
 			CommandLineInstance.getInstance().rawschemamapping = bookmark.rawSchemaMapping;
-			CommandLineInstance.getInstance().alias = ci.alias;
-			CommandLineInstance.getInstance().driver = ci.driverClass;
-			CommandLineInstance.getInstance().jdbcjar = ci.jar1;
-			CommandLineInstance.getInstance().jdbcjar2 = ci.jar2;
-			CommandLineInstance.getInstance().jdbcjar3 = ci.jar3;
-			CommandLineInstance.getInstance().jdbcjar4 = ci.jar4;
-			CommandLineInstance.getInstance().password = ci.password;
-			CommandLineInstance.getInstance().url = ci.url;
-			CommandLineInstance.getInstance().user = ci.user;
+			if (ci != null) {
+				CommandLineInstance.getInstance().alias = ci.alias;
+				CommandLineInstance.getInstance().driver = ci.driverClass;
+				CommandLineInstance.getInstance().jdbcjar = ci.jar1;
+				CommandLineInstance.getInstance().jdbcjar2 = ci.jar2;
+				CommandLineInstance.getInstance().jdbcjar3 = ci.jar3;
+				CommandLineInstance.getInstance().jdbcjar4 = ci.jar4;
+				CommandLineInstance.getInstance().password = ci.password;
+				CommandLineInstance.getInstance().url = ci.url;
+				CommandLineInstance.getInstance().user = ci.user;
+			}
 			onSelect(null, executionContext);
 			UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
-			UISettings.addRecentConnectionAliases(ci.alias);
-			UISettings.addRecentBookmarks(bookmark);
+			if (ci != null) {
+				UISettings.addRecentConnectionAliases(ci.alias);
+			}
+			if ("B".equals(module)) {
+				UISettings.addRecentBookmarks(bookmark);
+			}
 		} catch (Throwable t) {
 			CommandLineInstance.getInstance().bookmark = oldBookmark;
 			CommandLineInstance.getInstance().rawschemamapping = oldRawSchemaMapping;

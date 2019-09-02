@@ -1,0 +1,5 @@
+Layout; MEDIUM
+1; ; A.EMPNO=7900; 0; 6; 476; 460; 500; true; T; EMPLOYEE; ; false; 
+2; 1; ; 586; 6; 476; 460; 500; true; T; PROJECT_PARTICIPATION; inverse-EMPLOYEE; false; 
+3; 2; ; 1172; 6; 476; 460; 500; false; T; PROJECT; PROJECT; false; 
+4; 2; ; 1172; 474; 476; 460; 500; false; T; ROLE; ROLE; false; 

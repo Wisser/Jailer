@@ -35,6 +35,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -157,7 +159,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private Font font =  new JLabel("normal").getFont();
 	private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
     private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-
+	private Map<String, Date> aliasTimestamp = new HashMap<String, Date>();
+	
 	/**
 	 * Gets connection to DB.
 	 * 
@@ -368,9 +371,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		int i = 0;
 		for (ConnectionInfo ci: connectionList) {
 			Pair<String, Long> modelDetails = DataModelManager.getModelDetails(ci.dataModelFolder, executionContext);
-			data[i++] = new Object[] { ci.alias, ci.user, ci.url, ci.dataModelFolder == null? "Default" : modelDetails == null? "" : modelDetails.a };
+			if (showOnlyRecentyUsedConnections) {
+				data[i++] = new Object[] { ci.alias, ci.user, ci.url, ci.dataModelFolder == null? "Default" : modelDetails == null? "" : modelDetails.a, UIUtil.toDateAsString(aliasTimestamp.get(ci.alias)) };
+			} else {
+				data[i++] = new Object[] { ci.alias, ci.user, ci.url, ci.dataModelFolder == null? "Default" : modelDetails == null? "" : modelDetails.a };
+			}
 		}
-		DefaultTableModel tableModel = new DefaultTableModel(data, new String[] { "Alias", "User", "URL", "Data Model" }) {
+		DefaultTableModel tableModel = new DefaultTableModel(data, !showOnlyRecentyUsedConnections? new String[] { "Alias", "User", "URL", "Data Model" } : new String[] { "Alias", "User", "URL", "Data Model", "Time" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -588,10 +595,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (showOnlyRecentyUsedConnections) {
 			List<ConnectionInfo> recUsedConnectionList = new ArrayList<ConnectionInfo>();
 			
-			for (String alias: UISettings.loadRecentConnectionAliases()) {
+			for (Pair<String, Date> alias: UISettings.loadRecentConnectionAliases()) {
 				for (ConnectionInfo ci: connectionList) {
-					if (ci.alias != null && ci.alias.equals(alias)) {
+					if (ci.alias != null && ci.alias.equals(alias.a)) {
 						recUsedConnectionList.add(ci);
+						aliasTimestamp.put(alias.a, alias.b);
 						break;
 					}
 				}

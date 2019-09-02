@@ -79,6 +79,7 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.commandline.UICommandLine;
+import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.ui.util.AnimationController;
@@ -133,6 +134,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		this(extractionModelFile, isHorizonal, null, executionContext);
 	}
 
+	private void storeLastSession() {
+   		BookmarkId bookmark;
+		bookmark = new BookmarkId(extractionModelEditor.extractionModelFile, ExtractionModelFrame.this.executionContext.getCurrentModelSubfolder(), ExtractionModelFrame.this.executionContext.getCurrentConnectionAlias(), null);
+		UISettings.storeLastSession(bookmark, "S");
+	}
+	
 	/**
 	 *  Creates new form ExtractionModelFrame.
 	 *  
@@ -198,6 +205,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
         dbConnectionDialog.autoConnect();
 
+        final String bmFile = CommandLineInstance.getInstance().bookmark;
+		if (bmFile != null && !"".equals(bmFile) && new File(bmFile).exists()) {
+			showWizzard = false;
+			UIUtil.invokeLater(4, new Runnable() {
+				@Override
+				public void run() {
+					load(bmFile);
+				}
+			});
+		};
+        
 		updateMenuItems();
 
 		cycleViewDialog = new CyclesView(this);
@@ -209,6 +227,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}, executionContext);
 	}
 
+	private boolean showWizzard = true;
+	
 	private void initMenu() {
 		int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		if (mask != InputEvent.CTRL_MASK) {
@@ -1683,10 +1703,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					"",
 					JOptionPane.YES_NO_OPTION,
 					JOptionPane.QUESTION_MESSAGE)) {
+				storeLastSession();
 				dispose();
 				UIUtil.checkTermination();
 			}
 		} else {
+			storeLastSession();
 			dispose();
 			UIUtil.checkTermination();
 		}
@@ -2137,7 +2159,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									} catch (Exception e) {
 										UIUtil.showException(finalExtractionModelFrame, "Error", e);
 									}
-									if (withStartupWizzard) {
+									if (withStartupWizzard && finalExtractionModelFrame.showWizzard) {
 										new StartupWizzardDialog(finalExtractionModelFrame) {
 											@Override
 											protected void onClose() {

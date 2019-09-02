@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -460,12 +461,14 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		public final String datamodelFolder;
 		public final String connectionAlias;
 		public final String rawSchemaMapping;
+		public final Date date;
 		
 		public BookmarkId(String bookmark, String datamodelFolder, String connectionAlias, String rawSchemaMapping) {
 			this.bookmark = bookmark;
 			this.datamodelFolder = datamodelFolder;
 			this.connectionAlias = connectionAlias;
 			this.rawSchemaMapping = rawSchemaMapping;
+			this.date = new Date();
 		}
 
 		@Override

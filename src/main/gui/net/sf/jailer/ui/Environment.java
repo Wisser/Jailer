@@ -112,7 +112,7 @@ public class Environment {
 			        } catch (Throwable t) {
 			            if (active) {
 			            	active = false;
-			            	UIUtil.showException(null, "Error", t);
+			            	UIUtil.showException(null, "Error", t, "AWT");
 			            } else {
 			            	throw t;
 			            }

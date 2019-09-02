@@ -54,6 +54,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -769,7 +770,8 @@ public class UIUtil {
             contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
             contextDesc += "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
             
-            String iMsg = msg.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
+            String iMsg = (context != null && "AWT".equals(context)? context : "") +
+            		msg.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
             iMsg = iMsg
             		.replaceAll("\\bat [^\\n]*/", "at ")
             		.replaceAll("\\bat java.", "atj..")
@@ -1255,6 +1257,21 @@ public class UIUtil {
 			}
 		} catch (Exception e) {
 			return fileName;
+		}
+	}
+
+	public static String toDateAsString(Long time) {
+		if (time == null) {
+			return "";
+		}
+		return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Environment.initialLocal).format(new Date(time));
+	}
+
+	public static Object toDateAsString(Date date) {
+		if (date != null) {
+			return toDateAsString(date.getTime());
+		} else {
+			return null;
 		}
 	}
 
