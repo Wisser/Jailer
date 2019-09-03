@@ -203,6 +203,14 @@ public class BookmarksPanel extends javax.swing.JPanel {
 			protected void onElementClicked(StringBuilder element) {
 				nameTextField.setText(getDisplayName(element));
 			}
+			
+			protected void onDoubleClick(StringBuilder element) {
+				if (!forRenaming) {
+					nameTextField.setText(getDisplayName(element));
+					okButtonActionPerformed(null);
+				}
+			}
+			
 		};
 	}
 

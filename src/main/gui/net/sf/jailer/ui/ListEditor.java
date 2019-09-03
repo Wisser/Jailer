@@ -106,6 +106,9 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 					int row = table.rowAtPoint(p);
 					if (row >= 0) {
 						onElementClicked(model.get(row));
+						if (me.getClickCount() >= 2) {
+							onDoubleClick(model.get(row));
+						}
 					}
 					if (me.getClickCount() >= 2) {
 						columnsTable.getSelectionModel().setSelectionInterval(row, row);
@@ -508,6 +511,9 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		}
 	}//GEN-LAST:event_updateButtonActionPerformed
 
+	protected void onDoubleClick(T element) {
+	}
+	
 	private JDialog createEditDialog(T element, String titel, JComponent detailsView) {
 		Component owner = SwingUtilities.getRoot(this);
 		JDialog dialog;
