@@ -2799,6 +2799,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			
+			if (association.reversalAssociation == this.association) {
+				excludeFromANEmpty = true;
+			}
+			
 			final ActionListener itemAction = new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {

@@ -683,7 +683,6 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         setSize(500, 500);
         setAlwaysOnTop(true);
 
-        jLabel7.setVisible(false);
         jLabel8.setVisible(false);
         jLabel9.setVisible(false);
     }

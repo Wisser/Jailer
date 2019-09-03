@@ -202,11 +202,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		initTableModel();
 		initConnectionDialog(true);
 		initConnectionDialog(false);
-		loadBookmarks();
-		JTable bookmarkTable = createBookmarkTable(bmOkButton, false);
-		bookmarkDialogPanel.add(new JScrollPane(bookmarkTable));
-		bookmarkTable = createBookmarkTable(bmRecUsedOkButton, true);
-		bookmarkRecUsedDialogPanel.add(new JScrollPane(bookmarkTable));
+		JTable bookmarkTable = initBookmarkTables();
 
 		final TableCellRenderer defaultTableCellRenderer = dataModelsTable
 				.getDefaultRenderer(String.class);
@@ -381,6 +377,17 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 	}
 
+	private JTable initBookmarkTables() {
+		loadBookmarks();
+		JTable bookmarkTable = createBookmarkTable(bmOkButton, false);
+		bookmarkDialogPanel.removeAll();
+		bookmarkDialogPanel.add(new JScrollPane(bookmarkTable));
+		bookmarkTable = createBookmarkTable(bmRecUsedOkButton, true);
+		bookmarkRecUsedDialogPanel.removeAll();
+		bookmarkRecUsedDialogPanel.add(new JScrollPane(bookmarkTable));
+		return bookmarkTable;
+	}
+
 	private void initRestoreLastSessionButton() {
 		final boolean forEMEditor = "S".equals(module);
 		final BookmarkId lastSession = UISettings.restoreLastSession(module);
@@ -425,6 +432,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private final Map<BookmarksPanel.BookmarkId, DbConnectionDialog.ConnectionInfo> ciOfBookmark = new HashMap<BookmarksPanel.BookmarkId, DbConnectionDialog.ConnectionInfo>();
 
 	private void loadBookmarks() {
+		bookmarks.clear();
+		ciOfBookmark.clear();
 		for (String model: modelList) {
 			if (model != null) {
 				for (ConnectionInfo ci: dbConnectionDialog.getConnectionList()) {
@@ -700,6 +709,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					dbConnectionDialog.currentConnection = currentConnection;
 					dbConnectionDialog.isConnected = true;
+					store();
 					onSelect(dbConnectionDialog, executionContext);
 					UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -832,6 +842,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			refreshButtons();
 			initConnectionDialog(true);
 			initConnectionDialog(false);
+			initBookmarkTables();
 		} finally {
 			inRefresh = false;
 		}
@@ -853,7 +864,20 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	 * Stores the selection.
 	 */
 	private void store() {
-		if (currentModel != null) {
+		String cm = currentModel;
+		if (cm == null) {
+			try {
+				File file = Environment.newFile(MODEL_SELECTION_FILE);
+				if (file.exists()) {
+					BufferedReader in = new BufferedReader(new FileReader(file));
+					cm = in.readLine();
+					in.close();
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		if (cm != null) {
 			try {
 				File file = Environment.newFile(MODEL_SELECTION_FILE);
 				BufferedWriter out = new BufferedWriter(new FileWriter(file));
@@ -1705,6 +1729,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				CommandLineInstance.getInstance().url = ci.url;
 				CommandLineInstance.getInstance().user = ci.user;
 			}
+			store();
 			onSelect(null, executionContext);
 			UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
 			if (ci != null) {
