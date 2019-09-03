@@ -403,11 +403,14 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (desktop.desktopAnimation != null && desktop.desktopAnimation.isActive()) {
 					return false;
 				}
-				RowBrowser visParent = tableBrowser.parent;
-				while (visParent != null && !visParent.internalFrame.isVisible()) {
-					visParent = visParent.parent;
+				RowBrowser ancestor = tableBrowser.parent;
+				while (ancestor != null) {
+					if (ancestor.internalFrame.isVisible() && Math.abs(tableBrowser.internalFrame.getY() - ancestor.internalFrame.getY()) > 2) {
+						return true;
+					}
+					ancestor = ancestor.parent;
 				}
-				return visParent != null && Math.abs(tableBrowser.internalFrame.getY() - visParent.internalFrame.getY()) > 2;
+				return false;
 			}
         };
 

@@ -94,6 +94,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
@@ -2954,11 +2956,50 @@ public abstract class Desktop extends JDesktopPane {
 						+ (rb.association == null ? "" : CsvFile.encodeCell(rb.association.getName())) + "; ";
 			}
 			csv += rb.isHidden() + "; ";
+			csv += serializedSortKey(rb.browserContentPane.rowsTable);
 			out.append(csv).append(LF);
 			for (RowBrowser child : tableBrowsers) {
 				if (child.parent == rb) {
 					storeSession(child, browserNumber, out);
 				}
+			}
+		}
+	}
+
+	private String serializedSortKey(JTable jTable) {
+		if (jTable != null) {
+			try {
+				List<? extends SortKey> sortKeys = jTable.getRowSorter().getSortKeys();
+				StringBuilder sb = new StringBuilder();
+				for (SortKey sortKey: sortKeys) {
+					if (sb.length() > 0) {
+						sb.append(",");
+					}
+					sb.append(sortKey.getColumn() + "|" + sortKey.getSortOrder());
+				}
+				return sb.toString();
+			} catch (Exception e) {
+				return null; // sort keys are lost
+			}
+		}
+		return null;
+	}
+
+	private void deserializedSortKey(JTable jTable, String externaliuedSortKey) {
+		if (jTable != null && externaliuedSortKey != null && !externaliuedSortKey.trim().isEmpty()) {
+			try {
+				List<SortKey> sortKeys = new ArrayList<SortKey>();
+				for (String externalizedKey: externaliuedSortKey.trim().split(",")) {
+					String[] columnOrder = externalizedKey.trim().split("\\|");
+					if (columnOrder.length == 2) {
+						sortKeys.add(new SortKey(Integer.parseInt(columnOrder[0]), SortOrder.valueOf(columnOrder[1])));
+					}
+				}
+				if (!sortKeys.isEmpty()) {
+					jTable.getRowSorter().setSortKeys(sortKeys);
+				}
+			} catch (Exception e) {
+				// ignore
 			}
 		}
 	}
@@ -3088,6 +3129,7 @@ public abstract class Desktop extends JDesktopPane {
 						rb.internalFrame.setLocation(loc);
 						rb.internalFrame.setSize(size);
 					}
+					deserializedSortKey(rb.browserContentPane.rowsTable, l.cells.get(13));
 				}
 			}
 			checkDesktopSize();
