@@ -163,7 +163,7 @@ public class DesktopAnimation {
 			double f = (currentTimeMillis - animation.startTime) / duration;
 			double fs;
 
-			if (f > 1.0) {
+			if (f >= 1.0) {
 				f = 1.0;
 				fs = 1.0;
 			} else {
