@@ -275,10 +275,10 @@ public class CLIPanel extends javax.swing.JPanel {
 			}
 		}
 		
-		if (extractionModelFile == null) {
+//		if (extractionModelFile == null) {
 			args.add("-datamodel");
 			args.add(executionContext.getQualifiedDatamodelFolder());
-		}
+//		}
 		
 		if (bookmarks != null) {
 			Object bm = bookmarkComboBox.getSelectedItem();

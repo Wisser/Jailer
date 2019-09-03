@@ -2135,7 +2135,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				} else {
 					executionContext = new ExecutionContext(executionContext);
 				}
+				DataModelManagerDialog.setCurrentBaseFolder(executionContext);
 				DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file, executionContext), executionContext);
+				
+				String datamodelFolder = CommandLineInstance.getInstance().datamodelFolder;
+				if (datamodelFolder != null) {
+					executionContext.setDatamodelFolder(new File(datamodelFolder).getParent());
+					executionContext.setCurrentModelSubfolder(new File(datamodelFolder).getName());
+				}
+				
 				createFrame(finalFile, true, true, null, executionContext);
 			} else {
 				DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + " - Database Subsetting Tool", true, "S") {

@@ -868,7 +868,30 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		}
 	}
-	
+
+	/**
+	 * Reads in and set currentBaseFolder.
+	 */
+	public static void setCurrentBaseFolder(ExecutionContext executionContext) {
+		String currentBaseFolder = null;
+		try {
+			File file = Environment.newFile(MODEL_SELECTION_FILE);
+			if (file.exists()) {
+				BufferedReader in = new BufferedReader(new FileReader(file));
+				String cm = in.readLine();
+				if (cm != null) {
+					currentBaseFolder = in.readLine();
+				}
+				in.close();
+			}
+		} catch (Exception e) {
+			// ignore
+		}
+		if (currentBaseFolder != null && new File(currentBaseFolder).exists()) {
+			executionContext.setDatamodelFolder(currentBaseFolder);
+		}
+	}
+
 	/**
 	 * Restores the selection.
 	 */
@@ -878,21 +901,23 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		baseFolders.clear();
 		try {
 			File file = Environment.newFile(MODEL_SELECTION_FILE);
-			BufferedReader in = new BufferedReader(new FileReader(file));
-			currentModel = in.readLine();
-			if (currentModel != null) {
-				currentBaseFolder = in.readLine();
-				if (currentBaseFolder != null) {
-					for (;;) {
-						String bf = in.readLine();
-						if (bf == null) {
-							break;
+			if (file.exists()) {
+				BufferedReader in = new BufferedReader(new FileReader(file));
+				currentModel = in.readLine();
+				if (currentModel != null) {
+					currentBaseFolder = in.readLine();
+					if (currentBaseFolder != null) {
+						for (;;) {
+							String bf = in.readLine();
+							if (bf == null) {
+								break;
+							}
+							baseFolders.add(bf);
 						}
-						baseFolders.add(bf);
 					}
 				}
+				in.close();
 			}
-			in.close();
 		} catch (Exception e) {
 			// ignore
 		}
