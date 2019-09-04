@@ -239,7 +239,7 @@ public class ColumnsTable extends JTable {
 		});
 		Point p = new Point(e.getX(), e.getY());
 		SwingUtilities.convertPointToScreen(p, this);
-		return rb.createPopupMenu(row, i, (int) p.getX(), (int) p.getY(), false, copyTCB, new Runnable() {
+		return rb.createPopupMenu(this, row, i, (int) p.getX(), (int) p.getY(), false, copyTCB, new Runnable() {
 			@Override
 			public void run() {
 				repaint();

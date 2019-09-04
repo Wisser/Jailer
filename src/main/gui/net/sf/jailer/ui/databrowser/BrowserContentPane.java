@@ -614,7 +614,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		sortColumnsCheckBox.setVisible(false);
 
 		findColumnsLabel.setText(null);
-		findColumnsLabel.setToolTipText("Find Columns...");
+		findColumnsLabel.setToolTipText("Find Column...");
 		findColumnsLabel.setIcon(StringSearchPanel.getSearchIcon(false, this));
 
 		findColumnsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -622,22 +622,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				UIUtil.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						in = false;
-						updateBorder();
-						Point point = new Point();
-						SwingUtilities.convertPointToScreen(point, findColumnsPanel);
-						findColumns((int) point.getX(), (int) point.getY());
-					}
-				});
+				if (findColumnsLabel.isEnabled()) {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							in = false;
+							updateBorder();
+							Point point = new Point();
+							SwingUtilities.convertPointToScreen(point, findColumnsPanel);
+							findColumns((int) point.getX(), (int) point.getY(), rowsTable);
+						}
+					});
+				}
 			}
 
 			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				in = true;
-				updateBorder();
+				if (findColumnsLabel.isEnabled()) {
+					in = true;
+					updateBorder();
+				}
 			}
 
 			@Override
@@ -651,19 +655,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				findColumnsPanel.setOpaque(in);
 			}
 		});
-
-//		SmallButton searchButton = new SmallButton(StringSearchPanel.getSearchIcon(false, this), new Color(1f, 1f, 1f)) {
-//			
-//			@Override
-//			protected void onClick() {
-//				// TODO Auto-generated method stub
-//				
-//			}
-//		};
-//		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-//        gridBagConstraints.gridx = 5;
-//        gridBagConstraints.gridy = 1;
-//        jPanel6.add(searchButton, gridBagConstraints);
 
 		andCondition = new JComboBox();
 		andCondition.setEditable(true);
@@ -916,7 +907,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //			final Font italicBold = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC | Font.BOLD, nonbold.getSize());
 
 			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, final int row, final int column) {
 				boolean cellSelected = isSelected;
 				
 				if (table == rowsTable) {
@@ -997,14 +988,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						((JLabel) render).setFont(italic);
 						isNull = true;
 					}
-					TableColumnModel columnModel = table.getColumnModel();
-					if (foundColumn >= 0 && foundColumn < columnModel.getColumnCount() && columnModel.getColumn(column).getModelIndex() == foundColumn) {
+					TableColumnModel columnModel = rowsTable.getColumnModel();
+					if (foundColumn >= 0 && column < columnModel.getColumnCount() && columnModel.getColumn(column).getModelIndex() == foundColumn) {
 						Color background = render.getBackground();
 						render.setBackground(
 								new Color(
 										Math.max((int)(background.getRed()), 0),
-										Math.max((int)(background.getGreen() * 0.92), 0),
-										Math.max((int)(background.getBlue() * 0.93), 0),
+										Math.max((int)(background.getGreen() * 0.90), 0),
+										Math.max((int)(background.getBlue() * 0.91), 0),
 						 background.getAlpha()));
 					}
 					try {
@@ -1643,7 +1634,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param runnable 
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint) {
-		return createPopupMenu(row, rowIndex, x, y, navigateFromAllRows, altCopyTCB, repaint, true);
+		return createPopupMenu(rowsTable, row, rowIndex, x, y, navigateFromAllRows, altCopyTCB, repaint, true);
 	}
 
 	/**
@@ -1651,7 +1642,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param navigateFromAllRows 
 	 * @param runnable 
 	 */
-	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke) {
+	public JPopupMenu createPopupMenu(JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		if (withKeyStroke) {
 			tableFilter.setAccelerator(KS_FILTER);
@@ -1962,10 +1953,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				popup.add(copyTCB);
 				popup.addSeparator();
 			}
-			if (withKeyStroke) {
-				popup.add(createFindColumnMenuItem(x, y));
-				popup.add(new JSeparator());
-			}
+			popup.add(createFindColumnMenuItem(x, y, contextJTable));
+			popup.add(new JSeparator());
 			popup.add(tableFilter);
 			JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
 			editMode.setEnabled(isTableEditable(table));
@@ -1989,12 +1978,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return popup;
 	}
 
-	private JMenuItem createFindColumnMenuItem(final int x, final int y) {
+	private JMenuItem createFindColumnMenuItem(final int x, final int y, final JTable contextJTable) {
 		final JMenuItem menuItem = new JMenuItem("Find Column...");
+		menuItem.setEnabled(singleRowDetailsView == null);
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				findColumns(x, y);
+				findColumns(x, y, contextJTable);
 			}
 		});
 		return menuItem;
@@ -2145,7 +2135,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		popup.add(new JSeparator());
 		if (!forNavTree) {
-			popup.add(createFindColumnMenuItem(x, y));
+			popup.add(createFindColumnMenuItem(x, y, rowsTable));
 			popup.add(new JSeparator());
 		}
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
@@ -3891,6 +3881,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		DefaultTableModel dtm;
+		findColumnsLabel.setEnabled(true);
 		singleRowDetailsView = null;
 		singleRowViewScrollPaneContainer.setVisible(false);
 		rowsTableContainerPanel.setVisible(true);
@@ -4251,6 +4242,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					return false;
 				}
 			};
+			findColumnsLabel.setEnabled(false);
 
 			for (Row row : rows) {
 				dtm.addRow(new Object[] { row });
@@ -6045,7 +6037,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return sb.toString();
 	}
 
-	private void findColumns(final int x, final int y) {
+	private void findColumns(final int x, final int y, final JTable contextJTable) {
 		TableColumnModel columnModel = rowsTable.getColumnModel();
 		List<String> columNames = new ArrayList<String>();
 		for (int i = 0; i < columnModel.getColumnCount(); ++i) {
@@ -6075,17 +6067,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						Object name = columnModel.getColumn(i).getHeaderValue();
 						if (name != null && name.equals(selected)) {
 							int mi = i;
-							Rectangle visibleRect = rowsTable.getVisibleRect();
-							Rectangle cellRect = rowsTable.getCellRect(0, mi, true);
-							rowsTable.scrollRectToVisible(
-									new Rectangle(
-											cellRect.x - 32, visibleRect.y + visibleRect.height / 2, 
-											cellRect.width + 64, 1));
+							if (contextJTable != null && contextJTable != rowsTable) {
+								Rectangle visibleRect = contextJTable.getVisibleRect();
+								Rectangle cellRect = contextJTable.getCellRect(mi, 0, true);
+								contextJTable.scrollRectToVisible(
+										new Rectangle(
+												visibleRect.x + visibleRect.width / 2,
+												cellRect.y - 16,
+												1, cellRect.width + 16));
+								contextJTable.repaint();
+							} else {
+								Rectangle visibleRect = rowsTable.getVisibleRect();
+								Rectangle cellRect = rowsTable.getCellRect(0, mi, true);
+								rowsTable.scrollRectToVisible(
+										new Rectangle(
+												cellRect.x - 32, visibleRect.y + visibleRect.height / 2, 
+												cellRect.width + 64, 1));
+								rowsTable.repaint();
+							}
 							foundColumn = columnModel.getColumn(i).getModelIndex();
-							rowsTable.repaint();
-							
-							// TODO
-							
 						}
 					}
 				}
