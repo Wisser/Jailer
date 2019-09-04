@@ -4,7 +4,7 @@
   - https://github.com/Wisser/Jailer/issues/13
     "Multiple table selection"
   - The model selection dialog has been improved. Recently used connections/sessions/bookmarks can be reopened with a single click.
-  - New feature "Find Colums ..." of the data browser makes it easy to find a column in a wide table.
+  - New feature "Find Column..." of the data browser makes it easy to find a column in a wide table.
 
 8.8.4
   - Fixed a bug that caused a Liquibase export not to work for Postgres TEXT columns.
