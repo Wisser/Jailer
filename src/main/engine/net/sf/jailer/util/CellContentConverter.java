@@ -125,6 +125,7 @@ public class CellContentConverter {
 				hex.append(hexChar[(b >> 4) & 15]);
 				hex.append(hexChar[b & 15]);
 			}
+			data = null; // gc
 			return targetConfiguration.getBinaryPattern().replace("%s", hex);
 		}
 		if (content instanceof Time) {
