@@ -49,6 +49,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.swing.AbstractButton;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -114,7 +115,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton) {
 		final JToggleButton button = new JToggleButton();
-		button.setIcon(UIUtil.scaleIcon(button, alternativeIcon? icon2 : icon));
+		button.setIcon(getSearchIcon(alternativeIcon, button));
 		button.setToolTipText("Find Table");
 		button.addActionListener(new ActionListener() {
 			@Override
@@ -172,6 +173,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			});
 		}
 		return button;
+	}
+
+	public static ImageIcon getSearchIcon(boolean alternativeIcon, final JComponent button) {
+		return UIUtil.scaleIcon(button, alternativeIcon? icon2 : icon);
 	}
 
 	private static void updateEnabledState(JToggleButton button, JComboBox comboBox) {
@@ -277,7 +282,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		return null;
 	}
 
-	private final int MAX_LIST_LENGTH = 100;
+	private final int MAX_LIST_LENGTH = 80;
 	private boolean showAll = false;
 	private String showAllLabel;
 	 

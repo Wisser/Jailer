@@ -161,6 +161,7 @@ import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
+import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
@@ -611,6 +612,58 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		initComponents();
 		loadingCauseLabel.setVisible(false);
 		sortColumnsCheckBox.setVisible(false);
+
+		findColumnsLabel.setText(null);
+		findColumnsLabel.setToolTipText("Find Columns...");
+		findColumnsLabel.setIcon(StringSearchPanel.getSearchIcon(false, this));
+
+		findColumnsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+			private boolean in = false;
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				UIUtil.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						in = false;
+						updateBorder();
+						Point point = new Point();
+						SwingUtilities.convertPointToScreen(point, findColumnsPanel);
+						findColumns((int) point.getX(), (int) point.getY());
+					}
+				});
+			}
+
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				in = true;
+				updateBorder();
+			}
+
+			@Override
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				in = false;
+				updateBorder();
+			}
+
+			private void updateBorder() {
+				findColumnsPanel.setBackground(in? new Color(255, 255, 100) : null);
+				findColumnsPanel.setOpaque(in);
+			}
+		});
+
+//		SmallButton searchButton = new SmallButton(StringSearchPanel.getSearchIcon(false, this), new Color(1f, 1f, 1f)) {
+//			
+//			@Override
+//			protected void onClick() {
+//				// TODO Auto-generated method stub
+//				
+//			}
+//		};
+//		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridx = 5;
+//        gridBagConstraints.gridy = 1;
+//        jPanel6.add(searchButton, gridBagConstraints);
 
 		andCondition = new JComboBox();
 		andCondition.setEditable(true);
@@ -1941,66 +1994,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				TableColumnModel columnModel = rowsTable.getColumnModel();
-				List<String> columNames = new ArrayList<String>();
-				for (int i = 0; i < columnModel.getColumnCount(); ++i) {
-					Object name = columnModel.getColumn(i).getHeaderValue();
-					if (name != null) {
-						columNames.add(name.toString());
-					}
-				}
-				Collections.sort(columNames, new Comparator<String>() {
-					@Override
-					public int compare(String o1, String o2) {
-						return o1.compareToIgnoreCase(o2);
-					}
-				});
-
-				final Window owner = SwingUtilities.getWindowAncestor(rowsTable);
-
-				final JComboBox combobox = new JComboBox();
-				combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
-				StringSearchPanel searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
-					@Override
-					public void run() {
-						Object selected = combobox.getSelectedItem();
-						if (selected != null) {
-							TableColumnModel columnModel = rowsTable.getColumnModel();
-							for (int i = 0; i < columnModel.getColumnCount(); ++i) {
-								Object name = columnModel.getColumn(i).getHeaderValue();
-								if (name != null && name.equals(selected)) {
-									int mi = i;
-									Rectangle visibleRect = rowsTable.getVisibleRect();
-									Rectangle cellRect = rowsTable.getCellRect(0, mi, true);
-									rowsTable.scrollRectToVisible(
-											new Rectangle(
-													cellRect.x - 32, visibleRect.y + visibleRect.height / 2, 
-													cellRect.width + 64, 1));
-									foundColumn = columnModel.getColumn(i).getModelIndex();
-									rowsTable.repaint();
-									
-									// TODO
-									
-								}
-							}
-						}
-					}
-				}) {
-					@Override
-					protected Integer preferredWidth() {
-						return 260;
-					}
-					@Override
-					protected Integer maxX() {
-						if (owner != null) {
-							return owner.getX() + owner.getWidth() - preferredWidth();
-						} else {
-							return null;
-						}
-					}
-				};
-
-				searchPanel.find(owner, "Find Column", x, y, true);
+				findColumns(x, y);
 			}
 		});
 		return menuItem;
@@ -4550,6 +4544,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         selectDistinctCheckBox = new javax.swing.JCheckBox();
         sortColumnsPanel = new javax.swing.JPanel();
         sortColumnsLabel = new javax.swing.JLabel();
+        findColumnsPanel = new javax.swing.JPanel();
+        findColumnsLabel = new javax.swing.JLabel();
         loadingPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         cancelLoadButton = new javax.swing.JButton();
@@ -4630,12 +4626,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel6.add(sortColumnsCheckBox, gridBagConstraints);
 
         rowsCount.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         jPanel6.add(rowsCount, gridBagConstraints);
@@ -4649,19 +4647,37 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel6.add(selectDistinctCheckBox, gridBagConstraints);
 
         sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         sortColumnsPanel.setLayout(new javax.swing.BoxLayout(sortColumnsPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        sortColumnsLabel.setText("Natural column order");
+        sortColumnsLabel.setText("Natural column order ");
         sortColumnsPanel.add(sortColumnsLabel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel6.add(sortColumnsPanel, gridBagConstraints);
+
+        findColumnsPanel.setLayout(new java.awt.GridBagLayout());
+
+        findColumnsLabel.setText("Find Columns");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        findColumnsPanel.add(findColumnsLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 6;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel6.add(findColumnsPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -5133,7 +5149,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         rrPanel.add(relatedRowsPanel, gridBagConstraints);
 
-        sqlPanel.setBackground(new java.awt.Color(255, 243, 210));
+        sqlPanel.setBackground(new java.awt.Color(255, 243, 218));
         sqlPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         sqlPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -5259,6 +5275,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JButton deselectButton;
     private javax.swing.JLabel dropA;
     private javax.swing.JLabel dropB;
+    private javax.swing.JLabel findColumnsLabel;
+    public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JLabel from;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -6025,6 +6043,69 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 		return sb.toString();
+	}
+
+	private void findColumns(final int x, final int y) {
+		TableColumnModel columnModel = rowsTable.getColumnModel();
+		List<String> columNames = new ArrayList<String>();
+		for (int i = 0; i < columnModel.getColumnCount(); ++i) {
+			Object name = columnModel.getColumn(i).getHeaderValue();
+			if (name != null) {
+				columNames.add(name.toString());
+			}
+		}
+		Collections.sort(columNames, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o1.compareToIgnoreCase(o2);
+			}
+		});
+
+		final Window owner = SwingUtilities.getWindowAncestor(rowsTable);
+
+		final JComboBox combobox = new JComboBox();
+		combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
+		StringSearchPanel searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
+			@Override
+			public void run() {
+				Object selected = combobox.getSelectedItem();
+				if (selected != null) {
+					TableColumnModel columnModel = rowsTable.getColumnModel();
+					for (int i = 0; i < columnModel.getColumnCount(); ++i) {
+						Object name = columnModel.getColumn(i).getHeaderValue();
+						if (name != null && name.equals(selected)) {
+							int mi = i;
+							Rectangle visibleRect = rowsTable.getVisibleRect();
+							Rectangle cellRect = rowsTable.getCellRect(0, mi, true);
+							rowsTable.scrollRectToVisible(
+									new Rectangle(
+											cellRect.x - 32, visibleRect.y + visibleRect.height / 2, 
+											cellRect.width + 64, 1));
+							foundColumn = columnModel.getColumn(i).getModelIndex();
+							rowsTable.repaint();
+							
+							// TODO
+							
+						}
+					}
+				}
+			}
+		}) {
+			@Override
+			protected Integer preferredWidth() {
+				return 260;
+			}
+			@Override
+			protected Integer maxX() {
+				if (owner != null) {
+					return owner.getX() + owner.getWidth() - preferredWidth();
+				} else {
+					return null;
+				}
+			}
+		};
+
+		searchPanel.find(owner, "Find Column", x, y, true);
 	}
 
 }
