@@ -4,6 +4,7 @@
   - https://github.com/Wisser/Jailer/issues/13
     "Multiple table selection"
   - The model selection dialog has been improved. Recently used connections/sessions/bookmarks can be reopened with a single click.
+  - The sorting settings of table browsers in bookmarks are recorded and restored.
   - New feature "Find Column..." of the data browser makes it easy to find a column in a wide table.
 
 8.8.4
