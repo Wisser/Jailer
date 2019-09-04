@@ -151,8 +151,8 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.QueryBuilderDialog;
-import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
+import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
@@ -161,7 +161,6 @@ import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
-import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
@@ -6099,6 +6098,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			protected Integer maxX() {
 				if (owner != null) {
 					return owner.getX() + owner.getWidth() - preferredWidth();
+				} else {
+					return null;
+				}
+			}
+			@Override
+			protected Integer maxY(int height) {
+				if (owner != null) {
+					return owner.getY() + owner.getHeight() - height;
 				} else {
 					return null;
 				}
