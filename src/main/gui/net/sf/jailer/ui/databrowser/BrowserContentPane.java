@@ -4660,7 +4660,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         findColumnsLabel.setText("Find Columns");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
         findColumnsPanel.add(findColumnsLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4668,7 +4668,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel6.add(findColumnsPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
