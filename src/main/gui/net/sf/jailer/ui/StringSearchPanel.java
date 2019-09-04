@@ -134,8 +134,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							StringSearchPanel searchPanel = new StringSearchPanel(button, comboBox, metaDataSource, dataModel, prepare, onSuccess);
 							if (additionalComponentFactory != null) {
 								searchPanel.plugInPanel.add(additionalComponentFactory.create(searchPanel), java.awt.BorderLayout.CENTER);
-							} else {
-								searchPanel.plugInPanel.setVisible(false);
+								searchPanel.plugInPanel.setVisible(true);
 							}
 							Window ownerWindow = owner;
 							if (ownerWindow == null) {
@@ -187,7 +186,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			}
 		}
 		result = null;
-		button.setSelected(false);
+		if (button != null) {
+			button.setSelected(false);
+		}
 	}
 
 	public void find(Window owner, Object titel, int x, int y, boolean locateUnderButton) {
@@ -244,15 +245,38 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		if (pv) {
 			minWidth *= 2;
 		}
-		dialog.setSize(Math.max(minWidth, dialog.getWidth()), Math.min(height, 600));
+		Integer prefWidth = preferredWidth();
+		Integer maxX = maxX();
+		dialog.setSize(prefWidth != null ? prefWidth : Math.max(minWidth, dialog.getWidth()), Math.min(height, 600));
+		int prePackHeight = dialog.getHeight();
 		UIUtil.fit(dialog);
+		if (maxX != null) {
+			int delta = (prePackHeight - dialog.getHeight()) / 4;
+			if (delta < 0) {
+				delta = 0;
+			} else if (delta > dialog.getY()) {
+				delta = dialog.getY();
+			}
+			dialog.setSize(dialog.getWidth(), dialog.getHeight() + delta);
+			dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY() - delta);
+		}
 		plugInPanel.setVisible(pv);
 
 		result = null;
-		button.setSelected(true);
+		if (button != null) {
+			button.setSelected(true);
+		}
 		dialog.setVisible(true);
 	}
-	
+
+	protected Integer preferredWidth() {
+		return null;
+	}
+
+	protected Integer maxX() {
+		return null;
+	}
+
 	private final int MAX_LIST_LENGTH = 100;
 	private boolean showAll = false;
 	private String showAllLabel;
@@ -310,7 +334,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	this.prepare = prepare;
     	this.onSuccess = onSuccess;
         initComponents();
-        
+
+        plugInPanel.setVisible(false);
+
         if (metaDataSource != null) {
         	List<MDSchema> vis = new ArrayList<MDSchema>();
         	Set<MDSchema> visAsSet = new HashSet<MDSchema>();
