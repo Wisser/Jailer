@@ -49,7 +49,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.swing.AbstractButton;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -265,6 +264,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			dialog.setSize(dialog.getWidth(), dialog.getHeight() + delta);
 			dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY() - delta);
 		}
+		Integer maxY = maxY(dialog.getHeight());
+		if (maxY != null) {
+			dialog.setLocation(dialog.getX(), Math.max(0, Math.min(maxY, dialog.getY())));
+		}
 		plugInPanel.setVisible(pv);
 
 		result = null;
@@ -279,6 +282,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 
 	protected Integer maxX() {
+		return null;
+	}
+
+	protected Integer maxY(int height) {
 		return null;
 	}
 
