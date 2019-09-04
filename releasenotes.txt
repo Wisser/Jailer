@@ -1,4 +1,4 @@
-8.8.5
+8.8.6
   - https://github.com/Wisser/Jailer/issues/14
     "[new feature] add command line options to bypass the data model selection dialog"
   - https://github.com/Wisser/Jailer/issues/13
