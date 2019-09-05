@@ -1734,20 +1734,7 @@ public abstract class Desktop extends JDesktopPane {
 
 						Color color1 = tableBrowser.color1;
 						Color color2 = tableBrowser.color2;
-						if (tableBrowser.parent != null && tableBrowser.rowToRowLinks.isEmpty()) {
-							String sourceRowID = ALL;
-							String destRowID = ALL;
-							boolean inClosure = false;
-							
-							Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
-									tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure);
-							List<Link> l = links.get(sourceRowID);
-							if (l == null) {
-								l = new ArrayList<Link>();
-								links.put(sourceRowID, l);
-							}
-							l.add(link);
-						}
+						boolean linkAdded = false;
 						for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
 							if (rowToRowLink.visible && rowToRowLink.x1 >= 0) {
 								String sourceRowID = rowToRowLink.childRow.nonEmptyRowId;
@@ -1770,7 +1757,22 @@ public abstract class Desktop extends JDesktopPane {
 									links.put(sourceRowID, l);
 								}
 								l.add(link);
+								linkAdded = true;
 							}
+						}
+						if (tableBrowser.parent != null && !linkAdded) {
+							String sourceRowID = ALL;
+							String destRowID = ALL;
+							boolean inClosure = false;
+							
+							Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
+									tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure);
+							List<Link> l = links.get(sourceRowID);
+							if (l == null) {
+								l = new ArrayList<Link>();
+								links.put(sourceRowID, l);
+							}
+							l.add(link);
 						}
 					}
 

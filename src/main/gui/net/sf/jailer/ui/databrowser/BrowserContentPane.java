@@ -2232,7 +2232,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private JMenu createInsertChildMenu(List<Row> parents, final int x, final int y) {
 		JScrollMenu insertNewRow = new JScrollMenu("Insert Child");
-		if (parents == null || parents.isEmpty() || table == null || table.getName() == null) {
+		if (parents == null || parents.isEmpty() || parents.size() > 1 || table == null || table.getName() == null) {
 			insertNewRow.setEnabled(false);
 			return insertNewRow;
 		}
