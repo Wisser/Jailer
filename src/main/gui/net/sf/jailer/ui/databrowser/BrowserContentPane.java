@@ -988,7 +988,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						isNull = true;
 					}
 					TableColumnModel columnModel = rowsTable.getColumnModel();
-					if (foundColumn >= 0 && column < columnModel.getColumnCount() && columnModel.getColumn(column).getModelIndex() == foundColumn) {
+					if (!foundColumn.isEmpty() && column < columnModel.getColumnCount() && foundColumn.contains(columnModel.getColumn(column).getModelIndex())) {
 						Color background = render.getBackground();
 						render.setBackground(
 								new Color(
@@ -3801,7 +3801,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private boolean lastLimitExceeded;
 	private boolean lastClosureLimitExceeded;
 	private boolean isUpdatingTableModel;
-	private int foundColumn = -1;
+	private Set<Integer> foundColumn = new HashSet<Integer>();
 
 	/**
 	 * Updates the model of the {@link #rowsTable}.
@@ -6039,10 +6039,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private void findColumns(final int x, final int y, final JTable contextJTable) {
 		TableColumnModel columnModel = rowsTable.getColumnModel();
 		List<String> columNames = new ArrayList<String>();
+		Map<String, Integer> columNamesCount = new HashMap<String, Integer>();
 		for (int i = 0; i < columnModel.getColumnCount(); ++i) {
-			Object name = columnModel.getColumn(i).getHeaderValue();
-			if (name != null) {
-				columNames.add(name.toString());
+			Object nameObj = columnModel.getColumn(i).getHeaderValue();
+			if (nameObj != null) {
+				String name = nameObj.toString();
+				if (columNamesCount.containsKey(name)) {
+					columNamesCount.put(name, columNamesCount.get(name) + 1);
+				} else {
+					columNames.add(name);
+					columNamesCount.put(name, 1);
+				}
 			}
 		}
 		Collections.sort(columNames, new Comparator<String>() {
@@ -6062,29 +6069,34 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				Object selected = combobox.getSelectedItem();
 				if (selected != null) {
 					TableColumnModel columnModel = rowsTable.getColumnModel();
+					foundColumn.clear();
+					boolean scrolled = false;
 					for (int i = 0; i < columnModel.getColumnCount(); ++i) {
 						Object name = columnModel.getColumn(i).getHeaderValue();
 						if (name != null && name.equals(selected)) {
 							int mi = i;
-							if (contextJTable != null && contextJTable != rowsTable) {
-								Rectangle visibleRect = contextJTable.getVisibleRect();
-								Rectangle cellRect = contextJTable.getCellRect(mi, 0, true);
-								contextJTable.scrollRectToVisible(
-										new Rectangle(
-												visibleRect.x + visibleRect.width / 2,
-												cellRect.y - 16,
-												1, cellRect.width + 16));
-								contextJTable.repaint();
-							} else {
-								Rectangle visibleRect = rowsTable.getVisibleRect();
-								Rectangle cellRect = rowsTable.getCellRect(0, mi, true);
-								rowsTable.scrollRectToVisible(
-										new Rectangle(
-												cellRect.x - 32, visibleRect.y + visibleRect.height / 2, 
-												cellRect.width + 64, 1));
-								rowsTable.repaint();
+							if (!scrolled) {
+								if (contextJTable != null && contextJTable != rowsTable) {
+									Rectangle visibleRect = contextJTable.getVisibleRect();
+									Rectangle cellRect = contextJTable.getCellRect(mi, 0, true);
+									contextJTable.scrollRectToVisible(
+											new Rectangle(
+													visibleRect.x + visibleRect.width / 2,
+													cellRect.y - 16,
+													1, cellRect.width + 16));
+									contextJTable.repaint();
+								} else {
+									Rectangle visibleRect = rowsTable.getVisibleRect();
+									Rectangle cellRect = rowsTable.getCellRect(0, mi, true);
+									rowsTable.scrollRectToVisible(
+											new Rectangle(
+													cellRect.x - 32, visibleRect.y + visibleRect.height / 2, 
+													cellRect.width + 64, 1));
+									rowsTable.repaint();
+								}
+								scrolled = true;
 							}
-							foundColumn = columnModel.getColumn(i).getModelIndex();
+							foundColumn.add(columnModel.getColumn(i).getModelIndex());
 						}
 					}
 				}
@@ -6112,6 +6124,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		};
 
+		searchPanel.setStringCount(columNamesCount);
 		searchPanel.find(owner, "Find Column", x, y, true);
 	}
 
