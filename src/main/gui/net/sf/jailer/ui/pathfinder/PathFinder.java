@@ -21,6 +21,8 @@ import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.List;
 
 import org.fife.rsta.ui.EscapableDialog;
@@ -90,6 +92,12 @@ public class PathFinder {
 			dialog.setSize(Math.max(minWidth, dialog.getWidth()), Math.min(Math.max(dialog.getHeight() + 20, 400), 600));
 			UIUtil.fit(dialog);
 		}
+		
+		dialog.addWindowListener(new WindowAdapter() {
+			 public void windowOpened(WindowEvent e) {
+				 view.initFocus();
+			 }
+		});
 		
 		dialog.setVisible(true);
 		if (path == null) {
