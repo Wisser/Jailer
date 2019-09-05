@@ -5906,7 +5906,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private List<Row> sortedAndFiltered(List<Row> rows) {
 		RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
-		if (sorter != null) {
+		if (sorter != null && !rows.isEmpty()) {
 			List<Row> result = new ArrayList<Row>();
 			for (int i = 0; i < sorter.getViewRowCount(); ++i) {
 				result.add(rows.get(sorter.convertRowIndexToModel(i)));

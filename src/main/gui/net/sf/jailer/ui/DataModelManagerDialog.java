@@ -341,7 +341,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		refresh();
 		UIUtil.initPeer();
 
-		initRestoreLastSessionButton();
+		initRestoreLastSessionButton(restoreLastSessionButton);
+		initRestoreLastSessionButton(restoreLastSessionButton1);
+		initRestoreLastSessionButton(restoreLastSessionButton2);
+		initRestoreLastSessionButton(restoreLastSessionButton3);
+		initRestoreLastSessionButton(dbConnectionDialog.restoreLastSessionButton);
+		initRestoreLastSessionButton(recUsedConnectionDialog.restoreLastSessionButton);
 
 		try {
 			Object tab = UISettings.restore(tabPropertyName);
@@ -388,16 +393,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		return bookmarkTable;
 	}
 
-	private void initRestoreLastSessionButton() {
+	private void initRestoreLastSessionButton(JButton restoreButton) {
 		final boolean forEMEditor = "S".equals(module);
 		final BookmarkId lastSession = UISettings.restoreLastSession(module);
 		if (lastSession == null) {
-			restoreLastSessionButton.setEnabled(false);
+			restoreButton.setEnabled(false);
 			return;
 		}
 		Date date = forEMEditor? lastSession.date : DataBrowser.getLastSessionDate();
 		if (date == null || !modelList.contains(lastSession.datamodelFolder)) {
-			restoreLastSessionButton.setEnabled(false);
+			restoreButton.setEnabled(false);
 			return;
 		}
 		ConnectionInfo connectionInfo = null;
@@ -408,17 +413,17 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		}
 		if (connectionInfo == null && !forEMEditor) {
-			restoreLastSessionButton.setEnabled(false);
+			restoreButton.setEnabled(false);
 			return;
 		}
 		Pair<String, Long> details = modelDetails.get(lastSession.datamodelFolder);
-		restoreLastSessionButton.setToolTipText(
+		restoreButton.setToolTipText(
 				UIUtil.toHTML(
 					(lastSession.bookmark != null? (new File(lastSession.bookmark).getName()) : ((details != null? details.a : lastSession.datamodelFolder))) + "\n" +
 					(connectionInfo == null? "offline\n" : (connectionInfo.alias + " (" + connectionInfo.user + "@" + connectionInfo.url + ")\n")) +
 					UIUtil.toDateAsString(date.getTime()), 0));
 		final ConnectionInfo finalConnectionInfo = connectionInfo;
-		restoreLastSessionButton.addActionListener(new ActionListener() {
+		restoreButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				openBookmark(new BookmarkId(forEMEditor? lastSession.bookmark : "", lastSession.datamodelFolder, lastSession.connectionAlias, lastSession.rawSchemaMapping), finalConnectionInfo);
@@ -426,6 +431,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				dispose();
 			}
 		});
+		restoreButton.setVisible(true);
 	}
 
 	private final List<BookmarksPanel.BookmarkId> bookmarks = new ArrayList<BookmarksPanel.BookmarkId>();
@@ -996,6 +1002,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel7 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jmFilesTable = new javax.swing.JTable();
+        restoreLastSessionButton1 = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         connectionDialogPanel = new javax.swing.JPanel();
         recUsedConnectionPanel = new javax.swing.JPanel();
@@ -1006,12 +1013,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         infoBarLabelBookmark = new javax.swing.JLabel();
         bmCancelButton = new javax.swing.JButton();
         bmOkButton = new javax.swing.JButton();
+        restoreLastSessionButton2 = new javax.swing.JButton();
         recentlyUsedBookmarkPanel = new javax.swing.JPanel();
         borderPanel1 = new javax.swing.JPanel();
         bookmarkRecUsedDialogPanel = new javax.swing.JPanel();
         infoBarLabeRecUsedlBookmark = new javax.swing.JLabel();
         bmRecUsedCancelButton = new javax.swing.JButton();
         bmRecUsedOkButton = new javax.swing.JButton();
+        restoreLastSessionButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connect with DB");
@@ -1067,7 +1076,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 4);
         jPanel2.add(jButton2, gridBagConstraints);
 
         okButton.setText(" OK ");
@@ -1081,7 +1090,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 4);
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 4);
         jPanel2.add(okButton, gridBagConstraints);
 
         restoreLastSessionButton.setText("Restore last Session");
@@ -1095,7 +1104,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 4);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 4);
         jPanel2.add(restoreLastSessionButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1225,10 +1234,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
         loadJMPanel.add(loadExtractionModelButton, gridBagConstraints);
 
         jmOkButton.setText(" OK ");
@@ -1291,6 +1300,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         loadJMPanel.add(jPanel7, gridBagConstraints);
+
+        restoreLastSessionButton1.setText("Restore last Session");
+        restoreLastSessionButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restoreLastSessionButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 4);
+        loadJMPanel.add(restoreLastSessionButton1, gridBagConstraints);
 
         jTabbedPane1.addTab("Extraction Model", loadJMPanel);
 
@@ -1379,6 +1401,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         bookmarkPanel.add(bmOkButton, gridBagConstraints);
 
+        restoreLastSessionButton2.setText("Restore last Session");
+        restoreLastSessionButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restoreLastSessionButton2ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 4);
+        bookmarkPanel.add(restoreLastSessionButton2, gridBagConstraints);
+
         jTabbedPane1.addTab("Bookmark", bookmarkPanel);
 
         recentlyUsedBookmarkPanel.setLayout(new java.awt.GridBagLayout());
@@ -1439,6 +1474,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         recentlyUsedBookmarkPanel.add(bmRecUsedOkButton, gridBagConstraints);
+
+        restoreLastSessionButton3.setText("Restore last Session");
+        restoreLastSessionButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restoreLastSessionButton3ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 4);
+        recentlyUsedBookmarkPanel.add(restoreLastSessionButton3, gridBagConstraints);
 
         jTabbedPane1.addTab("Recently used Bookmark", recentlyUsedBookmarkPanel);
 
@@ -1640,6 +1688,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private void restoreLastSessionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreLastSessionButtonActionPerformed
     }//GEN-LAST:event_restoreLastSessionButtonActionPerformed
 
+    private void restoreLastSessionButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreLastSessionButton1ActionPerformed
+    }//GEN-LAST:event_restoreLastSessionButton1ActionPerformed
+
+    private void restoreLastSessionButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreLastSessionButton2ActionPerformed
+    }//GEN-LAST:event_restoreLastSessionButton2ActionPerformed
+
+    private void restoreLastSessionButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreLastSessionButton3ActionPerformed
+    }//GEN-LAST:event_restoreLastSessionButton3ActionPerformed
+
 	/**
 	 * Opens file chooser.
 	 */
@@ -1800,6 +1857,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel recUsedConnectionPanel;
     private javax.swing.JPanel recentlyUsedBookmarkPanel;
     private javax.swing.JButton restoreLastSessionButton;
+    private javax.swing.JButton restoreLastSessionButton1;
+    private javax.swing.JButton restoreLastSessionButton2;
+    private javax.swing.JButton restoreLastSessionButton3;
     // End of variables declaration//GEN-END:variables
     
 	private static final long serialVersionUID = -3983034803834547687L;

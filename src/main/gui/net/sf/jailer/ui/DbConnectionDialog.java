@@ -243,6 +243,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		this.showOnlyRecentyUsedConnections = showOnlyRecentyUsedConnections;
 		loadConnectionList(showOnlyRecentyUsedConnections);
 		initComponents();
+		restoreLastSessionButton.setVisible(false);
 		connectionsTable.setAutoCreateRowSorter(true);
 
 		if (infoBar == null) {
@@ -649,6 +650,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         mainPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
+        restoreLastSessionButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
@@ -670,6 +672,19 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
+        restoreLastSessionButton.setText("Restore last Session");
+        restoreLastSessionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restoreLastSessionButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 4);
+        jPanel2.add(restoreLastSessionButton, gridBagConstraints);
+
         closeButton.setText(" Cancel ");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -677,10 +692,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
         jPanel2.add(closeButton, gridBagConstraints);
 
@@ -692,11 +706,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         jPanel2.add(jButton1, gridBagConstraints);
 
@@ -945,6 +958,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		setVisible(false);
 	}//GEN-LAST:event_closeButtonActionPerformed
 
+    private void restoreLastSessionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreLastSessionButtonActionPerformed
+
+    }//GEN-LAST:event_restoreLastSessionButtonActionPerformed
+
 	/**
 	 * Opens detail editor for a connection.
 	 * 
@@ -1185,6 +1202,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane2;
     public javax.swing.JPanel mainPanel;
     private javax.swing.JButton newButton;
+    public javax.swing.JButton restoreLastSessionButton;
     // End of variables declaration//GEN-END:variables
 
 	public String getUser() {
