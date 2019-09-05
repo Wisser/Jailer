@@ -465,6 +465,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				if (i >= 0) {
 					item = item.substring(0, i) + "<b><font color=\"" + hlColor + "\">" + item.substring(i, i + search.length()) + "</font></b>" + item.substring(i + search.length());
 				}
+				if (stringCount != null) {
+					Integer count = stringCount.get(value.toString());
+					if (count != null && count > 1) {
+						item += "&nbsp;<font color=" + (isSelected? "#66ff66" : "#006600") + ">&nbsp;&nbsp;(" + count + ")</font>";
+					}
+				}
 				String html = "<html>" + item;
 				Component render = super.getListCellRendererComponent(list, html, index, false, cellHasFocus);
 				render.setBackground(bgColor);
@@ -834,6 +840,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
         selectSchemas(schemas);
     }//GEN-LAST:event_selectAllButtonActionPerformed
 
+    Map<String, Integer> stringCount = null;
+
+	public void setStringCount(Map<String, Integer> stringCount) {
+		this.stringCount = stringCount;
+	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton cancelButton;
