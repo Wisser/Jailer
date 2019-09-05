@@ -380,6 +380,9 @@ public class CellContentConverter {
 			return resultSet.getString(i);
 		}
 		Object object = resultSet.getObject(i);
+		
+		// TODO mssql: if type is (VAR|LONGVAR)BINARY or (VAR|LONGVAR)(N)CHAR then use #get...Stream(), put data into a B|C|NCLOB implementation
+		
 		if (type == Types.NCHAR || type == Types.NVARCHAR || type == Types.LONGNVARCHAR) {
 			if (object instanceof String) {
 				object = new NCharWrapper((String) object);
