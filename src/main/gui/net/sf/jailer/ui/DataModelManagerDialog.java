@@ -394,6 +394,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}
 
 	private void initRestoreLastSessionButton(JButton restoreButton) {
+		restoreButton.setVisible(true);
 		final boolean forEMEditor = "S".equals(module);
 		final BookmarkId lastSession = UISettings.restoreLastSession(module);
 		if (lastSession == null) {
@@ -431,7 +432,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				dispose();
 			}
 		});
-		restoreButton.setVisible(true);
 	}
 
 	private final List<BookmarksPanel.BookmarkId> bookmarks = new ArrayList<BookmarksPanel.BookmarkId>();
