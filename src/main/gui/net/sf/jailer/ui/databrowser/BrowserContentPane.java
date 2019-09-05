@@ -3687,7 +3687,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									final long length = ((byte[]) o).length;
 									StringBuilder sb = new StringBuilder();
 									int j;
-									for (j = 0; j < length && j < 128; ++j) {
+									for (j = 0; j < length && j < 16; ++j) {
 										byte b = ((byte[]) o)[j];
 										sb.append(" ");
 										sb.append(CellContentConverter.hexChar[(b >> 4) & 15]);
