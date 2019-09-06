@@ -37,6 +37,12 @@ public class Reference<T> {
 	}
 
 	/**
+	 * Constructor.
+	 */
+	public Reference() {
+	}
+
+	/**
 	 * Gets the object
 	 * 
 	 * @return the object

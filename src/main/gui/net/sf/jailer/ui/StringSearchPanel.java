@@ -236,7 +236,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		
 		dialog.pack();
 		double mh = 440;
-		double f = searchList.getModel().getSize() / 20.0;
+		double f = searchList.getModel().getSize() / 18.0;
 		if (f < 1) {
 			mh = Math.max(240, mh * f);
 		}
@@ -257,7 +257,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		}
 		Integer maxY = maxY(dialog.getHeight());
 		if (maxY != null && maxY < dialog.getY()) {
-			int deltaH = Math.min(dialog.getY() - maxY, (int) (dialog.getHeight() - dialog.getHeight() / 2.5));
+			int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
 			maxY += deltaH;
 			dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
 			dialog.setLocation(dialog.getX(), Math.max(0, maxY));

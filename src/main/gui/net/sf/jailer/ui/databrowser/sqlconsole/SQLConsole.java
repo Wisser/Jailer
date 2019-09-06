@@ -72,6 +72,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SwingUtilities;
@@ -874,6 +875,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         				origTabContentPanel == null? null : origTabContentPanel.shimPanel,
                         				caretDotMark);
                         tabContentPanel.contentPanel.add(rTabContainer);
+
+                        rb.setCurrentRowsTable(new Reference<JTable>() {
+                        	public JTable get() {
+                        		return tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel? columnsTable : rb.rowsTable;
+                        	}
+                        });
+
                         rb.sortColumnsCheckBox.setVisible(true);
                         rb.sortColumnsPanel.setVisible(false);
                         rb.findColumnsPanel.setVisible(true);

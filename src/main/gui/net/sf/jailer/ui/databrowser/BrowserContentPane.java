@@ -629,7 +629,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							updateBorder();
 							Point point = new Point();
 							SwingUtilities.convertPointToScreen(point, findColumnsPanel);
-							findColumns((int) point.getX(), (int) point.getY(), rowsTable);
+							findColumns((int) point.getX(), (int) point.getY(), currentRowsTableReference == null? rowsTable : currentRowsTableReference.get());
 						}
 					});
 				}
@@ -6036,6 +6036,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return sb.toString();
 	}
 
+	private Reference<JTable> currentRowsTableReference = null;
+
+	public void setCurrentRowsTable(Reference<JTable> reference) {
+		currentRowsTableReference = reference;
+	}
+
 	private void findColumns(final int x, final int y, final JTable contextJTable) {
 		TableColumnModel columnModel = rowsTable.getColumnModel();
 		List<String> columNames = new ArrayList<String>();
@@ -6059,7 +6065,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 
-		final Window owner = SwingUtilities.getWindowAncestor(rowsTable);
+		final Window owner = SwingUtilities.getWindowAncestor(contextJTable);
 
 		final JComboBox combobox = new JComboBox();
 		combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
