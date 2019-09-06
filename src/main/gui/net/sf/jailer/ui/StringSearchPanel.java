@@ -252,21 +252,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		Integer prefWidth = preferredWidth();
 		Integer maxX = maxX();
 		dialog.setSize(prefWidth != null ? prefWidth : Math.max(minWidth, dialog.getWidth()), Math.min(height, 600));
-		int prePackHeight = dialog.getHeight();
-		UIUtil.fit(dialog);
 		if (maxX != null) {
-			int delta = (prePackHeight - dialog.getHeight()) / 4;
-			if (delta < 0) {
-				delta = 0;
-			} else if (delta > dialog.getY()) {
-				delta = dialog.getY();
-			}
-			dialog.setSize(dialog.getWidth(), dialog.getHeight() + delta);
-			dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY() - delta);
+			dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
 		}
 		Integer maxY = maxY(dialog.getHeight());
-		if (maxY != null) {
-			dialog.setLocation(dialog.getX(), Math.max(0, Math.min(maxY, dialog.getY())));
+		if (maxY != null && maxY < dialog.getY()) {
+			int deltaH = Math.min(dialog.getY() - maxY, (int) (dialog.getHeight() - dialog.getHeight() / 2.5));
+			maxY += deltaH;
+			dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
+			dialog.setLocation(dialog.getX(), Math.max(0, maxY));
 		}
 		plugInPanel.setVisible(pv);
 

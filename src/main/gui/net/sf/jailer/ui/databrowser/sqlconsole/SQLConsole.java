@@ -876,8 +876,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         tabContentPanel.contentPanel.add(rTabContainer);
                         rb.sortColumnsCheckBox.setVisible(true);
                         rb.sortColumnsPanel.setVisible(false);
-                        rb.findColumnsPanel.setVisible(false);
+                        rb.findColumnsPanel.setVisible(true);
+                        rb.sortColumnsCheckBox.setText(rb.sortColumnsCheckBox.getText().trim());
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
+                        tabContentPanel.controlsPanel1.add(rb.findColumnsPanel);
                         rb.sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
                             @Override
 							public void actionPerformed(java.awt.event.ActionEvent evt) {

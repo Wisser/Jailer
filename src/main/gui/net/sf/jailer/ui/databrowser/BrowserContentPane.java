@@ -6117,7 +6117,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			protected Integer maxY(int height) {
 				if (owner != null) {
-					return owner.getY() + owner.getHeight() - height - 1;
+					return owner.getY() + owner.getHeight() - height - 8;
 				} else {
 					return null;
 				}
