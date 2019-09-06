@@ -1244,7 +1244,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         <datePattern>''yyyy-MM-dd'''::date'</datePattern>
         <timestampPattern>'to_timestamp('''yyyy-MM-dd HH.mm.ss'.${NANO}'', ''YYYY-MM-DD HH24.MI.SS.US'')'</timestampPattern>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
-        <binaryPattern>E'\\x%s'</binaryPattern>
+        <binaryPattern>bytea E'\\x%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
