@@ -355,7 +355,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                 } else {
                                     color = Color.BLUE;
                                 }
-                                result.add(new SQLCompletion(SQLCompletionProvider.this, (endsWithOn? "" : "on ") + cond, (endsWithOn? "" : "on ") + cond + " ", a.getName(), color, cond));
+                                result.add(new SQLCompletion(SQLCompletionProvider.this, (endsWithOn? " " : "on ") + cond, (endsWithOn? "" : "on ") + cond + " ", a.getName(), color, cond));
                             }
                         }
                         if (!result.isEmpty()) {
