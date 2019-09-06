@@ -1,3 +1,6 @@
+8.8.7
+  - Upsert statements in PostgreSQL format could fail due to missing explicit conversion of bytea literals.
+
 8.8.6
   - https://github.com/Wisser/Jailer/issues/14
     "[new feature] add command line options to bypass the data model selection dialog"
