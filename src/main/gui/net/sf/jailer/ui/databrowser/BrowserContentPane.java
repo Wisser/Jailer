@@ -4457,6 +4457,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
 		int minTotalWidth = (int) (Desktop.BROWSERTABLE_DEFAULT_WIDTH * getLayoutFactor()) - 18;
 		int totalWidth = 0;
+		final int maxColumnWidth = 300;
+		
 		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
 			TableColumn column = rowsTable.getColumnModel().getColumn(i);
 			int width = minTotalWidth / rowsTable.getColumnCount();
@@ -4503,14 +4505,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			totalWidth += width;
 			if (i == rowsTable.getColumnCount() - 1) {
 				if (totalWidth < minTotalWidth) {
-					column.setPreferredWidth(width + minTotalWidth - totalWidth);
+					width = width + minTotalWidth - totalWidth;
 				}
 			}
+			column.setPreferredWidth(Math.min(maxColumnWidth, width));
 		}
 	}
 
-	protected int maxColumnWidth = 400;
-	
 	/**
 	 * This method is called from within the constructor to initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is always

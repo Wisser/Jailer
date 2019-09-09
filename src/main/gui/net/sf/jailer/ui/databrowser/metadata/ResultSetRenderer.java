@@ -70,7 +70,6 @@ public class ResultSetRenderer extends javax.swing.JPanel {
         
 		final BrowserContentPane rb = new ResultContentPane(datamodel, null, "", session, null,
                 null, null, new RowsClosure(), Integer.MAX_VALUE, false, false,
-                resultSet.getMetaData().getColumnCount() > 1? 180 : 400,
                 executionContext);
 		if (resultSet instanceof MemorizedResultSet && ((MemorizedResultSet) resultSet).getSize() > 1) {
 			rb.setTableFilterEnabled(true);
@@ -138,11 +137,10 @@ public class ResultSetRenderer extends javax.swing.JPanel {
     	public ResultContentPane(DataModel dataModel, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
                 RowsClosure rowsClosure, Integer limit, Boolean selectDistinct,
-                boolean reload, int maxColumnWidth, ExecutionContext executionContext) {
+                boolean reload, ExecutionContext executionContext) {
             super(dataModel, table, condition, session, parentRows, association, parentFrame, 
             		rowsClosure, selectDistinct, reload, executionContext);
             singleRowDetailsViewTitel = "Details";
-            this.maxColumnWidth = maxColumnWidth;
             this.limit = limit;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
             rowsCount.setVisible(false);
