@@ -4220,8 +4220,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				// ignore
 			}
 		} else {
-			final boolean deselect = !currentSelectedRowCondition.equals("") 
-				// && currentSelectedRowCondition.equals(getAndConditionText())
+			final boolean deselect = !getAndConditionText().equals("") 
 				&& rows.size() == 1;
 			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, session) {
 				@Override
@@ -5829,8 +5828,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			for (Row r: toSelect) {
 				if (!r.rowId.isEmpty()) {
 					if (r.rowId.equals(rowId)) {
-						setCurrentRowSelection(i, append);
-						append = true;
+						int vi = rowsTable.getRowSorter().convertRowIndexToView(i);
+						if (vi >= 0) {
+							setCurrentRowSelection(vi, append);
+							append = true;
+						}
 						currentRowSelection = -1;
 						String cond = SqlUtil.replaceAliases(rowId, "A", "A");
 						if (numConds == 1) {

@@ -1086,9 +1086,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     
     private void updateTablesCombobox(Set<MDSchema> selectedSchemas) {
         Set<String> tableSet = new HashSet<String>();
+        Set<MDSchema> toLoad = new HashSet<MDSchema>();
         
         for (Table table: dataModel.getTables()) {
-            if (metaDataSource.toMDTable(table) == null) {
+        	MDSchema mdSchema = metaDataSource.getSchemaOfTable(table);
+        	if (mdSchema != null && !mdSchema.isLoaded()) {
+        		toLoad.add(mdSchema);
+        	} else if (metaDataSource.toMDTable(table) == null) {
                 String schemaName = table.getSchema("");
                 MDSchema schema;
                 if (schemaName.isEmpty()) {
@@ -1103,7 +1107,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             }
         }
         for (MDSchema schema: selectedSchemas) {
-            if (schema.isLoaded()) {
+            if (!schema.isLoaded()) {
+            	toLoad.add(schema);
+            } else {
                 for (MDTable table: schema.getTables()) {
                     if (!ModelBuilder.isJailerTable(table.getName())) {
                         String name;
@@ -1127,6 +1133,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         });
         ComboBoxModel model = new DefaultComboBoxModel(new Vector(tables));
         tablesComboBox.setModel(model);
+        
+        for (MDSchema schema: toLoad) {
+        	schema.loadTables(true, null, null);
+        }
     }
 
     protected void openTable(MDTable mdTable) {

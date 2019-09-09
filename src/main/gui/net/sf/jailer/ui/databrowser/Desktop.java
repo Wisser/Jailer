@@ -1736,35 +1736,37 @@ public abstract class Desktop extends JDesktopPane {
 						Color color2 = tableBrowser.color2;
 						boolean linkAdded = false;
 						for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
-							if (rowToRowLink.visible && rowToRowLink.x1 >= 0) {
-								String sourceRowID = rowToRowLink.childRow.nonEmptyRowId;
-								String destRowID = rowToRowLink.parentRow.nonEmptyRowId;
-								boolean inClosure = false;
-								
-								if (tableBrowser.parent != null) {
-									if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.browserContentPane, rowToRowLink.childRow))) {
-										if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.parent.browserContentPane, rowToRowLink.parentRow))) {
-											inClosure = true;
+							if (rowToRowLink.x1 >= 0) {
+								linkAdded = true;
+								if (rowToRowLink.visible) {
+									String sourceRowID = rowToRowLink.childRow.nonEmptyRowId;
+									String destRowID = rowToRowLink.parentRow.nonEmptyRowId;
+									boolean inClosure = false;
+	
+									if (tableBrowser.parent != null) {
+										if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.browserContentPane, rowToRowLink.childRow))) {
+											if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.parent.browserContentPane, rowToRowLink.parentRow))) {
+												inClosure = true;
+											}
 										}
 									}
+	
+									Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, rowToRowLink.x1, rowToRowLink.y1,
+											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure);
+									List<Link> l = links.get(sourceRowID);
+									if (l == null) {
+										l = new ArrayList<Link>();
+										links.put(sourceRowID, l);
+									}
+									l.add(link);
 								}
-								
-								Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, rowToRowLink.x1, rowToRowLink.y1,
-										rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure);
-								List<Link> l = links.get(sourceRowID);
-								if (l == null) {
-									l = new ArrayList<Link>();
-									links.put(sourceRowID, l);
-								}
-								l.add(link);
-								linkAdded = true;
 							}
 						}
 						if (tableBrowser.parent != null && !linkAdded) {
 							String sourceRowID = ALL;
 							String destRowID = ALL;
 							boolean inClosure = false;
-							
+
 							Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
 									tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure);
 							List<Link> l = links.get(sourceRowID);
