@@ -1,5 +1,6 @@
 8.8.7
   - Upsert statements in PostgreSQL format could fail due to missing explicit conversion of bytea literals.
+  - Minor improvements to the GUI and bug fixes.
 
 8.8.6
   - https://github.com/Wisser/Jailer/issues/14
