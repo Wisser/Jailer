@@ -20,14 +20,12 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 
 import org.fife.rsta.ui.EscapableDialog;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
-import net.sf.jailer.ui.databrowser.BookmarksPanel;
 
 /**
  * Assembles cli arguments that starts the application.

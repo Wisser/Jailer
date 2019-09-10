@@ -29,8 +29,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Locale;
 import java.util.Random;
 
-import javax.swing.JOptionPane;
-
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.util.AWTWatchdog;
