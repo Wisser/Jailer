@@ -2773,17 +2773,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected void setCurrentRowSelection(int i, boolean append) {
 		currentRowSelection = i;
 		if (i >= 0) {
-			Row row = rows.get(rowsTable.getRowSorter().convertRowIndexToModel(i));
-			if (!append) {
-				rowsClosure.currentClosure.clear();
-				rowsClosure.parentPath.clear();
-				rowsClosure.currentClosureRootID.clear();
+			int mi = rowsTable.getRowSorter().convertRowIndexToModel(i);
+			if (mi >= 0 && mi < rows.size()) {
+				Row row = rows.get(mi);
+				if (!append) {
+					rowsClosure.currentClosure.clear();
+					rowsClosure.parentPath.clear();
+					rowsClosure.currentClosureRootID.clear();
+				}
+				rowsClosure.currentClosureRootID.add(row.nonEmptyRowId);
+				findClosure(row);
+				Rectangle visibleRect = rowsTable.getVisibleRect();
+				Rectangle pos = rowsTable.getCellRect(i, 0, false);
+				rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, pos.y, 1, pos.height));
 			}
-			rowsClosure.currentClosureRootID.add(row.nonEmptyRowId);
-			findClosure(row);
-			Rectangle visibleRect = rowsTable.getVisibleRect();
-			Rectangle pos = rowsTable.getCellRect(i, 0, false);
-			rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, pos.y, 1, pos.height));
 		}
 		rowsClosure.currentClosureRowIDs.clear();
 		for (Pair<BrowserContentPane, Row> r: rowsClosure.currentClosure) {
