@@ -120,13 +120,20 @@ public class CellContentConverter {
 		}
 		if (content instanceof byte[]) {
 			byte[] data = (byte[]) content;
-			StringBuilder hex = new StringBuilder((data.length + 1) * 2);
+			String binaryPattern = targetConfiguration.getBinaryPattern();
+			int i = binaryPattern.indexOf("%s");
+			if (i < 0) {
+				return binaryPattern;
+			}
+			StringBuilder hex = new StringBuilder((data.length + 1) * 2 + binaryPattern.length());
+			hex.append(binaryPattern.substring(0, i));
 			for (byte b: data) {
 				hex.append(hexChar[(b >> 4) & 15]);
 				hex.append(hexChar[b & 15]);
 			}
 			data = null; // gc
-			return targetConfiguration.getBinaryPattern().replace("%s", hex);
+			hex.append(binaryPattern.substring(i + 2));
+			return hex.toString();
 		}
 		if (content instanceof Time) {
 			return "'" + content + "'";
