@@ -143,7 +143,7 @@ public class ResultSetRenderer extends javax.swing.JPanel {
             singleRowDetailsViewTitel = "Details";
             this.limit = limit;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
-            rowsCount.setVisible(false);
+            statusPanel.setVisible(false);
     	}
         @Override
         protected int getReloadLimit() {

@@ -4532,7 +4532,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         cardPanel = new javax.swing.JPanel();
         tablePanel = new javax.swing.JPanel();
         jLayeredPane1 = new javax.swing.JLayeredPane();
-        jPanel6 = new javax.swing.JPanel();
+        statusPanel = new javax.swing.JPanel();
         sortColumnsCheckBox = new javax.swing.JCheckBox();
         rowsCount = new javax.swing.JLabel();
         selectDistinctCheckBox = new javax.swing.JCheckBox();
@@ -4610,7 +4610,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jLayeredPane1.setLayout(new java.awt.GridBagLayout());
 
-        jPanel6.setLayout(new java.awt.GridBagLayout());
+        statusPanel.setLayout(new java.awt.GridBagLayout());
 
         sortColumnsCheckBox.setText("sort columns   ");
         sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -4622,7 +4622,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPanel6.add(sortColumnsCheckBox, gridBagConstraints);
+        statusPanel.add(sortColumnsCheckBox, gridBagConstraints);
 
         rowsCount.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -4630,7 +4630,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        jPanel6.add(rowsCount, gridBagConstraints);
+        statusPanel.add(rowsCount, gridBagConstraints);
 
         selectDistinctCheckBox.setSelected(true);
         selectDistinctCheckBox.setText("select distinct (-100 rows)");
@@ -4643,7 +4643,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        jPanel6.add(selectDistinctCheckBox, gridBagConstraints);
+        statusPanel.add(selectDistinctCheckBox, gridBagConstraints);
 
         sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         sortColumnsPanel.setLayout(new javax.swing.BoxLayout(sortColumnsPanel, javax.swing.BoxLayout.LINE_AXIS));
@@ -4656,7 +4656,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-        jPanel6.add(sortColumnsPanel, gridBagConstraints);
+        statusPanel.add(sortColumnsPanel, gridBagConstraints);
 
         findColumnsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -4671,14 +4671,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-        jPanel6.add(findColumnsPanel, gridBagConstraints);
+        statusPanel.add(findColumnsPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        jLayeredPane1.add(jPanel6, gridBagConstraints);
+        jLayeredPane1.add(statusPanel, gridBagConstraints);
 
         loadingPanel.setOpaque(false);
         loadingPanel.setLayout(new java.awt.GridBagLayout());
@@ -5294,7 +5294,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
@@ -5329,6 +5328,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     public javax.swing.JPanel sortColumnsPanel;
     private javax.swing.JLabel sqlLabel1;
     javax.swing.JPanel sqlPanel;
+    protected javax.swing.JPanel statusPanel;
     private javax.swing.JPanel tablePanel;
     private javax.swing.JLabel wherejLabel;
     // End of variables declaration//GEN-END:variables
