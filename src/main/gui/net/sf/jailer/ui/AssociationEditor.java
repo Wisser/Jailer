@@ -496,8 +496,12 @@ public class AssociationEditor extends javax.swing.JDialog {
 				if (columns.containsKey(tabLine.cells.get(0))) {
 					Line line = columns.get(tabLine.cells.get(0));
 					for (int i = 1; i < line.length; ++i) {
-						Column column = Column.parse(line.cells.get(i));
-						tableModel.columns.add(column.name);
+						try {
+							Column column = Column.parse(line.cells.get(i));
+							tableModel.columns.add(column.name);
+						} catch (Exception e) {
+							// ignore
+						}
 					}
 				}
 				tableModels.add(tableModel);

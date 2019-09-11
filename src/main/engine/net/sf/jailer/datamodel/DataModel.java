@@ -404,13 +404,18 @@ public class DataModel {
 					String col = line.cells.get(j).trim();
 					String newName = null;
 					if (knownIdentifiers != null) {
-						Column c = Column.parse(col);
-						newName = knownIdentifiers.getColumnName(line.cells.get(0), c.name);
+						try {
+							Column c = Column.parse(col);
+							newName = knownIdentifiers.getColumnName(line.cells.get(0), c.name);
+						} catch (Exception e) {
+							// ignore
+						}
 					}
 					try {
 						pk.add(Column.parse(newName, col));
 					} catch (Exception e) {
-						throw new RuntimeException("unable to load table '" + line.cells.get(0) + "'. " + line.location, e);
+						_log.warn(e);
+						// ignore, was throw new RuntimeException("unable to load table '" + line.cells.get(0) + "'. " + line.location, e);
 					}
 				}
 				String tabName = line.cells.get(0);
@@ -460,8 +465,12 @@ public class DataModel {
 						String col = line.cells.get(j).trim();
 						String newName = null;
 						if (knownIdentifiers != null) {
-							Column c = Column.parse(col);
-							newName = knownIdentifiers.getColumnName(Quoting.normalizeIdentifier(line.cells.get(0)), c.name);
+							try {
+								Column c = Column.parse(col);
+								newName = knownIdentifiers.getColumnName(Quoting.normalizeIdentifier(line.cells.get(0)), c.name);
+							} catch (Exception e) {
+								// ignore
+							}
 						}
 						try {
 							columns.add(Column.parse(newName, col));

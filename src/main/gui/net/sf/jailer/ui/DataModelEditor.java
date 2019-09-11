@@ -62,6 +62,7 @@ import net.coderazzi.filters.gui.TableFilterHeader;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.database.BasicDataSource;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.KnownIdentifierMap;
@@ -135,6 +136,8 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 */
 	private DbConnectionDialog dbConnectionDialog;
 
+	private Set<Integer> tablesWithInvalidPK = new HashSet<Integer>();
+	
 	/** 
 	 * Creates new form DataModelEditor.
 	 * 
@@ -351,7 +354,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 				} else {
 					render.setBackground(isSelected? BG_SELCOLOR : (row % 2 == 0) ? BG1 : BG2);
 				}
-				if (tableTableRowsWithoutPK.contains(tablesTable.getRowSorter().convertRowIndexToModel(row))) {
+				if (tableTableRowsWithoutPK.contains(tablesTable.getRowSorter().convertRowIndexToModel(row))
+						||
+					tablesWithInvalidPK.contains(tablesTable.getRowSorter().convertRowIndexToModel(row))) {
 					render.setForeground(Color.RED);
 				}
 				if (render instanceof JLabel) {
@@ -978,9 +983,11 @@ public class DataModelEditor extends javax.swing.JDialog {
 		};
 		tableTableRowsFromModelFinder.clear();
 		tableTableRowsWithoutPK.clear();
+		tablesWithInvalidPK.clear();
 		int row = 0;
 		for (CsvFile.Line line: tables) {
 			String pk = "";
+			boolean valid = true;
 			for (int i = 2; i < line.length; ++i) {
 				if (line.cells.get(i).length() == 0) {
 					break;
@@ -989,12 +996,20 @@ public class DataModelEditor extends javax.swing.JDialog {
 					pk += ", ";
 				}
 				pk += line.cells.get(i);
+				try {
+					Column.parse(line.cells.get(i));
+				} catch (Exception e) {
+					valid = false;
+				}
 			}
 			if (linesFromModelFinder.contains(line)) {
 				tableTableRowsFromModelFinder.add(row);	
 			}
 			if (pk.isEmpty()) {
 				tableTableRowsWithoutPK.add(row);
+			}
+			if (!valid) {
+				tablesWithInvalidPK.add(row);
 			}
 			tablesTableModel.addRow(new Object[] { line.cells.get(0), pk });
 			++row;

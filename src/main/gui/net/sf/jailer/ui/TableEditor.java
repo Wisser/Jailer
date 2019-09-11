@@ -838,16 +838,30 @@ public abstract class TableEditor extends javax.swing.JDialog {
 		gridBagConstraints.weighty = 1.0;
 		slotPanel.add(columnListEditor, gridBagConstraints);
 		List<ColumnModel> columnModel = new ArrayList<ColumnModel>();
+		List<Column> currentPrimaryKeys = null;
+		try {
+			currentPrimaryKeys = getCurrentPrimaryKeys();
+		} catch (Exception e) {
+			UIUtil.showException(this, "Warning, invalid column will be removed", e, UIUtil.EXCEPTION_CONTEXT_USER_WARNING);
+			needsSave = true;
+		}
 		for (int i = 1; i < currentColumnLine.length; ++i) {
-			ColumnModel cm = new ColumnModel();
-			cm.column = Column.parse(currentColumnLine.cells.get(i));
-			for (Column pk: getCurrentPrimaryKeys()) {
-				if (pk.name.equals(cm.column.name)) {
-					cm.isPk = true;
-					break;
+			try {
+				ColumnModel cm = new ColumnModel();
+				cm.column = Column.parse(currentColumnLine.cells.get(i));
+				if (currentPrimaryKeys != null) {
+					for (Column pk: currentPrimaryKeys) {
+						if (pk.name.equals(cm.column.name)) {
+							cm.isPk = true;
+							break;
+						}
+					}
 				}
+				columnModel.add(cm);
+			} catch (Exception e) {
+				UIUtil.showException(this, "Warning, invalid column will be removed", e, UIUtil.EXCEPTION_CONTEXT_USER_WARNING);
+				needsSave = true;
 			}
-			columnModel.add(cm);
 		}
 		columnListEditor.setModel(columnModel);
 		

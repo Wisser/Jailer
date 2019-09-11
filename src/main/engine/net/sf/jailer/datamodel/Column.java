@@ -140,12 +140,12 @@ public class Column {
 	/**
 	 * Parses a column declaration in SQL syntax.
 	 * 
-	 * @param columnDeclaration the column declaration in SQL syntax
+	 * @param theColumnDeclaration the column declaration in SQL syntax
 	 * @param columnName (optional) name of column
 	 * @return the column
 	 */
-	public static Column parse(String columnName, String columnDeclaration) {
-		columnDeclaration = columnDeclaration.trim();
+	public static Column parse(String columnName, String theColumnDeclaration) {
+		String columnDeclaration = theColumnDeclaration.trim();
 		
 		// work-around for bug 2849047
 		String normalizedcolumnDeclaration = PATTERN_IDENTITY.matcher(columnDeclaration).replaceFirst("");
@@ -221,7 +221,7 @@ public class Column {
 					name = matcher.group(1);
 					type = matcher.group(2);
 				} else {
-					throw new RuntimeException("can't parse primary-key: " + columnDeclaration);
+					throw new RuntimeException("invalid column declaration: " + theColumnDeclaration);
 				}
 			}
 		}

@@ -1057,16 +1057,18 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		try {
 			DatabaseMetaData metaData = session.getMetaData();
 			ResultSet rs = DBMS.MySQL.equals(session.dbms)? metaData.getCatalogs() : metaData.getSchemas();
-			while (rs.next()) {
-				String schema = rs.getString(DBMS.MySQL.equals(session.dbms)? "TABLE_CAT" : "TABLE_SCHEM").trim();
-				if (schema != null) {
-					if (DBMS.POSTGRESQL.equals(session.dbms) && schema.startsWith("pg_toast_temp")) {
-						continue;
+			if (rs != null) {
+				while (rs.next()) {
+					String schema = rs.getString(DBMS.MySQL.equals(session.dbms)? "TABLE_CAT" : "TABLE_SCHEM").trim();
+					if (schema != null) {
+						if (DBMS.POSTGRESQL.equals(session.dbms) && schema.startsWith("pg_toast_temp")) {
+							continue;
+						}
+						schemas.add(schema);
 					}
-					schemas.add(schema);
 				}
+				rs.close();
 			}
-			rs.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			if (userName != null) {
@@ -1100,16 +1102,18 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					catalog = catalog.trim();
 					if (!catalog.isEmpty()) {
 						ResultSet rs = DBMS.MySQL.equals(session.dbms)? metaData.getCatalogs() : metaData.getSchemas();
-						while (rs.next()) {
-							String schema = rs.getString(DBMS.MySQL.equals(session.dbms)? "TABLE_CAT" : "TABLE_SCHEM").trim();
-							if (schema != null) {
-								if (DBMS.POSTGRESQL.equals(session.dbms) && schema.startsWith("pg_toast_temp")) {
-									continue;
+						if (rs != null) {
+							while (rs.next()) {
+								String schema = rs.getString(DBMS.MySQL.equals(session.dbms)? "TABLE_CAT" : "TABLE_SCHEM").trim();
+								if (schema != null) {
+									if (DBMS.POSTGRESQL.equals(session.dbms) && schema.startsWith("pg_toast_temp")) {
+										continue;
+									}
+									schemas.add(catalog + "." + schema);
 								}
-								schemas.add(catalog + "." + schema);
 							}
+							rs.close();
 						}
-						rs.close();
 					}
 				}
 			}
@@ -1154,10 +1158,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			boolean isPostgreSQL = DBMS.POSTGRESQL.equals(session.dbms);
 			boolean isH2Sql = DBMS.H2.equals(session.dbms);
 			ResultSet rs = DBMS.MySQL.equals(session.dbms)? metaData.getCatalogs() : metaData.getSchemas();
-			while (rs.next()) {
-				schemas.add(rs.getString(DBMS.MySQL.equals(session.dbms)? "TABLE_CAT" : "TABLE_SCHEM"));
+			if (rs != null) {
+				while (rs.next()) {
+					schemas.add(rs.getString(DBMS.MySQL.equals(session.dbms)? "TABLE_CAT" : "TABLE_SCHEM"));
+				}
+				rs.close();
 			}
-			rs.close();
 			String userSchema = null;
 			for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
 				String schema = i.next().trim();
