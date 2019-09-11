@@ -909,8 +909,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, final int row, final int column) {
 				boolean cellSelected = isSelected;
 				
-				if (table == rowsTable) {
-					cellSelected = false;
+				if (BrowserContentPane.this.getQueryBuilderDialog() != null || // SQL Console
+					table.getSelectedColumnCount() <= 1 && table.getSelectedRowCount() <= 1) {
+
+					if (table == rowsTable) {
+						cellSelected = false;
+					}
 				}
 
 				isSelected = currentRowSelection == row || currentRowSelection == -2;
