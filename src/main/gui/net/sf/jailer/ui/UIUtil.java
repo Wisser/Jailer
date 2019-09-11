@@ -230,6 +230,10 @@ public class UIUtil {
                 if (addExtension && !(fn.endsWith(extension)
                         || (allowZip && (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
                     fn += extension;
+                } else {
+                	if (forLoad && !fn.endsWith(extension) && !new File(fn).exists()) {
+                        fn += extension;
+                	}
                 }
                 try {
                     storeCurrentDir(extension, selFile.getParent());
