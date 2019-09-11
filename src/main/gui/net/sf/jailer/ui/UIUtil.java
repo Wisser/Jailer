@@ -773,15 +773,17 @@ public class UIUtil {
             String iMsg = (context != null && "AWT".equals(context)? context : "") +
             		msg.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
 
+            boolean silent = "AWT".equals(context) && !iMsg.contains("jailer");
+
             iMsg = iMsg
             		.replaceAll("\\bat [^\\n]*/", "at ")
             		.replaceAll("\\bat java.", "atj..")
 					.replaceAll("\\bat javax.swing.", "atjs..")
 					.replaceAll("\\bat net.sf.jailer.", "atn..")
 					.replaceAll("\\s*(\\n)\\s*", "$1");
-            sendIssue("internal", iMsg);
+            sendIssue("internal", (silent? "S" : "") + iMsg);
 
-            if ("AWT".equals(context)) {
+            if (silent) {
             	return;
             }
         }
