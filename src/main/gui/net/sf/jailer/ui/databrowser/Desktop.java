@@ -1255,26 +1255,24 @@ public abstract class Desktop extends JDesktopPane {
 
 	private Color getAssociationColor1(Association association) {
 		Color color = new java.awt.Color(0, 120, 255);
-		if (association.isInsertDestinationBeforeSource()) {
-			color = new java.awt.Color(190, 30, 0);
-		}
-		if (association.isInsertSourceBeforeDestination()) {
-			color = new java.awt.Color(60, 132, 0);
-		}
 		if (association.isIgnored()) {
 			color = new java.awt.Color(153, 153, 153);
+		} else if (association.isInsertDestinationBeforeSource()) {
+			color = new java.awt.Color(190, 30, 0);
+		} else if (association.isInsertSourceBeforeDestination()) {
+			color = new java.awt.Color(60, 132, 0);
 		}
 		return color;
 	}
 
 	private Color getAssociationColor2(Association association) {
 		Color color = new java.awt.Color(0, 60, 235);
-		if (association.isInsertSourceBeforeDestination()) {
+		if (association.isIgnored()) {
+			color = new java.awt.Color(133, 133, 153);
+		} else if (association.isInsertSourceBeforeDestination()) {
 			color = new java.awt.Color(0, 180, 80);
 		} else if (association.isInsertDestinationBeforeSource()) {
 			color = new java.awt.Color(230, 0, 60);
-		} else if (association.isIgnored()) {
-			color = new java.awt.Color(133, 133, 153);
 		}
 		return color;
 	}
