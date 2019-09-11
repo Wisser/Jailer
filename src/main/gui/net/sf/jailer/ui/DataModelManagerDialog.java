@@ -1630,7 +1630,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private void loadExtractionModelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadExtractionModelButtonActionPerformed
 		try {
 			String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".jm", this, false, true, false);
-			if (modelFile != null) {
+			if (modelFile != null && UIUtil.checkFileExistsAndWarn(modelFile, this)) {
 				UIUtil.setWaitCursor(this);
 				onLoadExtractionmodel(modelFile, executionContext);
 				setVisible(false);

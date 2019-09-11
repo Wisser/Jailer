@@ -1529,19 +1529,21 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void loadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadActionPerformed
 		try {
 			String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".jm", this, false, true, false);
-			try {
-				UIUtil.setWaitCursor(this);
-				if (modelFile != null && !toFront(modelFile)) {
-					String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
-					if (extractionModelEditor.extractionModelFile == null && !extractionModelEditor.needsSave
-							&& currentModelSubfolder != null && currentModelSubfolder.equals(ExtractionModel.loadDatamodelFolder(modelFile, executionContext))) {
-						load(modelFile);
-					} else {
-						createFrame(modelFile, false, executionContext);
+			if (modelFile != null && UIUtil.checkFileExistsAndWarn(modelFile, this)) {
+				try {
+					UIUtil.setWaitCursor(this);
+					if (modelFile != null && !toFront(modelFile)) {
+						String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
+						if (extractionModelEditor.extractionModelFile == null && !extractionModelEditor.needsSave
+								&& currentModelSubfolder != null && currentModelSubfolder.equals(ExtractionModel.loadDatamodelFolder(modelFile, executionContext))) {
+							load(modelFile);
+						} else {
+							createFrame(modelFile, false, executionContext);
+						}
 					}
+				} finally {
+					UIUtil.resetWaitCursor(this);
 				}
-			} finally {
-				UIUtil.resetWaitCursor(this);
 			}
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);

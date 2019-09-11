@@ -1323,4 +1323,13 @@ public class UIUtil {
 		}, "connecting...");
 	}
 
+	public static boolean checkFileExistsAndWarn(String file, Component parent) {
+		if (file != null && !new File(file).exists()) {
+            JOptionPane.showMessageDialog(parent, "File \"" + file + "\" not found.", "File not found",
+                    JOptionPane.WARNING_MESSAGE);
+			return false;
+		}
+		return true;
+	}
+
 }
