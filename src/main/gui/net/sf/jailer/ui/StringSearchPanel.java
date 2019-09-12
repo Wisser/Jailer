@@ -123,23 +123,25 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					@Override
 					public void run() {
 				        try {
-				        	Point buttonLocation = button.getLocationOnScreen();
-				        	Point location;
-				        	if (locateUnderButton) {
-				        		location = new Point(buttonLocation.x + button.getWidth(), buttonLocation.y);
-				        	} else {
-				        		location = buttonLocation;
+				        	if (button.isShowing()) {
+					        	Point buttonLocation = button.getLocationOnScreen();
+					        	Point location;
+					        	if (locateUnderButton) {
+					        		location = new Point(buttonLocation.x + button.getWidth(), buttonLocation.y);
+					        	} else {
+					        		location = buttonLocation;
+					        	}
+								StringSearchPanel searchPanel = new StringSearchPanel(button, comboBox, metaDataSource, dataModel, prepare, onSuccess);
+								if (additionalComponentFactory != null) {
+									searchPanel.plugInPanel.add(additionalComponentFactory.create(searchPanel), java.awt.BorderLayout.CENTER);
+									searchPanel.plugInPanel.setVisible(true);
+								}
+								Window ownerWindow = owner;
+								if (ownerWindow == null) {
+									ownerWindow = SwingUtilities.getWindowAncestor(comboBox);
+								}
+								searchPanel.find(ownerWindow, titel, location.x, location.y, locateUnderButton);
 				        	}
-							StringSearchPanel searchPanel = new StringSearchPanel(button, comboBox, metaDataSource, dataModel, prepare, onSuccess);
-							if (additionalComponentFactory != null) {
-								searchPanel.plugInPanel.add(additionalComponentFactory.create(searchPanel), java.awt.BorderLayout.CENTER);
-								searchPanel.plugInPanel.setVisible(true);
-							}
-							Window ownerWindow = owner;
-							if (ownerWindow == null) {
-								ownerWindow = SwingUtilities.getWindowAncestor(comboBox);
-							}
-							searchPanel.find(ownerWindow, titel, location.x, location.y, locateUnderButton);
 				        } finally {
 				        	UIUtil.resetWaitCursor(button);
 				        }
