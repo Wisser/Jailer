@@ -72,6 +72,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	 * @param sql 
 	 * @param metaDataSource 
 	 * @param dialog */
+	@SuppressWarnings("serial")
 	public SQLDMLPanel(String sql, SQLConsole sqlConsole, Session session, MetaDataSource metaDataSource, Runnable afterExecution, Runnable switchToConsole, JDialog dialog, ExecutionContext executionContext) {
 		this.executionContext = executionContext;
 		this.sqlConsole = sqlConsole;
