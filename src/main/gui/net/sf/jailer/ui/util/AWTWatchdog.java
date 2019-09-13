@@ -13,6 +13,7 @@ import javax.swing.SwingUtilities;
 
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 
 public class AWTWatchdog {
@@ -47,10 +48,10 @@ public class AWTWatchdog {
 							        PrintWriter pw = new PrintWriter(sw);
 							        t.printStackTrace(pw);
 							        dump = sw.toString();
-								}
+							        Session._log.error(dump);
+						        }
 								dump = JailerVersion.VERSION + " " + dump;
-								Session._log.error(dump);
-					            String iMsg = dump;
+								String iMsg = dump;
 								UIUtil.sendIssue("AWTHanging", iMsg);
 								issueSent = true;
 							}
@@ -109,7 +110,7 @@ public class AWTWatchdog {
 				for (; i < ti.getStackTrace().length; i++) {
 					StackTraceElement ste = ti.getStackTrace()[i];
 					
-					String s = ste.getClassName() + "." + ste.getMethodName() + "(" +
+					String s = (Environment.JEventQueue.class.getName().equals(ste.getClassName())? "JEventQueue" : ste.getClassName()) + "." + ste.getMethodName() + "(" +
 			             (ste.isNativeMethod() ? "Native Method)" :
 			              (ste.getFileName() != null &&ste.getLineNumber() >= 0 ?
 			            		  ste.getFileName() + ":" + ste.getLineNumber() + ")" :
@@ -161,6 +162,8 @@ public class AWTWatchdog {
 					}
 				}
 				sb.append('\n');
+
+				Session._log.error(sb);
 
 				String dump = Pattern.compile(mrk + "(?d)([^\\n]*\\n[^\\n]*\\n)(.*?)\\b" + pckPtrn, Pattern.DOTALL).matcher(sb.toString()).replaceFirst("..$1at " + pck);
 				dump = dump
