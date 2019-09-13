@@ -101,24 +101,27 @@ public class Environment {
 	private static void initUI() {
 		try {
 			EventQueue queue = Toolkit.getDefaultToolkit().getSystemEventQueue();
-			queue.push(new EventQueue() {
-				boolean active = true;
-				@Override
-				protected void dispatchEvent(AWTEvent newEvent) {
-			        try {
-			            super.dispatchEvent(newEvent);
-			        } catch (Throwable t) {
-			            if (active) {
-			            	active = false;
-			            	UIUtil.showException(null, "Error", t, "AWT");
-			            } else {
-			            	throw t;
-			            }
-			        }
-			    }
-			});
+			queue.push(new JEventQueue());
 		} catch (Throwable t) {
 			// ignore
+		}
+	}
+
+	public static class JEventQueue extends EventQueue {
+		boolean active = true;
+
+		@Override
+		protected void dispatchEvent(AWTEvent newEvent) {
+		    try {
+		        super.dispatchEvent(newEvent);
+		    } catch (Throwable t) {
+		        if (active) {
+		        	active = false;
+		        	UIUtil.showException(null, "Error", t, "AWT");
+		        } else {
+		        	throw t;
+		        }
+		    }
 		}
 	}
 
