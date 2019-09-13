@@ -777,7 +777,7 @@ public class UIUtil {
             String iMsg = (context != null && "AWT".equals(context)? context : "") +
             		msg.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
 
-            boolean silent = "AWT".equals(context) && !iMsg.contains("jailer");
+            boolean silent = "AWT".equals(context);
 
             iMsg = iMsg
             		.replaceAll("\\bat [^\\n]*/", "at ")
