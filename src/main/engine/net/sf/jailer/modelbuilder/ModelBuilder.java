@@ -106,7 +106,7 @@ public class ModelBuilder {
 			if (!exTFile.exists()) {
 				exTFile.createNewFile();
 			}
-			 return new CsvFile(exTFile);
+			return new CsvFile(exTFile);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -481,8 +481,20 @@ public class ModelBuilder {
 	private static void writeFile(String fileName, String content) throws IOException {
 		File f = new File(fileName);
 		if (!f.exists()) {
-			f.getParentFile().mkdirs();
-			f.createNewFile();
+			Boolean mkdirsResult = null;
+			try {
+				mkdirsResult = f.getParentFile().mkdirs();
+				f.createNewFile();
+			} catch (Exception e) {
+				try {
+					Thread.sleep(1000);
+					f.getParentFile().mkdirs();
+					f.createNewFile();
+				} catch (InterruptedException e1) {
+					// ignore e1
+					throw new RuntimeException(e.getMessage() + " " + (f.getAbsolutePath()) + " (" + mkdirsResult + ")", e);
+				}
+			}
 		}
 		PrintWriter out = new PrintWriter(new FileOutputStream(fileName));
 		out.print(content);
