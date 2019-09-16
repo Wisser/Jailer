@@ -24,23 +24,36 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 
 import org.fife.rsta.ui.EscapableDialog;
 
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.pathfinder.PathFinderView;
+import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
@@ -71,6 +84,7 @@ public class ConditionEditor extends EscapableDialog {
 				okButtonActionPerformed(null);
 			}
 		};
+
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(editorPane);
 		
@@ -115,7 +129,9 @@ public class ConditionEditor extends EscapableDialog {
 		table1dropDown.setIcon(dropDownIcon);
 		table2dropDown.setText(null);
 		table2dropDown.setIcon(dropDownIcon);
-		table1dropDown.addMouseListener(new java.awt.event.MouseAdapter() {
+		scalarSQIconLabel.setText(null);
+		scalarSQIconLabel.setIcon(dropDownIcon);
+		java.awt.event.MouseAdapter l = new java.awt.event.MouseAdapter() {
 			@Override
 			public void mousePressed(java.awt.event.MouseEvent evt) {
 				openColumnDropDownBox(table1dropDown, table1alias, table1);
@@ -129,8 +145,10 @@ public class ConditionEditor extends EscapableDialog {
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				table1dropDown.setEnabled(true);
 		   }
-		});
-		table2dropDown.addMouseListener(new java.awt.event.MouseAdapter() {
+		};
+		table1dropDown.addMouseListener(l);
+		table1name.addMouseListener(l);
+		l = new java.awt.event.MouseAdapter() {
 			@Override
 			public void mousePressed(java.awt.event.MouseEvent evt) {
 				openColumnDropDownBox(table2dropDown, table2alias, table2);
@@ -144,7 +162,9 @@ public class ConditionEditor extends EscapableDialog {
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				table2dropDown.setEnabled(true);
 		   }
-		});
+		};
+		table2dropDown.addMouseListener(l);
+		table2name.addMouseListener(l);
 	}
 	
 	/**
@@ -207,6 +227,10 @@ public class ConditionEditor extends EscapableDialog {
         table2name = new javax.swing.JLabel();
         table2dropDown = new javax.swing.JLabel();
         addOnPanel = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        scalarSubQPanel = new javax.swing.JPanel();
+        scalarSQIconLabel = new javax.swing.JLabel();
+        scalarSQIconLabel2 = new javax.swing.JLabel();
         toSubQueryButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
@@ -289,10 +313,30 @@ public class ConditionEditor extends EscapableDialog {
         jPanel2.add(table2dropDown, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel2.add(addOnPanel, gridBagConstraints);
+
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        scalarSubQPanel.setToolTipText("Inserts a scalar query for a column of a neighboring table.");
+        scalarSubQPanel.setLayout(new java.awt.GridBagLayout());
+
+        scalarSQIconLabel.setText("jLabel1");
+        scalarSubQPanel.add(scalarSQIconLabel, new java.awt.GridBagConstraints());
+
+        scalarSQIconLabel2.setText(" Scalar Subquery...");
+        scalarSQIconLabel2.setToolTipText("Inserts a scalar query for a column of a neighboring table.");
+        scalarSubQPanel.add(scalarSQIconLabel2, new java.awt.GridBagConstraints());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 8);
+        jPanel4.add(scalarSubQPanel, gridBagConstraints);
 
         toSubQueryButton.setText("Convert to Subquery");
         toSubQueryButton.setToolTipText("<html>Converts condition into a subquery.<br> This allows to add joins with related tables or limiting clauses etc. </html>");
@@ -303,12 +347,18 @@ public class ConditionEditor extends EscapableDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jPanel2.add(toSubQueryButton, gridBagConstraints);
+        jPanel4.add(toSubQueryButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        jPanel2.add(jPanel4, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
@@ -423,6 +473,14 @@ public class ConditionEditor extends EscapableDialog {
 		if (Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
 			condition = new BasicFormatterImpl().format(condition);
 		}
+		
+		if (table2 != null || table1 == null) {
+			scalarSubQPanel.setVisible(false);
+		} else {
+			scalarSubQPanel.setVisible(true);
+			ConditionEditor.initJoinPopupMenu(scalarSubQPanel, scalarSQIconLabel, scalarSQIconLabel2, table1alias, table1, editorPane);
+		}
+		
 		this.table1 = table1;
 		this.table2 = table2;
 		this.table1alias = table1alias;
@@ -543,6 +601,93 @@ public class ConditionEditor extends EscapableDialog {
         }
 	}
 
+	public static void initJoinPopupMenu(final JPanel lpane, final JComponent container, final JLabel label, final String alias, final Table table, final RSyntaxTextAreaWithSQLSyntaxStyle editor) {
+		java.awt.event.MouseAdapter l = new java.awt.event.MouseAdapter() {
+			JPopupMenu popupMenu;
+
+			private void createMenu() {
+				if (popupMenu != null) {
+					return;
+				}
+				popupMenu = new JPopupMenu();
+				ImageIcon redDotIconScaled = UIUtil.scaleIcon(container, redDotIcon);
+				ImageIcon blueDotIconScaled = UIUtil.scaleIcon(container, blueDotIcon);
+				ImageIcon greenDotIconScaled = UIUtil.scaleIcon(container, greenDotIcon);
+				
+				Map<Table, Integer> destCount = new HashMap<Table, Integer>();
+				for (Association a: table.associations) {
+					if (!destCount.containsKey(a.destination)) {
+						destCount.put(a.destination, 1);
+					} else {
+						destCount.put(a.destination, destCount.get(a.destination) + 1);
+					}
+				}
+				Map<String, Association> namedAssocs = new TreeMap<String, Association>();
+				for (Association a: table.associations) {
+					Integer cnt = destCount.get(a.destination);
+					namedAssocs.put(a.getDataModel().getDisplayName(a.destination) + (cnt != null && cnt > 1? (" (" + a.getName() + ")") : ""), a);
+				}
+				for (final Entry<String, Association> e: namedAssocs.entrySet()) {
+					ImageIcon icon;
+					if (e.getValue().isInsertDestinationBeforeSource()) {
+						icon = redDotIconScaled;
+					} else if (e.getValue().isInsertSourceBeforeDestination()) {
+						icon = greenDotIconScaled;
+					} else {
+						icon = blueDotIconScaled;
+					}
+					JMenu menu = new JScrollMenu(e.getKey());
+					menu.setIcon(icon);
+					popupMenu.add(menu);
+					List<Column> cols = new ArrayList<Column>(e.getValue().destination.getColumns());
+					Collections.sort(cols, new Comparator<Column>() {
+						@Override
+						public int compare(Column o1, Column o2) {
+							return o1.name.compareToIgnoreCase(o2.name);
+						}
+					});
+					for (final Column col: cols) {
+						JMenuItem item = new JMenuItem(col.name);
+						menu.add(item);
+						item.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent ev) {
+								String condition;
+								if (!e.getValue().reversed) {
+									condition = SqlUtil.replaceAliases(e.getValue().getJoinCondition(), alias, e.getValue().destination.getUnqualifiedName());
+								} else {
+									condition = SqlUtil.replaceAliases(e.getValue().getJoinCondition(), e.getValue().destination.getUnqualifiedName(), alias);
+								}
+								editor.replaceSelection(
+										"(Select " + col.name + " from " + e.getValue().destination.getName() + 
+										" Where " + condition + ")");
+							}
+						});
+					}
+				}
+			}
+
+			@Override
+			public void mousePressed(java.awt.event.MouseEvent evt) {
+				createMenu();
+				UIUtil.fit(popupMenu);
+				popupMenu.show(container, 0, container.getHeight());
+			}
+
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				container.setEnabled(false);
+		        lpane.dispatchEvent ( SwingUtilities.convertMouseEvent ( evt.getComponent (), evt, lpane ) );
+			}
+			@Override
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				container.setEnabled(true);
+		   }
+		};
+		container.addMouseListener(l);
+		label.addMouseListener(l);
+	}
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JPanel addOnPanel;
     private javax.swing.JButton cancelButton;
@@ -551,8 +696,12 @@ public class ConditionEditor extends EscapableDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramsPanel;
+    private javax.swing.JLabel scalarSQIconLabel;
+    private javax.swing.JLabel scalarSQIconLabel2;
+    private javax.swing.JPanel scalarSubQPanel;
     protected javax.swing.JLabel table1dropDown;
     protected javax.swing.JLabel table1label;
     protected javax.swing.JLabel table1name;
@@ -563,12 +712,18 @@ public class ConditionEditor extends EscapableDialog {
     // End of variables declaration//GEN-END:variables
 	
 	private Icon dropDownIcon;
+	private static ImageIcon redDotIcon;
+	private static ImageIcon blueDotIcon;
+	private static ImageIcon greenDotIcon;
 	{
 		String dir = "/net/sf/jailer/ui/resource";
 		
 		// load images
 		try {
 			dropDownIcon = new ImageIcon(getClass().getResource(dir + "/dropdown.png"));
+			redDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/reddot.gif"));
+			blueDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/bluedot.gif"));
+			greenDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/greendot.gif"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

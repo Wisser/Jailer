@@ -340,9 +340,11 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		}
 		menu.add(new JSeparator(), 2);
 
-		menu.add(new JMenuItem(new ShowFindDialogAction()), 0);
-		menu.add(new JMenuItem(new ShowReplaceDialogAction()), 1);
-		menu.add(new JSeparator(), 2);
+		if (withFindAndReplace()) {
+			menu.add(new JMenuItem(new ShowFindDialogAction()), 0);
+			menu.add(new JMenuItem(new ShowReplaceDialogAction()), 1);
+			menu.add(new JSeparator(), 2);
+		}
 
 		if (withExecuteActions) {
 			item = new JMenuItem(runBlock);
@@ -362,6 +364,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		appendPopupMenu(menu);
 		
 		return menu;
+	}
+
+	protected boolean withFindAndReplace() {
+		return true;
 	}
 
 	protected void appendPopupMenu(JPopupMenu menu) {

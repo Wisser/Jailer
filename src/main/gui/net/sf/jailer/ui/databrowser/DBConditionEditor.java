@@ -119,6 +119,10 @@ public abstract class DBConditionEditor extends EscapableDialog {
 				super.runBlock();
 				okButtonActionPerformed(null);
 			}
+			@Override
+			protected boolean withFindAndReplace() {
+				return false;
+			}
 		};
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(editorPane);
@@ -150,7 +154,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		
 		table1dropDown.setText(null);
 		table1dropDown.setIcon(dropDownIcon);
-		table1dropDown.addMouseListener(new java.awt.event.MouseAdapter() {
+		java.awt.event.MouseAdapter l = new java.awt.event.MouseAdapter() {
 			@Override
 			public void mousePressed(java.awt.event.MouseEvent evt) {
 				openColumnDropDownBox(table1dropDown, table1alias, table1);
@@ -164,7 +168,9 @@ public abstract class DBConditionEditor extends EscapableDialog {
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				table1dropDown.setEnabled(true);
 		   }
-		});
+		};
+		table1dropDown.addMouseListener(l);
+		table1name.addMouseListener(l);
 	}
 
 	@Override

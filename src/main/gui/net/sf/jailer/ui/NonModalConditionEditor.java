@@ -132,6 +132,10 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 				super.runBlock();
 				okButtonActionPerformed(null);
 			}
+			@Override
+			protected boolean withFindAndReplace() {
+				return false;
+			}
 		};
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(editorPane);
@@ -158,7 +162,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		}
 		
 		setLocation(400, 150);
-		setSize(440, 200);
+		setSize(600, 200);
 		
 		if (parametersGetter != null) {
 			paramsPanel.add(parameterSelector = new ParameterSelector(this, editorPane, parametersGetter));
@@ -170,7 +174,9 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		table1dropDown.setIcon(dropDownIcon);
 		table2dropDown.setText(null);
 		table2dropDown.setIcon(dropDownIcon);
-		table1dropDown.addMouseListener(new java.awt.event.MouseAdapter() {
+		scalarSQIconLabel.setText(null);
+		scalarSQIconLabel.setIcon(dropDownIcon);
+		java.awt.event.MouseAdapter l = new java.awt.event.MouseAdapter() {
 			@Override
 			public void mousePressed(java.awt.event.MouseEvent evt) {
 				openColumnDropDownBox(table1dropDown, table1alias, table1);
@@ -184,8 +190,10 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				table1dropDown.setEnabled(true);
 		   }
-		});
-		table2dropDown.addMouseListener(new java.awt.event.MouseAdapter() {
+		};
+		table1dropDown.addMouseListener(l);
+		table1name.addMouseListener(l);
+		l = new java.awt.event.MouseAdapter() {
 			@Override
 			public void mousePressed(java.awt.event.MouseEvent evt) {
 				openColumnDropDownBox(table2dropDown, table2alias, table2);
@@ -199,7 +207,9 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				table2dropDown.setEnabled(true);
 		   }
-		});
+		};
+		table2dropDown.addMouseListener(l);
+		table2name.addMouseListener(l);
 	}
 	
 	/**
@@ -266,6 +276,10 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         table2dropDown = new javax.swing.JLabel();
         toSubQueryButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        scalarSubQPanel = new javax.swing.JPanel();
+        scalarSQIconLabel = new javax.swing.JLabel();
+        scalarSQIconLabel2 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         gripPanel = new javax.swing.JPanel();
@@ -379,9 +393,8 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         jPanel3.add(toSubQueryButton, gridBagConstraints);
 
         cancelButton.setText(" Cancel ");
@@ -394,8 +407,28 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel3.add(cancelButton, gridBagConstraints);
+
+        scalarSubQPanel.setToolTipText("Inserts a scalar query for a column of a neighboring table.");
+
+        scalarSQIconLabel.setText("jLabel1");
+        scalarSubQPanel.add(scalarSQIconLabel);
+
+        scalarSQIconLabel2.setText("Scalar Subquery...");
+        scalarSQIconLabel2.setToolTipText("Inserts a scalar query for a column of a neighboring table.");
+        scalarSubQPanel.add(scalarSQIconLabel2);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        jPanel3.add(scalarSubQPanel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        jPanel3.add(jLabel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -509,6 +542,14 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		if (Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
 			condition = new BasicFormatterImpl().format(condition);
 		}
+
+		if (table2 != null || table1 == null) {
+			scalarSubQPanel.setVisible(false);
+		} else {
+			scalarSubQPanel.setVisible(true);
+			ConditionEditor.initJoinPopupMenu(scalarSubQPanel, scalarSQIconLabel, scalarSQIconLabel2, table1alias, table1, editorPane);
+		}
+
 		this.table1 = table1;
 		this.table2 = table2;
 		this.table1alias = table1alias;
@@ -645,6 +686,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
     protected javax.swing.JPanel addOnPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel gripPanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -653,6 +695,9 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramsPanel;
+    private javax.swing.JLabel scalarSQIconLabel;
+    private javax.swing.JLabel scalarSQIconLabel2;
+    private javax.swing.JPanel scalarSubQPanel;
     protected javax.swing.JLabel table1dropDown;
     protected javax.swing.JLabel table1label;
     protected javax.swing.JLabel table1name;

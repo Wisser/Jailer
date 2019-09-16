@@ -831,7 +831,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				subjectConditionEditor.edit(condition, condition.getText(), "Subject", "T", subject, null, null, null, false, true);
+				subjectConditionEditor.edit(condition, condition.getText(), "", "T", subject, null, null, null, false, true);
 			}
 			
 			@Override

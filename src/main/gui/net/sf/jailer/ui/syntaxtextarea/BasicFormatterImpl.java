@@ -88,7 +88,12 @@ public class BasicFormatterImpl {
 
 	public String format(String source) {
 		try {
-			return new FormatProcess(source).perform();
+			boolean mk = source.trim().startsWith("(");
+			String formatted = new FormatProcess(mk? source.trim().substring(1) : source).perform();
+			if (mk) {
+				formatted = "(" + formatted;
+			}
+			return formatted;
 		} catch (Throwable t) {
 			return source;
 		}
