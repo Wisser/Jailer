@@ -262,7 +262,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         jPanel1.add(jButton1, gridBagConstraints);
 
         jLabel3.setFont(jLabel3.getFont().deriveFont(jLabel3.getFont().getSize()+1f));
-        jLabel3.setText("<html>&nbsp;* use 'A' as alias for <i>From</i>, use 'B' as alias for <i>To</i>.</html>");
+        jLabel3.setText("<html>&nbsp;* <i>Ctrl+Space</i> for code completion.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

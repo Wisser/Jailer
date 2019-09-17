@@ -189,7 +189,7 @@
                 <Font component="jLabel3" property="font" relativeSize="true" size="1"/>
               </FontInfo>
             </Property>
-            <Property name="text" type="java.lang.String" value="&lt;html&gt;&amp;nbsp;* use &apos;A&apos; as alias for &lt;i&gt;From&lt;/i&gt;, use &apos;B&apos; as alias for &lt;i&gt;To&lt;/i&gt;.&lt;/html&gt;"/>
+            <Property name="text" type="java.lang.String" value="&lt;html&gt;&amp;nbsp;* &lt;i&gt;Ctrl+Space&lt;/i&gt; for code completion."/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
