@@ -1321,7 +1321,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel7.setLayout(new java.awt.BorderLayout());
 
         condition.setText("jTextField1");
-        condition.setToolTipText("SQL expression. Keep empty if you want to export all rows.");
+        condition.setToolTipText("<html>SQL expression. Keep empty if you want to export all rows.\n<hr>\n<i>Ctrl+Space</i> for code completion.\n\t\t\t\t\t\t");
         jPanel7.add(condition, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

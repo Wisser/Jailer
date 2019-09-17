@@ -271,9 +271,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 	private String getConditionToolTip() {
-		return "use 'A' as alias for source-table, " +
-			   "use 'B' as alias for destination table, " +
-			   "(upper case, no space between A/B and dot!)";
+		return "<html><i>Ctrl+Space</i> for code completion.";
 	}
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables

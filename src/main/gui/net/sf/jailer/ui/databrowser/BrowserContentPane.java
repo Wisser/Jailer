@@ -742,11 +742,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
 						JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
 						String value = f.getText();
+						String ttInfo = "<i>Ctrl+Space</i> for code completion.";
 						if (value != null && value.toString().trim().length() > 0) {
 							String tooltip = (value.toString());
-							andCondition.setToolTipText(UIUtil.toHTML(tooltip, 200));
+							andCondition.setToolTipText("<html>" + UIUtil.toHTMLFragment(tooltip, 200) + "<hr>" + ttInfo);
 						} else {
-							andCondition.setToolTipText(null);
+							andCondition.setToolTipText("<html>" + ttInfo);
 						}
 					}
 				};
