@@ -222,7 +222,7 @@ public class UISettings  {
 		if (!isSbeModel(file) && !Configuration.getInstance().isTempFile(file)) {
 			List<Pair<File, Date>> files = loadRecentFiles();
 			for (Iterator<Pair<File, Date>> i = files.iterator(); i.hasNext(); ) {
-				if (i.next().a.equals(file)); {
+				if (i.next().a.equals(file)) {
 					i.remove();
 				}
 			}
