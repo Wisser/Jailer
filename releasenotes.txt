@@ -1,3 +1,6 @@
+8.8.8
+  - Avoid NPE if there is no default scheme.
+
 8.8.7
   - Upsert statements in PostgreSQL format could fail due to missing explicit conversion of bytea literals.
   - The data model editor is now more robust against errors in the data model files.

@@ -363,7 +363,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					return o1.getName().compareTo(o2.getName());
 				}
 			});
-	        vis.add(0, metaDataSource.getDefaultSchema());
+	        MDSchema defaultSchema = metaDataSource.getDefaultSchema();
+	        if (defaultSchema != null) {
+	        	vis.add(0, defaultSchema);
+	        }
 	        createSchemaSelectionList(visPanel, vis);
         }
 		

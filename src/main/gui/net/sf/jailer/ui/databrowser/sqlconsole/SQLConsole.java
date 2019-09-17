@@ -269,6 +269,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         }
                     } else {
                         schema = SQLConsole.this.metaDataSource.getDefaultSchema();
+                        if (schema == null) {
+                            return null;
+                        }
                     }
                     return schema.find(matcher.group(2));
                 }
