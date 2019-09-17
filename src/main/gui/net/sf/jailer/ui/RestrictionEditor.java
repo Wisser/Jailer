@@ -76,10 +76,12 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel4 = new javax.swing.JPanel();
         columnsA = new javax.swing.JLabel();
         source = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         type = new javax.swing.JLabel();
         cardinality = new javax.swing.JLabel();
         columnsB = new javax.swing.JLabel();
         destination = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         joinCondition = new javax.swing.JLabel();
@@ -200,6 +202,10 @@ public class RestrictionEditor extends javax.swing.JPanel {
         source.setText("jLabel3");
         jPanel4.add(source);
 
+        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() & ~java.awt.Font.BOLD));
+        jLabel2.setText("A");
+        jPanel4.add(jLabel2);
+
         type.setFont(type.getFont().deriveFont(type.getFont().getSize()+1f));
         type.setText("jLabel3");
         jPanel4.add(type);
@@ -214,6 +220,10 @@ public class RestrictionEditor extends javax.swing.JPanel {
         destination.setFont(destination.getFont().deriveFont(destination.getFont().getSize()+1f));
         destination.setText("jLabel3");
         jPanel4.add(destination);
+
+        jLabel3.setFont(jLabel3.getFont().deriveFont(jLabel3.getFont().getStyle() & ~java.awt.Font.BOLD));
+        jLabel3.setText("B");
+        jPanel4.add(jLabel3);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -275,6 +285,8 @@ public class RestrictionEditor extends javax.swing.JPanel {
     public javax.swing.JCheckBox fkToNullCheckBox;
     public javax.swing.JRadioButton ignore;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;

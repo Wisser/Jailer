@@ -36,8 +36,6 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -151,26 +149,6 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		
 		setLocation(400, 150);
 		setSize(440, 120);
-		
-		table1dropDown.setText(null);
-		table1dropDown.setIcon(dropDownIcon);
-		java.awt.event.MouseAdapter l = new java.awt.event.MouseAdapter() {
-			@Override
-			public void mousePressed(java.awt.event.MouseEvent evt) {
-				openColumnDropDownBox(table1dropDown, table1alias, table1);
-			}
-			
-			@Override
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				table1dropDown.setEnabled(false);
-			}
-			@Override
-			public void mouseExited(java.awt.event.MouseEvent evt) {
-				table1dropDown.setEnabled(true);
-		   }
-		};
-		table1dropDown.addMouseListener(l);
-		table1name.addMouseListener(l);
 	}
 
 	@Override
@@ -231,8 +209,6 @@ public abstract class DBConditionEditor extends EscapableDialog {
         jPanel4 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        table1name = new javax.swing.JLabel();
-        table1dropDown = new javax.swing.JLabel();
         toSubQueryButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -249,23 +225,6 @@ public abstract class DBConditionEditor extends EscapableDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        table1name.setFont(table1name.getFont().deriveFont(table1name.getFont().getSize()+1f));
-        table1name.setText("jLabel1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
-        jPanel2.add(table1name, gridBagConstraints);
-
-        table1dropDown.setFont(table1dropDown.getFont().deriveFont(table1dropDown.getFont().getSize()+1f));
-        table1dropDown.setText("jLabel1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(table1dropDown, gridBagConstraints);
-
         toSubQueryButton.setText("to Subquery");
         toSubQueryButton.setToolTipText("<html>Converts condition into a subquery.<br> This allows to add joins with related tables or limiting clauses etc. </html>");
         toSubQueryButton.addActionListener(new java.awt.event.ActionListener() {
@@ -278,7 +237,6 @@ public abstract class DBConditionEditor extends EscapableDialog {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
         jPanel2.add(toSubQueryButton, gridBagConstraints);
 
         okButton.setText("    Ok    ");
@@ -428,14 +386,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		this.table1alias = table1alias;
 		this.table2alias = table2alias;
 		this.addPseudoColumns = addPseudoColumns;
-		if (table1 != null) {
-			this.table1name.setText("  " + table1.getName());
-			this.table1name.setVisible(true);
-			this.table1dropDown.setVisible(true);
-		} else {
-			this.table1name.setVisible(false);
-			this.table1dropDown.setVisible(false);
-		}
+
 		toSubQueryButton.setVisible(addConvertSubqueryButton);
 		toSubQueryButton.setEnabled(true);
 		if (table1 != null && (table1.primaryKey == null || table1.primaryKey.getColumns() == null|| table1.primaryKey.getColumns().isEmpty())) {
@@ -536,23 +487,9 @@ public abstract class DBConditionEditor extends EscapableDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JButton okButton;
-    protected javax.swing.JLabel table1dropDown;
-    protected javax.swing.JLabel table1name;
     private javax.swing.JButton toSubQueryButton;
     // End of variables declaration//GEN-END:variables
-	
-	private Icon dropDownIcon;
-	{
-		String dir = "/net/sf/jailer/ui/resource";
-		
-		// load images
-		try {
-			dropDownIcon = new ImageIcon(getClass().getResource(dir + "/dropdown.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
+
 	public final RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
 	private SQLAutoCompletion sqlAutoCompletion;
 

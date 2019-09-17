@@ -28,6 +28,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +95,24 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	private void init(ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel) {
 		setUndecorated(true);
 		initComponents();
-		
+
+		scalarSQIconToggleButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JPopupMenu popupMenu = ConditionEditor.createJoinPopupMenu(table1alias, table1, editorPane);
+				UIUtil.fit(popupMenu);
+				popupMenu.show(scalarSQIconToggleButton, 0, scalarSQIconToggleButton.getHeight());
+				popupMenu.addPropertyChangeListener("visible", new PropertyChangeListener() {
+					@Override
+					public void propertyChange(PropertyChangeEvent evt) {
+						if (Boolean.FALSE.equals(evt.getNewValue())) {
+							scalarSQIconToggleButton.setSelected(false);
+						}
+					}
+				});
+			}
+		});
+
 		addWindowFocusListener(new WindowFocusListener() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
@@ -169,47 +188,6 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		} else {
 			paramsPanel.setVisible(false);
 		}
-		
-		table1dropDown.setText(null);
-		table1dropDown.setIcon(dropDownIcon);
-		table2dropDown.setText(null);
-		table2dropDown.setIcon(dropDownIcon);
-		scalarSQIconLabel.setText(null);
-		scalarSQIconLabel.setIcon(dropDownIcon);
-		java.awt.event.MouseAdapter l = new java.awt.event.MouseAdapter() {
-			@Override
-			public void mousePressed(java.awt.event.MouseEvent evt) {
-				openColumnDropDownBox(table1dropDown, table1alias, table1);
-			}
-			
-			@Override
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				table1dropDown.setEnabled(false);
-			}
-			@Override
-			public void mouseExited(java.awt.event.MouseEvent evt) {
-				table1dropDown.setEnabled(true);
-		   }
-		};
-		table1dropDown.addMouseListener(l);
-		table1name.addMouseListener(l);
-		l = new java.awt.event.MouseAdapter() {
-			@Override
-			public void mousePressed(java.awt.event.MouseEvent evt) {
-				openColumnDropDownBox(table2dropDown, table2alias, table2);
-			}
-			
-			@Override
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				table2dropDown.setEnabled(false);
-			}
-			@Override
-			public void mouseExited(java.awt.event.MouseEvent evt) {
-				table2dropDown.setEnabled(true);
-		   }
-		};
-		table2dropDown.addMouseListener(l);
-		table2name.addMouseListener(l);
 	}
 	
 	/**
@@ -267,19 +245,9 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         addOnPanel = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
-        jPanel5 = new javax.swing.JPanel();
-        table1label = new javax.swing.JLabel();
-        table1name = new javax.swing.JLabel();
-        table1dropDown = new javax.swing.JLabel();
-        table2label = new javax.swing.JLabel();
-        table2name = new javax.swing.JLabel();
-        table2dropDown = new javax.swing.JLabel();
+        scalarSQIconToggleButton = new javax.swing.JToggleButton();
         toSubQueryButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
-        scalarSubQPanel = new javax.swing.JPanel();
-        scalarSQIconLabel = new javax.swing.JLabel();
-        scalarSQIconLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         gripPanel = new javax.swing.JPanel();
@@ -329,59 +297,13 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         jPanel3.add(okButton, gridBagConstraints);
 
-        jPanel5.setLayout(new java.awt.GridBagLayout());
-
-        table1label.setText(" Table ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        jPanel5.add(table1label, gridBagConstraints);
-
-        table1name.setFont(table1name.getFont().deriveFont(table1name.getFont().getSize()+1f));
-        table1name.setText("jLabel1");
+        scalarSQIconToggleButton.setText("Scalar Subquery...");
+        scalarSQIconToggleButton.setToolTipText("Inserts a scalar query for a column of a neighboring table.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        jPanel5.add(table1name, gridBagConstraints);
-
-        table1dropDown.setFont(table1dropDown.getFont().deriveFont(table1dropDown.getFont().getSize()+1f));
-        table1dropDown.setText("jLabel1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        jPanel5.add(table1dropDown, gridBagConstraints);
-
-        table2label.setText("jLabel2");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        jPanel5.add(table2label, gridBagConstraints);
-
-        table2name.setFont(table2name.getFont().deriveFont(table2name.getFont().getSize()+1f));
-        table2name.setText("jLabel2");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        jPanel5.add(table2name, gridBagConstraints);
-
-        table2dropDown.setFont(table2dropDown.getFont().deriveFont(table2dropDown.getFont().getSize()+1f));
-        table2dropDown.setText("jLabel2");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        jPanel5.add(table2dropDown, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 6;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
-        jPanel3.add(jPanel5, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        jPanel3.add(scalarSQIconToggleButton, gridBagConstraints);
 
         toSubQueryButton.setText("to Subquery");
         toSubQueryButton.setToolTipText("<html>Converts condition into a subquery.<br> This allows to add joins with related tables or limiting clauses etc. </html>");
@@ -393,7 +315,6 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         jPanel3.add(toSubQueryButton, gridBagConstraints);
 
@@ -407,28 +328,9 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel3.add(cancelButton, gridBagConstraints);
-
-        scalarSubQPanel.setToolTipText("Inserts a scalar query for a column of a neighboring table.");
-
-        scalarSQIconLabel.setText("jLabel1");
-        scalarSubQPanel.add(scalarSQIconLabel);
-
-        scalarSQIconLabel2.setText("Scalar Subquery...");
-        scalarSQIconLabel2.setToolTipText("Inserts a scalar query for a column of a neighboring table.");
-        scalarSubQPanel.add(scalarSQIconLabel2);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
-        jPanel3.add(scalarSubQPanel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.weightx = 1.0;
-        jPanel3.add(jLabel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -544,10 +446,10 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		}
 
 		if (table2 != null || table1 == null) {
-			scalarSubQPanel.setVisible(false);
+			scalarSQIconToggleButton.setVisible(false);
 		} else {
-			scalarSubQPanel.setVisible(true);
-			ConditionEditor.initJoinPopupMenu(scalarSubQPanel, scalarSQIconLabel, scalarSQIconLabel2, table1alias, table1, editorPane);
+			scalarSQIconToggleButton.setVisible(true);
+			scalarSQIconToggleButton.setIcon(dropDownIcon);
 		}
 
 		this.table1 = table1;
@@ -555,28 +457,6 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		this.table1alias = table1alias;
 		this.table2alias = table2alias;
 		this.addPseudoColumns = addPseudoColumns;
-		if (table1 != null) {
-			this.table1label.setText(" " + table1label + " ");
-			this.table1name.setText("  " + table1.getName());
-			this.table1label.setVisible(true);
-			this.table1name.setVisible(true);
-			this.table1dropDown.setVisible(true);
-		} else {
-			this.table1label.setVisible(false);
-			this.table1name.setVisible(false);
-			this.table1dropDown.setVisible(false);
-		}
-		if (table2 != null) {
-			this.table2label.setText(" " + table2label + " ");
-			this.table2name.setText("  " + table2.getName());
-			this.table2label.setVisible(true);
-			this.table2name.setVisible(true);
-			this.table2dropDown.setVisible(true);
-		} else {
-			this.table2label.setVisible(false);
-			this.table2name.setVisible(false);
-			this.table2dropDown.setVisible(false);
-		}
 		toSubQueryButton.setVisible(addConvertSubqueryButton);
 		toSubQueryButton.setEnabled(true);
 		if (table1 != null && (table1.primaryKey == null || table1.primaryKey.getColumns() == null|| table1.primaryKey.getColumns().isEmpty())) {
@@ -686,24 +566,14 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
     protected javax.swing.JPanel addOnPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel gripPanel;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramsPanel;
-    private javax.swing.JLabel scalarSQIconLabel;
-    private javax.swing.JLabel scalarSQIconLabel2;
-    private javax.swing.JPanel scalarSubQPanel;
-    protected javax.swing.JLabel table1dropDown;
-    protected javax.swing.JLabel table1label;
-    protected javax.swing.JLabel table1name;
-    private javax.swing.JLabel table2dropDown;
-    private javax.swing.JLabel table2label;
-    private javax.swing.JLabel table2name;
+    private javax.swing.JToggleButton scalarSQIconToggleButton;
     private javax.swing.JButton toSubQueryButton;
     // End of variables declaration//GEN-END:variables
 	
@@ -718,10 +588,10 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
 	private SQLAutoCompletion sqlAutoCompletion;
-	
+
 	public void observe(final JTextField textfield, final Runnable open) {
 		InputMap im = textfield.getInputMap();
 		@SuppressWarnings("serial")

@@ -130,7 +130,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 							}
 						}
 					}
-				});
+				 });
+				 addOnPanel.setVisible(true);
 				 addOnPanel.add(checkBox);
 			}
 			checkBox.setSelected(condition.trim().startsWith(Filter.LITERAL_PREFIX));
