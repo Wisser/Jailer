@@ -70,8 +70,8 @@ public class MDTable extends MDObject {
     public final Long estimatedRowCount;
 
     // DDL of the table or <code>null</code>, if no DDL is available
-    private String ddl;
-    
+    private volatile String ddl;
+
     /**
      * Constructor.
      * 
@@ -320,6 +320,9 @@ public class MDTable extends MDObject {
      * @throws InterruptedException 
      */
     public String getDDL() {
+        if (ddlLoaded.get()) {
+        	return ddl;
+        }
     	synchronized (DDL_LOCK) {
 	        if (!ddlLoaded.get()) {
 	            Session session = getSchema().getMetaDataSource().getSession();
