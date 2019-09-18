@@ -1,5 +1,7 @@
 8.8.8
   - Avoid NPE if there is no default scheme.
+  - Import filters did not work correctly when a foreign key column with a filter was exported,
+    but not the corresponding primary key column.
   - In the condition editor, scalar subqueries for columns of adjacent tables can now be generated.
   - Minor fixes.
 
