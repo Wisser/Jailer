@@ -390,6 +390,7 @@ public class MDTable extends MDObject {
 	                try {
 	                	ddl = createDDL();
 		            } catch (Exception e) {
+		            	ddl = "-- DDL not available";
 	                	logger.info("error", e);
 		            }
 	            }
