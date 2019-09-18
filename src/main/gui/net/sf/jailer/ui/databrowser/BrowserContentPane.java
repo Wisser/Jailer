@@ -663,49 +663,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         jPanel7.add(andCondition, gridBagConstraints);
-        
+
 		setPendingState(false, false);
-		
-		dropA.setText(null);
-		dropA.setIcon(dropDownIcon);
+
 		sqlLabel1.setIcon(dropDownIcon);
 		sortColumnsLabel.setIcon(dropDownIcon);
-		dropA.addMouseListener(new java.awt.event.MouseAdapter() {
-			@Override
-			public void mousePressed(java.awt.event.MouseEvent evt) {
-				openColumnDropDownBox(dropA, "A", table);
-			}
-			
-			@Override
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				dropA.setEnabled(false);
-			}
-			@Override
-			public void mouseExited(java.awt.event.MouseEvent evt) {
-				dropA.setEnabled(true);
-		   }
-		});
-		
-		if (association != null) {
-			dropB.setText(null);
-			dropB.setIcon(dropDownIcon);
-			dropB.addMouseListener(new java.awt.event.MouseAdapter() {
-				@Override
-				public void mousePressed(java.awt.event.MouseEvent evt) {
-					openColumnDropDownBox(dropB, "B", association.source);
-				}
-				
-				@Override
-				public void mouseEntered(java.awt.event.MouseEvent evt) {
-					dropB.setEnabled(false);
-				}
-				@Override
-				public void mouseExited(java.awt.event.MouseEvent evt) {
-					dropB.setEnabled(true);
-			   }
-			});
-		}
-		
+
 		final ListCellRenderer acRenderer = andCondition.getRenderer();
 		andCondition.setRenderer(new ListCellRenderer() {
 			@Override
@@ -1197,9 +1160,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			});
 		}
 
-		dropA.setVisible(false);
-		dropB.setVisible(false);
-		
 		openEditorButton.setIcon(UIUtil.scaleIcon(this, conditionEditorIcon));
 		openEditorButton.setText(null);
 		
@@ -1539,7 +1499,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			jLabel4.setText(" ");
 			
 			jLabel6.setVisible(false);
-			dropB.setVisible(false);
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 8;
 			gridBagConstraints.gridy = 4;
@@ -4595,8 +4554,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sqlPanel = new javax.swing.JPanel();
         sqlLabel1 = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
-        dropA = new javax.swing.JLabel();
-        dropB = new javax.swing.JLabel();
         jPanel14 = new javax.swing.JPanel();
         wherejLabel = new javax.swing.JLabel();
 
@@ -5183,22 +5140,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         menuPanel.add(jPanel9, gridBagConstraints);
 
-        dropA.setFont(dropA.getFont().deriveFont(dropA.getFont().getStyle() | java.awt.Font.BOLD, dropA.getFont().getSize()+2));
-        dropA.setText("drop");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.weighty = 1.0;
-        menuPanel.add(dropA, gridBagConstraints);
-
-        dropB.setFont(dropB.getFont().deriveFont(dropB.getFont().getStyle() | java.awt.Font.BOLD, dropB.getFont().getSize()+2));
-        dropB.setText("drop");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.weighty = 1.0;
-        menuPanel.add(dropB, gridBagConstraints);
-
         jPanel14.setLayout(new java.awt.GridBagLayout());
 
         wherejLabel.setText(" Where ");
@@ -5272,8 +5213,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
     private javax.swing.JButton deselectButton;
-    private javax.swing.JLabel dropA;
-    private javax.swing.JLabel dropB;
     private javax.swing.JLabel findColumnsLabel;
     public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JLabel from;
