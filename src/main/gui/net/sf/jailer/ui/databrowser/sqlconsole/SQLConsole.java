@@ -1147,20 +1147,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
 	private boolean executeStatementWithLimit(Statement statement, String sqlStatement, Session session) throws SQLException {
-		if (DBMS.MySQL.equals(session.dbms)) {
-			try {
-				int limit = 1 + (Integer) limitComboBox.getSelectedItem();
-				Pattern pattern = Pattern.compile(".*\\blimit\\b\\s*([0-9]+)(\\s|\\))*$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
-				Matcher matcher = pattern.matcher(sqlStatement);
-				if (matcher.matches()) {
-					if (Integer.parseInt(matcher.group(1)) < limit) {
-						return statement.execute(sqlStatement);
-					}
-				}
-				return statement.execute("(" + sqlStatement + "\n) limit " + limit);
-			} catch (Throwable e) {
-				return statement.execute(sqlStatement);
+		try {
+			int limit = 1 + (Integer) limitComboBox.getSelectedItem();
+			if (limit > 0) {
+				statement.setMaxRows(limit + 1);
 			}
+		} catch (Exception e) {
+			// ignore
 		}
 		return statement.execute(sqlStatement);
 	}
