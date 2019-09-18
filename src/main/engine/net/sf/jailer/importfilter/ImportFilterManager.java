@@ -137,8 +137,17 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			List<Column> filteredColumns = new ArrayList<Column>();
 			for (Column column: table.getColumns()) {
 				Filter filter = column.getFilter();
-				if (filter != null && !filter.isApplyAtExport() && (!(filter.getFilterSource() instanceof PKColumnFilterSource))) {
-					filteredColumns.add(column);
+
+				if (filter != null && !filter.isApplyAtExport()) {
+					boolean derivedFromOutside = false;
+					if (filter.getFilterSource() instanceof PKColumnFilterSource) {
+						if (!totalProgress.contains(((PKColumnFilterSource) filter.getFilterSource()).table)) {
+							derivedFromOutside = true;
+						}
+					}
+					if (derivedFromOutside || (!(filter.getFilterSource() instanceof PKColumnFilterSource))) {
+						filteredColumns.add(column);
+					}
 				}
 			}
 			if (!filteredColumns.isEmpty()) {
@@ -437,7 +446,13 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	public String transform(Column column, String oldValue) {
 		Filter filter = column.getFilter();
 		if (filter.getFilterSource() instanceof PKColumnFilterSource) {
-			column = ((PKColumnFilterSource) filter.getFilterSource()).column;
+			boolean derivedFromOutside = false;
+			if (!totalProgress.contains(((PKColumnFilterSource) filter.getFilterSource()).table)) {
+				derivedFromOutside = true;
+			}
+			if (!derivedFromOutside) {
+				column = ((PKColumnFilterSource) filter.getFilterSource()).column;
+			}
 		}
 		ColumnToMappingTable mapping = columnMapping.get(column);
 
