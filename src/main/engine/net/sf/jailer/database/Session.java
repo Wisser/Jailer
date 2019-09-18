@@ -523,6 +523,13 @@ public class Session {
 			CancellationHandler.begin(statement, context);
 			ResultSet resultSet;
 			try {
+				if (limit > 0) {
+					statement.setMaxRows(limit + 1);
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+			try {
 				if (timeout > 0) {
 					statement.setQueryTimeout(timeout);
 				}
