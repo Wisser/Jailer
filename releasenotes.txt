@@ -1,6 +1,7 @@
 8.8.8
   - Avoid NPE if there is no default scheme.
   - In the condition editor, scalar subqueries for columns of adjacent tables can now be generated.
+  - Minor fixes.
 
 8.8.7
   - Upsert statements in PostgreSQL format could fail due to missing explicit conversion of bytea literals.
