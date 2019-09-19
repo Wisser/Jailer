@@ -83,18 +83,23 @@ public class BasicFormatterImpl {
 		MISC.add( "on" );
 	}
 
-	static final String indentString = "    ";
-	static final String initial = "\n    ";
+	static final String indentString = "     ";
+	static final String initial = "\n     ";
 
 	public String format(String source) {
-		return format0(source).replaceAll("\\)\\s+or\\s+\\(", ") or ("); 
+		return format0(source)
+				.replaceAll("(?is)\\)\\s+or\\s+\\(", ") or (")
+				.replaceAll("(?is)\\b(insert)\\n\\s*(into)\\b", "$1 $2")
+				.replaceAll("(?is)\\b(delete)\\n\\s*(from)\\b", "$1 $2")
+				.replaceAll("(?is)\\b(select)\\n\\s+(\\*)", "$1 $2")
+				.replaceAll("(?is)\\b(select)(\\n\\s+) (distinct)\\b", "$1 $3$2"); 
 	}
 
 	private String format0(String source) {
 		try {
 			if (source.trim().startsWith("(")) {
 				String formatted = new FormatProcess("where \n" + source).perform();
-				String result = formatted.replaceFirst("^\\s*where *\\n", "");
+				String result = formatted.replaceFirst("^\\s*where *\\n\\s*", "");
 				if (!result.equals(formatted)) {
 					String[] lines = result.split("\\r?\\n");
 					int pl = Integer.MAX_VALUE;
@@ -143,7 +148,7 @@ public class BasicFormatterImpl {
 		private LinkedList parenCounts = new LinkedList();
 		private LinkedList afterByOrFromOrSelects = new LinkedList();
 		
-		int indent = 1;
+		int indent = 0;
 
 		StringBuffer result = new StringBuffer();
 		StringTokenizer tokens;

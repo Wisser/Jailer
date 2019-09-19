@@ -1002,7 +1002,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		StringBuffer sql = new StringBuffer("Select "
 				+ (selectDistinct ? "distinct " : ""));
 		String lf = System.getProperty("line.separator", "\n");
-		String tab = "       ";
+		String tab = "     ";
 
 		List<Relationship> relationships = rootRelationship.flatten(0, null,
 				false);
@@ -1132,6 +1132,31 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			}
 		}
 
+		int numConds = 0;
+		
+		for (int i = 0; i < relationships.size(); ++i) {
+			Relationship r = relationships.get(i);
+			boolean appendAnd = true;
+			if (r.anchorWhereClause != null && r.anchor != null) {
+				boolean anchorExists = false;
+				for (Relationship c : r.children) {
+					if (c.association == r.anchor) {
+						anchorExists = true;
+						break;
+					}
+				}
+				if (!anchorExists) {
+					appendAnd = false;
+					++numConds;
+				}
+			}
+			if (appendAnd
+					&& r.whereClause != null
+					&& (r.joinOperator == JoinOperator.Join || r.originalParent != null)) {
+				++numConds;
+			}
+		}
+
 		for (int i = 0; i < relationships.size(); ++i) {
 			Relationship r = relationships.get(i);
 			String lastAlias = "";
@@ -1165,9 +1190,13 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 						sql.append(singleLine ? " " : (lf + tab));
 						sql.append("and ");
 					}
-					sql.append("("
-							+ SqlUtil.replaceAliases(r.anchorWhereClause,
-									r.alias, lastAlias) + ")");
+					if (!f || numConds != 1) {
+						sql.append("(");
+					}
+					sql.append(SqlUtil.replaceAliases(r.anchorWhereClause, r.alias, lastAlias));
+					if (!f || numConds != 1) {
+						sql.append(")");
+					}
 					f = false;
 				}
 			}
@@ -1182,9 +1211,13 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 					sql.append(singleLine ? " " : (lf + tab));
 					sql.append("and ");
 				}
-				sql.append("("
-						+ SqlUtil.replaceAliases(r.whereClause, r.alias,
-								lastAlias) + ")");
+				if (!f || numConds != 1) {
+					sql.append("(");
+				}
+				sql.append(SqlUtil.replaceAliases(r.whereClause, r.alias, lastAlias));
+				if (!f || numConds != 1) {
+					sql.append(")");
+				}
 				f = false;
 			}
 		}
