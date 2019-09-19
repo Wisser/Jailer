@@ -189,4 +189,6 @@ public class Environment {
 
 	public static int state;
 
+	public static boolean nimbus = false;
+
 }

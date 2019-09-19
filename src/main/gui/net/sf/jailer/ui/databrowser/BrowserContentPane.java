@@ -2951,6 +2951,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		reloadRows(null);
 	}
 
+	boolean loadedRowsAreRestricted = false;
+	
 	/**
 	 * Reloads rows.
 	 */
@@ -2964,9 +2966,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			setPendingState(false, false);
 			int limit = getReloadLimit();
 			LoadJob reloadJob;
+			loadedRowsAreRestricted = false;
 			if (statementForReloading != null) {
 				reloadJob = new LoadJob(limit, statementForReloading, getParentBrowser(), false);
 			} else {
+				loadedRowsAreRestricted = !(table instanceof SqlStatementTable) && !getAndConditionText().trim().isEmpty();
 				reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? "" : getAndConditionText(), getParentBrowser(), selectDistinctCheckBox.isSelected());
 			}
 			synchronized (this) {

@@ -1687,9 +1687,10 @@ public abstract class Desktop extends JDesktopPane {
 		public final Color color2;
 		public final boolean dotted, intersect;
 		public final boolean inClosure;
+		public final boolean restricted;
 		
 		public Link(RowBrowser from, RowBrowser to, String sourceRowID, String destRowID, int x1, int y1, int x2, int y2, Color color1, Color color2, boolean dotted,
-				boolean intersect, boolean inClosure) {
+				boolean intersect, boolean inClosure, boolean restricted) {
 			this.from = from;
 			this.to = to;
 			this.sourceRowID = sourceRowID;
@@ -1698,11 +1699,12 @@ public abstract class Desktop extends JDesktopPane {
 			this.y1 = y1;
 			this.x2 = x2;
 			this.y2 = y2;
-			this.color1 = color1;
-			this.color2 = color2;
+			this.color1 = restricted? color1.brighter() : color1;
+			this.color2 = restricted? color2.brighter() : color2;
 			this.dotted = dotted;
 			this.intersect = intersect;
 			this.inClosure = inClosure;
+			this.restricted = restricted;
 		}
 	};
 
@@ -1733,6 +1735,7 @@ public abstract class Desktop extends JDesktopPane {
 						Color color1 = tableBrowser.color1;
 						Color color2 = tableBrowser.color2;
 						boolean linkAdded = false;
+						boolean restricted = tableBrowser.parent != null && tableBrowser.browserContentPane.loadedRowsAreRestricted;
 						for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
 							if (rowToRowLink.x1 >= 0) {
 								linkAdded = true;
@@ -1750,7 +1753,7 @@ public abstract class Desktop extends JDesktopPane {
 									}
 	
 									Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, rowToRowLink.x1, rowToRowLink.y1,
-											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure);
+											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure, restricted);
 									List<Link> l = links.get(sourceRowID);
 									if (l == null) {
 										l = new ArrayList<Link>();
@@ -1766,7 +1769,7 @@ public abstract class Desktop extends JDesktopPane {
 							boolean inClosure = false;
 
 							Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
-									tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure);
+									tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure, restricted);
 							List<Link> l = links.get(sourceRowID);
 							if (l == null) {
 								l = new ArrayList<Link>();
@@ -1812,7 +1815,7 @@ public abstract class Desktop extends JDesktopPane {
 										boolean intersect = link.intersect;
 										boolean dotted = link.dotted || toJoin.dotted;
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
-												Color.yellow.darker().darker(), Color.yellow.darker(), dotted, intersect, link.inClosure && toJoin.inClosure));
+												Color.yellow.darker().darker(), Color.yellow.darker(), dotted, intersect, link.inClosure && toJoin.inClosure, link.restricted || toJoin.restricted));
 									}
 								}
 							}
@@ -1930,7 +1933,8 @@ public abstract class Desktop extends JDesktopPane {
 									lastLastY = lastY;
 									lastY = y;
 									lastInClosure = link.inClosure;
-									final Color color = pbg ? Color.white : light? link.color1 : link.color2;
+									Color cl = pbg ? Color.white : light? link.color1 : link.color2;
+									final Color color = link.restricted? Environment.nimbus? cl.darker() : cl.brighter() : cl;
 									final Point2D start = new Point2D.Double(link.x2, link.y2);
 									final Point2D end = new Point2D.Double(link.x1, link.y1);
 									final int ir = dir > 0? i : linksToRender.size() - 1 - i;

@@ -2042,6 +2042,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 					        if ("Nimbus".equals(info.getName())) {
 					            UIManager.setLookAndFeel(info.getClassName());
+                                Environment.nimbus = true;
 					            break;
 					        }
 					    }
