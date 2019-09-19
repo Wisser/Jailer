@@ -1934,7 +1934,20 @@ public abstract class Desktop extends JDesktopPane {
 									lastY = y;
 									lastInClosure = link.inClosure;
 									Color cl = pbg ? Color.white : light? link.color1 : link.color2;
-									final Color color = link.restricted? Environment.nimbus? cl.darker() : cl.brighter() : cl;
+									if (!Environment.nimbus) {
+										if (cl.getGreen() > cl.getBlue() && cl.getGreen() > cl.getRed()) {
+											if (link.restricted) {
+												cl = cl.brighter();
+											}
+										} else {
+											double f = link.restricted? 2.0 : 1.5;
+											cl = new Color(
+													brighter(cl.getRed(), f),
+													brighter(cl.getGreen(), f),
+													brighter(cl.getBlue(), f));
+										}
+									}
+									final Color color = link.restricted && Environment.nimbus? cl.darker() : cl;
 									final Point2D start = new Point2D.Double(link.x2, link.y2);
 									final Point2D end = new Point2D.Double(link.x1, link.y1);
 									final int ir = dir > 0? i : linksToRender.size() - 1 - i;
@@ -1985,6 +1998,14 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		paintDuration = System.currentTimeMillis() - startTime;
 		deferRescaleMode(startTime);
+	}
+
+	private int brighter(int col, double f) {
+		if (col > 128) {
+			return Math.min((int) (col * f), 255);
+		} else {
+			return Math.max(255 - (int) ((255 - col) / f), 0);
+		}
 	}
 
 	private void renderActiveIFrameMarker(Graphics2D g2d) {
