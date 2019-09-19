@@ -2439,4 +2439,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     }
 
+    // TODO new popup menu item "to single line"
+    
 }
