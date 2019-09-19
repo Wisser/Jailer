@@ -87,13 +87,44 @@ public class BasicFormatterImpl {
 	static final String initial = "\n    ";
 
 	public String format(String source) {
+		return format0(source).replaceAll("\\)\\s+or\\s+\\(", ") or ("); 
+	}
+
+	private String format0(String source) {
 		try {
-			boolean mk = source.trim().startsWith("(");
-			String formatted = new FormatProcess(mk? source.trim().substring(1) : source).perform();
-			if (mk) {
-				formatted = "(" + formatted;
+			if (source.trim().startsWith("(")) {
+				String formatted = new FormatProcess("where \n" + source).perform();
+				String result = formatted.replaceFirst("^\\s*where *\\n", "");
+				if (!result.equals(formatted)) {
+					String[] lines = result.split("\\r?\\n");
+					int pl = Integer.MAX_VALUE;
+					for (String line: lines) {
+						for (int i = 0; i < line.length(); ++i) {
+							if (line.charAt(i) != ' ') {
+								if (pl > i) {
+									pl = i;
+									break;
+								}
+							}
+						}
+						if (pl == 0) {
+							break;
+						}
+					}
+					if (pl > 0) {
+						StringBuilder sb = new StringBuilder();
+						for (String line: lines) {
+							if (sb.length() > 0) {
+								sb.append('\n');
+							}
+							sb.append(pl < line.length()? line.substring(pl) : line);
+						}
+						return sb.toString();
+					}
+					return result;
+				}
 			}
-			return formatted;
+			return new FormatProcess(source).perform();
 		} catch (Throwable t) {
 			return source;
 		}

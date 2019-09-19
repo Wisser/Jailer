@@ -107,7 +107,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 				if (ok && initialCondition.equals(editorPane.getText())) {
 					ok = false;
 				}
-				consume(ok? removeSingleLineComments(editorPane.getText()).replaceAll("\\n(\\r?) *", " ").replace('\n', ' ').replace('\r', ' ') : null);
+				consume(ok? UIUtil.removesuperfluousSpaces(removeSingleLineComments(editorPane.getText()).replaceAll("\\n(\\r?) *", " ").replace('\n', ' ').replace('\r', ' ')) : null);
 			}
 		});
 		
@@ -378,7 +378,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	 * @return new condition or <code>null</code>, if user canceled the editor
 	 */
 	public void edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
-		if (Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
+		if (Pattern.compile("(\\bselect\\b)|(^\\s*\\()", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
 			condition = new BasicFormatterImpl().format(condition);
 		}
 		this.table1 = table1;
@@ -401,6 +401,8 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		editorPane.setCaretPosition(0);
 		editorPane.discardAllEdits();
 
+		editorPane.setAnimateBracketMatching(false);
+		
 		if (parameterSelector != null) {
 			parameterSelector.updateParameters();
 		}
@@ -463,7 +465,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		return sb.toString();
 	}
 
-	public void setLocationAndFit(Point pos) {
+	public void setLocationAndFit(Point pos, int maxXW) {
 		setLocation(pos);
 		UIUtil.fit(this);
         try {
@@ -473,6 +475,8 @@ public abstract class DBConditionEditor extends EscapableDialog {
             if (hd > 0) {
                 setLocation(getX(), Math.max(getY() - hd, 0));
             }
+            int maxX = maxXW - getWidth();
+    		setLocation(Math.max(0, Math.min(maxX, getX())), getY());
         } catch (Throwable t) {
             // ignore
         }

@@ -202,6 +202,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel5.add(historyComboBox, gridBagConstraints);
         
         this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(true, true) {
+        	{
+        		setBracketMatchingEnabled(true);
+        	}
 			@Override
 			protected boolean canExplain() {
 				return SQLConsole.this.canExplain();
@@ -1218,7 +1221,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     ttEnd = Math.min(ttEnd, info.contextEnd);
                 }
                 if (cStart < cEnd) {
-	                String context = sql.substring(cStart, cEnd).trim().replaceAll("\\s+", " ");
+	                String context = UIUtil.removesuperfluousSpaces(sql.substring(cStart, cEnd).trim().replaceAll("\\s+", " "));
 	                if (context.length() > MAX_CONTEXT_LENGTH) {
 	                    context = context.substring(0, MAX_CONTEXT_LENGTH) + "...";
 	                }

@@ -197,6 +197,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 									JTabbedPane tabbedPane = new JTabbedPane();
 									for (Entry<String, StringBuilder> e: rows.entrySet()) {
 										RSyntaxTextArea textPane = new RSyntaxTextArea(e.getValue().toString());
+										textPane.setBracketMatchingEnabled(false);
 										textPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
 										textPane.setEditable(false);
 										textPane.setCaretPosition(0);

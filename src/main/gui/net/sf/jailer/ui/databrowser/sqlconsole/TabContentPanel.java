@@ -134,7 +134,8 @@ public class TabContentPanel extends javax.swing.JPanel {
 		
 		JScrollPane scrollPane = new JScrollPane();
 		RSyntaxTextArea area = new RSyntaxTextArea();
-		
+		area.setBracketMatchingEnabled(false);
+
 		area.setEditable(false);
 		scrollPane.setViewportView(area);
 		area.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);

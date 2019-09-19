@@ -429,7 +429,8 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		    	} else {
 		    		JScrollPane tab = new JScrollPane();
 		    		RSyntaxTextArea area = new RSyntaxTextArea();
-		    		
+					area.setBracketMatchingEnabled(false);
+
 		    		area.setEditable(false);
 		    		tab.setViewportView(area);
 		    		area.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);

@@ -627,9 +627,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						public void run() {
 							in = false;
 							updateBorder();
-							Point point = new Point();
-							SwingUtilities.convertPointToScreen(point, findColumnsPanel);
-							findColumns((int) point.getX(), (int) point.getY(), currentRowsTableReference == null? rowsTable : currentRowsTableReference.get());
+							if (findColumnsPanel.isShowing()) {
+								Point point = new Point();
+								SwingUtilities.convertPointToScreen(point, findColumnsPanel);
+								findColumns((int) point.getX(), (int) point.getY(), currentRowsTableReference == null? rowsTable : currentRowsTableReference.get());
+							}
 						}
 					});
 				}
@@ -1173,7 +1175,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				openEditorButton.setSelected(true);
 				final Point pos = new Point(andCondition.getX(), andCondition.getY());
 				SwingUtilities.convertPointToScreen(pos, andCondition.getParent());
-				andConditionEditor.setLocationAndFit(pos);
+				Window owner = SwingUtilities.getWindowAncestor(BrowserContentPane.this);
+				andConditionEditor.setLocationAndFit(pos, owner != null? owner.getX() + owner.getWidth() - 8: Integer.MAX_VALUE);
 				andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
 			}
 		};
@@ -1453,7 +1456,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	protected void historizeAndCondition(Object item) {
-		if (item == null) {
+		if (item == null || (item.toString().trim().isEmpty() && !item.toString().isEmpty())) {
 			return;
 		}
 		for (int i = 0; i < andCondModel.getSize(); ++i) {
@@ -1803,8 +1806,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					toSelect.clear();
 					toSelect.add(row);
 				}
-				if (!currentSelectedRowCondition.equals("") && rows.size() == 1
-					|| toSelect.size() == rows.size()) {
+				if (!currentSelectedRowCondition.equals("") && 
+						(rows.size() == 1 || toSelect.size() == rows.size())) {
 					JMenuItem sr = new JMenuItem(rows.size() == 1? "Deselect Row" : ("Deselect Rows (" + rows.size() + ")"));
 					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
@@ -2972,6 +2975,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			} else {
 				loadedRowsAreRestricted = !(table instanceof SqlStatementTable) && !getAndConditionText().trim().isEmpty();
 				reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? "" : getAndConditionText(), getParentBrowser(), selectDistinctCheckBox.isSelected());
+				currentSelectedRowCondition = getAndConditionText();
 			}
 			synchronized (this) {
 				currentLoadJob = reloadJob;
@@ -5813,7 +5817,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //			cond = "(" + cond + ") and (" + currentCond + ")";
 //		}
 		andCondition.setSelectedItem(cond);
-		currentSelectedRowCondition = cond;
 	}
 
 	protected void deselectIfNeededWithoutReload() {

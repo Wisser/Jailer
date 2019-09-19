@@ -105,6 +105,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		this.withExecuteActions = withExecuteActions;
 		setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
 		setAutoIndentEnabled(true);
+		setBracketMatchingEnabled(false);
 		// setTabsEmulated(true);
 		
 		// load images

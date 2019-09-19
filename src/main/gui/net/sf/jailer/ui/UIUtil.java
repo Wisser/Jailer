@@ -1336,4 +1336,8 @@ public class UIUtil {
 		return true;
 	}
 
+	public static String removesuperfluousSpaces(String text) {
+		return text.trim().replaceAll(" *\\) +or +\\( *", ") or (").replaceAll("\\( *", "(").replaceAll(" *\\)", ")");
+	}
+
 }

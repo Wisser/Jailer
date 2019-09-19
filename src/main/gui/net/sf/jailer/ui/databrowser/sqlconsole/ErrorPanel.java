@@ -50,6 +50,8 @@ public class ErrorPanel extends javax.swing.JPanel {
 			// ignore
 		}
 		sqlEditorPane = new RSyntaxTextArea();
+		sqlEditorPane.setBracketMatchingEnabled(false);
+
 		sqlEditorPane.setFadeCurrentLineHighlight(true);
 		sqlEditorPane.setEditable(false);
 		sqlEditorPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
