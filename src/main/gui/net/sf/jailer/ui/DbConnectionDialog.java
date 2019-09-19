@@ -1291,8 +1291,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 
-    // TODO: allow more than 4 jars
-
     private static ImageIcon warnIcon;
     private static ImageIcon scaledWarnIcon;
     static {
