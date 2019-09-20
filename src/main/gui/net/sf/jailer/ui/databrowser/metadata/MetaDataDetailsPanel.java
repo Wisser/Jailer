@@ -389,27 +389,29 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						} catch (SQLException e) {
 							// ignore
 						}
-			    		UIUtil.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								LoadJob loadJob = rb.newLoadJob(metaDataDetails[0], null);
-					    		loadJob.run();
-					        	JComponent rTabContainer = rb.getRowsTableContainer();
-						    	detailsViews.put(cacheKey, rTabContainer);
-								final JTable rTab = rb.getRowsTable();
-								UIUtil.invokeLater(new Runnable() {
-									@Override
-									public void run() {
-										mdd.adjustRowsTable(rTab);
-										panel.removeAll();
-							        	JComponent rTabContainer = rb.getRowsTableContainer();
-										panel.add(rTabContainer);
-										rb.resetRowsTableContainer();
-										tabbedPane.repaint();
-									}
-								});
-							}
-						});
+				    	if (metaDataDetails[0] != null) {
+				    		UIUtil.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									LoadJob loadJob = rb.newLoadJob(metaDataDetails[0], null);
+						    		loadJob.run();
+						        	JComponent rTabContainer = rb.getRowsTableContainer();
+							    	detailsViews.put(cacheKey, rTabContainer);
+									final JTable rTab = rb.getRowsTable();
+									UIUtil.invokeLater(new Runnable() {
+										@Override
+										public void run() {
+											mdd.adjustRowsTable(rTab);
+											panel.removeAll();
+								        	JComponent rTabContainer = rb.getRowsTableContainer();
+											panel.add(rTabContainer);
+											rb.resetRowsTableContainer();
+											tabbedPane.repaint();
+										}
+									});
+								}
+							});
+				    	}
 					}
 				});
 			} catch (InterruptedException e) {
