@@ -1,3 +1,7 @@
+8.8.8.4
+   - Hotfix release for Issue "Gui: NPE after renaming model file (*.jm)"
+     https://github.com/Wisser/Jailer/issues/16
+
 8.8.8
   - Avoid NPE if there is no default scheme.
   - Import filters did not work correctly when a foreign key column with a filter was exported,
