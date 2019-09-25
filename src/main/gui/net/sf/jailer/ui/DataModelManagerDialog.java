@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -627,6 +628,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				// ignore
 			}
 		}
+		data = Arrays.copyOf(data, i);
+		
 		DefaultTableModel tableModel = new DefaultTableModel(data, new String[] { "Name", "Path", "Time" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
