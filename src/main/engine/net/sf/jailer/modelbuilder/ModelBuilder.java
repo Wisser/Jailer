@@ -486,7 +486,7 @@ public class ModelBuilder {
 				mkdirsResult = f.getParentFile().mkdirs();
 				f.createNewFile();
 			} catch (Exception e) {
-				throw new RuntimeException(e.getMessage() + " " + (f.getAbsolutePath()) + " (" + mkdirsResult + ")", e);
+				throw new IOException(e.getMessage() + " (" + mkdirsResult + ")" + ": " + (f.getAbsolutePath()), e);
 			}
 		}
 		PrintWriter out = new PrintWriter(new FileOutputStream(fileName));
