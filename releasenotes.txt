@@ -1,3 +1,6 @@
+8.8.9
+   - Added configuration information for MariaDB.
+
 8.8.8.4
    - Hotfix release for Issue "Gui: NPE after renaming model file (*.jm)"
      https://github.com/Wisser/Jailer/issues/16
