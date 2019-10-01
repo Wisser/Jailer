@@ -161,6 +161,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private final SQLPlusSupport sqlPlusSupport = new SQLPlusSupport();
 	private File file;
 	private JMenuItem menuItemToggle;
+	private JMenuItem menuItemToSingleLine;
 	private JMenuItem menuItemSubstituteVariables;
 	private JMenuItem menuItemAnalyse;
 	private int initialTabbedPaneSelection = 0;
@@ -284,6 +285,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	@Override
         	protected void appendPopupMenu(JPopupMenu menu) {
         		menu.addSeparator();
+        		menu.add(menuItemToSingleLine);
         		menu.add(menuItemToggle);
         		menu.add(menuItemSubstituteVariables);
         		menu.addSeparator();
@@ -410,6 +412,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				"<html>Adds (or remove) line-continuation-character ('\\') <br>" +
 				" to each line terminated by ';' <br>"
 				+ "(allowing you to execute PL/SQL code)");
+		
+		item = new JMenuItem("To Single Line");
+		item.setEnabled(false);
+		menuItemToSingleLine = item;
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				toSingleLine();
+			}
+		});
+		
 		item = new JMenuItem("Substitute Variables");
 		item.setEnabled(false);
 		menuItemSubstituteVariables = item;
@@ -442,6 +455,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private void updateMenuItems(boolean isTextSelected) {
     	if (menuItemToggle != null) {
     		menuItemToggle.setEnabled(isTextSelected);
+    	}
+    	if (menuItemToSingleLine != null) {
+    		menuItemToSingleLine.setEnabled(isTextSelected);
     	}
     	if (menuItemSubstituteVariables != null) {
     		menuItemSubstituteVariables.setEnabled(isTextSelected);
@@ -2219,6 +2235,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         return -1;
     }
 
+    private void toSingleLine() {
+		String currentStatement = editorPane.getCurrentStatement(false);
+		String newStatement = UIUtil.toSingleLineSQL(currentStatement);
+		if (!currentStatement.equals(newStatement)) {
+			editorPane.replaceCurrentStatement(newStatement, false);
+		}
+	}
+
     private void toggleLineContinuation() {
 		String currentStatement = editorPane.getCurrentStatement(false);
 		String newStatement;
@@ -2439,6 +2463,4 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     }
 
-    // TODO new popup menu item "to single line"
-    
 }

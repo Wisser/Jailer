@@ -667,6 +667,7 @@ public class UIUtil {
     }
 
     public static Object EXCEPTION_CONTEXT_USER_ERROR = new Object();
+    public static Object EXCEPTION_CONTEXT_MB_USER_ERROR = new Object();
     public static Object EXCEPTION_CONTEXT_USER_WARNING = new Object();
     
     /**
@@ -712,7 +713,7 @@ public class UIUtil {
      *            the exception
      */
     public static void showException(Component parent, String title, Throwable t, Object context, JComponent additionalControl) {
-        if (context == EXCEPTION_CONTEXT_USER_ERROR) {
+        if (context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_MB_USER_ERROR) {
         	if (t instanceof IndexOutOfBoundsException
         			|| t instanceof NullPointerException
         			|| t instanceof ClassCastException
@@ -762,7 +763,7 @@ public class UIUtil {
             if (context instanceof Session) {
                 Session session = (Session) context;
                 contextDesc = session.dbUrl + " (" + session.dbms + ")";
-            } else if (context != EXCEPTION_CONTEXT_USER_ERROR) {
+            } else if (context != EXCEPTION_CONTEXT_USER_ERROR && context != EXCEPTION_CONTEXT_MB_USER_ERROR) {
                 contextDesc = lineWrap(context.toString(), 80).toString();
             }
         }
@@ -770,10 +771,12 @@ public class UIUtil {
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
         if (context != EXCEPTION_CONTEXT_USER_ERROR) {
-            contextDesc += "\nHelp Desk: https://sourceforge.net/p/jailer/discussion/";
-            contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
-            contextDesc += "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
-            
+        	if (context != EXCEPTION_CONTEXT_MB_USER_ERROR) {
+        		contextDesc += "\nHelp Desk: https://sourceforge.net/p/jailer/discussion/";
+        		contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
+        		contextDesc += "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
+        	}
+
             String iMsg = (context != null && "AWT".equals(context)? context : "") +
             		msg.toString() + "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
 
@@ -793,7 +796,7 @@ public class UIUtil {
         }
 
         new SqlErrorDialog(parent == null ? null : parent instanceof Window? (Window) parent : SwingUtilities.getWindowAncestor(parent), msg.toString(),
-                contextDesc, false, false, context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_USER_WARNING? title : null, context == EXCEPTION_CONTEXT_USER_WARNING, additionalControl);
+                contextDesc, false, false, context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_MB_USER_ERROR || context == EXCEPTION_CONTEXT_USER_WARNING? title : null, context == EXCEPTION_CONTEXT_USER_WARNING, additionalControl);
     }
 
     private static StringBuilder lineWrap(String message, int maxwidth) {
@@ -1337,7 +1340,56 @@ public class UIUtil {
 	}
 
 	public static String removesuperfluousSpaces(String text) {
-		return text.trim().replaceAll(" *\\) +or +\\( *", ") or (").replaceAll("\\( *", "(").replaceAll(" *\\)", ")");
+		return text.trim()
+				.replaceAll(" *\\) +or +\\( *", ") or (")
+				.replaceAll("\\( *", "(")
+				.replaceAll(" *\\)", ")")
+				.replaceAll(" *;$", ";");
+	}
+
+	/**
+	 * Removes single line comments.
+	 * 
+	 * @param statement
+	 *            the statement
+	 * 
+	 * @return statement the statement without comments and literals
+	 */
+	private static String removeSingleLineComments(String statement) {
+		Pattern pattern = Pattern.compile("('(?:[^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(statement);
+		boolean result = matcher.find();
+		StringBuffer sb = new StringBuffer();
+		if (result) {
+			do {
+				if (matcher.group(3) == null) {
+					matcher.appendReplacement(sb, "$0");
+					result = matcher.find();
+					continue;
+				}
+				int l = matcher.group(0).length();
+				matcher.appendReplacement(sb, "");
+				if (matcher.group(1) != null) {
+					l -= 2;
+					sb.append("'");
+				}
+				while (l > 0) {
+					--l;
+					sb.append(' ');
+				}
+				if (matcher.group(1) != null) {
+					sb.append("'");
+				}
+				result = matcher.find();
+			} while (result);
+		}
+		matcher.appendTail(sb);
+		return sb.toString();
+	}
+
+	public static String toSingleLineSQL(String text) {
+		return UIUtil.removesuperfluousSpaces(
+				removeSingleLineComments(text).replaceAll("\\s*\\n\\s*", " "));
 	}
 
 }

@@ -711,6 +711,22 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
+			protected void findTempClosure(Row row) {
+				Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
+				Set<Pair<BrowserContentPane, Row>> closure = new HashSet<Pair<BrowserContentPane, Row>>();
+				findClosure(row, rows, false);
+				closure.addAll(rows);
+				rows = new HashSet<Pair<BrowserContentPane, Row>>();
+				findClosure(row, rows, true);
+				closure.addAll(rows);
+				
+				rowsClosure.tempClosure.clear();
+				for (Pair<BrowserContentPane, Row> p: closure) {
+					rowsClosure.tempClosure.add(p.b);
+				}
+			}
+
+			@Override
 			protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward) {
 				synchronized (Desktop.this) {
 					Pair<BrowserContentPane, Row> thisRow = new Pair<BrowserContentPane, Row>(this, row);

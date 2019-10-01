@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -38,6 +39,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -530,8 +532,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Set<Pair<BrowserContentPane, String>> currentClosureRowIDs = new HashSet<Pair<BrowserContentPane, String>>();
 		Set<String> currentClosureRootID = new HashSet<String>();
 		Set<BrowserContentPane> parentPath = new HashSet<BrowserContentPane>();
+		
+		Set<Row> tempClosure = Collections.synchronizedSet(new HashSet<Row>());
 	};
-	
+
 	private final RowsClosure rowsClosure;
 	
 	private boolean suppressReload;
@@ -747,30 +751,62 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (!(graphics instanceof Graphics2D)) {
 					return;
 				}
-				if (BrowserContentPane.this.association != null && BrowserContentPane.this.association.isInsertDestinationBeforeSource()) {
-					return;
-				}
 				
 				int maxI = Math.min(rowsTable.getRowCount(), rows.size());
-
+				Rectangle visRect = rowsTable.getVisibleRect();
+				
 				RowSorter<? extends TableModel> sorter = getRowSorter();
 				if (sorter != null) {
 					maxI = sorter.getViewRowCount();
 				}
 				
+				Graphics2D g2d = (Graphics2D) graphics;
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2d.setStroke(new BasicStroke(1));
+				
+				Color tempClosureColor = new Color(255, 0, 0, 50);
+				int width = (int) (visRect.width * 1.4);
+
+				for (int i = 0; i < maxI; ++i) {
+					int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
+					if (mi >= rows.size()) {
+						continue;
+					}
+					Row row = rows.get(mi);
+					if (BrowserContentPane.this.rowsClosure.tempClosure.contains(row)) {
+						int vi = i;
+						g2d.setColor(tempClosureColor);
+						Rectangle r = rowsTable.getCellRect(vi, 0, false);
+						x[0] = (int) visRect.getMinX();
+						y[0] = (int) r.getMinY();
+						r = rowsTable.getCellRect(vi, rowsTable.getColumnCount() - 1, false);
+						x[1] = (int) visRect.getMinX() + width;
+						y[1] = (int) r.getMaxY();
+						GradientPaint paint = new GradientPaint(
+								x[0], y[0], tempClosureColor,
+								x[0] + width, y[1], new Color(255, 0, 0, 0));
+						g2d.setPaint(paint);
+						g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
+					}
+				}
+
+				g2d.setPaint(null);
+				
+				if (BrowserContentPane.this.association != null && BrowserContentPane.this.association.isInsertDestinationBeforeSource()) {
+					return;
+				}
+
 				int lastPMIndex = -1;
 				for (int i = 0; i < maxI; ++i) {
 					int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
 					if (mi >= rows.size()) {
 						continue;
 					}
-					if (rows.get(mi).getParentModelIndex() != lastPMIndex) {
-						lastPMIndex = rows.get(mi).getParentModelIndex();
+					Row row = rows.get(mi);
+					if (row.getParentModelIndex() != lastPMIndex) {
+						lastPMIndex = row.getParentModelIndex();
 						int vi = i;
-						Graphics2D g2d = (Graphics2D) graphics;
 						g2d.setColor(color);
-						g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-						g2d.setStroke(new BasicStroke(1));
 						Rectangle r = rowsTable.getCellRect(vi, 0, false);
 						x[0] = (int) r.getMinX();
 						y[0] = (int) r.getMinY();
@@ -1109,6 +1145,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTable.addMouseListener(rowTableListener);
 		rowsTableScrollPane.addMouseListener(rowTableListener);
 		singleRowViewScrollContentPanel.addMouseListener(rowTableListener);
+
+		TempClosureListener tempClosureListener = new TempClosureListener();
+		rowsTable.addMouseListener(tempClosureListener);
+		rowsTable.addMouseMotionListener(tempClosureListener);
+		rowsTableScrollPane.addMouseListener(tempClosureListener);
+		rowsTableScrollPane.addMouseMotionListener(tempClosureListener);
+		singleRowViewScrollPaneContainer.addMouseListener(tempClosureListener);
+		singleRowViewScrollPaneContainer.addMouseMotionListener(tempClosureListener);
 
 		if (getQueryBuilderDialog() != null) { // !SQL Console
 			rowsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -5355,50 +5399,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	/**
-	 * Opens a drop-down box which allows the user to select columns for restriction definitions.
-	 */
-	private void openColumnDropDownBox(JLabel label, String alias, Table table) {
-		JPopupMenu popup = new JScrollPopupMenu();
-		List<String> columns = new ArrayList<String>();
-		
-		for (Column c: table.getColumns()) {
-			columns.add(alias + "." + c.name);
-		}
-		
-		for (final String c: columns) {
-			if (c.equals("")) {
-				popup.add(new JSeparator());
-				continue;
-			}
-			JMenuItem m = new JMenuItem(c);
-			m.addActionListener(new ActionListener () {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if (andCondition.isEnabled()) {
-						if (andCondition.isEditable()) {
-							if (andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
-								JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
-								int pos = f.getCaretPosition();
-								String current = f.getText();
-								if (pos < 0 || pos >= current.length()) {
-									setAndCondition(current + c, false);
-								} else {
-									setAndCondition(current.substring(0, pos) + c + current.substring(pos), false);
-									f.setCaretPosition(pos + c.length());
-								}
-							}
-							andCondition.grabFocus();
-						}
-					}
-				}
-			});
-			popup.add(m);
-		}
-		UIUtil.fit(popup);
-		UIUtil.showPopup(label, 0, label.getHeight(), popup);
-	}
-
-	/**
 	 * Creates new row. Fills in foreign key.
 	 * 
 	 * @param parents rows holding the primary key
@@ -5461,6 +5461,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract JFrame getOwner();
 
 	protected abstract void findClosure(Row row);
+	protected void findTempClosure(Row row) {};
 	protected abstract void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward);
 
 	protected abstract QueryBuilderDialog getQueryBuilderDialog();
@@ -6091,4 +6092,64 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		searchPanel.find(owner, "Find Column", x, y, true);
 	}
 
+	/**
+	 * Calculates temporary closure when mouse cursor is on new row.
+	 */
+	private class TempClosureListener implements MouseListener, MouseMotionListener {
+		Row currentRow = null;
+		
+		private Row rowAt(Point point) {
+			int ri = rowsTable.rowAtPoint(point);
+			if (ri >= 0 && !rows.isEmpty() && rowsTable.getRowSorter().getViewRowCount() > 0) {
+				int i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
+				if (i >= 0 && i < rows.size()) {
+					return rows.get(i);
+				}
+			}
+			return null;
+		}
+
+		private void updateClosure(Row row) {
+			if (currentRow != row) {
+				currentRow = row;
+				rowsClosure.tempClosure.clear();
+				if (currentRow != null) {
+					findTempClosure(currentRow);
+				}
+				onRedraw();
+			}
+		}
+
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			Row row = null;
+			if (e.getSource() == rowsTable) {
+				row = rowAt(e.getPoint());
+			}
+			updateClosure(row);
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			updateClosure(null);
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			mouseMoved(e);
+		}
+		@Override
+		public void mouseClicked(MouseEvent e) {
+		}
+		@Override
+		public void mousePressed(MouseEvent e) {
+		}
+		@Override
+		public void mouseReleased(MouseEvent e) {
+		}
+	}
 }

@@ -283,7 +283,7 @@ public class ProgressTable extends JTable {
 						selectedCells.clear();
 						setSelectedTableName(cellInfo.tableName);
 						multiSelection = false;
-						selectCell(cellInfo);
+						selectCell(cellInfo, 0);
 						repaint();
 						getSelectionModel().clearSelection();
 					}
@@ -309,17 +309,21 @@ public class ProgressTable extends JTable {
 	}
 
 	private boolean multiSelection = false;
-	
+
+	private final int MAX_DEPTH = 1000;
+
 	/**
 	 * Recursively selects cells.
 	 * 
 	 * @param cellInfo current cell
 	 */
-	private void selectCell(CellInfo cellInfo) {
-		selectedCells.add(cellInfo);
-		if (cellInfo.parents != null) {
-			for (CellInfo p : cellInfo.parents) {
-				selectCell(p);
+	private void selectCell(CellInfo cellInfo, int depth) {
+		if (!selectedCells.contains(cellInfo) && depth < MAX_DEPTH) {
+			selectedCells.add(cellInfo);
+			if (cellInfo.parents != null) {
+				for (CellInfo p : cellInfo.parents) {
+					selectCell(p, depth + 1);
+				}
 			}
 		}
 	}
@@ -338,7 +342,7 @@ public class ProgressTable extends JTable {
 				if (cellInfo != null) {
 					if (cellInfo.tableName.equals(tableName)) {
 						if (cellInfo.numberOfRows > 0) {
-							selectCell(cellInfo);
+							selectCell(cellInfo, 0);
 						}
 					}
 				}
@@ -425,7 +429,7 @@ public class ProgressTable extends JTable {
 		if (selectedTableName != null) {
 			for (CellInfo cellInfo : cellInfos.get(cellInfos.size() - 1)) {
 				if (cellInfo != null && selectedTableName.equals(cellInfo.tableName) && selectedCells.contains(cellInfo)) {
-					selectCell(cellInfo);
+					selectCell(cellInfo, 0);
 					checkSelection = true;
 					break;
 				}
@@ -450,7 +454,7 @@ public class ProgressTable extends JTable {
 				boolean f = false;
 				for (CellInfo cellInfo : cellInfos.get(cellInfos.size() - 1)) {
 					if (cellInfo != null && selectedTableName.equals(cellInfo.tableName)) {
-						selectCell(cellInfo);
+						selectCell(cellInfo, 0);
 						f = true;
 						break;
 					}

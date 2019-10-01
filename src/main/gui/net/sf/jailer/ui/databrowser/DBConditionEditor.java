@@ -107,7 +107,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 				if (ok && initialCondition.equals(editorPane.getText())) {
 					ok = false;
 				}
-				consume(ok? UIUtil.removesuperfluousSpaces(removeSingleLineComments(editorPane.getText()).replaceAll("\\n(\\r?) *", " ").replace('\n', ' ').replace('\r', ' ')) : null);
+				consume(ok? UIUtil.toSingleLineSQL(editorPane.getText()) : null);
 			}
 		});
 		
@@ -423,46 +423,6 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		});
 		initialCondition = condition;
 		setVisible(true);
-	}
-
-	/**
-	 * Removes single line comments.
-	 * 
-	 * @param statement
-	 *            the statement
-	 * 
-	 * @return statement the statement without comments and literals
-	 */
-	private String removeSingleLineComments(String statement) {
-		Pattern pattern = Pattern.compile("('(?:[^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
-		Matcher matcher = pattern.matcher(statement);
-		boolean result = matcher.find();
-		StringBuffer sb = new StringBuffer();
-		if (result) {
-			do {
-				if (matcher.group(3) == null) {
-					matcher.appendReplacement(sb, "$0");
-					result = matcher.find();
-					continue;
-				}
-				int l = matcher.group(0).length();
-				matcher.appendReplacement(sb, "");
-				if (matcher.group(1) != null) {
-					l -= 2;
-					sb.append("'");
-				}
-				while (l > 0) {
-					--l;
-					sb.append(' ');
-				}
-				if (matcher.group(1) != null) {
-					sb.append("'");
-				}
-				result = matcher.find();
-			} while (result);
-		}
-		matcher.appendTail(sb);
-		return sb.toString();
 	}
 
 	public void setLocationAndFit(Point pos, int maxXW) {
