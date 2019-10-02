@@ -240,10 +240,6 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 										@Override
 										public void readCurrentRow(ResultSet resultSet) throws SQLException {
 											count[0] = resultSet.getLong(1);
-										
-// TODO
-count[0]++;
-
 										}
 										@Override
 										public void close() throws SQLException {
