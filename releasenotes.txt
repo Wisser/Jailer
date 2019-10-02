@@ -1,9 +1,9 @@
 9.0
-   - Hover & See function in the data browser to easily see which row is related to which other rows.
-   - Added configuration information for MariaDB.
-   - Fix for Issue "Gui: NPE after renaming model file (*.jm)"
-     https://github.com/Wisser/Jailer/issues/16
-   - Extensive internal redesigns since the last major release.
+  - Hover & See function in the data browser to easily see which row is related to which other rows.
+  - Added configuration information for MariaDB.
+  - Fix for Issue "Gui: NPE after renaming model file (*.jm)"
+    https://github.com/Wisser/Jailer/issues/16
+  - Extensive internal redesigns since the last major release.
 
 8.8.8
   - Avoid NPE if there is no default scheme.
