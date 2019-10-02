@@ -2416,12 +2416,8 @@ public abstract class Desktop extends JDesktopPane {
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
-					try {
-						synchronized (session) {
-							session.shutDown();
-						}
-					} catch (SQLException e) {
-						// exception already has been logged
+					synchronized (session) {
+						session.shutDown();
 					}
 				}
 			});

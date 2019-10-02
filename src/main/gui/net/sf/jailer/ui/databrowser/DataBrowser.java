@@ -515,7 +515,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         setTitle(DataBrowserContext.getAppName(false));
         if (embedded) {
-            menuTools.setVisible(false);
+            menuTools.setEnabled(false);
         }
 
         // L&F can no longer be changed
@@ -1940,7 +1940,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu2.add(createExtractionModelMenuItem);
 
-        consistencyCheckMenuItem.setText("Check Consistency");
+        consistencyCheckMenuItem.setText("Referential Consistency Check");
         consistencyCheckMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 consistencyCheckMenuItemActionPerformed(evt);
@@ -2193,17 +2193,11 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_showDataModelMenuItemActionPerformed
 
     private void consistencyCheckMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consistencyCheckMenuItemActionPerformed
-       	new ConstraintChecker(this, datamodel.get(), session) {
+       	new ConstraintChecker(this, datamodel.get(), true, session) {
 			@Override
 			protected void openTableBrowser(Table source, String where) {
 				workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
-	    		desktop.addTableBrowser(null, null, source, null, new BasicFormatterImpl().format(where), null, null, true);
-			}
-
-			@Override
-			protected void appendSQLConsole(String text) {
-				getCurrentSQLConsole().appendStatement(text, false);
-				workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
+	    		desktop.addTableBrowser(null, null, source, null, UIUtil.toSingleLineSQL(new BasicFormatterImpl().format(where)), null, null, true);
 			}
        	};
     }//GEN-LAST:event_consistencyCheckMenuItemActionPerformed

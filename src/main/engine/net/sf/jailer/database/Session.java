@@ -950,7 +950,7 @@ public class Session {
 	/**
 	 * Closes all connections.
 	 */
-	public void shutDown() throws SQLException {
+	public void shutDown() {
 		down.set(true);
 		_log.info("closing connections... (" + connections.size() + ")");
 		for (Connection con: connections) {

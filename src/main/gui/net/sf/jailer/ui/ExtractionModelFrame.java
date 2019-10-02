@@ -79,9 +79,11 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.commandline.UICommandLine;
+import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
 import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
@@ -389,6 +391,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         queryBuilder = new javax.swing.JMenuItem();
         cycleView = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
+        consistencyCheckMenuItem = new javax.swing.JMenuItem();
         createCLIItem = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         horizontalLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
@@ -822,6 +825,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu3.add(renderHtml);
+
+        consistencyCheckMenuItem.setText("Referential Consistency Check");
+        consistencyCheckMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                consistencyCheckMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu3.add(consistencyCheckMenuItem);
 
         createCLIItem.setText("Show Command Line");
         createCLIItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1920,6 +1931,29 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		new CLIPanel(dbConnectionDialog, false, extractionModelEditor.extractionModelFile, null, null, null, executionContext).open(this);;
     }//GEN-LAST:event_createCLIItemActionPerformed
 
+    @SuppressWarnings("serial")
+	private void consistencyCheckMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consistencyCheckMenuItemActionPerformed
+    	try {
+	    	if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Referential Consistency Check")) {
+	    		BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs()); 
+				Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), this);
+				if (session != null) {
+					try {
+						new ConstraintChecker(this, extractionModelEditor.dataModel, false, session) {
+				            @Override
+				            protected void openTableBrowser(Table source, String where) {
+				            }
+				        };
+					} finally {
+						session.shutDown();
+					}
+				}
+	    	}
+    	} catch (Exception e) {
+    		UIUtil.showException(this, "Error", e);
+    	}
+    }//GEN-LAST:event_consistencyCheckMenuItemActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -2242,6 +2276,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JMenuItem columnOrderItem;
     private javax.swing.JCheckBoxMenuItem connectDb;
+    private javax.swing.JMenuItem consistencyCheckMenuItem;
     private javax.swing.JMenuItem createCLIItem;
     private javax.swing.JMenuItem cycleView;
     private javax.swing.JMenuItem dataExport;

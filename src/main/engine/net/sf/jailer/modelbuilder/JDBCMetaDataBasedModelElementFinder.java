@@ -1438,7 +1438,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		for (Session s: sessionWithPermissionToReadSchema.values()) {
 			try {
 				s.shutDown();
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				_log.warn(e.getMessage());
 			}
 		}
@@ -1467,7 +1467,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			if (s != null) {
 				try {
 					s.shutDown();
-				} catch (SQLException e) {
+				} catch (Exception e) {
 					// ignore
 				}
 				sessionWithPermissionToReadSchema.remove(schemaID);

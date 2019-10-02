@@ -1766,7 +1766,7 @@ public class GraphicalDataModelView extends JPanel {
 				if (showTable(g, a.destination)) {
 					result.add(a.destination);
 				}
-				String tooltip = a.getJoinCondition();
+				String tooltip = a.getUnrestrictedJoinCondition();
 				if (!associationIsUnique(a)) {
 					Node an = g.addNode();
 					an.set("association", a);

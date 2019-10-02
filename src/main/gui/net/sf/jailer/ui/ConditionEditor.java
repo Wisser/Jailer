@@ -510,9 +510,9 @@ public class ConditionEditor extends EscapableDialog {
 					public void actionPerformed(ActionEvent ev) {
 						String condition;
 						if (!e.getValue().reversed) {
-							condition = SqlUtil.replaceAliases(e.getValue().getJoinCondition(), alias, e.getValue().destination.getUnqualifiedName());
+							condition = SqlUtil.replaceAliases(e.getValue().getUnrestrictedJoinCondition(), alias, e.getValue().destination.getUnqualifiedName());
 						} else {
-							condition = SqlUtil.replaceAliases(e.getValue().getJoinCondition(), e.getValue().destination.getUnqualifiedName(), alias);
+							condition = SqlUtil.replaceAliases(e.getValue().getUnrestrictedJoinCondition(), e.getValue().destination.getUnqualifiedName(), alias);
 						}
 						editor.replaceSelection(
 								"(Select " + col.name + " from " + e.getValue().destination.getName() + 

@@ -735,6 +735,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						reloadRows();
 					}
 				}
+				if (andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
+					JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
+					f.setCaretPosition(0);
+				}
 			}
 		});
 

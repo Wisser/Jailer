@@ -144,14 +144,14 @@ public class SessionForUI extends Session {
 	 * Closes all connections asynchronously.
 	 */
 	@Override
-	public void shutDown() throws SQLException {
+	public void shutDown() {
 		down.set(true);
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					SessionForUI.super.shutDown();
-				} catch (SQLException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}

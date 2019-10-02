@@ -338,8 +338,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		menu.add(item, 0);
 		if (selectTableAction != null) {
 			menu.add(new JMenuItem(selectTableAction), 1);
+			menu.add(new JSeparator(), 2);
+		} else {
+			menu.add(new JSeparator(), 1);
 		}
-		menu.add(new JSeparator(), 2);
 
 		if (withFindAndReplace()) {
 			menu.add(new JMenuItem(new ShowFindDialogAction()), 0);
