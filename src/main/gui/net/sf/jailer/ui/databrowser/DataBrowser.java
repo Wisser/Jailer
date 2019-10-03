@@ -4130,16 +4130,14 @@ public class DataBrowser extends javax.swing.JFrame {
 	private static final String LAST_SESSION_FILE = ".lastsession";
 	
 	private void storeLastSession() {
-		if (!desktop.isEmpty()) {
-			BookmarkId bookmark;
-			try {
-				desktop.storeSession(Environment.newFile(LAST_SESSION_FILE).getPath());
-				bookmark = new BookmarkId(null, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping());
-			} catch (IOException e) {
-				bookmark = null;
-			}
-			UISettings.storeLastSession(bookmark, "B");
+		BookmarkId bookmark;
+		try {
+			desktop.storeSession(Environment.newFile(LAST_SESSION_FILE).getPath());
+			bookmark = new BookmarkId(null, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping());
+		} catch (IOException e) {
+			bookmark = null;
 		}
+		UISettings.storeLastSession(bookmark, "B");
 	}
 
 	public static Date getLastSessionDate() {
