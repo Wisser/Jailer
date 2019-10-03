@@ -2402,10 +2402,6 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	public boolean isEmpty() {
-		return tableBrowsers.isEmpty();
-	}
-	
 	public synchronized void stop() {
 		running = false;
 		desktops.remove(this);
