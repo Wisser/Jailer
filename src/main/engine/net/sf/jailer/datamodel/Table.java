@@ -30,6 +30,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -352,7 +353,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 			template = XmlUtil.parse(xmlTemplate);
 		}
 
-		removeNonAggregatedAssociationElements((Element) template.getChildNodes().item(0));
+		removeNonAggregatedAssociationElements(template.getChildNodes().item(0));
 		
 		// find associations:
 		final Set<String> mappedAssociations = new HashSet<String>();
@@ -391,12 +392,12 @@ public class Table extends ModelElement implements Comparable<Table> {
 		return template;
 	}
 
-	private void removeNonAggregatedAssociationElements(Element element) {
-		NodeList children = element.getChildNodes();
+	private void removeNonAggregatedAssociationElements(Node node) {
+		NodeList children = node.getChildNodes();
 		int i = 0;
 		while (i < children.getLength()) {
 			if (children.item(i) instanceof Element) {
-				Element e = (Element) children.item(i);
+				Node e = children.item(i);
 				if (XmlUtil.NS_URI.equals(e.getNamespaceURI()) && XmlUtil.ASSOCIATION_TAG.equals(e.getLocalName())) {
 					boolean f = false;
 					for (Association a: associations) {
@@ -410,7 +411,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 					if (f) {
 						++i;
 					} else {
-						element.removeChild(e);
+						node.removeChild(e);
 					}
 				} else {
 					removeNonAggregatedAssociationElements(e);

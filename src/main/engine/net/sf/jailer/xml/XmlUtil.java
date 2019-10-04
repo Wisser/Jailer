@@ -84,19 +84,19 @@ public class XmlUtil {
 		factory.setNamespaceAware(true);
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		Document document = builder.parse(new InputSource(new StringReader(xml)));
-		removeWhitespaces((Element) document.getChildNodes().item(0));
+		removeWhitespaces(document.getChildNodes().item(0));
 		return document;
 	}
 
-	private static void removeWhitespaces(Element element) {
-		NodeList children = element.getChildNodes();
+	private static void removeWhitespaces(Node node) {
+		NodeList children = node.getChildNodes();
 		for (int i = 0; i < children.getLength();) {
 			Node n = children.item(i);
 			if (n instanceof Element) {
-				removeWhitespaces((Element) n);
+				removeWhitespaces(n);
 				++i;
 			} else if (n instanceof Text && ((Text) n).getTextContent().trim().length() == 0) {
-				element.removeChild(n);
+				node.removeChild(n);
 			} else {
 				++i;
 			}
@@ -204,9 +204,9 @@ public class XmlUtil {
 		} else if (node instanceof Comment) {
 			visitor.visitComment((((Comment) node).getTextContent()));
 		} else if (node instanceof Element) {
-			if (NS_URI.equals(node.getNamespaceURI()) && ASSOCIATION_TAG.equals(node.getLocalName()) && ((Element) node).getTextContent() != null) {
+			if (NS_URI.equals(node.getNamespaceURI()) && ASSOCIATION_TAG.equals(node.getLocalName()) && node.getTextContent() != null) {
 				visitor.visitAssociationElement(((Element) node).getTextContent().trim());
-			} else {
+			} else if (node instanceof Element) {
 				Element e = (Element) node;
 				NamedNodeMap attr = e.getAttributes();
 				String[] aNames = new String[0];

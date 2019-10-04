@@ -55,17 +55,17 @@ public class XmlSketchBuilder {
 		}
 		Document sketch = table.getXmlTemplateAsDocument(null);
 		if (sketch.getChildNodes().getLength() > 0 && sketch.getChildNodes().item(0) instanceof Element) {
-			insertAssociationSketch((Element) sketch.getChildNodes().item(0), table, sketch, depth);
+			insertAssociationSketch(sketch.getChildNodes().item(0), table, sketch, depth);
 		}
 		return XmlUtil.buildOmitDeclaration(sketch);
 	}
 	
-	private static void insertAssociationSketch(Element element, Table table, Document doc, int depth) throws DOMException, ParserConfigurationException, SAXException, IOException {
-		NodeList children = element.getChildNodes();
+	private static void insertAssociationSketch(Node node, Table table, Document doc, int depth) throws DOMException, ParserConfigurationException, SAXException, IOException {
+		NodeList children = node.getChildNodes();
 		int i = 0;
 		while (i < children.getLength()) {
 			if (children.item(i) instanceof Element) {
-				Element e = (Element) children.item(i);
+				Node e = children.item(i);
 				if (XmlUtil.NS_URI.equals(e.getNamespaceURI()) && XmlUtil.ASSOCIATION_TAG.equals(e.getLocalName()) && e.getTextContent() != null) {
 					Association association = null;
 					for (Association a: table.associations) {
@@ -80,12 +80,12 @@ public class XmlSketchBuilder {
 						  Node[] ae = insertAssociationSketch(association, doc, depth + 1);
 						if (ae != null) {
 							for (Node n: ae) {
-								element.insertBefore(doc.importNode(n, true), e);
+								node.insertBefore(doc.importNode(n, true), e);
 								++i;
 							}
 						}
 					  }
-					  element.removeChild(e);
+					  node.removeChild(e);
 				} else {
 					++i;
 				}
@@ -116,7 +116,7 @@ public class XmlSketchBuilder {
 			Document sketch = association.destination.getXmlTemplateAsDocument(null);
 			List<Node> nodes = new ArrayList<Node>();
 			if (sketch.getChildNodes().getLength() > 0 && sketch.getChildNodes().item(0) instanceof Element) {
-				insertAssociationSketch((Element) sketch.getChildNodes().item(0), association.destination, sketch, depth + 1);
+				insertAssociationSketch(sketch.getChildNodes().item(0), association.destination, sketch, depth + 1);
 			}
 			NodeList children = sketch.getChildNodes().item(0).getChildNodes();
 			for (int i = 0; i < children.getLength(); ++i) {
