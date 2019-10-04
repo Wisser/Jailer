@@ -713,7 +713,9 @@ public class UIUtil {
      *            the exception
      */
     public static void showException(Component parent, String title, Throwable t, Object context, JComponent additionalControl) {
-        if (context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_MB_USER_ERROR) {
+    	Throwable original = t;
+    	
+    	if (context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_MB_USER_ERROR) {
         	if (t instanceof IndexOutOfBoundsException
         			|| t instanceof NullPointerException
         			|| t instanceof ClassCastException
@@ -752,10 +754,27 @@ public class UIUtil {
         if (t instanceof CancellationException) {
         	return;
         }
-        String message = t.getMessage();
-        if (message == null || "".equals(message.trim())) {
-            message = t.getClass().getName();
+        String message;
+        if (context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_MB_USER_ERROR) {
+        	message = original.getClass().getSimpleName();
+	        if (original.getMessage() != null && !"".equals(original.getMessage().trim())) {
+	            message += ": " + original.getMessage();
+	        }
+	        Throwable cause = original.getCause();
+	        while (cause != null && cause != cause.getCause()) {
+	        	if (cause.getMessage() != null && !"".equals(cause.getMessage().trim())) {
+			        message += "\n \nCaused by: " + cause.getClass().getSimpleName();
+		            message += ": " + cause.getMessage();
+		        }
+	        	cause = cause.getCause();
+            }
+        } else {
+	        message = t.getMessage();
+	        if (message == null || "".equals(message.trim())) {
+	            message = t.getClass().getName();
+	        }
         }
+
         StringBuilder msg = lineWrap(message, 80);
 
         String contextDesc = "";
