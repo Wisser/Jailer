@@ -89,7 +89,7 @@ public class MDSchema extends MDObject {
 					}
 				}
 			}
-		});
+		}, "Metadata-LoadColumns");
 		thread.setDaemon(true);
 		thread.start();
 
@@ -104,7 +104,7 @@ public class MDSchema extends MDObject {
 					}
 				}
 			}
-		});
+		}, "Metadata-LoadTables");
 		thread.setDaemon(true);
 		thread.start();
 
@@ -122,7 +122,7 @@ public class MDSchema extends MDObject {
 						}
 					}
 				}
-			});
+			}, "Metadata-LoadOther-" + (i + 1));
 			thread.setDaemon(true);
 			thread.start();
 		}

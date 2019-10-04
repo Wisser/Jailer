@@ -311,7 +311,7 @@ public abstract class Desktop extends JDesktopPane {
 						lastDuration = duration.get();
 					}
 				}
-			});
+			}, "Databrowser-Animator");
 			updateUIThread.setDaemon(true);
 			updateUIThread.start();
 			
@@ -3602,7 +3602,7 @@ public abstract class Desktop extends JDesktopPane {
 						}
 					}
 				}
-			}, "PQueue Worker " + i);
+			}, "PQueue-Worker-" + (i + 1));
 			t.setDaemon(true);
 			t.start();
 		}

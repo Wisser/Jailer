@@ -136,7 +136,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						}
 					}
 				}
-			});
+			}, "Metadata-LoadDetails-" + (i + 1));
 	        thread.setDaemon(true);
 	        thread.start();
         }

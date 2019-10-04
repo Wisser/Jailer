@@ -393,7 +393,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     }
                 } while (action != STOP);
             }
-        }, "console-thread-" + (threadNum++));
+        }, "SQLConsole-" + (threadNum++));
         thread.setDaemon(true);
         thread.start();
     }
