@@ -306,7 +306,7 @@ public class MDTable extends MDObject {
                     }
                 }
             }
-        });
+        }, "Metadata-Tabledetails");
         thread.setDaemon(true);
         thread.start();
     }

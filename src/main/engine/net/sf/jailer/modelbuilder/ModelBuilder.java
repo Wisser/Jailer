@@ -481,15 +481,9 @@ public class ModelBuilder {
 	private static void writeFile(String fileName, String content) throws IOException {
 		File f = new File(fileName);
 		if (!f.exists()) {
-			Boolean mkdirsResult = null;
-			try {
-				mkdirsResult = f.getParentFile().mkdirs();
-				f.createNewFile();
-			} catch (Exception e) {
-				throw new IOException(e.getMessage() + " (" + mkdirsResult + ")" + ": " + (f.getAbsolutePath()), e);
-			}
+			f.getParentFile().mkdirs();
 		}
-		PrintWriter out = new PrintWriter(new FileOutputStream(fileName));
+		PrintWriter out = new PrintWriter(new FileOutputStream(f));
 		out.print(content);
 		out.close();
 		_log.info("file '" + fileName + "' written");

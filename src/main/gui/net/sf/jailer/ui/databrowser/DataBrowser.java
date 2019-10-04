@@ -515,7 +515,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
         setTitle(DataBrowserContext.getAppName(false));
         if (embedded) {
-            menuTools.setEnabled(false);
+            analyseMenuItem.setEnabled(false);
+            dataModelEditorjMenuItem.setEnabled(false);
+            analyseSQLMenuItem1.setEnabled(false);
         }
 
         // L&F can no longer be changed
@@ -3489,6 +3491,13 @@ public class DataBrowser extends javax.swing.JFrame {
 										});
 									}
 								});
+							} else {
+								if (createMetaDataPanel != null) {
+									createMetaDataPanel.run();
+								}
+								if (metaDataPanel != null) {
+									metaDataPanel.refresh();
+								}
 							}
 						}
 					});
