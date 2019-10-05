@@ -60,30 +60,6 @@ public class PrimaryKeyValidator {
 				// not necessary to check here
 				continue;
 			}
-			try {
-				ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(
-						session,
-						session.getMetaData(),
-						Quoting.staticUnquote(table.getSchema(defaultSchema)),
-						Quoting.staticUnquote(table.getUnqualifiedName()),
-						true);
-				Set<String> pkColumns = new HashSet<String>();
-				while (resultSet.next()) {
-					String colName = Quoting.normalizeIdentifier(resultSet.getString(4));
-					pkColumns.add(colName);
-				}
-				resultSet.close();
-				Set<String> tabPkColumns = new HashSet<String>();
-				for (Column pkCol: table.primaryKey.getColumns()) {
-					tabPkColumns.add(Quoting.normalizeIdentifier(pkCol.name));
-				}
-				if (tabPkColumns.equals(pkColumns)) {
-					// real PK
-					continue;
-				}
-			} catch (Exception e) {
-				// ignore
-			}
 			jobs.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
