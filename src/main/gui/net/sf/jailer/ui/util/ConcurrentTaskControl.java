@@ -177,12 +177,12 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 	protected abstract void onCancellation();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JLabel infoLabel;
+    public javax.swing.JButton cancelButton;
+    public javax.swing.JLabel infoLabel;
     // End of variables declaration//GEN-END:variables
 
-    private ConcurrentTaskControl master;
-    
+    public ConcurrentTaskControl master;
+  
 	public static void openInModalDialog(Window windowAncestor, final ConcurrentTaskControl concurrentTaskControl, final Task task, String title) {
 		final JDialog dialog = new JDialog(windowAncestor);
 		dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);

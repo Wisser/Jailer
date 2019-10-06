@@ -1214,9 +1214,12 @@ public class UIUtil {
 	 */
 	@SuppressWarnings("serial")
 	public static void validatePrimaryKeys(final Window windowAncestor, final BasicDataSource basicDataSource, final Set<Table> tables) {
+		final Object cancellationContext = new Object();
+		
+		String infoPrefix = "<html>"
+		+ "Checking the primary key definitions in the data model <br>for uniqueness...<br><br>".replace(" ", "&nbsp;");
 		final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(null, 
-				"<html>"
-				+ "Checking the primary key definitions in the data model <br>for uniqueness...</html>".replace(" ", "&nbsp;")) {
+				infoPrefix + "<br><br><br>") {
 				@Override
 				protected void onError(Throwable error) {
 					UIUtil.showException(windowAncestor, "Error", error);
@@ -1224,8 +1227,9 @@ public class UIUtil {
 				}
 				@Override
 				protected void onCancellation() {
-					closeWindow();
-					CancellationHandler.cancel(null);
+					master.cancelButton.setText("Stopping...");
+					master.cancelButton.setEnabled(false);
+					CancellationHandler.cancel(cancellationContext);
 				}
 			};
 		ConcurrentTaskControl.openInModalDialog(windowAncestor, concurrentTaskControl, 
@@ -1235,7 +1239,33 @@ public class UIUtil {
 					Session session = new Session(basicDataSource, basicDataSource.dbms, null);
 					JobManager jobManager = new JobManager(tables.size() > 1? 4 : 1);
 					try {
-						new PrimaryKeyValidator().validatePrimaryKey(session, tables, false, jobManager);
+						new PrimaryKeyValidator(cancellationContext) {
+							boolean initialized = false;
+							@Override
+							protected void updateProgressBar() {
+								invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										String info;
+										int total = numTotal.get();
+										if (total > 0) {
+											info = (numDone.get() * 100 / total) + "%";
+										} else {
+											info = "";
+										}
+										int errors = numErrors.get();
+										if (errors > 0) {
+											info += "&nbsp;<font size=\"+1\" color=\"#ff8888\"" + errors + "&nbsp; Error" + (errors == 1? "" : "s") + "</font>";
+										}
+										if (!initialized) {
+											concurrentTaskControl.master.cancelButton.setText("Stop");
+											initialized = true;
+										}
+										concurrentTaskControl.master.infoLabel.setText(infoPrefix + info + "</html>");
+									}
+								});
+							}
+						}.validatePrimaryKey(session, tables, false, jobManager);
 					} finally {
 						session.shutDown();
 						jobManager.shutdown();
@@ -1243,8 +1273,10 @@ public class UIUtil {
 					invokeLater(new Runnable() {
 						@Override
 						public void run() {
-							JOptionPane.showMessageDialog(windowAncestor, tables.size() == 1? "The primary key definition is valid." : "All primary key definitions are valid.");
-							concurrentTaskControl.closeWindow();
+							if (concurrentTaskControl.master.isShowing()) {
+								JOptionPane.showMessageDialog(windowAncestor, tables.size() == 1? "The primary key definition is valid." : "All primary key definitions are valid.");
+								concurrentTaskControl.closeWindow();
+							}
 						}
 					});
 				}
@@ -1252,7 +1284,7 @@ public class UIUtil {
 		invokeLater(4, new Runnable() {
 			@Override
 			public void run() {
-				CancellationHandler.reset(null);
+				CancellationHandler.reset(cancellationContext);
 			}
 		});
 	}

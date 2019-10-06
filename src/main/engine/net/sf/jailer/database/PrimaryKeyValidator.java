@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -37,10 +38,16 @@ import net.sf.jailer.util.Quoting;
  * 
  * @author Ralf Wisser
  */
-public class PrimaryKeyValidator {
+public abstract class PrimaryKeyValidator {
 
 	private static final boolean FAIL_FAST_RPK = false;
 	private static final boolean FAIL_FAST_UDPK = true;
+
+	private final Object cancellationContext;
+	
+	public PrimaryKeyValidator(Object cancellationContext) {
+		this.cancellationContext = cancellationContext;
+	}
 
 	/**
 	 * Validates all primary keys of a set of tables.
@@ -51,11 +58,16 @@ public class PrimaryKeyValidator {
 	 * @throws SQLException if a pk is invalid
 	 */
 	public void validatePrimaryKey(final Session session, Set<Table> tables, boolean hasRowID, JobManager jobManager) throws SQLException {
+		numTotal.set(0);
+		numErrors.set(0);
+		numDone.set(0);
+		updateProgressBar();
+
 		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
 		List<JobManager.Job> jobsUDPK = new ArrayList<JobManager.Job>();
 		List<JobManager.Job> jobsRealPK = new ArrayList<JobManager.Job>();
 		for (final Table table: tables) {
-			CancellationHandler.checkForCancellation(null);
+			CancellationHandler.checkForCancellation(cancellationContext);
 			if (table.primaryKey == null || table.primaryKey.getColumns().isEmpty()) {
 				// nothing to check here
 				continue;
@@ -103,7 +115,18 @@ public class PrimaryKeyValidator {
 			jobListToAddTo.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
+					// TODO
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
 					checkUniqueness(session, table, new Quoting(session));
+					numDone.getAndIncrement();
+					updateProgressBar();
+					
 					if (FAIL_FAST) {
 						throwIfErrorFound();
 					}
@@ -112,7 +135,17 @@ public class PrimaryKeyValidator {
 			jobListToAddTo.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
+					// TODO
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
 					checkNoNull(session, table, new Quoting(session));
+					numDone.getAndIncrement();
+					updateProgressBar();
 					if (FAIL_FAST) {
 						throwIfErrorFound();
 					}
@@ -124,8 +157,11 @@ public class PrimaryKeyValidator {
 		jobs.addAll(jobsUDPK);
 		jobs.addAll(jobsRealPK);
 
+		numTotal.set(jobs.size());
+		updateProgressBar();
+
 		jobManager.executeJobs(jobs);
-		CancellationHandler.checkForCancellation(null);
+		CancellationHandler.checkForCancellation(cancellationContext);
 		throwIfErrorFound();
 	}
 
@@ -171,7 +207,7 @@ public class PrimaryKeyValidator {
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				addError("Primary key of table \"" + table.getName() + "\" is not unique.", sql.toString());
 			}
-		}, null, null, 1);
+		}, null, cancellationContext, 1);
 	}
 
 	private void checkNoNull(Session session, final Table table, Quoting quoting) throws SQLException {
@@ -189,15 +225,23 @@ public class PrimaryKeyValidator {
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				addError("Primary key of table \"" + table.getName() + "\" contains null.", sql.toString());
 			}
-		}, null, null, 1);
+		}, null, cancellationContext, 1);
 	}
 
 	private StringBuilder errorMessage = new StringBuilder();
 	private StringBuilder errorStatements = new StringBuilder();
 
+	protected AtomicInteger numErrors = new AtomicInteger();
+	protected AtomicInteger numDone = new AtomicInteger();
+	protected AtomicInteger numTotal = new AtomicInteger();
+	
+	protected abstract void updateProgressBar();
+	
 	private void addError(String message, String sql) {
 		errorMessage.append("- " + message + "\n");
 		errorStatements.append("- " + sql + "\n");
+		numErrors.getAndIncrement();
+		updateProgressBar();
 	}
 
 }
