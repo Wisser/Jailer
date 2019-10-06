@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +29,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.JobManager;
+import net.sf.jailer.util.JobManager.Job;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -36,8 +39,9 @@ import net.sf.jailer.util.Quoting;
  */
 public class PrimaryKeyValidator {
 
-	private static final boolean FAIL_FAST = false;
-	
+	private static final boolean FAIL_FAST_RPK = false;
+	private static final boolean FAIL_FAST_UDPK = true;
+
 	/**
 	 * Validates all primary keys of a set of tables.
 	 * 
@@ -48,7 +52,8 @@ public class PrimaryKeyValidator {
 	 */
 	public void validatePrimaryKey(final Session session, Set<Table> tables, boolean hasRowID, JobManager jobManager) throws SQLException {
 		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
-		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
+		List<JobManager.Job> jobsUDPK = new ArrayList<JobManager.Job>();
+		List<JobManager.Job> jobsRealPK = new ArrayList<JobManager.Job>();
 		for (final Table table: tables) {
 			CancellationHandler.checkForCancellation(null);
 			if (table.primaryKey == null || table.primaryKey.getColumns().isEmpty()) {
@@ -59,7 +64,43 @@ public class PrimaryKeyValidator {
 				// not necessary to check here
 				continue;
 			}
-			jobs.add(new JobManager.Job() {
+			boolean realPK = false;
+			try {
+				ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(
+						session,
+						session.getMetaData(),
+						Quoting.staticUnquote(table.getSchema(defaultSchema)),
+						Quoting.staticUnquote(table.getUnqualifiedName()),
+						true);
+				Set<String> pkColumns = new HashSet<String>();
+				while (resultSet.next()) {
+					String colName = Quoting.normalizeIdentifier(resultSet.getString(4));
+					pkColumns.add(colName);
+				}
+				resultSet.close();
+				Set<String> tabPkColumns = new HashSet<String>();
+				for (Column pkCol: table.primaryKey.getColumns()) {
+					tabPkColumns.add(Quoting.normalizeIdentifier(pkCol.name));
+				}
+				if (tabPkColumns.equals(pkColumns)) {
+					// real PK
+					realPK = true;
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+
+			final boolean FAIL_FAST;
+			List<JobManager.Job> jobListToAddTo;
+			if (realPK) {
+				FAIL_FAST = FAIL_FAST_RPK;
+				jobListToAddTo = jobsRealPK;
+			} else {
+				FAIL_FAST = FAIL_FAST_UDPK;
+				jobListToAddTo = jobsUDPK;
+			}
+
+			jobListToAddTo.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
 					checkUniqueness(session, table, new Quoting(session));
@@ -68,7 +109,7 @@ public class PrimaryKeyValidator {
 					}
 				}
 			});
-			jobs.add(new JobManager.Job() {
+			jobListToAddTo.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
 					checkNoNull(session, table, new Quoting(session));
@@ -78,6 +119,11 @@ public class PrimaryKeyValidator {
 				}
 			});
 		}
+
+		Collection<Job> jobs = new ArrayList<JobManager.Job>();
+		jobs.addAll(jobsUDPK);
+		jobs.addAll(jobsRealPK);
+
 		jobManager.executeJobs(jobs);
 		CancellationHandler.checkForCancellation(null);
 		throwIfErrorFound();
