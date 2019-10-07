@@ -899,17 +899,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2 = new Color(242, 255, 242);
 			final Color BG1_EM = new Color(255, 255, 236);
 			final Color BG2_EM = new Color(230, 255, 236);
-			final Color BG3 = new Color(194, 228, 255);
-			final Color BG3_2 = new Color(184, 220, 255);
-			final Color BG4 = new Color(30, 200, 255);
+			final Color BG3 = new Color(198, 236, 255);
+			final Color BG3_2 = new Color(184, 226, 255);
+			final Color BG4 = new Color(32, 210, 255);
+			final Color BG4_2 = new Color(30, 196, 255);
 			final Color BG4_LIGHT = new Color(30, 200, 255, 60);
 			final Color FG1 = new Color(155, 0, 0);
 			final Color FG2 = new Color(0, 0, 255);
 			final Font font = new JLabel().getFont();
 			final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
 			final Font italic = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC, nonbold.getSize());
-//			final Font bold = new Font(nonbold.getName(), nonbold.getStyle() | Font.BOLD, nonbold.getSize());
-//			final Font italicBold = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC | Font.BOLD, nonbold.getSize());
 
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, final int row, final int column) {
@@ -972,7 +971,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									&& !BrowserContentPane.this.rowsClosure.currentClosureRootID.isEmpty()) {
 								String rid = rows.get(rowSorter.convertRowIndexToModel(row)).nonEmptyRowId;
 								if (!rid.isEmpty() && BrowserContentPane.this.rowsClosure.currentClosureRootID.contains(rid)) {
-									((JLabel) render).setBackground(currentRowSelection >= 0? BG4_LIGHT : BG4);
+									((JLabel) render).setBackground(currentRowSelection >= 0? BG4_LIGHT : (row % 2 == 0? BG4 : BG4_2));
 								}
 							}
 						} else {
@@ -985,7 +984,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						}
 					} else {
-						((JLabel) render).setBackground(currentRowSelection == row? BG4.brighter() : BG4);
+						((JLabel) render).setBackground(currentRowSelection == row? BG4.brighter() : (row % 2 == 0? BG4 : BG4_2));
 					}
 					((JLabel) render).setForeground(
 							renderRowAsPK || pkColumns.contains(convertedColumnIndex) ? FG1 : 
