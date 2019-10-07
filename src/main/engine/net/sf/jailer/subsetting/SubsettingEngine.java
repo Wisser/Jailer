@@ -59,7 +59,6 @@ import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.DeletionTransformer;
-import net.sf.jailer.database.PrimaryKeyValidator;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.WorkingTableScope;
@@ -1388,24 +1387,6 @@ public class SubsettingEngine {
 
 		long startTimestamp = System.currentTimeMillis();
 		Long afterCollectionTimestamp = null; 
-		
-		Set<Table> toCheck = new HashSet<Table>();
-		boolean insertOnly = Boolean.FALSE.equals(extractionModel.subject.getUpsert()) && !executionContext.getUpsertOnly();
-		if (extractionModel.additionalSubjects != null) {
-			for (AdditionalSubject as: extractionModel.additionalSubjects) {
-				toCheck.add(as.getSubject());
-				if (Boolean.TRUE.equals(as.getSubject().getUpsert())) {
-					insertOnly = false;
-				}
-			}
-		}
-		toCheck.add(extractionModel.subject);
-		boolean hasRowID = !(session.dbms.getRowidName() == null || executionContext.getNoRowid() || !insertOnly || deleteScriptFileName != null);
-		Set<Table> checked = extractionModel.dataModel.checkForPrimaryKey(toCheck, hasRowID);
-		if (executionContext.getCheckPrimaryKeys()) {
-			executionContext.getProgressListenerRegistry().fireNewStage("check primary keys", false, false);
-			new PrimaryKeyValidator().validatePrimaryKey(session, checked, hasRowID, jobManager);
-		}
 
 		subjectCondition = ParameterHandler.assignParameterValues(subjectCondition, executionContext.getParameters());
 		

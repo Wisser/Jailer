@@ -431,7 +431,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 									"Warning: The number of rows collected (" + finalCollectedRows + ") differs from that of the exported ones (" + exportedRows.get() + ").\n \n" +
 									"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique and never null.\n \n" +
 									"It is recommended to check the integrity of the primary keys.\n" +
-									"To do this, use the button below \nor select the option \"Check primary key\" in the export dialog.";
+									"To do this, use the button below \nor the menu item \"Check primary keys\" in the menu called \"DataModel\".";
 							final JButton button = new JButton("Check Primary Keys");
 							button.addActionListener(new ActionListener() {
 								@Override

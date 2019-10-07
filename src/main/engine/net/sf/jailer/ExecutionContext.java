@@ -84,7 +84,6 @@ public class ExecutionContext {
 		this.scope = other.scope;
 		this.rawparameters = other.rawparameters;
 		this.embedded = other.embedded;
-		this.checkPrimaryKeys = other.checkPrimaryKeys;
 		this.insertIncrementally = other.insertIncrementally;
 		this.abortInCaseOfInconsistency = other.abortInCaseOfInconsistency;
 		this.independentWorkingTables = other.independentWorkingTables;
@@ -851,9 +850,6 @@ public class ExecutionContext {
 	// use primary keys to determine row identity (instead of rowid-column)
 	private boolean noRowid = false;
 
-	// Should the PKs be checked for validity?
-	private boolean checkPrimaryKeys = false;
-	
 	// collects the rows using multiple insert operations with a limited number of rows per operation
 	private boolean insertIncrementally = false;
 
@@ -896,20 +892,6 @@ public class ExecutionContext {
 		this.layoutStorage = layoutStorage;
 	}
 
-	/**
-	 * Should the PKs be checked for validity?
-	 */
-	public boolean getCheckPrimaryKeys() {
-		return checkPrimaryKeys;
-	}
-	
-	/**
-	 * Should the PKs be checked for validity?
-	 */
-	public void setCheckPrimaryKeys(boolean checkPrimaryKeys) {
-		this.checkPrimaryKeys = checkPrimaryKeys;
-	}
-	
 	/**
 	 * Create working tables that are independent of the extraction model. (Potentially less efficient)
 	 */
@@ -977,7 +959,6 @@ public class ExecutionContext {
 		isolationLevel = commandLine.isolationLevel;
 		noRowid = commandLine.noRowid;
 		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
-		checkPrimaryKeys = commandLine.checkPrimaryKeys;
 		insertIncrementally = commandLine.insertIncrementally;
 		abortInCaseOfInconsistency = commandLine.abortInCaseOfInconsistency;
 	}

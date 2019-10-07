@@ -57,7 +57,7 @@ public class CommandLine {
 	@Option(name="-c",usage="print restricted data-model with closures")
 	public boolean withClosures = false;
 	
-	@Option(name="-explain",usage="this option is no longer used")
+	@Option(name="-explain",usage="(no longer used)")
 	public boolean dummyExplain;
 
 	// explain is always false
@@ -66,13 +66,13 @@ public class CommandLine {
 	@Option(name="-u",usage="consider associations as un-directed")
 	public boolean undirected = false;
 	
-	@Option(name="-m", usage="no longer used")
+	@Option(name="-m", usage="(no longer used)")
 	public int maxNumberOfEntities = 0;
 	
-	@Option(name="-script-enhancer", usage="no longer used")
+	@Option(name="-script-enhancer", usage="(no longer used)")
 	public String scriptEnhancer = "";
 
-	@Option(name="-t", usage="no longer used")
+	@Option(name="-t", usage="(no longer used)")
 	public String tabu = "";
 
 	@Option(name="-e",usage="name of the export-script file (compressed if it ends with '.zip' or '.gz')", metaVar="export-script")
@@ -159,8 +159,8 @@ public class CommandLine {
 	@Option(name="-import-filter-mapping-table-schema", usage="schema in which the import-filter mapping tables will be created")
 	public String importFilterMappingTableSchema = "";
 	
-	@Option(name="-check-primary-keys", usage="should the PKs be checked for validity?")
-	boolean checkPrimaryKeys = false;
+	@Option(name="-check-primary-keys", usage="(no longer used)")
+	boolean checkPrimaryKeysNoLongerUsed = false;
 
 	@Option(name="-limit-transaction-size", usage="collects the rows using multiple insert operations with a limited number of rows per operation")
 	boolean insertIncrementally = false;

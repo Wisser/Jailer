@@ -1216,8 +1216,8 @@ public class UIUtil {
 	public static void validatePrimaryKeys(final Window windowAncestor, final BasicDataSource basicDataSource, final Set<Table> tables) {
 		final Object cancellationContext = new Object();
 		
-		String infoPrefix = "<html>"
-		+ "Checking the primary key definitions in the data model <br>for uniqueness...<br><br>".replace(" ", "&nbsp;");
+		final String infoPrefix = "<html>"
+		+ "Checking the primary key definitions in the data model <br>for uniqueness...<br><br><br>".replace(" ", "&nbsp;");
 		final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(null, 
 				infoPrefix + "<br><br><br>") {
 				@Override
@@ -1248,24 +1248,34 @@ public class UIUtil {
 									public void run() {
 										String info;
 										int total = numTotal.get();
-										if (total > 0) {
-											info = (numDone.get() * 100 / total) + "%";
-										} else {
-											info = "";
+										if (total == 0) {
+											total = 1;
 										}
+										info = (numDone.get() * 100 / total) + "%";
 										int errors = numErrors.get();
 										if (errors > 0) {
-											info += "&nbsp;<font size=\"+1\" color=\"#ff8888\"" + errors + "&nbsp; Error" + (errors == 1? "" : "s") + "</font>";
+											info += "&nbsp;<font color=\"#ff2222\">" + errors + "&nbsp;Error" + (errors == 1? "" : "s") + "</font>";
 										}
 										if (!initialized) {
 											concurrentTaskControl.master.cancelButton.setText("Stop");
 											initialized = true;
 										}
-										concurrentTaskControl.master.infoLabel.setText(infoPrefix + info + "</html>");
+										concurrentTaskControl.master.infoLabel.setText(infoPrefix + "<font size=\"+1\">" + info + "</font></html>");
 									}
 								});
 							}
 						}.validatePrimaryKey(session, tables, false, jobManager);
+					} catch (final Throwable t) {
+						invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								if (concurrentTaskControl.master.isShowing()) {
+									UIUtil.showException(windowAncestor, "Error", t);
+									concurrentTaskControl.master.closeWindow();
+								}
+							}
+						});
+						return;
 					} finally {
 						session.shutDown();
 						jobManager.shutdown();

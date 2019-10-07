@@ -415,7 +415,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			threads.getDocument().addDocumentListener(dl);
 			rowsPerThread.getDocument().addDocumentListener(dl);
 			upsertCheckbox.addActionListener(al);
-			checkPKs.addActionListener(al);
 			insertIncrementally.addActionListener(al);
 			independentWorkingTables.addActionListener(al);
 			transactional.addActionListener(al);
@@ -960,7 +959,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jLabel30 = new javax.swing.JLabel();
         browseInsertButton = new javax.swing.JButton();
         browseDeleteButton = new javax.swing.JButton();
-        checkPKs = new javax.swing.JCheckBox();
         insertIncrementally = new javax.swing.JCheckBox();
         targetDBMSLabel1 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
@@ -1578,21 +1576,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 34;
         jPanel1.add(browseDeleteButton, gridBagConstraints);
 
-        checkPKs.setText("check primary keys"); // NOI18N
-        checkPKs.setToolTipText("<html>Check the validity of the primary keys of all relevant tables. <br>Reports an error if a primary key is ambiguous or contains a null. </html>");
-        checkPKs.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        checkPKs.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkPKsActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 53;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 8, 0);
-        jPanel1.add(checkPKs, gridBagConstraints);
-
         insertIncrementally.setText("limit transaction size"); // NOI18N
         insertIncrementally.setToolTipText("<html>Collects the rows using multiple insert operations with a limited number of rows per operation.<br>Use this option if otherwise the transactions become too big.</html>");
         insertIncrementally.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -1655,7 +1638,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 52;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 8, 0);
         jPanel1.add(transactional, gridBagConstraints);
 
         independentWorkingTables.setText("independent working tables"); // NOI18N
@@ -1971,9 +1954,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 	}//GEN-LAST:event_browseDeleteButtonActionPerformed
 
-    private void checkPKsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkPKsActionPerformed
-    }//GEN-LAST:event_checkPKsActionPerformed
-
     private void insertIncrementallyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertIncrementallyActionPerformed
     }//GEN-LAST:event_insertIncrementallyActionPerformed
 
@@ -2022,9 +2002,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		if (delete.isVisible() && delete.getText().trim().length() > 0) {
 			args.add("-d");
 			args.add(toFileName(delete.getText().trim()));
-		}
-		if (checkPKs.isSelected()) {
-			args.add("-check-primary-keys");
 		}
 		if (insertIncrementally.isSelected()) {
 			args.add("-limit-transaction-size");
@@ -2262,7 +2239,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JButton browseInsertButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton cancelButton;
-    public javax.swing.JCheckBox checkPKs;
     private javax.swing.JTextArea cliArea;
     public javax.swing.JPanel commandLinePanel;
     public javax.swing.JCheckBox confirmInsert;
