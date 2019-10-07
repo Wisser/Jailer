@@ -1188,10 +1188,14 @@ public class GraphicalDataModelView extends JPanel {
 			visualization.removeGroup(graph);
 			visualGraph = visualization.addGraph(graph, g);
 			if (visualGraph.getNodeCount() > 1) {
-				VisualItem f = (VisualItem) visualGraph.getNode(1);
-				visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
-				f.setFixed(true);
-				((VisualItem) visualGraph.getNode(0)).setFixed(true);
+				try {
+					VisualItem f = (VisualItem) visualGraph.getNode(1);
+					visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
+					f.setFixed(true);
+					((VisualItem) visualGraph.getNode(0)).setFixed(true);
+				} catch (Exception e) {
+					// ignore
+				}
 			}
 		}
 		
@@ -2067,9 +2071,13 @@ public class GraphicalDataModelView extends JPanel {
 	 */
 	public void setFix(boolean fix) {
 		synchronized (visualization) {
-			for (int i = visualGraph.getNodeCount() - 1; i >= 0; --i) {
-				VisualItem n = (VisualItem) visualGraph.getNode(i);
-				n.setFixed(fix);
+			try {
+				for (int i = visualGraph.getNodeCount() - 1; i >= 0; --i) {
+					VisualItem n = (VisualItem) visualGraph.getNode(i);
+					n.setFixed(fix);
+				}
+			} catch (Exception e) {
+				// ignore
 			}
 		}
 	}
