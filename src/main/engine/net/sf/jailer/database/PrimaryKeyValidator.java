@@ -17,7 +17,6 @@ package net.sf.jailer.database;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -52,10 +51,9 @@ public abstract class PrimaryKeyValidator {
 	 * 
 	 * @param session the session
 	 * @param tables the tables
-	 * @param hasRowID 
 	 * @throws SQLException if a pk is invalid
 	 */
-	public void validatePrimaryKey(final Session session, Set<Table> tables, boolean hasRowID, JobManager jobManager) throws SQLException {
+	public void validatePrimaryKey(final Session session, Set<Table> tables, JobManager jobManager) throws SQLException {
 		numTotal.set(0);
 		numErrors.set(0);
 		numDone.set(0);
@@ -68,10 +66,6 @@ public abstract class PrimaryKeyValidator {
 			CancellationHandler.checkForCancellation(cancellationContext);
 			if (table.primaryKey == null || table.primaryKey.getColumns().isEmpty()) {
 				// nothing to check here
-				continue;
-			}
-			if (hasRowID && !Boolean.TRUE.equals(table.upsert) && !hasLOBColumns(table, defaultSchema, session)) {
-				// not necessary to check here
 				continue;
 			}
 			boolean realPK = false;
@@ -139,25 +133,6 @@ public abstract class PrimaryKeyValidator {
 		}
 		throwIfErrorFound();
 		CancellationHandler.checkForCancellation(cancellationContext);
-	}
-
-	private boolean hasLOBColumns(Table table, String defaultSchema, Session session) throws SQLException {
-		ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(
-				session,
-				session.getMetaData(),
-				Quoting.staticUnquote(table.getSchema(defaultSchema)),
-				Quoting.staticUnquote(table.getUnqualifiedName()),
-				"%", false, false, null);
-		boolean hasLOB = false;
-		while (resultSet.next()) {
-			int type = resultSet.getInt(5);
-			if (type == Types.BLOB || type == Types.CLOB || type == Types.NCLOB || type == Types.SQLXML) {
-				hasLOB = true;
-				break;
-			}
-		}
-		resultSet.close();
-		return hasLOB;
 	}
 
 	private void throwIfErrorFound() throws SqlException {

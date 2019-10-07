@@ -1264,7 +1264,7 @@ public class UIUtil {
 									}
 								});
 							}
-						}.validatePrimaryKey(session, tables, false, jobManager);
+						}.validatePrimaryKey(session, tables, jobManager);
 					} catch (final Throwable t) {
 						invokeLater(new Runnable() {
 							@Override
