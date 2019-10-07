@@ -899,7 +899,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2 = new Color(242, 255, 242);
 			final Color BG1_EM = new Color(255, 255, 236);
 			final Color BG2_EM = new Color(230, 255, 236);
-			final Color BG3 = new Color(198, 236, 255);
+			final Color BG3 = new Color(192, 236, 255);
 			final Color BG3_2 = new Color(184, 226, 255);
 			final Color BG4 = new Color(32, 210, 255);
 			final Color BG4_2 = new Color(30, 196, 255);
@@ -2791,6 +2791,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (mi >= 0 && mi < rows.size()) {
 				Row row = rows.get(mi);
 				if (!append) {
+					for (Pair<BrowserContentPane, Row> e: rowsClosure.currentClosure) {
+						e.a.currentRowSelection = -1;
+					}
 					rowsClosure.currentClosure.clear();
 					rowsClosure.parentPath.clear();
 					rowsClosure.currentClosureRootID.clear();
