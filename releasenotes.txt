@@ -4,6 +4,7 @@
   - Fix for Issue "Gui: NPE after renaming model file (*.jm)"
     https://github.com/Wisser/Jailer/issues/16
   - The initial base folder of the data models was incorrect if the installer was used on Windows.
+  - The minimum requirement for the number of available database connections has been reduced to a single one.
   - Extensive internal redesigns since the last major release.
 
 8.8.8
