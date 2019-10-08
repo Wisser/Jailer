@@ -44,9 +44,9 @@ public class SessionForUI extends Session {
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
 	 */
-	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, final Window w) throws SQLException {
+	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, final Window w) throws SQLException {
 		Session.setThreadSharesConnection();
-		final SessionForUI session = new SessionForUI(dataSource, dbms, isolationLevel);
+		final SessionForUI session = new SessionForUI(dataSource, dbms, isolationLevel, shutDownImmediatelly);
 		final AtomicReference<Connection> con = new AtomicReference<Connection>();
 		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
 		session.connectionDialog = new JDialog(w, "Connecting");
@@ -116,9 +116,11 @@ public class SessionForUI extends Session {
 
 	/**
 	 * Constructor.
+	 * @param shutDownImmediatelly 
 	 */
-	private SessionForUI(DataSource dataSource, DBMS dbms, Integer isolationLevel) throws SQLException {
+	private SessionForUI(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly) throws SQLException {
 		super(dataSource, dbms, isolationLevel);
+		this.shutDownImmediatelly = shutDownImmediatelly;
 		connectingPanel.setBackground(java.awt.Color.white);
 
         jLabel1.setForeground(java.awt.Color.red);
@@ -140,24 +142,34 @@ public class SessionForUI extends Session {
 	protected void init() throws SQLException {
 	}
 	
+	private final boolean shutDownImmediatelly;
+	
 	/**
 	 * Closes all connections asynchronously.
 	 */
 	@Override
 	public void shutDown() {
 		down.set(true);
-		Thread thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					SessionForUI.super.shutDown();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+		if (shutDownImmediatelly) {
+			try {
+				super.shutDown();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		});
-		thread.setDaemon(true);
-		thread.start();
+		} else {
+			Thread thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						SessionForUI.super.shutDown();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
+			thread.setDaemon(true);
+			thread.start();
+		}
 	}
 
 }
