@@ -232,7 +232,7 @@ public class Session {
 	public Session(DataSource dataSource, DBMS dbms, Integer isolationLevel, final WorkingTableScope scope, boolean transactional) throws SQLException {
 		this(dataSource, dbms, isolationLevel, scope, transactional, false);
 	}
-	
+
 	/**
 	 * Constructor.
 	 * 
@@ -249,7 +249,7 @@ public class Session {
 		this.dbUrl = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUrl : null;
 		this.schema = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUser : "";
 		this.temporaryTableScope = scope;
-		
+
 		connectionFactory = new ConnectionFactory() {
 			private Connection defaultConnection = null;
 			private Random random = new Random();
@@ -272,6 +272,9 @@ public class Session {
 						} else if (defaultConnection != null) {
 							// fall back to default connection
 							con = defaultConnection;
+						} else if (globalFallbackConnection != null) {
+							// fall back to global default connection
+							con = globalFallbackConnection;
 						} else {
 							throw e;
 						}
@@ -296,15 +299,17 @@ public class Session {
 					} else {
 						connection.set(con);
 						boolean addCon = true;
-						synchronized (connections) {
-							for (Connection c: connections) {
-								if (c == con) {
-									addCon = false;
-									break;
+						if (con != globalFallbackConnection) {
+							synchronized (connections) {
+								for (Connection c: connections) {
+									if (c == con) {
+										addCon = false;
+										break;
+									}
 								}
-							}
-							if (addCon) {
-								connections.add(con);
+								if (addCon) {
+									connections.add(con);
+								}
 							}
 						}
 					}
@@ -1178,6 +1183,19 @@ public class Session {
 	
 	public static void setThreadSharesConnection() {
 		sharesConnection.set(true);
+	}
+
+	private static volatile Connection globalFallbackConnection = null;
+	
+	public static void setGlobalFallbackConnection(Connection globalFallbackConnection) {
+		if (Session.globalFallbackConnection != null) {
+			try {
+				Session.globalFallbackConnection.close();
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		Session.globalFallbackConnection = globalFallbackConnection;
 	}
 
 }

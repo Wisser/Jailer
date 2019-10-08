@@ -267,6 +267,16 @@ public class Jailer {
 						throw new RuntimeException("Please specify either a data model (e.g., \"-datamodel datamodel/Demo-Scott\") or an extraction model (But not both)");
 					}
 				}
+				if (commandLine.arguments.size() >= 5) {
+					if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 5) {
+						PrimaryKeyFactory.createUPKScope(extractionModelFileName, executionContext);
+					}
+					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), 0, jdbcJarURLs);
+					return new DDLCreator(executionContext).createDDL(dataSource, dataSource.dbms, executionContext.getScope(), commandLine.workingTableSchema);
+				}
+				if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 1) {
+					PrimaryKeyFactory.createUPKScope(extractionModelFileName, executionContext);
+				}
 				if (commandLine.targetDBMS == null) {
 					List<DBMS> dbmss = Configuration.getInstance().getDBMS();
 					System.err.println("");
@@ -277,16 +287,6 @@ public class Jailer {
 						}
 					}
 					System.err.println("");
-				}
-				if (commandLine.arguments.size() >= 5) {
-					if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 5) {
-						PrimaryKeyFactory.createUPKScope(extractionModelFileName, executionContext);
-					}
-					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), 0, jdbcJarURLs);
-					return new DDLCreator(executionContext).createDDL(dataSource, dataSource.dbms, executionContext.getScope(), commandLine.workingTableSchema);
-				}
-				if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 1) {
-					PrimaryKeyFactory.createUPKScope(extractionModelFileName, executionContext);
 				}
 				return new DDLCreator(executionContext).createDDL((DataSource) null, null, executionContext.getScope(), commandLine.workingTableSchema);
 			} else if ("build-model-wo-merge".equalsIgnoreCase(command)) {
