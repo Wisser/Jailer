@@ -1,8 +1,9 @@
-9.0
+9.1
   - Hover & See function in the data browser to easily see which row is related to which other rows.
   - Added configuration information for MariaDB.
   - Fix for Issue "Gui: NPE after renaming model file (*.jm)"
     https://github.com/Wisser/Jailer/issues/16
+  - The initial base folder of the data models was incorrect if the installer was used on Windows.
   - Extensive internal redesigns since the last major release.
 
 8.8.8
