@@ -1866,7 +1866,5 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     
 	private static final long serialVersionUID = -3983034803834547687L;
-
-	// TODO "connection details" dialog has wrong frame-icon (prop. bc. it has no parent frame)
 	
 }
