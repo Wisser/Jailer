@@ -703,7 +703,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}
 
 	private void initConnectionDialog(boolean all) {
-		DbConnectionDialog dialog = new DbConnectionDialog(null, JailerVersion.APPLICATION_NAME, all? infoBarConnection : infoBarRecUsedConnection, executionContext, false, !all) {
+		DbConnectionDialog dialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, all? infoBarConnection : infoBarRecUsedConnection, executionContext, false, !all) {
 			@Override
 			protected boolean isAssignedToDataModel(String dataModelFolder) {
 				return modelList.contains(dataModelFolder);
