@@ -1276,6 +1276,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 						final Set<Table> toCheck = new HashSet<Table>();
 						if (session != null) {
+							Session.setGlobalFallbackConnection(session.getConnection());
 							if (extractionModelEditor.dataModel != null) {
 								if (extractionModelEditor.extractionModel != null) {
 									if (extractionModelEditor.extractionModel.additionalSubjects != null) {
@@ -1314,6 +1315,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									return true;
 								}
 							};
+							Session.setGlobalFallbackConnection(null);
 							session.shutDown();
 							if (exportDialog.isOk()) {
 								exportDialog.fillCLIArgs(args);
@@ -1401,6 +1403,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				UIUtil.showException(this, "Error", e);
 			}
 		} finally {
+			Session.setGlobalFallbackConnection(null);
 			if (tmpFileName != null) {
 				new File(tmpFileName).delete();
 			}
