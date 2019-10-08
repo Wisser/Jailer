@@ -29,6 +29,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Locale;
 import java.util.Random;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.util.AWTWatchdog;
@@ -78,6 +79,7 @@ public class Environment {
 				if (renderer != null) {
 					renderer.setOutputFolder(newFile(renderer.getOutputFolder()).getAbsolutePath());
 				}
+				ExecutionContext.defaultDatamodelFolder = newFile(ExecutionContext.defaultDatamodelFolder).getAbsolutePath();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

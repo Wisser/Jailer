@@ -833,7 +833,9 @@ public class ExecutionContext {
 	private String workingTableSchema = null;
 
 	// folder holding the data model. Defaults to './datamodel'
-	private String datamodelFolder = "datamodel";
+	private String datamodelFolder = defaultDatamodelFolder;
+
+	public static String defaultDatamodelFolder = "datamodel";
 
 	// the exported rows will not be sorted according to foreign key constraints
 	private boolean noSorting = false;
