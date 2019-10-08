@@ -1052,7 +1052,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		try {
 			Window w = parent instanceof Window? (Window) parent : SwingUtilities.getWindowAncestor(parent);
 			BasicDataSource dataSource = UIUtil.createBasicDataSource(w, ci.driverClass, ci.url, ci.user, ci.password, 0, urls);
-			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, null, w);
+			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, null, true, w);
 			String databaseProductName = null;
 			if (session != null) {
 				try {

@@ -959,7 +959,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
         ConnectionInfo connection = dbConnectionDialog.currentConnection;
         BasicDataSource dataSource = UIUtil.createBasicDataSource(this, connection.driverClass, connection.url, connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
-        SessionForUI newSession = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), this);
+        SessionForUI newSession = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), false, this);
         if (newSession != null) {
             if (session != null) {
                 try {
