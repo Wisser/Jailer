@@ -1186,15 +1186,8 @@ public class Session {
 	}
 
 	private static volatile Connection globalFallbackConnection = null;
-	
+
 	public static void setGlobalFallbackConnection(Connection globalFallbackConnection) {
-		if (Session.globalFallbackConnection != null) {
-			try {
-				Session.globalFallbackConnection.close();
-			} catch (Exception e) {
-				// ignore
-			}
-		}
 		Session.globalFallbackConnection = globalFallbackConnection;
 	}
 
