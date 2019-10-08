@@ -172,6 +172,19 @@ public class ModelBuilder {
 	 */
 	public static void build(DataSource dataSource, DBMS dbms, String schema, StringBuffer warnings, ExecutionContext executionContext) throws Exception {
 		session = new Session(dataSource, dbms, executionContext.getIsolationLevel());
+		try {
+			build(schema, warnings, executionContext);
+		} finally {
+			try {
+				session.shutDown();
+			} catch (Exception e) {
+				// ignore
+			}
+			session = null;
+		}
+	}
+
+	private static void build(String schema, StringBuffer warnings, ExecutionContext executionContext) throws Exception {
 		session.setIntrospectionSchema(schema);
 
 		resetFiles(executionContext);
