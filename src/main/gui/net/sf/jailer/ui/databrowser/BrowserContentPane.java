@@ -3814,18 +3814,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		public TableModelItem(int blockNr, Object value) {
 			this.blockNr = blockNr;
 			this.value = value;
-
-			if (value instanceof Double) {
-				valueAsString = SqlUtil.toString((Double) value);
-			} else if (value instanceof BigDecimal) {
-				valueAsString = SqlUtil.toString((BigDecimal) value);
-			} else {
-				valueAsString = String.valueOf(value);
-			}
 		}
 
 		@Override
 		public String toString() {
+			if (valueAsString == null) {
+				if (value instanceof Double) {
+					valueAsString = SqlUtil.toString((Double) value);
+				} else if (value instanceof BigDecimal) {
+					valueAsString = SqlUtil.toString((BigDecimal) value);
+				} else {
+					valueAsString = String.valueOf(value);
+				}
+			}
 			return valueAsString;
 		}
 	}
