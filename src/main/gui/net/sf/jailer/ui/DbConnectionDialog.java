@@ -1242,7 +1242,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
     private ImageIcon getScaledWarnIcon() {
-        if (scaledWarnIcon == null) {
+        if (scaledWarnIcon == null && warnIcon != null) {
             int heigth = getFontMetrics(new JLabel("M").getFont()).getHeight();
             double s = heigth / (double) warnIcon.getIconHeight();
             try {
@@ -1298,7 +1298,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         
         // load images
         try {
-            warnIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/wanr.png"));
+            warnIcon = new ImageIcon(DbConnectionDialog.class.getResource(dir + "/wanr.png"));
  	    } catch (Exception e) {
 	    	logger.info("error", e);
 	        e.printStackTrace();

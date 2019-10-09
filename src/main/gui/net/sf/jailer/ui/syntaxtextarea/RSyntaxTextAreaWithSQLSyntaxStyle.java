@@ -290,8 +290,11 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	}
 
 	private ImageIcon scaleToLineHeight(ImageIcon imageIcon) {
-		double s = getLineHeight() / (double) imageIcon.getIconHeight();
-		return new ImageIcon(imageIcon.getImage().getScaledInstance((imageIcon.getIconWidth()), (int)(imageIcon.getIconHeight() * s + 0.5), Image.SCALE_SMOOTH));
+		if (imageIcon != null) {
+			double s = getLineHeight() / (double) imageIcon.getIconHeight();
+			return new ImageIcon(imageIcon.getImage().getScaledInstance((imageIcon.getIconWidth()), (int)(imageIcon.getIconHeight() * s + 0.5), Image.SCALE_SMOOTH));
+		}
+		return null;
 	}
 
 	protected MDTable getSelectedTable() {
