@@ -3807,20 +3807,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 	
 	public static class TableModelItem {
-		public int blockNr;
-		public Object value;
+		public final int blockNr;
+		public final Object value;
+		private String valueAsString = null;
+
+		public TableModelItem(int blockNr, Object value) {
+			this.blockNr = blockNr;
+			this.value = value;
+
+			if (value instanceof Double) {
+				valueAsString = SqlUtil.toString((Double) value);
+			} else if (value instanceof BigDecimal) {
+				valueAsString = SqlUtil.toString((BigDecimal) value);
+			} else {
+				valueAsString = String.valueOf(value);
+			}
+		}
+
 		@Override
 		public String toString() {
-			if (value instanceof Double) {
-				return SqlUtil.toString((Double) value);
-			}
-			if (value instanceof BigDecimal) {
-				return SqlUtil.toString((BigDecimal) value);
-			}
-			return String.valueOf(value);
+			return valueAsString;
 		}
 	}
-	
+
 	private int lastLimit;
 	private boolean lastLimitExceeded;
 	private boolean lastClosureLimitExceeded;
@@ -4043,9 +4052,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					tableContentViewFilter.filter(rowData, columnNameMap);
 				}
 				for (int i = 0; i < columns.size(); ++i) {
-					TableModelItem item = new TableModelItem();
-					item.blockNr = row.getParentModelIndex();
-					item.value = rowData[i];
+					TableModelItem item = new TableModelItem(row.getParentModelIndex(), rowData[i]);
 					rowData[i] = item;
 				}
 				dtm.addRow(rowData);
