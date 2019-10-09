@@ -675,8 +675,8 @@ public class LocalEntityGraph extends EntityGraph {
 		localSession.executeUpdate(
 				"Update " + dmlTableReference(ENTITY, localSession) + " set birthday=0 " +
 				"Where r_entitygraph=" + graphID + " and birthday>0 and " +
-					   (table != null? "type=" + typeName(table) + " and " : "") +
-					   "not exists (Select * from " + dmlTableReference(DEPENDENCY, localSession) + " D " +
+						"type=" + typeName(table) + " and " +
+						"not exists (Select * from " + dmlTableReference(DEPENDENCY, localSession) + " D " +
 						   "Where D.r_entitygraph=" + graphID + " and D.assoc=0 and D.from_type=" + dmlTableReference(ENTITY, localSession) + ".type and " +
 								 fromEqualsPK + ")");
 	}

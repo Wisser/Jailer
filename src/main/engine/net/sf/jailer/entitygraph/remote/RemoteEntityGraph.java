@@ -467,7 +467,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		session.executeUpdate(
 				"Update " + dmlTableReference(ENTITY, session) + " set birthday=0 " +
 				"Where r_entitygraph=" + graphID + " and birthday>0 and " +
-					   (table != null? "type=" + typeName(table) + " and " : "") +
+					   "type=" + typeName(table) + " and " +
 					   "not exists (Select * from " + dmlTableReference(DEPENDENCY, session) + " D " +
 						   "Where D.r_entitygraph=" + graphID + " and D.assoc=0 and D.from_type=" + dmlTableReference(ENTITY, session) + ".type and " +
 								 fromEqualsPK + ")");
