@@ -1062,7 +1062,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                 TABLE mdTable = findTable(mdSchema, table);
                                 if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.normalizeIdentifier(table))) {
                                     if (outlineInfos != null) {
-                                        if (outlineInfos != null && (mdTable == null || mdTable instanceof MDTable)) {
+                                        if (mdTable == null || mdTable instanceof MDTable) {
                                             OutlineInfo info = new OutlineInfo((MDTable) mdTable, null, level, pos, mdTable == null? table : null);
                                             info.isCTE = mdTable == null;
 											outlineInfos.add(nextInsertPos >= 0? nextInsertPos : outlineInfos.size(), info);
