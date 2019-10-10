@@ -175,8 +175,21 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		return button;
 	}
 
+	private static ImageIcon sIcon = null;
+	private static ImageIcon sIcon2 = null;
+	
 	public static ImageIcon getSearchIcon(boolean alternativeIcon, final JComponent button) {
-		return UIUtil.scaleIcon(button, alternativeIcon? icon2 : icon);
+		if (alternativeIcon) {
+			if (sIcon2 == null) {
+				sIcon2 = UIUtil.scaleIcon(button, icon2);
+			}
+			return sIcon2;
+		} else {
+			if (sIcon == null) {
+				sIcon = UIUtil.scaleIcon(button, icon);
+			}
+			return sIcon;
+		}
 	}
 
 	private static void updateEnabledState(JToggleButton button, JComboBox comboBox) {
