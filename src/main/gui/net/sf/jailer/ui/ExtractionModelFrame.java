@@ -1938,7 +1938,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	try {
 	    	if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Referential Consistency Check")) {
 	    		BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs()); 
-				Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, this);
+				Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), false, this);
 				if (session != null) {
 					try {
 						new ConstraintChecker(this, extractionModelEditor.dataModel, false, session) {
