@@ -1,3 +1,6 @@
+9.2
+  - Performance improvements.
+
 9.1
   - Hover & See function in the data browser to easily see which row is related to which other rows.
   - Added configuration information for MariaDB.
