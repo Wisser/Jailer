@@ -532,7 +532,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Set<String> currentClosureRootID = new HashSet<String>();
 		Set<BrowserContentPane> parentPath = new HashSet<BrowserContentPane>();
 		
-		Set<Row> tempClosure = Collections.synchronizedSet(new HashSet<Row>());
+		Set<Row> tempClosure = new HashSet<Row>();
 	};
 
 	private final RowsClosure rowsClosure;
