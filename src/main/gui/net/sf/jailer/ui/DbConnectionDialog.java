@@ -1011,12 +1011,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	protected void onConnect(ConnectionInfo currentConnection) {
-		if (currentConnection != null && currentConnection.url != null) {
-			if (currentConnection.url.toLowerCase().startsWith("jdbc:jtds:")) {
-				JOptionPane.showMessageDialog(this, "The jTDS JDBC Driver is no longer supported.");
-				return;
-			}
-		}
 		setVisible(false);
 	}
 
