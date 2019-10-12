@@ -1654,7 +1654,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param navigateFromAllRows 
 	 * @param runnable 
 	 */
-	public JPopupMenu createPopupMenu(JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke) {
+	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		if (withKeyStroke) {
 			tableFilter.setAccelerator(KS_FILTER);
@@ -1669,8 +1669,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		tableFilter.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				isTableFilterEnabled = !isTableFilterEnabled;
-				updateTableModel();
+				Component parent = null;
+				try {
+					parent = SwingUtilities.getWindowAncestor(contextJTable);
+					UIUtil.setWaitCursor(parent);
+					isTableFilterEnabled = !isTableFilterEnabled;
+					updateTableModel();
+				} finally {
+					UIUtil.resetWaitCursor(parent);
+				}
 			}
 		});
 		JMenuItem copyTCB;
@@ -2160,8 +2167,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		tableFilter.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				isTableFilterEnabled = !isTableFilterEnabled;
-				updateTableModel();
+				Component parent = null;
+				try {
+					parent = SwingUtilities.getWindowAncestor(parentComponent);
+					UIUtil.setWaitCursor(parent);
+					isTableFilterEnabled = !isTableFilterEnabled;
+					updateTableModel();
+				} finally {
+					UIUtil.resetWaitCursor(parent);
+				}
 			}
 		});
 		popup.add(tableFilter);
