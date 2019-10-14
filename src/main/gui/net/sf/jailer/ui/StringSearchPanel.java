@@ -190,6 +190,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			}
 			return sIcon;
 		}
+		// TODO hi-dpi support, seems that jvm 9 have props with it, but jvm 13 doesn't ?! Need for further investigation!
+//		BaseMultiResolutionImage mri = new BaseMultiResolutionImage(icon.getImage());
+//		sIcon = new ImageIcon(mri);
 	}
 
 	private static void updateEnabledState(JToggleButton button, JComboBox comboBox) {
