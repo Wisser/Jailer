@@ -1,5 +1,6 @@
 9.2
   - Performance improvements.
+  - The animation of the data model view in the desktop did not work.
 
 9.1
   - Hover & See function in the data browser to easily see which row is related to which other rows.
