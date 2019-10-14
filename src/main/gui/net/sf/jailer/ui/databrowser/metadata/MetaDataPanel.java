@@ -778,7 +778,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					                    			script.append(separator + UIUtil.LINE_SEPARATOR);
 					                    		}
 					                    		if ("DDL".equals(template)) {
-						                    		String ddl = mdTable.getDDL().trim();
+						                    		String ddl = mdTable.getDDL().trim().replaceAll("\\nON ", " ON ");
 													script.append(ddl);
 													if (!ddl.endsWith(";")) {
 														script.append(";");
