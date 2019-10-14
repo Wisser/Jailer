@@ -113,7 +113,9 @@ public class AnimationController {
 		lastActiveWindow = theActiveWindow;
 		boolean stopAll = theActiveWindow == null && nothingActiveSince > 0 && System.currentTimeMillis() - nothingActiveSince > MAX_INACTIVITY;
 		for (Window window: windowControl.keySet()) {
-			windowControl.get(window).setEnabled(!stopAll && (theActiveWindow == null || window.equals(theActiveWindow)));
+			if (window.isShowing()) {
+				windowControl.get(window).setEnabled(!stopAll && (theActiveWindow == null || window.equals(theActiveWindow)));
+			}
 		}
 	}
 

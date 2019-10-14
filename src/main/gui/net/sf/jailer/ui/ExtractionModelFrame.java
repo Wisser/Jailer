@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -2250,12 +2251,25 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		extractionModelEditor.markDirty();
 	}
 
-	public JComponent tearOutGraphViewContainer() {
+	public JComponent tearOutGraphViewContainer(JFrame ownerFrame) {
 		extractionModelEditor.layeredPane.remove(extractionModelEditor.inspectorHolder);
 		extractionModelEditor.focusPanel.setVisible(false);
 		extractionModelEditor.layeredPane.remove(extractionModelEditor.toolBarPanel);
 		extractionModelEditor.addAdditionalPopupMenuItems(
 				Arrays.asList(collapseAll, expandAll, expandAllVisible, refresh));
+		AnimationController.registerWindow(ownerFrame, new AnimationController.AnimationControl() {
+			@Override
+			public void setEnabled(boolean enabled) {
+				if (extractionModelEditor != null && extractionModelEditor.graphView != null) {
+					extractionModelEditor.graphView.setAnimationEnabled(enabled);
+				}
+			}
+		});
+		
+		Container parent = extractionModelEditor.undoViewHolder.getParent();
+		if (parent != null) {
+			parent.remove(extractionModelEditor.undoViewHolder);
+		}
 		return extractionModelEditor.layeredPane;
 	}
 

@@ -3115,11 +3115,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	public synchronized void incCaptureLevel() {
 		++captureLevel;
 	}
-		
+
 	public synchronized void decCaptureLevel() {
 		--captureLevel;
 	}
-		
+
 	public synchronized void captureLayout() {
 		try {
 			if (graphView != null && captureLevel == 0) {

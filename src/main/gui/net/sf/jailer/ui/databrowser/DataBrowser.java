@@ -3063,7 +3063,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					UIUtil.setWaitCursor(DataBrowser.this);
 					if (dataModelViewFrame == null) {
 						dataModelViewFrame = ExtractionModelFrame.createFrame(null, false, false, null, executionContext);
-						JComponent graphViewContainer = dataModelViewFrame.tearOutGraphViewContainer();
+						JComponent graphViewContainer = dataModelViewFrame.tearOutGraphViewContainer(DataBrowser.this);
 						dataModelPanel.removeAll();
 						dataModelPanel.add(graphViewContainer);
 					}

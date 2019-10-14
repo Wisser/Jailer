@@ -480,8 +480,9 @@ public class GraphicalDataModelView extends JPanel {
 		Rectangle2D bounds = null;
 		if (root != null) {
 			synchronized (visualization) {
+				@SuppressWarnings("rawtypes")
 				Iterator items = visualization.items(BooleanLiteral.TRUE);
-				for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
+				while (items.hasNext()) {
 					VisualItem item = (VisualItem)items.next();
 					if (item.canGetString("label") ) {
 						String tableName = item.getString("label");
@@ -524,6 +525,7 @@ public class GraphicalDataModelView extends JPanel {
 				float vx, vy, v, coeff;
 				float[][] k, l;
 				
+				@SuppressWarnings("rawtypes")
 				Iterator iter = sim.getItems();
 				while ( iter.hasNext() ) {
 					ForceItem item = (ForceItem)iter.next();
@@ -648,8 +650,9 @@ public class GraphicalDataModelView extends JPanel {
 					if (!done) {
 						synchronized (visualization) {
 							if (root != null && !initiallyVisibleTables.isEmpty()) {
+								@SuppressWarnings("rawtypes")
 								Iterator items = visualization.items(BooleanLiteral.TRUE);
-								for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
+								while (items.hasNext()) {
 									VisualItem item = (VisualItem)items.next();
 									if (item.canGetString("label") ) {
 										String tableName;
@@ -694,13 +697,13 @@ public class GraphicalDataModelView extends JPanel {
 	/**
 	 * Stores current positions of the tables.
 	 */
-	@SuppressWarnings("unchecked")
 	public void storeLayout() {
 		if (root != null && layoutHasBeenSet) {
 			synchronized (visualization) {
 				executionContext.getLayoutStorage().removeAll(root.getName());
+				@SuppressWarnings("rawtypes")
 				Iterator items = visualization.items(BooleanLiteral.TRUE);
-				for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
+				while (items.hasNext()) {
 					VisualItem item = (VisualItem)items.next();
 					if (item.canGetString("label") ) {
 						String tableName;
