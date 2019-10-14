@@ -2463,6 +2463,4 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
     }
 
-    // TODO DDL for indexes under table DDL
-
 }

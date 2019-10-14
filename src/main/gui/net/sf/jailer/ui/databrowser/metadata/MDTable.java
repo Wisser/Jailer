@@ -23,9 +23,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
@@ -42,6 +45,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -326,9 +330,9 @@ public class MDTable extends MDObject {
     	synchronized (DDL_LOCK) {
 	        if (!ddlLoaded.get()) {
 	            Session session = getSchema().getMetaDataSource().getSession();
-	
+
 	            String statement = session.dbms.getDdlCall();
-	
+
 	            if (statement != null) {
 	                CallableStatement cStmt = null;
 	                try {
@@ -394,19 +398,112 @@ public class MDTable extends MDObject {
 	                	logger.info("error", e);
 		            }
 	            }
+	            if (ddl != null) {
+	            	ddl = ddl.trim();
+	            	if (!ddl.endsWith(";")) {
+	            		ddl += ";";
+	            	}
+	            	for (Entry<String, StringBuilder> e: getIndexDDL().entrySet()) {
+	            		if (e.getValue().length() > 0) {
+	            			ddl += "\n\n" + e.getValue() + ";";
+	            		}
+	            	}
+	            }
 	        }
 	        ddlLoaded.set(true);
 	        return ddl;
     	}
     }
 
-    /**
+    private Map<String, StringBuilder> getIndexDDL() {
+    	Map<String, StringBuilder> result = new TreeMap<String, StringBuilder>();
+    	Map<String, List<Pair<Integer, String>>> columns = new TreeMap<String, List<Pair<Integer,String>>>();
+    	Session session = getSchema().getMetaDataSource().getSession();
+    	ResultSet rs = null;
+    	try {
+			rs = JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()));
+			while (rs.next()) {
+				String indexName = rs.getString(6);
+				String schemaName = rs.getString(5);
+				String ascDesc = rs.getString(10);
+				boolean unique = !rs.getBoolean(4);
+				
+				if (indexName != null) {
+					MDSchema schema = schemaName != null? getMetaDataSource().find(schemaName) : null;
+			        if (!result.containsKey(indexName)) {
+			        	result.put(indexName, new StringBuilder("CREATE " + (unique? "UNIQUE " : "") + "INDEX " + (schema == null || schema.isDefaultSchema? "" : (schema.getName() + ".")) + indexName + "\n"
+			        			+ "ON " + (getSchema().isDefaultSchema? "" : (getSchema().getName() + ".")) + getName() + " ("));
+			        }
+					List<Pair<Integer, String>> cols = columns.get(indexName);
+					if (cols == null) {
+						cols = new ArrayList<Pair<Integer,String>>();
+						columns.put(indexName, cols);
+					}
+					cols.add(new Pair<Integer, String>(rs.getInt(8), rs.getString(9) + ("D".equals(ascDesc)? " DESC" : "")));
+				}
+			}
+			rs.close();
+	        
+	        for (Entry<String, StringBuilder> e: result.entrySet()) {
+	        	List<Pair<Integer, String>> cols = columns.get(e.getKey());
+	        	if (cols == null) {
+	        		e.getValue().setLength(0);
+	        	} else {
+	        		Collections.sort(cols, new Comparator<Pair<Integer, String>>() {
+						@Override
+						public int compare(Pair<Integer, String> o1, Pair<Integer, String> o2) {
+							int i1 = o1.a  == null? 0 : o1.a;
+							int i2 = o2.a  == null? 0 : o2.a;
+							return i1 - i2;
+						}
+					});
+	        		if (!primaryKey.isEmpty() && primaryKey.size() == cols.size()) {
+	        			boolean isPKIndex = true;
+	        			int i = 0;
+		        		for (Pair<Integer, String> col: cols) {
+	        				if (!Quoting.equalsIgnoreQuotingAndCase(primaryKey.get(i), col.b)) {
+	        					isPKIndex = false;
+	        					break;
+	        				}
+	        				++i;
+	        			}
+		        		if (isPKIndex) {
+			        		e.getValue().setLength(0);
+		        			continue;
+		        		}
+	        		}
+	        		boolean f = true;
+	        		for (Pair<Integer, String> col: cols) {
+	        			if (!f) {
+	        				e.getValue().append(", ");
+	        			}
+	        			e.getValue().append(getSchema().getMetaDataSource().getQuoting().quote(col.b));
+	        			f = false;
+	        		}
+	        		e.getValue().append(")");
+	        	}
+	        }
+		} catch (Throwable e) {
+			e.printStackTrace();
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (SQLException e1) {
+					// ignore
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
      * Creates DDL for this table.
      * 
      * @return DDL for this table
      */
     private String createDDL() {
-        StringBuilder sb = new StringBuilder("CREATE TABLE " + getName() + " (\n");
+        StringBuilder sb = new StringBuilder("CREATE TABLE " + (getSchema().isDefaultSchema? "" : (getSchema().getName() + ".")) + getName() + " (\n");
     	String nullableContraint = getMetaDataSource().getSession().dbms.getNullableContraint();
     	boolean prepComma = false;
         for (Column column: columnTypes)  {
