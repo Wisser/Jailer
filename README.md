@@ -69,8 +69,6 @@ To build the tool you can just use ant: ( https://ant.apache.org )
 * `cd Jailer`
 * `ant`
 
-(The repository also contains all the configuration files needed to use the eclipse IDE directly)
-
 ## Contact
  - Home:    http://jailer.sourceforge.net/ or https://github.com/Wisser/Jailer
  - Forum:   https://sourceforge.net/p/jailer/discussion/
