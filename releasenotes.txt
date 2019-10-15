@@ -1,4 +1,4 @@
-9.2
+9.1.1
   - Performance improvements.
   - The animation of the data model view in the desktop did not work.
   - When the DDL is generated for a table, it is also generated for the indexes.

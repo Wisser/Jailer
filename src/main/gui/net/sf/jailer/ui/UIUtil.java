@@ -52,6 +52,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -1051,10 +1052,10 @@ public class UIUtil {
 						icon.getImage()
 						};
 				try {
-					if (baseMultiResolutionImageClass == null) {
-						baseMultiResolutionImageClass = Class.forName("java.awt.image.BaseMultiResolutionImage");
+					if (baseMultiResolutionImageClassConstructor == null) {
+						baseMultiResolutionImageClassConstructor = Class.forName("java.awt.image.BaseMultiResolutionImage").getConstructor(imageList.getClass());
 					}
-					Object baseMultiResolutionImage = baseMultiResolutionImageClass.getConstructor(imageList.getClass()).newInstance((Object) imageList);
+					Object baseMultiResolutionImage = baseMultiResolutionImageClassConstructor.newInstance((Object) imageList);
 					return new ImageIcon((Image) baseMultiResolutionImage);
 				} catch (Throwable t) {
 					baseMultiResolutionImageClassExists = false;
@@ -1067,7 +1068,7 @@ public class UIUtil {
 		return null;
 	}
 
-	private static Class<?> baseMultiResolutionImageClass;
+	private static Constructor<?> baseMultiResolutionImageClassConstructor = null;
 	private static boolean baseMultiResolutionImageClassExists = true;
 
     /**
