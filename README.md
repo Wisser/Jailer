@@ -66,6 +66,7 @@ Clone the git repository:
 
 To build the tool you can just use ant: ( https://ant.apache.org )
 
+* `cd Jailer`
 * `ant`
 
 (The repository also contains all the configuration files needed to use the eclipse IDE directly)
