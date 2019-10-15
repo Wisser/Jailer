@@ -35,6 +35,7 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.plaf.basic.BasicInternalFrameUI;
 
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 
 /**
@@ -262,7 +263,7 @@ public abstract class DesktopAnchorManager {
         
         // load images
         try {
-            anchorIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/anchor.png"));
+            anchorIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/anchor.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }

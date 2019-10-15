@@ -2128,12 +2128,12 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		
 		// load images
 		try {
-			conditionEditorIcon = new ImageIcon(getClass().getResource(dir + "/edit.png"));
+			conditionEditorIcon = UIUtil.readImage(getClass().getResource(dir + "/edit.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			conditionEditorSelectedIcon = new ImageIcon(getClass().getResource(dir + "/edit_s.png"));
+			conditionEditorSelectedIcon = UIUtil.readImage(getClass().getResource(dir + "/edit_s.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

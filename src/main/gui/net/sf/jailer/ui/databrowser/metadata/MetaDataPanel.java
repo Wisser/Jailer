@@ -1895,7 +1895,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 	s *= 0.8;
                 }
                 try {
-                    return new ImageIcon(scaledIcon.getImage().getScaledInstance((int)(scaledIcon.getIconWidth() * s), (int)(scaledIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
+                    return UIUtil.scaleIcon(scaledIcon, s);
                 } catch (Exception e) {
                 	logger.info("error", e);
                     return null;
@@ -1909,15 +1909,15 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         
         // load images
         try {
-            warnIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/wanr.png"));
-            viewIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/view.png"));
-            synonymIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/synonym.png"));
-            synonymsIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/synonyms.png"));
-            viewsIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/views.png"));
-            tablesIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/tables.png"));
-            tableIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/table.png"));
-            databaseIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/database.png"));
-            schemaIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/schema.png"));
+            warnIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/wanr.png"));
+            viewIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/view.png"));
+            synonymIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/synonym.png"));
+            synonymsIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/synonyms.png"));
+            viewsIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/views.png"));
+            tablesIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/tables.png"));
+            tableIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/table.png"));
+            databaseIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/database.png"));
+            schemaIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/schema.png"));
         } catch (Exception e) {
         	logger.info("error", e);
             e.printStackTrace();

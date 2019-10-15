@@ -623,12 +623,12 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		
 		// load images
 		try {
-			helpIcon = new ImageIcon(getClass().getResource(dir + "/help.png"));
+			helpIcon = UIUtil.readImage(getClass().getResource(dir + "/help.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			loadIcon = new ImageIcon(getClass().getResource(dir + "/load.png"));
+			loadIcon = UIUtil.readImage(getClass().getResource(dir + "/load.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

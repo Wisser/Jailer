@@ -36,12 +36,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.ImageIcon;
-
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.UIUtil;
 import prefuse.Constants;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.ImageFactory;
@@ -1207,32 +1206,32 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 		
 		// load images
 		try {
-			excludeFromDeletionImage = new ImageIcon(getClass().getResource(dir + "/database-lock.png")).getImage();
+			excludeFromDeletionImage = UIUtil.readImage(getClass().getResource(dir + "/database-lock.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			collapsedImage = new ImageIcon(getClass().getResource(dir + "/collapsed.png")).getImage();
+			collapsedImage = UIUtil.readImage(getClass().getResource(dir + "/collapsed.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			collapsedRedImage = new ImageIcon(getClass().getResource(dir + "/collapsedred.png")).getImage();
+			collapsedRedImage = UIUtil.readImage(getClass().getResource(dir + "/collapsedred.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			upsertImage = new ImageIcon(getClass().getResource(dir + "/upsert.png")).getImage();
+			upsertImage = UIUtil.readImage(getClass().getResource(dir + "/upsert.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			subjectImage = new ImageIcon(getClass().getResource(dir + "/subject.png")).getImage();
+			subjectImage = UIUtil.readImage(getClass().getResource(dir + "/subject.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			filterImage = new ImageIcon(getClass().getResource(dir + "/filter.png")).getImage();
+			filterImage = UIUtil.readImage(getClass().getResource(dir + "/filter.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

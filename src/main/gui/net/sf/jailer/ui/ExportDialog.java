@@ -2326,17 +2326,17 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		
 		// load images
 		try {
-			loadIcon = new ImageIcon(getClass().getResource(dir + "/load.png"));
+			loadIcon = UIUtil.readImage(getClass().getResource(dir + "/load.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			conditionEditorIcon = new ImageIcon(getClass().getResource(dir + "/edit.png"));
+			conditionEditorIcon = UIUtil.readImage(getClass().getResource(dir + "/edit.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			conditionEditorSelectedIcon = new ImageIcon(getClass().getResource(dir + "/edit_s.png"));
+			conditionEditorSelectedIcon = UIUtil.readImage(getClass().getResource(dir + "/edit_s.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

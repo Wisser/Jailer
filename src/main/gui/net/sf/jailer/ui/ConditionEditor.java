@@ -545,10 +545,10 @@ public class ConditionEditor extends EscapableDialog {
 		
 		// load images
 		try {
-			dropDownIcon = new ImageIcon(getClass().getResource(dir + "/dropdown.png"));
-			redDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/reddot.gif"));
-			blueDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/bluedot.gif"));
-			greenDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/greendot.gif"));
+			dropDownIcon = UIUtil.readImage(getClass().getResource(dir + "/dropdown.png"));
+			redDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/reddot.gif"));
+			blueDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/bluedot.gif"));
+			greenDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/greendot.gif"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

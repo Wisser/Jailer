@@ -1469,16 +1469,12 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 		// load image
 		try {
-			joinImage = new ImageIcon(new ImageIcon(getClass().getResource(
-					dir + "/collapsed.png")).getImage().getScaledInstance(22,
-					18, Image.SCALE_SMOOTH));
+			joinImage = UIUtil.scaleIcon(UIUtil.readImage(getClass().getResource(dir + "/collapsed.png")), 22, 18);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			minusImage = new ImageIcon(new ImageIcon(getClass().getResource(
-					dir + "/minus.png")).getImage().getScaledInstance(22, 18,
-					Image.SCALE_SMOOTH));
+			minusImage = UIUtil.scaleIcon(UIUtil.readImage(getClass().getResource(dir + "/minus.png")), 22, 18);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

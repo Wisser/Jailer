@@ -540,15 +540,15 @@ public class DataBrowser extends javax.swing.JFrame {
         }
 
         try {
-            setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailerlight.png"))).getImage());
+            setIconImage((jailerIcon = UIUtil.readImage(getClass().getResource("/net/sf/jailer/ui/resource/jailerlight.png"))).getImage());
         } catch (Throwable t) {
             try {
-                setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.gif"))).getImage());
+                setIconImage((jailerIcon = UIUtil.readImage(getClass().getResource("/net/sf/jailer/ui/resource/jailer.gif"))).getImage());
             } catch (Throwable t2) {
             }
         }
 
-        jailerIcon.setImage(jailerIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+        jailerIcon.setImage(UIUtil.scaleIcon(jailerIcon, 16, 16).getImage());
 
         if (dbConnectionDialog != null) {
             createSession(dbConnectionDialog);
@@ -4178,16 +4178,16 @@ public class DataBrowser extends javax.swing.JFrame {
         
         // load images
         try {
-            tableIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/table.png"));
-            databaseIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/database.png"));
-            redIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/reddot.gif")));
-            blueIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/bluedot.gif")));
-            greenIcon = UIUtil.scaleIcon(new JLabel(""), new ImageIcon(DataBrowser.class.getResource(dir + "/greendot.gif")));
-            closeIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/Close-16-1.png"));
-            sqlConsoleIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/runall.png"));
-            desktopIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/tables.png"));
-            addSqlConsoleIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/add.png"));
-            navigationIcon = new ImageIcon(DataBrowser.class.getResource(dir + "/navigation.png"));
+            tableIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/table.png"));
+            databaseIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/database.png"));
+            redIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage(DataBrowser.class.getResource(dir + "/reddot.gif")));
+            blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage(DataBrowser.class.getResource(dir + "/bluedot.gif")));
+            greenIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage(DataBrowser.class.getResource(dir + "/greendot.gif")));
+            closeIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/Close-16-1.png"));
+            sqlConsoleIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/runall.png"));
+            desktopIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/tables.png"));
+            addSqlConsoleIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/add.png"));
+            navigationIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/navigation.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -25,11 +25,10 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import javax.swing.ImageIcon;
-
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
+import net.sf.jailer.ui.UIUtil;
 import prefuse.Constants;
 import prefuse.render.EdgeRenderer;
 import prefuse.util.ColorLib;
@@ -442,10 +441,10 @@ public class AssociationRenderer extends EdgeRenderer {
 		try {
 			String dir = "/net/sf/jailer/ui/resource";
 			
-			starImage = new ImageIcon(getClass().getResource(dir + "/star.png")).getImage();
+			starImage = UIUtil.readImage(getClass().getResource(dir + "/star.png")).getImage();
 			starWidth = starImage.getWidth(null);
 			starHeight = starImage.getHeight(null);
-			pendingImage = new ImageIcon(getClass().getResource(dir + "/wanr.png")).getImage();
+			pendingImage = UIUtil.readImage(getClass().getResource(dir + "/wanr.png")).getImage();
 			pendingWidth = pendingImage.getWidth(null);
 			pendingHeight = pendingImage.getHeight(null);
 		} catch (Exception e) {

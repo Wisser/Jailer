@@ -374,7 +374,7 @@ public class MDSchema extends MDObject {
 			icon = constraintTypeIcons.get(iconURL);
 			if (icon == null) {
 				try {
-		            icon = new ImageIcon(MDSchema.class.getResource("/net/sf/jailer/ui/resource/" + iconURL));
+		            icon = UIUtil.readImage(MDSchema.class.getResource("/net/sf/jailer/ui/resource/" + iconURL));
 		        } catch (Exception e) {
 		        }
 			}

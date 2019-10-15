@@ -583,7 +583,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		
 		// load images
 		try {
-			dropDownIcon = new ImageIcon(getClass().getResource(dir + "/dropdown.png"));
+			dropDownIcon = UIUtil.readImage(getClass().getResource(dir + "/dropdown.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

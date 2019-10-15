@@ -49,6 +49,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -190,9 +191,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			}
 			return sIcon;
 		}
-		// TODO hi-dpi support, seems that jvm 9 have props with it, but jvm 13 doesn't ?! Need for further investigation!
-//		BaseMultiResolutionImage mri = new BaseMultiResolutionImage(icon.getImage());
-//		sIcon = new ImageIcon(mri);
 	}
 
 	private static void updateEnabledState(JToggleButton button, JComboBox comboBox) {
@@ -888,8 +886,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		
 		// load images
 		try {
-			icon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/search.png"));
-			icon2 = new ImageIcon(MetaDataPanel.class.getResource(dir + "/search2.png"));
+			// ImageIO.read TODO
+			icon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/search.png"));
+			icon2 = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/search2.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

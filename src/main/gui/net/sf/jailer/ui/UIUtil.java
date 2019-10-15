@@ -67,6 +67,7 @@ import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -85,6 +86,7 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
+import jdk.nashorn.internal.runtime.Context.ThrowErrorManager;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.JailerVersion;
@@ -1025,14 +1027,48 @@ public class UIUtil {
         if (icon != null) {
         	int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
         	double s = heigth * scaleFactor / (double) icon.getIconHeight();
-        	try {
-        		return new ImageIcon(icon.getImage().getScaledInstance((int)(icon.getIconWidth() * s), (int)(icon.getIconHeight() * s), Image.SCALE_SMOOTH));
-        	} catch (Exception e) {
-        		return null;
-        	}
+        	return scaleIcon(icon, s);
         }
     	return null;
     }
+
+	public static ImageIcon scaleIcon(ImageIcon icon, double factor) {
+		if (icon != null) {
+	        return scaleIcon(icon, (int)(icon.getIconWidth() * factor), (int)(icon.getIconHeight() * factor));
+		}
+		return null;
+	}
+
+	public static ImageIcon scaleIcon(ImageIcon icon, int w, int h) {
+		if (icon != null) {
+			try {
+				Image scaled = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+				if (!baseMultiResolutionImageClassExists || (icon.getIconWidth() <= w && icon.getIconHeight() <= h)) {
+					return new ImageIcon(scaled);
+				}
+				Image[] imageList = new Image[] { 
+						scaled, 
+						icon.getImage()
+						};
+				try {
+					if (baseMultiResolutionImageClass == null) {
+						baseMultiResolutionImageClass = Class.forName("java.awt.image.BaseMultiResolutionImage");
+					}
+					Object baseMultiResolutionImage = baseMultiResolutionImageClass.getConstructor(imageList.getClass()).newInstance((Object) imageList);
+					return new ImageIcon((Image) baseMultiResolutionImage);
+				} catch (Throwable t) {
+					baseMultiResolutionImageClassExists = false;
+					return new ImageIcon(scaled);
+				}
+			} catch (Exception e) {
+				return null;
+			}
+		}
+		return null;
+	}
+
+	private static Class<?> baseMultiResolutionImageClass;
+	private static boolean baseMultiResolutionImageClassExists = true;
 
     /**
      * Represents "null"-value in rows tables.
@@ -1451,6 +1487,17 @@ public class UIUtil {
 	public static String toSingleLineSQL(String text) {
 		return UIUtil.removesuperfluousSpaces(
 				removeSingleLineComments(text).replaceAll("\\s*\\n\\s*", " "));
+	}
+
+	private static Map<URL, ImageIcon> images = new HashMap<URL, ImageIcon>();
+	
+	public static ImageIcon readImage(URL resource) throws IOException {
+		ImageIcon result = images.get(resource);
+		if (result == null) {
+			result = new ImageIcon(ImageIO.read(resource));
+			images.put(resource, result);
+		}
+		return result;
 	}
 
 }

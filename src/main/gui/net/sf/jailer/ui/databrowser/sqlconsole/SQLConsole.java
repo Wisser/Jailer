@@ -1910,7 +1910,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         
         // load images
         try {
-            closeIcon = new ImageIcon(getClass().getResource(dir + "/Close-16-1.png"));
+            closeIcon = UIUtil.readImage(getClass().getResource(dir + "/Close-16-1.png"));
         } catch (Exception e) {
             logger.info("error", e);
         }
@@ -2454,10 +2454,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         
         // load images
         try {
-            runIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/run.png"));
-            runAllIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/runall.png"));
-            cancelIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/Cancel.png"));
-            explainIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/explain.png"));
+            runIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/run.png"));
+            runAllIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/runall.png"));
+            cancelIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/Cancel.png"));
+            explainIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/explain.png"));
         } catch (Exception e) {
             logger.info("error", e);
         }

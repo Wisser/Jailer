@@ -3348,27 +3348,27 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		// load images
 		try {
-			dropDownIcon = new ImageIcon(getClass().getResource(dir + "/dropdown.png"));
+			dropDownIcon = UIUtil.readImage(getClass().getResource(dir + "/dropdown.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			conditionEditorIcon = new ImageIcon(getClass().getResource(dir + "/edit.png"));
+			conditionEditorIcon = UIUtil.readImage(getClass().getResource(dir + "/edit.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			conditionEditorSelectedIcon = new ImageIcon(getClass().getResource(dir + "/edit_s.png"));
+			conditionEditorSelectedIcon = UIUtil.readImage(getClass().getResource(dir + "/edit_s.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			leftIconP = new ImageIcon(getClass().getResource(dir + "/leftp.png"));
+			leftIconP = UIUtil.readImage(getClass().getResource(dir + "/leftp.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			leftIcon = new ImageIcon(getClass().getResource(dir + "/left.png"));
+			leftIcon = UIUtil.readImage(getClass().getResource(dir + "/left.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

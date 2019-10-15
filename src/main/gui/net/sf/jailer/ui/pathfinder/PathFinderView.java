@@ -1341,9 +1341,9 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         
         // load images
         try {
-            cancelIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/Cancel2.png"));
-            rightIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/right.png"));
-            leftIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/left.png"));
+            cancelIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/Cancel2.png"));
+            rightIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/right.png"));
+            leftIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/left.png"));
         } catch (Exception e) {
             // ignore
         }
@@ -1363,10 +1363,10 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 		
 		// load images
 		try {
-			redDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/reddot.gif"));
-			blueDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/bluedot.gif"));
-			greenDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/greendot.gif"));
-			greyDotIcon = new ImageIcon(PathFinderView.class.getResource(dir + "/greydot.gif"));
+			redDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/reddot.gif"));
+			blueDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/bluedot.gif"));
+			greenDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/greendot.gif"));
+			greyDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/greydot.gif"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

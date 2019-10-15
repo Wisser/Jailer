@@ -292,7 +292,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	private ImageIcon scaleToLineHeight(ImageIcon imageIcon) {
 		if (imageIcon != null) {
 			double s = getLineHeight() / (double) imageIcon.getIconHeight();
-			return new ImageIcon(imageIcon.getImage().getScaledInstance((imageIcon.getIconWidth()), (int)(imageIcon.getIconHeight() * s + 0.5), Image.SCALE_SMOOTH));
+			return UIUtil.scaleIcon(imageIcon, imageIcon.getIconWidth(), (int)(imageIcon.getIconHeight() * s + 0.5));
 		}
 		return null;
 	}
@@ -1146,18 +1146,18 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	static {
 		try {
 			String dir = "/net/sf/jailer/ui/resource";
-			iconR = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsole.png"));
-		    iconBeginR = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin.png"));
-			iconBeginEndR = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend.png"));
-			iconEndR = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleend.png"));
-			iconfR = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolef.png"));
-		    iconBeginfR = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginf.png"));
-			iconBeginEndfR = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginendf.png"));
-			iconEndfR = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleendf.png"));
-			icon2R = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsole2.png"));
-		    iconBegin2R = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin2.png"));
-			iconBeginEnd2R = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend2.png"));
-			iconEnd2R = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleend2.png"));
+			iconR = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsole.png"));
+		    iconBeginR = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin.png"));
+			iconBeginEndR = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend.png"));
+			iconEndR = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsoleend.png"));
+			iconfR = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsolef.png"));
+		    iconBeginfR = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginf.png"));
+			iconBeginEndfR = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginendf.png"));
+			iconEndfR = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsoleendf.png"));
+			icon2R = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsole2.png"));
+		    iconBegin2R = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin2.png"));
+			iconBeginEnd2R = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend2.png"));
+			iconEnd2R = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/sqlconsoleend2.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

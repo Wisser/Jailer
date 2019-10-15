@@ -877,7 +877,7 @@ public class ProgressTable extends JTable {
 		
 		// load images
 		try {
-			sourceIcon = new ImageIcon(getClass().getResource(dir + "/source.png"));
+			sourceIcon = UIUtil.readImage(getClass().getResource(dir + "/source.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

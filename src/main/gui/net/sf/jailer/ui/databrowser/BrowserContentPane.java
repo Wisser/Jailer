@@ -5364,7 +5364,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		// load images
 		try {
-			conditionEditorIcon = new ImageIcon(getClass().getResource(dir + "/edit.png"));
+			conditionEditorIcon = UIUtil.readImage(getClass().getResource(dir + "/edit.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -5674,12 +5674,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		// load images
 		try {
-			dropDownIcon = new ImageIcon(getClass().getResource(dir + "/dropdown.png"));
-			relatedRowsIcon = new ImageIcon(getClass().getResource(dir + "/right.png"));
-			redDotIcon = new ImageIcon(getClass().getResource(dir + "/reddot.gif"));
-			blueDotIcon = new ImageIcon(getClass().getResource(dir + "/bluedot.gif"));
-			greenDotIcon = new ImageIcon(getClass().getResource(dir + "/greendot.gif"));
-			greyDotIcon = new ImageIcon(getClass().getResource(dir + "/greydot.gif"));
+			dropDownIcon = UIUtil.readImage(getClass().getResource(dir + "/dropdown.png"));
+			relatedRowsIcon = UIUtil.readImage(getClass().getResource(dir + "/right.png"));
+			redDotIcon = UIUtil.readImage(getClass().getResource(dir + "/reddot.gif"));
+			blueDotIcon = UIUtil.readImage(getClass().getResource(dir + "/bluedot.gif"));
+			greenDotIcon = UIUtil.readImage(getClass().getResource(dir + "/greendot.gif"));
+			greyDotIcon = UIUtil.readImage(getClass().getResource(dir + "/greydot.gif"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
