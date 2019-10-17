@@ -448,4 +448,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		jScrollPane1.getHorizontalScrollBar().setValue(jScrollPane1.getHorizontalScrollBar().getMinimum());
 	}
 
+	// TODO make blue bg more transparent
+
 }
