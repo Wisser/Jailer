@@ -78,7 +78,7 @@ public class SQLDMLBuilder {
 	public static String buildUpdate(Table table, Row row, boolean withComments, int columnToUpdate, Session session) {
 		Quoting quoting;
 		try {
-			quoting = new Quoting(session);
+			quoting = Quoting.getQuoting(session);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -162,7 +162,7 @@ public class SQLDMLBuilder {
 	public static String buildInsert(Table table, Row row, boolean withComments, Session session) {
 		Quoting quoting;
 		try {
-			quoting = new Quoting(session);
+			quoting = Quoting.getQuoting(session);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}

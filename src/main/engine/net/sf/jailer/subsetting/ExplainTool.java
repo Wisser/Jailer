@@ -41,7 +41,7 @@ package net.sf.jailer.subsetting;
 //	 */
 //	public static void explain(final EntityGraph graph, final Session session, final ExecutionContext executionContext) throws SQLException, IOException {
 //		_log.info("generating explain.log...");
-//		final Quoting quoting = new Quoting(session);
+//		final Quoting quoting = Quoting.getQuoting(session);
 //		StringBuffer succEqualsE = new StringBuffer();
 //		for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
 //			if (succEqualsE.length() > 0) {

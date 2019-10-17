@@ -193,7 +193,7 @@ public class RowIdSupport {
 		Quoting quoting;
 		result = false;
 		try {
-			quoting = new Quoting(session);
+			quoting = Quoting.getQuoting(session);
 			String schema = table.getSchema("");
 			String tableName;
 			if (schema.length() == 0) {

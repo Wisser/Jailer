@@ -189,7 +189,7 @@ public class DDLCreator {
 		}
 		String tableName = SQLDialect.CONFIG_TABLE_;
 		arguments.put("config-dml-reference", tableName);
-		String schema = workingTableSchema != null? (session == null? workingTableSchema : new Quoting(session).requote(workingTableSchema)) + "." : "";
+		String schema = workingTableSchema != null? (session == null? workingTableSchema : Quoting.getQuoting(session).requote(workingTableSchema)) + "." : "";
 		arguments.put("schema", schema);
 		arguments.put("index-schema", supportsSchemasInIndexDefinitions(session)? schema : "");
 		if (tableManager != null) {
@@ -333,7 +333,7 @@ public class DDLCreator {
 				final Map<String, String> typeReplacement = targetDBMS(session).getTypeReplacement();
 				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, targetDBMS(session), useRowId);
 				
-				final String schema = workingTableSchema == null ? "" : new Quoting(session).requote(workingTableSchema) + ".";
+				final String schema = workingTableSchema == null ? "" : Quoting.getQuoting(session).requote(workingTableSchema) + ".";
 				
 				Session.ResultSetReader reader = new Session.ResultSetReader() {
 					@Override

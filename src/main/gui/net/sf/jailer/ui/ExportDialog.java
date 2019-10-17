@@ -631,7 +631,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		List<String> result = new ArrayList<String>();
 		Quoting quoting;
 		try {
-			quoting = new Quoting(session);
+			quoting = Quoting.getQuoting(session);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return;

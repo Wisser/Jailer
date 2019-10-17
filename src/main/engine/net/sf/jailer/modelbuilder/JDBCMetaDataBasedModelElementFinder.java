@@ -162,7 +162,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session session, ExecutionContext executionContext) throws Exception {
 		Collection<Association> associations = new ArrayList<Association>();
 		DatabaseMetaData metaData = session.getMetaData();
-		Quoting quoting = new Quoting(session);
+		Quoting quoting = Quoting.getQuoting(session);
 		ResultSet resultSet;
 		String defaultSchema = getDefaultSchema(session, session.getSchema());
 		Set<Association> toRemove = new HashSet<Association>();
@@ -380,7 +380,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		
 		Set<Table> tables = new HashSet<Table>();
 		DatabaseMetaData metaData = session.getMetaData();
-		Quoting quoting = new Quoting(session);
+		Quoting quoting = Quoting.getQuoting(session);
 		ResultSet resultSet;
 		List<String> types = getTypes(executionContext);
 		resultSet = getTables(session, metaData, introspectionSchema, tableNamePattern, types.toArray(new String[0]));
@@ -693,7 +693,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 											try {
 												Session theSession = session;
 												while (theSession != null) {
-													Quoting quoting = new Quoting(theSession);
+													Quoting quoting = Quoting.getQuoting(theSession);
 													Set<Table> tables = findTables(theSession, executionContext, quoting.normalizeCase(schema), quoting.normalizeCase(name), depth + 1);
 													if (tables.size() < 1) {
 														tables = findTables(theSession, executionContext, schema, name, depth + 1);
@@ -1201,7 +1201,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	public List<Column> findColumns(Table table, Session session, ExecutionContext executionContext) throws SQLException {
 		List<Column> columns = new ArrayList<Column>();
 		DatabaseMetaData metaData = session.getMetaData();
-		Quoting quoting = new Quoting(session);
+		Quoting quoting = Quoting.getQuoting(session);
 		if (forDefaultSchema != session) {
 			forDefaultSchema = session;
 			_log.info("getting default schema...");
@@ -1378,7 +1378,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 
 	public static Column toColumn(ResultSetMetaData metaData, int i, Session session) throws SQLException {
-		Quoting quoting = new Quoting(session);
+		Quoting quoting = Quoting.getQuoting(session);
 		String colName = quoting.quote(metaData.getColumnLabel(i));
 		int type = metaData.getColumnType(i);
 		int length = 0;

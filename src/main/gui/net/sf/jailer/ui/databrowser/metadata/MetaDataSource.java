@@ -76,7 +76,7 @@ public class MetaDataSource {
 	public MetaDataSource(Session session, DataModel dataModel, String dataSourceName, ExecutionContext executionContext) throws SQLException {
 		this.session = session;
 		this.dataSourceName = dataSourceName;
-		this.quoting = new Quoting(session);
+		this.quoting = Quoting.getQuoting(session);
 		
 		initTableMapping(dataModel);
 	}

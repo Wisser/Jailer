@@ -142,7 +142,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 		this.columns = columns;
 		this.scriptFileWriter = scriptFileWriter;
 		this.currentDialect = targetDBMSConfiguration.getSqlDialect();
-		this.quoting = new Quoting(session);
+		this.quoting = Quoting.getQuoting(session);
 		this.importFilterTransformer = importFilterTransformer;
 		this.reason = reason;
 		if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {

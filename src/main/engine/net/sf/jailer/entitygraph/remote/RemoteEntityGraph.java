@@ -86,7 +86,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	protected RemoteEntityGraph(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey, Runnable updateStatistics, ExecutionContext executionContext) throws SQLException {
 		super(graphID, dataModel, executionContext);
 		this.session = session;
-		this.quoting = new Quoting(session);
+		this.quoting = Quoting.getQuoting(session);
 		this.universalPrimaryKey = universalPrimaryKey;
 		this.updateStatistics = updateStatistics;
 		this.rowIdSupport = new RowIdSupport(dataModel, session.dbms, executionContext);

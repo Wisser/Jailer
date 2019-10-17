@@ -233,7 +233,7 @@ public class RowCounter {
 	 */
 	public long countRows(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, boolean selectDistinct, long maxTime, InlineViewStyle inlineViewStyle) throws SQLException {
-		final Quoting quoting = new Quoting(session);
+		final Quoting quoting = Quoting.getQuoting(session);
 		String sql = "Select "; // + (selectDistinct? "distinct " : "");
 		if (association != null) {
 			sql += "distinct ";

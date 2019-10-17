@@ -64,6 +64,20 @@ public class Quoting {
 	private Set<String> keyWords = new HashSet<String>(); 
 
 	/**
+	 * Gets the {@link Quoting} for a given session.
+	 * 
+	 * @param session the database session
+	 */
+	public static synchronized Quoting getQuoting(Session session) throws SQLException {
+		Quoting quoting = (Quoting) session.getSessionProperty(Quoting.class, "quoting");
+		if (quoting == null) {
+			quoting = new Quoting(session);
+			session.setSessionProperty(Quoting.class, "quoting", quoting);
+		}
+		return quoting;
+	}
+
+	/**
 	 * Constructor.
 	 * 
 	 * @param session the database session

@@ -104,7 +104,7 @@ public abstract class PrimaryKeyValidator {
 			jobListToAddTo.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
-					checkUniqueness(session, table, new Quoting(session));
+					checkUniqueness(session, table, Quoting.getQuoting(session));
 					numDone.getAndIncrement();
 					updateProgressBar();
 				}
@@ -112,7 +112,7 @@ public abstract class PrimaryKeyValidator {
 			jobListToAddTo.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
-					checkNoNull(session, table, new Quoting(session));
+					checkNoNull(session, table, Quoting.getQuoting(session));
 					numDone.getAndIncrement();
 					updateProgressBar();
 				}

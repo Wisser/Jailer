@@ -280,7 +280,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	}
 
 	protected Quoting createQuoting(Session session) throws SQLException {
-		return new Quoting(session);
+		return Quoting.getQuoting(session);
 	}
 	
 	private Map<Integer, String> columnTypeFromDatamodel = new HashMap<Integer, String>();

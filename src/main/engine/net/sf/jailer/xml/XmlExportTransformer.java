@@ -135,7 +135,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		this.totalProgress = totalProgress;
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
 		this.session = session;
-		this.quoting = new Quoting(session);
+		this.quoting = Quoting.getQuoting(session);
 		this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), session.dbms, executionContext);
 	}
 

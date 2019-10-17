@@ -3545,7 +3545,7 @@ public class DataBrowser extends javax.swing.JFrame {
 								}
 								try {
 									String sql;
-									Quoting quoting = new Quoting(session);
+									Quoting quoting = Quoting.getQuoting(session);
 									MDTable mdTable = getMetaDataSource(session).toMDTable(table);
 									String tableName;
 									String schemaName;
@@ -3617,7 +3617,7 @@ public class DataBrowser extends javax.swing.JFrame {
 								String schemaName = mdTable.getSchema().isDefaultSchema? null : mdTable.getSchema().getName();
 								String tableName = mdTable.getName();
 								try {
-									Quoting quoting = new Quoting(session);
+									Quoting quoting = Quoting.getQuoting(session);
 									String sql = "Select * From " + (schemaName == null? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
 									if (!selectNavTreeNode(navigationTree.getModel().getRoot(), mdTable)
 										|| workbenchTabbedPane.getSelectedComponent() == getCurrentSQLConsole()) {

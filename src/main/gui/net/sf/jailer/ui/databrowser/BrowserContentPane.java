@@ -277,7 +277,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				boolean reconnected = reconnectIfConnectionIsInvalid(true);
 				try {
 					if (reconnected) {
-						new Quoting(session); // fail-fast
+						session.getMetaData(); // fail-fast
 					}
 					reloadRows(inputResultSet, andCond, rows, this, l + 1, selectDistinct);
 					CancellationHandler.checkForCancellation(this);
@@ -3084,7 +3084,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		try {
 			Set<String> columns = new HashSet<String>();
 			DatabaseMetaData metaData = session.getMetaData();
-			Quoting quoting = new Quoting(session);
+			Quoting quoting = Quoting.getQuoting(session);
 			String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
 			String schema = quoting.unquote(table.getOriginalSchema(defaultSchema));
 			String tableName = quoting.unquote(table.getUnqualifiedName());
@@ -3438,7 +3438,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private void reloadRows0(ResultSet inputResultSet, InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, LoadJob loadJob, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
 		String sql = "Select ";
-		final Quoting quoting = new Quoting(session);
+		final Quoting quoting = Quoting.getQuoting(session);
 		final Set<String> pkColumnNames = new HashSet<String>();
 		final Set<String> parentPkColumnNames = new HashSet<String>();
 		final boolean selectParentPK = association != null && parentRows != null && parentRows.size() > 1;

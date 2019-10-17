@@ -157,7 +157,7 @@ public class SQLDialect {
 		if (temporaryTableScope != WorkingTableScope.LOCAL_DATABASE) {
 			String schema = executionContext.getWorkingTableSchema();
 			if (schema != null) {
-				tableRef = new Quoting(session).requote(schema) + "." + tableRef;
+				tableRef = Quoting.getQuoting(session).requote(schema) + "." + tableRef;
 			}
 		}
 		return tableRef;

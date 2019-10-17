@@ -79,7 +79,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			upsertStrategies.add(new UpsertPGUS());
 			upsertStrategies.add(new UpsertStandardUS());
 		}
-		quoting = new Quoting(session);
+		quoting = Quoting.getQuoting(session);
 	}
 
 	private Quoting quoting = null;

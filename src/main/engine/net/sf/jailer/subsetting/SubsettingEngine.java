@@ -607,7 +607,7 @@ public class SubsettingEngine {
 			DBMS sourceConfig = session.dbms;
 			DBMS targetConfig = targetDBMSConfiguration(entityGraph.getTargetSession());
 			Quoting targetQuoting;
-			targetQuoting = new Quoting(session);
+			targetQuoting = Quoting.getQuoting(session);
 			if (sourceConfig != targetConfig) {
 				targetQuoting.setIdentifierQuoteString(targetConfig.getIdentifierQuoteString());
 			}

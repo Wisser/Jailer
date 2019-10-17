@@ -102,7 +102,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
      */
     public void reset(Session session, SOURCE metaDataSource) throws SQLException {
         this.metaDataSource = metaDataSource;
-        this.llQuoting = session == null? null : new Quoting(session);
+        this.llQuoting = session == null? null : Quoting.getQuoting(session);
     }
     
     /**
@@ -160,7 +160,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     private Quoting getQuoting() {
     	if (llQuoting == null) {
     		try {
-				llQuoting = session == null? null : new Quoting(session);
+				llQuoting = session == null? null : Quoting.getQuoting(session);
 			} catch (SQLException e) {
 				// ignore
 			}
