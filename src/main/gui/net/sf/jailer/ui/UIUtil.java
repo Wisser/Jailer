@@ -1185,8 +1185,10 @@ public class UIUtil {
     	UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				setPopupActive(true);
-				popup.show(invoker, x, y);
+				if (invoker.isShowing()) {
+					setPopupActive(true);
+					popup.show(invoker, x, y);
+				}
 			}
 		});
 	}
