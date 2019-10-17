@@ -170,7 +170,11 @@ public class AutoCompletion extends PlainDocument {
 		}
 		setText(item.toString());
 		// select the completed part
-		highlightCompletedText(offs + str.length());
+		try {
+			highlightCompletedText(offs + str.length());
+		} catch (Exception e) {
+			// ignore
+		}
 	}
 
 	private void setText(String text) {
