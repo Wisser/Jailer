@@ -1,3 +1,6 @@
+9.1.2
+  - Fetching results from PostgreSQL is now based on a cursor. This prevents out-of-memory errors with large amounts of data.
+
 9.1.1
   - Performance improvements.
   - The animation of the data model view in the desktop did not work.

@@ -4602,9 +4602,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         singleRowViewScrollPane = new javax.swing.JScrollPane();
         singleRowViewScrollContentPanel = new javax.swing.JPanel();
         singleRowViewContainterPanel = new javax.swing.JPanel();
+        jPanel12 = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
-        jPanel12 = new javax.swing.JPanel();
         deselectButton = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         jLabel10 = new javax.swing.JLabel();
@@ -4895,6 +4895,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         singleRowViewScrollContentPanel.add(singleRowViewContainterPanel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.weighty = 1.0;
+        singleRowViewScrollContentPanel.add(jPanel12, gridBagConstraints);
+
+        singleRowViewScrollPane.setViewportView(singleRowViewScrollContentPanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        singleRowViewScrollPaneContainer.add(singleRowViewScrollPane, gridBagConstraints);
 
         jPanel11.setBackground(new java.awt.Color(228, 228, 232));
         jPanel11.setLayout(new java.awt.GridBagLayout());
@@ -4916,12 +4932,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        singleRowViewScrollContentPanel.add(jPanel11, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.weighty = 1.0;
-        singleRowViewScrollContentPanel.add(jPanel12, gridBagConstraints);
+        singleRowViewScrollPaneContainer.add(jPanel11, gridBagConstraints);
 
         deselectButton.setText("Deselect Row");
         deselectButton.addActionListener(new java.awt.event.ActionListener() {
@@ -4933,17 +4944,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        singleRowViewScrollContentPanel.add(deselectButton, gridBagConstraints);
-
-        singleRowViewScrollPane.setViewportView(singleRowViewScrollContentPanel);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        singleRowViewScrollPaneContainer.add(singleRowViewScrollPane, gridBagConstraints);
+        singleRowViewScrollPaneContainer.add(deselectButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

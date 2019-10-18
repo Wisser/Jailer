@@ -151,8 +151,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private final Font italic = new Font(font.getName(), font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize()); 
 	private final Color BG1 = new Color(255, 255, 255);
 	private final Color BG2 = new Color(242, 255, 242);
-	private final Color BG3 = new Color(196, 234, 255);
-	private final Color BG3_2 = new Color(184, 226, 255);
+	private final Color BG3 = blend(new Color(196, 234, 255), BG1);
+	private final Color BG3_2 = blend(new Color(184, 226, 255), BG2);
 	private final Color FG1 = new Color(155, 0, 0);
 	private List<JLabel> labels = new ArrayList<JLabel>();
 	private List<Color> labelColors = new ArrayList<Color>();
@@ -161,6 +161,14 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		jScrollPane1.setBorder(BorderFactory.createEtchedBorder(color, Color.GRAY));
 	}
 	
+	private Color blend(Color a, Color b) {
+		final double f = 0.6;
+		return new Color(
+				(int)(a.getRed() * f + b.getRed() * (1 - f)),
+				(int)(a.getGreen() * f + b.getGreen() * (1 - f)),
+				(int)(a.getBlue() * f + b.getBlue() * (1 - f)));
+	}
+
 	private int currentRow;
 	private boolean sortColumns;
 	private JPanel content;
@@ -447,7 +455,5 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		jScrollPane1.getVerticalScrollBar().setValue(jScrollPane1.getVerticalScrollBar().getMinimum());					
 		jScrollPane1.getHorizontalScrollBar().setValue(jScrollPane1.getHorizontalScrollBar().getMinimum());
 	}
-
-	// TODO make blue bg more transparent
 
 }
