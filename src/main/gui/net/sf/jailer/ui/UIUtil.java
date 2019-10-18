@@ -1498,7 +1498,7 @@ public class UIUtil {
 		if (result == null) {
 			try {
 				result = new ImageIcon(ImageIO.read(UIUtil.class.getResource("/net/sf/jailer/ui/resource" + resource)));
-			} catch (IOException e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 				result = null;
 			}
