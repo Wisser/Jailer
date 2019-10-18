@@ -529,7 +529,7 @@ public class LocalEntityGraph extends EntityGraph {
 							rc[0] += localSession.executeUpdate(insert);
 							totalRowcount += rc[0];
 						}
-					});
+					}, withExplicitCommit());
 					
 				}
 			});
@@ -568,7 +568,7 @@ public class LocalEntityGraph extends EntityGraph {
 				rc[0] += localSession.executeUpdate(insert);
 				totalRowcount += rc[0];
 			}
-		});
+		}, withExplicitCommit());
 		
 		return rc[0];
 	}
@@ -630,7 +630,7 @@ public class LocalEntityGraph extends EntityGraph {
 						
 							totalRowcount += localSession.executeUpdate(insert);
 					}
-				});
+				}, withExplicitCommit());
 			}
 		});
 	}
@@ -883,9 +883,9 @@ public class LocalEntityGraph extends EntityGraph {
 				if (orderByPK) {
 					String sqlQueryWithOrderBy = sqlQuery +
 						" order by " + rowIdSupport.getPrimaryKey(table).columnList("T.", quoting);
-					lrc = remoteSession.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0);
+					lrc = remoteSession.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0, withExplicitCommit());
 				} else {
-					lrc = remoteSession.executeQuery(sqlQuery, reader);
+					lrc = remoteSession.executeQuery(sqlQuery, reader, withExplicitCommit());
 				}
 				rc[0] += lrc;
 				if (fireProgressEvents) {
@@ -932,7 +932,7 @@ public class LocalEntityGraph extends EntityGraph {
 			protected void process(String inlineView) throws SQLException {
 				String sqlQuery = "Select distinct " + columnList + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
 						pkEqualsEntityID(table, "T", "E", "", false);
-				rc[0] += remoteSession.executeQuery(sqlQuery, reader);
+				rc[0] += remoteSession.executeQuery(sqlQuery, reader, withExplicitCommit());
 			}
 		});
 		return rc[0];
@@ -1177,7 +1177,7 @@ public class LocalEntityGraph extends EntityGraph {
 								localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY_SET_ELEMENT, localSession) + " where set_id=" + setId + "");
 							}
 						}
-					});
+					}, withExplicitCommit());
 				}
 			});
 			return rc[0];
@@ -1225,7 +1225,7 @@ public class LocalEntityGraph extends EntityGraph {
 					select = "Select " + selectionSchema + " from " + quoting.requote(table.getName()) + " T join " + inlineView + " on " +
 						 pkEqualsEntityID(table, "T", "D", "TO_", false) + "";
 				}
-				long rc = remoteSession.executeQuery(select, reader);
+				long rc = remoteSession.executeQuery(select, reader, withExplicitCommit());
 				executionContext.getProgressListenerRegistry().fireExported(table, rc);
 				addExportedCount(rc);
 			}
@@ -1518,4 +1518,7 @@ public class LocalEntityGraph extends EntityGraph {
 		return remoteSession;
 	}
 
+	private boolean withExplicitCommit() {
+		return DBMS.POSTGRESQL.equals(remoteSession.dbms);
+	}
 }
