@@ -49,7 +49,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -76,7 +75,6 @@ import org.fife.rsta.ui.EscapableDialog;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
-import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 
 /**
@@ -886,9 +884,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		
 		// load images
 		try {
-			// ImageIO.read TODO
-			icon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/search.png"));
-			icon2 = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/search2.png"));
+			icon = UIUtil.readImage(StringSearchPanel.class.getResource(dir + "/search.png"));
+			icon2 = UIUtil.readImage(StringSearchPanel.class.getResource(dir + "/search2.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
