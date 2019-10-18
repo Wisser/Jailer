@@ -39,7 +39,6 @@ import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -2322,24 +2321,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private Icon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-		
 		// load images
-		try {
-			loadIcon = UIUtil.readImage(getClass().getResource(dir + "/load.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			conditionEditorIcon = UIUtil.readImage(getClass().getResource(dir + "/edit.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			conditionEditorSelectedIcon = UIUtil.readImage(getClass().getResource(dir + "/edit_s.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		loadIcon = UIUtil.readImage("/load.png");
+		conditionEditorIcon = UIUtil.readImage("/edit.png");
+		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
 	}
 
 }

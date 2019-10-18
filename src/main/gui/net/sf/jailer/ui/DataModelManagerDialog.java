@@ -172,13 +172,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 
 		try {
-			ImageIcon imageIcon = UIUtil.readImage(getClass().getResource("/net/sf/jailer/ui/resource/jailerlight.png"));
+			ImageIcon imageIcon = UIUtil.readImage("/jailerlight.png");
 			setIconImage(imageIcon.getImage());
 		} catch (Throwable t) {
 		}
 
 		try {
-			ImageIcon imageIcon = UIUtil.readImage(getClass().getResource("/net/sf/jailer/ui/resource/jailer.png"));
+			ImageIcon imageIcon = UIUtil.readImage("/jailer.png");
 			infoBar.setIcon(imageIcon);
 			infoBarJM.setIcon(imageIcon);
 			infoBarConnection.setIcon(imageIcon);
@@ -187,7 +187,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			infoBarRecUsedBookmark.setIcon(imageIcon);
 		} catch (Throwable t) {
 			try {
-				ImageIcon imageIcon = UIUtil.readImage(getClass().getResource("/net/sf/jailer/ui/resource/jailer.gif"));
+				ImageIcon imageIcon = UIUtil.readImage("jailer.gif");
 				infoBar.setIcon(imageIcon);
 				infoBarConnection.setIcon(imageIcon);
 				infoBarRecUsedConnection.setIcon(imageIcon);

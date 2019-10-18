@@ -25,7 +25,6 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -540,10 +539,10 @@ public class DataBrowser extends javax.swing.JFrame {
         }
 
         try {
-            setIconImage((jailerIcon = UIUtil.readImage(getClass().getResource("/net/sf/jailer/ui/resource/jailerlight.png"))).getImage());
+            setIconImage((jailerIcon = UIUtil.readImage("/jailerlight.png")).getImage());
         } catch (Throwable t) {
             try {
-                setIconImage((jailerIcon = UIUtil.readImage(getClass().getResource("/net/sf/jailer/ui/resource/jailer.gif"))).getImage());
+                setIconImage((jailerIcon = UIUtil.readImage("/jailer.gif")).getImage());
             } catch (Throwable t2) {
             }
         }
@@ -2977,7 +2976,10 @@ public class DataBrowser extends javax.swing.JFrame {
 
         @Override
         public boolean equals(Object other) {
-            if (other instanceof BrowserAssociationModel) {
+        	if (other == null) {
+        		return false;
+        	}
+            if (other.getClass().equals(getClass())) {
                 BrowserAssociationModel otherModel = (BrowserAssociationModel) other;
                 return rowBrowser == otherModel.rowBrowser && association == otherModel.association;
             }
@@ -4174,22 +4176,16 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon navigationIcon;
 	private ImageIcon desktopIcon;
 	{
-        String dir = "/net/sf/jailer/ui/resource";
-        
         // load images
-        try {
-            tableIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/table.png"));
-            databaseIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/database.png"));
-            redIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage(DataBrowser.class.getResource(dir + "/reddot.gif")));
-            blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage(DataBrowser.class.getResource(dir + "/bluedot.gif")));
-            greenIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage(DataBrowser.class.getResource(dir + "/greendot.gif")));
-            closeIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/Close-16-1.png"));
-            sqlConsoleIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/runall.png"));
-            desktopIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/tables.png"));
-            addSqlConsoleIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/add.png"));
-            navigationIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/navigation.png"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        tableIcon = UIUtil.readImage("/table.png");
+        databaseIcon = UIUtil.readImage("/database.png");
+        redIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reddot.gif"));
+        blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
+        greenIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/greendot.gif"));
+        closeIcon = UIUtil.readImage("/Close-16-1.png");
+        sqlConsoleIcon = UIUtil.readImage("/runall.png");
+        desktopIcon = UIUtil.readImage("/tables.png");
+        addSqlConsoleIcon = UIUtil.readImage("/add.png");
+        navigationIcon = UIUtil.readImage("/navigation.png");
     }
 }

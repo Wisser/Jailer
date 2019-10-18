@@ -650,7 +650,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		long rc;
 		if (orderByPK) {
 			String sqlQueryWithOrderBy = sqlQuery +
-				(orderByPK? " order by " + rowIdSupport.getPrimaryKey(table).columnList("T.", quoting) : "");
+				" order by " + rowIdSupport.getPrimaryKey(table).columnList("T.", quoting);
 			rc = session.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0, withExplicitCommit());
 		} else {
 			rc = session.executeQuery(sqlQuery, reader, withExplicitCommit());

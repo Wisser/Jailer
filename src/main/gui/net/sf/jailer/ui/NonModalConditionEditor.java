@@ -40,7 +40,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -579,14 +578,8 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	
 	private Icon dropDownIcon;
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-		
 		// load images
-		try {
-			dropDownIcon = UIUtil.readImage(getClass().getResource(dir + "/dropdown.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		dropDownIcon = UIUtil.readImage("/dropdown.png");
 	}
 
 	public RSyntaxTextAreaWithSQLSyntaxStyle editorPane;

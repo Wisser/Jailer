@@ -18,7 +18,6 @@ package net.sf.jailer.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ComponentEvent;
@@ -1288,14 +1287,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private static ImageIcon warnIcon;
     private static ImageIcon scaledWarnIcon;
     static {
-        String dir = "/net/sf/jailer/ui/resource";
-        
         // load images
-        try {
-            warnIcon = UIUtil.readImage(DbConnectionDialog.class.getResource(dir + "/wanr.png"));
- 	    } catch (Exception e) {
-	    	logger.info("error", e);
-	        e.printStackTrace();
-	    }
+    	warnIcon = UIUtil.readImage("/wanr.png");
 	}
 }

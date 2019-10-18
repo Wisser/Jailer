@@ -47,7 +47,6 @@ import java.util.regex.Pattern;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -2124,19 +2123,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	private Icon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-		
 		// load images
-		try {
-			conditionEditorIcon = UIUtil.readImage(getClass().getResource(dir + "/edit.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			conditionEditorSelectedIcon = UIUtil.readImage(getClass().getResource(dir + "/edit_s.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		conditionEditorIcon = UIUtil.readImage("/edit.png");
+		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
 	}
 
 	private static final long serialVersionUID = 7869830170667759018L;

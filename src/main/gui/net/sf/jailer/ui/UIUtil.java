@@ -87,7 +87,6 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import jdk.nashorn.internal.runtime.Context.ThrowErrorManager;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.JailerVersion;
@@ -1040,7 +1039,7 @@ public class UIUtil {
 		return null;
 	}
 
-	public static ImageIcon scaleIcon(ImageIcon icon, int w, int h) {
+	public static synchronized ImageIcon scaleIcon(ImageIcon icon, int w, int h) {
 		if (icon != null) {
 			try {
 				Image scaled = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
@@ -1492,12 +1491,17 @@ public class UIUtil {
 				removeSingleLineComments(text).replaceAll("\\s*\\n\\s*", " "));
 	}
 
-	private static Map<URL, ImageIcon> images = new HashMap<URL, ImageIcon>();
+	private static Map<String, ImageIcon> images = new HashMap<String, ImageIcon>();
 	
-	public static ImageIcon readImage(URL resource) throws IOException {
+	public static ImageIcon readImage(String resource) {
 		ImageIcon result = images.get(resource);
 		if (result == null) {
-			result = new ImageIcon(ImageIO.read(resource));
+			try {
+				result = new ImageIcon(ImageIO.read(UIUtil.class.getResource("/net/sf/jailer/ui/resource" + resource)));
+			} catch (IOException e) {
+				e.printStackTrace();
+				result = null;
+			}
 			images.put(resource, result);
 		}
 		return result;

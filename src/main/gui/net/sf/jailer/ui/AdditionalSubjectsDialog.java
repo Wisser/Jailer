@@ -559,18 +559,8 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	private boolean ok;
 
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-
 		// load image
-		try {
-			conditionEditorSelectedIcon = UIUtil.readImage(getClass().getResource(dir + "/edit_s.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			conditionEditorIcon = UIUtil.readImage(getClass().getResource(dir + "/edit.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
+		conditionEditorIcon = UIUtil.readImage("/edit.png");
 	}
 }

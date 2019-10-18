@@ -83,7 +83,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 	protected int m_maxTextWidth = -1;
 	
 	/** Transform used to scale and position images */
-	AffineTransform m_transform = new AffineTransform();
+	AffineTransform transform = new AffineTransform();
 	
 	/** The holder for the currently computed bounding box */
 	protected RectangularShape m_bbox  = new Rectangle2D.Double();
@@ -546,8 +546,8 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 				break;
 			}
 			
-			m_transform.setTransform(size * imgScale(i),0,0,size * imgScale(i),ix,iy);
-			g.drawImage(i, m_transform, null);
+			transform.setTransform(size * imgScale(i),0,0,size * imgScale(i),ix,iy);
+			g.drawImage(i, transform, null);
 			
 			if (i == collapsedImage || i == collapsedRedImage) {
 				g.setFont(m_font3);
@@ -621,8 +621,8 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 					b = line.substring(tab + 1);
 					if (a.startsWith("!")) {
 						if (filterImage != null) {
-							m_transform.setTransform(size * imgScale(filterImage) * 0.6, 0, 0, size * imgScale(filterImage) * 0.6, x - filterImage.getWidth(null) * imgScale(filterImage) * 0.9, y - lh * 0.75);
-							g.drawImage(filterImage, m_transform, null);
+							transform.setTransform(size * imgScale(filterImage) * 0.6, 0, 0, size * imgScale(filterImage) * 0.6, x - filterImage.getWidth(null) * imgScale(filterImage) * 0.9, y - lh * 0.75);
+							g.drawImage(filterImage, transform, null);
 						}
 						a = a.substring(1);
 					}
@@ -1202,39 +1202,13 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 	private Image subjectImage = null;
 	private Image filterImage = null;
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-		
 		// load images
-		try {
-			excludeFromDeletionImage = UIUtil.readImage(getClass().getResource(dir + "/database-lock.png")).getImage();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			collapsedImage = UIUtil.readImage(getClass().getResource(dir + "/collapsed.png")).getImage();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			collapsedRedImage = UIUtil.readImage(getClass().getResource(dir + "/collapsedred.png")).getImage();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			upsertImage = UIUtil.readImage(getClass().getResource(dir + "/upsert.png")).getImage();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			subjectImage = UIUtil.readImage(getClass().getResource(dir + "/subject.png")).getImage();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			filterImage = UIUtil.readImage(getClass().getResource(dir + "/filter.png")).getImage();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		excludeFromDeletionImage = UIUtil.readImage("/database-lock.png").getImage();
+		collapsedImage = UIUtil.readImage("/collapsed.png").getImage();
+		collapsedRedImage = UIUtil.readImage("/collapsedred.png").getImage();
+		upsertImage = UIUtil.readImage("/upsert.png").getImage();
+		subjectImage = UIUtil.readImage("/subject.png").getImage();
+		filterImage = UIUtil.readImage("/filter.png").getImage();
 	}
 	
 }

@@ -116,7 +116,6 @@ import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
-import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.metadata.ResultSetRenderer;
@@ -1906,14 +1905,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     private Icon closeIcon;
     {
-        String dir = "/net/sf/jailer/ui/resource";
-        
         // load images
-        try {
-            closeIcon = UIUtil.readImage(getClass().getResource(dir + "/Close-16-1.png"));
-        } catch (Exception e) {
-            logger.info("error", e);
-        }
+    	closeIcon = UIUtil.readImage("/Close-16-1.png");
     }
 
     /**
@@ -2450,17 +2443,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private int nextPlanID = 0;
     
     static {
-        String dir = "/net/sf/jailer/ui/resource";
-        
         // load images
-        try {
-            runIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/run.png"));
-            runAllIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/runall.png"));
-            cancelIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/Cancel.png"));
-            explainIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/explain.png"));
-        } catch (Exception e) {
-            logger.info("error", e);
-        }
+        runIcon = UIUtil.readImage("/run.png");
+        runAllIcon = UIUtil.readImage("/runall.png");
+        cancelIcon = UIUtil.readImage("/Cancel.png");
+        explainIcon = UIUtil.readImage("/explain.png");
     }
 
 }

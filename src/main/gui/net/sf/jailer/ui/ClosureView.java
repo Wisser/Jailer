@@ -1084,9 +1084,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		boolean limitExceeded = false;
 		final Table st = getSelectedTable();
 		boolean unlimited = noAssocLimitTableName != null && st != null && noAssocLimitTableName.equals(st.getName());
-		Color bgColor = Color.WHITE;
 		for (List<String> assocList: associationClosure) {
 			boolean firstTime = true;
+			Color bgColor;
 			if (distance % 2 == 0) {
 				bgColor = new java.awt.Color(240, 255, 255);
 			} else {

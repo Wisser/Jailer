@@ -880,14 +880,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
     static private ImageIcon icon;
     static private ImageIcon icon2;
     static {
-		String dir = "/net/sf/jailer/ui/resource";
-		
 		// load images
-		try {
-			icon = UIUtil.readImage(StringSearchPanel.class.getResource(dir + "/search.png"));
-			icon2 = UIUtil.readImage(StringSearchPanel.class.getResource(dir + "/search2.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		icon = UIUtil.readImage("/search.png");
+		icon2 = UIUtil.readImage("/search2.png");
 	}
 }

@@ -51,7 +51,6 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.pathfinder.PathFinderView;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
@@ -541,17 +540,11 @@ public class ConditionEditor extends EscapableDialog {
 	private static ImageIcon blueDotIcon;
 	private static ImageIcon greenDotIcon;
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-		
 		// load images
-		try {
-			dropDownIcon = UIUtil.readImage(getClass().getResource(dir + "/dropdown.png"));
-			redDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/reddot.gif"));
-			blueDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/bluedot.gif"));
-			greenDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/greendot.gif"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		dropDownIcon = UIUtil.readImage("/dropdown.png");
+		redDotIcon = UIUtil.readImage("/reddot.gif");
+		blueDotIcon = UIUtil.readImage("/bluedot.gif");
+		greenDotIcon = UIUtil.readImage("/greendot.gif");
 	}
 	
 	public final RSyntaxTextAreaWithSQLSyntaxStyle editorPane;

@@ -44,7 +44,6 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -2144,10 +2143,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		boolean isHorizonal = false;
 		ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal, connectionDialog, executionContext);
 		try {
-			extractionModelFrame.setIconImage(UIUtil.readImage(extractionModelFrame.getClass().getResource("/net/sf/jailer/ui/resource/jailerlight.png")).getImage());
+			extractionModelFrame.setIconImage(UIUtil.readImage("/jailerlight.png").getImage());
 		} catch (Throwable t) {
 			try {
-				extractionModelFrame.setIconImage(UIUtil.readImage(extractionModelFrame.getClass().getResource("/net/sf/jailer/ui/resource/jailer.gif")).getImage());
+				extractionModelFrame.setIconImage(UIUtil.readImage("/jailer.gif").getImage());
 			} catch (Throwable t2) {
 			}
 		}

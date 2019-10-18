@@ -594,10 +594,26 @@ public class Base64
 		}   // end catch
 		finally
 		{
-			try{ oos.close();   } catch( Exception e ){}
-			try{ gzos.close();  } catch( Exception e ){}
-			try{ b64os.close(); } catch( Exception e ){}
-			try{ baos.close();  } catch( Exception e ){}
+			try {
+				oos.close();
+			} catch (Exception e) {
+				// ignore
+			}
+			try {
+				gzos.close();
+			} catch (Exception e) {
+				// ignore
+			}
+			try {
+				b64os.close();
+			} catch (Exception e) {
+				// ignore
+			}
+			try {
+				baos.close();
+			} catch (Exception e) {
+				// ignore
+			}
 		}   // end finally
 		
 		// Return value according to relevant encoding.
@@ -724,9 +740,21 @@ public class Base64
 			}   // end catch
 			finally
 			{
-				try{ gzos.close();  } catch( Exception e ){}
-				try{ b64os.close(); } catch( Exception e ){}
-				try{ baos.close();  } catch( Exception e ){}
+				try {
+					gzos.close();
+				} catch (Exception e) {
+					// ignore
+				}
+				try {
+					b64os.close();
+				} catch (Exception e) {
+					// ignore
+				}
+				try {
+					baos.close();
+				} catch (Exception e) {
+					// ignore
+				}
 			}   // end finally
 
 			// Return value according to relevant encoding.
@@ -1023,9 +1051,21 @@ public class Base64
 				}   // end catch
 				finally
 				{
-					try{ baos.close(); } catch( Exception e ){}
-					try{ gzis.close(); } catch( Exception e ){}
-					try{ bais.close(); } catch( Exception e ){}
+					try {
+						baos.close();
+					} catch (Exception e) {
+						// ignore
+					}
+					try {
+						gzis.close();
+					} catch (Exception e) {
+						// ignore
+					}
+					try {
+						bais.close();
+					} catch (Exception e) {
+						// ignore
+					}
 				}   // end finally
 
 			}   // end if: gzipped
@@ -1285,8 +1325,16 @@ public class Base64
 		} catch( java.io.IOException exc ){
 			exc.printStackTrace();
 		} finally{
-			try{ in.close();  } catch( Exception exc ){}
-			try{ out.close(); } catch( Exception exc ){}
+			try {
+				in.close();
+			} catch (Exception exc) {
+				// ignore
+			}
+			try {
+				out.close();
+			} catch (Exception exc) {
+				// ignore
+			}
 		}   // end finally
 		
 		return success;
@@ -1322,8 +1370,16 @@ public class Base64
 		} catch( java.io.IOException exc ){
 			exc.printStackTrace();
 		} finally{
-			try{ in.close();  } catch( Exception exc ){}
-			try{ out.close(); } catch( Exception exc ){}
+			try {
+				in.close();
+			} catch (Exception exc) {
+				// ignore
+			}
+			try {
+				out.close();
+			} catch (Exception exc) {
+				// ignore
+			}
 		}   // end finally
 		
 		return success;

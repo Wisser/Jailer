@@ -873,14 +873,8 @@ public class ProgressTable extends JTable {
 
 	private static ImageIcon sourceIcon;
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-		
 		// load images
-		try {
-			sourceIcon = UIUtil.readImage(getClass().getResource(dir + "/source.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		sourceIcon = UIUtil.readImage("/source.png");
 	}
 
 	private static final long serialVersionUID = -6284876860992859979L;

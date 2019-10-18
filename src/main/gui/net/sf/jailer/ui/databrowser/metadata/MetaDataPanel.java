@@ -1905,23 +1905,16 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         return null;
     }
     static {
-        String dir = "/net/sf/jailer/ui/resource";
-        
         // load images
-        try {
-            warnIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/wanr.png"));
-            viewIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/view.png"));
-            synonymIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/synonym.png"));
-            synonymsIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/synonyms.png"));
-            viewsIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/views.png"));
-            tablesIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/tables.png"));
-            tableIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/table.png"));
-            databaseIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/database.png"));
-            schemaIcon = UIUtil.readImage(MetaDataPanel.class.getResource(dir + "/schema.png"));
-        } catch (Exception e) {
-        	logger.info("error", e);
-            e.printStackTrace();
-        }
+        warnIcon = UIUtil.readImage("/wanr.png");
+        viewIcon = UIUtil.readImage("/view.png");
+        synonymIcon = UIUtil.readImage("/synonym.png");
+        synonymsIcon = UIUtil.readImage("/synonyms.png");
+        viewsIcon = UIUtil.readImage("/views.png");
+        tablesIcon = UIUtil.readImage("/tables.png");
+        tableIcon = UIUtil.readImage("/table.png");
+        databaseIcon = UIUtil.readImage("/database.png");
+        schemaIcon = UIUtil.readImage("/schema.png");
     }
 
 }

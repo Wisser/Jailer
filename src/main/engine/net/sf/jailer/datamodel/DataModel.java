@@ -474,7 +474,8 @@ public class DataModel {
 						}
 						try {
 							columns.add(Column.parse(newName, col));
-						} catch (Exception e) {
+						} catch (Throwable e) {
+							e.printStackTrace();
 							// ignore
 						}
 					}

@@ -1337,16 +1337,10 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	private static final Color COLOR_NOT_IN_CLOSURE = new Color(255, 80, 80);
 
 	static {
-        String dir = "/net/sf/jailer/ui/resource";
-        
         // load images
-        try {
-            cancelIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/Cancel2.png"));
-            rightIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/right.png"));
-            leftIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/left.png"));
-        } catch (Exception e) {
-            // ignore
-        }
+        cancelIcon = UIUtil.readImage("/Cancel2.png");
+        rightIcon = UIUtil.readImage("/right.png");
+        leftIcon = UIUtil.readImage("/left.png");
     }
 
 	private ImageIcon redDotIconScaled;
@@ -1359,17 +1353,11 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 	private static ImageIcon greenDotIcon;
 	private static ImageIcon greyDotIcon;
 	static {
-		String dir = "/net/sf/jailer/ui/resource";
-		
 		// load images
-		try {
-			redDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/reddot.gif"));
-			blueDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/bluedot.gif"));
-			greenDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/greendot.gif"));
-			greyDotIcon = UIUtil.readImage(PathFinderView.class.getResource(dir + "/greydot.gif"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		redDotIcon = UIUtil.readImage("/reddot.gif");
+		blueDotIcon = UIUtil.readImage("/bluedot.gif");
+		greenDotIcon = UIUtil.readImage("/greendot.gif");
+		greyDotIcon = UIUtil.readImage("/greydot.gif");
 	}
 
     private static final long serialVersionUID = 1L;

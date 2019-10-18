@@ -19,7 +19,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -551,7 +550,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 			if (y == 0) {
 				label = new javax.swing.JLabel();
-				label.setText(y == 0 ? " From  " : " Join  ");
+				label.setText(" From  ");
 				label.setFont(nonBoldFont);
 
 				relationshipsPanel.add(label, gridBagConstraints);
@@ -1465,19 +1464,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	private ImageIcon joinImage = null;
 	private ImageIcon minusImage = null;
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-
 		// load image
-		try {
-			joinImage = UIUtil.scaleIcon(UIUtil.readImage(getClass().getResource(dir + "/collapsed.png")), 22, 18);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			minusImage = UIUtil.scaleIcon(UIUtil.readImage(getClass().getResource(dir + "/minus.png")), 22, 18);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		joinImage = UIUtil.scaleIcon(UIUtil.readImage("/collapsed.png"), 22, 18);
+		minusImage = UIUtil.scaleIcon(UIUtil.readImage("/minus.png"), 22, 18);
 	}
 
 	private static final long serialVersionUID = -2801831496446636545L;

@@ -58,7 +58,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -681,7 +680,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		initRestrictionEditor(null, null);
 		if (extractionModel.subject != null) {
 			subjectTable.setSelectedItem(null);
-			subjectTable.setSelectedItem(dataModel.getDisplayName(extractionModel.subject));
+			if (dataModel != null) {
+				subjectTable.setSelectedItem(dataModel.getDisplayName(extractionModel.subject));
+			}
 		}
 		String cond = extractionModel.getCondition();
 		if (cond.equals("1=1")) {
@@ -713,9 +714,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		extractionModelFrame.updateTitle(needsSave);
 		
 		try {
-			ScriptFormat f = ScriptFormat.valueOf(dataModel.getExportModus());
-			if (f != null) {
-				scriptFormat = f;
+			if (dataModel != null) {
+				ScriptFormat f = ScriptFormat.valueOf(dataModel.getExportModus());
+				if (f != null) {
+					scriptFormat = f;
+				}
 			}
 		} catch (Exception e) {
 			// ignore
@@ -742,14 +745,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		connectivityState.setText(connectionState);
 		connectivityState.setToolTipText(connectionStateToolTip);
 		
-		String modelname = "Data Model \"" + dataModel.getName() + "\"";
-		String lastMod = dataModel.getLastModifiedAsString();
-		if (lastMod.length() > 0) {
-			lastMod = " (" + lastMod + ")";
+		if (dataModel != null) {
+			String modelname = "Data Model \"" + dataModel.getName() + "\"";
+			String lastMod = dataModel.getLastModifiedAsString();
+			if (lastMod.length() > 0) {
+				lastMod = " (" + lastMod + ")";
+			}
+			modelName.setText(modelname);
+			modelName.setToolTipText(modelname + lastMod);
 		}
-		modelName.setText(modelname);
-		modelName.setToolTipText(modelname + lastMod);
-		
+
 		String modelpath = executionContext.getQualifiedDatamodelFolder();
 		try {
 			modelpath = new File(modelpath).getAbsolutePath();
@@ -3344,34 +3349,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private Icon leftIcon;
 	private Icon leftIconP;
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-		
 		// load images
-		try {
-			dropDownIcon = UIUtil.readImage(getClass().getResource(dir + "/dropdown.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			conditionEditorIcon = UIUtil.readImage(getClass().getResource(dir + "/edit.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			conditionEditorSelectedIcon = UIUtil.readImage(getClass().getResource(dir + "/edit_s.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			leftIconP = UIUtil.readImage(getClass().getResource(dir + "/leftp.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			leftIcon = UIUtil.readImage(getClass().getResource(dir + "/left.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		dropDownIcon = UIUtil.readImage("/dropdown.png");
+		conditionEditorIcon = UIUtil.readImage("/edit.png");
+		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
+		leftIconP = UIUtil.readImage("/leftp.png");
+		leftIcon = UIUtil.readImage("/left.png");
 	}
 
 	private static final long serialVersionUID = -5640822484296649670L;

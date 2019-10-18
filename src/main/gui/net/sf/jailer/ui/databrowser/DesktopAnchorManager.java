@@ -259,14 +259,8 @@ public abstract class DesktopAnchorManager {
 
 	private ImageIcon anchorIcon;
 	{
-        String dir = "/net/sf/jailer/ui/resource";
-        
         // load images
-        try {
-            anchorIcon = UIUtil.readImage(DataBrowser.class.getResource(dir + "/anchor.png"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+		anchorIcon = UIUtil.readImage("/anchor.png");
     }
 
 }

@@ -337,18 +337,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					} else {
 						Set<String> prevIDs = new TreeSet<String>();
 						long prevHash = 0;
-						if (BrowserContentPane.this.rows != null) {
-							for (Row r: BrowserContentPane.this.rows) {
-								prevIDs.add(r.nonEmptyRowId);
-								try {
-									for (Object v: r.values) {
-										if (v != null) {
-											prevHash = 2 * prevHash + v.hashCode();
-										}
+						for (Row r: BrowserContentPane.this.rows) {
+							prevIDs.add(r.nonEmptyRowId);
+							try {
+								for (Object v: r.values) {
+									if (v != null) {
+										prevHash = 2 * prevHash + v.hashCode();
 									}
-								} catch (RuntimeException e1) {
-									// ignore
 								}
+							} catch (RuntimeException e1) {
+								// ignore
 							}
 						}
 						onContentChange(new ArrayList<Row>(), false);
@@ -5361,14 +5359,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private DBConditionEditor andConditionEditor;
 	private ImageIcon conditionEditorIcon;
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-
 		// load images
-		try {
-			conditionEditorIcon = UIUtil.readImage(getClass().getResource(dir + "/edit.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		conditionEditorIcon = UIUtil.readImage("/edit.png");
 	}
 
 	/**
@@ -5671,19 +5663,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private ImageIcon greenDotIcon;
 	private ImageIcon greyDotIcon;
 	{
-		String dir = "/net/sf/jailer/ui/resource";
-		
 		// load images
-		try {
-			dropDownIcon = UIUtil.readImage(getClass().getResource(dir + "/dropdown.png"));
-			relatedRowsIcon = UIUtil.readImage(getClass().getResource(dir + "/right.png"));
-			redDotIcon = UIUtil.readImage(getClass().getResource(dir + "/reddot.gif"));
-			blueDotIcon = UIUtil.readImage(getClass().getResource(dir + "/bluedot.gif"));
-			greenDotIcon = UIUtil.readImage(getClass().getResource(dir + "/greendot.gif"));
-			greyDotIcon = UIUtil.readImage(getClass().getResource(dir + "/greydot.gif"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		dropDownIcon = UIUtil.readImage("/dropdown.png");
+		relatedRowsIcon = UIUtil.readImage("/right.png");
+		redDotIcon = UIUtil.readImage("/reddot.gif");
+		blueDotIcon = UIUtil.readImage("/bluedot.gif");
+		greenDotIcon = UIUtil.readImage("/greendot.gif");
+		greyDotIcon = UIUtil.readImage("/greydot.gif");
 	}
 
 	public void resetRowsTableContainer() {
