@@ -73,6 +73,7 @@ public class Environment {
 				copyIfNotExists("demo-sakila-1.4.mv.db");
 				copyIfNotExists("demo-scott-subset-1.4.mv.db");
 				copyIfNotExists("example");
+				copyIfNotExists("render");
 
 				configuration.setTempFileFolder(newFile("tmp").getPath());
 				HtmlDataModelRenderer renderer = configuration.getRenderer();

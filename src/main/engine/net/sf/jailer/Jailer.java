@@ -41,7 +41,6 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
-import net.sf.jailer.domainmodel.DomainModel;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.progress.ProgressListener;
@@ -168,17 +167,7 @@ public class Jailer {
 			
 			URL[] jdbcJarURLs = ClasspathUtil.toURLArray(commandLine.jdbcjar, commandLine.jdbcjar2, commandLine.jdbcjar3, commandLine.jdbcjar4);
 
-			if ("check-domainmodel".equalsIgnoreCase(command)) {
-				DataModel dataModel = new DataModel(executionContext);
-				for (String rm : commandLine.arguments.subList(1, commandLine.arguments.size())) {
-					if (dataModel.getRestrictionModel() == null) {
-						dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
-					}
-					URL modelURL = new File(rm).toURI().toURL();
-					dataModel.getRestrictionModel().addRestrictionDefinition(modelURL, new HashMap<String, String>());
-				}
-				new DomainModel(dataModel).check();
-			} else if ("render-datamodel".equalsIgnoreCase(command)) {
+			if ("render-datamodel".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() <= 1) {
 					CommandLineParser.printUsage();
 				} else {

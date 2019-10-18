@@ -35,9 +35,6 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.domainmodel.Composite;
-import net.sf.jailer.domainmodel.Domain;
-import net.sf.jailer.domainmodel.DomainModel;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.PrintUtil;
@@ -50,7 +47,7 @@ import net.sf.jailer.util.SqlUtil;
  */
 public class HtmlDataModelRenderer implements DataModelRenderer {
 
-	private static final String COLOR_KEYWORDS = "font-style: italic; color: rgb(120, 0, 0);";
+	private static final String COLOR_KEYWORDS = "font-style: italic; color: rgb(180, 0, 0);";
 
 	/**
 	 * The directory to put the HTML-render in.
@@ -107,18 +104,11 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			List<Table> tableList = new ArrayList<Table>(dataModel.getTables());
 			Collections.sort(tableList);
 			List<String> tablesColumn = new ArrayList<String>();
-			List<String> domainsColumn = new ArrayList<String>();
-			DomainModel domainModel = new DomainModel(dataModel);
 			
 			for (Table table: tableList) {
-				Composite composite = domainModel.composites.get(table);
-				Domain domain = domainModel.getDomain(table);
-				if (composite != null) {
-					tablesColumn.add(linkTo(table));
-					domainsColumn.add(domain == null? "" : "&nbsp;&nbsp;&nbsp;<small>" + linkTo(domain) + "</small>");
-				}
+				tablesColumn.add(linkTo(table));
 				StringBuffer legend = new StringBuffer();
-				String closure = renderClosure(domainModel, composite == null? domainModel.getComposite(table) : composite, legend);
+				String closure = "";
 				closure = new PrintUtil().applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure", "", closure });
 				String columns = generateColumnsTable(table);
 				if (columns == null) {
@@ -127,14 +117,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 					columns += "<br>";
 				}
 				String components = "";
-				if (composite != null && composite.componentTables.size() > 0) {
-					components = generateComponentsTable(composite) + "<br>";
-				}
 				String domainSuffix = "";
-				if (domain != null) {
-					domainSuffix = " <small>(" + linkTo(domain) + ")</small>";
-				}
-				String title = composite == null? "Component " + table.getName() : composite.toString();
+				String title = "Table " + table.getName();
 				writeFile(new File(outputFolder, toFileName(table)), new PrintUtil().applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
 				CancellationHandler.checkForCancellation(null);
 			}
@@ -146,99 +130,13 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			}
 			
 			String domains = "";
-			if (!domainModel.getDomains().isEmpty()) {
-				domains = renderDomainModel(domainModel) + "<br>";
-			}
-			
-			writeFile(new File(outputFolder, "index.html"), new PrintUtil().applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), generateHTMLTable("Tables", null, tablesColumn, domainsColumn), restrictions, domains }));
+
+			writeFile(new File(outputFolder, "index.html"), new PrintUtil().applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), generateHTMLTable("Tables", null, tablesColumn), restrictions, domains }));
 		} catch (CancellationException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	/**
-	 * Renders the closure of a composite.
-	 * 
-	 * @param composite the composite
-	 * @return render of composite's closure
-	 */
-	private String renderClosure(DomainModel domainModel, Composite composite, StringBuffer legend) throws FileNotFoundException, IOException {
-		StringBuffer lines = new StringBuffer();
-		int distance = 0;
-		Set<Composite> closure = new HashSet<Composite>();
-		Set<Composite> associatedComposites = new HashSet<Composite>();
-		boolean printLegend = false;
-		Domain domain = domainModel.getDomain(composite.mainTable);
-		do {
-			associatedComposites.clear();
-			if (distance == 0) {
-				associatedComposites.add(composite);
-			} else {
-				for (Composite c: closure) {
-					for (Association a: c.getAssociations()) {
-						if (a.getJoinCondition() != null) {
-							Composite destinationComposite = domainModel.getComposite(a.destination);
-							if (!closure.contains(destinationComposite)) {
-								if (!excludeFromClosure(a.destination)) {
-									associatedComposites.add(destinationComposite);
-								}
-							}
-						}
-					}
-				}
-			}
-			
-			List<Composite> cl = new ArrayList<Composite>(associatedComposites);
-			Collections.sort(cl, new Comparator<Composite>() {
-				@Override
-				public int compare(Composite o1, Composite o2) {
-					return o1.mainTable.compareTo(o2.mainTable);
-				}
-			});
-			StringBuffer ts = new StringBuffer();
-			boolean firstTime = true;
-			for (Composite dt: cl) {
-				if (!firstTime) {
-					ts.append(", ");
-				}
-				Domain dtDomain = domainModel.getDomain(dt.mainTable);
-				boolean differentDomains = false;
-				boolean subDomain = false;
-				if (dtDomain == null && domain == null) {
-					differentDomains = false;
-				} else if (dtDomain == null || domain == null) {
-					differentDomains = true;
-				} else {
-					differentDomains = !domain.equals(dtDomain);
-					subDomain = dtDomain.isSubDomainOf(domain);
-				}
-				
-				if (differentDomains && !subDomain) {
-					ts.append("<span style=\"font-style: italic;\">");
-					printLegend = true;
-				}
-				ts.append(dt.equals(composite)? dt.mainTable.getName() : linkTo(dt.mainTable));
-				if (subDomain) {
-					ts.append("*");
-					printLegend = true;
-				}
-				if (differentDomains && !subDomain) {
-					ts.append("**</span>");
-				}
-				firstTime = false;
-			}
-			if (!cl.isEmpty()) {
-				lines.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { "", "&nbsp;&nbsp;distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), COLOR_KEYWORDS, distance % 2 != 0? "class=\"highlightedrow\"" : "" }));
-			}
-			++distance;
-			closure.addAll(associatedComposites);
-		} while (!associatedComposites.isEmpty());
-		if (printLegend) {
-			legend.append(new PrintUtil().applyTemplate("template" + File.separatorChar + "legend.html", new Object[0]));
-		}
-		return lines.toString();
 	}
 
 	protected boolean excludeFromClosure(Table table) {
@@ -415,107 +313,16 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 		
 		return count == 0? null : (new PrintUtil().applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Columns", "", result.toString() }));
 	}
-	
-	/**
-	 * Generates a HTML render of a components table.
-	 * 
-	 * @param composite the composite
-	 * @return HTML render
-	 */
-	private String generateComponentsTable(Composite composite) throws SQLException, FileNotFoundException, IOException {
-		List<String> componentNames = new ArrayList<String>();
-		
-		for (Table component: composite.componentTables) {
-			componentNames.add(linkTo(component));
-		}
-		return generateHTMLTable("Components", null, componentNames, null);
-	}
-	
+
 	/**
 	 * Generates a HTML table.
 	 */
-	private String generateHTMLTable(String title, List<Integer> indents, List<String> column1, List<String> column2) throws FileNotFoundException, IOException {
+	private String generateHTMLTable(String title, List<Integer> indents, List<String> column1) throws FileNotFoundException, IOException {
 		StringBuffer result = new StringBuffer();
 		for (int i = 0; i < column1.size(); ++i) {
-			result.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { "", indentSpaces(indents == null? 1 : indents.get(i)) + column1.get(i), column2 == null? "" : column2.get(i), "", "", "", i % 2 != 0? "class=\"highlightedrow\"" : "" }));
+			result.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { "", indentSpaces(indents == null? 1 : indents.get(i)) + column1.get(i), "", "", "", "", i % 2 != 0? "class=\"highlightedrow\"" : "" }));
 		}
 		return column1.isEmpty()? null : (new PrintUtil().applyTemplate("template" + File.separatorChar + "table.html", new Object[] { title, "", result.toString() }));
-	}
-
-	/** 
-	 * Generates a human readable HTML-representation of the domain-model.
-	 * 
-	 * @param domainModel the domain model
-	 */
-	public String renderDomainModel(DomainModel domainModel) throws FileNotFoundException, IOException {
-		List<String> column1 = new ArrayList<String>();
-		List<String> column2 = new ArrayList<String>();
-		List<Integer> indent = new ArrayList<Integer>();
-		Set<Domain> renderedDomains = new HashSet<Domain>();
-		for (Domain domain: domainModel.getDomains().values()) {
-			if (domain.getSuperDomains().isEmpty()) {
-				appendDomainTree(domain, column1, column2, 1, indent, domainModel.getDomains().size() + 2, domain.name, renderedDomains);
-			}
-			List<String> column = new ArrayList<String>();
-			for (Domain subDomain: domain.getSubDomains()) {
-				column.add(linkTo(subDomain));
-			}
-			String containsTable = generateHTMLTable("contains", null, column, null);
-			String content = ""; 
-			if (containsTable != null) {
-				content += containsTable + "<br>";
-			}
-			column.clear();
-			for (Domain superDomain: domain.getSuperDomains()) {
-				column.add(linkTo(superDomain));
-			}
-			String partOfTable = generateHTMLTable("Part of", null, column, null);
-			if (partOfTable != null) {
-				content += partOfTable + "<br>";
-			}
-			column.clear();
-			for (Table table: domain.tables) {
-				if (domainModel.composites.get(table) != null) {
-					column.add(linkTo(table));
-				}
-			}
-			String tablesTable = generateHTMLTable("Tables", null, column, null);
-			if (tablesTable != null) {
-				content += tablesTable + "<br>";
-			}
-			
-			writeFile(new File(outputFolder, domain.name + "_DOMAIN.html"), new PrintUtil().applyTemplate("template" + File.separator + "tableframe.html", new Object[] { "Domain " + domain.name, content, "", "", "" }));
-		}
-		return generateHTMLTable("Domains", indent, column1, column2);
-	}
-
-	/**
-	 * Puts lines into HTML render table for the domain model. 
-	 * 
-	 * @param domain root domain
-	 * @param column1 domain name
-	 * @param column2 domain description
-	 * @param level current indent level
-	 * @param indent indent level for each line
-	 * @param renderedDomains set of already rendered domains (to prevent duplicate rendering)
-	 */
-	private void appendDomainTree(Domain domain, List<String> column1, List<String> column2, int level, List<Integer> indent, int maxLevel, String path, Set<Domain> renderedDomains) {
-		if (level > maxLevel) {
-			throw new RuntimeException("cyclic domain containment: " + path);
-		}
-		String suffix = "";
-		if (renderedDomains.contains(domain) && !domain.getSubDomains().isEmpty()) {
-			suffix = "&nbsp;&#x2191;";
-		}
-		column1.add(linkTo(domain) + suffix + "&nbsp;&nbsp;&nbsp;");
-		column2.add("&nbsp;&nbsp;<small>" + domain.tables.size() + "&nbsp;Tables</small>&nbsp;&nbsp;");
-		indent.add(level);
-		if (!renderedDomains.contains(domain)) {
-			renderedDomains.add(domain);
-			for (Domain subDomain: domain.getSubDomains()) {
-				appendDomainTree(subDomain, column1, column2, level + 1, indent, maxLevel, path + "->" + subDomain.name, renderedDomains);
-			}
-		}
 	}
 
 	/**
@@ -531,16 +338,6 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			}
 		}
 		return result.toString();
-	}
-
-	/**
-	 * Returns a HTML-hyper link to the render of a given domain. 
-	 * 
-	 * @param domain the domain
-	 * @return HTML-hyper link to the render of domain
-	 */
-	private String linkTo(Domain domain) {
-		return "<a href=\"" + domain.name + "_DOMAIN.html\">" + domain.name + "</a>";
 	}
 
 	/**
