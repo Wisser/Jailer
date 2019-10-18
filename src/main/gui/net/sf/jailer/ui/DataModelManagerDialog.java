@@ -177,25 +177,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		} catch (Throwable t) {
 		}
 
-		try {
-			ImageIcon imageIcon = UIUtil.readImage("/jailer.png");
-			infoBar.setIcon(imageIcon);
-			infoBarJM.setIcon(imageIcon);
-			infoBarConnection.setIcon(imageIcon);
-			infoBarRecUsedConnection.setIcon(imageIcon);
-			infoBarBookmark.setIcon(imageIcon);
-			infoBarRecUsedBookmark.setIcon(imageIcon);
-		} catch (Throwable t) {
-			try {
-				ImageIcon imageIcon = UIUtil.readImage("jailer.gif");
-				infoBar.setIcon(imageIcon);
-				infoBarConnection.setIcon(imageIcon);
-				infoBarRecUsedConnection.setIcon(imageIcon);
-				infoBarBookmark.setIcon(imageIcon);
-				infoBarRecUsedBookmark.setIcon(imageIcon);
-			} catch (Throwable t2) {
-			}
+		ImageIcon imageIcon = UIUtil.readImage("/jailer.png");
+		if (imageIcon == null) {
+			imageIcon = UIUtil.readImage("jailer.gif");
 		}
+		infoBar.setIcon(imageIcon);
+		infoBarJM.setIcon(imageIcon);
+		infoBarConnection.setIcon(imageIcon);
+		infoBarRecUsedConnection.setIcon(imageIcon);
+		infoBarBookmark.setIcon(imageIcon);
+		infoBarRecUsedBookmark.setIcon(imageIcon);
 		
 		restore();
 		
