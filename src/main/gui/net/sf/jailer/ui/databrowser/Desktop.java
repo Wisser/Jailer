@@ -662,23 +662,35 @@ public abstract class Desktop extends JDesktopPane {
 				return parentFrame;
 			}
 
+			private Set<Pair<Row, Row>> addedRowPairs = new HashSet<Pair<Row,Row>>();
+
 			@Override
 			protected void addRowToRowLink(Row parentRow, Row childRow) {
 				synchronized (Desktop.this) {
-					RowToRowLink rowToRowLink = new RowToRowLink();
-					rowToRowLink.parentRow = parentRow;
-					rowToRowLink.childRow = childRow;
-					rowToRowLink.color1 = getAssociationColor1(association);
-					rowToRowLink.color2 = getAssociationColor2(association);
-					tableBrowser.rowToRowLinks.add(rowToRowLink);
+					Pair<Row, Row> pair = new Pair<Row, Row>(parentRow, childRow);
+					if (!addedRowPairs.contains(pair)) {
+						addedRowPairs.add(pair);
+						RowToRowLink rowToRowLink = new RowToRowLink();
+						rowToRowLink.parentRow = parentRow;
+						rowToRowLink.childRow = childRow;
+						rowToRowLink.color1 = getAssociationColor1(association);
+						rowToRowLink.color2 = getAssociationColor2(association);
+						tableBrowser.rowToRowLinks.add(rowToRowLink);
+					}
 				}
 			}
 
 			@Override
 			protected void beforeReload() {
+				addedRowPairs.clear();
 				synchronized (Desktop.this) {
 					tableBrowser.rowToRowLinks.clear();
 				}
+			}
+
+			@Override
+			protected void afterReload() {
+				addedRowPairs.clear();
 			}
 
 			@Override

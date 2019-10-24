@@ -390,6 +390,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							reloadAction.run();
 						}
 					}
+					afterReload();
 				}
 			});
 		}
@@ -3712,7 +3713,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					if (!selectParentPK || !seenRowIds.contains(rowId)) {
 						cRows.add(new Row(rowId, primaryKey, v));
-						seenRowIds.add(rowId);
+						// TODO seenRowIds.add(rowId);
 					}
 				}
 
@@ -5570,6 +5571,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void onHide();
 
 	protected abstract void beforeReload();
+	protected void afterReload() {}
 
 	protected abstract QueryBuilderDialog.Relationship createQBRelations(boolean withParents);
 	protected abstract List<QueryBuilderDialog.Relationship> createQBChildrenRelations(RowBrowser tabu, boolean all);
