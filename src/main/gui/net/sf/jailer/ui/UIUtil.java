@@ -820,7 +820,7 @@ public class UIUtil {
                 contextDesc, false, false, context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_MB_USER_ERROR || context == EXCEPTION_CONTEXT_USER_WARNING? title : null, context == EXCEPTION_CONTEXT_USER_WARNING, additionalControl);
     }
 
-    private static StringBuilder lineWrap(String message, int maxwidth) {
+    public static StringBuilder lineWrap(String message, int maxwidth) {
         StringBuilder msg = new StringBuilder();
         Pattern wrapRE = Pattern.compile("(\\S\\S{" + maxwidth + ",}|.{1," + maxwidth + "})(\\s+|$)");
         Matcher m = wrapRE.matcher(message == null ? "" : message);

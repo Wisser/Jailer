@@ -162,6 +162,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
@@ -322,6 +323,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						unhide();
 						if (theSession == null || !theSession.isDown()) {
 							errorMessageTextArea.setText(e.getMessage());
+							errorMessageTextArea.setToolTipText(UIUtil.toHTML(UIUtil.lineWrap(e.getMessage(), 100).toString(), 120));
 							errorMessageTextArea.setCaretPosition(0);
 							if (shouldShowLoadErrors()) {
 								SQLException sqlException = null;
@@ -332,6 +334,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									currentErrorDetail = e;
 									errorDetailsButton.setVisible(true);
 									errorMessageTextArea.setText(sqlException.getMessage());
+									errorMessageTextArea.setToolTipText(UIUtil.toHTML(UIUtil.lineWrap(e.getMessage(), 100).toString(), 120));
+									if (e instanceof SqlException) {
+										String sqlStatement = ((SqlException) e).sqlStatement;
+										if (sqlStatement != null && sqlStatement.trim().length() > 0) {
+											String HR = "(!insHorizontRulHere!)";
+											String sql = HR
+													+ new BasicFormatterImpl().format(sqlStatement);
+											errorMessageTextArea.setToolTipText(
+													UIUtil.toHTML(UIUtil.lineWrap(sqlException.getMessage().trim(), 100).toString()
+															+ UIUtil.LINE_SEPARATOR + sql, 120).replace(HR, "<hr>"));
+										}
+									}
 									errorMessageTextArea.setCaretPosition(0);
 								} else if (!showingLoadErrorNow) {
 									if (getRowBrowser() != null && getRowBrowser().internalFrame != null && getRowBrowser().internalFrame.isVisible()) {
