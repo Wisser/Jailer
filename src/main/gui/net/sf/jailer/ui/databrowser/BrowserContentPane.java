@@ -3633,12 +3633,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final int finalNumParentPKColumns = numParentPKColumns;
 			AbstractResultSetReader reader = new AbstractResultSetReader() {
 				Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
-				Set<String> seenRowIds = new HashSet<String>();
 				int rowNr = 0;
 				
 				@Override
 				public void init(ResultSet resultSet) throws SQLException {
-					seenRowIds.clear();
 					ResultSetMetaData metaData = getMetaData(resultSet);
 					int columnCount = metaData.getColumnCount();
 					if (table instanceof SqlStatementTable) {
@@ -3711,10 +3709,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						cRows = new ArrayList<Row>();
 						rows.put(parentRowId, cRows);
 					}
-					if (!selectParentPK || !seenRowIds.contains(rowId)) {
-						cRows.add(new Row(rowId, primaryKey, v));
-						// TODO seenRowIds.add(rowId);
-					}
+					cRows.add(new Row(rowId, primaryKey, v));
 				}
 
 				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column, Map<String, String> pkColumn, Map<String, String> pkColumnValue, Set<Integer> unknownColumnIndexes)
