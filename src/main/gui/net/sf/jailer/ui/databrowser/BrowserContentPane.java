@@ -104,6 +104,7 @@ import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -320,13 +321,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						updateMode("error", null);
 						unhide();
 						if (theSession == null || !theSession.isDown()) {
-							if (!showingLoadErrorNow && shouldShowLoadErrors()) {
-								if (getRowBrowser() != null && getRowBrowser().internalFrame != null && getRowBrowser().internalFrame.isVisible()) {
-									try {
-										showingLoadErrorNow = true;
-										UIUtil.showException(BrowserContentPane.this, "Error", e);	
-									} finally {
-										showingLoadErrorNow = false;
+							errorMessageTextArea.setText(e.getMessage());
+							errorMessageTextArea.setCaretPosition(0);
+							if (shouldShowLoadErrors()) {
+								SQLException sqlException = null;
+								if (e instanceof SqlException && e.getCause() != null && e.getCause() instanceof SQLException) {
+									sqlException = (SQLException) e.getCause();
+								}
+								if (sqlException != null && sqlException.getMessage() != null && sqlException.getMessage().trim().length() > 0) {
+									currentErrorDetail = e;
+									errorDetailsButton.setVisible(true);
+									errorMessageTextArea.setText(sqlException.getMessage());
+									errorMessageTextArea.setCaretPosition(0);
+								} else if (!showingLoadErrorNow) {
+									if (getRowBrowser() != null && getRowBrowser().internalFrame != null && getRowBrowser().internalFrame.isVisible()) {
+										try {
+											showingLoadErrorNow = true;
+											UIUtil.showException(BrowserContentPane.this, "Error", e);	
+										} finally {
+											showingLoadErrorNow = false;
+										}
 									}
 								}
 							}
@@ -512,6 +526,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private boolean isEditMode = false;
 
 	/**
+	 * To be shown as "Detail..." in error view.
+	 */
+	private Throwable currentErrorDetail;
+	
+	/**
 	 * DB session.
 	 */
 	Session session;
@@ -609,6 +628,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		
 		initComponents();
+		try {
+			Icon errorIcon = UIManager.getIcon("OptionPane.errorIcon");
+			errorLabel.setIcon(errorIcon);
+			errorLabel.setText(null);
+		} catch (Throwable t) {
+			// ignore
+		}
+
 		loadingCauseLabel.setVisible(false);
 		sortColumnsCheckBox.setVisible(false);
 
@@ -3605,10 +3632,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final int finalNumParentPKColumns = numParentPKColumns;
 			AbstractResultSetReader reader = new AbstractResultSetReader() {
 				Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
+				Set<String> seenRowIds = new HashSet<String>();
 				int rowNr = 0;
 				
 				@Override
 				public void init(ResultSet resultSet) throws SQLException {
+					seenRowIds.clear();
 					ResultSetMetaData metaData = getMetaData(resultSet);
 					int columnCount = metaData.getColumnCount();
 					if (table instanceof SqlStatementTable) {
@@ -3681,7 +3710,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						cRows = new ArrayList<Row>();
 						rows.put(parentRowId, cRows);
 					}
-					cRows.add(new Row(rowId, primaryKey, v));
+					if (!selectParentPK || !seenRowIds.contains(rowId)) {
+						cRows.add(new Row(rowId, primaryKey, v));
+						seenRowIds.add(rowId);
+					}
 				}
 
 				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column, Map<String, String> pkColumn, Map<String, String> pkColumnValue, Set<Integer> unknownColumnIndexes)
@@ -4635,7 +4667,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         deselectButton = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
-        jLabel10 = new javax.swing.JLabel();
+        errorLabel = new javax.swing.JLabel();
+        errorDetailsButton = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        errorMessageTextArea = new javax.swing.JTextArea();
         jPanel4 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
@@ -5002,17 +5037,42 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
-        jLabel10.setFont(jLabel10.getFont().deriveFont(jLabel10.getFont().getStyle() | java.awt.Font.BOLD, jLabel10.getFont().getSize()+3));
-        jLabel10.setForeground(new java.awt.Color(141, 16, 16));
-        jLabel10.setText("Error");
+        errorLabel.setForeground(new java.awt.Color(141, 16, 16));
+        errorLabel.setText("Error");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 0);
-        jPanel5.add(jLabel10, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
+        jPanel5.add(errorLabel, gridBagConstraints);
+
+        errorDetailsButton.setText("Details...");
+        errorDetailsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                errorDetailsButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel5.add(errorDetailsButton, gridBagConstraints);
+
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        errorMessageTextArea.setEditable(false);
+        errorMessageTextArea.setColumns(20);
+        errorMessageTextArea.setLineWrap(true);
+        errorMessageTextArea.setWrapStyleWord(true);
+        jScrollPane2.setViewportView(errorMessageTextArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel5.add(jScrollPane2, gridBagConstraints);
 
         cardPanel.add(jPanel5, "error");
 
@@ -5289,6 +5349,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         andCondition.setSelectedItem("");
     }//GEN-LAST:event_removeConditionButtonActionPerformed
 
+    private void errorDetailsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_errorDetailsButtonActionPerformed
+        UIUtil.showException(this, "Error", currentErrorDetail);
+    }//GEN-LAST:event_errorDetailsButtonActionPerformed
+
 	private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_loadButtonActionPerformed
 		if (System.currentTimeMillis() - lastReloadTS > 200) {
 			reloadRows();
@@ -5321,11 +5385,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
     private javax.swing.JButton deselectButton;
+    private javax.swing.JButton errorDetailsButton;
+    private javax.swing.JLabel errorLabel;
+    private javax.swing.JTextArea errorMessageTextArea;
     private javax.swing.JLabel findColumnsLabel;
     public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JLabel from;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -5349,6 +5415,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
     public javax.swing.JButton loadButton;
@@ -5445,6 +5512,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			cancelLoadButton.setVisible(true);
 			rowsTable.setEnabled(false);
 		}
+		errorDetailsButton.setVisible(false);
 		((CardLayout) cardPanel.getLayout()).show(cardPanel, mode);
 	}
 
