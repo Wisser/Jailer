@@ -26,7 +26,6 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -765,7 +764,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setStroke(new BasicStroke(1));
 				
-				Color tempClosureColor = new Color(255, 0, 0, 50);
 				int width = (int) (visRect.width * 1.4);
 
 				for (int i = 0; i < maxI; ++i) {
@@ -776,7 +774,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Row row = rows.get(mi);
 					if (BrowserContentPane.this.rowsClosure.tempClosure.contains(row)) {
 						int vi = i;
-						g2d.setColor(tempClosureColor);
+						g2d.setColor(new Color(255, 0, 0, 50));
 						Rectangle r = rowsTable.getCellRect(vi, 0, false);
 						x[0] = (int) visRect.getMinX();
 						y[0] = (int) r.getMinY();
@@ -784,7 +782,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						x[1] = (int) visRect.getMinX() + width;
 						y[1] = (int) r.getMaxY();
 						GradientPaint paint = new GradientPaint(
-								x[0], y[0], tempClosureColor,
+								x[0], y[0], new Color(255, 0, 0, 50),
 								x[0] + width, y[1], new Color(255, 0, 0, 0));
 						g2d.setPaint(paint);
 						g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
@@ -1059,12 +1057,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					int i = 0;
 					if (source == rowsTable) {
 						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
-					} else if (source == rowsTableScrollPane) {
-						if (e.getButton() == MouseEvent.BUTTON1 && (e.getClickCount() <= 1 || getQueryBuilderDialog() == null /* SQL Console */)) {
+					} else if (source == rowsTableScrollPane || source == singleRowViewContainterPanel) {
+						if (rows.size() != 1 || getQueryBuilderDialog() == null /* SQL Console */) {
 							return;
 						}
-						ri = rowsTable.getRowSorter().getViewRowCount() - 1;
-						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
+						ri = 0;
+						i = 0;
 					}
 					Row row = rows.get(i);
 
@@ -1113,7 +1111,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						} else {
 							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(ri, false);
 						}
-					} else if (e.getComponent() == singleRowViewScrollContentPanel) {
+					} else if (e.getComponent() == singleRowViewScrollContentPanel || e.getSource() == singleRowViewContainterPanel) {
 						if (getQueryBuilderDialog() != null) { // !SQL Console
 							for (RowBrowser tb: getTableBrowser()) {
 								try {
@@ -1144,15 +1142,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		rowsTable.addMouseListener(rowTableListener);
 		rowsTableScrollPane.addMouseListener(rowTableListener);
-		singleRowViewScrollContentPanel.addMouseListener(rowTableListener);
+		singleRowViewScrollPane.addMouseListener(rowTableListener);
+		singleRowViewContainterPanel.addMouseListener(rowTableListener);
 
 		TempClosureListener tempClosureListener = new TempClosureListener();
 		rowsTable.addMouseListener(tempClosureListener);
 		rowsTable.addMouseMotionListener(tempClosureListener);
 		rowsTableScrollPane.addMouseListener(tempClosureListener);
 		rowsTableScrollPane.addMouseMotionListener(tempClosureListener);
-		singleRowViewScrollPaneContainer.addMouseListener(tempClosureListener);
-		singleRowViewScrollPaneContainer.addMouseMotionListener(tempClosureListener);
+		singleRowViewContainterPanel.addMouseListener(tempClosureListener);
+		singleRowViewContainterPanel.addMouseMotionListener(tempClosureListener);
 
 		if (getQueryBuilderDialog() != null) { // !SQL Console
 			rowsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -4294,13 +4293,44 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			rowsTable.setModel(dtm);
 			
-			JPanel detailsPanel = singleRowDetailsView.getDetailsPanel();
+			JPanel detailsPanel = new JPanel(new java.awt.BorderLayout(0, 0)) {
+				@Override
+				public void paint(Graphics graphics) {
+					super.paint(graphics);
+					if (!(graphics instanceof Graphics2D)) {
+						return;
+					}
+					if (rows.size() == 1 && BrowserContentPane.this.rowsClosure.tempClosure.size() > 1 && BrowserContentPane.this.rowsClosure.tempClosure.contains(rows.get(0))) {
+						Rectangle visRect = singleRowViewContainterPanel.getVisibleRect();
+						
+						Graphics2D g2d = (Graphics2D) graphics;
+						g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+						g2d.setStroke(new BasicStroke(1));
+						
+						int width = (int) (visRect.width * 1.4);
+
+						g2d.setColor(new Color(255, 0, 0, 20));
+						int[] x = new int[2];
+						int[] y = new int[2];
+						x[0] = (int) visRect.getMinX();
+						y[0] = (int) visRect.getMinY();
+						x[1] = (int) visRect.getMinX() + width;
+						y[1] = (int) visRect.getMaxY();
+						GradientPaint paint = new GradientPaint(
+								x[0], y[0], new Color(255, 0, 0, 20),
+								x[0] + width, y[1], new Color(255, 0, 0, 0));
+						g2d.setPaint(paint);
+						g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
+						g2d.setPaint(null);
+					}
+				}
+			};
+			detailsPanel.add(singleRowDetailsView.getDetailsPanel(), java.awt.BorderLayout.CENTER);
 			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 1;
 	        gridBagConstraints.gridy = 1;
 	        gridBagConstraints.weightx = 1;
 	        gridBagConstraints.weighty = 0;
-	        gridBagConstraints.insets = new Insets(2, 4, 2, 4);
 	        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 	        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
 	        singleRowViewContainterPanel.removeAll();
@@ -4922,7 +4952,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 2);
         jPanel11.add(jLabel7, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -6139,6 +6169,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Row row = null;
 			if (e.getSource() == rowsTable) {
 				row = rowAt(e.getPoint());
+			} else if (e.getSource() == singleRowViewContainterPanel && rows.size() == 1) {
+				row = rows.get(0);
 			}
 			updateClosure(row);
 		}
