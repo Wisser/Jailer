@@ -224,7 +224,7 @@ public class Jailer {
 				} else {
 					pw = commandLine.arguments.get(5);
 					if (commandLine.deleteScriptFileName == null) {
-						System.out.println("missing '-d' option");
+						System.out.println("can't delete: missing '-d' option");
 						CommandLineParser.printUsage(args);
 					} else {
 						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
