@@ -87,7 +87,7 @@ available targets:
 		</jar>
 	</target>
 
-	<target name="package" depends="package-engine,compile-gui,javadoc">
+	<target name="package" depends="package-engine,compile-gui">
 		<jar destfile="${JAR}" basedir="${COMPILE_DIR}">
 			<manifest>
 				<attribute name="Main-Class" value="net.sf.jailer.ui.ExtractionModelFrame" />
@@ -184,7 +184,7 @@ available targets:
 		</junit>
 	</target>
 
-	<target name="javadoc">
+	<target name="all" depends="package">
 		<zip destfile="${JAR-ENGINE-SRC}" basedir="${SRC_DIR}/main/engine">
 		</zip>
 		<javadoc packagenames="net.sf.jailer.*" sourcepath="src/main/engine" defaultexcludes="yes" destdir="docs/api" author="true" version="true" use="true" windowtitle="Jailer Subsetter API">

@@ -640,10 +640,11 @@ public class UIUtil {
                 break;
             }
         }
+        char q =  System.getProperty("os.name", "").toLowerCase().startsWith("windows") ? '"' : '\'';
         for (int i = 0; i < args.size(); ++i) {
             String arg = args.get(i);
             if (i == pwi) {
-                arglist.append((escMinus? " -" : "") + " \"<password>\"");
+                arglist.append((escMinus? " -" : "") + " " + q + "<password>" + q);
             } else {
                 if (escMinus && arg.startsWith("-") && user != null && arg.equals(user)) {
                 	arglist.append(" -");
@@ -651,15 +652,15 @@ public class UIUtil {
                 if ("".equals(arg) || arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*")
                         || arg.contains("?") || arg.contains("|") || arg.contains("$") || arg.contains("\"")
                         || arg.contains("'") || arg.contains("\\") || arg.contains(";") || arg.contains("&")) {
-                    arglist.append(" \"");
+                    arglist.append(" " + q);
                     for (int j = 0; j < arg.length(); ++j) {
                         char c = arg.charAt(j);
-                        if (c == '\"' || c == '$') {
+                        if (c == '\"' || c == '\'' || c == '$') {
                             arglist.append("\\");
                         }
                         arglist.append(c);
                     }
-                    arglist.append("\"");
+                    arglist.append(q);
                 } else {
                     arglist.append(" " + arg);
                 }

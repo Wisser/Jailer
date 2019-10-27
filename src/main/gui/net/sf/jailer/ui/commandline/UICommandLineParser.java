@@ -22,6 +22,8 @@ import java.util.List;
 
 import org.kohsuke.args4j.CmdLineParser;
 
+import net.sf.jailer.ui.UIUtil;
+
 /**
  * Parser for {@link UICommandLine}.
  * 
@@ -39,6 +41,7 @@ public class UICommandLineParser {
 		UICommandLine commandLine = new UICommandLine();
 		try {
 			List<String> theArgs = new ArrayList<String>();
+			StringBuilder allArgs = new StringBuilder(UIUtil.LINE_SEPARATOR + "Arguments: ");
 			
 			final String ESC_PREFIX = "((!JAILER_MINUS_ESC!!)";
 
@@ -51,6 +54,18 @@ public class UICommandLineParser {
 					theArgs.add(arg);
 				}
 				++i;
+			}
+			if (args.length > 0) {
+				i = 0;
+				while (i < args.length) {
+					String arg = args[i];
+					if (i > 0) {
+						allArgs.append(", ");
+					}
+					allArgs.append(" " + i + ": {" + arg + "}");
+					++i;
+				}
+				allArgs.append(UIUtil.LINE_SEPARATOR);
 			}
 
 			CmdLineParser cmdLineParser = new CmdLineParser(commandLine);
@@ -65,10 +80,10 @@ public class UICommandLineParser {
 			}
 			commandLine.arguments = escapedWords;
 			if (commandLine.arguments.size() > 1) {
-				throw new RuntimeException("Illegal arguments " + commandLine.arguments);
+				throw new RuntimeException("Illegal arguments " + commandLine.arguments + allArgs);
 			}
 			if (commandLine.arguments.size() == 1 && !commandLine.arguments.get(0).toLowerCase().endsWith(".jm")) {
-				throw new RuntimeException("'" + commandLine.arguments.get(0) + "' is not a valid extraction model file.");
+				throw new RuntimeException("'" + commandLine.arguments.get(0) + "' is not a valid extraction model file." + allArgs);
 			}
 			if (commandLine.datamodelFolder == null && commandLine.arguments.isEmpty()) {
 				commandLine.url = null;

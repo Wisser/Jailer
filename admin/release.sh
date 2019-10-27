@@ -15,7 +15,7 @@ mv $1.co/Jailer/* jailer
 cd jailer
 
 sed "s/stateOffset = 100/stateOffset = 0/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
-ant package
+ant all
 sed "s/stateOffset = 0/stateOffset = 100/g" src/main/gui/net/sf/jailer/ui/Environment.java --in-place
 
 rm -rf docs/api
@@ -63,5 +63,4 @@ zip -r dbeauty_$1.zip dbeauty
 # Web upload
 # cd docs
 # scp -r * rwisser,jailer@web.sf.net:/home/groups/j/ja/jailer/htdocs/
-# scp -r * rwisser,jailer@web.sf.net:/home/groups/j/ja/jailer/htdocs/doc/
 

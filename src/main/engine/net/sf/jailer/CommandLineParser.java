@@ -15,6 +15,7 @@
  */
 package net.sf.jailer;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,14 +66,14 @@ public class CommandLineParser {
 			commandLine.arguments = escapedWords;
 			if (commandLine.arguments.isEmpty()) {
 				if (!silent) {
-					printUsage();
+					printUsage(args);
 					return null;
 				}
 			}
 			return commandLine;
 		} catch (CmdLineException e) {
 			System.out.println(e.getMessage());
-			printUsage();
+			printUsage(args);
 			throw e;
 		}
 	}
@@ -80,7 +81,7 @@ public class CommandLineParser {
 	/**
 	 * Prints out usage.
 	 */
-	public static void printUsage() {
+	public static void printUsage(String[] args) {
 		System.out.println("usage:");
 		System.out.println("  jailer export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
 		System.out.println("    extracts data (see option '-e') and optionally creates a delete-script (see option '-d')");
@@ -126,6 +127,28 @@ public class CommandLineParser {
 		cmdLineParser.setUsageWidth(120);
 		cmdLineParser.printUsage(System.out);
 		System.out.println();
+		printAruments(System.out, args, null);
+	}
+
+	public static void printAruments(PrintStream out, String[] args, String password) {
+		if (args.length > 0) {
+			out.println();
+			out.print("Arguments: ");
+			int i = 0;
+			while (i < args.length) {
+				String arg = args[i];
+				if (arg.equals(password)) {
+					arg = "?";
+				}
+				if (i > 0) {
+					out.print(", ");
+				}
+				out.print(" " + i + ": {" + arg + "}");
+				++i;
+			}
+			out.println();
+			out.println();
+		}
 	}
 
 }

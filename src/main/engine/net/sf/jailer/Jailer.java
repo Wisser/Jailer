@@ -146,6 +146,7 @@ public class Jailer {
 	 */
 	public static boolean jailerMain(String[] args, StringBuffer warnings, ProgressListener progressListener, boolean fromCli) throws Exception {
 		CancellationHandler.reset(null);
+		String pw = null;
 
 		try {
 			CommandLine commandLine = CommandLineParser.parse(args, false);
@@ -169,16 +170,16 @@ public class Jailer {
 
 			if ("render-datamodel".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() <= 1) {
-					CommandLineParser.printUsage();
+					CommandLineParser.printUsage(args);
 				} else {
 					renderDataModel(commandLine.arguments, commandLine.withClosures, commandLine.schema, executionContext);
 				}
 			} else if ("import".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 6) {
-					CommandLineParser.printUsage();
+					CommandLineParser.printUsage(args);
 				} else {
 					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4),
-							commandLine.arguments.get(5), 0, jdbcJarURLs);
+							pw = commandLine.arguments.get(5), 0, jdbcJarURLs);
 					Session session = new Session(dataSource, dataSource.dbms, commandLine.isolationLevel, null, commandLine.transactional);
 					try {
 						new SqlScriptExecutor(session, commandLine.numberOfThreads, false).executeScript(commandLine.arguments.get(1), commandLine.transactional);
@@ -194,8 +195,9 @@ public class Jailer {
 				printDataModel(commandLine.arguments, commandLine.withClosures, executionContext);
 			} else if ("export".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 6) {
-					CommandLineParser.printUsage();
+					CommandLineParser.printUsage(args);
 				} else {
+					pw = commandLine.arguments.get(5);
 					if (commandLine.maxNumberOfEntities > 0) {
 						EntityGraph.maxTotalRowcount = commandLine.maxNumberOfEntities;
 						_log.info("max-rowcount=" + EntityGraph.maxTotalRowcount);
@@ -203,7 +205,7 @@ public class Jailer {
 					
 					if (commandLine.exportScriptFileName == null) {
 						System.out.println("missing '-e' option");
-						CommandLineParser.printUsage();
+						CommandLineParser.printUsage(args);
 					} else {
 						if (!commandLine.independentWorkingTables) {
 							PrimaryKeyFactory.createUPKScope(commandLine.arguments.get(1), executionContext);
@@ -218,11 +220,12 @@ public class Jailer {
 				}
 			} else if ("delete".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 6) {
-					CommandLineParser.printUsage();
+					CommandLineParser.printUsage(args);
 				} else {
+					pw = commandLine.arguments.get(5);
 					if (commandLine.deleteScriptFileName == null) {
 						System.out.println("missing '-d' option");
-						CommandLineParser.printUsage();
+						CommandLineParser.printUsage(args);
 					} else {
 						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
 								commandLine.arguments.get(4), commandLine.arguments.get(5), 0, jdbcJarURLs);
@@ -238,7 +241,7 @@ public class Jailer {
 				}
 			} else if ("find-association".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() < 3) {
-					CommandLineParser.printUsage();
+					CommandLineParser.printUsage(args);
 				} else {
 					findAssociation(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.subList(3, commandLine.arguments.size()), commandLine.undirected, executionContext);
 				}
@@ -257,6 +260,7 @@ public class Jailer {
 					}
 				}
 				if (commandLine.arguments.size() >= 5) {
+					pw = commandLine.arguments.get(4);
 					if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 5) {
 						PrimaryKeyFactory.createUPKScope(extractionModelFileName, executionContext);
 					}
@@ -280,22 +284,24 @@ public class Jailer {
 				return new DDLCreator(executionContext).createDDL((DataSource) null, null, executionContext.getScope(), commandLine.workingTableSchema);
 			} else if ("build-model-wo-merge".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 5) {
-					CommandLineParser.printUsage();
+					CommandLineParser.printUsage(args);
 				} else {
+					pw = commandLine.arguments.get(4);
 					_log.info("Building data model.");
 					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), 0, jdbcJarURLs);
 					ModelBuilder.build(dataSource, dataSource.dbms, commandLine.schema, warnings, executionContext);
 				}
 			} else if ("build-model".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 5) {
-					CommandLineParser.printUsage();
+					CommandLineParser.printUsage(args);
 				} else {
+					pw = commandLine.arguments.get(4);
 					_log.info("Building data model.");
 					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), 0, jdbcJarURLs);
 					ModelBuilder.buildAndMerge(dataSource, dataSource.dbms, commandLine.schema, warnings, executionContext);
 				}
 			} else {
-				CommandLineParser.printUsage();
+				CommandLineParser.printUsage(args);
 				return false;
 			}
 			return true;
@@ -305,7 +311,8 @@ public class Jailer {
 				throw e;
 			}
 			_log.error(e.getMessage(), e);
-			System.out.println("Error: " + e.getClass().getName() + ": " + e.getMessage());
+			System.err.println("Error: " + e.getClass().getName() + ": " + e.getMessage());
+			CommandLineParser.printAruments(System.err, args, pw);
 			String workingDirectory = System.getProperty("user.dir");
 			_log.error("working directory is " + workingDirectory);
 			throw e;
