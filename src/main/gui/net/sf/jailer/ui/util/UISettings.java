@@ -94,7 +94,7 @@ public class UISettings  {
 					properties = (Map<String, Object>) in.readObject();
 					in.close();
 				} catch (Exception e) {
-					e.printStackTrace();
+					// ignore
 				}
 			}
 		}
