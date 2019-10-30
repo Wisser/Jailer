@@ -708,8 +708,8 @@ public class Session {
 					CancellationHandler.checkForCancellation(null);
 					CancellationHandler.end(statement, null);
 
-					boolean deadlock = "40001".equals(e.getSQLState()); // "serialization failure", see https://en.wikipedia.org/wiki/SQLSTATE
-					deadlock = deadlock || "40P01".equals(e.getSQLState()); // "deadlock_detected"
+					String sqlState = e.getSQLState();
+					boolean deadlock = sqlState != null && sqlState.matches("40.01"); // "serialization failure", see https://en.wikipedia.org/wiki/SQLSTATE
 					boolean crf = DBMS.ORACLE.equals(dbms) && e.getErrorCode() == 8176; // ORA-08176: consistent read failure; rollback data not available
 					
 					if (++failures > maximumNumberOfFailures || !(deadlock || crf)) {
