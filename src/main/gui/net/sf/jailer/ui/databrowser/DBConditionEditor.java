@@ -51,7 +51,6 @@ import org.fife.rsta.ui.EscapableDialog;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.ParameterSelector;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
@@ -71,7 +70,6 @@ public abstract class DBConditionEditor extends EscapableDialog {
 
 	private boolean ok;
 	private boolean escaped;
-	private ParameterSelector parameterSelector;
 	private DataModelBasedSQLCompletionProvider provider;
 
 	/** Creates new form ConditionEditor */
@@ -402,9 +400,6 @@ public abstract class DBConditionEditor extends EscapableDialog {
 
 		editorPane.setAnimateBracketMatching(false);
 		
-		if (parameterSelector != null) {
-			parameterSelector.updateParameters();
-		}
 		if (provider != null) {
 			provider.removeAliases();
 			if (table1 != null) {

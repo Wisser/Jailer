@@ -357,7 +357,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 					+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
 					+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")");
 			Desktop.getDesktop().browse(url);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			// ignore
 		}
 	}// GEN-LAST:event_sendButtonActionPerformed

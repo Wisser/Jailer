@@ -527,8 +527,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		rootTable.addItemListener(new java.awt.event.ItemListener() {
 			@Override
 			public void itemStateChanged(java.awt.event.ItemEvent evt) {
-				Table table = getDataModel().getTableByDisplayName((String) ClosureView.this.rootTable.getSelectedItem());
-				refresh(table);
+				refreshClear();
 			}
 		});
 		if (jScrollPane2.getHorizontalScrollBar() != null) {
@@ -726,47 +725,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	}
 
 	/**
-	 * Make {@link #refresh(Table)} reentrant.
-	 */
-	private boolean refreshing = false;
-	
-	/**
 	 * Refreshes the dialog.
-	 * 
-	 * @param tableToSelect the table to select initially or <code>null</code> to keep the current selection
 	 */
-	public void refresh(Table tableToSelect) {
-		if (refreshing) {
-			return;
-		}
-		refreshing = true;
-		
+	public void refreshClear() {
 		selectedTable = null;
-		
-		// table list model
-		if (tableToSelect == null) {
-			Object currentSelection = rootTable.getSelectedItem();
-			if (currentSelection instanceof String) {
-				tableToSelect = getDataModel().getTableByDisplayName((String) currentSelection);
-			}
-		}
-		Vector<String> tableNames = new Vector<String>();
-		for (Table table: getDataModel().getTables()) {
-			tableNames.add(getDataModel().getDisplayName(table));
-		}
-		Collections.sort(tableNames);
-//    	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
-//        tableSelection.setModel(model);
-//    	if (tableToSelect != null) {
-//    		tableSelection.setSelectedItem(getDataModel().getDisplayName(tableToSelect));
-//    	} else {
-//    		tableSelection.setSelectedItem(0);
-//    	}
-		
-		// table model
 		refreshTableModel(null);
-
-		refreshing = false;
 	}
 	
 	/**
@@ -780,7 +743,6 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		} else {
 			selectedTable = null;
 		}
-//    	disableAssocButton.setEnabled(false);
 		repaintClosureView();
 	}
 	

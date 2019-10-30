@@ -562,7 +562,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						}
 					}
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				// ignore
 			}
 		}
