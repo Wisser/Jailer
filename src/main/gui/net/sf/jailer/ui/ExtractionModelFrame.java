@@ -1036,7 +1036,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpForumActionPerformed
 		try {
-			BrowserLauncher.openURL(new URI("https://sourceforge.net/p/jailer/discussion/"));
+			BrowserLauncher.openURL(new URI("https://sourceforge.net/p/jailer/discussion/"), this);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -1048,7 +1048,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void tutorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tutorialActionPerformed
 		try {
-			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/exporting-data.htm"));
+			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/exporting-data.htm"), this);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -1056,7 +1056,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void helpContentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpContentActionPerformed
 		try {
-			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/home.htm"));
+			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/home.htm"), this);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -1457,7 +1457,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			File file = saveRestrictions();
 			args.add(file.getAbsolutePath());
 			UIUtil.runJailer(this, args, false, true, false, true, null, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, executionContext);
-			BrowserLauncher.openURL(Environment.newFile(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table))).toURI());
+			BrowserLauncher.openURL(Environment.newFile(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table))).toURI(), this);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}

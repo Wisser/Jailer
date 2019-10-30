@@ -161,7 +161,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				try {
-					BrowserLauncher.openURL(new URI(jdbcHelpURL));
+					BrowserLauncher.openURL(new URI(jdbcHelpURL), DbConnectionDetailsEditor.this);
 				} catch (Exception e) {
 					UIUtil.showException(DbConnectionDetailsEditor.this, "Error", e);
 				}
