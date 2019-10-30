@@ -1,3 +1,6 @@
+9.1.4
+  - Deadlock prevention in PostgreSQL.
+
 9.1.3
   - Improved display of errors in the data browser.
   - More robustness if primary keys are not specified correctly.
