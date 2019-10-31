@@ -1,5 +1,6 @@
 9.1.4
   - Deadlock prevention in PostgreSQL.
+  - Support for PostgreSQL type "bpchar".
 
 9.1.3
   - Improved display of errors in the data browser.
