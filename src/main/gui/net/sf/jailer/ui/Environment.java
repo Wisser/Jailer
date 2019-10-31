@@ -43,21 +43,18 @@ import net.sf.jailer.util.LogUtil;
 public class Environment {
 
 	private static File home = null;
-	public static Locale initialLocal = Locale.ENGLISH;
 
 	public static void init() {
 		initUI();
 		String osName = System.getProperty("os.name");
 		if (osName != null) {
-			if (osName.toLowerCase().contains("mac os")) {
+			if (osName.toLowerCase(Locale.ENGLISH).contains("mac os")) {
 				// https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
 				// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8215200
 				// https://bugs.openjdk.java.net/browse/JDK-8215200
 				System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 			}
 		}
-		initialLocal = Locale.getDefault();
-		Locale.setDefault(Locale.ENGLISH); // TODO find a better solution than setting the default location
 		if (new File(".singleuser").exists() // legacy
 				|| new File(".multiuser").exists()) {
 			home = new File(System.getProperty("user.home"), ".jailer");

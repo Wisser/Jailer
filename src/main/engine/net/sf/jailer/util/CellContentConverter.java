@@ -372,7 +372,7 @@ public class CellContentConverter {
 				if (DBMS.MySQL.equals(configuration)) {
 					// YEAR
 					String typeName = resultSetMetaData.getColumnTypeName(i);
-					if (typeName != null && typeName.toUpperCase().equals("YEAR")) {
+					if (typeName != null && typeName.toUpperCase(Locale.ENGLISH).equals("YEAR")) {
 						int result = resultSet.getInt(i);
 						if (resultSet.wasNull()) {
 							return null;
@@ -402,7 +402,7 @@ public class CellContentConverter {
 				return "NaN";
 			} else if (object instanceof Boolean) {
 				String typeName = resultSetMetaData.getColumnTypeName(i);
-				if (typeName != null && typeName.toLowerCase().equals("bit")) {
+				if (typeName != null && typeName.toLowerCase(Locale.ENGLISH).equals("bit")) {
 					final String value = Boolean.TRUE.equals(object)? "B'1'" : "B'0'";
 					return new Object() {
 						@Override

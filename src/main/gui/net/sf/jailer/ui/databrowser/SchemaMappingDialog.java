@@ -20,6 +20,7 @@ import java.awt.Window;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -85,10 +86,10 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 				}
 				if (dbSchemas.contains(v)) {
 					comboBox.setSelectedItem(v);
-				} else if (dbSchemas.contains(v.toUpperCase())) {
-					comboBox.setSelectedItem(v.toUpperCase());
-				} else if (dbSchemas.contains(v.toLowerCase())) {
-					comboBox.setSelectedItem(v.toLowerCase());
+				} else if (dbSchemas.contains(v.toUpperCase(Locale.ENGLISH))) {
+					comboBox.setSelectedItem(v.toUpperCase(Locale.ENGLISH));
+				} else if (dbSchemas.contains(v.toLowerCase(Locale.ENGLISH))) {
+					comboBox.setSelectedItem(v.toLowerCase(Locale.ENGLISH));
 				} else {
 					comboBox.setSelectedItem(defaultSchemaName);
 				}

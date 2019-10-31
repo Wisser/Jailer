@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -82,7 +83,7 @@ public class UICommandLineParser {
 			if (commandLine.arguments.size() > 1) {
 				throw new RuntimeException("Illegal arguments " + commandLine.arguments + allArgs);
 			}
-			if (commandLine.arguments.size() == 1 && !commandLine.arguments.get(0).toLowerCase().endsWith(".jm")) {
+			if (commandLine.arguments.size() == 1 && !commandLine.arguments.get(0).toLowerCase(Locale.ENGLISH).endsWith(".jm")) {
 				throw new RuntimeException("'" + commandLine.arguments.get(0) + "' is not a valid extraction model file." + allArgs);
 			}
 			if (commandLine.datamodelFolder == null && commandLine.arguments.isEmpty()) {

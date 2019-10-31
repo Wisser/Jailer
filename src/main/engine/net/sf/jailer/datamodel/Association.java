@@ -19,6 +19,7 @@ package net.sf.jailer.datamodel;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -412,9 +413,9 @@ public class Association extends ModelElement {
 		String tag;
 		if (aggregationTagName == null) {
 			if (name.startsWith("inverse-")) {
-				tag = destination.getUnqualifiedName().toLowerCase();
+				tag = destination.getUnqualifiedName().toLowerCase(Locale.ENGLISH);
 			} else {
-				tag = name.toLowerCase();
+				tag = name.toLowerCase(Locale.ENGLISH);
 			}
 		} else {
 			tag = aggregationTagName;

@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -432,7 +433,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		Document template = builder.newDocument();
 		
-		Element root = template.createElement(XmlUtil.asElementName(getUnqualifiedName().toLowerCase()));
+		Element root = template.createElement(XmlUtil.asElementName(getUnqualifiedName().toLowerCase(Locale.ENGLISH)));
 		root.setAttributeNS("http://www.w3.org/2000/xmlns/",
 				"xmlns:" + XmlUtil.NS_PREFIX,
 				XmlUtil.NS_URI);
@@ -451,7 +452,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 					break;
 				}
 			}
-			Element columnElement = template.createElement(XmlUtil.asElementName(column.name.toLowerCase()));
+			Element columnElement = template.createElement(XmlUtil.asElementName(column.name.toLowerCase(Locale.ENGLISH)));
 			String quotedName = quoting != null? quoting.requote(column.name) : column.name;
 			if (!isPK) {
 				columnElement.setAttribute(XmlUtil.NS_PREFIX + ":if-not-null", XmlUtil.SQL_PREFIX + "T." + quotedName);

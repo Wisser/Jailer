@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -76,14 +77,14 @@ public class SQLPlusSupport {
 			if (val.length() > 1 && val.startsWith("\"") && val.endsWith("\"")) {
 				val = val.substring(1, val.length() - 1);
 			}
-			variables.put(var.toUpperCase(), val);
+			variables.put(var.toUpperCase(Locale.ENGLISH), val);
 			logger.info("DEFINE " + var + " = " + val);
 			return true;
 		}
 		matcher = UNDEFINE_PATTERN.matcher(statement);
 		if (matcher.matches()) {
 			for (String var: matcher.group(1).split("\\s+")) {
-				variables.remove(var.toUpperCase());
+				variables.remove(var.toUpperCase(Locale.ENGLISH));
 			}
 			return true;
 		}
@@ -91,7 +92,7 @@ public class SQLPlusSupport {
 		if (matcher.matches()) {
 			String column = matcher.group(1);
 			String[] variables = matcher.group(2).split("(?i:\\s*(new_value|old_value)\\s*)");
-			columnSubstitutions.put(column.toUpperCase(), variables);
+			columnSubstitutions.put(column.toUpperCase(Locale.ENGLISH), variables);
 			return true;
 		}
 		return false;
@@ -136,7 +137,7 @@ public class SQLPlusSupport {
 					StringBuffer sb = new StringBuffer();
 					do {
 						String var = matcher.group(1);
-						String replacement = variables.get(var.toUpperCase());
+						String replacement = variables.get(var.toUpperCase(Locale.ENGLISH));
 						if (replacement != null) {
 							matcher.appendReplacement(sb,  Matcher.quoteReplacement(replacement));
 							if (positionOffsets != null) {
@@ -177,7 +178,7 @@ public class SQLPlusSupport {
 			for (Entry<Integer, String[]> e: varsPerIndex.entrySet()) {
 				String value = resultSet.getString(e.getKey());
 				for (String var: e.getValue()) {
-					variables.put(var.toUpperCase(), value);
+					variables.put(var.toUpperCase(Locale.ENGLISH), value);
 				}
 			}
 		}

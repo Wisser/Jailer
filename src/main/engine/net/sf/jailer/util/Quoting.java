@@ -92,7 +92,7 @@ public class Quoting {
 		try {
 			String productName = metaData.getDatabaseProductName();
 			if (productName != null) {
-				if (productName.toUpperCase().contains("ADAPTIVE SERVER")) {
+				if (productName.toUpperCase(Locale.ENGLISH).contains("ADAPTIVE SERVER")) {
 					// Sybase don't handle quoting correctly
 					quoteString = null;
 				  }
@@ -103,7 +103,7 @@ public class Quoting {
 		quote = quoteString;
 		unquotedIdentifierInUpperCase = metaData.storesUpperCaseIdentifiers();
 		
-		if (session.dbUrl != null && session.dbUrl.toLowerCase().startsWith("jdbc:jtds:")) {
+		if (session.dbUrl != null && session.dbUrl.toLowerCase(Locale.ENGLISH).startsWith("jdbc:jtds:")) {
 			// workaround for JTDS-bug
 			unquotedIdentifierInMixedCase = true;
 		} else {
@@ -122,7 +122,7 @@ public class Quoting {
 				k += "," + additionalKeyWords;
 			}
 			for (String key : k.split(",")) {
-				keyWords.add(key.trim().toUpperCase());
+				keyWords.add(key.trim().toUpperCase(Locale.ENGLISH));
 			}
 			// add all SQL 92 keywords
 			keyWords.addAll(UCSQL2003KEYWORDS);
@@ -143,7 +143,7 @@ public class Quoting {
 		}
 		identifier = unquote(identifier);
 		if (quote != null && identifier != null && identifier.length() > 0) {
-			if (!keyWords.contains(identifier.toUpperCase())) {
+			if (!keyWords.contains(identifier.toUpperCase(Locale.ENGLISH))) {
 				String lower = "abcdefghijklmnopqrstuvwxyz_0123456789";
 				String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
 				String digits = "0123456789";
@@ -312,9 +312,9 @@ public class Quoting {
 			return identifier;
 		}
 		if (unquotedIdentifierInUpperCase) {
-			return identifier.toUpperCase();
+			return identifier.toUpperCase(Locale.ENGLISH);
 		}
-		return identifier.toLowerCase();
+		return identifier.toLowerCase(Locale.ENGLISH);
 	}
 	
 	/**

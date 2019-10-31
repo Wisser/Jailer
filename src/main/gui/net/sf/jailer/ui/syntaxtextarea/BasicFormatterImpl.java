@@ -26,6 +26,7 @@ package net.sf.jailer.ui.syntaxtextarea;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -183,7 +184,7 @@ public class BasicFormatterImpl {
 					token = nextToken;
 				}
 				nextToken = null;
-				lcToken = token.toLowerCase();
+				lcToken = token.toLowerCase(Locale.ENGLISH);
 
 				if ("-".equals(token) && tokens.hasMoreTokens()) {
 					nextToken = tokens.nextToken();

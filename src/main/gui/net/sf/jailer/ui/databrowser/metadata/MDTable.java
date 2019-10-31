@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -196,7 +197,7 @@ public class MDTable extends MDObject {
                         if (sqlType == null) {
                             sqlType = resultSet.getString(6);
                         }
-                        if (type == Types.NUMERIC || type == Types.DECIMAL || JDBCMetaDataBasedModelElementFinder.TYPES_WITH_LENGTH.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
+                        if (type == Types.NUMERIC || type == Types.DECIMAL || JDBCMetaDataBasedModelElementFinder.TYPES_WITH_LENGTH.contains(sqlType.toUpperCase(Locale.ENGLISH)) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
                             length = resultSet.getInt(7);
                         }
                         if (DBMS.MSSQL.equals(metaDataSource.getSession().dbms) && sqlType != null && sqlType.equalsIgnoreCase("timestamp")) {
@@ -377,7 +378,7 @@ public class MDTable extends MDObject {
 	            if (ddl == null && isView) {
 	            	String viewTextOrDDLQuery = session.dbms.getViewTextOrDDLQuery();
 	    			if (viewTextOrDDLQuery != null) {
-	    				String viewTextQuery = String.format(viewTextOrDDLQuery, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()));
+	    				String viewTextQuery = String.format(Locale.ENGLISH, viewTextOrDDLQuery, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()));
 	    				try {
 	    					session.executeQuery(viewTextQuery, new Session.AbstractResultSetReader() {
 	    						@Override

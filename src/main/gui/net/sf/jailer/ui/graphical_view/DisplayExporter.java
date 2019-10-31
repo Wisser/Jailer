@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
+import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -57,10 +58,10 @@ public class DisplayExporter {
 		String[]        fmts             = ImageIO.getWriterFormatNames();
 
 		for (int i = 0; i < fmts.length; i++) {
-			String s = fmts[i].toLowerCase();
+			String s = fmts[i].toLowerCase(Locale.ENGLISH);
 			if ((s.length() == 3) &&!availableFormats.contains(s)) {
 				availableFormats.add(s);
-				chooser.setFileFilter(new SimpleFileFilter(s, s.toUpperCase() + " Image (*." + s + ")"));
+				chooser.setFileFilter(new SimpleFileFilter(s, s.toUpperCase(Locale.ENGLISH) + " Image (*." + s + ")"));
 			}
 		}
 

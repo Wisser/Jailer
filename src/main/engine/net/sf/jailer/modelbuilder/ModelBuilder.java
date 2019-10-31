@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -231,7 +232,7 @@ public class ModelBuilder {
 		for (Table table: allTablesSet.values()) {
 			if (!isJailerTable(table, quoting) &&
 				!excludeTablesCSV.contains(new String[] { table.getName()}) && 
-				!excludeTablesCSV.contains(new String[] { table.getName().toUpperCase() })) {
+				!excludeTablesCSV.contains(new String[] { table.getName().toUpperCase(Locale.ENGLISH) })) {
 				_log.info("find colums with " + finder);
 				List<Column> columns = finder.findColumns(table, session, executionContext);
 				if (!columns.isEmpty()) {
@@ -252,7 +253,7 @@ public class ModelBuilder {
 		for (Table table: sortedTables) {
 			if (!isJailerTable(table, quoting) &&
 				!excludeTablesCSV.contains(new String[] { table.getName()}) && 
-				!excludeTablesCSV.contains(new String[] { table.getName().toUpperCase() })) {
+				!excludeTablesCSV.contains(new String[] { table.getName().toUpperCase(Locale.ENGLISH) })) {
 				if (table.primaryKey.getColumns().isEmpty()) {
 					// try find user defined pk
 					Table old = dataModel.getTable(table.getName());
@@ -433,7 +434,7 @@ public class ModelBuilder {
 	 * @return <code>true</code> if table is one of Jailers working tables
 	 */
 	private static boolean isJailerTable(Table table, Quoting quoting) {
-		String tName = quoting.unquote(table.getUnqualifiedName()).toUpperCase();
+		String tName = quoting.unquote(table.getUnqualifiedName()).toUpperCase(Locale.ENGLISH);
 		return SqlUtil.JAILER_TABLES.contains(tName)
 			|| tName.startsWith(ImportFilterManager.MAPPINGTABLE_NAME_PREFIX)
 			|| (tName.endsWith("_T") && SqlUtil.JAILER_TABLES.contains(tName.substring(0, tName.length() - 2)));

@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -186,7 +187,7 @@ public class UIUtil {
         if (selectedFile != null) {
             fileChooser.setFile(selectedFile.getName());
         } else if (extension != null && extension.length() > 0) {
-            if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
+            if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
                 // workaround: http://bugs.java.com/view_bug.do?bug_id=8021943
                 boolean set = true;
                 Matcher m = Pattern.compile("1.7.0_(\\d+).*").matcher(System.getProperty("java.version", ""));
@@ -205,9 +206,9 @@ public class UIUtil {
         FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(extension)
-                        || allowZip && name.toLowerCase().endsWith(extension + ".gz")
-                        || allowZip && name.toLowerCase().endsWith(extension + ".zip");
+                return name.toLowerCase(Locale.ENGLISH).endsWith(extension)
+                        || allowZip && name.toLowerCase(Locale.ENGLISH).endsWith(extension + ".gz")
+                        || allowZip && name.toLowerCase(Locale.ENGLISH).endsWith(extension + ".zip");
             }
         };
         fileChooser.setFilenameFilter(filter);
@@ -640,7 +641,7 @@ public class UIUtil {
                 break;
             }
         }
-        char q =  System.getProperty("os.name", "").toLowerCase().startsWith("windows") ? '"' : '\'';
+        char q =  System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows") ? '"' : '\'';
         for (int i = 0; i < args.size(); ++i) {
             String arg = args.get(i);
             if (i == pwi) {
@@ -1378,7 +1379,7 @@ public class UIUtil {
 		if (time == null) {
 			return "";
 		}
-		return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Environment.initialLocal).format(new Date(time));
+		return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(time));
 	}
 
 	public static Object toDateAsString(Date date) {

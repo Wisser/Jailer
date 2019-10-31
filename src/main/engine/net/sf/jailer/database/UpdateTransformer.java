@@ -24,6 +24,7 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -154,7 +155,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 		selectionClause = table.getSelectionClause();
 		this.primaryKeyColumnNames = new HashSet<String>();
 		for (Column c: table.getNonVirtualPKColumns(session)) {
-			this.primaryKeyColumnNames.add(c.name.toUpperCase());
+			this.primaryKeyColumnNames.add(c.name.toUpperCase(Locale.ENGLISH));
 		}
 	}
 
@@ -208,7 +209,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 				labelCSL += columnLabel[i];
 			}
 			for (Column column: columns) {
-				columnNamesLower.add(column.name.toLowerCase());
+				columnNamesLower.add(column.name.toLowerCase(Locale.ENGLISH));
 			}
 		}
 		try {
@@ -221,7 +222,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 				if (columnLabel[i] == null) {
 					continue;
 				}
-				if (!isPrimaryKeyColumn(columnLabel[i]) && !columnNamesLower.contains(columnLabel[i].toLowerCase())) {
+				if (!isPrimaryKeyColumn(columnLabel[i]) && !columnNamesLower.contains(columnLabel[i].toLowerCase(Locale.ENGLISH))) {
 					continue;
 				}
 				if (content == null) {
@@ -294,10 +295,10 @@ public class UpdateTransformer extends AbstractResultSetReader {
 				String name = quoting.quote(pk.name);
 				if (val.containsKey(name)) {
 					value = val.get(name);
-				} else if (val.containsKey(name.toLowerCase())) {
-					value = val.get(name.toLowerCase());
+				} else if (val.containsKey(name.toLowerCase(Locale.ENGLISH))) {
+					value = val.get(name.toLowerCase(Locale.ENGLISH));
 				} else {
-					value = val.get(name.toUpperCase());
+					value = val.get(name.toUpperCase(Locale.ENGLISH));
 				}
 				where.append("T." + quoting.requote(pk.name) + "=" + value);
 				whereWOAlias.append(quoting.requote(pk.name) + "=" + value);
@@ -318,7 +319,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 						continue;
 					}
 					if  (!isPrimaryKeyColumn(columnLabel[i])) {
-						if (columnNamesLower.contains(columnLabel[i].toLowerCase())) {
+						if (columnNamesLower.contains(columnLabel[i].toLowerCase(Locale.ENGLISH))) {
 							if (sets.length() > 0) {
 								sets.append(", ");
 							}
@@ -359,7 +360,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 				insert.append("Update " + qualifiedTableName(table) + " set ");
 				f = true;
 				for (int i = 1; i <= columnCount; ++i) {
-					if (!columnNamesLower.contains(columnLabel[i].toLowerCase())) {
+					if (!columnNamesLower.contains(columnLabel[i].toLowerCase(Locale.ENGLISH))) {
 						continue;
 					}
 					if (isPrimaryKeyColumn(columnLabel[i])) {
@@ -406,7 +407,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	 * @return <code>true</code> if column is part of primary key
 	 */
 	private boolean isPrimaryKeyColumn(String column) {
-		return primaryKeyColumnNames.contains(column.toUpperCase());
+		return primaryKeyColumnNames.contains(column.toUpperCase(Locale.ENGLISH));
 	}
 
 	/**

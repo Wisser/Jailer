@@ -18,6 +18,7 @@ package net.sf.jailer.ui.databrowser;
 import java.io.File;
 import java.io.FileReader;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.script.Bindings;
@@ -37,7 +38,7 @@ public class TableContentViewFilter {
 	
 	private static CompiledScript script;
 	private ScriptEngine engine; 
-	private SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+	private SimpleDateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.ENGLISH);
 
 	/**
 	 * Create a filter.

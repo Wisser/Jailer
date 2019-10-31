@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -191,7 +192,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		            if (schema != null) {
 		            	schema = Quoting.staticUnquote(schema);
 		            }
-		            ResultSet rs = cStmt.executeQuery(String.format(session.dbms.getPackageNamesQuery(), schema));
+		            ResultSet rs = cStmt.executeQuery(String.format(Locale.ENGLISH, session.dbms.getPackageNamesQuery(), schema));
 		            MemorizedResultSet result = new MemorizedResultSet(rs, null, session, schema);
 		            result.close();
 		            rs.close();
@@ -797,7 +798,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 						                    		} else {
 						                    			tableName = mdTable.getSchema() + "." + mdTable.getName();
 						                    		}
-						                    		script.append(String.format(template, tableName, tableType));
+						                    		script.append(String.format(Locale.ENGLISH, template, tableName, tableType));
 					                    		}
 					                    	}
 					            			script.append("\n");

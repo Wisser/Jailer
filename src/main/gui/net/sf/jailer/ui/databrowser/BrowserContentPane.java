@@ -66,6 +66,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -2367,7 +2368,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		UIUtil.setWaitCursor(parent);
 		try {
 			String file;
-			String ts = new SimpleDateFormat("HH-mm-ss-SSS").format(new Date());
+			String ts = new SimpleDateFormat("HH-mm-ss-SSS", Locale.ENGLISH).format(new Date());
 			
 			Table stable = table;
 			String subjectCondition;
@@ -3129,21 +3130,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String tableName = quoting.unquote(table.getUnqualifiedName());
 			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%", false, false, null);
 			while (resultSet.next()) {
-				String colName = resultSet.getString(4).toLowerCase();
+				String colName = resultSet.getString(4).toLowerCase(Locale.ENGLISH);
 				columns.add(colName);
 			}
 			resultSet.close();
 			if (columns.isEmpty()) {
 				if (session.getMetaData().storesUpperCaseIdentifiers()) {
-					schema = schema.toUpperCase();
-					tableName = tableName.toUpperCase();
+					schema = schema.toUpperCase(Locale.ENGLISH);
+					tableName = tableName.toUpperCase(Locale.ENGLISH);
 				} else {
-					schema = schema.toLowerCase();
-					tableName = tableName.toLowerCase();
+					schema = schema.toLowerCase(Locale.ENGLISH);
+					tableName = tableName.toLowerCase(Locale.ENGLISH);
 				}
 				resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%", false, false, null);
 				while (resultSet.next()) {
-					String colName = resultSet.getString(4).toLowerCase();
+					String colName = resultSet.getString(4).toLowerCase(Locale.ENGLISH);
 					columns.add(colName);
 				}
 			}
@@ -3497,7 +3498,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String olapPrefix = "Select ";
 			String olapSuffix = ") S Where S." + ROWNUMBERALIAS + " <= " + limit;
 			boolean limitSuffixInSelectClause = sqlLimitSuffix != null &&
-					(sqlLimitSuffix.toLowerCase().startsWith("top ") || sqlLimitSuffix.toLowerCase().startsWith("first "));
+					(sqlLimitSuffix.toLowerCase(Locale.ENGLISH).startsWith("top ") || sqlLimitSuffix.toLowerCase(Locale.ENGLISH).startsWith("first "));
 			if (sqlLimitSuffix != null && limitSuffixInSelectClause) {
 				sql += (sqlLimitSuffix.replace("%s", Integer.toString(limit))) + " ";
 			}
@@ -3519,7 +3520,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			
 			for (Column column : rowIdSupport.getColumns(table, session)) {
 				String name = quoting.requote(column.name);
-				if (existingColumnsLowerCase != null && !rowIdSupport.isRowIdColumn(column) && !existingColumnsLowerCase.contains(quoting.unquote(name).toLowerCase())) {
+				if (existingColumnsLowerCase != null && !rowIdSupport.isRowIdColumn(column) && !existingColumnsLowerCase.contains(quoting.unquote(name).toLowerCase(Locale.ENGLISH))) {
 					sql += (!f ? ", " : "") + "'?' AS A" + i;
 					unknownColumnIndexes.add(colI);
 				} else {

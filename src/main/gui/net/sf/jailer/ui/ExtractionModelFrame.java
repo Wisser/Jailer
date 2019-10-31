@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -1221,7 +1222,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	
 	private String createTempFileName() {
 		String file;
-		String ts = new SimpleDateFormat("HH-mm-ss-SSS").format(new Date());
+		String ts = new SimpleDateFormat("HH-mm-ss-SSS", Locale.ENGLISH).format(new Date());
 		File newFile;
 		for (int i = 1; ; ++i) {
 			file = Environment.newFile("tmp").getPath();
@@ -1494,7 +1495,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		String extractionModelFile = extractionModelEditor.extractionModelFile;
 		if (extractionModelFile != null) {
 			extractionModelFile = new File(extractionModelFile).getName();
-			if (extractionModelFile.toLowerCase().endsWith(".jm")) {
+			if (extractionModelFile.toLowerCase(Locale.ENGLISH).endsWith(".jm")) {
 				file = new File(tempFileFolder, extractionModelFile.substring(0, extractionModelFile.length() - 3) + "-restrictions.jm");
 			} else {
 				file = new File(tempFileFolder, extractionModelFile + "-restrictions.jm");

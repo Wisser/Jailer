@@ -7,6 +7,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import javax.swing.SwingUtilities;
@@ -86,7 +87,7 @@ public class AWTWatchdog {
 	protected static String sendThreadDump() {
 		ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
 		for (ThreadInfo ti : threadMxBean.dumpAllThreads(true, true)) {
-			if (ti.getThreadName() != null && ti.getThreadName().toLowerCase().startsWith("awt-event")) {
+			if (ti.getThreadName() != null && ti.getThreadName().toLowerCase(Locale.ENGLISH).startsWith("awt-event")) {
 
 				StringBuilder sb = new StringBuilder(
 						"\"" + ti.getThreadName() + "\"" + " Id=" + ti.getThreadId() + " " + ti.getThreadState());

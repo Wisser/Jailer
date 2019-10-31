@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -275,7 +276,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		}
 		this.primaryKeyColumnNames = new HashSet<String>();
 		for (Column c: table.getNonVirtualPKColumns(session)) {
-			this.primaryKeyColumnNames.add(c.name.toUpperCase());
+			this.primaryKeyColumnNames.add(c.name.toUpperCase(Locale.ENGLISH));
 		}
 	}
 
@@ -452,10 +453,10 @@ public class DMLTransformer extends AbstractResultSetReader {
 					String name = quoting.quote(pk.name);
 					if (val.containsKey(name)) {
 						value = val.get(name);
-					} else if (val.containsKey(name.toLowerCase())) {
-						value = val.get(name.toLowerCase());
+					} else if (val.containsKey(name.toLowerCase(Locale.ENGLISH))) {
+						value = val.get(name.toLowerCase(Locale.ENGLISH));
 					} else {
-						value = val.get(name.toUpperCase());
+						value = val.get(name.toUpperCase(Locale.ENGLISH));
 					}
 					where.append("T." + quoting.requote(pk.name) + "=" + value);
 					whereWOAlias.append(quoting.requote(pk.name) + "=" + value);
@@ -807,7 +808,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * @return <code>true</code> if column is part of primary key
 	 */
 	private boolean isPrimaryKeyColumn(String column) {
-		return primaryKeyColumnNames.contains(column.toUpperCase());
+		return primaryKeyColumnNames.contains(column.toUpperCase(Locale.ENGLISH));
 	}
 
 	/**

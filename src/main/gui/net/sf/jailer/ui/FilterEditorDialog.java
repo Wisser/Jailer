@@ -37,6 +37,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -387,7 +388,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		@Override
 		protected String getDisplayName(FilterModel element) {
-			return Quoting.unquotedTableName(element.table, executionContext).toLowerCase() + "." + Quoting.staticUnquote(element.column.name).toLowerCase();
+			return Quoting.unquotedTableName(element.table, executionContext).toLowerCase(Locale.ENGLISH) + "." + Quoting.staticUnquote(element.column.name).toLowerCase(Locale.ENGLISH);
 		}
 
 		@Override
@@ -425,7 +426,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			return new String[] {
 					element.column.getFilter().isApplyAtExport()? "Export" : "Import",
 					getDisplayName(element),
-					element.column.type.toLowerCase(),
+					element.column.type.toLowerCase(Locale.ENGLISH),
 					element.column.getFilter().getExpression(),
 					source
 					};
@@ -624,10 +625,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		Set<String> columnNames = new TreeSet<String>();
 		Set<String> typeNames = new TreeSet<String>();
 		for (Table tab: getDataModel().getTables()) {
-			tableNames.add(Quoting.unquotedTableName(tab, executionContext).toLowerCase());
+			tableNames.add(Quoting.unquotedTableName(tab, executionContext).toLowerCase(Locale.ENGLISH));
 			for (Column column: tab.getColumns()) {
-				columnNames.add(Quoting.staticUnquote(column.name).toLowerCase());
-				typeNames.add(column.type.toLowerCase());
+				columnNames.add(Quoting.staticUnquote(column.name).toLowerCase(Locale.ENGLISH));
+				typeNames.add(column.type.toLowerCase(Locale.ENGLISH));
 			}
 		}
 		objectsModel.put(Subject.COLUMN_NAME, columnNames.toArray(new String[0]));

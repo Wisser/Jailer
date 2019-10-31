@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -254,7 +255,7 @@ public class LocalEntityGraph extends EntityGraph {
 		if (fieldProcTablesFile.exists()) {
 			try {
 				for (CsvFile.Line line: new CsvFile(fieldProcTablesFile).getLines()) {
-					fieldProcTables.add(line.cells.get(0).toLowerCase());
+					fieldProcTables.add(line.cells.get(0).toLowerCase(Locale.ENGLISH));
 				}
 				Session._log.info("tables with field procedures: " + fieldProcTables);
 			} catch (Exception e) {
@@ -971,7 +972,7 @@ public class LocalEntityGraph extends EntityGraph {
 				filterExpression = c.getFilterExpression();
 			}
 			if (filterExpression != null) {
-				if (filterExpression.trim().toLowerCase().startsWith("select")) {
+				if (filterExpression.trim().toLowerCase(Locale.ENGLISH).startsWith("select")) {
 					sb.append("(" + filterExpression + ")");
 				} else {
 					sb.append(filterExpression);
@@ -1349,7 +1350,7 @@ public class LocalEntityGraph extends EntityGraph {
 				}
 				sb.append(entityAlias + "." + columnPrefix + column.name);
 				if (tableColumn != null) {
-					if (fieldProcTables.contains(table.getUnqualifiedName().toLowerCase())) {
+					if (fieldProcTables.contains(table.getUnqualifiedName().toLowerCase(Locale.ENGLISH))) {
 						sb.append(" = " + tableColumn.type + "(" + tableAlias + "." + quoting.requote(tableColumn.name) + ")");
 					} else {
 						sb.append("=" + tableAlias + "." + quoting.requote(tableColumn.name));

@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -549,12 +550,12 @@ public class SubsettingEngine {
 			parentFile.mkdirs();
 		}
 		OutputStream outputStream = new FileOutputStream(file);
-		if (sqlScriptFile.toLowerCase().endsWith(".zip")) {
+		if (sqlScriptFile.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
 			outputStream = new ZipOutputStream(outputStream);
 			String zipFileName = file.getName();
 			((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
 		} else {
-			if (sqlScriptFile.toLowerCase().endsWith(".gz")) {
+			if (sqlScriptFile.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
 				outputStream = new GZIPOutputStream(outputStream);
 			}
 		}
@@ -1018,12 +1019,12 @@ public class SubsettingEngine {
 		_log.info("writing file '" + xmlFile + "'...");
 
 		OutputStream outputStream = new FileOutputStream(new File(xmlFile));
-		if (xmlFile.toLowerCase().endsWith(".zip")) {
+		if (xmlFile.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
 			outputStream = new ZipOutputStream(outputStream);
 			String zipFileName = new File(xmlFile).getName();
 			((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
 		} else {
-			if (xmlFile.toLowerCase().endsWith(".gz")) {
+			if (xmlFile.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
 				outputStream = new GZIPOutputStream(outputStream);
 			}
 		}

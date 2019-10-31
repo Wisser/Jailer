@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -665,7 +666,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 		fillCLIArgs(args);
 		String cmd = "sh jailer.sh";
-		if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
+		if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
 			cmd = "jailer.bat";
 		}
 		String cli = cmd + UIUtil.createCLIArgumentString(user, password, args, executionContext);

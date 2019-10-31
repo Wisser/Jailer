@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -271,7 +272,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
             if (parentName != null) {
             	parentName = Quoting.staticUnquote(parentName);
             }
-            ResultSet rs = cStmt.executeQuery(String.format(query, schema, parentName));
+            ResultSet rs = cStmt.executeQuery(String.format(Locale.ENGLISH, query, schema, parentName));
             MemorizedResultSet result = new MemorizedResultSet(rs, null, session, schema);
             rs.close();
             return result;

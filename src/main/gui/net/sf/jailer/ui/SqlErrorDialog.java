@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;

@@ -878,7 +878,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         if (result) {
             do {
                 String clause = matcher.group(1);
-                String clauseLC = clause == null? null : clause.toLowerCase();
+                String clauseLC = clause == null? null : clause.toLowerCase(Locale.ENGLISH);
                 String keyword = matcher.group(2);
                 String identifier = matcher.group(3);
 

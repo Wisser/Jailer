@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -99,7 +100,7 @@ public class CollectedRowsCounter implements ProgressListener {
 					rc -= r;
 				}
 			}
-			result.add(String.format("   %-24s %10d %s", datamodel.getDisplayName(stable), rc, reduct));
+			result.add(String.format(Locale.ENGLISH, "   %-24s %10d %s", datamodel.getDisplayName(stable), rc, reduct));
 		}
 		if (exportStatistic != null) {
 			exportStatistic.setExportedRows(exportedRows);

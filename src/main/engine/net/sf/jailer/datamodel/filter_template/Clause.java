@@ -16,6 +16,7 @@
 package net.sf.jailer.datamodel.filter_template;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -106,37 +107,37 @@ public class Clause {
 		STARTS_WITH("starts with", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return subject.toString().toLowerCase().startsWith(object.toLowerCase());
+				return subject.toString().toLowerCase(Locale.ENGLISH).startsWith(object.toLowerCase(Locale.ENGLISH));
 			}
 		},
 		NOT_STARTS_WITH("not starts with", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return !subject.toString().toLowerCase().startsWith(object.toLowerCase());
+				return !subject.toString().toLowerCase(Locale.ENGLISH).startsWith(object.toLowerCase(Locale.ENGLISH));
 			}
 		},
 		ENDS_WITH("ends with", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return subject.toString().toLowerCase().endsWith(object.toLowerCase());
+				return subject.toString().toLowerCase(Locale.ENGLISH).endsWith(object.toLowerCase(Locale.ENGLISH));
 			}
 		},
 		NOT_ENDS_WITH("not ends with", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return !subject.toString().toLowerCase().endsWith(object.toLowerCase());
+				return !subject.toString().toLowerCase(Locale.ENGLISH).endsWith(object.toLowerCase(Locale.ENGLISH));
 			}
 		},
 		CONTAINS("contains", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return subject.toString().toLowerCase().contains(object.toLowerCase());
+				return subject.toString().toLowerCase(Locale.ENGLISH).contains(object.toLowerCase(Locale.ENGLISH));
 			}
 		},
 		NOT_CONTAINS("not contains", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return !subject.toString().toLowerCase().contains(object.toLowerCase());
+				return !subject.toString().toLowerCase(Locale.ENGLISH).contains(object.toLowerCase(Locale.ENGLISH));
 			}
 		},
 		

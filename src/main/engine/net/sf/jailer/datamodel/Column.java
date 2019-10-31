@@ -16,6 +16,7 @@
 
 package net.sf.jailer.datamodel;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -162,19 +163,19 @@ public class Column {
 		}
 		
 		boolean isNullable = false;
-		if (columnDeclaration.toLowerCase().endsWith(" null")) {
+		if (columnDeclaration.toLowerCase(Locale.ENGLISH).endsWith(" null")) {
 			isNullable = true;
 			columnDeclaration = columnDeclaration.substring(0, columnDeclaration.length() - 5).trim();
 		}
 
 		boolean isVirtual = false;
-		if (columnDeclaration.toLowerCase().endsWith(" virtual")) {
+		if (columnDeclaration.toLowerCase(Locale.ENGLISH).endsWith(" virtual")) {
 			isVirtual = true;
 			columnDeclaration = columnDeclaration.substring(0, columnDeclaration.length() - 8).trim();
 		}
 		
 		boolean isIdent = false;
-		if (columnDeclaration.toLowerCase().endsWith(" identity")) {
+		if (columnDeclaration.toLowerCase(Locale.ENGLISH).endsWith(" identity")) {
 			isIdent = true;
 			columnDeclaration = columnDeclaration.substring(0, columnDeclaration.length() - 9).trim();
 		}

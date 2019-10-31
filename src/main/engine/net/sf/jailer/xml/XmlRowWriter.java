@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
@@ -95,8 +96,8 @@ public class XmlRowWriter {
 	 */
 	public XmlRowWriter(OutputStream out, String commentHeader, String rootTag, String datePattern, String timestampPattern, Charset charset) throws SAXException, TransformerConfigurationException {
 		this.rootTag = rootTag;
-		this.datePattern = new SimpleDateFormat(datePattern);
-		this.timestampPattern = new SimpleDateFormat(timestampPattern);
+		this.datePattern = new SimpleDateFormat(datePattern, Locale.ENGLISH);
+		this.timestampPattern = new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
 		StreamResult streamResult = new StreamResult(new OutputStreamWriter(out, charset));
 		transformerHandler = XmlUtil.createTransformerHandler(commentHeader, rootTag, streamResult, charset);
 	}

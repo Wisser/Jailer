@@ -19,6 +19,7 @@ import java.awt.Frame;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.DefaultComboBoxModel;
 
@@ -228,7 +229,7 @@ public class CLIPanel extends javax.swing.JPanel {
 		List<String> args = new ArrayList<String>();
 		String cmd = forDataBrowser? "jailerDataBrowser" : "jailerGUI";
 		String cmdWithExt = "sh " + cmd + ".sh";
-		if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
+		if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
 			cmdWithExt = cmd + ".bat";
 		}
 

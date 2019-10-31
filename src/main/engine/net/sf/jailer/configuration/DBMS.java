@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -697,7 +698,7 @@ public class DBMS {
 	 */
 	public SimpleDateFormat createTimestampFormat() {
 		if (timestampFormat == null) {
-			timestampFormat = new SimpleDateFormat(timestampPattern);
+			timestampFormat = new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
 		}
 		return timestampFormat;
 	}
@@ -721,7 +722,7 @@ public class DBMS {
 	 */
 	public SimpleDateFormat createDateFormat() {
 		if (dateFormat == null) {
-			dateFormat = new SimpleDateFormat(datePattern);
+			dateFormat = new SimpleDateFormat(datePattern, Locale.ENGLISH);
 		}
 		return dateFormat;
 	}

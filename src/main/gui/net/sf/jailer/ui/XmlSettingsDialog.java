@@ -19,6 +19,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.swing.DefaultComboBoxModel;
 
@@ -107,12 +108,12 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		String dateExampleText = "- invalid pattern -";
 		String timestampExampleText = "- invalid pattern -";
 		try {
-			dateExampleText = new SimpleDateFormat(datePattern.getEditor().getItem().toString()).format(now);
+			dateExampleText = new SimpleDateFormat(datePattern.getEditor().getItem().toString(), Locale.ENGLISH).format(now);
 		} catch (Exception e) {
 			// ignore
 		}
 		try {
-			timestampExampleText = new SimpleDateFormat(timestampPattern.getEditor().getItem().toString()).format(now);
+			timestampExampleText = new SimpleDateFormat(timestampPattern.getEditor().getItem().toString(), Locale.ENGLISH).format(now);
 		} catch (Exception e) {
 			// ignore
 		}

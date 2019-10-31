@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -130,7 +131,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			userDefinedTypes = new HashSet<String>();
 			if (session.dbms.getUserDefinedColumnsQuery() != null) {
 				try {
-					String query = String.format(session.dbms.getUserDefinedColumnsQuery(), Quoting.staticUnquote(session.getSchema()));
+					String query = String.format(Locale.ENGLISH, session.dbms.getUserDefinedColumnsQuery(), Quoting.staticUnquote(session.getSchema()));
 					session.executeQuery(query, new ResultSetReader() {
 						
 						@Override
@@ -387,7 +388,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		List<String> tableNames = new ArrayList<String>();
 		while (resultSet.next()) {
 			String tableName = resultSet.getString(3);
-			if (resultSet.getString(4) != null && types.contains(resultSet.getString(4).toUpperCase())) {
+			if (resultSet.getString(4) != null && types.contains(resultSet.getString(4).toUpperCase(Locale.ENGLISH))) {
 				if (isValidName(tableName, session)) {
 					tableName = quoting.quote(tableName);
 					if (executionContext.getQualifyNames() || (depth > 0 && introspectionSchema != null && !introspectionSchema.equals(session.getIntrospectionSchema()))) {
@@ -400,7 +401,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 						}
 					}
 					tableNames.add(tableName);
-					tableTypes.put(tableName, resultSet.getString(4).toUpperCase());
+					tableTypes.put(tableName, resultSet.getString(4).toUpperCase(Locale.ENGLISH));
 					_log.info("found table " + tableName);
 				} else {
 					_log.info("skip table " + tableName);
@@ -462,7 +463,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 						throw new RuntimeException("unknown SQL type: " + type);
 					}
 				}
-				if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
+				if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase(Locale.ENGLISH)) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
 					length = resultSet.getInt(7);
 				}
 				if (DBMS.MSSQL.equals(session.dbms) && sqlType != null && sqlType.equalsIgnoreCase("timestamp")) {
@@ -511,7 +512,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			String viewText = null;
 			String viewTextOrDDLQuery = session.dbms.getViewTextOrDDLQuery();
 			if ("VIEW".equals(tableTypes.get(table.getName())) && viewTextOrDDLQuery != null) {
-				String viewTextQuery = String.format(viewTextOrDDLQuery, introspectionSchema, table.getUnqualifiedName());
+				String viewTextQuery = String.format(Locale.ENGLISH, viewTextOrDDLQuery, introspectionSchema, table.getUnqualifiedName());
 				final String[] viewTextContainer = new String[1];
 				try {
 					session.executeQuery(viewTextQuery, new Session.AbstractResultSetReader() {
@@ -531,7 +532,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				}
 			} else if ("SYNONYM".equals(tableTypes.get(table.getName())) || "ALIAS".equals(tableTypes.get(table.getName()))) {
 				if (session.dbms.getSynonymTableQuery() != null) {
-					String synonymTableQuery = String.format(session.dbms.getSynonymTableQuery(), introspectionSchema, table.getUnqualifiedName());
+					String synonymTableQuery = String.format(Locale.ENGLISH, session.dbms.getSynonymTableQuery(), introspectionSchema, table.getUnqualifiedName());
 					final String[] synonymTableQueryContainer = new String[1];
 					try {
 						session.executeQuery(synonymTableQuery, new Session.AbstractResultSetReader() {
@@ -1235,7 +1236,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					// throw new RuntimeException("unknown SQL type: " + type);
 				}
 			}
-			if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
+			if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase(Locale.ENGLISH)) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
 				length = resultSet.getInt(7);
 				if (type == Types.VARCHAR) {
 					if (session.dbms.getVarcharLengthLimit() != null) {
@@ -1362,7 +1363,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				return "VARCHAR";
 			}
 		}
-		if (!sqlType.toLowerCase().endsWith(" identity")) {
+		if (!sqlType.toLowerCase(Locale.ENGLISH).endsWith(" identity")) {
 			// Some drivers (MS SQL Server driver for example) prepends the type with some options,
 			// so we ignore everything after the first space.
 			int i = sqlType.indexOf(' ');
@@ -1399,7 +1400,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				sqlType = "(?unknown type)";
 			}
 		}
-		if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
+		if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase(Locale.ENGLISH)) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
 			length = metaData.getPrecision(i);
 			if (type == Types.VARCHAR) {
 				if (session.dbms.getVarcharLengthLimit() != null) {

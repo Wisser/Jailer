@@ -30,6 +30,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -926,8 +927,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 								if (!unquote(tableC.getUnqualifiedName())
 										.equalsIgnoreCase(aName)) {
 									if (unquote(tableC.getUnqualifiedName())
-											.toLowerCase().startsWith(
-													as.toLowerCase())) {
+											.toLowerCase(Locale.ENGLISH).startsWith(
+													as.toLowerCase(Locale.ENGLISH))) {
 										unique = false;
 										break;
 									}

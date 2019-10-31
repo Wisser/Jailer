@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import javax.xml.transform.sax.TransformerHandler;
 
@@ -136,9 +137,9 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		this.entityGraph = entityGraph;
 		this.rowElementName = qualifiedTableName(table);
 		this.scriptFile = new File(scriptFile);
-		this.datePattern = new SimpleDateFormat(datePattern);
-		this.timePattern = new SimpleDateFormat(timePattern);
-		this.timestampPattern = new SimpleDateFormat(timestampPattern);
+		this.datePattern = new SimpleDateFormat(datePattern, Locale.ENGLISH);
+		this.timePattern = new SimpleDateFormat(timePattern, Locale.ENGLISH);
+		this.timestampPattern = new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
 		this.session = session;
 	}
 	
@@ -369,7 +370,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 			}	
 		}
 		return scriptFile.getName() + ".lob" + File.separator
-				+ rowElementName.toLowerCase() + path + File.separator
+				+ rowElementName.toLowerCase(Locale.ENGLISH) + path + File.separator
 				+ count + suffix;
 	}
 

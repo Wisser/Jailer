@@ -22,6 +22,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import net.sf.jailer.datamodel.Column;
@@ -101,8 +102,8 @@ public class BrowserContentCellEditor {
 			}
 		},
 		DATE {
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-			SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+			SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
 		
 			@Override
 			String cellContentToText(int columnType, Object content) {

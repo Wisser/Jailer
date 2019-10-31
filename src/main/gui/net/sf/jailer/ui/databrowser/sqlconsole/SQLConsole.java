@@ -47,6 +47,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -765,11 +766,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             		stmtId = "Jailer" + (nextPlanID++ % 8);
 				}
             	if (session.dbms.getExplainPrepare() != null && !session.dbms.getExplainPrepare().isEmpty()) {
-                	statement.execute(String.format(session.dbms.getExplainPrepare(), sqlStatement, stmtId));
+                	statement.execute(String.format(Locale.ENGLISH, session.dbms.getExplainPrepare(), sqlStatement, stmtId));
                 	statement.close();
             	}
                 statement = connection.createStatement();
-            	hasResultSet = statement.execute(String.format(session.dbms.getExplainQuery(), sqlStatement, stmtId));
+            	hasResultSet = statement.execute(String.format(Locale.ENGLISH, session.dbms.getExplainQuery(), sqlStatement, stmtId));
             } else {
             	sqlPlusResultSet = sqlPlusSupport.executeSQLPLusQuery(sqlStatement);
             	if (sqlPlusResultSet != null) {
@@ -1147,7 +1148,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             	if (session.dbms.getExplainPrepare() != null) {
                     try {
                     	statement = session.getConnection().createStatement();
-						statement.execute(String.format(session.dbms.getExplainCleanup(), sqlStatement, stmtId));
+						statement.execute(String.format(Locale.ENGLISH, session.dbms.getExplainCleanup(), sqlStatement, stmtId));
 	                	statement.close();
 					} catch (SQLException e) {
 	                    logger.info("error", e);
