@@ -482,7 +482,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					length = 0;
 					precision = -1;
 				}
-				Column column = new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
+				Column column = new Column(colName, filterType(sqlType, length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
 				for (int i: pk.keySet()) {
 					if (pk.get(i).name.equals(column.name)) {
 						pk.put(i, column);
@@ -1261,7 +1261,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				precision = -1;
 			}
 			_log.debug("column info: '" + colName + "' '" + sqlType + "' " + type + " '" + resultSet.getString(6) + "'");
-			Column column = new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
+			Column column = new Column(colName, filterType(sqlType, length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
 			column.isNullable = resultSet.getInt(11) == DatabaseMetaData.columnNullable;
 			Boolean isVirtual = null;
 			if (session.dbms.getExportBlocks().contains(sqlType)) {
@@ -1335,6 +1335,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				} else if ("bytea".equalsIgnoreCase(typeName)) {
 					length = 0;
 				}
+				if (length > 10485760 && "bpchar".equalsIgnoreCase(typeName)) {
+					length = 0;
+				}
 			} else if (DBMS.SQLITE.equals(dbms)) {
 				return 0;
 			}
@@ -1346,6 +1349,27 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 		}
 		return length;
+	}
+
+	/**
+	 * Filters the type attribute of a column in a DBMS specific way.
+	 * 
+	 * @param length the length as given from driver
+	 * @param the type name
+	 * @param type the sql type
+	 * @param dbms the DBMS
+	 * 
+	 * @return filtered length
+	 */
+	public static String filterType(String sqlType, int length, String typeName, int type, DBMS dbms, int origLength) {
+		if (length > 10485760) {
+			if (DBMS.POSTGRESQL.equals(dbms)) {
+				if ("bpchar".equalsIgnoreCase(typeName)) {
+					return "varchar";
+				}
+			}
+		}
+		return sqlType;
 	}
 
 	/**
@@ -1424,7 +1448,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			length = 0;
 			precision = -1;
 		}
-		Column column = new Column(colName, sqlType, filterLength(length, metaData.getColumnTypeName(i), type, session.dbms, metaData.getPrecision(i)), precision);
+		Column column = new Column(colName, filterType(sqlType, length, metaData.getColumnTypeName(i), type, session.dbms, metaData.getPrecision(i)), filterLength(length, metaData.getColumnTypeName(i), type, session.dbms, metaData.getPrecision(i)), precision);
 		column.isNullable = metaData.isNullable(i) != ResultSetMetaData.columnNoNulls;
 		return column;
 	}

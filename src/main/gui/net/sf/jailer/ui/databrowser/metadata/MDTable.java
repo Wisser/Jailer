@@ -216,7 +216,7 @@ public class MDTable extends MDObject {
                             length = 0;
                             precision = -1;
                         }
-                        Column column = new Column(colName, sqlType, JDBCMetaDataBasedModelElementFinder.filterLength(length, resultSet.getString(6), type, metaDataSource.getSession().dbms, resultSet.getInt(7)), precision);
+                        Column column = new Column(colName, JDBCMetaDataBasedModelElementFinder.filterType(sqlType, length, resultSet.getString(6), type, metaDataSource.getSession().dbms, resultSet.getInt(7)), JDBCMetaDataBasedModelElementFinder.filterLength(length, resultSet.getString(6), type, metaDataSource.getSession().dbms, resultSet.getInt(7)), precision);
                         columnTypes.add(column);
                         column.isNullable = resultSet.getInt(11) == DatabaseMetaData.columnNullable;
                     }
