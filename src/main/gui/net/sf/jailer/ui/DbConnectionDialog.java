@@ -184,6 +184,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			setTitle((reason == null ? "" : (reason + " - ")) + "Connect.");
 			sortConnectionList();
 			refresh();
+			if (connectionsTable.getModel().getRowCount() > 0) {
+				connectionsTable.getSelectionModel().setSelectionInterval(0, 0);
+			}
 			setVisible(true);
 			if (currentConnection == null) {
 				isConnected = false;
