@@ -881,7 +881,7 @@ public class Session {
 	 * @param sql the SQL-Statement
 	 */
 	public long execute(String sql) throws SQLException {
-		return execute(sql, null);
+		return execute(sql, null, false);
 	}
 
 	/**
@@ -889,7 +889,7 @@ public class Session {
 	 * 
 	 * @param sql the SQL-Statement
 	 */
-	public long execute(String sql, Object cancellationContext) throws SQLException {
+	public long execute(String sql, Object cancellationContext, boolean acceptQueries) throws SQLException {
 		if (getLogStatements()) {
 			_log.info(sql);
 		}
@@ -900,7 +900,15 @@ public class Session {
 			CancellationHandler.checkForCancellation(cancellationContext);
 			statement = connectionFactory.getConnection().createStatement();
 			CancellationHandler.begin(statement, cancellationContext);
-			rc = statement.executeUpdate(sql);
+			if (acceptQueries) {
+				if (statement.execute(sql)) {
+					statement.getResultSet().close();
+				} else {
+					rc = statement.getUpdateCount();
+				}
+			} else {
+				rc = statement.executeUpdate(sql);
+			}
 			if (getLogStatements()) {
 				_log.info("" + rc + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");
 			}

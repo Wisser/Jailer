@@ -4033,7 +4033,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 										};
 										cancelLoadButton.addActionListener(listener);
 										try {
-											session.execute(updateStatement, context);
+											session.execute(updateStatement, context, false);
 										} catch (Exception e) {
 											exception = e;
 										} finally {

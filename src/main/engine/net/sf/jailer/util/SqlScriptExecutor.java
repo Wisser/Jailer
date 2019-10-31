@@ -368,7 +368,7 @@ public class SqlScriptExecutor {
 										}
 									}
 									if (!done) {
-										rc = session.execute(stmt);
+										rc = session.execute(stmt, null, true);
 									}
 									totalRowCount.addAndGet(rc);
 									linesRead.getAndIncrement();
