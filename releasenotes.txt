@@ -1,3 +1,6 @@
+9.1.5
+  - Fix for https://github.com/Wisser/Jailer/issues/20 (work in progress)
+
 9.1.4
   - Deadlock prevention in PostgreSQL.
   - Support for PostgreSQL type "bpchar".

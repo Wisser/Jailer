@@ -285,6 +285,8 @@ union all
         </typeReplacement>
         <identityInserts>true</identityInserts>
         <timestampPattern>'convert(datetime, '''yyyy-MM-dd'T'HH:mm:ss.SSS''', 126)'</timestampPattern>
+        <timestampWithNanoTypeName>datetime2</timestampWithNanoTypeName>
+        <timestampWithNanoPattern>'convert(datetime2, '''yyyy-MM-dd'T'HH:mm:ss'.${NANO}'', 126)'</timestampWithNanoPattern>
         <emptyBLOBValue>0x</emptyBLOBValue>
         <emptyCLOBValue>''</emptyCLOBValue>
         <emptyNCLOBValue>N''</emptyNCLOBValue>

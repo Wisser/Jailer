@@ -70,6 +70,8 @@ public class CellContentConverter {
 		this.configuration = this.session.dbms;
 	}
 
+	private static final int TIMESTAMP_WITH_NANO = -30201;
+	
 	/**
 	 * Converts a cell-content to valid SQL-literal.
 	 * 
@@ -92,7 +94,14 @@ public class CellContentConverter {
 		}
 		if (content instanceof java.sql.Timestamp) {
 			String nano = getNanoString((Timestamp) content, true);
-			if (targetConfiguration.getTimestampPattern() != null) {
+			if (content instanceof TimestampWithNano && targetConfiguration.getTimestampWithNanoPattern() != null) {
+				synchronized (targetConfiguration.getTimestampWithNanoPattern()) {
+					return targetConfiguration.createTimestampWithNanoFormat()
+							.format(content)
+							.replace("${NANOFORMAT}", "FF" + (nano.length()))
+							.replace("${NANO}", nano);
+				}
+			} else if (targetConfiguration.getTimestampPattern() != null) {
 				synchronized (targetConfiguration.getTimestampPattern()) {
 					return targetConfiguration.createTimestampFormat()
 							.format(content)
@@ -308,6 +317,12 @@ public class CellContentConverter {
 		}
 	}
 
+	public static class TimestampWithNano extends Timestamp {
+		public TimestampWithNano(long time) {
+			super(time);
+		}
+	}
+	
 	/**
 	 * Gets object from result-set.
 	 * 
@@ -320,36 +335,40 @@ public class CellContentConverter {
 		if (type == null) {
 			try {
 				type = resultSetMetaData.getColumnType(i);
+				String columnTypeName = resultSetMetaData.getColumnTypeName(i);
+				if (configuration.getTimestampWithNanoTypeName() != null && configuration.getTimestampWithNanoTypeName().equalsIgnoreCase(columnTypeName)) {
+					type = TIMESTAMP_WITH_NANO;
+				}
 				if (DBMS.ORACLE.equals(configuration)) {
 					if (type == Types.DATE || type == -102 || type == -101 /* TIMESTAMPTZ */) {
 						type = Types.TIMESTAMP;
 					}
 				 }
-				 if (DBMS.POSTGRESQL.equals(configuration)) {
-					String typeName = resultSetMetaData.getColumnTypeName(i);
+				if (DBMS.POSTGRESQL.equals(configuration)) {
+					String typeName = columnTypeName;
 					if (isPostgresObjectType(typeName) || type == Types.ARRAY) {
 						type = TYPE_POBJECT;
 					}
 				 }
 				 // workaround for JDTS bug
 				 if (type == Types.VARCHAR) {
-					 if ("nvarchar".equalsIgnoreCase(resultSetMetaData.getColumnTypeName(i))) {
+					 if ("nvarchar".equalsIgnoreCase(columnTypeName)) {
 						 type = Types.NVARCHAR;
 					 }
 				 }
 				 // workaround for JDTS bug
 				 if (DBMS.MSSQL.equals(configuration)) {
-					 if ("datetimeoffset".equalsIgnoreCase(resultSetMetaData.getColumnTypeName(i))) {
+					 if ("datetimeoffset".equalsIgnoreCase(columnTypeName)) {
 						 type = Types.TIMESTAMP;
 					 }
 				 }
 				 if (type == Types.CHAR) {
-					 if ("nchar".equalsIgnoreCase(resultSetMetaData.getColumnTypeName(i))) {
+					 if ("nchar".equalsIgnoreCase(columnTypeName)) {
 						 type = Types.NCHAR;
 					 }
 				 }
 				 if (type == Types.OTHER) {
-					 if ("rowid".equalsIgnoreCase(resultSetMetaData.getColumnTypeName(i))) {
+					 if ("rowid".equalsIgnoreCase(columnTypeName)) {
 						 type = Types.ROWID;
 					 }
 				 }
@@ -387,9 +406,17 @@ public class CellContentConverter {
 			return resultSet.getString(i);
 		}
 		Object object = resultSet.getObject(i);
-		
+
 		// TODO mssql: if type is (VAR|LONGVAR)BINARY or (VAR|LONGVAR)(N)CHAR then use #get...Stream(), put data into a B|C|NCLOB implementation
-		
+
+		if (type == TIMESTAMP_WITH_NANO && object instanceof Timestamp) {
+			long t = ((Timestamp) object).getTime();
+			int nano = ((Timestamp) object).getNanos();
+			Timestamp ts = new TimestampWithNano(t);
+			ts.setNanos(nano);
+			object = ts;
+		}
+
 		if (type == Types.NCHAR || type == Types.NVARCHAR || type == Types.LONGNVARCHAR) {
 			if (object instanceof String) {
 				object = new NCharWrapper((String) object);

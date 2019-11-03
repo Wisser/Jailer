@@ -100,6 +100,9 @@ public class DBMS {
 		this.avoidLeftJoin = other.avoidLeftJoin;
 		this.timestampPattern = other.timestampPattern;
 		this.timestampFormat = other.timestampFormat;
+		this.timestampWithNanoFormat = other.timestampWithNanoFormat;
+		this.timestampWithNanoTypeName = other.timestampWithNanoTypeName;
+		this.timestampWithNanoPattern = other.timestampWithNanoPattern;
 		this.datePattern = other.datePattern;
 		this.dateFormat = other.dateFormat;
 		this.sqlDialect = other.sqlDialect;
@@ -291,9 +294,12 @@ public class DBMS {
 	private String binaryPattern = "x'%s'";
 	private boolean avoidLeftJoin = false;
 	private String timestampPattern = null;
+	private String timestampWithNanoTypeName = null;
+	private String timestampWithNanoPattern = null;
 	private String datePattern = null;
 	@XmlTransient
 	private SimpleDateFormat timestampFormat = null;
+	private SimpleDateFormat timestampWithNanoFormat = null;
 	private SimpleDateFormat dateFormat = null;
 	private SQLDialect sqlDialect = new SQLDialect();
 	private String rowidName = null;
@@ -691,6 +697,47 @@ public class DBMS {
 	 */
 	public void setTimestampPattern(String timestampPattern) {
 		this.timestampPattern = timestampPattern;
+	}
+
+	/**
+	 * @return name of timestamp type with nano-precision, if any
+	 */
+	public String getTimestampWithNanoTypeName() {
+		return timestampWithNanoTypeName;
+	}
+
+	/**
+	 * @param timestampWithNanoTypeName name of timestamp type with nano-precision, if any
+	 */
+	public void setTimestampWithNanoTypeName(String timestampWithNanoTypeName) {
+		this.timestampWithNanoTypeName = timestampWithNanoTypeName;
+	}
+
+	/**
+	 * @return timestampPattern the timestampPattern to set
+	 */
+	public String getTimestampWithNanoPattern() {
+		return timestampWithNanoPattern;
+	}
+
+	/**
+	 * @param timestampWithNanoPattern the timestampPattern to set
+	 */
+	public void setTimestampWithNanoPattern(String timestampWithNanoPattern) {
+		this.timestampWithNanoPattern = timestampWithNanoPattern;
+	}
+
+	/**
+	 * @return the {@link #getTimestampWithNanoPattern()} as {@link SimpleDateFormat}.
+	 */
+	public SimpleDateFormat createTimestampWithNanoFormat() {
+		if (timestampWithNanoPattern == null) {
+			return null;
+		}
+		if (timestampWithNanoFormat == null) {
+			timestampWithNanoFormat = new SimpleDateFormat(timestampWithNanoPattern, Locale.ENGLISH);
+		}
+		return timestampWithNanoFormat;
 	}
 
 	/**
