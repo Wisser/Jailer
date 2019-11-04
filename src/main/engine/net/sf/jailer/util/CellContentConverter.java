@@ -85,29 +85,22 @@ public class CellContentConverter {
 
 		if (content instanceof java.sql.Date) {
 			if (targetConfiguration.getDatePattern() != null) {
-				synchronized (targetConfiguration.getDatePattern()) {
-					return targetConfiguration.createDateFormat()
-							.format((Date) content);
-				}
+				return targetConfiguration.createDateFormat().format((Date) content);
 			}
 			return "'" + content + "'";
 		}
 		if (content instanceof java.sql.Timestamp) {
 			String nano = getNanoString((Timestamp) content, true);
 			if (content instanceof TimestampWithNano && targetConfiguration.getTimestampWithNanoPattern() != null) {
-				synchronized (targetConfiguration.getTimestampWithNanoPattern()) {
-					return targetConfiguration.createTimestampWithNanoFormat()
-							.format(content)
-							.replace("${NANOFORMAT}", "FF" + (nano.length()))
-							.replace("${NANO}", nano);
-				}
+				return targetConfiguration.createTimestampWithNanoFormat()
+						.format(content)
+						.replace("${NANOFORMAT}", "FF" + (nano.length()))
+						.replace("${NANO}", nano);
 			} else if (targetConfiguration.getTimestampPattern() != null) {
-				synchronized (targetConfiguration.getTimestampPattern()) {
-					return targetConfiguration.createTimestampFormat()
-							.format(content)
-							.replace("${NANOFORMAT}", "FF" + (nano.length()))
-							.replace("${NANO}", nano);
-				}
+				return targetConfiguration.createTimestampFormat()
+						.format(content)
+						.replace("${NANOFORMAT}", "FF" + (nano.length()))
+						.replace("${NANO}", nano);
 			}
 			return "'" + content + "'";
 		}

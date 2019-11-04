@@ -99,12 +99,9 @@ public class DBMS {
 		this.binaryPattern = other.binaryPattern;
 		this.avoidLeftJoin = other.avoidLeftJoin;
 		this.timestampPattern = other.timestampPattern;
-		this.timestampFormat = other.timestampFormat;
-		this.timestampWithNanoFormat = other.timestampWithNanoFormat;
 		this.timestampWithNanoTypeName = other.timestampWithNanoTypeName;
 		this.timestampWithNanoPattern = other.timestampWithNanoPattern;
 		this.datePattern = other.datePattern;
-		this.dateFormat = other.dateFormat;
 		this.sqlDialect = other.sqlDialect;
 		this.rowidName = other.rowidName;
 		this.supportsSchemasInIndexDefinitions = other.supportsSchemasInIndexDefinitions;
@@ -298,9 +295,9 @@ public class DBMS {
 	private String timestampWithNanoPattern = null;
 	private String datePattern = null;
 	@XmlTransient
-	private SimpleDateFormat timestampFormat = null;
-	private SimpleDateFormat timestampWithNanoFormat = null;
-	private SimpleDateFormat dateFormat = null;
+	private ThreadLocal<SimpleDateFormat> timestampFormat = new ThreadLocal<SimpleDateFormat>();
+	private ThreadLocal<SimpleDateFormat> timestampWithNanoFormat = new ThreadLocal<SimpleDateFormat>();
+	private ThreadLocal<SimpleDateFormat> dateFormat = new ThreadLocal<SimpleDateFormat>();
 	private SQLDialect sqlDialect = new SQLDialect();
 	private String rowidName = null;
 	private Boolean supportsSchemasInIndexDefinitions = null;
@@ -734,20 +731,24 @@ public class DBMS {
 		if (timestampWithNanoPattern == null) {
 			return null;
 		}
-		if (timestampWithNanoFormat == null) {
-			timestampWithNanoFormat = new SimpleDateFormat(timestampWithNanoPattern, Locale.ENGLISH);
+		SimpleDateFormat format = timestampWithNanoFormat.get();
+		if (format == null) {
+			format = new SimpleDateFormat(timestampWithNanoPattern, Locale.ENGLISH);
+			timestampWithNanoFormat.set(format);
 		}
-		return timestampWithNanoFormat;
+		return format;
 	}
 
 	/**
 	 * @return the {@link #getTimestampPattern()} as {@link SimpleDateFormat}.
 	 */
 	public SimpleDateFormat createTimestampFormat() {
-		if (timestampFormat == null) {
-			timestampFormat = new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
+		SimpleDateFormat format = timestampFormat.get();
+		if (format == null) {
+			format = new SimpleDateFormat(timestampPattern, Locale.ENGLISH);
+			timestampFormat.set(format);
 		}
-		return timestampFormat;
+		return format;
 	}
 
 	/**
@@ -768,10 +769,12 @@ public class DBMS {
 	 * @return the {@link #getDatePattern()} as {@link SimpleDateFormat}.
 	 */
 	public SimpleDateFormat createDateFormat() {
-		if (dateFormat == null) {
-			dateFormat = new SimpleDateFormat(datePattern, Locale.ENGLISH);
+		SimpleDateFormat format = dateFormat.get();
+		if (format == null) {
+			format = new SimpleDateFormat(datePattern, Locale.ENGLISH);
+			dateFormat.set(format);
 		}
-		return dateFormat;
+		return format;
 	}
 
 	/**
