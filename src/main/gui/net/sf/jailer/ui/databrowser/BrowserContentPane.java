@@ -506,7 +506,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * For in-place editing.
 	 */
-	private BrowserContentCellEditor browserContentCellEditor = new BrowserContentCellEditor(new int[0]);
+	private BrowserContentCellEditor browserContentCellEditor = new BrowserContentCellEditor(new int[0], new String[0], null);
 	
 	/**
 	 * Cache for association row count.
@@ -3660,14 +3660,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					}
 					int[] columnTypes = new int[columnCount];
+					String[] columnTypeNames = new String[columnCount];
 					for (int ci = 1 + finalNumParentPKColumns; ci <= columnCount; ++ci) {
 						if (metaData instanceof MemorizedResultSetMetaData) {
 							columnTypes[ci - 1 - finalNumParentPKColumns] = ((MemorizedResultSetMetaData) metaData).types[ci - 1];
+							columnTypeNames[ci - 1 - finalNumParentPKColumns] = ((MemorizedResultSetMetaData) metaData).typeNames[ci - 1];
 						} else {
 							columnTypes[ci - 1 - finalNumParentPKColumns] = metaData.getColumnType(ci);
+							columnTypeNames[ci - 1 - finalNumParentPKColumns] = metaData.getColumnTypeName(ci);
 						}
 					}
-					browserContentCellEditor = new BrowserContentCellEditor(columnTypes);
+					browserContentCellEditor = new BrowserContentCellEditor(columnTypes, columnTypeNames, session);
 				}
 				
 				@Override

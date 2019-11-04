@@ -70,7 +70,7 @@ public class CellContentConverter {
 		this.configuration = this.session.dbms;
 	}
 
-	private static final int TIMESTAMP_WITH_NANO = -30201;
+	public static final int TIMESTAMP_WITH_NANO = -30201;
 	
 	/**
 	 * Converts a cell-content to valid SQL-literal.

@@ -1358,8 +1358,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								} else {
 									if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || UIUtil.isDDLUptodate(ddlCreator, ExtractionModelFrame.this, dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 										"Automatic creation of working-tables failed!\n" +
-										"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n" +
-										"or try another \"Working table schema\"\n\n" +
+										"Please execute the Jailer-DDL manually (jailer_ddl.sql),\n" +
+										"try another \"Working table schema\"," +
+										"or use the Working table scope \"local database\"\n\n" +
 										"Continue Data Export?", dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, true, false, true, executionContext)) {
 										ProgressTable progressTable = new ProgressTable();
 										ProgressTable progressTableForDelete = new ProgressTable();

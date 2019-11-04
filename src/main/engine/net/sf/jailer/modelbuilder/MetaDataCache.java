@@ -166,10 +166,12 @@ public class MetaDataCache {
 			ResultSetMetaData rsMetaData = rs.getMetaData();
 			int numCol = rsMetaData.getColumnCount();
 			String[] names = new String[numCol];
+			String[] typeNames = new String[numCol];
 			int[] types = new int[numCol];
 			for (int i = 0; i < numCol; ++i) {
 				names[i] = rsMetaData.getColumnName(i + 1);
 				types[i] = rsMetaData.getColumnType(i + 1);
+				typeNames[i] = ""; // not needed
 			}
 			
 			while (rs.next()) {
@@ -194,7 +196,7 @@ public class MetaDataCache {
 				}
 				rowList.add(row);
 			}
-			metaDataCache.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types); 
+			metaDataCache.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types, typeNames); 
 			rs.close();
 
 			if (metaDataCache.cache.isEmpty()) {

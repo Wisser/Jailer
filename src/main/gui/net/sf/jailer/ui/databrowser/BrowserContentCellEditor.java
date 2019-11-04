@@ -25,9 +25,11 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.CellContentConverter.TimestampWithNano;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -103,14 +105,14 @@ public class BrowserContentCellEditor {
 		},
 		DATE {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-			SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
-		
+			SimpleDateFormat timeStampWONFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+
 			@Override
 			String cellContentToText(int columnType, Object content) {
 				if (columnType == Types.DATE && (content == null || content instanceof Date)) {
 					return dateFormat.format((Date) content);
 				}
-				return timeStampFormat.format((Timestamp) content);
+				return String.valueOf((Timestamp) content);
 			}
 
 			@Override
@@ -120,7 +122,73 @@ public class BrowserContentCellEditor {
 						return new java.sql.Date(dateFormat.parse(text).getTime());
 					}
 					try {
-						return new java.sql.Timestamp(timeStampFormat.parse(text).getTime());
+						int dot = text.lastIndexOf('.');
+						int nano = 0;
+						if (dot > 0) {
+							String n = text.substring(dot + 1);
+							while (n.length() < 9) {
+								n += "0";
+							}
+							if (n.length() > 9) {
+								n = n.substring(0, 9);
+							}
+							nano = Integer.parseInt(n);
+							text = text.substring(0, dot);
+						}
+						Timestamp result = new Timestamp(timeStampWONFormat.parse(text).getTime());
+						result.setNanos(nano);
+						return result;
+					} catch (ParseException e) {
+						if (text.length() <= 11) {
+							return new java.sql.Timestamp(dateFormat.parse(text).getTime());
+						}
+					}
+				} catch (ParseException e) {
+					// ignore
+				}
+				return INVALID;
+			}
+
+			@Override
+			boolean isEditable(int columnType, Object content) {
+				return true;
+			}
+		},
+		
+		TIMESTAMP_WITH_NANO {
+			SimpleDateFormat timeStampWONFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+			
+			@Override
+			String cellContentToText(int columnType, Object content) {
+				String text = timeStampWONFormat.format((Timestamp) content);
+				String nano = String.valueOf(1000000000L + ((TimestampWithNano) content).getNanos()).substring(1);
+				while (nano.length() > 1 && nano.endsWith("0")) {
+					nano = nano.substring(0, nano.length() - 1);
+				}
+				return text + "." + nano;
+			}
+
+			@Override
+			Object textToContent(int columnType, String text, Object oldContent) {
+				try {
+					try {
+						int dot = text.lastIndexOf('.');
+						int nano = 0;
+						if (dot > 0) {
+							String n = text.substring(dot + 1);
+							while (n.length() < 9) {
+								n += "0";
+							}
+							if (n.length() > 9) {
+								n = n.substring(0, 9);
+							}
+							nano = Integer.parseInt(n);
+							text = text.substring(0, dot);
+						}
+						TimestampWithNano result = new TimestampWithNano(timeStampWONFormat.parse(text).getTime());
+						result.setNanos(nano);
+						return result;
 					} catch (ParseException e) {
 						if (text.length() <= 11) {
 							return new java.sql.Timestamp(dateFormat.parse(text).getTime());
@@ -137,7 +205,7 @@ public class BrowserContentCellEditor {
 				return true;
 			}
 		};
-		
+
 		abstract boolean isEditable(int columnType, Object content);
 		abstract String cellContentToText(int columnType, Object content);
 		abstract Object textToContent(int columnType, String text, Object oldContent);
@@ -163,20 +231,37 @@ public class BrowserContentCellEditor {
 
 		converterPerType.put(Types.DATE, Converter.DATE);
 		converterPerType.put(Types.TIMESTAMP, Converter.DATE);
+
+		converterPerType.put(CellContentConverter.TIMESTAMP_WITH_NANO, Converter.TIMESTAMP_WITH_NANO);
 	}
 	
 	/**
 	 * {@link Types} per column.
 	 */
 	private final int[] columnTypes;
+
+	/**
+	 * The session.
+	 */
+	private final Session session;
 	
 	/**
 	 * Constructor.
 	 * 
 	 * @param columnTypes {@link Types} per column
+	 * @param columnTypeNames type names per column
+	 * @param session the session
 	 */
-	public BrowserContentCellEditor(int[] columnTypes) {
+	public BrowserContentCellEditor(int[] columnTypes, String[] columnTypeNames, Session session) {
 		this.columnTypes = columnTypes;
+		this.session = session;
+		if (session != null && session.dbms.getTimestampWithNanoTypeName() != null) {
+			for (int i = 0; i < columnTypes.length && i < columnTypeNames.length; ++i) {
+				if (session.dbms.getTimestampWithNanoTypeName().equalsIgnoreCase(columnTypeNames[i])) {
+					columnTypes[i] = CellContentConverter.TIMESTAMP_WITH_NANO;
+				}
+			}
+		}
 	}
 
 	/**

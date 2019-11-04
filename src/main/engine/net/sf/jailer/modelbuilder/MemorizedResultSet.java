@@ -58,9 +58,18 @@ public class MemorizedResultSet implements ResultSet {
 		this.rowList = rowList;
 	}
 
+	public MemorizedResultSet(List<Object[]> rowList, int numCol, String[] names, int[] types, String[] typeNames) {
+		this.rowList = rowList;
+		this.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types, typeNames);
+	}
+
 	public MemorizedResultSet(List<Object[]> rowList, int numCol, String[] names, int[] types) {
 		this.rowList = rowList;
-		this.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types);
+		String[] typeNames = new String[types.length];
+		for (int i = 0; i < typeNames.length; ++i) {
+			typeNames[i] = "";
+		}
+		this.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types, typeNames);
 	}
 
 	public MemorizedResultSet(List<Object[]> rowList, MemorizedResultSetMetaData resultSetMetaData) {
@@ -95,9 +104,11 @@ public class MemorizedResultSet implements ResultSet {
 		
 		final String[] names = new String[numCol];
 		final int[] types = new int[numCol];
+		final String[] typeNames = new String[numCol];
 		for (int i = 1; i <= numCol; ++i) {
 			names[i - 1] = columnNames == null? rmd.getColumnName(projection == null? i : projection[i - 1]) : columnNames[i - 1];
 			types[i - 1] = rmd.getColumnType(projection == null? i : projection[i - 1]);
+			typeNames[i - 1] = rmd.getColumnTypeName(projection == null? i : projection[i - 1]);
 		}
 
 		while (resultSet.next()) {
@@ -114,7 +125,7 @@ public class MemorizedResultSet implements ResultSet {
 				CancellationHandler.checkForCancellation(cancellationContext);
 			}
 		}
-		resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types);
+		resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types, typeNames);
 	}
 
 	protected void prepareHook(ResultSetMetaData rmd) throws SQLException {
@@ -1299,11 +1310,13 @@ public class MemorizedResultSet implements ResultSet {
 		private final int numCol;
 		private final String[] names;
 		public final int[] types;
+		public final String[] typeNames;
 
-		public MemorizedResultSetMetaData(int numCol, String[] names, int[] types) {
+		public MemorizedResultSetMetaData(int numCol, String[] names, int[] types, String[] typeNames) {
 			this.numCol = numCol;
 			this.names = names;
 			this.types = types;
+			this.typeNames = typeNames;
 		}
 
 		@Override
