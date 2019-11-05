@@ -1,5 +1,8 @@
 9.1.5
-  - Fix for https://github.com/Wisser/Jailer/issues/20
+  - Support for data type datetime2 in MS SQL.
+    https://github.com/Wisser/Jailer/issues/20
+  - The -schemamapping option was not used correctly for the statements of a delete script.
+    https://github.com/Wisser/Jailer/issues/21
   - Formatting of dates/timestamps during export no longer takes place synchronized.
     This improves performance when multiple threads are used.
 
