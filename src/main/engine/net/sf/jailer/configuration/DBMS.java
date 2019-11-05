@@ -80,6 +80,7 @@ public class DBMS {
 		this.testQuery = other.testQuery;
 		this.statisticRenovator = other.statisticRenovator;
 		this.typeReplacement = other.typeReplacement;
+		this.experimentalTypeReplacement = other.experimentalTypeReplacement;
 		this.stringLiteralEscapeSequences = other.stringLiteralEscapeSequences;
 		this.sqlLimitSuffix = other.sqlLimitSuffix;
 		this.varcharLengthLimit = other.varcharLengthLimit;
@@ -205,6 +206,11 @@ public class DBMS {
 	 * Replacement map for column types used for DDL generation.
 	 */
 	private Map<String, String> typeReplacement = new HashMap<String, String>();
+	
+	/**
+	 * Replacement map for column types used for DDL generation. Only used if DBMS accept it.
+	 */
+	private Map<String, String> experimentalTypeReplacement = new HashMap<String, String>();
 	
 	/**
 	 * Replacement map for special characters in string literals.
@@ -506,6 +512,13 @@ public class DBMS {
 	}
 
 	/**
+	 * Sets replacement map for column types used for DDL generation. Only used if DBMS accept it.
+	 */
+	public void setExperimentalTypeReplacement(Map<String, String> tr) {
+		experimentalTypeReplacement = tr;
+	}
+
+	/**
 	 * @return the toBlob
 	 */
 	public String getToBlob() {
@@ -548,6 +561,13 @@ public class DBMS {
 			}
 		}
 		return typeReplacement;
+	}
+
+	/**
+	 * Sets replacement map for column types used for DDL generation. Only used if DBMS accept it.
+	 */
+	public Map<String, String> getExperimentalTypeReplacement() {
+		return experimentalTypeReplacement;
 	}
 
 	/**

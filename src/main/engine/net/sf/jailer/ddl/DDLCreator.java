@@ -101,6 +101,23 @@ public class DDLCreator {
 	 */
 	public boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, targetDBMS(session), executionContext);
+		if (session != null && session.dbms.getExperimentalTypeReplacement() != null) {
+			Map<String, String> oldTypeReplacement = session.dbms.getTypeReplacement();
+			if (oldTypeReplacement == null) {
+				session.dbms.setTypeReplacement(session.dbms.getExperimentalTypeReplacement());
+			} else {
+				HashMap<String, String> repl = new HashMap<String, String>(session.dbms.getExperimentalTypeReplacement());
+				repl.putAll(session.dbms.getExperimentalTypeReplacement());
+				session.dbms.setTypeReplacement(repl);
+			}
+			try {
+				return createDDL(datamodel, session, temporaryTableScope, rowIdSupport, workingTableSchema);
+			} catch (Throwable t) {
+				// fall through
+			} finally {
+				session.dbms.setTypeReplacement(oldTypeReplacement);
+			}
+		}
 		return createDDL(datamodel, session, temporaryTableScope, rowIdSupport, workingTableSchema);
 	}
 
@@ -119,7 +136,7 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema, boolean withTableProperties) throws FileNotFoundException, IOException, SQLException {
+	private boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema, boolean withTableProperties) throws FileNotFoundException, IOException, SQLException {
 		uPKWasTooLong = false;
 		try {
 			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport, workingTableSchema, withTableProperties);
