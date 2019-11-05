@@ -435,6 +435,32 @@ union all
                 <value>bigint</value>
             </entry>
         </typeReplacement>
+        <experimentalTypeReplacement>
+            <entry>
+                <key>TIMESTAMP</key>
+                <value>TIMESTAMP(6)</value>
+            </entry>
+            <entry>
+                <key>timestamp</key>
+                <value>timestamp(6)</value>
+            </entry>
+            <entry>
+                <key>DATETIME</key>
+                <value>DATETIME(6)</value>
+            </entry>
+            <entry>
+                <key>datetime</key>
+                <value>datetime(6)</value>
+            </entry>
+            <entry>
+                <key>TIME</key>
+                <value>TIME(6)</value>
+            </entry>
+            <entry>
+                <key>time</key>
+                <value>time(6)</value>
+            </entry>
+		</experimentalTypeReplacement>
         <stringLiteralEscapeSequences>
             <entry>
                 <key>\0</key>
@@ -616,6 +642,32 @@ union all
                 <value>bigint</value>
             </entry>
         </typeReplacement>
+        <experimentalTypeReplacement>
+            <entry>
+                <key>TIMESTAMP</key>
+                <value>TIMESTAMP(6)</value>
+            </entry>
+            <entry>
+                <key>timestamp</key>
+                <value>timestamp(6)</value>
+            </entry>
+            <entry>
+                <key>DATETIME</key>
+                <value>DATETIME(6)</value>
+            </entry>
+            <entry>
+                <key>datetime</key>
+                <value>datetime(6)</value>
+            </entry>
+            <entry>
+                <key>TIME</key>
+                <value>TIME(6)</value>
+            </entry>
+            <entry>
+                <key>time</key>
+                <value>time(6)</value>
+            </entry>
+		</experimentalTypeReplacement>
         <stringLiteralEscapeSequences>
             <entry>
                 <key>\0</key>
