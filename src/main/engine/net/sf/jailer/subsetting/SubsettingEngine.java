@@ -742,10 +742,10 @@ public class SubsettingEngine {
 						}
 						
 						appendSync(result);
-						updateNullableForeignKeys(result, egCopy, nullableForeignKeys);
+						updateNullableForeignKeys(result, egCopy, nullableForeignKeys, false);
 						
 					} else {
-						updateNullableForeignKeys(result, egCopy, nullableForeignKeys);
+						updateNullableForeignKeys(result, egCopy, nullableForeignKeys, true);
 
 						for (Runnable runnable: resetFilters) {
 							runnable.run();
@@ -854,13 +854,13 @@ public class SubsettingEngine {
 	}
 
 	private void updateNullableForeignKeys(final OutputStreamWriter result, final EntityGraph eg,
-			Map<Table, Set<Column>> nullableForeignKeys) throws CancellationException, SQLException {
+			Map<Table, Set<Column>> nullableForeignKeys, final boolean inSourceSchema) throws CancellationException, SQLException {
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 		for (final Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
 			jobs.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
-					eg.updateEntities(entry.getKey(), entry.getValue(), result, targetDBMSConfiguration(entityGraph.getTargetSession()), "explicit due to circular dependency");
+					eg.updateEntities(entry.getKey(), entry.getValue(), result, targetDBMSConfiguration(entityGraph.getTargetSession()), inSourceSchema, "explicit due to circular dependency");
 				}
 			});
 		}

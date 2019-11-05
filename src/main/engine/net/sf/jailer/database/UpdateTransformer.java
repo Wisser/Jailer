@@ -119,6 +119,11 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	private final ExecutionContext executionContext;
 
 	/**
+	 * If <code>true</code>, use source-schema-mapping, else use schema-mapping.
+	 */
+	private final boolean inSourceSchema;
+
+	/**
 	 * To be written as comment.
 	 */
 	private String reason;
@@ -133,9 +138,10 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	 * @param maxBodySize maximum length of SQL values list (for generated inserts)
 	 * @param session the session
 	 * @param targetDBMSConfiguration configuration of the target DBMS
+	 * @param inSourceSchema if <code>true</code>, use source-schema-mapping, else use schema-mapping
 	 * @param reason to be written as comment
 	 */
-	public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, String reason, ExecutionContext executionContext) throws SQLException {
+	public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, boolean inSourceSchema, String reason, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;
 		this.targetDBMSConfiguration = targetDBMSConfiguration;
 		this.maxBodySize = maxBodySize;
@@ -145,6 +151,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 		this.currentDialect = targetDBMSConfiguration.getSqlDialect();
 		this.quoting = Quoting.getQuoting(session);
 		this.importFilterTransformer = importFilterTransformer;
+		this.inSourceSchema = inSourceSchema;
 		this.reason = reason;
 		if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
 			if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
@@ -390,7 +397,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	 */
 	private String qualifiedTableName(Table t) {
 		String schema = t.getOriginalSchema("");
-		String mappedSchema = executionContext.getSchemaMapping().get(schema);
+		String mappedSchema = inSourceSchema? executionContext.getSourceSchemaMapping().get(schema) : executionContext.getSchemaMapping().get(schema);
 		if (mappedSchema != null) {
 			schema = mappedSchema;
 		}

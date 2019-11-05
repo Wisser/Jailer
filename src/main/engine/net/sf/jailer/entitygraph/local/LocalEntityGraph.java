@@ -944,11 +944,12 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @param table the table
 	 * @param columns the columns;
+	 * @param inSourceSchema if <code>true</code>, use source-schema-mapping, else use schema-mapping
 	 * @param reason to be written as comment
 	 */
 	@Override
-	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration, String reason) throws SQLException {
-		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, executionContext.getNumberOfEntities(), getTargetSession(), targetConfiguration, importFilterManager, reason, executionContext);
+	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration, boolean inSourceSchema, String reason) throws SQLException {
+		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, executionContext.getNumberOfEntities(), getTargetSession(), targetConfiguration, importFilterManager, inSourceSchema, reason, executionContext);
 		readEntities(table, false, reader, false);
 	}
 

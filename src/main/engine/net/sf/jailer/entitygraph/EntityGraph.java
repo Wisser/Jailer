@@ -251,9 +251,10 @@ public abstract class EntityGraph {
 	 * 
 	 * @param table the table
 	 * @param columns the columns;
+	 * @param inSourceSchema if <code>true</code>, use source-schema-mapping, else use schema-mapping
 	 * @param reason to be written as comment
 	 */
-	public abstract void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration, String reason) throws SQLException;
+	public abstract void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration, boolean inSourceSchema, String reason) throws SQLException;
 
 	/**
 	 * Reads some columns of all entities of a given table without using filters.
