@@ -114,8 +114,6 @@ available targets:
 			</classpath>
 		</java>
 		<rename src="${JAR-ENGINE}" dest="jailer-engine-${VERSION}.jar"/>
-		<rename src="${JAR-ENGINE-SRC}" dest="jailer-engine-${VERSION}-src.zip"/>
-		<rename src="${JAR-ENGINE-DOC}" dest="jailer-engine-${VERSION}-javadoc.zip"/>
 	</target>
 
 	<target name="compile-test" depends="compile-engine">
@@ -195,5 +193,7 @@ available targets:
 		</javadoc>
 		<zip destfile="${JAR-ENGINE-DOC}" basedir="docs/api">
 		</zip>
+		<rename src="${JAR-ENGINE-SRC}" dest="jailer-engine-${VERSION}-src.zip"/>
+		<rename src="${JAR-ENGINE-DOC}" dest="jailer-engine-${VERSION}-javadoc.zip"/>
 	</target>
 </project>
