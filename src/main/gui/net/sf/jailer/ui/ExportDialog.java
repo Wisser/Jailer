@@ -119,7 +119,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * Source-schema mapping fields.
 	 */
 	private Map<String, JTextField> sourceSchemaMappingFields = new HashMap<String, JTextField>();
-	
+
+	/**
+	 * Delete-schema mapping fields.
+	 */
+	private Map<String, JTextField> deleteSchemaMappingFields = new HashMap<String, JTextField>();
+
 	/**
 	 * The form field setting.
 	 */
@@ -304,9 +309,19 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			
 			if ((!ScriptFormat.SQL.equals(scriptFormat)) && (!ScriptFormat.INTRA_DATABASE.equals(scriptFormat)) && (!ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat)) && !ScriptFormat.LIQUIBASE_XML.equals(scriptFormat)) {
 				schemaMappingPanel.setVisible(false);
+				schemaMappingLabelPanel.setVisible(false);
 			} else {
 				schemaMappingPanel.setVisible(true);
+				schemaMappingLabelPanel.setVisible(true);
 				initSchemaMapping(dataModel, fields, defaults);
+			}
+			if ((!ScriptFormat.SQL.equals(scriptFormat)) && (!ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat)) && !ScriptFormat.LIQUIBASE_XML.equals(scriptFormat)) {
+				deleteSchemaMappingPanel.setVisible(false);
+				deleteSchemaMappingLabelPanel.setVisible(false);
+			} else {
+				deleteSchemaMappingPanel.setVisible(true);
+				deleteSchemaMappingLabelPanel.setVisible(true);
+				initDeleteSchemaMapping(dataModel, fields, defaults);
 			}
 			initSourceSchemaMapping(dataModel, fields, defaults);
 			initIsolationLevel(session);
@@ -655,6 +670,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	private void updateCLIArea() {
 		explain.setEnabled(!scopeLocal.isSelected());
+		for (JTextField cb: deleteSchemaMappingFields.values()) {
+			cb.setEnabled(delete.isVisible() && delete.getText().trim().length() > 0);
+		}
 
 		List<String> args = new ArrayList<String>(initialArgs);
 		if (args.size() > 0) {
@@ -693,6 +711,101 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	/**
+	 * Initializes the delete-schema mapping panel.
+	 * 
+	 * @param dataModel the data model
+	 * @param fields to put newly created text fields into
+	 * @param defaults to put default values for newly created text fields into
+	 */
+	private void initDeleteSchemaMapping(DataModel dataModel, Map<String, JComponent> fields, Map<JTextField, String> defaults) {
+		Set<String> distinctSchemas = new HashSet<String>();
+		
+		Set<String> relevantSchemas = getRelevantSchemas(true);
+		for (Table table: dataModel.getTables()) {
+			String schema = table.getOriginalSchema(DEFAULT_SCHEMA);
+			if (relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema)) {
+				distinctSchemas.add(schema);
+			}
+		}
+		
+		List<String> sortedSchemaList = new ArrayList<String>(distinctSchemas);
+		Collections.sort(sortedSchemaList);
+		
+		boolean simplified = sortedSchemaList.size() == 1;
+		if (simplified) {
+			deleteSchemaMappingPanel.setVisible(false);
+			deleteSchemaMappingLabelPanel.setVisible(false);
+		}
+		
+		int y = 0;
+		for (String schema: sortedSchemaList) {
+			JLabel b = new JLabel("  instead of ");
+			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 2;
+			gridBagConstraints.gridy = y;
+			if (simplified) {
+				b.setText(" Delete from schema ");
+				gridBagConstraints.gridx = 0;
+				gridBagConstraints.gridy = 86;
+				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				jPanel1.add(b, gridBagConstraints);
+			} else {
+				deleteSchemaMappingPanel.add(b, gridBagConstraints);
+			}
+			JComboBox cb = new JComboBox();
+			cb.setMaximumRowCount(20);
+			JComponent ccb = cb;
+			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel)); 
+			cb.setEditable(true);
+			cb.setSelectedItem(schema);
+			JTextField c;
+			try {
+				c = (JTextField) cb.getEditor().getEditorComponent();
+			} catch (ClassCastException e) {
+				c = new JTextField(schema);
+				ccb = c;
+			}
+			c.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+			});
+			fields.put("delschema-" + schema, c);
+			defaults.put(c, schema);
+			deleteSchemaMappingFields.put(schema, c);
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 1;
+			gridBagConstraints.gridy = y;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			if (simplified) {
+				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridy = 86;
+				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+				jPanel1.add(ccb, gridBagConstraints);
+			} else {
+				deleteSchemaMappingPanel.add(ccb, gridBagConstraints);
+			}
+			JLabel a = new JLabel(schema);
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 3;
+			gridBagConstraints.gridy = y;
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			deleteSchemaMappingPanel.add(a, gridBagConstraints);
+			y++;
+		}
+	}
+	
+	/**
 	 * Initializes the schema mapping panel.
 	 * 
 	 * @param dataModel the data model
@@ -716,19 +829,20 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		boolean simplified = sortedSchemaList.size() == 1;
 		if (simplified) {
 			schemaMappingPanel.setVisible(false);
+			schemaMappingLabelPanel.setVisible(false);
 		}
 		
 		int y = 0;
 		for (String schema: sortedSchemaList) {
-			JLabel a = new JLabel(schema + " into ");
+			JLabel a = new JLabel("  instead of " + schema);
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 1;
 			gridBagConstraints.gridy = y;
-			gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 			if (simplified) {
 				a.setText(" Target schema ");
 				gridBagConstraints.gridx = 0;
-				gridBagConstraints.gridy = 80;
+				gridBagConstraints.gridy = 84;
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				jPanel1.add(a, gridBagConstraints);
 			} else {
@@ -766,12 +880,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			schemaMappingFields.put(schema, c);
 			schemaMappingLabels.put(schema, a);
 			gridBagConstraints = new java.awt.GridBagConstraints();
-			gridBagConstraints.gridx = 3;
+			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = y;
 			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			if (simplified) {
 				gridBagConstraints.gridx = 1;
-				gridBagConstraints.gridy = 80;
+				gridBagConstraints.gridy = 84;
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
 				jPanel1.add(ccb, gridBagConstraints);
@@ -781,7 +895,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			y++;
 		}
 	}
-	
+
 	/**
 	 * Initializes the source schema mapping panel.
 	 * 
@@ -806,11 +920,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		boolean simplified = sortedSchemaList.size() == 1;
 		if (simplified) {
 			sourceSchemaMappingPanel.setVisible(false);
+			sourceSchemaMappingLabelPanel.setVisible(false);
 		}
 		
 		int y = 0;
 		for (String schema: sortedSchemaList) {
-			JLabel b = new JLabel(" instead of ");
+			JLabel b = new JLabel("  instead of ");
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 2;
 			gridBagConstraints.gridy = y;
@@ -820,10 +935,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				gridBagConstraints.gridy = 82;
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				jPanel1.add(b, gridBagConstraints);
-				gridBagConstraints = new java.awt.GridBagConstraints();
-				gridBagConstraints.gridx = 0;
-				gridBagConstraints.gridy = 83;
-				jPanel1.add(new JLabel(" "), gridBagConstraints);
 			} else {
 				sourceSchemaMappingPanel.add(b, gridBagConstraints);
 			}
@@ -854,7 +965,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 					updateCLIArea();
 				}
 			});
-			// fields.put("srcschema-" + schema, c);
+			fields.put("srcschema-" + schema, c);
 			defaults.put(c, schema);
 			sourceSchemaMappingFields.put(schema, c);
 			gridBagConstraints = new java.awt.GridBagConstraints();
@@ -894,13 +1005,25 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jPanel6 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         sourceSchemaMappingPanel = new javax.swing.JPanel();
-        jLabel18 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
+        sourceSchemaMappingLabelPanel = new javax.swing.JPanel();
+        jLabel33 = new javax.swing.JLabel();
+        jLabel34 = new javax.swing.JLabel();
+        jLabel42 = new javax.swing.JLabel();
         schemaMappingPanel = new javax.swing.JPanel();
-        jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
+        schemaMappingLabelPanel = new javax.swing.JPanel();
+        jLabel36 = new javax.swing.JLabel();
+        jLabel37 = new javax.swing.JLabel();
+        jLabel43 = new javax.swing.JLabel();
+        deleteSchemaMappingPanel = new javax.swing.JPanel();
+        jLabel31 = new javax.swing.JLabel();
+        deleteSchemaMappingLabelPanel = new javax.swing.JPanel();
+        jLabel39 = new javax.swing.JLabel();
+        jLabel40 = new javax.swing.JLabel();
+        jLabel44 = new javax.swing.JLabel();
         where = new javax.swing.JTextField();
         exportLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -967,6 +1090,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         transactional = new javax.swing.JCheckBox();
         independentWorkingTables = new javax.swing.JCheckBox();
         orderByPKCheckbox = new javax.swing.JCheckBox();
+        jLabel13 = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -988,12 +1112,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
         sourceSchemaMappingPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel18.setText(" Read from schema "); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        sourceSchemaMappingPanel.add(jLabel18, gridBagConstraints);
-
         jLabel19.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -1009,19 +1127,43 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         sourceSchemaMappingPanel.add(jLabel20, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 82;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel1.add(sourceSchemaMappingPanel, gridBagConstraints);
 
-        schemaMappingPanel.setLayout(new java.awt.GridBagLayout());
+        sourceSchemaMappingLabelPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel13.setText(" Insert rows from schema "); // NOI18N
+        jLabel33.setText(" Read rows"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        schemaMappingPanel.add(jLabel13, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        sourceSchemaMappingLabelPanel.add(jLabel33, gridBagConstraints);
+
+        jLabel34.setText(" "); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        sourceSchemaMappingLabelPanel.add(jLabel34, gridBagConstraints);
+
+        jLabel42.setText(" from schema..."); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        sourceSchemaMappingLabelPanel.add(jLabel42, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 82;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(sourceSchemaMappingLabelPanel, gridBagConstraints);
+
+        schemaMappingPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel14.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1038,11 +1180,88 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         schemaMappingPanel.add(jLabel15, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 80;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 84;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel1.add(schemaMappingPanel, gridBagConstraints);
+
+        schemaMappingLabelPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel36.setText(" Insert rows"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        schemaMappingLabelPanel.add(jLabel36, gridBagConstraints);
+
+        jLabel37.setText(" "); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        schemaMappingLabelPanel.add(jLabel37, gridBagConstraints);
+
+        jLabel43.setText(" into schema... "); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        schemaMappingLabelPanel.add(jLabel43, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 84;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(schemaMappingLabelPanel, gridBagConstraints);
+
+        deleteSchemaMappingPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel31.setText(" "); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        deleteSchemaMappingPanel.add(jLabel31, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 86;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(deleteSchemaMappingPanel, gridBagConstraints);
+
+        deleteSchemaMappingLabelPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel39.setText(" Delete rows"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        deleteSchemaMappingLabelPanel.add(jLabel39, gridBagConstraints);
+
+        jLabel40.setText(" "); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        deleteSchemaMappingLabelPanel.add(jLabel40, gridBagConstraints);
+
+        jLabel44.setText(" from schema..."); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        deleteSchemaMappingLabelPanel.add(jLabel44, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 86;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(deleteSchemaMappingLabelPanel, gridBagConstraints);
 
         where.setMaximumSize(new java.awt.Dimension(300, 2147483647));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1368,7 +1587,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 85;
+        gridBagConstraints.gridy = 95;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -1537,6 +1756,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         iFMTPanel.add(jLabel29, gridBagConstraints);
 
         jLabel30.setText(" mapping table schema "); // NOI18N
@@ -1545,6 +1765,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         iFMTPanel.add(jLabel30, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1667,6 +1888,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(orderByPKCheckbox, gridBagConstraints);
 
+        jLabel13.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 94;
+        jPanel1.add(jLabel13, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -1754,6 +1981,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 		}
 		for (JTextField f: sourceSchemaMappingFields.values()) {
+			if (f.getText().trim().length() == 0) {
+				f.setText(DEFAULT_SCHEMA);
+			}
+		}
+		for (JTextField f: deleteSchemaMappingFields.values()) {
 			if (f.getText().trim().length() == 0) {
 				f.setText(DEFAULT_SCHEMA);
 			}
@@ -2126,6 +2358,24 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add(sourceSchemaMapping.toString());
 		}
 
+		if (delete.isVisible() && delete.getText().trim().length() > 0) {
+			StringBuilder deleteSchemaMapping = new StringBuilder();
+			for (String schema: deleteSchemaMappingFields.keySet()) {
+				String to = deleteSchemaMappingFields.get(schema).getText().trim();
+				if (to.equals(DEFAULT_SCHEMA)) {
+					to = "";
+				}
+				if (deleteSchemaMapping.length() > 0) {
+					deleteSchemaMapping.append(",");
+				}
+				deleteSchemaMapping.append((schema.equals(DEFAULT_SCHEMA)? "" : schema) + "=" + to);
+			}
+			if (deleteSchemaMapping.length() > 0) {
+				args.add("-deletion-schemamapping");
+				args.add(deleteSchemaMapping.toString());
+			}
+		}
+
 		args.add("-scope");
 		args.add(getTemporaryTableScope().toString());
 
@@ -2244,6 +2494,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     public javax.swing.JCheckBox confirmInsert;
     private javax.swing.JButton copyButton;
     private javax.swing.JTextField delete;
+    private javax.swing.JPanel deleteSchemaMappingLabelPanel;
+    private javax.swing.JPanel deleteSchemaMappingPanel;
     public javax.swing.JCheckBox explain;
     private javax.swing.JLabel exportLabel;
     private javax.swing.JPanel iFMTPanel;
@@ -2263,7 +2515,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
@@ -2277,7 +2528,17 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
+    private javax.swing.JLabel jLabel31;
+    private javax.swing.JLabel jLabel33;
+    private javax.swing.JLabel jLabel34;
+    private javax.swing.JLabel jLabel36;
+    private javax.swing.JLabel jLabel37;
+    private javax.swing.JLabel jLabel39;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel40;
+    private javax.swing.JLabel jLabel42;
+    private javax.swing.JLabel jLabel43;
+    private javax.swing.JLabel jLabel44;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
@@ -2298,11 +2559,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel placeholder;
     private javax.swing.JLabel placeholder1;
     private javax.swing.JTextField rowsPerThread;
+    private javax.swing.JPanel schemaMappingLabelPanel;
     private javax.swing.JPanel schemaMappingPanel;
     private javax.swing.JRadioButton scopeGlobal;
     private javax.swing.JRadioButton scopeLocal;
     private javax.swing.JRadioButton scopeSession;
     private javax.swing.JCheckBox sortedCheckBox;
+    public javax.swing.JPanel sourceSchemaMappingLabelPanel;
     public javax.swing.JPanel sourceSchemaMappingPanel;
     private javax.swing.JLabel subjectTable;
     private javax.swing.JComboBox targetDBMSComboBox;

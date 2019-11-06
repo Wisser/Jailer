@@ -69,6 +69,7 @@ public class ExecutionContext {
 		this.analyseView = other.analyseView;
 		this.rawschemamapping = other.rawschemamapping;
 		this.rawsourceschemamapping = other.rawsourceschemamapping;
+		this.rawdeletionschemamapping = other.rawdeletionschemamapping;
 		this.parameters = copy(other.parameters);
 		this.numberOfThreads = other.numberOfThreads;
 		this.numberOfEntities = other.numberOfEntities;
@@ -685,6 +686,34 @@ public class ExecutionContext {
 		return sourceSchemaMapping;
 	}
 	
+	private Map<String, String> deletionSchemaMapping;
+
+	/**
+	 * @param deletionSchemaMapping the sourceSchemaMapping to set
+	 */
+	public void setDeletionSchemaMapping(Map<String, String> deletionSchemaMapping) {
+		this.deletionSchemaMapping = deletionSchemaMapping;
+	}
+
+	public Map<String, String> getDeletionSchemaMapping() {
+		if (deletionSchemaMapping == null) {
+			deletionSchemaMapping = new HashMap<String, String>();
+			String rawmapping = rawdeletionschemamapping;
+			if (rawmapping == null) {
+				rawmapping = rawsourceschemamapping;
+			}
+			if (rawmapping != null) {
+				for (String item: rawmapping.split(",")) {
+					String[] fromTo = (" " + item + " ").split("=");
+					if (fromTo.length == 2) {
+						deletionSchemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
+					}
+				}
+			}
+		}
+		return deletionSchemaMapping;
+	}
+
 	private ScriptFormat scriptFormat;
 	
 	/**
@@ -816,6 +845,9 @@ public class ExecutionContext {
 	// source schema map
 	private String rawsourceschemamapping = null;
 
+	// source schema map
+	private String rawdeletionschemamapping = null;
+
 	// parameters
 	private Map<String, String> parameters = null;
 
@@ -939,6 +971,7 @@ public class ExecutionContext {
 		analyseView = commandLine.analyseView;
 		rawschemamapping = commandLine.rawschemamapping;
 		rawsourceschemamapping = commandLine.rawsourceschemamapping;
+		rawdeletionschemamapping = commandLine.rawdeletionschemamapping;
 		rawparameters = commandLine.parameters;
 		numberOfThreads = commandLine.numberOfThreads;
 		numberOfEntities = commandLine.numberOfEntities;

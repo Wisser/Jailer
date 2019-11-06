@@ -213,7 +213,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	 */
 	private String qualifiedTableName(Table t) {
 		String schema = t.getOriginalSchema("");
-		String mappedSchema = executionContext.getSourceSchemaMapping().get(schema);
+		String mappedSchema = executionContext.getDeletionSchemaMapping().get(schema);
 		if (mappedSchema != null) {
 			schema = mappedSchema;
 		}

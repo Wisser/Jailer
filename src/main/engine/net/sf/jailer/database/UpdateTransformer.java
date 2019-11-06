@@ -397,7 +397,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	 */
 	private String qualifiedTableName(Table t) {
 		String schema = t.getOriginalSchema("");
-		String mappedSchema = inSourceSchema? executionContext.getSourceSchemaMapping().get(schema) : executionContext.getSchemaMapping().get(schema);
+		String mappedSchema = inSourceSchema? executionContext.getDeletionSchemaMapping().get(schema) : executionContext.getSchemaMapping().get(schema);
 		if (mappedSchema != null) {
 			schema = mappedSchema;
 		}
