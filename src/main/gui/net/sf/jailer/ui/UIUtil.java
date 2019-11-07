@@ -102,6 +102,7 @@ import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.extractionmodel.ExtractionModel.IncompatibleModelException;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
+import net.sf.jailer.ui.databrowser.DetailsView;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
@@ -1244,8 +1245,24 @@ public class UIUtil {
 	/**
 	 * Triggers UI initializations.
 	 */
+	@SuppressWarnings("serial")
 	public static void prepareUI() {
-		new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);	
+		try {
+			new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
+			new DetailsView() {
+				@Override
+				protected void onSelectRow(Row row) {
+				}
+				@Override
+				protected void onRowChanged(int row) {
+				}
+				@Override
+				protected void onClose() {
+				}
+			};
+		} catch (Throwable t) {
+			// ignore
+		}
 	}
 
 	/**

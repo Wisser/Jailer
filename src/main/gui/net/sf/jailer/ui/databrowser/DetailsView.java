@@ -146,14 +146,26 @@ public abstract class DetailsView extends javax.swing.JPanel {
         setCurrentRow(rowIndex, showSpinner);
 	}
 
-	private final Font font = new JLabel().getFont();
-	private final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize()); 
-	private final Font italic = new Font(font.getName(), font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize()); 
-	private final Color BG1 = new Color(255, 255, 255);
-	private final Color BG2 = new Color(242, 255, 242);
-	private final Color BG3 = blend(new Color(196, 234, 255), BG1);
-	private final Color BG3_2 = blend(new Color(184, 226, 255), BG2);
-	private final Color FG1 = new Color(155, 0, 0);
+	/**
+	 * Default constructor.
+	 */
+	protected DetailsView() {
+		this.table = null;
+		this.showSpinner = false;
+		this.session = null;
+		this.rows = null;
+		this.rowSorter = null;
+		this.rowIdSupport = null;
+	}
+
+	private static final Font font = new JLabel().getFont();
+	private static final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize()); 
+	private static final Font italic = new Font(font.getName(), font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize()); 
+	private static final Color BG1 = new Color(255, 255, 255);
+	private static final Color BG2 = new Color(242, 255, 242);
+	private static final Color BG3 = blend(new Color(196, 234, 255), BG1);
+	private static final Color BG3_2 = blend(new Color(184, 226, 255), BG2);
+	private static final Color FG1 = new Color(155, 0, 0);
 	private List<JLabel> labels = new ArrayList<JLabel>();
 	private List<Color> labelColors = new ArrayList<Color>();
 	
@@ -161,7 +173,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		jScrollPane1.setBorder(BorderFactory.createEtchedBorder(color, Color.GRAY));
 	}
 	
-	private Color blend(Color a, Color b) {
+	private static Color blend(Color a, Color b) {
 		final double f = 0.6;
 		return new Color(
 				(int)(a.getRed() * f + b.getRed() * (1 - f)),
