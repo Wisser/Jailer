@@ -99,13 +99,13 @@ public class CommandLine {
 	@Option(name="-where",usage="subject condition", metaVar="SQL-expression")
 	public String where = null;
 	
-	@Option(name="-schemamapping",usage="schema mapping", metaVar="schema-in-model=schema-in-db[','x=y]*")
+	@Option(name="-schemamapping",usage="schema mapping (Default schema is empty string)", metaVar="schema-in-model=schema-in-db[','x=y]*")
 	public String rawschemamapping = null;
 	
-	@Option(name="-source-schemamapping",usage="source schema mapping", metaVar="<from>=<to>[','<from>=<to>]*")
+	@Option(name="-source-schemamapping",usage="source schema mapping (Default schema is empty string)", metaVar="<from>=<to>[','<from>=<to>]*")
 	public String rawsourceschemamapping = null;
 	
-	@Option(name="-deletion-schemamapping",usage="deletion schema mapping", metaVar="<from>=<to>[','<from>=<to>]*")
+	@Option(name="-deletion-schemamapping",usage="deletion schema mapping (Default schema is empty string)", metaVar="<from>=<to>[','<from>=<to>]*")
 	public String rawdeletionschemamapping = null;
 	
 	@Option(name="-parameters",usage="parameters", metaVar="<parameter>=<value>[';'<parameter>=<value>]*")
