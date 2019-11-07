@@ -1,3 +1,6 @@
+9.1.6
+  - Minor improvements to the "Export Data" dialog.
+
 9.1.5
   - Support for data type datetime2 in MS SQL.
     https://github.com/Wisser/Jailer/issues/20
