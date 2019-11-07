@@ -920,12 +920,16 @@ public class SubsettingEngine {
 			}
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			for (final Table table : dependentTables) {
-				jobs.add(new JobManager.Job() {
-					@Override
-					public void run() throws SQLException {
-						theEntityGraph.readMarkedEntities(table, false);
-					}
-				});
+				if (executionContext.getOrderByPK()) {
+					theEntityGraph.readMarkedEntities(table, true);
+				} else {
+					jobs.add(new JobManager.Job() {
+						@Override
+						public void run() throws SQLException {
+							theEntityGraph.readMarkedEntities(table, false);
+						}
+					});
+				}
 			}
 			if (result != null && !jobs.isEmpty()) {
 				appendSync(result);
