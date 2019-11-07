@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -63,6 +64,7 @@ import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
@@ -154,12 +156,15 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private final String tmpFileName;
 	private final ExecutionContext executionContext;
 
+	private static final String NO_SCHEMA_INFO = new String("");
+	private static final String NO_SCHEMA_INFO_LABEL = "<html><i>no further schema information</i></html>";
+
 	/** Creates new form DbConnectionDialog 
 	 * @param showCmd 
 	 * @param jmFile 
 	 * @param tmpFileName 
 	 * @param args */
-	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, ExecutionContext executionContext) {
+	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, final Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, ExecutionContext executionContext) {
 		super(parent, true);
 		this.executionContext = executionContext;
 		this.extractionModelFileName = extractionModelFileName;
@@ -197,12 +202,63 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				commandLinePanel.setVisible(false);
 			}
 			
-			List<String> allSchemas = new ArrayList<String>(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema()));
-			allSchemas.addAll(JDBCMetaDataBasedModelElementFinder.getCatalogsWithSchemas(session));
+			final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(
+					this, "Retrieving schema info...") {
+				@Override
+				protected void onError(Throwable error) {
+					UIUtil.showException(this, "Error", error);
+					closeWindow();
+				}
+				@Override
+				protected void onCancellation() {
+					closeWindow();
+				}
+			};
+			UIUtil.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					if (concurrentTaskControl.master != null) {
+						concurrentTaskControl.master.cancelButton.setText("continue without info");
+					}
+				}
+			});
+
+			final List<String> schemaInfo = Collections.synchronizedList(new ArrayList<String>());
+			final AtomicBoolean schemaInfoRead = new AtomicBoolean(false);
+
+			ConcurrentTaskControl.openInModalDialog(parent, concurrentTaskControl, 
+					new ConcurrentTaskControl.Task() {
+						@Override
+						public void run() throws Throwable {
+							List<String> schemas = new ArrayList<String>();
+							schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema()));
+							schemas.addAll(JDBCMetaDataBasedModelElementFinder.getCatalogsWithSchemas(session));
+							synchronized (schemaInfo) {
+								schemaInfo.addAll(schemas);
+								schemaInfoRead.set(true);
+							}
+							UIUtil.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									if (concurrentTaskControl.master.isShowing()) {
+										concurrentTaskControl.closeWindow();
+									}
+								}
+							});
+						}
+				}, "Retrieving schema info...");
+
 			String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+			List<String> allSchemas;
+			synchronized (schemaInfo) {
+				allSchemas = new ArrayList<String>(schemaInfo);
+				if (!schemaInfoRead.get()) {
+					allSchemas.add(NO_SCHEMA_INFO);
+				}
+			} 
 			initWorkingTableSchemaBox(session, allSchemas, defaultSchema);
 			initIFMTableSchemaBox(session, allSchemas, defaultSchema);
-	
+
 			try {
 				JTextField c = (JTextField) workingTableSchemaComboBox.getEditor().getEditorComponent();
 				c.getDocument().addDocumentListener(new DocumentListener() {
@@ -262,10 +318,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			fields.put("scopeSession", scopeSession);
 			fields.put("orderByPK", orderByPKCheckbox);
 			fields.put("useRowIds", useRowIds);
+			fields.put("transactional", transactional);
+			fields.put("delete", delete);
+
 			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
 				fields.put("$" + e.getKey(), e.getValue());
 			}
-			
+
 			try {
 				JTextField c;
 				c = (JTextField) workingTableSchemaComboBox.getEditor().getEditorComponent();
@@ -595,6 +654,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		schemas.remove(defaultSchema);
 		quoteSchemas(schemas, session);
 		String[] ifmComboboxModel = schemas.toArray(new String[0]);
+		setComboboxRenderer(iFMTableSchemaComboBox);
 		iFMTableSchemaComboBox.setModel(new DefaultComboBoxModel(ifmComboboxModel));
 		iFMTableSchemaComboBox.setSelectedItem(DEFAULT_SCHEMA);
 		iFMTableSchemaComboBox.addActionListener(new ActionListener() {
@@ -632,6 +692,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		schemas.remove(defaultSchema);
 		quoteSchemas(schemas, session);
 		schemaComboboxModel = schemas.toArray(new String[0]);
+		setComboboxRenderer(workingTableSchemaComboBox);
 		workingTableSchemaComboBox.setModel(new DefaultComboBoxModel(schemaComboboxModel));
 		workingTableSchemaComboBox.setSelectedItem(DEFAULT_SCHEMA);
 		workingTableSchemaComboBox.addActionListener(new ActionListener() {
@@ -652,7 +713,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			return;
 		}
 		for (String schema: schemas) {
-			if (DEFAULT_SCHEMA.equals(schema)) {
+			if (DEFAULT_SCHEMA.equals(schema) || NO_SCHEMA_INFO == schema) {
 				result.add(schema);
 			} else {
 				int iDot = schema.indexOf('.');
@@ -755,6 +816,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			JComboBox cb = new JComboBox();
 			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
+			setComboboxRenderer(cb);
 			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel)); 
 			cb.setEditable(true);
 			cb.setSelectedItem(schema);
@@ -805,6 +867,18 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void setComboboxRenderer(javax.swing.JComboBox iFMTableSchemaComboBox2) {
+		iFMTableSchemaComboBox2.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList list,
+					Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				return super.getListCellRendererComponent(list, value == NO_SCHEMA_INFO? NO_SCHEMA_INFO_LABEL : value, index, isSelected, cellHasFocus);
+			}
+		});
+	}
+
 	/**
 	 * Initializes the schema mapping panel.
 	 * 
@@ -851,6 +925,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			JComboBox cb = new JComboBox();
 			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
+			setComboboxRenderer(cb);
 			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel)); 
 			cb.setEditable(true);
 			cb.setSelectedItem(schema);
@@ -941,6 +1016,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			JComboBox cb = new JComboBox();
 			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
+			setComboboxRenderer(cb);
 			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel)); 
 			cb.setEditable(true);
 			cb.setSelectedItem(schema);

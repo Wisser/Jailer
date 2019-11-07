@@ -663,8 +663,7 @@ public class SubsettingEngine {
 			rest = 0;
 	
 			if (scriptType == ScriptType.INSERT && 
-					(executionContext.getOrderByPK() 
-					|| ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())
+					(ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())
 					|| ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat()))) {
 				Set<Table> remaining = new HashSet<Table>(dependentTables);
 	
