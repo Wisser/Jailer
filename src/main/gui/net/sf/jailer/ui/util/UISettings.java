@@ -87,15 +87,15 @@ public class UISettings  {
 	private static synchronized void loadUISettings() {
 		if (properties == null) {
 			properties = new HashMap<String, Object>();
-			File file = Environment.newFile(FILENAME);
-			if (file.exists()) {
-				try {
-					ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
-					properties = (Map<String, Object>) in.readObject();
-					in.close();
-				} catch (Exception e) {
-					// ignore
-				}
+		}
+		File file = Environment.newFile(FILENAME);
+		if (file.exists()) {
+			try {
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+				properties = (Map<String, Object>) in.readObject();
+				in.close();
+			} catch (Exception e) {
+				// ignore
 			}
 		}
 	}
