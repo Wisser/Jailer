@@ -653,7 +653,7 @@ public class UIUtil {
                 }
                 if ("".equals(arg) || arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*")
                         || arg.contains("?") || arg.contains("|") || arg.contains("$") || arg.contains("\"")
-                        || arg.contains("'") || arg.contains("\\") || arg.contains(";") || arg.contains("&")) {
+                        || arg.contains("'") || arg.contains("\\") || arg.contains(";") || arg.contains("&") || arg.contains("~")) {
                     arglist.append(" " + q);
                     for (int j = 0; j < arg.length(); ++j) {
                         char c = arg.charAt(j);
