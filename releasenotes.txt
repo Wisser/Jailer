@@ -1,13 +1,11 @@
 9.1.6
-  - Minor improvements to the "Export Data" dialog.
-
-9.1.5
   - Support for data type datetime2 in MS SQL.
     https://github.com/Wisser/Jailer/issues/20
   - The -schemamapping option was not used correctly for the statements of a delete script.
     https://github.com/Wisser/Jailer/issues/21
   - Formatting of dates/timestamps during export no longer takes place synchronized.
     This improves performance when multiple threads are used.
+  - Minor improvements to the "Export Data" dialog.
 
 9.1.4
   - Deadlock prevention in PostgreSQL.
