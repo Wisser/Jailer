@@ -224,7 +224,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		private boolean reconnectIfConnectionIsInvalid(boolean updateMode) {
 			try {
 				if (inputResultSet == null) {
-					if (!session.getConnection().isValid(0)) {
+					if (!session.getConnection().isValid(8)) {
 						if (updateMode) {
 							UIUtil.invokeLater(new Runnable() {
 								@Override
@@ -301,7 +301,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 
-			reconnectIfConnectionIsInvalid(false);
+			if (!finished) {
+				reconnectIfConnectionIsInvalid(false);
+			}
 			CancellationHandler.reset(this);
 			UIUtil.invokeLater(new Runnable() {
 				@Override
