@@ -662,7 +662,7 @@ public abstract class Desktop extends JDesktopPane {
 				return parentFrame;
 			}
 
-			private final Set<Pair<Row, Row>> addedRowPairs;
+			private Set<Pair<Row, Row>> addedRowPairs;
 			{
 				synchronized (Desktop.this) {
 					addedRowPairs = new HashSet<Pair<Row,Row>>();
@@ -688,7 +688,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected void beforeReload() {
 				synchronized (Desktop.this) {
-					addedRowPairs.clear();
+					addedRowPairs = new HashSet<Pair<Row,Row>>();
 					tableBrowser.rowToRowLinks.clear();
 				}
 			}
