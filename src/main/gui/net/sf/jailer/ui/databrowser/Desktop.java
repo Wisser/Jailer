@@ -663,18 +663,15 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			private Set<Pair<Row, Row>> addedRowPairs;
-			{
-				synchronized (Desktop.this) {
-					addedRowPairs = new HashSet<Pair<Row,Row>>();
-				}
-			}
 
 			@Override
 			protected void addRowToRowLink(Row parentRow, Row childRow) {
 				synchronized (Desktop.this) {
 					Pair<Row, Row> pair = new Pair<Row, Row>(parentRow, childRow);
-					if (!addedRowPairs.contains(pair)) {
-						addedRowPairs.add(pair);
+					if (addedRowPairs == null || !addedRowPairs.contains(pair)) {
+						if (addedRowPairs != null) {
+							addedRowPairs.add(pair);
+						}
 						RowToRowLink rowToRowLink = new RowToRowLink();
 						rowToRowLink.parentRow = parentRow;
 						rowToRowLink.childRow = childRow;
@@ -696,7 +693,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected void afterReload() {
 				synchronized (Desktop.this) {
-					addedRowPairs.clear();
+					addedRowPairs = null;
 				}
 			}
 
