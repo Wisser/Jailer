@@ -1,3 +1,6 @@
+9.1.7
+  - Fixed NullPointerException in Data Browser.
+
 9.1.6
   - Support for data type datetime2 in MS SQL.
     https://github.com/Wisser/Jailer/issues/20
