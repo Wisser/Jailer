@@ -744,7 +744,7 @@ public class UIUtil {
             context = EXCEPTION_CONTEXT_USER_ERROR;
         }
         if (t instanceof SqlException) {
-            String message = ((SqlException) t).message;
+            String message = ((SqlException) t).getMessage();
             String sql = ((SqlException) t).sqlStatement;
 			if (message != null) {
 				if (sql != null) {
