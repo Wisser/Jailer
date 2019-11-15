@@ -652,7 +652,7 @@ public class Session {
 			_log.info(sqlUpdate);
 		}
 		CancellationHandler.checkForCancellation(null);
-		final int maximumNumberOfFailures = 10;
+		final int maximumNumberOfFailures = 100;
 		try {
 			int rowCount = 0;
 			int failures = 0;
