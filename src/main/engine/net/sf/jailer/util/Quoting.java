@@ -87,18 +87,7 @@ public class Quoting {
 		String quoteString = metaData.getIdentifierQuoteString();
 		if (quoteString != null
 				&& (quoteString.equals(" ") || quoteString.equals(""))) {
-			quoteString = null;
-		}
-		try {
-			String productName = metaData.getDatabaseProductName();
-			if (productName != null) {
-				if (productName.toUpperCase(Locale.ENGLISH).contains("ADAPTIVE SERVER")) {
-					// Sybase don't handle quoting correctly
-					quoteString = null;
-				  }
-			}
-		} catch (Exception e) {
-			// ignore
+			quoteString = "\"";
 		}
 		quote = quoteString;
 		unquotedIdentifierInUpperCase = metaData.storesUpperCaseIdentifiers();
