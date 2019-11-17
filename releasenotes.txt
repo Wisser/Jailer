@@ -1,3 +1,6 @@
+9.1.8
+  - Fixed https://github.com/Wisser/Jailer/issues/22
+
 9.1.7
   - Fixed NullPointerException in Data Browser.
 
