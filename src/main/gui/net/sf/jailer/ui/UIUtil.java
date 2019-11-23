@@ -87,6 +87,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
@@ -1260,6 +1261,7 @@ public class UIUtil {
 				protected void onClose() {
 				}
 			};
+			new RSyntaxTextArea();
 		} catch (Throwable t) {
 			// ignore
 		}
