@@ -221,6 +221,8 @@ public class BasicDataSource implements DataSource {
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
+		} catch (UnsupportedClassVersionError e) {
+			throw new UnsupportedClassVersionError("This Java VM (" + System.getProperty("java.version") + ") is too old to support the JDBC driver. \nPlease update the Java VM.");
 		} catch (ClassNotFoundException e) {
 			if (!registeredDriverClassNames.contains(driverClassName)) {
 				throw new RuntimeException(e);
