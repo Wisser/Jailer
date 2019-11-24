@@ -197,11 +197,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
 
 		@Override
 		protected Object[] toColumnList(ColumnModel element, int index) {
-			String type = toSql(element.column);
-			int i = type.indexOf(" ");
-			if (i > 0) {
-				type = type.substring(i).trim();
-			}
+			String type = element.column.toSQL(null).substring(element.column.name.length());
 			return new String[] { element.column.name, type };
 		}
 

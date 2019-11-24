@@ -1243,27 +1243,32 @@ public class UIUtil {
 		}
 	}
 
+	private static boolean isInitialized = false;
+
 	/**
-	 * Triggers UI initializations.
+	 * Triggers expensive UI initializations.
 	 */
 	@SuppressWarnings("serial")
 	public static void prepareUI() {
-		try {
-			new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
-			new DetailsView() {
-				@Override
-				protected void onSelectRow(Row row) {
-				}
-				@Override
-				protected void onRowChanged(int row) {
-				}
-				@Override
-				protected void onClose() {
-				}
-			};
-			new RSyntaxTextArea();
-		} catch (Throwable t) {
-			// ignore
+		if (!isInitialized) {
+			isInitialized = true;
+			try {
+				new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
+				new DetailsView() {
+					@Override
+					protected void onSelectRow(Row row) {
+					}
+					@Override
+					protected void onRowChanged(int row) {
+					}
+					@Override
+					protected void onClose() {
+					}
+				};
+				new RSyntaxTextArea();
+			} catch (Throwable t) {
+				// ignore
+			}
 		}
 	}
 
