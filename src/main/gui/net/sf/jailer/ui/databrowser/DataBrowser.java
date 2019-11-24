@@ -2488,7 +2488,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	                        	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
 	                        }
 	                        
-	                        UIUtil.prepareUI();
+	                        // UIUtil.prepareUI();
 	                    } catch (Exception x) {
 	                    	UIUtil.showException(null, "Error", x);
 	                    }

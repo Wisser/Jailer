@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -130,7 +131,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.tabPropertyName = "DMMDPropTab" + module;
 		this.module = module;
 		initComponents();
-
+		((CardLayout) cardPanel.getLayout()).show(cardPanel, "main");
+		
 		InfoBar infoBar = new InfoBar("Data Model Configuration", 
 				"A data model is a set of interrelated tables. Acquire information about tables by analyzing\n" +
 				"database schemas, or use the data model editor to manually define tables and associations.\n \n",
@@ -968,6 +970,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        cardPanel = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
@@ -1015,10 +1018,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         bmRecUsedCancelButton = new javax.swing.JButton();
         bmRecUsedOkButton = new javax.swing.JButton();
         restoreLastSessionButton3 = new javax.swing.JButton();
+        jPanel9 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connect with DB");
         getContentPane().setLayout(new java.awt.GridBagLayout());
+
+        cardPanel.setLayout(new java.awt.CardLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -1483,14 +1490,29 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Recently used Bookmark", recentlyUsedBookmarkPanel);
 
+        cardPanel.add(jTabbedPane1, "main");
+
+        jPanel9.setLayout(new java.awt.GridBagLayout());
+
+        jLabel1.setText(" Loading...");
+        jLabel1.setToolTipText("");
+        jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
+        jPanel9.add(jLabel1, gridBagConstraints);
+
+        cardPanel.add(jPanel9, "loading");
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
-        getContentPane().add(jTabbedPane1, gridBagConstraints);
+        getContentPane().add(cardPanel, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1722,9 +1744,23 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		if (datamodelFolder != null && CommandLineInstance.getInstance().arguments.isEmpty()) {
 			executionContext.setDatamodelFolder(new File(datamodelFolder).getParent());
 			executionContext.setCurrentModelSubfolder(new File(datamodelFolder).getName());
+			UIUtil.prepareUI();
 			onSelect(dbConnectionDialog, executionContext);
 		} else {
 			setVisible(true);
+			((CardLayout) cardPanel.getLayout()).show(cardPanel, "loading");
+			UIUtil.setWaitCursor(this);
+			UIUtil.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						UIUtil.prepareUI();
+					} finally {
+						((CardLayout) cardPanel.getLayout()).show(cardPanel, "main");
+						UIUtil.resetWaitCursor(DataModelManagerDialog.this);
+					}
+				}
+			});
 		}
 	}
 
@@ -1818,6 +1854,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel borderPanel;
     private javax.swing.JPanel borderPanel1;
     private javax.swing.JButton browseButton;
+    private javax.swing.JPanel cardPanel;
     private javax.swing.JPanel connectionDialogPanel;
     private javax.swing.JTable dataModelsTable;
     private javax.swing.JButton deleteButton;
@@ -1827,6 +1864,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JLabel infoBarLabel2;
     private javax.swing.JLabel infoBarLabelBookmark;
     private javax.swing.JButton jButton2;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -1835,6 +1873,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
