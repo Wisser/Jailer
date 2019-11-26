@@ -1173,6 +1173,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(jPanel3, gridBagConstraints);
 
         infoBarLabel.setText("info bar");

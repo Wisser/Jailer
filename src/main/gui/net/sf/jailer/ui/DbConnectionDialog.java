@@ -794,6 +794,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         mainPanel.add(jPanel3, gridBagConstraints);
 
         infoBarLabel.setText("info bar");
