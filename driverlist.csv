@@ -1,5 +1,10 @@
+PostgreSQL;jdbc:postgresql://<HOST(localhost)>[:<PORT(5432)>]/[<DATABASE>];org.postgresql.Driver;lib/postgresql-42.2.6.jre7.jar
+Oracle Thin;jdbc:oracle:thin:@<HOST(localhost)>:<PORT(1521)>:<SID>;oracle.jdbc.driver.OracleDriver
+Oracle OCI;jdbc:oracle:oci:@<TNS_NAME>;oracle.jdbc.driver.OracleDriver
+MySQL;jdbc:mysql://<HOST(localhost)>:<PORT(3306)>[/<DATABASE>];org.gjt.mm.mysql.Driver;lib/mysql-connector-java-5.1.5-bin.jar
+Microsoft SQL Server;jdbc:sqlserver://<HOST(localhost)>[\\<INSTANCE>][:<PORT>];com.microsoft.sqlserver.jdbc.SQLServerDriver;lib/mssql-jdbc-7.2.1.jre8.jar
+MariaDB;jdbc:mariadb://<HOST(localhost)>:<PORT(3306)>[/<DATABASE>];org.mariadb.jdbc.Driver;lib/mariadb-java-client-2.4.4.jar
 IBM Db2;jdbc:db2://<HOST(localhost)>:<PORT>/<DATABASE>;COM.ibm.db2.jdbc.app.DB2Driver
-Oracle Thin;jdbc:oracle:thin:@<HOST(localhost)>:<PORT>:<SID>;oracle.jdbc.driver.OracleDriver
 Cloudscape;jdbc:cloudscape:<DB>;COM.cloudscape.core.JDBCDriver
 Cloudscape RMI;jdbc:rmi://<HOST(localhost)>:<PORT>/jdbc:cloudscape:<DB>;RmiJdbc.RJDriver
 Firebird;jdbc:firebirdsql://<HOST(localhost)>[:<PORT(3050)>]/<DATABASE>;org.firebirdsql.jdbc.FBDriver
@@ -10,11 +15,6 @@ Interbase (InterClient Driver);jdbc:interbase://<HOST(localhost)>/<DATABASE>;int
 H2 embedded;jdbc:h2:<DATABASEFILE>;org.h2.Driver;lib/h2-1.4.199.jar
 H2 TCP;jdbc:h2:tcp://<HOST(localhost)>[:<PORT>]/<DATABASEFILE>;org.h2.Driver;lib/h2-1.4.199.jar
 HyperSQL;jdbc:hsqldb:<file|hsql|http>:<DATABASE>;org.hsqldb.jdbcDriver
-Microsoft SQL Server;jdbc:sqlserver://<HOST(localhost)>[\\<INSTANCE>][:<PORT>];com.microsoft.sqlserver.jdbc.SQLServerDriver;lib/mssql-jdbc-7.2.1.jre8.jar
-MySQL;jdbc:mysql://<HOST(localhost)>:<PORT(3306)>[/<DATABASE>];org.gjt.mm.mysql.Driver;lib/mysql-connector-java-5.1.5-bin.jar
-MariaDB;jdbc:mariadb://<HOST(localhost)>:<PORT(3306)>[/<DATABASE>];org.mariadb.jdbc.Driver;lib/mariadb-java-client-2.4.4.jar
-Oracle OCI;jdbc:oracle:oci:@<SID>;oracle.jdbc.driver.OracleDriver
-PostgreSQL;jdbc:postgresql://<HOST(localhost)>[:<PORT(5432)>]/[<DATABASE>];org.postgresql.Driver;lib/postgresql-42.2.6.jre7.jar
 Sybase;jdbc:sybase:Tds:<HOST(localhost)>[:<PORT>];com.sybase.jdbc3.jdbc.SybDriver
 Derby;jdbc:derby://<HOST(localhost)>:<PORT>/<DATABASE>;org.apache.derby.jdbc.ClientDriver;lib/derbyclient.jar lib/derbytools.jar
 Derby embedded;jdbc:derby:<DB>;org.apache.derby.jdbc.EmbeddedDriver;lib/derbyclient.jar lib/derbytools.jar
