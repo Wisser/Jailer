@@ -11,12 +11,12 @@ Firebird;jdbc:firebirdsql://<HOST(localhost)>[:<PORT(3050)>]/<DATABASE>;org.fire
 IDS Server;jdbc:ids://<HOST(localhost)>:<PORT>/conn?dsn='<ODBC_DSN_NAME>';ids.sql.IDSDriver
 Informix Dynamic Server;jdbc:informix-sqli://<HOST(localhost)>:<PORT>/<DATABASE>:INFORMIXSERVER=<SERVER_NAME>;com.informix.jdbc.IfxDriver
 InstantDB;jdbc:idb:<DATABASE>;org.enhydra.instantdb.jdbc.idbDriver
-Interbase (InterClient Driver);jdbc:interbase://<HOST(localhost)>/<DATABASE>;interbase.interclient.Driver
+Interbase;jdbc:interbase://<HOST(localhost)>/<DATABASE>;interbase.interclient.Driver
 H2 embedded;jdbc:h2:<DATABASEFILE>;org.h2.Driver;lib/h2-1.4.199.jar
 H2 TCP;jdbc:h2:tcp://<HOST(localhost)>[:<PORT>]/<DATABASEFILE>;org.h2.Driver;lib/h2-1.4.199.jar
 HyperSQL;jdbc:hsqldb:<file|hsql|http>:<DATABASE>;org.hsqldb.jdbcDriver
 Sybase;jdbc:sybase:Tds:<HOST(localhost)>[:<PORT>];com.sybase.jdbc3.jdbc.SybDriver
 Derby;jdbc:derby://<HOST(localhost)>:<PORT>/<DATABASE>;org.apache.derby.jdbc.ClientDriver;lib/derbyclient.jar lib/derbytools.jar
-Derby embedded;jdbc:derby:<DB>;org.apache.derby.jdbc.EmbeddedDriver;lib/derbyclient.jar lib/derbytools.jar
+Derby embedded;jdbc:derby:<DATABASE>;org.apache.derby.jdbc.EmbeddedDriver;lib/derbyclient.jar lib/derbytools.jar
 SQLite;jdbc:sqlite:<DATABASEFILE>;org.sqlite.JDBC;lib/sqlite-jdbc-3.28.0.jar
 <other>;
