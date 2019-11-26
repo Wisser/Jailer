@@ -652,6 +652,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jPanel1 = new javax.swing.JPanel();
         mainPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         restoreLastSessionButton = new javax.swing.JButton();
@@ -672,6 +673,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connect with DB");
         getContentPane().setLayout(new java.awt.CardLayout());
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -837,7 +840,17 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         mainPanel.add(jPanel4, gridBagConstraints);
 
-        getContentPane().add(mainPanel, "card2");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(mainPanel, gridBagConstraints);
+
+        getContentPane().add(jPanel1, "card2");
+        jPanel1.getAccessibleContext().setAccessibleName("");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1213,6 +1226,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
