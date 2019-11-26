@@ -77,6 +77,12 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		jar2.setText(ci.jar2);
 		jar3.setText(ci.jar3);
 		jar4.setText(ci.jar4);
+		try {
+			dbUrl.setCaretPosition(0);
+			driverClass.setCaretPosition(0);
+		} catch (Exception e) {
+			// ignore
+		}
 	}
 
 	/** Creates new form DbConnectionDialog 

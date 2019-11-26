@@ -369,6 +369,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	/**
 	 * Initializes the table model.
 	 */
+	@SuppressWarnings("rawtypes")
 	private Object[][] initTableModel() {
 		Object[][] data = new Object[connectionList.size()][];
 		int i = 0;
@@ -387,6 +388,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 			private static final long serialVersionUID = 1535384744352159695L;
 		};
+		@SuppressWarnings("unchecked")
 		List<? extends SortKey> sortKeys = new ArrayList(connectionsTable.getRowSorter().getSortKeys());
 		connectionsTable.setModel(tableModel);
 		try {
@@ -915,7 +917,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			if (s == null) return;
 			for (Line line: lines) {
 				if (line.cells.get(0).equals(s)) {
-					ci.url = line.cells.get(1);
+					ci.url = editURLParameter(s, line.cells.get(1));
+					if (ci.url == null) {
+						return;
+					}
 					ci.driverClass = line.cells.get(2);
 					String[] jars = line.cells.get(3).replace("/", File.separator).split(" ");
 					if (jars.length > 0) {
@@ -925,6 +930,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						ci.jar2 = jars[1];
 					}
 					ci.alias = s;
+					break;
 				}
 			}
 		} catch (Exception e) {
@@ -951,6 +957,19 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 		}
 	}//GEN-LAST:event_newButtonActionPerformed
+
+	private String editURLParameter(String dbms, String url) {
+		try {
+			Component root = SwingUtilities.getWindowAncestor(mainPanel);
+			if (root == null) {
+				root = mainPanel;
+			}
+			return new DbConnectionSettings(root).edit(dbms, url);
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+			return url;
+		}
+	}
 
 	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
 		if (currentConnection == null) return;

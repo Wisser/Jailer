@@ -1,22 +1,22 @@
-IBM Db2;jdbc:db2://<HOST>:<PORT>/<DB>;COM.ibm.db2.jdbc.app.DB2Driver
-Oracle Thin;jdbc:oracle:thin:@<HOST>:<PORT>:<SID>;oracle.jdbc.driver.OracleDriver
+IBM Db2;jdbc:db2://<HOST(localhost)>:<PORT>/<DATABASE>;COM.ibm.db2.jdbc.app.DB2Driver
+Oracle Thin;jdbc:oracle:thin:@<HOST(localhost)>:<PORT>:<SID>;oracle.jdbc.driver.OracleDriver
 Cloudscape;jdbc:cloudscape:<DB>;COM.cloudscape.core.JDBCDriver
-Cloudscape RMI;jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>;RmiJdbc.RJDriver
-Firebird;jdbc:firebirdsql:[//<HOST>[:<PORT>]/]<DB>;org.firebirdsql.jdbc.FBDriver
-IDS Server;jdbc:ids://<HOST>:<PORT>/conn?dsn='<ODBC_DSN_NAME>';ids.sql.IDSDriver
-Informix Dynamic Server;jdbc:informix-sqli://<HOST>:<PORT>/<DB>:INFORMIXSERVER=<SERVER_NAME>;com.informix.jdbc.IfxDriver
-InstantDB;jdbc:idb:<DB>;org.enhydra.instantdb.jdbc.idbDriver
-Interbase (InterClient Driver);jdbc:interbase://<HOST>/<DB>;interbase.interclient.Driver
-H2 embedded;jdbc:h2:<DB-File>;org.h2.Driver;lib/h2-1.4.199.jar
-H2 TCP;jdbc:h2:tcp://<HOST>/<DB-File>;org.h2.Driver;lib/h2-1.4.199.jar
-HyperSQL;jdbc:hsqldb:<file|hsql|http>:<DB>;org.hsqldb.jdbcDriver
-Microsoft SQL Server;jdbc:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.sqlserver.jdbc.SQLServerDriver;lib/mssql-jdbc-7.2.1.jre8.jar
-MySQL;jdbc:mysql://<HOST>:<PORT(3306)>/<DB>;org.gjt.mm.mysql.Driver;lib/mysql-connector-java-5.1.5-bin.jar
-MariaDB;jdbc:mariadb://<HOST>:<PORT(3306)>/<DB>;org.mariadb.jdbc.Driver;lib/mariadb-java-client-2.4.4.jar
+Cloudscape RMI;jdbc:rmi://<HOST(localhost)>:<PORT>/jdbc:cloudscape:<DB>;RmiJdbc.RJDriver
+Firebird;jdbc:firebirdsql://<HOST(localhost)>[:<PORT(3050)>]/<DATABASE>;org.firebirdsql.jdbc.FBDriver
+IDS Server;jdbc:ids://<HOST(localhost)>:<PORT>/conn?dsn='<ODBC_DSN_NAME>';ids.sql.IDSDriver
+Informix Dynamic Server;jdbc:informix-sqli://<HOST(localhost)>:<PORT>/<DATABASE>:INFORMIXSERVER=<SERVER_NAME>;com.informix.jdbc.IfxDriver
+InstantDB;jdbc:idb:<DATABASE>;org.enhydra.instantdb.jdbc.idbDriver
+Interbase (InterClient Driver);jdbc:interbase://<HOST(localhost)>/<DATABASE>;interbase.interclient.Driver
+H2 embedded;jdbc:h2:<DATABASEFILE>;org.h2.Driver;lib/h2-1.4.199.jar
+H2 TCP;jdbc:h2:tcp://<HOST(localhost)>[:<PORT>]/<DATABASEFILE>;org.h2.Driver;lib/h2-1.4.199.jar
+HyperSQL;jdbc:hsqldb:<file|hsql|http>:<DATABASE>;org.hsqldb.jdbcDriver
+Microsoft SQL Server;jdbc:sqlserver://<HOST(localhost)>[\\<INSTANCE>][:<PORT>];com.microsoft.sqlserver.jdbc.SQLServerDriver;lib/mssql-jdbc-7.2.1.jre8.jar
+MySQL;jdbc:mysql://<HOST(localhost)>:<PORT(3306)>[/<DATABASE>];org.gjt.mm.mysql.Driver;lib/mysql-connector-java-5.1.5-bin.jar
+MariaDB;jdbc:mariadb://<HOST(localhost)>:<PORT(3306)>[/<DATABASE>];org.mariadb.jdbc.Driver;lib/mariadb-java-client-2.4.4.jar
 Oracle OCI;jdbc:oracle:oci:@<SID>;oracle.jdbc.driver.OracleDriver
-PostgreSQL;jdbc:postgresql://<HOST>:<PORT>/<DB>;org.postgresql.Driver;lib/postgresql-42.2.6.jre7.jar
-Sybase;jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc3.jdbc.SybDriver
-Derby;jdbc:derby://<HOST>:<PORT>/<DB>;org.apache.derby.jdbc.ClientDriver;lib/derbyclient.jar lib/derbytools.jar
+PostgreSQL;jdbc:postgresql://<HOST(localhost)>[:<PORT(5432)>]/[<DATABASE>];org.postgresql.Driver;lib/postgresql-42.2.6.jre7.jar
+Sybase;jdbc:sybase:Tds:<HOST(localhost)>[:<PORT>];com.sybase.jdbc3.jdbc.SybDriver
+Derby;jdbc:derby://<HOST(localhost)>:<PORT>/<DATABASE>;org.apache.derby.jdbc.ClientDriver;lib/derbyclient.jar lib/derbytools.jar
 Derby embedded;jdbc:derby:<DB>;org.apache.derby.jdbc.EmbeddedDriver;lib/derbyclient.jar lib/derbytools.jar
-SQLite;jdbc:sqlite:<file>;org.sqlite.JDBC;lib/sqlite-jdbc-3.28.0.jar
+SQLite;jdbc:sqlite:<DATABASEFILE>;org.sqlite.JDBC;lib/sqlite-jdbc-3.28.0.jar
 <other>;
