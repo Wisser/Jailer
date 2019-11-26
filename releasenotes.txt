@@ -1,6 +1,7 @@
 9.1.8
   - Fixed https://github.com/Wisser/Jailer/issues/22
   - Updated the SQLite JDBC driver.
+  - A new wizard for JDBC URL settings has been created.
 
 9.1.7
   - Fixed NullPointerException in Data Browser.
