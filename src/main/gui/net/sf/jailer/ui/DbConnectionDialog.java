@@ -899,12 +899,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		try {
 			CsvFile drivers = new CsvFile(new File("driverlist.csv"));
 			List<Line> lines = new ArrayList<Line>(drivers.getLines());
-			Collections.sort(lines, new Comparator<Line>() {
-				@Override
-				public int compare(Line o1, Line o2) {
-					return o1.cells.get(0).compareTo(o2.cells.get(0));
-				}
-			});
+
 			List<String> dbmsNames = new ArrayList<String>();
 			for (Line line: lines) {
 				if (line.cells.get(0).length() > 0) {
