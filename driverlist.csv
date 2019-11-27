@@ -1,4 +1,3 @@
-<other>;
 PostgreSQL;jdbc:postgresql://<HOST(localhost)>[:<PORT(5432)>]/[<DATABASE>];org.postgresql.Driver;lib/postgresql-42.2.6.jre7.jar
 Oracle Thin;jdbc:oracle:thin:@<HOST(localhost)>:<PORT(1521)>:<SID>;oracle.jdbc.driver.OracleDriver
 Oracle OCI;jdbc:oracle:oci:@<TNS_NAME>;oracle.jdbc.driver.OracleDriver
@@ -21,3 +20,4 @@ Cloudscape;jdbc:cloudscape:<DB>;COM.cloudscape.core.JDBCDriver
 Cloudscape RMI;jdbc:rmi://<HOST(localhost)>:<PORT>/jdbc:cloudscape:<DB>;RmiJdbc.RJDriver
 Derby;jdbc:derby://<HOST(localhost)>:<PORT>/<DATABASE>;org.apache.derby.jdbc.ClientDriver;lib/derbyclient.jar lib/derbytools.jar
 Derby embedded;jdbc:derby:<DATABASE>;org.apache.derby.jdbc.EmbeddedDriver;lib/derbyclient.jar lib/derbytools.jar
+<other>;
