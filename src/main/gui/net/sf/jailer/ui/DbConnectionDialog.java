@@ -914,19 +914,15 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			CsvFile drivers = new CsvFile(new File("driverlist.csv"));
 			List<Line> lines = new ArrayList<Line>(drivers.getLines());
 
-			List<String> dbmsNames = new ArrayList<String>();
-			for (Line line: lines) {
-				if (line.cells.get(0).length() > 0) {
-					dbmsNames.add(line.cells.get(0));
-				}
+			Component root = SwingUtilities.getWindowAncestor(mainPanel);
+			if (root == null) {
+				root = mainPanel;
 			}
-			String s = (String) JOptionPane.showInputDialog(this,
-					"Select DBMS", "Select DBMS",
-					JOptionPane.QUESTION_MESSAGE, null, dbmsNames.toArray(), dbmsNames.get(0));
+			Pair<String, String> s = new DbConnectionSettings(root).edit(lines);
 			if (s == null) return;
 			for (Line line: lines) {
-				if (line.cells.get(0).equals(s)) {
-					ci.url = editURLParameter(s, line.cells.get(1));
+				if (line.cells.get(0).equals(s.a)) {
+					ci.url = s.b;
 					if (ci.url == null) {
 						return;
 					}
@@ -938,11 +934,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					if (jars.length > 1) {
 						ci.jar2 = jars[1];
 					}
-					ci.alias = s;
+					ci.alias = s.a;
 					break;
 				}
 			}
 		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e);
 		}
 		if (edit(ci, true)) {
 			for (int nr = 1; ; ++nr) {
@@ -966,19 +963,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 		}
 	}//GEN-LAST:event_newButtonActionPerformed
-
-	private String editURLParameter(String dbms, String url) {
-		try {
-			Component root = SwingUtilities.getWindowAncestor(mainPanel);
-			if (root == null) {
-				root = mainPanel;
-			}
-			return new DbConnectionSettings(root).edit(dbms, url);
-		} catch (Throwable t) {
-			UIUtil.showException(this, "Error", t);
-			return url;
-		}
-	}
 
 	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
 		if (currentConnection == null) return;
