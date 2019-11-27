@@ -224,6 +224,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			});
 
 			final List<String> schemaInfo = Collections.synchronizedList(new ArrayList<String>());
+			final List<String> schemaNames = Collections.synchronizedList(new ArrayList<String>());
 			final AtomicBoolean schemaInfoRead = new AtomicBoolean(false);
 
 			ConcurrentTaskControl.openInModalDialog(parent, concurrentTaskControl, 
@@ -232,6 +233,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 						public void run() throws Throwable {
 							List<String> schemas = new ArrayList<String>();
 							schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema()));
+							synchronized (schemaNames) {
+								schemaNames.addAll(schemas);
+							}
 							schemas.addAll(JDBCMetaDataBasedModelElementFinder.getCatalogsWithSchemas(session));
 							synchronized (schemaInfo) {
 								schemaInfo.addAll(schemas);
@@ -248,7 +252,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 						}
 				}, "Retrieving schema info...");
 
-			String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+			String defaultSchema;
+			synchronized (schemaNames) {
+				defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema(), schemaNames.isEmpty()? null : schemaNames);
+			}
 			List<String> allSchemas;
 			synchronized (schemaInfo) {
 				allSchemas = new ArrayList<String>(schemaInfo);

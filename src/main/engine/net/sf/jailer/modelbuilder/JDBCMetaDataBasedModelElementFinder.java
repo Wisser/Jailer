@@ -1133,6 +1133,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * @param userName schema with this name may be empty
 	 */ 
 	public static String getDefaultSchema(Session session, String userName) {
+		return getDefaultSchema(session, userName, null);
+	}
+
+	/**
+	 * Gets default schema of DB.
+	 * 
+	 * @param session the statement executor for executing SQL-statements
+	 * @param userName schema with this name may be empty
+	 */ 
+	public static String getDefaultSchema(Session session, String userName, List<String> schemaNames) {
 		
 		// TODO: in MSSQL, should default schema be userName if SCHEMA_NAME() is "dbo"?
 		
@@ -1158,12 +1168,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			DatabaseMetaData metaData = session.getMetaData();
 			boolean isPostgreSQL = DBMS.POSTGRESQL.equals(session.dbms);
 			boolean isH2Sql = DBMS.H2.equals(session.dbms);
-			ResultSet rs = DBMS.MySQL.equals(session.dbms)? metaData.getCatalogs() : metaData.getSchemas();
-			if (rs != null) {
-				while (rs.next()) {
-					schemas.add(rs.getString(DBMS.MySQL.equals(session.dbms)? "TABLE_CAT" : "TABLE_SCHEM"));
+			if (schemaNames != null) {
+				schemas.addAll(schemaNames);
+			} else {
+				ResultSet rs = DBMS.MySQL.equals(session.dbms)? metaData.getCatalogs() : metaData.getSchemas();
+				if (rs != null) {
+					while (rs.next()) {
+						schemas.add(rs.getString(DBMS.MySQL.equals(session.dbms)? "TABLE_CAT" : "TABLE_SCHEM"));
+					}
+					rs.close();
 				}
-				rs.close();
 			}
 			String userSchema = null;
 			for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
