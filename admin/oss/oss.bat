@@ -1,5 +1,5 @@
-gpg -ab jailer-engine-V.jar
-gpg -ab jailer-engine-V-sources.jar
-gpg -ab jailer-engine-V-javadoc.jar
-gpg -ab jailer-engine-V.pom
+gpg -ab jailer-engine-X.jar
+gpg -ab jailer-engine-X-sources.jar
+gpg -ab jailer-engine-X-javadoc.jar
+gpg -ab jailer-engine-X.pom
 jar -cvf bundle.jar *.jar *.pom *.asc
