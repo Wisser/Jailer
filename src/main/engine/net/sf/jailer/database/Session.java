@@ -1073,32 +1073,42 @@ public class Session {
 	 */
 	private String password;
 	
+	private final Object CLI_LOCK = new String("CLI_LOCK");
+	
 	/**
 	 * Gets connection password (UI support)
 	 */
-	public synchronized String getPassword() {
-		return password;
+	public String getPassword() {
+		synchronized (CLI_LOCK) {
+			return password;
+		}
 	}
 
 	/**
 	 * Sets connection password (UI support)
 	 */
-	public synchronized void setPassword(String password) {
-		this.password = password;
+	public void setPassword(String password) {
+		synchronized (CLI_LOCK) {
+			this.password = password;
+		}
 	}
 	
 	/**
 	 * Sets CLI connection arguments (UI support)
 	 */
-	public synchronized void setCliArguments(List<String> args) {
-		this.cliArguments = args;
+	public void setCliArguments(List<String> args) {
+		synchronized (CLI_LOCK) {
+			this.cliArguments = args;
+		}
 	}
 	
 	/**
 	 * Gets CLI connection arguments (UI support)
 	 */
-	public synchronized List<String> getCliArguments() {
-		return cliArguments;
+	public List<String> getCliArguments() {
+		synchronized (CLI_LOCK) {
+			return cliArguments;
+		}
 	}
 
 	/**
