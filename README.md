@@ -27,6 +27,7 @@ Jailer is a tool for database subsetting and relational data browsing.
 
 ## News
 
+ - 2019-12-06   The Jailer engine is published in Maven repository. https://mvnrepository.com/artifact/io.github.wisser/jailer-engine
  - 2019-02-01   The new "Model Migration Tool" allows you to easily find and edit the newly added associations if the data model has been extended after the last change to this extraction model.
  - 2018-04-26   The new feature "Analyze SQL" analyzes SQL statements and proposes association definitions. This allows to reverse-engineer the data model based on existing SQL queries.
  - 2018-03-06   SQL Console with code completion, syntax highlighting and database metadata visualization.
