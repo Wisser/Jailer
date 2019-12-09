@@ -977,7 +977,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					
 			}
 			if (withCaching) {
-				synchronized (session) {
+				synchronized (session.MD_GETCOLUMNS_LOCK) {
 					MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
 					if (metaDataCache == null) {
 						metaDataCache = MetaDataCache.readColumns(session, metaData, schemaPattern);
