@@ -72,6 +72,9 @@ public class PrimaryKey {
 	 * @return a match of all columns of <code>primaryKey</code>
 	 */
 	public Map<Column, Column> match(PrimaryKey primaryKey) {
+		
+		// TODO check completeness of matching
+		
 		if (Configuration.getInstance().getDoMinimizeUPK() || !primaryKey.needsOrderedMatch) {
 			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
 			Map<Column, Column> match = new HashMap<Column, Column>();
