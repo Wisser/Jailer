@@ -54,8 +54,8 @@ public class RowIdSupport {
 		this.useRowIds = useRowIds;
 		if (useRowIds) {
 			rowIdColumn = new Column(configuration.getRowidName(), rowIdType, 0, -1);
-			tablePK = new PrimaryKey(Arrays.asList(rowIdColumn));
-			uPK = new PrimaryKey(Arrays.asList(new Column("PK", rowIdType, 0, -1)));
+			tablePK = new PrimaryKey(Arrays.asList(rowIdColumn), true);
+			uPK = new PrimaryKey(Arrays.asList(new Column("PK", rowIdType, 0, -1)), true);
 		}
 	}
 	

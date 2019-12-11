@@ -37,12 +37,21 @@ public class PrimaryKey {
 	private final List<Column> columns;
 	
 	/**
+	 * <code>true</code> if match with UPK must be ordered.
+	 */
+	private final boolean needsOrderedMatch;
+
+	public int numberOfIndexedPKColumns;
+
+	/**
 	 * Constructor.
 	 * 
 	 * @param primaryKeyColumns the primary-key columns
+	 * @param needsOrderedMatch <code>true</code> if match with UPK must be ordered
 	 */
-	PrimaryKey(List<Column> columns) {
+	public PrimaryKey(List<Column> columns, boolean needsOrderedMatch) {
 		this.columns = columns;
+		this.needsOrderedMatch = needsOrderedMatch;
 	}
 	
 	/**
@@ -63,7 +72,7 @@ public class PrimaryKey {
 	 * @return a match of all columns of <code>primaryKey</code>
 	 */
 	public Map<Column, Column> match(PrimaryKey primaryKey) {
-		if (Configuration.getInstance().getDoMinimizeUPK()) {
+		if (Configuration.getInstance().getDoMinimizeUPK() || !primaryKey.needsOrderedMatch) {
 			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
 			Map<Column, Column> match = new HashMap<Column, Column>();
 			for (Column column: getColumns()) {

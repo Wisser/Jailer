@@ -240,9 +240,21 @@ public class DDLCreator {
 		Map<String, List<String>> listArguments = new HashMap<String, List<String>>();
 		if (indexType == 0) {
 			// full index
-			listArguments.put("column-list", Collections.singletonList(", " + upk.columnList(null)));
-			listArguments.put("column-list-from", Collections.singletonList(", " + upk.columnList("FROM_")));
-			listArguments.put("column-list-to", Collections.singletonList(", " + upk.columnList("TO_")));
+			final int MAX_INDEX_SIZE = 12;
+			PrimaryKey pk = upk;
+			if (pk.numberOfIndexedPKColumns < pk.getColumns().size()) {
+				int iSize = pk.getColumns().size();
+				if (iSize > MAX_INDEX_SIZE) {
+					iSize = Math.max(MAX_INDEX_SIZE, pk.numberOfIndexedPKColumns);
+				}
+				if (iSize < pk.getColumns().size()) {
+					pk = new PrimaryKey(new ArrayList<Column>(pk.getColumns().subList(0, iSize)), false);
+				}
+			}
+			
+			listArguments.put("column-list", Collections.singletonList(", " + pk.columnList(null)));
+			listArguments.put("column-list-from", Collections.singletonList(", " + pk.columnList("FROM_")));
+			listArguments.put("column-list-to", Collections.singletonList(", " + pk.columnList("TO_")));
 		} else if (indexType == 1) {
 			// single column indexes
 			List<String> cl = new ArrayList<String>();

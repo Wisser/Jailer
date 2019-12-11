@@ -151,7 +151,7 @@ public abstract class PrimaryKeyValidator {
 			}
 			pks.append(quoting.requote(pkCol.name));
 		}
-		final String sql = "Select 1 from " + quoting.requote(table.getName()) + " " +
+		final String sql = "Select * from " + quoting.requote(table.getName()) + " " +
 				"Group by " + pks + " having count(*) > 1";
 		try {
 			session.executeQuery(sql, new Session.AbstractResultSetReader() {
@@ -168,22 +168,26 @@ public abstract class PrimaryKeyValidator {
 	private void checkNoNull(Session session, final Table table, Quoting quoting) throws SQLException {
 		StringBuilder hasNull = new StringBuilder();
 		for (Column pkCol: table.primaryKey.getColumns()) {
-			if (hasNull.length() > 0) {
-				hasNull.append(" or ");
-			}
-			hasNull.append(quoting.requote(pkCol.name) + " is null");
-		}
-		final String sql = "Select 1 from " + quoting.requote(table.getName()) + " " +
-				"Where " + hasNull;
-		try {
-			session.executeQuery(sql, new Session.AbstractResultSetReader() {
-				@Override
-				public void readCurrentRow(ResultSet resultSet) throws SQLException {
-					addError("Primary key of table \"" + table.getName() + "\" contains null.", sql.toString());
+			if (!pkCol.isNullable) {
+				if (hasNull.length() > 0) {
+					hasNull.append(" or ");
 				}
-			}, null, cancellationContext, 1);
-		} catch (SqlException e) {
-			addError("Table \"" + table.getName() + "\": " + e.message, sql.toString());
+				hasNull.append(quoting.requote(pkCol.name) + " is null");
+			}
+		}
+		if (hasNull.length() > 0) {
+			final String sql = "Select * from " + quoting.requote(table.getName()) + " " +
+					"Where " + hasNull;
+			try {
+				session.executeQuery(sql, new Session.AbstractResultSetReader() {
+					@Override
+					public void readCurrentRow(ResultSet resultSet) throws SQLException {
+						addError("Primary key of table \"" + table.getName() + "\" contains null.", sql.toString());
+					}
+				}, null, cancellationContext, 1);
+			} catch (SqlException e) {
+				addError("Table \"" + table.getName() + "\": " + e.message, sql.toString());
+			}
 		}
 	}
 

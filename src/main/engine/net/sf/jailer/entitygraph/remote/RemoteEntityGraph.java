@@ -1055,14 +1055,26 @@ public class RemoteEntityGraph extends EntityGraph {
 				sb.append(" and ");
 			}
 			Column tableColumn = match.get(column);
-			sb.append(entityAlias + "." + columnPrefix + column.name);
 			if (tableColumn != null) {
+				if (tableColumn.isNullable) {
+					sb.append("(");
+				}
+				sb.append(entityAlias + "." + columnPrefix + column.name);
 				if (fieldProcTables.contains(table.getUnqualifiedName().toLowerCase(Locale.ENGLISH))) {
 					sb.append(" = " + tableColumn.type + "(" + tableAlias + "." + quoting.requote(tableColumn.name) + ")");
 				} else {
 					sb.append("=" + tableAlias + "." + quoting.requote(tableColumn.name));
+					if (tableColumn.isNullable) {
+						sb.append(" or (");
+						sb.append(entityAlias + "." + columnPrefix + column.name + " is null and ");
+						sb.append(tableAlias + "." + quoting.requote(tableColumn.name) + " is null)");
+					}
+				}
+				if (tableColumn.isNullable) {
+					sb.append(")");
 				}
 			} else {
+				sb.append(entityAlias + "." + columnPrefix + column.name);
 				sb.append(" is null");
 			}
 		}

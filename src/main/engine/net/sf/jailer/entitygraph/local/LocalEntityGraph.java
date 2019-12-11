@@ -232,11 +232,14 @@ public class LocalEntityGraph extends EntityGraph {
 			public PrimaryKey createPrimaryKey(List<Column> columns, String tableName) {
 				List<Column> localPK = new ArrayList<Column>(columns.size());
 				for (Column c: columns) {
+					Column newColumn;
 					if (c.type.equalsIgnoreCase("nvarchar") || c.type.equalsIgnoreCase("nchar")) {
-						localPK.add(new Column(c.name, getConfiguration().getLocalNPKType(), getConfiguration().getLocalPKLength(), -1));
+						newColumn = new Column(c.name, getConfiguration().getLocalNPKType(), getConfiguration().getLocalPKLength(), -1);
 					} else {
-						localPK.add(new Column(c.name, getConfiguration().getLocalPKType(), getConfiguration().getLocalPKLength(), -1));
+						newColumn = new Column(c.name, getConfiguration().getLocalPKType(), getConfiguration().getLocalPKLength(), -1);
 					}
+					newColumn.isNullable = c.isNullable;
+					localPK.add(newColumn);
 				}
 				return super.createPrimaryKey(localPK, tableName);
 			}
@@ -1349,14 +1352,26 @@ public class LocalEntityGraph extends EntityGraph {
 				if (sb.length() > 0) {
 					sb.append(" and ");
 				}
-				sb.append(entityAlias + "." + columnPrefix + column.name);
 				if (tableColumn != null) {
+					if (tableColumn.isNullable) {
+						sb.append("(");
+					}
+					sb.append(entityAlias + "." + columnPrefix + column.name);
 					if (fieldProcTables.contains(table.getUnqualifiedName().toLowerCase(Locale.ENGLISH))) {
 						sb.append(" = " + tableColumn.type + "(" + tableAlias + "." + quoting.requote(tableColumn.name) + ")");
 					} else {
 						sb.append("=" + tableAlias + "." + quoting.requote(tableColumn.name));
+						if (tableColumn.isNullable) {
+							sb.append(" or (");
+							sb.append(entityAlias + "." + columnPrefix + column.name + " is null and ");
+							sb.append(tableAlias + "." + quoting.requote(tableColumn.name) + " is null)");
+						}
+					}
+					if (tableColumn.isNullable) {
+						sb.append(")");
 					}
 				} else {
+					sb.append(entityAlias + "." + columnPrefix + column.name);
 					sb.append(" is null");
 				}
 			}

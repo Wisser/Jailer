@@ -56,11 +56,15 @@ public class PrimaryKeyFactory {
 	 */
 	private boolean closed = false;
 
+	// accumulate PKs
+	private List<List<Column>> nullablePKs = new ArrayList<List<Column>>();
+	private List<List<Column>> nonnullablePKs = new ArrayList<List<Column>>();
+
 	/**
 	 * A super-set of all columns of created primary-keys.
 	 */
 	private PrimaryKey universalPrimaryKey = new PrimaryKey(
-			new ArrayList<Column>());
+			new ArrayList<Column>(), false);
 
 	/**
 	 * Constructs a new primary-key.
@@ -74,7 +78,14 @@ public class PrimaryKeyFactory {
 		if (closed) {
 			throw new IllegalStateException("factory is closed");
 		}
-		PrimaryKey primaryKey = new PrimaryKey(columns);
+		boolean hasNullableColumn = false;
+		for (Column column: columns) {
+			if (column.isNullable) {
+				hasNullableColumn = true;
+			}
+		}
+		
+		PrimaryKey primaryKey = new PrimaryKey(columns, !hasNullableColumn);
 		
 		if (executionContext != null && executionContext.getUpkDomain() != null && tableName != null) {
 			if (!executionContext.getUpkDomain().contains(tableName)) {
@@ -82,7 +93,26 @@ public class PrimaryKeyFactory {
 			}
 		}
 
-		if (Configuration.getInstance().getDoMinimizeUPK()) {
+		if (hasNullableColumn) {
+			nullablePKs.add(columns);
+		} else {
+			nonnullablePKs.add(columns);
+		}
+		return primaryKey;
+	}
+
+	private void createUPK() {
+		for (List<Column> columns: nonnullablePKs) {
+			appendUPK(columns, false);
+		}
+		universalPrimaryKey.numberOfIndexedPKColumns = universalPrimaryKey.getColumns().size();
+		for (List<Column> columns: nullablePKs) {
+			appendUPK(columns, true);
+		}
+	}
+
+	private void appendUPK(List<Column> columns, boolean minimizeUPK) {
+		if (Configuration.getInstance().getDoMinimizeUPK() || minimizeUPK) {
 			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
 			for (Column column: columns) {
 				boolean assigned = false;
@@ -127,7 +157,6 @@ public class PrimaryKeyFactory {
 					assignedUPKColumns.add(universalPrimaryKey.getColumns().size() - 1);
 				}
 			}
-			return primaryKey;
 		} else {
 			int n = 0;
 			if (!columns.isEmpty()) {
@@ -161,7 +190,6 @@ public class PrimaryKeyFactory {
 						new Column(createUniqueUPKName(), column.type,
 								column.length, column.precision));
 			}
-			return primaryKey;
 		}
 	}
 
@@ -183,6 +211,7 @@ public class PrimaryKeyFactory {
 	 * @return the universal primary key
 	 */
 	public PrimaryKey getUniversalPrimaryKey(Session session) {
+		createUPK();
 		closed = true;
 		return universalPrimaryKey;
 	}
