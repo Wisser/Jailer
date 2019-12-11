@@ -1,3 +1,6 @@
+9.1.9
+  - "Limit" parameter as a safeguard for exports. https://github.com/Wisser/Jailer/issues/24
+
 9.1.8
   - Fixed https://github.com/Wisser/Jailer/issues/22
   - Updated the SQLite JDBC driver.

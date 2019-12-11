@@ -314,6 +314,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			fields.put("insert" + scriptFormat.name(), insert);
 			fields.put("threads", threads);
 			fields.put("rowsPerThread", rowsPerThread);
+			fields.put("rowLimit", rowLimit);
 			fields.put("unicode", unicode);
 			fields.put("sorted", sortedCheckBox);
 			fields.put("insertIncrementally", insertIncrementally);
@@ -495,6 +496,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			delete.getDocument().addDocumentListener(dl);
 			threads.getDocument().addDocumentListener(dl);
 			rowsPerThread.getDocument().addDocumentListener(dl);
+			rowLimit.getDocument().addDocumentListener(dl);
 			upsertCheckbox.addActionListener(al);
 			insertIncrementally.addActionListener(al);
 			independentWorkingTables.addActionListener(al);
@@ -1174,6 +1176,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         independentWorkingTables = new javax.swing.JCheckBox();
         orderByPKCheckbox = new javax.swing.JCheckBox();
         jLabel13 = new javax.swing.JLabel();
+        rowLimit = new javax.swing.JTextField();
+        jLabel18 = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1381,11 +1385,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jLabel6.setText(" Parallel threads "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 54;
+        gridBagConstraints.gridy = 53;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel6, gridBagConstraints);
 
         insert.setToolTipText("add '.zip' or '.gz' extension for compressed files");
+        insert.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                insertActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 30;
@@ -1411,13 +1420,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 54;
+        gridBagConstraints.gridy = 53;
         gridBagConstraints.ipadx = 30;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(threads, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 55;
+        gridBagConstraints.gridy = 54;
         gridBagConstraints.ipadx = 30;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(rowsPerThread, gridBagConstraints);
@@ -1504,7 +1513,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jLabel16.setText(" Rows per statement "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 55;
+        gridBagConstraints.gridy = 54;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel16, gridBagConstraints);
 
@@ -1977,6 +1986,24 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 94;
         jPanel1.add(jLabel13, gridBagConstraints);
 
+        rowLimit.setColumns(8);
+        rowLimit.setToolTipText("<html>Maximum allowed number of exported rows, if not empty. <br>If this limit is exceeded, the export aborts with an error.<br></html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 55;
+        gridBagConstraints.ipadx = 30;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(rowLimit, gridBagConstraints);
+
+        jLabel18.setText("<html>&nbsp;Maximum&nbsp;number<br>&nbsp;of&nbsp;exported&nbsp;rows&nbsp;</html>"); // NOI18N
+        jLabel18.setToolTipText("<html>Maximum allowed number of exported rows, if not empty. <br>If this limit is exceeded, the export aborts with an error.<br></html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 55;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        jPanel1.add(jLabel18, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -2278,6 +2305,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
     private void independentWorkingTablesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_independentWorkingTablesActionPerformed
     }//GEN-LAST:event_independentWorkingTablesActionPerformed
+
+    private void insertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_insertActionPerformed
 	
 	public boolean isOk() {
 		return isOk;
@@ -2372,6 +2403,14 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			int nt = Integer.parseInt(rowsPerThread.getText().trim());
 			if (nt > 0) {
 				args.add("-entities");
+				args.add("" + nt);
+			}
+		} catch (Exception e) {
+		}
+		try {
+			long nt = Long.parseLong(rowLimit.getText().trim());
+			if (nt > 0) {
+				args.add("-row-limit");
 				args.add("" + nt);
 			}
 		} catch (Exception e) {
@@ -2598,6 +2637,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
@@ -2641,6 +2681,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel parameterPanel;
     private javax.swing.JLabel placeholder;
     private javax.swing.JLabel placeholder1;
+    private javax.swing.JTextField rowLimit;
     private javax.swing.JTextField rowsPerThread;
     private javax.swing.JPanel schemaMappingLabelPanel;
     private javax.swing.JPanel schemaMappingPanel;

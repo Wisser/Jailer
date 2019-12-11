@@ -1563,7 +1563,7 @@ public class SubsettingEngine {
 	private void checkRowLimit(long rowCount) {
 		if (maxAllowedNumRows != null && rowCount > 0) {
 			if (maxAllowedNumRows.addAndGet(-rowCount) < 0) {
-				throw new IllegalStateException("The row limit (" + limit + ") has been exceeded.");
+				throw new RowLimitExceededException("The row limit (" + limit + ") has been exceeded.");
 			}
 		}
 	}

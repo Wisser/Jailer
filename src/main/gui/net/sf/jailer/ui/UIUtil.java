@@ -102,6 +102,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.extractionmodel.ExtractionModel.IncompatibleModelException;
 import net.sf.jailer.progress.ProgressListener;
+import net.sf.jailer.subsetting.RowLimitExceededException;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.DetailsView;
 import net.sf.jailer.ui.databrowser.Row;
@@ -744,7 +745,10 @@ public class UIUtil {
     	if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException || t instanceof IncompatibleModelException) {
             context = EXCEPTION_CONTEXT_USER_ERROR;
         }
-        if (t instanceof SqlException) {
+    	if (t instanceof RowLimitExceededException) {
+            context = EXCEPTION_CONTEXT_USER_WARNING;
+        }
+    	if (t instanceof SqlException) {
             String message = ((SqlException) t).getMessage();
             String sql = ((SqlException) t).sqlStatement;
 			if (message != null) {

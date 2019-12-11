@@ -1014,7 +1014,13 @@ public class ExecutionContext {
 		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
 		insertIncrementally = commandLine.insertIncrementally;
 		abortInCaseOfInconsistency = commandLine.abortInCaseOfInconsistency;
-		limit = commandLine.limit;
+		limit = null;
+		if (commandLine.limit != null) {
+			String limitStr = commandLine.limit.trim();
+			if (!limitStr.isEmpty()) {
+				limit = Long.parseLong(commandLine.limit);
+			}
+		}
 	}
 
 	private Map<String, String> copy(Map<String, String> map) {
