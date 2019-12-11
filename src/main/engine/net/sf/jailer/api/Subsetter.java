@@ -37,7 +37,7 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.subsetting.SubsettingEngine;
 
 /**
- * Generates a subset of a relational database that respects foreign key constraints. <br>
+ * Generates a subset of a relational database that respects foreign key constraints.
  * 
  * @author Ralf Wisser
  */

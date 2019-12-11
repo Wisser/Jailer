@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -299,6 +300,7 @@ public class SubsettingEngine {
 						progress.add(table);
 					}
 					executionContext.getProgressListenerRegistry().fireCollected(today, table, rc);
+					checkRowLimit(rc);
 				}
 			});
 		}
@@ -356,6 +358,7 @@ public class SubsettingEngine {
 						if (rc >= 0) {
 							_log.info(rc + " entities found resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true));
 						}
+						checkRowLimit(rc);
 						synchronized (progress) {
 							if (rc > 0) {
 								Collection<Association> as = progress.get(association.destination);
@@ -1412,6 +1415,7 @@ public class SubsettingEngine {
 		try {
 			runstats();
 			entityGraph.checkExist(executionContext);
+			initRowLimit(executionContext.getLimit());
 			executionContext.getProgressListenerRegistry().fireNewStage("collecting rows", false, false);
 			Set<Table> completedTables = new HashSet<Table>();
 			Set<Table> progress = exportSubjects(extractionModel, completedTables);
@@ -1446,6 +1450,7 @@ public class SubsettingEngine {
 				}
 			}
 			exportedCount = entityGraph.getExportedCount();
+			initRowLimit(null);
 			if (deleteScriptFileName != null) {
 				executionContext.getProgressListenerRegistry().fireNewStage("delete", false, false);
 				executionContext.getProgressListenerRegistry().fireNewStage("delete-reduction", false, false);
@@ -1541,6 +1546,26 @@ public class SubsettingEngine {
 		shutDown();
 		
 		return exportStatistic;
+	}
+
+	private AtomicLong maxAllowedNumRows = null;
+	private Long limit = null;
+	
+	private void initRowLimit(Long limit) {
+		this.limit = limit;
+		if (limit != null) {
+			maxAllowedNumRows = new AtomicLong(limit);
+		} else {
+			maxAllowedNumRows = null;
+		}
+	}
+
+	private void checkRowLimit(long rowCount) {
+		if (maxAllowedNumRows != null && rowCount > 0) {
+			if (maxAllowedNumRows.addAndGet(-rowCount) < 0) {
+				throw new IllegalStateException("The row limit (" + limit + ") has been exceeded.");
+			}
+		}
 	}
 
 	/**

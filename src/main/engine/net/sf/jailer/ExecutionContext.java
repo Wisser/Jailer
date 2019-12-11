@@ -90,6 +90,7 @@ public class ExecutionContext {
 		this.independentWorkingTables = other.independentWorkingTables;
 		this.upkDomain = other.upkDomain;
 		this.currentConnectionAlias = other.currentConnectionAlias;
+		this.limit = other.limit;
 // don't share progressListenerRegistry, was: this.progressListenerRegistry = other.progressListenerRegistry;
 	}
 
@@ -896,6 +897,9 @@ public class ExecutionContext {
 	// create working tables that are independent of the extraction model. (Potentially less efficient)
 	private boolean independentWorkingTables = false;
 	
+	// maximum allowed number of exported rows. If this limit is exceeded, the export aborts with an error.
+	private Long limit;
+
 	private WorkingTableScope scope = WorkingTableScope.GLOBAL;
 
 	private String rawparameters;
@@ -924,6 +928,20 @@ public class ExecutionContext {
 
 	public void setLayoutStorage(LayoutStorage layoutStorage) {
 		this.layoutStorage = layoutStorage;
+	}
+
+	/**
+	 * @return maximum allowed number of exported rows. If this limit is exceeded, the export aborts with an error.
+	 */
+	public Long getLimit() {
+		return limit;
+	}
+
+	/**
+	 * @param limit maximum allowed number of exported rows. If this limit is exceeded, the export aborts with an error.
+	 */
+	public void setLimit(Long limit) {
+		this.limit = limit;
 	}
 
 	/**
@@ -996,6 +1014,7 @@ public class ExecutionContext {
 		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
 		insertIncrementally = commandLine.insertIncrementally;
 		abortInCaseOfInconsistency = commandLine.abortInCaseOfInconsistency;
+		limit = commandLine.limit;
 	}
 
 	private Map<String, String> copy(Map<String, String> map) {

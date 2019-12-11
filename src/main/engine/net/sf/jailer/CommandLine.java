@@ -171,6 +171,9 @@ public class CommandLine {
 	@Option(name="-abortInCaseOfInconsistency", usage="abort the process if the result is inconsistent due to insufficient transaction isolation")
 	boolean abortInCaseOfInconsistency = false;
 
+	@Option(name="-row-limit", usage="maximum allowed number of exported rows. If this limit is exceeded, the export aborts with an error.")
+	public Long limit = null;
+
 	@Option(name="-", usage="do not interpret the next word as an option, even if it begins with '-'. For example, if the username is \"-abc\", use \"- -abc\".")
 	public List<String> escapedWords = new ArrayList<String>();
 
