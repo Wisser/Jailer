@@ -2307,7 +2307,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_independentWorkingTablesActionPerformed
 
     private void insertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_insertActionPerformed
 	
 	public boolean isOk() {

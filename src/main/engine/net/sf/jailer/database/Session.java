@@ -463,8 +463,8 @@ public class Session {
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
 	 * @param alternativeSQL query to be executed if sqlQuery fails
-	 * @param limit row limit, 0 for unlimited
 	 * @param context cancellation context
+	 * @param limit row limit, 0 for unlimited
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
 	 */
 	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit, boolean withExplicitCommit) throws SQLException {
@@ -477,8 +477,8 @@ public class Session {
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
 	 * @param alternativeSQL query to be executed if sqlQuery fails
-	 * @param limit row limit, 0 for unlimited
 	 * @param context cancellation context
+	 * @param limit row limit, 0 for unlimited
 	 */
 	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit) throws SQLException {
 		return executeQuery(sqlQuery, reader, alternativeSQL, context, limit, 0, false);
@@ -491,8 +491,8 @@ public class Session {
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
 	 * @param alternativeSQL query to be executed if sqlQuery fails
-	 * @param limit row limit, 0 for unlimited
 	 * @param context cancellation context
+	 * @param limit row limit, 0 for unlimited
 	 * @param timeout the timeout in sec
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
 	 */

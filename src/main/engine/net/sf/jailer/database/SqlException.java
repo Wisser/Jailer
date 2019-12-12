@@ -25,12 +25,18 @@ import java.sql.SQLException;
 public class SqlException extends SQLException {
 
 	public final String message;
+	public final String errorDialogTitle;
 	public final String sqlStatement;
 	private boolean insufficientPrivileges = false;
 	private boolean isFormatted = false;
-	
+
 	public SqlException(String message, String sqlStatement, Throwable t) {
+		this(null, message, sqlStatement, t);
+	}
+
+	public SqlException(String errorDialogTitle, String message, String sqlStatement, Throwable t) {
 		super(message, t);
+		this.errorDialogTitle = errorDialogTitle;
 		this.message = t == null? message : t.getMessage();
 		this.sqlStatement = sqlStatement;
 	}

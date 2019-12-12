@@ -1475,9 +1475,9 @@ public class SubsettingEngine {
 			if (scriptFile != null && scriptFormat != ScriptFormat.XML && exportStatistic.getTotal() != exportedCount) {
 				String message =
 							"The number of rows collected (" + exportStatistic.getTotal() + ") differs from that of the exported ones (" + exportedCount + ").\n" +
-							"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique and never null.\n" +
+							"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique.\n" +
 							"It is recommended to check the integrity of the primary keys.\n" +
-							"To do this, use the cli/api-argument \"-check-primary-keys\".";
+							"To do this, use the menu item \"Check primary keys\" in the menu called \"DataModel\".";
 				if (executionContext.isAbortInCaseOfInconsistency()) {
 					throw new InconsistentSubsettingResultException(message);
 				} else {

@@ -72,12 +72,10 @@ public class PrimaryKey {
 	 * @return a match of all columns of <code>primaryKey</code>
 	 */
 	public Map<Column, Column> match(PrimaryKey primaryKey) {
-		
-		// TODO check completeness of matching
-		
-		if (Configuration.getInstance().getDoMinimizeUPK() || !primaryKey.needsOrderedMatch) {
+		Map<Column, Column> match = new HashMap<Column, Column>();
+		boolean minimize = Configuration.getInstance().getDoMinimizeUPK() || !primaryKey.needsOrderedMatch;
+		if (minimize) {
 			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
-			Map<Column, Column> match = new HashMap<Column, Column>();
 			for (Column column: getColumns()) {
 				for (int i = 0; i < primaryKey.getColumns().size(); ++i) {
 					if (assignedUPKColumns.contains(i)) {
@@ -94,9 +92,7 @@ public class PrimaryKey {
 					}
 				}
 			}
-			return match;
 		} else {
-			Map<Column, Column> match = new HashMap<Column, Column>();
 			int i = 0;
 			for (Column column: getColumns()) {
 				if (i >= primaryKey.getColumns().size()) {
@@ -111,8 +107,16 @@ public class PrimaryKey {
 					}
 				}
 			}
-			return match;
 		}
+		
+		if (match.size() != primaryKey.columns.size()) {
+			throw new IllegalStateException("Incomplete pk-upk-match. (" + minimize + ")\n"
+					+ "PK: " + primaryKey.toSQL(null) + "\n"
+					+ "UPK: " + toSQL(null) + "\n"
+					+ "Match: " + match + "\n");
+		}
+		
+		return match;
 	}
 
 	public static boolean  isAssignable(Column uPKColumn, Column entityColumn) {

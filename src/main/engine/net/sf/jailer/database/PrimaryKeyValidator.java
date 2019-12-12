@@ -137,7 +137,7 @@ public abstract class PrimaryKeyValidator {
 
 	private void throwIfErrorFound() throws SqlException {
 		if (errorMessage.length() > 0) {
-			SqlException e = new SqlException(errorMessage.toString(), errorStatements.toString(), null);
+			SqlException e = new SqlException("Invalid Primary Key", errorMessage.toString(), errorStatements.toString(), null);
 			e.setFormatted(true);
 			throw e;
 		}
@@ -151,7 +151,7 @@ public abstract class PrimaryKeyValidator {
 			}
 			pks.append(quoting.requote(pkCol.name));
 		}
-		final String sql = "Select * from " + quoting.requote(table.getName()) + " " +
+		final String sql = "Select " + pks + " from " + quoting.requote(table.getName()) + " " +
 				"Group by " + pks + " having count(*) > 1";
 		try {
 			session.executeQuery(sql, new Session.AbstractResultSetReader() {
@@ -159,7 +159,7 @@ public abstract class PrimaryKeyValidator {
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					addError("Primary key of table \"" + table.getName() + "\" is not unique.", sql.toString());
 				}
-			}, null, cancellationContext, 1);
+			}, null, cancellationContext, 1, true);
 		} catch (SqlException e) {
 			addError("Table \"" + table.getName() + "\": " + e.message, sql.toString());
 		}
@@ -184,7 +184,7 @@ public abstract class PrimaryKeyValidator {
 					public void readCurrentRow(ResultSet resultSet) throws SQLException {
 						addError("Primary key of table \"" + table.getName() + "\" contains null.", sql.toString());
 					}
-				}, null, cancellationContext, 1);
+				}, null, cancellationContext, 1, true);
 			} catch (SqlException e) {
 				addError("Table \"" + table.getName() + "\": " + e.message, sql.toString());
 			}

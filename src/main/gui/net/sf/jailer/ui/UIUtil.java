@@ -751,6 +751,7 @@ public class UIUtil {
     	if (t instanceof SqlException) {
             String message = ((SqlException) t).getMessage();
             String sql = ((SqlException) t).sqlStatement;
+            String errorDialogTitle = ((SqlException) t).errorDialogTitle;
 			if (message != null) {
 				if (sql != null) {
 		            String iMsg = message.toString() + "\n" + JailerVersion.VERSION + "\n" + sql;
@@ -758,7 +759,7 @@ public class UIUtil {
 				}
 			}
 			new SqlErrorDialog(parent == null ? null : parent instanceof Window? (Window) parent : SwingUtilities.getWindowAncestor(parent),
-					((SqlException) t).isFormatted()? message : lineWrap(message, 120).toString(), sql, ((SqlException) t).isFormatted(), true, null, false, additionalControl);
+					((SqlException) t).isFormatted()? message : lineWrap(message, 120).toString(), sql, ((SqlException) t).isFormatted(), true, errorDialogTitle, false, additionalControl);
             return;
         }
         if (t instanceof CancellationException) {

@@ -72,13 +72,18 @@ public abstract class TableEditor extends javax.swing.JDialog {
 	
 	private void updateTable(List<ColumnModel> model) {
 		List<Column> pkColumns = new ArrayList<Column>();
+		hasNullablePKColumn = false;
 		for (ColumnModel cm: model) {
 			if (cm.isPk) {
 				pkColumns.add(cm.column);
+				if (cm.column.isNullable) {
+					hasNullablePKColumn = true;
+				}
 			}
 		}
 		PrimaryKey primaryKey = new PrimaryKeyFactory(null).createPrimaryKey(pkColumns, null);
 		table = new Table(nameField.getText().trim(), primaryKey, false, false);
+		updateWarningPanel();
 	}
 	
 	@SuppressWarnings("serial")
@@ -176,7 +181,8 @@ public abstract class TableEditor extends javax.swing.JDialog {
 			c.isNullable = columnIsNullable.isSelected();
 			element.column = c;
 			if (element.isPk != primaryKey1.isSelected()) {
-				pkChangedWarning();
+				pkChanged = true;
+				updateWarningPanel();
 			}
 			element.isPk = primaryKey1.isSelected();
 		}
@@ -294,7 +300,9 @@ public abstract class TableEditor extends javax.swing.JDialog {
         jLabel7 = new javax.swing.JLabel();
         displayName = new javax.swing.JTextField();
         warnPanel = new javax.swing.JPanel();
-        jLabel12 = new javax.swing.JLabel();
+        warnPKChangedLabel = new javax.swing.JLabel();
+        warnSeparator = new javax.swing.JSeparator();
+        warnNullablePKLabel = new javax.swing.JLabel();
 
         columnDetailsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -649,14 +657,33 @@ public abstract class TableEditor extends javax.swing.JDialog {
         warnPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Warning"));
         warnPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel12.setFont(jLabel12.getFont().deriveFont(jLabel12.getFont().getSize()+1f));
-        jLabel12.setForeground(new java.awt.Color(205, 0, 0));
-        jLabel12.setText("<html>Primary key has been changed. <br> Please keep in mind that the PK must be unique and never <i>null</i>. <br> It is recommended to check the integrity of the PK.<br> To do that, please select the option \"check primary keys\" in the export dialog or use the button below. </html>");
+        warnPKChangedLabel.setFont(warnPKChangedLabel.getFont().deriveFont(warnPKChangedLabel.getFont().getSize()+1f));
+        warnPKChangedLabel.setForeground(new java.awt.Color(205, 0, 0));
+        warnPKChangedLabel.setText("<html>Primary key has been changed.<br>Keep in mind that the primary key must be unique.<br>It is recommended to check the integrity of the primary key.<br>To do that, please select the option \"check primary keys\" in the export dialog or use the button below. </html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        warnPanel.add(jLabel12, gridBagConstraints);
+        warnPanel.add(warnPKChangedLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        warnPanel.add(warnSeparator, gridBagConstraints);
+
+        warnNullablePKLabel.setFont(warnNullablePKLabel.getFont().deriveFont(warnNullablePKLabel.getFont().getSize()+1f));
+        warnNullablePKLabel.setForeground(new java.awt.Color(205, 0, 0));
+        warnNullablePKLabel.setText("<html>Nullable primary key columns can have a negative impact on performance.</html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        warnPanel.add(warnNullablePKLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -957,10 +984,14 @@ public abstract class TableEditor extends javax.swing.JDialog {
 		return false;
 	}
 
-	private void pkChangedWarning() {
-		if (!warnPanel.isVisible()) {
-			warnPanel.setVisible(true);
-		}
+	private boolean pkChanged = false;
+	private boolean hasNullablePKColumn = false;
+
+	private void updateWarningPanel() {
+		warnPanel.setVisible(pkChanged || hasNullablePKColumn);
+		warnPKChangedLabel.setVisible(pkChanged);
+		warnSeparator.setVisible(pkChanged && hasNullablePKColumn);
+		warnNullablePKLabel.setVisible(hasNullablePKColumn);
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -980,7 +1011,6 @@ public abstract class TableEditor extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -994,7 +1024,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
     private javax.swing.JCheckBox primaryKey1;
     private javax.swing.JPanel slotPanel;
     private javax.swing.JCheckBox upsertCheckbox;
+    private javax.swing.JLabel warnNullablePKLabel;
+    private javax.swing.JLabel warnPKChangedLabel;
     private javax.swing.JPanel warnPanel;
+    private javax.swing.JSeparator warnSeparator;
     // End of variables declaration//GEN-END:variables
 	
 	private static final long serialVersionUID = -3331167410435129849L;
