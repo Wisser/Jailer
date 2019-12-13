@@ -524,7 +524,22 @@ public class MDTable extends MDObject {
         	if (prepComma) {
         		sb.append(",\n");
         	}
-        	sb.append("    CONSTRAINT " + (pkConstraintName == null? "" : pkConstraintName) + " PRIMARY KEY (");
+        	sb.append("    ");
+        	if (pkConstraintName == null) {
+            	sb.append("-- ");
+        	}
+        	sb.append("CONSTRAINT ");
+        	if (pkConstraintName == null) {
+            	sb.append(getName());
+        		if (getName() != null && getName().toLowerCase().equals(getName())) {
+                	sb.append("_pk");
+        		} else {
+        			sb.append("_PK");
+        		}
+        	} else {
+            	sb.append(pkConstraintName);
+        	}
+        	sb.append(" PRIMARY KEY (");
         	prepComma = false;
         	for (String pk: primaryKey) {
         		if (prepComma) {
