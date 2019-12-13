@@ -1,4 +1,4 @@
-9.1.9
+9.2
   - Support for nullable primary key columns.
     This simplifies the definition of pseudo-primary keys for tables without keys.
   - "Limit" parameter as a safeguard for exports. https://github.com/Wisser/Jailer/issues/24
