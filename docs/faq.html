@@ -118,59 +118,48 @@
                             <td style="vertical-align: top;">A</td>
 
                             <td>Each association will be traversed in both directions,
-                            unless there is a restriction defined. For example, if the
+                            unless there is a restriction defined. If, for example, the
                             subject table is <span style=
                             "font-style: italic;">employee</span>, and the association
                             from&nbsp;<span style="font-style: italic;">department</span>
                             table to&nbsp;<span style=
                             "font-style: italic;">employee</span> table is enabled, you
                             will not only get all departments associated with any subject
-                            employee, but also&nbsp;all employees associated with any of
-                            that departments.<br />
+                            employee, but also all employees associated with one of these departments.<br />
                             <br />
-                            If you get rows which you don't intend to get, then a
-                            restriction is missing. You can use the&nbsp;<span style=
-                            "font-style: italic;">explain</span> feature in such a case.
-                            The explain log shows the chain of associations for each
-                            exported row back to a subject row, where the exportation
-                            starts. I recommend to read the <a href=
-                            "exporting-data.htm">tutorial</a>, which explains the
-                            matters.<br />
+                            If you get lines that you do not want to get, you need to make a further restriction. The <span style=
+                            "font-style: italic;">Progress Panel</span> can help you in such a case.
+                            It shows the chain of associations for each
+                            exported row back to a subject row, where the export
+                            starts. I recommend reading the <a href=
+                            "exporting-data.htm">tutorial</a> that explains these things.<br />
                             <br />
                             Instead of adding all restrictions you need, starting from
                             the unrestricted model, you can also go the opposit way: at
-                            first disable all associations (except dependencies) using
+                            first disable all associations (except dependencies) via the menu item
                             <span style="font-style: italic;">"Edit-&gt;Disable all
-                            associations</span>" menu item. Then remove restrictions
+                            associations</span>". Then remove restrictions
                             until you get all the rows you are looking for.<br />
                             &nbsp;<br />
-                            It's easier that way to get a working extraction model, but
-                            it's harder to ensure that the model isn't too restrictive,
-                            i.e. that you will get&nbsp;<span style=
-                            "font-weight: bold;">all</span> rows you intend to get.<br />
-                            &nbsp;<br />
-                            From my experience the best way to define an extraction model
+                            It is easier to get a working extraction model in this way, but it is more difficult to ensure that the model is not too restrictive, i.e. that you get <b>all</b> the rows you want.<br><br />
+                            
+                            In my experience the best way to define an extraction model
                             is to use the "<span style="font-weight: bold;">Closure
-                            Browser</span>" (use "<span style=
-                            "font-style: italic;">Closure...</span>" button).<br />
+                            </span>" view.<br />
                             &nbsp;<br />
-                            The closure browser lists all tables which are directly or
-                            indirectly associated with the subject table (where
-                            extraction starts) according to the restrictions, ordered by
+                            The closure view lists all tables that are directly or
+                            indirectly associated with the subject table (where the
+                            export starts), according to the restrictions, ordered by
                             distance.<br />
                             &nbsp;<br />
                             Check each table of this list from top to bottom. If you
                             don't want to have rows from the table to be exported, select
-                            the table and disable the association which gets
-                            automatically selected then (table's context menu is also
-                            available here). The table disapears from the list as soon as
-                            it is no longer associated with subject.&nbsp;<br />
+                            the table and disable the association which will be automatically selected (the context menu of the table is also available here). The table disapears from the list as soon as
+                            it is no longer associated with the subject.&nbsp;<br />
                             <br />
-                            This way you easily get an extraction model which extracts
-                            rows only from tables you want to extract data
-                            from.&nbsp;<br />
+                            In this way, you simply get an extraction model that extracts rows only from tables from which you want to extract data.&nbsp;<br />
                             <br />
-                            Finally check all associations between the remaining
+                            Finally, check all associations between the remaining
                             tables.<br />
                             &nbsp;<br /></td>
                           </tr>
@@ -255,7 +244,7 @@
                             "<span style="font-style: italic;">Filter editor...</span>",
                             or table's context menu)<br />
                             <br />
-                            A filter is an assignment of a SQL expression to a table
+                            A filter is an assignment of an SQL expression to a table
                             column. The column values will be replaced by the result of
                             the expression when the export file is written.<br />
                             &nbsp;<br />
@@ -286,28 +275,6 @@
                             &nbsp;<br /></td>
                           </tr>
 
-                          <tr>
-                            <td style=
-                            "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Q</td>
-
-                            <td style=
-                            "background-color: rgb(242, 242, 242); font-weight: bold;">
-                            Why doesn't Jailer detect&nbsp;associations in MySQL
-                            databases?</td>
-                          </tr>
-
-                          <tr>
-                            <td style="vertical-align: top;">A</td>
-
-                            <td>If you use MyISAM database engine, no association will be
-                            detected. MyISAM doesn't know the concept of foreign key
-                            relationships, even if they're defined in the DDL.<br />
-                            &nbsp;<br />
-                            The typical alternative engine that supports foreign key
-                            relationships is InnoDB.<br />
-                            &nbsp;</td>
-                          </tr>
 
                           <tr>
                             <td style=
@@ -346,12 +313,8 @@
                           <tr>
                             <td style="vertical-align: top;">A</td>
 
-                            <td>Jailer cannot handle tables without primary keys.
-                            Exporting data is not possible, if a table without a primary
-                            key is associated with the subject table. In this case, you
-                            should define a&nbsp;key of the table in the tool's data
-                            model&nbsp;(not in the database!) manually, using the data
-                            model editor. Note that a key must be unique.<br />
+                            <td>Jailer cannot handle tables without a primary key.
+                            Exporting data is not possible if the subject table is associated with a table without a primary key. In this case, you should manually define a primary key in the data model of the tool (not in the database!) using the <i>Data Model Editor</i>. Note that a key must be unique.<br />
                             <br />
                             (On Oracle, however, <i>rowid</i>-pseudo columns can be used
                             instead of primary keys)<br />
@@ -378,7 +341,7 @@
                             "font-style: italic;">animation step time</span>" which
                             determines the minimum time (in ms) for one animation step.
                             Increasing that parameter (<span style=
-                            "font-style: italic;">View-&gt;Animation step time</span>)
+                            "font-style: italic;">Settings-&gt;Animation step time</span>)
                             will reduce the cpu utilization.<br /><br /></td>
                           </tr>
 
@@ -396,7 +359,7 @@
                             <td style="vertical-align: top;">A</td>
 
                             <td>
-                            Unzip the "jailer-version.zip" file and create a (empty) file ".multiuser" in the directory "jailer".
+                            Unzip the "jailer-version.zip" file and create an (empty) file ".multiuser" in the directory "jailer".
 All model and settings files are then stored in a folder named ".jailer" in the user's home directory.
                             <br /><br /></td>
                           </tr>
@@ -415,7 +378,7 @@ All model and settings files are then stored in a folder named ".jailer" in the 
                             <td style="vertical-align: top;">A</td>
 
                             <td>
-                            Java JRE 8 does not support HiDPI graphics. Therefore, it is strongly recommended to use Java <b>JRE 11</b> (or above).
+                            Java JRE 8 does not support HiDPI graphics. Therefore it is strongly recommended to use Java <b>JRE 11</b> (or above).
                             <br /><br /></td>
                           </tr>
                         </tbody>
