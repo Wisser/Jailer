@@ -869,18 +869,18 @@ public class RemoteEntityGraph extends EntityGraph {
 				remove = "Update " + dmlTableReference(ENTITY, session) + " E set E.birthday=-1 Where E.r_entitygraph=" + graphID + " and E.type=" + typeName(association.destination) + " " +
 						  "and exists (Select * from " + dmlTableReference(ENTITY_SET_ELEMENT, session) + " S where S.set_id=" + setId + " and E.type=S.type and " + sEqualsE + ") " +
 						  "and E.birthday<>-1";
+				String removeWOAlias = "Update " + dmlTableReference(ENTITY, session) + " set birthday=-1 Where " + dmlTableReference(ENTITY, session) + ".r_entitygraph=" + graphID + " and " + dmlTableReference(ENTITY, session) + ".type=" + typeName(association.destination) + " " +
+						"and exists (Select * from " + dmlTableReference(ENTITY_SET_ELEMENT, session) + " S where S.set_id=" + setId + " and " + dmlTableReference(ENTITY, session) + ".type=S.type and " + sEqualsEWoAlias + ") " +
+						"and " + dmlTableReference(ENTITY, session) + ".birthday<>-1";
+				boolean tryWithAliasFirst = !DBMS.POSTGRESQL.equals(session.dbms);
 				boolean silent = session.getSilent();
 				try {
 					session.setSilent(true);
-					rc = session.executeUpdate(remove);
+					rc = session.executeUpdate(tryWithAliasFirst? remove : removeWOAlias);
 					totalRowcount += rc;
 				} catch (SQLException e) {
-					// postgreSQL
-					Session._log.debug("failed, retry without alias (" + e.getMessage() + ")");
-					remove = "Update " + dmlTableReference(ENTITY, session) + " set birthday=-1 Where " + dmlTableReference(ENTITY, session) + ".r_entitygraph=" + graphID + " and " + dmlTableReference(ENTITY, session) + ".type=" + typeName(association.destination) + " " +
-					"and exists (Select * from " + dmlTableReference(ENTITY_SET_ELEMENT, session) + " S where S.set_id=" + setId + " and " + dmlTableReference(ENTITY, session) + ".type=S.type and " + sEqualsEWoAlias + ") " +
-					"and " + dmlTableReference(ENTITY, session) + ".birthday<>-1";
-					rc = session.executeUpdate(remove);
+					Session._log.debug("failed, retry with/without alias (" + e.getMessage() + ")");
+					rc = session.executeUpdate(tryWithAliasFirst? removeWOAlias : remove);
 					totalRowcount += rc;
 				} finally {
 					session.setSilent(silent);

@@ -73,10 +73,17 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			upsertStrategy = null;
 			upsertStrategies = new ArrayList<UpsertStrategy>();
 			
+			boolean isPG = DBMS.POSTGRESQL.equals(session.dbms);
+			
+			if (isPG) {
+				upsertStrategies.add(new UpsertPGUS());
+			}
 			upsertStrategies.add(new MergeUS(true));
 			upsertStrategies.add(new MergeUS(false));
 			upsertStrategies.add(new UpsertMYSQLUS());
-			upsertStrategies.add(new UpsertPGUS());
+			if (!isPG) {
+				upsertStrategies.add(new UpsertPGUS());
+			}
 			upsertStrategies.add(new UpsertStandardUS());
 		}
 		quoting = Quoting.getQuoting(session);

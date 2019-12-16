@@ -101,12 +101,12 @@ public class DDLCreator {
 	 */
 	public boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, targetDBMS(session), executionContext);
-		if (session != null && session.dbms.getExperimentalTypeReplacement() != null) {
+		if (session != null && session.dbms.getExperimentalTypeReplacement() != null && !session.dbms.getExperimentalTypeReplacement().isEmpty()) {
 			Map<String, String> oldTypeReplacement = session.dbms.getTypeReplacement();
 			if (oldTypeReplacement == null) {
 				session.dbms.setTypeReplacement(session.dbms.getExperimentalTypeReplacement());
 			} else {
-				HashMap<String, String> repl = new HashMap<String, String>(session.dbms.getExperimentalTypeReplacement());
+				HashMap<String, String> repl = new HashMap<String, String>(session.dbms.getTypeReplacement());
 				repl.putAll(session.dbms.getExperimentalTypeReplacement());
 				session.dbms.setTypeReplacement(repl);
 			}
