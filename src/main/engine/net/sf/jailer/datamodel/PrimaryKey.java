@@ -109,13 +109,6 @@ public class PrimaryKey {
 			}
 		}
 		
-		if (match.size() != primaryKey.columns.size()) {
-			throw new IllegalStateException("Incomplete pk-upk-match. (" + minimize + ")\n"
-					+ "PK: " + primaryKey.toSQL(null) + "\n"
-					+ "UPK: " + toSQL(null) + "\n"
-					+ "Match: " + match + "\n");
-		}
-		
 		return match;
 	}
 
