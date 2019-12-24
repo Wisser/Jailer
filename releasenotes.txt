@@ -1,3 +1,6 @@
+9.2.2
+  - When deleting rows, an IllegalStateException sometimes occurred incorrectly.
+
 9.2.1
   - Support for nullable primary key columns.
     This simplifies the definition of pseudo-primary keys for tables without keys.
