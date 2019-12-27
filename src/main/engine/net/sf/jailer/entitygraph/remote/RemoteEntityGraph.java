@@ -821,11 +821,12 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * outside the graph.
 	 * 
 	 * @param deletedEntitiesAreMarked if true, consider entity as deleted if its birthday is negative
+	 * @param allTables set of tables from which there are entities in E
 	 * @param association the association
 	 * @return number of removed entities
 	 */
 	@Override
-	public long removeAssociatedDestinations(Association association, boolean deletedEntitiesAreMarked) throws SQLException {
+	public long removeAssociatedDestinations(Association association, boolean deletedEntitiesAreMarked, Set<Table> allTables) throws SQLException {
 		String jc = association.getJoinCondition();
 		if (jc != null) {
 			String destAlias, sourceAlias;
@@ -838,14 +839,21 @@ public class RemoteEntityGraph extends EntityGraph {
 			}
 			int setId = getNextSetId();
 			jc = SqlUtil.resolvePseudoColumns(jc, association.reversed? "EB" : "EA", association.reversed? "EA" : "EB", 0, birthdayOfSubject, "orig_birthday", inDeleteMode);
+			boolean checkDest = allTables.contains(association.source);
+
 			String remove = "Insert into " + dmlTableReference(ENTITY_SET_ELEMENT, session) + "(set_id, type, " + universalPrimaryKey.columnList(null) + ") " +
 				"Select distinct " + setId + ", EB.type, " + universalPrimaryKey.columnList("EB.") + " from " + dmlTableReference(ENTITY, session) + " EB " +
 				"join " + quoting.requote(association.destination.getName()) + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB") + " " +
 				"join " + quoting.requote(association.source.getName()) + " " + sourceAlias + " " +
 				"on (" + jc + ") " +
-				(deletedEntitiesAreMarked? "join " : "left join ") + dmlTableReference(ENTITY, session) + " EA on EA.r_entitygraph=" + graphID + " and EA.type=" + typeName(association.source) + " and " + pkEqualsEntityID(association.source, sourceAlias, "EA") + " " +
-				"Where EB.r_entitygraph=" + graphID + " and EB.type=" + typeName(association.destination) + " " +
-				"and " + (deletedEntitiesAreMarked? "EA.birthday=-1 and EB.birthday>=0" : "EA.type is null");
+				(checkDest?
+						(deletedEntitiesAreMarked? "join " : "left join ") + dmlTableReference(ENTITY, session) + " EA on EA.r_entitygraph=" + graphID + " and EA.type=" + typeName(association.source) + " and " + pkEqualsEntityID(association.source, sourceAlias, "EA") + " "
+						:
+						"") +
+				"Where EB.r_entitygraph=" + graphID + " and EB.type=" + typeName(association.destination);
+				if (checkDest) {
+					remove += " and " + (deletedEntitiesAreMarked? "EA.birthday=-1 and EB.birthday>=0" : "EA.type is null");
+				}
 			long rc = session.executeUpdate(remove);
 			if (rc > 0) {
 				Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(association.destination));

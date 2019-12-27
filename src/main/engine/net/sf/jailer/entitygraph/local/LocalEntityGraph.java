@@ -1073,12 +1073,13 @@ public class LocalEntityGraph extends EntityGraph {
 	 * Removes all entities from this graph which are associated with an entity
 	 * outside the graph.
 	 * 
-	 * @param deletedEntitiesAreMarked if true, consider entity as deleted if its birthday is negative
 	 * @param association the association
+	 * @param deletedEntitiesAreMarked if true, consider entity as deleted if its birthday is negative
+	 * @param allTables set of tables from which there are entities in E
 	 * @return number of removed entities
 	 */
 	@Override
-	public long removeAssociatedDestinations(final Association association, final boolean deletedEntitiesAreMarked) throws SQLException {
+	public long removeAssociatedDestinations(final Association association, final boolean deletedEntitiesAreMarked, Set<Table> allTables) throws SQLException {
 		final String jc = association.getJoinCondition();
 		checkPseudoColumns(association.source, jc);
 		if (jc != null) {
@@ -1091,8 +1092,11 @@ public class LocalEntityGraph extends EntityGraph {
 				destAlias = "B";
 				sourceAlias = "A";
 			}
+			final boolean checkDest = allTables.contains(association.source);
+			final String sep = checkDest? (upkMatch(association.source).isEmpty()? "" : ", ") : "";
+
 			final int setId = getNextSetId();
-			
+
 			final long[] rc = new long[1];
 
 			String selectEB = 
@@ -1105,37 +1109,38 @@ public class LocalEntityGraph extends EntityGraph {
 				@Override
 				protected void process(String inlineView) throws SQLException {
 				
-					String sep = upkMatch(association.source).isEmpty()? "" : ", ";
-					
 					String selectSource =
-							"Select distinct " + upkColumnList(association.destination, "EB", "") + sep + pkList(association.source, sourceAlias, "") + " from " + inlineView + " " +
+							"Select distinct " + upkColumnList(association.destination, "EB", "") + (checkDest? sep + pkList(association.source, sourceAlias, "") : "") + " from " + inlineView + " " +
 									"join " + quoting.requote(association.destination.getName()) + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB", "", false) + " " +
 									"join " + quoting.requote(association.source.getName()) + " " + sourceAlias + " " + " on " + jc;
 
-					remoteSession.executeQuery(selectSource, new LocalInlineViewBuilder("EBA", upkColumnList(association.destination, null, "EB") + sep + upkColumnList(association.source, "A"), true) {
+					remoteSession.executeQuery(selectSource, new LocalInlineViewBuilder("EBA", upkColumnList(association.destination, null, "EB") + (checkDest? sep + upkColumnList(association.source, "A") : ""), true) {
 						
 						@Override
 						protected void process(String inlineView) throws SQLException {
-							Map<Column, Column> match = upkMatch(association.source);
-							StringBuffer eBAEqualsEA = new StringBuffer();
-							for (Column column: universalPrimaryKey.getColumns()) {
-								Column tableColumn = match.get(column);
-								if (tableColumn != null) {
-									if (eBAEqualsEA.length() > 0) {
-										eBAEqualsEA.append(" and ");
-									}
-									eBAEqualsEA.append("EBA.A" + column.name);
-									eBAEqualsEA.append("=EA." + column.name);
-								}
-							}
-							
 							String selectEB =
-									"Select distinct " + setId + ", " + typeName(association.destination) + ", " + upkColumnList(association.destination, "EBA", "EB") + 
-									" from " + inlineView + (deletedEntitiesAreMarked? " join " : " left join ") + dmlTableReference(ENTITY, localSession) + " EA" + 
+								"Select distinct " + setId + ", " + typeName(association.destination) + ", " + upkColumnList(association.destination, "EBA", "EB") + 
+								" from " + inlineView;
+							if (checkDest) {
+								Map<Column, Column> match = upkMatch(association.source);
+								StringBuffer eBAEqualsEA = new StringBuffer();
+								for (Column column: universalPrimaryKey.getColumns()) {
+									Column tableColumn = match.get(column);
+									if (tableColumn != null) {
+										if (eBAEqualsEA.length() > 0) {
+											eBAEqualsEA.append(" and ");
+										}
+										eBAEqualsEA.append("EBA.A" + column.name);
+										eBAEqualsEA.append("=EA." + column.name);
+									}
+								}
+								
+								selectEB += (deletedEntitiesAreMarked? " join " : " left join ") + dmlTableReference(ENTITY, localSession) + " EA" + 
 									" on EA.r_entitygraph=" + graphID + " and EA.type=" + typeName(association.source) + "" +
 									(eBAEqualsEA.length() > 0? " and " + eBAEqualsEA : "") +
 									" Where " + (deletedEntitiesAreMarked? "EA.birthday=-1" : "EA.type is null");
-									
+							}
+
 							String remove = "Insert into " + dmlTableReference(ENTITY_SET_ELEMENT, localSession) + 
 									"(set_id, type, " + upkColumnList(association.destination, null, "") + ") " +
 									selectEB;
@@ -1143,7 +1148,7 @@ public class LocalEntityGraph extends EntityGraph {
 							long rcl = localSession.executeUpdate(remove);
 							totalRowcount += rcl;
 							if (rcl > 0) {
-								match = upkMatch(association.destination);
+								Map<Column, Column> match = upkMatch(association.destination);
 								StringBuffer sEqualsE = new StringBuffer();
 								StringBuffer sEqualsEWoAlias = new StringBuffer();
 								for (Column column: universalPrimaryKey.getColumns()) {

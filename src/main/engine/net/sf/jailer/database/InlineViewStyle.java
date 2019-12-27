@@ -305,9 +305,6 @@ public enum InlineViewStyle {
 	 * Gets a style for a session.
 	 */
 	public static InlineViewStyle forSession(Session session) {
-		if (session.dbms != null && "Redshift".equals(session.dbms.getId())) {
-			return MySQL;
-		}
 		StringBuilder messages = new StringBuilder();
 		for (InlineViewStyle style : InlineViewStyle.values()) {
 			boolean wasSilent = session.getSilent();

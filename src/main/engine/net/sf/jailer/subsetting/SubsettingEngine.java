@@ -1594,7 +1594,7 @@ public class SubsettingEngine {
 	 * @param statementExecutor
 	 *            for executing SQL-statements
 	 */
-	private void deleteEntities(Set<Table> subjects, Set<Table> allTables, Session session) throws SQLException {
+	private void deleteEntities(Set<Table> subjects, final Set<Table> allTables, Session session) throws SQLException {
 		Set<Table> tabuTables = new HashSet<Table>();
 		for (Table table: allTables) {
 			if (table.isExcludedFromDeletion()) {
@@ -1640,6 +1640,9 @@ public class SubsettingEngine {
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			final Set<Table> tablesToCheckNextTime = new HashSet<Table>();
 			Map<Table, Long> entityCounts = new HashMap<Table, Long>();
+			
+			// TODO assoc out -> in nie 2* checken?
+			
 			for (final Table table : tablesToCheck) {
 				for (final Association a : table.associations) {
 					if (emptyTables.contains(table)) {
@@ -1666,7 +1669,7 @@ public class SubsettingEngine {
 								if (!isFirstStep) {
 									executionContext.getProgressListenerRegistry().fireCollectionJobStarted(finalToday, a.reversalAssociation);
 								}
-								long rc = entityGraph.removeAssociatedDestinations(a.reversalAssociation, !isFirstStep);
+								long rc = entityGraph.removeAssociatedDestinations(a.reversalAssociation, !isFirstStep, allTables);
 								if (!isFirstStep) {
 									executionContext.getProgressListenerRegistry().fireCollected(finalToday, a.reversalAssociation, rc);
 								} else if (rc > 0) {

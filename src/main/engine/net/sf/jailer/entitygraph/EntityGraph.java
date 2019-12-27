@@ -287,11 +287,12 @@ public abstract class EntityGraph {
 	 * Removes all entities from this graph which are associated with an entity
 	 * outside the graph.
 	 * 
-	 * @param deletedEntitiesAreMarked if true, consider entity as deleted if its birthday is negative
 	 * @param association the association
+	 * @param deletedEntitiesAreMarked if true, consider entity as deleted if its birthday is negative
+	 * @param allTables set of tables from which there are entities in E
 	 * @return number of removed entities
 	 */
-	public abstract long removeAssociatedDestinations(Association association, boolean deletedEntitiesAreMarked) throws SQLException;
+	public abstract long removeAssociatedDestinations(Association association, boolean deletedEntitiesAreMarked, Set<Table> allTables) throws SQLException;
 	
 	/**
 	 * Reads all entities which depends on given entity. 

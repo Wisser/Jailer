@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -107,6 +108,13 @@ public class PrimaryKey {
 					}
 				}
 			}
+		}
+		
+		if (match.size() != primaryKey.columns.size()) {
+			LogUtil.warn(new IllegalStateException("Incomplete pk-upk-match. (" + minimize + ")\n"
+					+ "PK: " + primaryKey.toSQL(null) + "\n"
+					+ "UPK: " + toSQL(null) + "\n"
+					+ "Match: " + match + "\n"));
 		}
 		
 		return match;

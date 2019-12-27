@@ -41,4 +41,21 @@ public class LogUtil {
 		}
 	}
 
+	public interface Warn {
+		void warn(Exception e);
+	}
+	
+	private static Warn warn = null;
+	
+	public static synchronized void setWarn(Warn warn) {
+		LogUtil.warn = warn;
+	}
+
+	public static synchronized void warn(Exception e) {
+		e.printStackTrace();
+		if (warn != null) {
+			warn.warn(e);
+		}
+	}
+
 }

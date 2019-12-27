@@ -21,6 +21,8 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -96,6 +98,16 @@ public class Environment {
 				+ (!testCreateTempFile() ? 8 : 0)
 				+ stateOffset;
 		AWTWatchdog.start();
+		LogUtil.setWarn(new LogUtil.Warn() {
+			@Override
+			public void warn(Exception e) {
+				StringWriter sw = new StringWriter();
+		        PrintWriter pw = new PrintWriter(sw);
+		        e.printStackTrace(pw);
+		        UIUtil.sendIssue("warn", sw.toString().replaceAll("at (.*)?\\.((\\w|\\$)+\\.(\\w|\\$)+\\()", "$2"));
+		        LogUtil.setWarn(null);
+			}
+		});
 	}
 
 	private static void initUI() {
