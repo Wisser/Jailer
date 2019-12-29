@@ -911,7 +911,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
 		ConnectionInfo ci = new ConnectionInfo(executionContext);
 		try {
-			CsvFile drivers = new CsvFile(new File("driverlist.csv"));
+			File csvFile = new File("driverlist.csv");
+			
+			FileInputStream is = new FileInputStream(csvFile);
+			is.close();
+			
+			CsvFile drivers = new CsvFile(csvFile);
 			List<Line> lines = new ArrayList<Line>(drivers.getLines());
 
 			Component root = SwingUtilities.getWindowAncestor(mainPanel);
