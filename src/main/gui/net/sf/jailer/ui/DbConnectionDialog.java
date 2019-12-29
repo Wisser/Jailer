@@ -913,6 +913,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		try {
 			File csvFile = new File("driverlist.csv");
 			
+			// check existence of "driverlist.csv"
 			FileInputStream is = new FileInputStream(csvFile);
 			is.close();
 			
