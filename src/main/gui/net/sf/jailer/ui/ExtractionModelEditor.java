@@ -2025,6 +2025,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			restrictionEditor.joinCondition.setText(shortJC);
 			restrictionEditor.joinCondition.setToolTipText(joinCondition);
+			restrictionEditor.resetBGColor();
 		}
 		graphView.setSelection(association);
 		restrictionEditor.apply.setEnabled(false);
@@ -2068,6 +2069,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Reacts on 'Apply'-button pressed.
 	 */
 	public void onApply(boolean applyButtonKlicked) {
+		restrictionEditor.resetBGColor();
 		if (currentAssociation != null) {
 			markDirty();
 

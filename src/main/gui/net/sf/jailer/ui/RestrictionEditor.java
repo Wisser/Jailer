@@ -17,9 +17,13 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * Editor for a restricted association.
@@ -27,6 +31,8 @@ import javax.swing.JLabel;
  * @author Ralf Wisser
  */
 public class RestrictionEditor extends javax.swing.JPanel {
+
+	private Color origGBColor;
 	
 	/** Creates new form RestrictionEditor */
 	public RestrictionEditor() {
@@ -47,8 +53,45 @@ public class RestrictionEditor extends javax.swing.JPanel {
 		jPanel4.setBackground(white);
 		jPanel5.setBackground(white);
 		jPanel8.setBackground(white);
+		
+		origGBColor = restriction.getBackground();
+		restriction.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				setBG();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				setBG();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				setBG();
+			}
+			private void setBG() {
+				restriction.setBackground(new Color(255, 255, 220));
+			}
+		});
+		restriction.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if (e.getKeyChar() == '\n') {
+					apply.doClick();
+				}
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+			}
+		});
 	}
-	
+
+	public void resetBGColor() {
+		restriction.setBackground(origGBColor);
+	}
+
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
@@ -306,4 +349,5 @@ public class RestrictionEditor extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 	
 	private static final long serialVersionUID = -6735468124049608700L;
+
 }
