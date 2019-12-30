@@ -374,6 +374,7 @@ public class UIUtil {
 	
 	public interface ResultConsumer {
     	public void consume(boolean result, Throwable t);
+    	public void cleanUp();
     }
     
     /**
@@ -605,7 +606,10 @@ public class UIUtil {
                             	outputView.dialog.toFront();
                             	currentConsoleFrame = null;
                             	System.setOut(originalOut);
-        		            	
+                            	if (resultConsumer != null) { // non-modal
+                            		resultConsumer.cleanUp();
+                            	}
+
                             	if (outputView.dialog instanceof JDialog) {
                             		((JDialog) outputView.dialog).setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                             	} else {

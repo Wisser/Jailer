@@ -1097,6 +1097,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							@Override
 							public void consume(boolean result, Throwable t) {
 							}
+							public void cleanUp() {
+							}
 						};
 						UIUtil.runJailer(this, args, false, true, false,
 						false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false,
@@ -1414,7 +1416,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 													new File(tmpFileName).delete();
 												}
 											}
-										};
+											public void cleanUp() {
+											}										};
 										UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(),
 											false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), progressListener, progressPanel, true,
 											true, false, false, false, consumer, executionContext);

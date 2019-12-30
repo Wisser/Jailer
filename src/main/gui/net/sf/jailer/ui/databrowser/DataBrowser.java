@@ -2129,6 +2129,8 @@ public class DataBrowser extends javax.swing.JFrame {
 						ResultConsumer consumer = new ResultConsumer() {
 							@Override
 							public void consume(boolean result, Throwable t) {
+							}
+							public void cleanUp() {
 								try {
 			                        if (desktop != null) {
 			                            desktop.updateMenu();
