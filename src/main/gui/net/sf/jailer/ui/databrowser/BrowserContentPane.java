@@ -564,6 +564,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Set<Pair<BrowserContentPane, Row>> currentClosure = Collections.synchronizedSet(new HashSet<Pair<BrowserContentPane, Row>>());
 		Set<Pair<BrowserContentPane, String>> currentClosureRowIDs = new HashSet<Pair<BrowserContentPane, String>>();
 		Set<String> currentClosureRootID = new HashSet<String>();
+		BrowserContentPane currentClosureRootPane;
 		Set<BrowserContentPane> parentPath = new HashSet<BrowserContentPane>();
 		
 		Set<Row> tempClosure = new HashSet<Row>();
@@ -941,8 +942,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2_EM = new Color(230, 255, 236);
 			final Color BG3 = new Color(192, 236, 255);
 			final Color BG3_2 = new Color(184, 226, 255);
-			final Color BG4 = new Color(32, 210, 255);
-			final Color BG4_2 = new Color(30, 196, 255);
+			final Color BG4 = new Color(32, 210, 255, 200);
+			final Color BG4_2 = new Color(30, 196, 255, 200);
 			final Color BG4_LIGHT = new Color(30, 200, 255, 60);
 			final Color FG1 = new Color(155, 0, 0);
 			final Color FG2 = new Color(0, 0, 255);
@@ -1008,7 +1009,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							BrowserContentPane.this.rowsClosure.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).nonEmptyRowId))) {
 							((JLabel) render).setBackground((row % 2) == 0? BG3 : BG3_2);
 							if (BrowserContentPane.this.rowsClosure.currentClosureRootID != null
-									&& !BrowserContentPane.this.rowsClosure.currentClosureRootID.isEmpty()) {
+									&& !BrowserContentPane.this.rowsClosure.currentClosureRootID.isEmpty()
+									&& BrowserContentPane.this.rowsClosure.currentClosureRootPane == BrowserContentPane.this) {
 								String rid = rows.get(rowSorter.convertRowIndexToModel(row)).nonEmptyRowId;
 								if (!rid.isEmpty() && BrowserContentPane.this.rowsClosure.currentClosureRootID.contains(rid)) {
 									((JLabel) render).setBackground(currentRowSelection >= 0? BG4_LIGHT : (row % 2 == 0? BG4 : BG4_2));
@@ -2860,6 +2862,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					rowsClosure.currentClosureRootID.clear();
 				}
 				rowsClosure.currentClosureRootID.add(row.nonEmptyRowId);
+				rowsClosure.currentClosureRootPane = this;
 				findClosure(row);
 				Rectangle visibleRect = rowsTable.getVisibleRect();
 				Rectangle pos = rowsTable.getCellRect(i, 0, false);
