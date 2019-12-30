@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -42,7 +43,7 @@ import net.sf.jailer.util.CancellationHandler;
 public class JailerConsole {
 
 	private final ProgressPanel progressPanel;
-	public final JDialog dialog;
+	public final Window dialog;
 	private final boolean fullSize;
 	
 	/**
@@ -53,7 +54,7 @@ public class JailerConsole {
 	 * @param showExplainLogButton <code>true</code> for offering a button to open the explain-log-file
 	 * @param progressPanel progress panel, optional
 	 */
-	public JailerConsole(Window owner, JDialog dialog, boolean showLogfileButton, boolean showExplainLogButton, ProgressPanel progressPanel, boolean fullSize) {
+	public JailerConsole(Window owner, Window dialog, boolean showLogfileButton, boolean showExplainLogButton, ProgressPanel progressPanel, boolean fullSize) {
 		this.dialog = dialog;
 		this.progressPanel = progressPanel;
 		this.fullSize = fullSize;
@@ -62,8 +63,12 @@ public class JailerConsole {
 		Font f = getJTextPane().getFont();
 		getJTextPane().setFont(new Font(Font.MONOSPACED, f.getStyle(), f.getSize()));
 		getJTextPane().setLineWrap(false);
-		dialog.setModal(true);
-		dialog.setDefaultCloseOperation(0);
+		if (dialog instanceof JDialog) {
+			((JDialog) dialog).setModal(true);
+			((JDialog) dialog).setDefaultCloseOperation(0);
+		} else {
+			((JFrame) dialog).setDefaultCloseOperation(0);
+		}
 		getLoadExplainLog().setEnabled(false);
 		getLoadSqlLog().setEnabled(false);
 		getLoadExportLog().setVisible(false);
@@ -104,8 +109,13 @@ public class JailerConsole {
 			dialog.setSize(new Dimension(600, 400));
 			dialog.setLocation(200, 250);
 		}
-		dialog.setContentPane(jPanel);
-		dialog.setTitle("Jailer Console - in progress");
+		if (dialog instanceof JDialog) {
+			((JDialog) dialog).setContentPane(jPanel);
+			((JDialog) dialog).setTitle("Jailer Console - in progress");
+		} else {
+			((JFrame) dialog).setContentPane(jPanel);
+			((JFrame) dialog).setTitle("Jailer Console - in progress");
+		}
 		getJTextPane().setFont(new Font("Monospaced", Font.PLAIN, 12));
 		
 		getLoadExportLog().addActionListener(new ActionListener() {
@@ -162,7 +172,11 @@ public class JailerConsole {
 								CancellationHandler.cancel(null);
 							}
 						}).start();
-						dialog.setTitle("Jailer Console - cancelled");
+						if (dialog instanceof JDialog) {
+							((JDialog) dialog).setTitle("Jailer Console - cancelled");
+						} else {
+							((JFrame) dialog).setTitle("Jailer Console - cancelled");
+						}
 						getCancelButton().setEnabled(false);
 					}
 				}
@@ -213,7 +227,12 @@ public class JailerConsole {
 		getLoadExplainLog().setEnabled(true);
 		getCancelButton().setText("Close");
 		getCancelButton().setEnabled(true);
-		dialog.setTitle("Jailer Console - " + (ok? "finished" : "failed!"));
+		String title = "Jailer Console - " + (ok? "finished" : "failed!");
+		if (dialog instanceof JDialog) {
+			((JDialog) dialog).setTitle(title);
+		} else {
+			((JFrame) dialog).setTitle(title);
+		}
 		hasFinished = true;
 	}
 	

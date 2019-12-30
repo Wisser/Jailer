@@ -1573,6 +1573,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}
 
 	private void analyzeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyzeButtonActionPerformed
+		if (!UIUtil.canRunJailer()) {
+			return;
+		}
+		
 		activateCurrentModel();
 		
 		try {

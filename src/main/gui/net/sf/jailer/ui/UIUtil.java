@@ -75,6 +75,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
@@ -356,9 +357,25 @@ public class UIUtil {
             boolean returnFalseOnError, ExecutionContext executionContext) {
         return runJailer(ownerOfConsole, cliArgs, showLogfileButton, printCommandLine, showExplainLogButton,
                 closeOutputWindow, continueOnErrorQuestion, user, password, progressListener, progressPanel, showExeptions,
-                fullSize, false, returnFalseOnError, false, executionContext);
+                fullSize, false, returnFalseOnError, false, null, executionContext);
     }
 
+	public static boolean canRunJailer() {
+		if (currentConsoleFrame != null) {
+			currentConsoleFrame.toFront();
+			JOptionPane.showMessageDialog(currentConsoleFrame, "Please complete this process before starting another.", "Engine already running...",
+                    JOptionPane.INFORMATION_MESSAGE);
+			return false;
+		}
+		return true;
+	}
+
+	private static JFrame currentConsoleFrame = null;
+	
+	public interface ResultConsumer {
+    	public void consume(boolean result, Throwable t);
+    }
+    
     /**
      * Calls the Jailer export engine via CLI.
      * 
@@ -382,10 +399,30 @@ public class UIUtil {
      */
     public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, boolean showLogfileButton,
             final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow,
-            String continueOnErrorQuestion, String user, String password, final ProgressListener progressListener,
+            final String continueOnErrorQuestion, String user, String password, final ProgressListener progressListener,
             final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
-            final boolean closeOutputWindowOnError, boolean returnFalseOnError, boolean throwException, ExecutionContext executionContext) {
-        JDialog dialog = new JDialog(ownerOfConsole);
+            final boolean closeOutputWindowOnError, final boolean returnFalseOnError, boolean throwException, final ResultConsumer resultConsumer, ExecutionContext executionContext) {
+		if (!UIUtil.canRunJailer()) {
+			return false;
+		}
+		Window dialog;
+        if (resultConsumer == null) {
+        	dialog = new JDialog(ownerOfConsole);
+        } else {
+        	dialog = currentConsoleFrame = new JFrame();
+        	currentConsoleFrame.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosed(WindowEvent e) {
+					currentConsoleFrame = null;
+					checkTermination();
+				}
+			});
+    		try {
+    			dialog.setIconImage(UIUtil.readImage("/jailerlight.png").getImage());
+    		} catch (Throwable t) {
+    			// ignore
+    		}
+        }
         List<String> args = new ArrayList<String>(cliArgs);
         final StringBuffer arglist = createCLIArgumentString(user, password, args, executionContext);
         final List<String> argslist = new ArrayList<String>();
@@ -497,7 +534,12 @@ public class UIUtil {
                                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                             if (!outputView.hasFinished) {
                                 cancel();
-                                outputView.dialog.setTitle("Jailer Console - cancelling...");
+        						if (outputView.dialog instanceof JDialog) {
+        							((JDialog) outputView.dialog).setTitle("Jailer Console - cancelling...");
+        						} else {
+        							((JFrame) outputView.dialog).setTitle("Jailer Console - cancelling...");
+        						}
+
                                 if (progressListener != null) {
                                     progressListener.newStage("cancelling...", true, true);
                                 }
@@ -560,7 +602,15 @@ public class UIUtil {
                         @Override
 						public void run() {
                             synchronized (UIUtil.class) {
-                                outputView.dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                            	outputView.dialog.toFront();
+                            	currentConsoleFrame = null;
+                            	System.setOut(originalOut);
+        		            	
+                            	if (outputView.dialog instanceof JDialog) {
+                            		((JDialog) outputView.dialog).setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                            	} else {
+                            		((JFrame) outputView.dialog).setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                            	}
                                 if (progressListener != null) {
                                     progressListener.newStage(outputView.hasCancelled ? "cancelled"
                                             : exp[0] == null ? "finished" : "failed", exp[0] != null, true);
@@ -569,7 +619,7 @@ public class UIUtil {
                                         || (closeOutputWindow && result[0] && exp[0] == null
                                                 && warnings.length() == 0)) {
                                     if (!outputView.hasCancelled) {
-                                        outputView.dialog.setVisible(false);
+                                        closeDialog();
                                     }
                                 } else {
                                     outputView.finish(result[0] && exp[0] == null);
@@ -578,7 +628,7 @@ public class UIUtil {
                                                 warnings.length() > 800 ? warnings.substring(0, 800) + "..."
                                                         : warnings.toString(),
                                                 "Warning", JOptionPane.INFORMATION_MESSAGE);
-                                        outputView.dialog.setVisible(false);
+                                        closeDialog();
                                     } else if (showExeptions && exp[0] != null
                                             && !(exp[0] instanceof CancellationException)) {
                                         UIUtil.showException(outputView.dialog, "Error", exp[0], arglist);
@@ -590,24 +640,54 @@ public class UIUtil {
                                 }
                             }
                         }
+
+						private void closeDialog() {
+							outputView.dialog.setVisible(false);
+						}
                     });
                 }
             }, "jailer-main").start();
-            outputView.dialog.setVisible(true);
-            synchronized (UIUtil.class) {
-                if (exp[0] != null) {
-                    if (returnFalseOnError) {
-                        result[0] = false;
-                    } else {
-                        throw exp[0];
+            if (resultConsumer != null) { // non-modal
+                outputView.dialog.addWindowListener(new WindowAdapter() {
+                    public void windowClosed(WindowEvent ev) {
+		            	System.setOut(originalOut);
+		            	Throwable e = null;
+						synchronized (UIUtil.class) {
+			                if (exp[0] != null) {
+			                    if (returnFalseOnError) {
+			                        result[0] = false;
+			                    } else {
+			                        e = exp[0];
+			                    }
+			                }
+			            }
+			            if (e != null && !result[0] && continueOnErrorQuestion != null) {
+			                result[0] = JOptionPane.showConfirmDialog(outputView.dialog, continueOnErrorQuestion, "Error",
+			                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+			            }
+			            resultConsumer.consume(result[0], e);
                     }
-                }
+                });
             }
-            if (!result[0] && continueOnErrorQuestion != null) {
-                result[0] = JOptionPane.showConfirmDialog(outputView.dialog, continueOnErrorQuestion, "Error",
-                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+            outputView.dialog.setVisible(true);
+            if (resultConsumer == null) { // modal
+	            synchronized (UIUtil.class) {
+	                if (exp[0] != null) {
+	                    if (returnFalseOnError) {
+	                        result[0] = false;
+	                    } else {
+	                        throw exp[0];
+	                    }
+	                }
+	            }
+	            if (!result[0] && continueOnErrorQuestion != null) {
+	                result[0] = JOptionPane.showConfirmDialog(outputView.dialog, continueOnErrorQuestion, "Error",
+	                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+	            }
+	            return result[0];
+            } else {
+            	return true;
             }
-            return result[0];
         } catch (Throwable t) {
             if (t instanceof CancellationException) {
                 CancellationHandler.reset(null);
@@ -625,7 +705,9 @@ public class UIUtil {
             }
             return false;
         } finally {
-            System.setOut(originalOut);
+            if (resultConsumer == null) { // modal
+            	System.setOut(originalOut);
+            }
         }
     }
 

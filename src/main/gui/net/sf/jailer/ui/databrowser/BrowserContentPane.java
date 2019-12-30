@@ -2525,20 +2525,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 			dataModel.save(file, stable, subjectCondition, ScriptFormat.SQL, restrictionDefinitions, positions, new ArrayList<ExtractionModel.AdditionalSubject>(), currentModelSubfolder);
 
-			ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false, !doExport, null, executionContext);
+			final ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false, !doExport, null, executionContext);
 			extractionModelFrame.setDbConnectionDialogClone(getDbConnectionDialog());
 			if (doExport) {
-				extractionModelFrame.openExportDialog(false, new Runnable() {
-					@Override
-					public void run() {
-						try {
-							reloadDataModel();
-						} catch (Exception e) {
-							throw new RuntimeException(e);
+				extractionModelFrame.openExportDialog(false, 
+					new Runnable() {
+						@Override
+						public void run() {
+							try {
+								reloadDataModel();
+							} catch (Exception e) {
+								throw new RuntimeException(e);
+							}
 						}
-					}
-				});
-				extractionModelFrame.dispose();
+					},
+					new Runnable() {
+						@Override
+						public void run() {
+							extractionModelFrame.dispose();
+						}
+					});
 			} else {
 				extractionModelFrame.markDirty();
 				extractionModelFrame.expandAll();

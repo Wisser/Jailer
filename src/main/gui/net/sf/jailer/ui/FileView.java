@@ -15,9 +15,9 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Window;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -48,7 +48,7 @@ public class FileView extends javax.swing.JDialog {
 	 * 
 	 * @param owner the enclosing component.
 	 */
-	public FileView(Dialog owner) {
+	public FileView(Window owner) {
 		super(owner);
 		initialize();
 		setModal(true);
@@ -61,7 +61,7 @@ public class FileView extends javax.swing.JDialog {
 	 * @param owner the enclosing component.
 	 * @param file the file to render
 	 */
-	public FileView(Dialog owner, String file) throws FileNotFoundException, IOException {
+	public FileView(Window owner, String file) throws FileNotFoundException, IOException {
 		super(owner);
 		setModal(true);
 		try {

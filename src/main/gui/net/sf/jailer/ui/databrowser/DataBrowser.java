@@ -128,6 +128,7 @@ import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.UIUtil.ResultConsumer;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.ImportDialog;
@@ -2110,7 +2111,10 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_exportDataMenuItemActionPerformed
 
     private void dataImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataImportActionPerformed
-        try {
+		if (!UIUtil.canRunJailer()) {
+			return;
+		}
+		try {
             String sqlFile = UIUtil.choseFile(null, ".", "Data Import", ".sql", this, false, true);
             if (sqlFile != null) {
                 DbConnectionDialog dcd = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
@@ -2122,17 +2126,28 @@ public class DataBrowser extends javax.swing.JFrame {
                     ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), true);
                     if (importDialog.isOk) {
                     	importDialog.fillCLIArgs(args);
-						UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getUser(), dcd.getPassword(), null, null, false, true, false, executionContext);
-                        if (desktop != null) {
-                            desktop.updateMenu();
-                            for (RowBrowser rb : desktop.getBrowsers()) {
-                                rb.browserContentPane.session = session;
-                                rb.browserContentPane.rows.clear();
-                            }
-                            for (RowBrowser rb : desktop.getRootBrowsers(false)) {
-                                rb.browserContentPane.reloadRows();
-                            }
-                        }
+						ResultConsumer consumer = new ResultConsumer() {
+							@Override
+							public void consume(boolean result, Throwable t) {
+								try {
+			                        if (desktop != null) {
+			                            desktop.updateMenu();
+			                            for (RowBrowser rb : desktop.getBrowsers()) {
+			                                rb.browserContentPane.session = session;
+			                                rb.browserContentPane.rows.clear();
+			                            }
+			                            for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+			                                rb.browserContentPane.reloadRows();
+			                            }
+			                        }
+						        } catch (Exception e) {
+						            UIUtil.showException(DataBrowser.this, "Error", e, session);
+						        }
+							}
+						};
+						UIUtil.runJailer(this, args, false, true, false,
+							false, null, dcd.getUser(), dcd.getPassword(), null, null, false,
+							true, false, false, false, consumer, executionContext);
                     }
                 }
             }
@@ -2618,7 +2633,10 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     private void updateDataModel(String schemaName, boolean withViews, boolean withSynonyms) {
-        try {
+		if (!UIUtil.canRunJailer()) {
+			return;
+		}
+		try {
 			JDBCMetaDataBasedModelElementFinder.privilegedSessionProvider = new PrivilegedSessionProviderDialog.Provider(this);
 
             List<String> args = new ArrayList<String>();

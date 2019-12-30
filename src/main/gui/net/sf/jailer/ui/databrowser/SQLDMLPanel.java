@@ -389,6 +389,9 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	}
 	
 	private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
+		if (!UIUtil.canRunJailer()) {
+			return;
+		}
 		if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Execute Statements?", "Execute", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
 			String sqlFile;
 			try {
@@ -413,7 +416,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			args.add("-transactional");
 			if (UIUtil.runJailer(SwingUtilities.getWindowAncestor(this), args, false, true, false,
 			true, null, session.getSchema(), session.getPassword(), null, null, true,
-			false, false, true, true, executionContext)) {
+			false, false, true, true, null, executionContext)) {
 				statusLabel.setText("Executed " + SqlScriptExecutor.getLastStatementCount().a + " statements. " +
 						SqlScriptExecutor.getLastStatementCount().b + " rows affected");
 				statusLabel.setForeground(new Color(0, 100, 0));
