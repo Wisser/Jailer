@@ -1,6 +1,7 @@
 9.2.2
   - When deleting rows, an IllegalStateException sometimes occurred incorrectly.
   - Improved performance of deletion script generation.
+  - Progress dialog for exporting is no longer modal.
 
 9.2.1
   - Support for nullable primary key columns.
