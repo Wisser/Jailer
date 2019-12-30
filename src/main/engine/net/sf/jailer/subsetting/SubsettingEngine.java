@@ -1606,7 +1606,7 @@ public class SubsettingEngine {
 		_log.info("Tabu-tables: " + new PrintUtil().tableSetAsString(tabuTables, null));
 		entityGraph.setDeleteMode(true);
 		
-		final Map<Table, Long> removedEntities = new HashMap<Table, Long>();
+		final Map<Table, Long> removedEntities = Collections.synchronizedMap(new HashMap<Table, Long>());
 
 		int today = 1;
 		executionContext.getProgressListenerRegistry().firePrepareExport();
@@ -1633,6 +1633,8 @@ public class SubsettingEngine {
 		boolean firstStep = true;
 		final Set<Table> roots = new HashSet<Table>();
 		final Map<Association, Long> rootAssocs = new HashMap<Association, Long>();
+		final Set<Association> checked = Collections.synchronizedSet(new HashSet<Association>());
+
 		// remove associated entities
 		while (!tablesToCheck.isEmpty()) {
 			++today;
@@ -1641,11 +1643,13 @@ public class SubsettingEngine {
 			final Set<Table> tablesToCheckNextTime = new HashSet<Table>();
 			Map<Table, Long> entityCounts = new HashMap<Table, Long>();
 			
-			// TODO assoc out -> in nie 2* checken?
-			
+			// final StringBuffer rcs = new StringBuffer();
+
 			for (final Table table : tablesToCheck) {
 				for (final Association a : table.associations) {
-					if (emptyTables.contains(table)) {
+					if (emptyTables.contains(table)
+							|| checked.contains(a)
+							) {
 						continue;
 					}
 					if (!a.reversalAssociation.isIgnored()) {
@@ -1670,6 +1674,10 @@ public class SubsettingEngine {
 									executionContext.getProgressListenerRegistry().fireCollectionJobStarted(finalToday, a.reversalAssociation);
 								}
 								long rc = entityGraph.removeAssociatedDestinations(a.reversalAssociation, !isFirstStep, allTables);
+								checked.add(a);
+								
+//								rcs.append(a.source.getName() + " " + a.destination.getName() + " " + rc + "\n");
+								
 								if (!isFirstStep) {
 									executionContext.getProgressListenerRegistry().fireCollected(finalToday, a.reversalAssociation, rc);
 								} else if (rc > 0) {
@@ -1683,6 +1691,9 @@ public class SubsettingEngine {
 										_log.info("excluded " + rc + " entities from " + datamodel.getDisplayName(table) + " referenced by " + a);
 										for (Association a2 : table.associations) {
 											tablesToCheckNextTime.add(a2.destination);
+											checked.remove(a2.reversalAssociation);
+											
+//											rcs.append("- " + a2.reversalAssociation.source.getName() + " " + a2.reversalAssociation.destination.getName() + " " + rc + " " + "\n");
 										}
 									}
 								}
@@ -1692,6 +1703,7 @@ public class SubsettingEngine {
 				}
 			}
 			jobManager.executeJobs(jobs);
+//			rcs.append("\n");
 			if (firstStep) {
 				for (Table table: roots) {
 					if (!tabuTables.contains(table)) {
@@ -1705,6 +1717,7 @@ public class SubsettingEngine {
 									
 				}
 			}
+//			System.out.println(rcs);
 			tablesToCheck = tablesToCheckNextTime;
 			tablesToCheck.retainAll(allTables);
 			firstStep = false;
