@@ -92,7 +92,8 @@ public class DDLCreator {
 	public void createDDL(Session localSession, WorkingTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		// TODO register all current export processes.
 		// Fail if a process is still active.
-		// Use a heard beat concept to detect dead processes 
+		// Use a heard beat concept to detect dead processes
+		// Use this to create unique entity-graph-ids
 		createDDL(new DataModel(executionContext), localSession, temporaryTableScope, workingTableSchema);
 	}
 

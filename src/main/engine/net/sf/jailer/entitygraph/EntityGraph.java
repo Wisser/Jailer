@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
@@ -369,10 +369,10 @@ public abstract class EntityGraph {
 	 * @return a unique ID
 	 */
 	public static int createUniqueGraphID() {
-		return Math.abs(nextGraphId.getAndIncrement()) % 65536;
+		return Math.abs(Math.abs((int) nextGraphId.getAndIncrement())) % (Integer.MAX_VALUE / 4);
 	}
 
-	private static AtomicInteger nextGraphId = new AtomicInteger((int) System.currentTimeMillis());
+	private static AtomicLong nextGraphId = new AtomicLong(System.currentTimeMillis() % 30000);
 
 	private int lobCount = 0;
 

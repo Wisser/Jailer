@@ -117,6 +117,7 @@ import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
+import net.sf.jailer.util.LogUtil;
 
 /**
  * Some utility methods.
@@ -1441,6 +1442,7 @@ public class UIUtil {
 							if (concurrentTaskControl.master.isShowing()) {
 								JOptionPane.showMessageDialog(windowAncestor, tables.size() == 1? "The primary key definition is valid." : "All primary key definitions are valid.");
 								concurrentTaskControl.closeWindow();
+								LogUtil.warn(new RuntimeException("PK check ok (" + tables.size() + ")"));
 							}
 						}
 					});
