@@ -1757,4 +1757,7 @@ public class SubsettingEngine {
 		return resetFilters;
 	}
 
+	// TODO "limit" parameter for subject tables
+	// TODO allow "limit"/"fetch first"/"order by" in where-clauses (incl. browser) (no "(...)")
+	
 }

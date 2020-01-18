@@ -1194,6 +1194,8 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 	
 	protected abstract void afterRendering(Table table, Rectangle2D bounds);
 
+	// TODO make bg lighter
+	
 	// images
 	private Image excludeFromDeletionImage = null;
 	private Image collapsedImage = null;

@@ -893,6 +893,7 @@ public class Session {
 		if (getLogStatements()) {
 			_log.info(sql);
 		}
+		// TODO deadlock prevention
 		long rc = 0;
 		long startTime = System.currentTimeMillis();
 		Statement statement = null;
