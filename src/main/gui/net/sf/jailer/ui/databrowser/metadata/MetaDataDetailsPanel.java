@@ -502,10 +502,19 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     	    		public void run() {
     	    			try {
 							mdTable.getSchema().getConstraints(null);
-						} catch (SQLException e) {
-							// ignore
+	    	    			if (mdTable.getSchema().isConstraintsLoaded()) {
+	    	    	        	UIUtil.invokeLater(doRunGetConstraints);
+	    	    			}
+						} catch (Throwable t) {
+							UIUtil.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									constraintsPanel.removeAll();
+			    					constraintsPanel.add(new JLabel(" Error: " + t.getMessage()));
+			        		    	tabbedPane.repaint();
+								}
+							});
 						}
-    	    			UIUtil.invokeLater(doRunGetConstraints);
     	    		}
     	    	}, 1);
     		}
