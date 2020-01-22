@@ -1234,4 +1234,6 @@ public class RemoteEntityGraph extends EntityGraph {
 		return session;
 	}
 
+	// TODO repl "where 1=1$" with "" in each sql statement
+
 }
