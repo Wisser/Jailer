@@ -210,7 +210,7 @@ public class ExtractionModel {
 		}
 		String condition = subjectLine.cells.get(1);
 		if ("".equals(condition)) {
-			condition = "1=1";
+			condition = "1=1"; // TODO "1=1" should be a global constant. Synonym to "true". Named SQL_TRUE?
 		}
 		long limit = 0;
 		if (!"".equals(subjectLine.cells.get(2))) {
