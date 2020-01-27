@@ -104,6 +104,7 @@ import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.RestrictionDefinition;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
+import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
@@ -293,6 +294,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		boolean saveNeedsSave = needsSave;
 		initComponents();
 		
+		exportButton.setIcon(runIcon);
+		limitLabel.setText(SubjectLimitEditor.subjectLimitDefinitionRender(extractionModel.subjectLimitDefinition));
+
 		undoManager = new UndoManager(extractionModelFrame.undoMenuItem, extractionModelFrame.redoMenuItem, undoViewHolder) {
 			@Override
 			public void undo() {
@@ -1073,7 +1077,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         editorPanel = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
-        jLabel8 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -1085,10 +1088,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel7 = new javax.swing.JLabel();
         openSubjectConditionEditor = new javax.swing.JLabel();
         subjectTable = new JComboBox();
+        exportButton = new javax.swing.JButton();
         jPanel10 = new javax.swing.JPanel();
         exportFormat = new JComboBox();
-        exportButton = new javax.swing.JButton();
         openXmlSettings = new javax.swing.JButton();
+        jLabel10 = new javax.swing.JLabel();
+        jPanel13 = new javax.swing.JPanel();
+        limitLabel = new javax.swing.JLabel();
+        limitButton = new javax.swing.JToggleButton();
         jPanel4 = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -1220,7 +1227,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(focusPanel);
-        focusPanel.setBounds(0, 0, 287, 29);
+        focusPanel.setBounds(0, 0, 324, 31);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -1273,13 +1280,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIUtil.defaultTitleFont()));
         jPanel3.setLayout(new java.awt.GridBagLayout());
-
-        jLabel8.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.weighty = 1.0;
-        jPanel3.add(jLabel8, gridBagConstraints);
 
         jLabel6.setText(" Export from ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1367,6 +1367,17 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel3.add(subjectTable, gridBagConstraints);
 
+        exportButton.setText("Export");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel3.add(exportButton, gridBagConstraints);
+
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
         exportFormat.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -1379,15 +1390,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         jPanel10.add(exportFormat, gridBagConstraints);
-
-        exportButton.setText("Export");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        jPanel10.add(exportButton, gridBagConstraints);
 
         openXmlSettings.setText("Setting");
         openXmlSettings.addActionListener(new java.awt.event.ActionListener() {
@@ -1404,9 +1407,45 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel3.add(jPanel10, gridBagConstraints);
+
+        jLabel10.setText(" Limit");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel3.add(jLabel10, gridBagConstraints);
+
+        jPanel13.setLayout(new java.awt.GridBagLayout());
+
+        limitLabel.setText("<html><i>no limit</i></html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        jPanel13.add(limitLabel, gridBagConstraints);
+
+        limitButton.setText("Edit Limit");
+        limitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                limitButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel13.add(limitButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        jPanel3.add(jPanel10, gridBagConstraints);
+        jPanel3.add(jPanel13, gridBagConstraints);
 
         editorPanel.add(jPanel3);
 
@@ -2332,21 +2371,62 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private void changeSubject(Table newSubject) {
 		if (newSubject != null && newSubject != subject) {
 			final Table oldSubject = subject;
+			final SubjectLimitDefinition oldSubjectLimitDefinition = extractionModel.subjectLimitDefinition;
 			undoManager.push(new CompensationAction(1, "changed subject", "changed subject", dataModel.getDisplayName(oldSubject)) {
 				@Override
 				public void run() {
 					subjectTable.setSelectedItem(dataModel.getDisplayName(oldSubject));
+					extractionModel.subjectLimitDefinition = oldSubjectLimitDefinition;
+					limitLabel.setText(SubjectLimitEditor.subjectLimitDefinitionRender(oldSubjectLimitDefinition));
+					markDirty();
 				}
 			});
 			currentSubjectClosure = null; // force re-calculation
 			subject = newSubject;
 			pendingDecisionsPanel.updateView();
+			extractionModel.subjectLimitDefinition = new SubjectLimitDefinition(null, null);
+			limitLabel.setText(SubjectLimitEditor.subjectLimitDefinitionRender(extractionModel.subjectLimitDefinition));
 			markDirty();
 		}
 		rootTable.setModel(getTableListModel());
 		rootTable.setSelectedItem(null);
 		rootTable.setSelectedItem(subjectTable.getSelectedItem());
 	}
+
+	private void changeSubjectLimitDefinition(SubjectLimitDefinition newSubjectLimitDefinition) {
+		if (subject != null && newSubjectLimitDefinition != null && !newSubjectLimitDefinition.equals(extractionModel.subjectLimitDefinition)) {
+			final SubjectLimitDefinition oldSubjectLimitDefinition = extractionModel.subjectLimitDefinition;
+			undoManager.push(new CompensationAction(1, "changed limit", "changed limit", dataModel.getDisplayName(subject)) {
+				@Override
+				public void run() {
+					changeSubjectLimitDefinition(oldSubjectLimitDefinition);
+				}
+			});
+			extractionModel.subjectLimitDefinition = newSubjectLimitDefinition;
+			limitLabel.setText(SubjectLimitEditor.subjectLimitDefinitionRender(newSubjectLimitDefinition));
+			markDirty();
+		}
+	}
+
+	private SubjectLimitEditor subjectLimitEditor;
+	
+    @SuppressWarnings("serial")
+	private void limitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_limitButtonActionPerformed
+        if (limitButton.isSelected()) {
+			if (subjectLimitEditor == null) {
+				subjectLimitEditor = new SubjectLimitEditor(extractionModelFrame, dataModel) {
+					@Override
+					protected void consume(SubjectLimitDefinition subjectLimitDefinition) {
+						if (subjectLimitDefinition != null) {
+							changeSubjectLimitDefinition(subjectLimitDefinition);
+						}
+						limitButton.setSelected(false);
+					}
+				};
+			}
+			subjectLimitEditor.edit(limitLabel, subject, extractionModel.subjectLimitDefinition);
+        }
+    }//GEN-LAST:event_limitButtonActionPerformed
 
 	private void resetFocusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetFocusActionPerformed
 		rootTable.setSelectedItem(subjectTable.getSelectedItem());
@@ -2765,7 +2845,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				return true;
 			}
 			String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
-			dataModel.save(fileName, stable, (condition.getText()), scriptFormat, currentRestrictionDefinitions, null, extractionModel.additionalSubjects, currentModelSubfolder);
+			dataModel.save(fileName, stable, extractionModel.subjectLimitDefinition, condition.getText(), scriptFormat, currentRestrictionDefinitions, null, extractionModel.additionalSubjects, currentModelSubfolder);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Could not save " + new File(fileName).getName(), e);
 			return false;
@@ -3291,18 +3371,19 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JLabel ignored;
     javax.swing.JPanel inspectorHolder;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -3321,6 +3402,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
     private javax.swing.JPanel legende2;
+    private javax.swing.JToggleButton limitButton;
+    private javax.swing.JLabel limitLabel;
     private javax.swing.JButton mapColumns;
     private javax.swing.JPanel messagePanel;
     private javax.swing.JLabel modelName;
@@ -3350,6 +3433,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private Icon conditionEditorSelectedIcon;
 	private Icon leftIcon;
 	private Icon leftIconP;
+	private Icon runIcon;
 	{
 		// load images
 		dropDownIcon = UIUtil.readImage("/dropdown.png");
@@ -3357,6 +3441,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
 		leftIconP = UIUtil.readImage("/leftp.png");
 		leftIcon = UIUtil.readImage("/left.png");
+        runIcon = UIUtil.readImage("/run.png");
 	}
 
 	private static final long serialVersionUID = -5640822484296649670L;

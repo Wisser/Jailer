@@ -50,6 +50,7 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
@@ -423,9 +424,24 @@ public class LocalEntityGraph extends EntityGraph {
 	@Override
 	public long addEntities(Table table, String condition, int today) throws SQLException {
 		// checkPseudoColumns(table, condition);
-		return addEntities(table, "T", condition, today);
+		return addEntities(table, "T", condition, today, null, false);
 	}
-	
+
+	/**
+	 * Adds limited number of entities to the graph.
+	 * 
+	 * @param table the table 
+	 * @param condition the condition in SQL that the entities must fulfill
+	 * @param today the birthday of the new entities
+	 * @param limitDefinition limit
+	 * 
+	 * @return row-count
+	 */
+	@Override
+	public long addEntities(Table table, String condition, int today, SubjectLimitDefinition limitDefinition, boolean joinWithEntity) throws SQLException {
+		return addEntities(table, "T", condition, today, limitDefinition, joinWithEntity);
+	}
+
 	/**
 	 * The pseudo-columns $DISTANCE and $IS_SUBJECT are currently not supported
 	 * if the "working table scope" "local database" is used. It works with
@@ -513,11 +529,18 @@ public class LocalEntityGraph extends EntityGraph {
 									sb.append(" and ");
 								}
 								Column tableColumn = match.get(column);
-								sb.append("Duplicate." + column.name);
-								if (tableColumn != null) {
-									sb.append("=" + destAlias + "." + column.name);
+								if (tableColumn != null && tableColumn.isNullable) {
+									sb.append("(Duplicate." + column.name);
+									sb.append("=" + destAlias + "." + column.name + " or ");
+									sb.append("(Duplicate." + column.name + " is null and ");
+									sb.append(destAlias + "." + column.name + " is null))");
 								} else {
-									sb.append(" is null");
+									sb.append("Duplicate." + column.name);
+									if (tableColumn != null) {
+										sb.append("=" + destAlias + "." + column.name);
+									} else {
+										sb.append(" is null");
+									}
 								}
 							}
 							
@@ -555,24 +578,57 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @return row-count
 	 */
-	private long addEntities(final Table table, final String alias, String condition, final int today) throws SQLException {
+	private long addEntities(final Table table, final String alias, String condition, final int today, SubjectLimitDefinition limitDefinition, boolean joinWithEntity) throws SQLException {
 		String select =
 			"Select " + pkList(table, alias) +
 			" From " + quoting.requote(table.getName()) + " " + alias + " Where (" + condition + ")";
-		
+		if (limitDefinition != null && limitDefinition.limit != null && limitDefinition.orderBy != null && limitDefinition.orderBy.length() > 0) {
+			select += " order by " + limitDefinition.orderBy;
+		}
+
 		final long[] rc = new long[1];
-		
-		remoteSession.executeQuery(select, new LocalInlineViewBuilder(alias, upkColumnList(table, null)) {
+		ResultSetReader reader = new LocalInlineViewBuilder(alias, upkColumnList(table, null)) {
 			@Override
 			protected void process(String inlineView) throws SQLException {
 				String select = "Select " + graphID + " as GRAPH_ID, " + upkColumnList(table, alias, null) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
 				" From " + inlineView;
 				
+				if (joinWithEntity) {
+					Map<Column, Column> match = upkMatch(table);
+					StringBuffer sb = new StringBuffer();
+					for (Column column: universalPrimaryKey.getColumns()) {
+						if (sb.length() > 0) {
+							sb.append(" and ");
+						}
+						Column tableColumn = match.get(column);
+						if (tableColumn != null && tableColumn.isNullable) {
+							sb.append("(Duplicate." + column.name);
+							sb.append("=" + alias + "." + column.name + " or ");
+							sb.append("(Duplicate." + column.name + " is null and ");
+							sb.append(alias + "." + column.name + " is null))");
+						} else {
+							sb.append("Duplicate." + column.name);
+							if (tableColumn != null) {
+								sb.append("=" + alias + "." + column.name);
+							} else {
+								sb.append(" is null");
+							}
+						}
+					}
+					select += " left join " + dmlTableReference(ENTITY, localSession) + 
+							" Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) +
+							" and (" + sb + ")" +
+							" Where Duplicate.type is null";
+				}
+				
 				String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type) " + select;
+
 				rc[0] += localSession.executeUpdate(insert);
 				totalRowcount += rc[0];
 			}
-		}, withExplicitCommit());
+		};
+		
+		remoteSession.executeQuery(select, reader, null, null, limitDefinition != null && limitDefinition.limit != null? limitDefinition.limit : 0, withExplicitCommit());
 		
 		return rc[0];
 	}
@@ -620,8 +676,15 @@ public class LocalEntityGraph extends EntityGraph {
 								if (sb.length() > 0) {
 									sb.append(" and ");
 								}
-								sb.append("E2" + "." + "" + column.name);
-								sb.append("=" + "E1E2" + ".E2" + column.name);
+								if (tableColumn.isNullable) {
+									sb.append("(E2" + "." + "" + column.name);
+									sb.append("=" + "E1E2" + ".E2" + column.name + " or (");
+									sb.append("E2" + "." + "" + column.name + " is null and ");
+									sb.append("E1E2" + ".E2" + column.name + " is null))");
+								} else {
+									sb.append("E2" + "." + "" + column.name);
+									sb.append("=" + "E1E2" + ".E2" + column.name);
+								}
 							}
 						}
 						String pkEqualsEntityID = sb.toString();
@@ -671,7 +734,12 @@ public class LocalEntityGraph extends EntityGraph {
 				fromEqualsPK.append(" and ");
 			}
 			if (match.get(column) != null) {
-				fromEqualsPK.append("D.FROM_" + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name);
+				if (match.get(column).isNullable) {
+					fromEqualsPK.append("(D.FROM_" + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name + " or (");
+					fromEqualsPK.append("D.FROM_" + column.name + " is null and " + dmlTableReference(ENTITY, localSession) + "." + column.name + " is null))");
+				} else {
+					fromEqualsPK.append("D.FROM_" + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name);
+				}
 			} else {
 				fromEqualsPK.append("D.FROM_" + column.name + " is null and " + dmlTableReference(ENTITY, localSession) + "." + column.name + " is null");
 			}
@@ -700,7 +768,11 @@ public class LocalEntityGraph extends EntityGraph {
 			if (toEqualsPK.length() > 0) {
 				toEqualsPK.append(" and ");
 			}
-			if (match.containsKey(column)) {
+			Column tabColumn = match.get(column);
+			if (tabColumn != null && tabColumn.isNullable) {
+				toEqualsPK.append("(D.TO_" + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name + " or (");
+				toEqualsPK.append("D.TO_" + column.name + " is null and " + dmlTableReference(ENTITY, localSession) + "." + column.name + " is null))");
+			} else if (tabColumn != null) {
 				toEqualsPK.append("D.TO_" + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name);
 			} else {
 				toEqualsPK.append("D.TO_" + column.name + " is null and " + dmlTableReference(ENTITY, localSession) + "." + column.name + " is null");
@@ -1003,16 +1075,27 @@ public class LocalEntityGraph extends EntityGraph {
 			if (fromEqualsPK.length() > 0) {
 				fromEqualsPK.append(" and ");
 			}
-			if (match.containsKey(column)) {
-				fromEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".FROM_" + column.name + "=" + column.name);
+			if (match.get(column) != null) {
+				if (match.get(column).isNullable) {
+					fromEqualsPK.append("(" + dmlTableReference(DEPENDENCY, localSession) + ".FROM_" + column.name + "=" + column.name + " or (");
+					fromEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".FROM_" + column.name + " is null and " + column.name + " is null))");
+				}
+				else {
+					fromEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".FROM_" + column.name + "=" + column.name);
+				}
 			} else {
 				fromEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".FROM_" + column.name + " is null and " + column.name + " is null");
 			}
 			if (toEqualsPK.length() > 0) {
 				toEqualsPK.append(" and ");
 			}
-			if (match.containsKey(column)) {
-				toEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".TO_" + column.name + "=" + column.name);
+			if (match.get(column) != null) {
+				if (match.get(column).isNullable) {
+					toEqualsPK.append("(" + dmlTableReference(DEPENDENCY, localSession) + ".TO_" + column.name + "=" + column.name + " or (");
+					toEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".TO_" + column.name + " is null and " + column.name + " is null))");
+				} else {
+					toEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".TO_" + column.name + "=" + column.name);
+				}
 			} else {
 				toEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".TO_" + column.name + " is null and " + column.name + " is null");
 			}
@@ -1130,8 +1213,15 @@ public class LocalEntityGraph extends EntityGraph {
 										if (eBAEqualsEA.length() > 0) {
 											eBAEqualsEA.append(" and ");
 										}
-										eBAEqualsEA.append("EBA.A" + column.name);
-										eBAEqualsEA.append("=EA." + column.name);
+										if (tableColumn.isNullable) {
+											eBAEqualsEA.append("(EBA.A" + column.name);
+											eBAEqualsEA.append("=EA." + column.name + " or (");
+											eBAEqualsEA.append("EBA.A" + column.name + " is null and ");
+											eBAEqualsEA.append("EA." + column.name + " is null))");
+										} else {
+											eBAEqualsEA.append("EBA.A" + column.name);
+											eBAEqualsEA.append("=EA." + column.name);
+										}
 									}
 								}
 								
@@ -1158,9 +1248,17 @@ public class LocalEntityGraph extends EntityGraph {
 									if (sEqualsEWoAlias.length() > 0) {
 										sEqualsEWoAlias.append(" and ");
 									}
-									if (match.containsKey(column)) {
-										sEqualsE.append("S." + column.name + "=E." + column.name);
-										sEqualsEWoAlias.append("S." + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name);
+									if (match.get(column) != null) {
+										if (match.get(column).isNullable) {
+											sEqualsE.append("(S." + column.name + "=E." + column.name + " or (");
+											sEqualsE.append("S." + column.name + " is null and E." + column.name + " is null))");
+
+											sEqualsEWoAlias.append("(S." + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name + " or (");
+											sEqualsEWoAlias.append("S." + column.name + " is null and " + dmlTableReference(ENTITY, localSession) + "." + column.name + " is null))");
+										} else {
+											sEqualsE.append("S." + column.name + "=E." + column.name);
+											sEqualsEWoAlias.append("S." + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name);
+										}
 									} else {
 										sEqualsE.append("S." + column.name + " is null and E." + column.name + " is null");
 										sEqualsEWoAlias.append("S." + column.name + " is null and " + dmlTableReference(ENTITY, localSession) + "." + column.name + " is null");
@@ -1297,7 +1395,14 @@ public class LocalEntityGraph extends EntityGraph {
 				if (sb.length() > 0) {
 					sb.append(" and ");
 				}
+				if (tableColumn.isNullable) {
+					sb.append("(");
+				}
 				sb.append("FROM_" + column.name + " = TO_" + column.name);
+				if (tableColumn.isNullable) {
+					sb.append(" or (FROM_" + column.name + " is null and TO_" + column.name + " is null)");
+					sb.append(")");
+				}
 			}
 		}
 		String delete = "Delete from " + dmlTableReference(DEPENDENCY, localSession) +
@@ -1332,7 +1437,12 @@ public class LocalEntityGraph extends EntityGraph {
 					}
 					++i;
 				}
-				sb.append("=" + cellContentConverter.toSql(cellContentConverter.toSql(cellContentConverter.getObject(resultSet, "PK" + i))));
+				Object object = cellContentConverter.getObject(resultSet, "PK" + i);
+				if (object == null) {
+					sb.append(" is 'null'");
+				} else {
+					sb.append("=" + cellContentConverter.toSql(cellContentConverter.toSql(object)));
+				}
 			} else {
 				sb.append(" is null");
 			}

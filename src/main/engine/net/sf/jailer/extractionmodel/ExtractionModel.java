@@ -64,12 +64,27 @@ public class ExtractionModel {
 	 * The table to read from.
 	 */
 	public final Table subject;
+
+	/**
+	 * Subject Limit Definition
+	 */
+	public SubjectLimitDefinition subjectLimitDefinition = new SubjectLimitDefinition(null, null);
 	
 	/**
 	 * Additional Subject.
 	 */
 	public static class AdditionalSubject {
+		
 		private Table subject;
+		
+		/**
+		 * Subject Limit Definition
+		 */
+		private SubjectLimitDefinition subjectLimitDefinition = new SubjectLimitDefinition(null, null);
+
+		/**
+		 * "Where" condition.
+		 */
 		private String condition;
 
 		/**
@@ -96,26 +111,36 @@ public class ExtractionModel {
 		public void setCondition(String condition) {
 			this.condition = condition;
 		}
-		public AdditionalSubject(Table subject, String condition) {
+
+		/**
+		 * @return Subject Limit Definition
+		 */
+		public SubjectLimitDefinition getSubjectLimitDefinition() {
+			return subjectLimitDefinition;
+		}
+		
+		/**
+		 * @param subjectLimitDefinition Subject Limit Definition
+		 */
+		public void setSubjectLimitDefinition(SubjectLimitDefinition subjectLimitDefinition) {
+			this.subjectLimitDefinition = subjectLimitDefinition;
+		}
+
+		public AdditionalSubject(Table subject, String condition, SubjectLimitDefinition subjectLimitDefinition) {
 			this.subject = subject;
 			this.condition = condition;
+			this.subjectLimitDefinition = subjectLimitDefinition;
 		}
-		/**
-		 * @see java.lang.Object#hashCode()
-		 */
+		
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result
-					+ ((condition == null) ? 0 : condition.hashCode());
-			result = prime * result
-					+ ((subject == null) ? 0 : subject.hashCode());
+			result = prime * result + ((condition == null) ? 0 : condition.hashCode());
+			result = prime * result + ((subject == null) ? 0 : subject.hashCode());
+			result = prime * result + ((subjectLimitDefinition == null) ? 0 : subjectLimitDefinition.hashCode());
 			return result;
 		}
-		/**
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -135,6 +160,11 @@ public class ExtractionModel {
 					return false;
 			} else if (!subject.equals(other.subject))
 				return false;
+			if (subjectLimitDefinition == null) {
+				if (other.subjectLimitDefinition != null)
+					return false;
+			} else if (!subjectLimitDefinition.equals(other.subjectLimitDefinition))
+				return false;
 			return true;
 		}
 	}
@@ -148,12 +178,7 @@ public class ExtractionModel {
 	 * The SQL-condition.
 	 */
 	private final String condition;
-	
-	/**
-	 * A limit for the number of subject-entities. (-1 for unlimited)
-	 */
-	public final long limit;
-	
+
 	/**
 	 * The restricted data-model to be used for extraction.
 	 */
@@ -169,7 +194,6 @@ public class ExtractionModel {
 		subject = dataModel.getTables().iterator().hasNext()? dataModel.getTables().iterator().next() : null;
 		condition = "";
 		dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
-		limit = -1;
 		dataModel.deriveFilters();
 	}
 
@@ -210,16 +234,9 @@ public class ExtractionModel {
 		}
 		String condition = subjectLine.cells.get(1);
 		if ("".equals(condition)) {
-			condition = "1=1"; // TODO "1=1" should be a global constant. Synonym to "true". Named SQL_TRUE?
+			condition = "1=1";
 		}
-		long limit = 0;
-		if (!"".equals(subjectLine.cells.get(2))) {
-			try {
-				limit = Long.parseLong(subjectLine.cells.get(2));
-			} catch (NumberFormatException e) {
-				limit = 0;
-			}
-		}
+		subjectLimitDefinition = createLimitDefinition(subjectLine.cells.get(2), subjectLine.cells.get(3));
 		if (dataModel.getRestrictionModel() == null) {
 			dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
 		}
@@ -230,7 +247,6 @@ public class ExtractionModel {
 		}
 		this.subject = subject;
 		this.condition = condition;
-		this.limit = limit;
 		this.dataModel = dataModel;
 
 		// read xml mapping
@@ -395,12 +411,24 @@ public class ExtractionModel {
 		for (CsvFile.Line line: additionalSubsLines) {
 			Table additSubject = getTable(dataModel, SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
 			if (additSubject != null) {
-				additionalSubjects.add(new AdditionalSubject(additSubject, line.cells.get(1)));
+				additionalSubjects.add(new AdditionalSubject(additSubject, line.cells.get(1), createLimitDefinition(line.cells.get(2), line.cells.get(3))));
 			}
 		}
 		
 		dataModel.deriveFilters();
 		disableUnknownAssociations(new CsvFile(modelURL.openStream(), "known", csvLocation, null).getLines());
+	}
+
+	private SubjectLimitDefinition createLimitDefinition(String limit, String orderBy) {
+		Long lLimit = null;
+		if (!"".equals(limit)) {
+			try {
+				lLimit = Long.parseLong(limit);
+			} catch (NumberFormatException e) {
+				lLimit = null;
+			}
+		}
+		return new SubjectLimitDefinition(lLimit, orderBy.length() == 0? null : orderBy);
 	}
 
 	private KnownIdentifierMap knownIdentifierMap;

@@ -604,7 +604,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		Map<File, Date> timestamps = new HashMap<File, Date>();
 		try {
 			for (Pair<File, Date> file: UISettings.loadRecentFiles()) {
-				fileList.add(file.a);
+				if (file.a.exists()) {
+					fileList.add(file.a);
+				}
 				timestamps.put(file.a, file.b);
 			}
 		} catch (Exception e) {

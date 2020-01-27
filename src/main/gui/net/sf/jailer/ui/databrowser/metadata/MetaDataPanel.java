@@ -432,19 +432,21 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		return genericDatabaseObjects;
 	}
 
-	private Map<String, MemorizedResultSet> proceduresPerSchema = new HashMap<String, MemorizedResultSet>();
+	private Map<String, MemorizedResultSet> proceduresPerSchema = Collections.synchronizedMap(new HashMap<String, MemorizedResultSet>());
 
-	public synchronized ResultSet getProcedures(Session session, DatabaseMetaData metaData, String schema, String context) throws SQLException {
-		MemorizedResultSet rs = proceduresPerSchema.get(schema);
-		if (rs == null) {
-			if (schema != null) {
-            	schema = Quoting.staticUnquote(schema);
-            }
-			rs = new MemorizedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, metaData, Quoting.staticUnquote(schema), context), null, session, "");
-			proceduresPerSchema.put(schema, rs);
+	public ResultSet getProcedures(Session session, DatabaseMetaData metaData, String schema, String context) throws SQLException {
+		synchronized (proceduresPerSchema) {
+			MemorizedResultSet rs = proceduresPerSchema.get(schema);
+			if (rs == null) {
+				if (schema != null) {
+	            	schema = Quoting.staticUnquote(schema);
+	            }
+				rs = new MemorizedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, metaData, Quoting.staticUnquote(schema), context), null, session, "");
+				proceduresPerSchema.put(schema, rs);
+			}
+			rs.reset();
+			return rs;
 		}
-		rs.reset();
-		return rs;
 	}
 
 	private abstract class ExpandingMutableTreeNode extends DefaultMutableTreeNode {

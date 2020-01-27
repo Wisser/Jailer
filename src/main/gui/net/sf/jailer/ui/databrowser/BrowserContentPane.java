@@ -145,6 +145,7 @@ import net.sf.jailer.datamodel.RestrictionDefinition;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
+import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet.MemorizedResultSetMetaData;
 import net.sf.jailer.subsetting.ScriptFormat;
@@ -2525,7 +2526,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Map<String, Map<String, double[]>> positions = new TreeMap<String, Map<String,double[]>>();
 			collectPositions(positions);
 			String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
-			dataModel.save(file, stable, subjectCondition, ScriptFormat.SQL, restrictionDefinitions, positions, new ArrayList<ExtractionModel.AdditionalSubject>(), currentModelSubfolder);
+			dataModel.save(file, stable, new SubjectLimitDefinition(null, null), subjectCondition, ScriptFormat.SQL, restrictionDefinitions, positions, new ArrayList<ExtractionModel.AdditionalSubject>(), currentModelSubfolder);
 
 			final ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false, !doExport, null, executionContext);
 			extractionModelFrame.setDbConnectionDialogClone(getDbConnectionDialog());

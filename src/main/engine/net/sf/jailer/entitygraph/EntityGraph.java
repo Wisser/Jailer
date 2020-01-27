@@ -37,6 +37,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.importfilter.ImportFilterManager;
 import net.sf.jailer.subsetting.TransformerFactory;
 import net.sf.jailer.util.JobManager;
@@ -172,6 +173,18 @@ public abstract class EntityGraph {
 	 * @return row-count
 	 */
 	public abstract long addEntities(Table table, String condition, int today) throws SQLException;
+	
+	/**
+	 * Adds limited number of entities to the graph.
+	 * 
+	 * @param table the table 
+	 * @param condition the condition in SQL that the entities must fulfill
+	 * @param today the birthday of the new entities
+	 * @param limitDefinition limit
+	 * 
+	 * @return row-count
+	 */
+	public abstract long addEntities(Table table, String condition, int today, SubjectLimitDefinition limitDefinition, boolean joinWithEntity) throws SQLException;
 	
 	/**
 	 * Resolves an association. Retrieves and adds all entities 

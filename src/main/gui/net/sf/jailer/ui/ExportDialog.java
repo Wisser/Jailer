@@ -23,6 +23,8 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -186,6 +188,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			UIUtil.setWaitCursor(parent);
 
 			initComponents();
+			jButton1.setIcon(runIcon);
 			
 			explain.setVisible(false);
 			
@@ -466,10 +469,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			browseInsertButton.setIcon(loadIcon);
 			browseDeleteButton.setIcon(loadIcon);
 			
-			if (parameterEditor.firstTextField != null) {
-				parameterEditor.firstTextField.grabFocus();
-			}
-			
 			DocumentListener dl = new DocumentListener() {
 				@Override
 				public void removeUpdate(DocumentEvent e) {
@@ -558,6 +557,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		} finally {
 			UIUtil.resetWaitCursor(parent);
 		}
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+				jButton1.grabFocus();
+				super.windowOpened(e);
+			}
+		});
 		setVisible(true);
 		try {
 			if (initScopeButtonThread != null) {
@@ -2027,7 +2033,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jButton1.setText("Export Data"); // NOI18N
+        jButton1.setText(" Export Data "); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -2039,7 +2045,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
         jPanel2.add(jButton1, gridBagConstraints);
 
         jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() & ~java.awt.Font.BOLD));
@@ -2707,11 +2713,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private Icon loadIcon;
 	private Icon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;
+	private Icon runIcon;
 	{
 		// load images
 		loadIcon = UIUtil.readImage("/load.png");
 		conditionEditorIcon = UIUtil.readImage("/edit.png");
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
+        runIcon = UIUtil.readImage("/run.png");
 	}
 
 }

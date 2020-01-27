@@ -51,6 +51,7 @@ import net.sf.jailer.datamodel.filter_template.Clause;
 import net.sf.jailer.datamodel.filter_template.FilterTemplate;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
+import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.modelbuilder.KnownIdentifierMap;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.subsetting.ScriptFormat;
@@ -1011,27 +1012,39 @@ public class DataModel {
 	 * @param file the file name
 	 * @param stable 
 	 * @param stable the subject table
+	 * @param subjectLimitDefinition limit of subject
 	 * @param subjectCondition 
 	 * @param scriptFormat
 	 * @param positions table positions or <code>null</code>
 	 * @param additionalSubjects 
 	 */
-	public void save(String file, Table stable, String subjectCondition, ScriptFormat scriptFormat, List<RestrictionDefinition> restrictionDefinitions, Map<String, Map<String, double[]>> positions, List<AdditionalSubject> additionalSubjects, String currentModelSubfolder) throws FileNotFoundException {
+	public void save(String file, Table stable, SubjectLimitDefinition subjectLimitDefinition, String subjectCondition, ScriptFormat scriptFormat, List<RestrictionDefinition> restrictionDefinitions, Map<String, Map<String, double[]>> positions, List<AdditionalSubject> additionalSubjects, String currentModelSubfolder) throws FileNotFoundException {
 		File extractionModel = new File(file);
 		PrintWriter out = new PrintWriter(extractionModel);
-		out.println("# subject; condition");
-		out.println(CsvFile.encodeCell("" + stable.getName()) + "; " + CsvFile.encodeCell(subjectCondition));
+		out.println("# subject; condition; limit; limit-order");
+		out.println(
+				CsvFile.encodeCell("" + stable.getName()) + "; " + 
+				CsvFile.encodeCell(subjectCondition) + "; " +
+				CsvFile.encodeCell(subjectLimitDefinition.limit == null? "" : subjectLimitDefinition.limit.toString()) + "; " +
+				CsvFile.encodeCell(subjectLimitDefinition.orderBy == null? "" : subjectLimitDefinition.orderBy)
+				);
 		saveRestrictions(out, restrictionDefinitions);
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "additional subjects");
+		out.println("# subject; condition; limit; limit-order");
+		for (AdditionalSubject as: additionalSubjects) {
+			out.println(
+					CsvFile.encodeCell("" + as.getSubject().getName()) + "; " + 
+					CsvFile.encodeCell(as.getCondition()) + "; " +
+					CsvFile.encodeCell(as.getSubjectLimitDefinition().limit == null? "" : as.getSubjectLimitDefinition().limit.toString()) + "; " +
+					CsvFile.encodeCell(as.getSubjectLimitDefinition().orderBy == null? "" : as.getSubjectLimitDefinition().orderBy)
+					);
+		}
 		saveXmlMapping(out);
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "datamodelfolder");
 		if (currentModelSubfolder != null) {
 			out.println(currentModelSubfolder);
-		}
-		out.println();
-		out.println(CsvFile.BLOCK_INDICATOR + "additional subjects");
-		for (AdditionalSubject as: additionalSubjects) {
-			out.println(CsvFile.encodeCell("" + as.getSubject().getName()) + "; " + CsvFile.encodeCell(as.getCondition()) + ";");
 		}
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "export modus");

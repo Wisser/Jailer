@@ -455,15 +455,15 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 			int fillColor = item.getFillColor();
 			Integer pos = graphicalDataModelView.tablesOnPath.get(tableName);
 			if (pos != null) {
-				final int PERIOD = 6000;
-				double d = Math.sin((((System.currentTimeMillis() - pos * 500) % PERIOD) / (double) PERIOD) * 2 * Math.PI);
+				final int PERIOD = 4000;
+				double d = Math.sin((((System.currentTimeMillis() - pos * 300) % PERIOD) / (double) PERIOD) * 2 * Math.PI);
 				d = Math.pow(d *= d, 2.2);
-				double f = isSelected || graphicalDataModelView.tablesOnPath.size() <= 3? 0.0 : 0.70 * d;
+				double f = isSelected || graphicalDataModelView.tablesOnPath.size() <= 3? 0.0 : 0.50 * d;
 				fillColor = ColorLib.rgba(
 						ColorLib.interp(76, 240, f),
 						ColorLib.interp(230, 120, f),
 						ColorLib.interp(255, 90, f),
-						76);
+						65);
 			}
 			paint(g, item, fillColor, shape, itemStroke != null? itemStroke : new BasicStroke(isSelected? 1 : 0), isSelected? RENDER_TYPE_DRAW_AND_FILL : RENDER_TYPE_FILL);
 			if (table != null) {
@@ -1194,8 +1194,6 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 	
 	protected abstract void afterRendering(Table table, Rectangle2D bounds);
 
-	// TODO make bg lighter
-	
 	// images
 	private Image excludeFromDeletionImage = null;
 	private Image collapsedImage = null;

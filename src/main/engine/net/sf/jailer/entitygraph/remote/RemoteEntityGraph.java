@@ -17,9 +17,11 @@ package net.sf.jailer.entitygraph.remote;
 
 import java.io.File;
 import java.io.OutputStreamWriter;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -32,6 +34,7 @@ import net.sf.jailer.configuration.LimitTransactionSizeInfo;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
+import net.sf.jailer.database.SqlException;
 import net.sf.jailer.database.UpdateTransformer;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -40,6 +43,7 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
@@ -268,6 +272,187 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 	
 	/**
+	 * Adds limited number of entities to the graph.
+	 * 
+	 * @param table the table 
+	 * @param condition the condition in SQL that the entities must fulfill
+	 * @param today the birthday of the new entities
+	 * @param limitDefinition limit
+	 * 
+	 * @return row-count
+	 */
+	@Override
+	public long addEntities(Table table, String condition, int today, SubjectLimitDefinition limitDefinition, boolean joinWithEntity) throws SQLException {
+		String select;
+		String alias = "T";
+
+		select =
+				"Select " + pkList(table, alias) +
+				" From " + quoting.requote(table.getName()) + " " + alias +
+				" Where (" + condition + ")";
+		if (limitDefinition.limit != null && limitDefinition.orderBy != null && limitDefinition.orderBy.length() > 0) {
+			select += " order by " + limitDefinition.orderBy;
+		}
+
+		final Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
+		final int MAX_BATCH_SIZE = 200;
+
+		String insSQL = 
+				"Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, birthday, type, " + upkColumnList(table, null) + ") " +
+				"values (" + graphID + ", " + today + ", " + typeName(table);
+		for (Column column: universalPrimaryKey.getColumns()) {
+			Column tableColumn = match.get(column);
+			if (tableColumn != null) {
+				insSQL += " ,?";
+			}
+		}
+		insSQL += ")";
+		
+		String delSQL = null;
+		if (joinWithEntity) {
+			StringBuffer sb = new StringBuffer();
+			for (Column column: universalPrimaryKey.getColumns()) {
+				if (sb.length() > 0) {
+					sb.append(" and ");
+				}
+				Column tableColumn = match.get(column);
+				if (tableColumn != null) {
+					if (tableColumn.isNullable) {
+						sb.append("(");
+					}
+					sb.append(column.name + " = ?");
+					if (tableColumn.isNullable) {
+						sb.append(" or (");
+						sb.append(column.name + " is null and ? is null)");
+					}
+					if (tableColumn.isNullable) {
+						sb.append(")");
+					}
+				} else {
+					sb.append(column.name);
+					sb.append(" is null");
+				}
+			}
+			delSQL =
+				"Delete from " + dmlTableReference(ENTITY, session) +
+				" Where r_entitygraph=" + graphID + " and type=" + typeName(table) +
+				" and (" + sb + ")";
+		}
+
+		final String insert = insSQL;
+		final String delete = delSQL;
+		final String finalSelect = select;
+
+		final PreparedStatement ins = session.getConnection().prepareStatement(insert);
+		final PreparedStatement del = delete != null? session.getConnection().prepareStatement(delete) : null;
+		final long[] rc = new long[] { 0 };
+		final boolean[] rcValid = new boolean[] { true };
+
+		session.executeQuery(select, new Session.AbstractResultSetReader() {
+			int batchSize = 0;
+			Map<Integer, Integer> columnType = null;
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+                try {
+                	if (columnType == null) {
+                		columnType = new HashMap<Integer, Integer>();
+                		ResultSetMetaData md = getMetaData(resultSet);
+                		int ci = 1;
+    					for (Column column: universalPrimaryKey.getColumns()) {
+    						Column tableColumn = match.get(column);
+    						if (tableColumn != null) {
+    							columnType.put(ci, md.getColumnType(ci));
+    							++ci;
+    						}
+    					}
+    					Session._log.info("batch insert: " + insert);
+    					if (delete != null) {
+        					Session._log.info("batch delete: " + delete);
+    					}
+                	}
+                	
+					int insI = 1;
+					int delI = 1;
+					int ci = 1;
+					for (Column column: universalPrimaryKey.getColumns()) {
+						Column tableColumn = match.get(column);
+						if (tableColumn != null) {
+							Object v = resultSet.getObject(ci++);
+							
+							setObject(ins, insI++, v);
+							if (del != null) {
+								setObject(del, delI++, v);
+								if (tableColumn.isNullable) {
+									setObject(del, delI++, v);
+								}
+							}
+						}
+					}
+
+					ins.addBatch();
+					if (del != null) {
+						del.addBatch();
+					}
+	                ++batchSize;
+	                if (batchSize >= MAX_BATCH_SIZE) {
+                    	executeBatch();
+                        batchSize = 0;
+                        if (updateStatistics != null) {
+                			updateStatistics.run();
+                		}
+                    }
+                }
+                catch (SQLException e) {
+                	throw new SqlException("\"" + e.getMessage() + "\" (" + columnType + ") in statement \"" + insert + "\"", finalSelect, e);
+                }
+			}
+			private void setObject(final PreparedStatement statement, int i, Object value) throws SQLException {
+				if (value == null) {
+					statement.setNull(i, columnType.get(i));
+				} else {
+					statement.setObject(i, value);
+				}
+			}
+			private void executeBatch() throws SQLException {
+				if (del != null) {
+					int[] batchRc = del.executeBatch();
+					for (int brc: batchRc) {
+						if (brc < 0) {
+							rcValid[0] = false;
+						}
+		                rc[0] -= brc;
+		    			totalRowcount -= brc;
+					}
+				}
+				int brc = ins.executeBatch().length;
+				rc[0] += brc;
+				totalRowcount += brc;
+			}
+			@Override
+			public void close() {
+                try {
+                	if (batchSize > 0) {
+						executeBatch();
+					}
+                    batchSize = 0;
+                    ins.close();
+                    if (del != null) {
+                    	del.close();
+                    }
+				} catch (SQLException e) {
+					throw new RuntimeException(new SqlException("\"" + e.getMessage() + "\" in statement \"" + insert + "\"", finalSelect, e));
+	            }
+			}
+		}, null, null, limitDefinition.limit, false);
+
+		if (updateStatistics != null) {
+			updateStatistics.run();
+		}
+
+		return rcValid[0]? rc[0] : -1;
+	}
+
+	/**
 	 * Resolves an association. Retrieves and adds all entities 
 	 * associated with an entity born yesterday in the graph 
 	 * and adds the dependencies.
@@ -460,7 +645,12 @@ public class RemoteEntityGraph extends EntityGraph {
 				fromEqualsPK.append(" and ");
 			}
 			if (match.get(column) != null) {
-				fromEqualsPK.append("D.FROM_" + column.name + "=" + dmlTableReference(ENTITY, session) + "." + column.name);
+				if (match.get(column) != null) {
+					fromEqualsPK.append("(D.FROM_" + column.name + "=" + dmlTableReference(ENTITY, session) + "." + column.name + " or (");
+					fromEqualsPK.append("D.FROM_" + column.name + " is null and " + dmlTableReference(ENTITY, session) + "." + column.name + " is null))");
+				} else {
+					fromEqualsPK.append("D.FROM_" + column.name + "=" + dmlTableReference(ENTITY, session) + "." + column.name);
+				}
 			} else {
 				fromEqualsPK.append("D.FROM_" + column.name + " is null and " + dmlTableReference(ENTITY, session) + "." + column.name + " is null");
 			}
@@ -485,8 +675,13 @@ public class RemoteEntityGraph extends EntityGraph {
 			if (toEqualsPK.length() > 0) {
 				toEqualsPK.append(" and ");
 			}
-			if (match.containsKey(column)) {
-				toEqualsPK.append("D.TO_" + column.name + "=" + dmlTableReference(ENTITY, session) + "." + column.name);
+			if (match.get(column) != null) {
+				if (match.get(column).isNullable) {
+					toEqualsPK.append("(D.TO_" + column.name + "=" + dmlTableReference(ENTITY, session) + "." + column.name + " or (");
+					toEqualsPK.append("D.TO_" + column.name + " is null and " + dmlTableReference(ENTITY, session) + "." + column.name + " is null))");
+				} else {
+					toEqualsPK.append("D.TO_" + column.name + "=" + dmlTableReference(ENTITY, session) + "." + column.name);
+				}
 			} else {
 				toEqualsPK.append("D.TO_" + column.name + " is null and " + dmlTableReference(ENTITY, session) + "." + column.name + " is null");
 			}
@@ -750,16 +945,26 @@ public class RemoteEntityGraph extends EntityGraph {
 			if (fromEqualsPK.length() > 0) {
 				fromEqualsPK.append(" and ");
 			}
-			if (match.containsKey(column)) {
-				fromEqualsPK.append(dmlTableReference(DEPENDENCY, session) + ".FROM_" + column.name + "=" + column.name);
+			if (match.get(column) != null) {
+				if (match.get(column).isNullable) {
+					fromEqualsPK.append("(" + dmlTableReference(DEPENDENCY, session) + ".FROM_" + column.name + "=" + column.name + " or (");
+					fromEqualsPK.append(dmlTableReference(DEPENDENCY, session) + ".FROM_" + column.name + " is null and " + column.name + " is null))");
+				} else {
+					fromEqualsPK.append(dmlTableReference(DEPENDENCY, session) + ".FROM_" + column.name + "=" + column.name);
+				}
 			} else {
 				fromEqualsPK.append(dmlTableReference(DEPENDENCY, session) + ".FROM_" + column.name + " is null and " + column.name + " is null");
 			}
 			if (toEqualsPK.length() > 0) {
 				toEqualsPK.append(" and ");
 			}
-			if (match.containsKey(column)) {
-				toEqualsPK.append(dmlTableReference(DEPENDENCY, session) + ".TO_" + column.name + "=" + column.name);
+			if (match.get(column) != null) {
+				if (match.get(column).isNullable) {
+					toEqualsPK.append("(" + dmlTableReference(DEPENDENCY, session) + ".TO_" + column.name + "=" + column.name + " or (");
+					toEqualsPK.append(dmlTableReference(DEPENDENCY, session) + ".TO_" + column.name + " is null and " + column.name + " is null))");
+				} else {
+					toEqualsPK.append(dmlTableReference(DEPENDENCY, session) + ".TO_" + column.name + "=" + column.name);
+				}
 			} else {
 				toEqualsPK.append(dmlTableReference(DEPENDENCY, session) + ".TO_" + column.name + " is null and " + column.name + " is null");
 			}
@@ -866,9 +1071,17 @@ public class RemoteEntityGraph extends EntityGraph {
 					if (sEqualsEWoAlias.length() > 0) {
 						sEqualsEWoAlias.append(" and ");
 					}
-					if (match.containsKey(column)) {
-						sEqualsE.append("S." + column.name + "=E." + column.name);
-						sEqualsEWoAlias.append("S." + column.name + "=" + dmlTableReference(ENTITY, session) + "." + column.name);
+					if (match.get(column) != null) {
+						if (match.get(column).isNullable) {
+							sEqualsE.append("(S." + column.name + "=E." + column.name + " or (");
+							sEqualsE.append("S." + column.name + " is null and E." + column.name + " is null))");
+
+							sEqualsEWoAlias.append("(S." + column.name + "=" + dmlTableReference(ENTITY, session) + "." + column.name + " or (");
+							sEqualsEWoAlias.append("S." + column.name + " is null and " + dmlTableReference(ENTITY, session) + "." + column.name + " is null))");
+						} else {
+							sEqualsE.append("S." + column.name + "=E." + column.name);
+							sEqualsEWoAlias.append("S." + column.name + "=" + dmlTableReference(ENTITY, session) + "." + column.name);
+						}
 					} else {
 						sEqualsE.append("S." + column.name + " is null and E." + column.name + " is null");
 						sEqualsEWoAlias.append("S." + column.name + " is null and " + dmlTableReference(ENTITY, session) + "." + column.name + " is null");
@@ -996,7 +1209,12 @@ public class RemoteEntityGraph extends EntityGraph {
 				if (sb.length() > 0) {
 					sb.append(" and ");
 				}
-				sb.append("FROM_" + column.name + " = TO_" + column.name);
+				if (tableColumn.isNullable) {
+					sb.append("(FROM_" + column.name + " = TO_" + column.name);
+					sb.append(" or (FROM_" + column.name + " is null and TO_" + column.name + " is null))");
+				} else {
+					sb.append("FROM_" + column.name + " = TO_" + column.name);
+				}
 			}
 		}
 		deleteRows(session, dmlTableReference(DEPENDENCY, session), sb +
@@ -1029,7 +1247,12 @@ public class RemoteEntityGraph extends EntityGraph {
 					}
 					++i;
 				}
-				sb.append("=" + cellContentConverter.toSql(cellContentConverter.getObject(resultSet, "PK" + i)));
+				Object object = cellContentConverter.getObject(resultSet, "PK" + i);
+				if (object == null) {
+					sb.append(" is null");
+				} else {
+					sb.append("=" + cellContentConverter.toSql(object));
+				}
 			} else {
 				sb.append(" is null");
 			}
@@ -1233,7 +1456,5 @@ public class RemoteEntityGraph extends EntityGraph {
 	public Session getTargetSession() {
 		return session;
 	}
-
-	// TODO repl "where 1=1$" with "" in each sql statement
 
 }

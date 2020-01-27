@@ -541,13 +541,12 @@ public class DMLTransformer extends AbstractResultSetReader {
 					}
 				
 					String item;
-					if (sb.isEmpty()) {
-						item = namedValuesWONull.toString();	
-					} else {
-						item = valuesWONull.toString();
-					}
+					item = valuesWONull.toString();
 					if (!sb.isAppendable(insertHead, item)) {
 						writeToScriptFile(sb.build(), true);
+					}
+					if (sb.isEmpty()) {
+						item = namedValuesWONull.toString();	
 					}
 					sb.append(insertHead, item, " union all " + PrintUtil.LINE_SEPARATOR + " Select ", terminator.toString());
 				} else {

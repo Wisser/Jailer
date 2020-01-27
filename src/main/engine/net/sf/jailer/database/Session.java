@@ -467,7 +467,7 @@ public class Session {
 	 * @param limit row limit, 0 for unlimited
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
 	 */
-	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit, boolean withExplicitCommit) throws SQLException {
+	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, long limit, boolean withExplicitCommit) throws SQLException {
 		return executeQuery(sqlQuery, reader, alternativeSQL, context, limit, 0, withExplicitCommit);
 	}
 
@@ -480,7 +480,7 @@ public class Session {
 	 * @param context cancellation context
 	 * @param limit row limit, 0 for unlimited
 	 */
-	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit) throws SQLException {
+	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, long limit) throws SQLException {
 		return executeQuery(sqlQuery, reader, alternativeSQL, context, limit, 0, false);
 	}
 
@@ -496,7 +496,7 @@ public class Session {
 	 * @param timeout the timeout in sec
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
 	 */
-	private long executeQuery(Connection theConnection, String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit, int timeout, boolean withExplicitCommit) throws SQLException {
+	private long executeQuery(Connection theConnection, String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, long limit, int timeout, boolean withExplicitCommit) throws SQLException {
 		if (withExplicitCommit) {
 			synchronized (theConnection) {
 				if (theConnection.getAutoCommit()) {
@@ -528,8 +528,8 @@ public class Session {
 			CancellationHandler.begin(statement, context);
 			ResultSet resultSet;
 			try {
-				if (limit > 0) {
-					statement.setMaxRows(limit + 1);
+				if (limit > 0 && limit < Integer.MAX_VALUE - 1) {
+					statement.setMaxRows((int) limit + 1);
 				}
 			} catch (Exception e) {
 				// ignore
@@ -591,7 +591,7 @@ public class Session {
 	 * @param timeout the timeout in sec
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
 	 */
-	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit, int timeout, boolean withExplicitCommit) throws SQLException {
+	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, long limit, int timeout, boolean withExplicitCommit) throws SQLException {
 		if (getLogStatements()) {
 			_log.info(sqlQuery);
 		}
@@ -637,8 +637,9 @@ public class Session {
 	/**
 	 * Prevention of livelocks.
 	 */
-	private final int PERMITS = Integer.MAX_VALUE / 4;
+	private static final int PERMITS = Integer.MAX_VALUE / 4;
 	private Semaphore semaphore = new Semaphore(PERMITS);
+	private static final int MAXIMUM_NUMBER_OF_FAILURES = 100;
 
 	/**
 	 * Executes a SQL-Update (INSERT, DELETE or UPDATE).
@@ -652,7 +653,6 @@ public class Session {
 			_log.info(sqlUpdate);
 		}
 		CancellationHandler.checkForCancellation(null);
-		final int maximumNumberOfFailures = 100;
 		try {
 			int rowCount = 0;
 			int failures = 0;
@@ -708,11 +708,8 @@ public class Session {
 					CancellationHandler.checkForCancellation(null);
 					CancellationHandler.end(statement, null);
 
-					String sqlState = e.getSQLState();
-					boolean deadlock = sqlState != null && sqlState.matches("40.01"); // "serialization failure", see https://en.wikipedia.org/wiki/SQLSTATE
-					boolean crf = DBMS.ORACLE.equals(dbms) && e.getErrorCode() == 8176; // ORA-08176: consistent read failure; rollback data not available
-					
-					if (++failures > maximumNumberOfFailures || !(deadlock || crf)) {
+					boolean isRetrieable = isRetrieable(e);
+					if (++failures > MAXIMUM_NUMBER_OF_FAILURES || !isRetrieable) {
 						throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"", sqlUpdate, e);
 					}
 					// deadlock
@@ -893,43 +890,119 @@ public class Session {
 		if (getLogStatements()) {
 			_log.info(sql);
 		}
-		// TODO deadlock prevention
-		long rc = 0;
-		long startTime = System.currentTimeMillis();
-		Statement statement = null;
+		CancellationHandler.checkForCancellation(null);
 		try {
-			CancellationHandler.checkForCancellation(cancellationContext);
-			statement = connectionFactory.getConnection().createStatement();
-			CancellationHandler.begin(statement, cancellationContext);
-			if (acceptQueries) {
-				if (statement.execute(sql)) {
-					statement.getResultSet().close();
-				} else {
-					rc = statement.getUpdateCount();
+			int rowCount = 0;
+			int failures = 0;
+			boolean ok = false;
+			boolean serializeAccess = false;
+
+			while (!ok) {
+				long startTime = System.currentTimeMillis();
+				Statement statement = null;
+				try {
+					statement = connectionFactory.getConnection().createStatement();
+					CancellationHandler.begin(statement, null);
+					if (serializeAccess) {
+						boolean acquired;
+						try {
+							semaphore.acquire(PERMITS);
+							acquired = true;
+						} catch (InterruptedException e) {
+							acquired = false;
+						}
+
+						try {
+							if (acceptQueries) {
+								if (statement.execute(sql)) {
+									statement.getResultSet().close();
+								} else {
+									rowCount = statement.getUpdateCount();
+								}
+							} else {
+								rowCount = statement.executeUpdate(sql);
+							}
+						} finally {
+							if (acquired) {
+								semaphore.release(PERMITS);
+							}
+						}
+					} else {
+						boolean acquired;
+						try {
+							semaphore.acquire(1);
+							acquired = true;
+						} catch (InterruptedException e) {
+							acquired = false;
+						}
+
+						try {
+							if (acceptQueries) {
+								if (statement.execute(sql)) {
+									statement.getResultSet().close();
+								} else {
+									rowCount = statement.getUpdateCount();
+								}
+							} else {
+								rowCount = statement.executeUpdate(sql);
+							}
+						} finally {
+							if (acquired) {
+								semaphore.release(1);
+							}
+						}
+					}
+
+					CancellationHandler.end(statement, null);
+					ok = true;
+					if (getLogStatements()) {
+						_log.info("" + rowCount + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");
+					}
+				} catch (SQLException e) {
+					CancellationHandler.checkForCancellation(null);
+					CancellationHandler.end(statement, null);
+
+					boolean isRetrieable = isRetrieable(e);
+					if (++failures > MAXIMUM_NUMBER_OF_FAILURES || !isRetrieable) {
+						throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sql + "\"", sql, e);
+					}
+					// deadlock
+					serializeAccess = true;
+					_log.info("Deadlock! Try again...");
+					try {
+						Thread.sleep(140);
+					} catch (InterruptedException e1) {
+						// ignore
+					}
+				} finally {
+					if (statement != null) {
+						try { statement.close(); } catch (SQLException e) { }
+					}
 				}
-			} else {
-				rc = statement.executeUpdate(sql);
 			}
-			if (getLogStatements()) {
-				_log.info("" + rc + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");
-			}
+			return rowCount;
 		} catch (SQLException e) {
-			CancellationHandler.checkForCancellation(cancellationContext);
+			CancellationHandler.checkForCancellation(null);
 			if (!silent) {
 				_log.error("Error executing statement", e);
-			}
-			throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sql + "\"", sql, e);
-		} finally {
-			if (statement != null) {
-				try {
-					statement.close();
-				} catch (SQLException e) {
-					// ignore
+			} else {
+				String message = e.getMessage();
+				if (e instanceof SqlException) {
+					message = e.getCause().getMessage();
 				}
-				CancellationHandler.end(statement, cancellationContext);
+				_log.info("\"" + message + "\"");
 			}
+			throw e;
 		}
-		return rc;
+	}
+
+	private boolean isRetrieable(SQLException e) {
+		String sqlState = e.getSQLState();
+		boolean deadlock = sqlState != null && sqlState.matches("40.01"); // "serialization failure", see https://en.wikipedia.org/wiki/SQLSTATE
+		boolean crf = DBMS.ORACLE.equals(dbms) && e.getErrorCode() == 8176; // ORA-08176: consistent read failure; rollback data not available
+		
+		boolean isRetrieable = deadlock || crf;
+		return isRetrieable;
 	}
 	
 	/**

@@ -258,49 +258,103 @@ public class SubsettingEngine {
 	private Set<Table> exportSubjects(ExtractionModel extractionModel, Set<Table> completedTables) throws CancellationException, SQLException {
 		List<AdditionalSubject> allSubjects = new ArrayList<ExtractionModel.AdditionalSubject>();
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
-			allSubjects.add(new AdditionalSubject(as.getSubject(), ParameterHandler.assignParameterValues(as.getCondition(), executionContext.getParameters())));
+			allSubjects.add(new AdditionalSubject(as.getSubject(), ParameterHandler.assignParameterValues(as.getCondition(), executionContext.getParameters()), as.getSubjectLimitDefinition()));
 		}
-		allSubjects.add(new AdditionalSubject(extractionModel.subject, subjectCondition.equals("1=1")? "" : subjectCondition));
-		Map<Table, String> conditionPerTable = new HashMap<Table, String>();
+		allSubjects.add(new AdditionalSubject(extractionModel.subject, subjectCondition.equals("1=1")? "" : subjectCondition, extractionModel.subjectLimitDefinition));
+		Map<Table, String> conditionPerUnlimitedTable = new HashMap<Table, String>();
+		Map<Table, List<AdditionalSubject>> subjectsPerTables = new HashMap<Table, List<AdditionalSubject>>();
 		for (AdditionalSubject as: allSubjects) {
-			String cond = conditionPerTable.get(as.getSubject());
-			if (cond == null || cond.trim().length() > 0) {
-				if (as.getCondition().trim().length() > 0) {
-					String newCond = "(" + as.getCondition() + ")";
-					if (cond == null) {
-						cond = newCond;
+			List<AdditionalSubject> spt = subjectsPerTables.get(as.getSubject());
+			if (spt == null) {
+				spt = new ArrayList<AdditionalSubject>();
+				subjectsPerTables.put(as.getSubject(), spt);
+			}
+			spt.add(as);
+			if (as.getSubjectLimitDefinition().limit == null) {
+				String cond = conditionPerUnlimitedTable.get(as.getSubject());
+				if (cond == null || cond.trim().length() > 0) {
+					if (as.getCondition().trim().length() > 0) {
+						String newCond = "(" + as.getCondition() + ")";
+						if (cond == null) {
+							cond = newCond;
+						} else {
+							cond += " or " + newCond;
+						}
 					} else {
-						cond += " or " + newCond;
+						cond = "";
 					}
-				} else {
-					cond = "";
+					conditionPerUnlimitedTable.put(as.getSubject(), cond.trim());
 				}
-				conditionPerTable.put(as.getSubject(), cond);
 			}
 		}
 		final Set<Table> progress = Collections.synchronizedSet(new HashSet<Table>());
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
-		for (Map.Entry<Table, String> e: conditionPerTable.entrySet()) {
+		for (Entry<Table, List<AdditionalSubject>> e: subjectsPerTables.entrySet()) {
 			final Table table = e.getKey();
-			final String condition = e.getValue().trim();
-			if (condition.length() > 0) {
-				_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition);
-			} else {
-				completedTables.add(table);
-				_log.info("exporting all " + datamodel.getDisplayName(table));
+			final String condition = conditionPerUnlimitedTable.get(table);
+			final List<AdditionalSubject> subjects = new ArrayList<AdditionalSubject>(e.getValue());
+			if (condition != null) {
+				if (condition.length() > 0) {
+					_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition);
+				} else {
+					completedTables.add(table);
+					_log.info("exporting all " + datamodel.getDisplayName(table));
+				}
 			}
 			jobs.add(new JobManager.Job() {
 				@Override
 				public void run() throws SQLException {
 					int today = entityGraph.getAge();
+					long sumRc = 0;
+					boolean moreRows = true;
+					boolean joinWithEntity = false;
+
 					executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, table);
 					executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, table);
-					long rc = entityGraph.addEntities(table, condition.length() > 0? condition : "1=1", today);
-					if (rc > 0) {
-						progress.add(table);
+
+					// unlimited
+					if (condition != null) {
+						long rc = entityGraph.addEntities(table, condition.length() > 0? condition : "1=1", today);
+						sumRc += rc;
+						if (rc > 0) {
+							progress.add(table);
+							joinWithEntity = true;
+						}
+						checkRowLimit(rc);
+						
+						if (condition.length() == 0 || "1=1".equals(condition)) {
+							// no more rows left
+							moreRows = false;
+						}
 					}
-					executionContext.getProgressListenerRegistry().fireCollected(today, table, rc);
-					checkRowLimit(rc);
+					// limited
+					if (moreRows) {
+						for (AdditionalSubject as: subjects) {
+							if (as.getSubjectLimitDefinition().limit != null && as.getSubjectLimitDefinition().limit > 0) {
+								String lCondition = as.getCondition();
+								long rc = entityGraph.addEntities(table, lCondition != null && lCondition.trim().length() > 0? lCondition : "1=1", today, as.getSubjectLimitDefinition(), joinWithEntity);
+								if (rc < 0) {
+									sumRc = -1;
+								} else if (sumRc >= 0) {
+									sumRc += rc;
+								}
+								if (rc > 0) {
+									progress.add(table);
+									joinWithEntity = true;
+								}
+								checkRowLimit(rc);
+							}
+						}
+					}
+
+					if (sumRc < 0) {
+						sumRc = entityGraph.countEntities(table);
+						if (sumRc > 0) {
+							progress.add(table);
+						}
+					}
+
+					executionContext.getProgressListenerRegistry().fireCollected(today, table, sumRc);
 				}
 			});
 		}
@@ -1374,10 +1428,16 @@ public class SubsettingEngine {
 		String condition = (subjectCondition != null && !"1=1".equals(subjectCondition)) ? extractionModel.subject.getName() + " where " + subjectCondition
 				: "all rows from " + extractionModel.subject.getName();
 		appendCommentHeader("Extraction Model:  " + (condition.replaceAll("\\s+", " ")) + " (" + extractionModelURL + ")");
+		if (extractionModel.subjectLimitDefinition.limit != null) {
+			appendCommentHeader("                         limit " + extractionModel.subjectLimitDefinition.limit + (extractionModel.subjectLimitDefinition.orderBy != null? " order by " + extractionModel.subjectLimitDefinition.orderBy : ""));
+		}
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
 			condition = (as.getCondition() != null && as.getCondition().trim().length() > 0) ? as.getSubject().getName() + " where " + (as.getCondition().replaceAll("\\s+", " "))
 					: "all rows from " + as.getSubject().getName();
 			appendCommentHeader("                   Union " + condition);
+			if (as.getSubjectLimitDefinition().limit != null) {
+				appendCommentHeader("                         limit " + as.getSubjectLimitDefinition().limit + (as.getSubjectLimitDefinition().orderBy != null? " order by " + as.getSubjectLimitDefinition().orderBy : ""));
+			}
 		}
 		if (executionContext.getNoSorting()) {
 			appendCommentHeader("                   unsorted");
@@ -1757,7 +1817,4 @@ public class SubsettingEngine {
 		return resetFilters;
 	}
 
-	// TODO "limit" parameter for subject tables
-	// TODO allow "limit"/"fetch first"/"order by" in where-clauses (incl. browser) (no "(...)")
-	
 }
