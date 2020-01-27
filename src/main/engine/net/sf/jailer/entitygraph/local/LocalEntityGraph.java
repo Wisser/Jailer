@@ -578,7 +578,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * 
 	 * @return row-count
 	 */
-	private long addEntities(final Table table, final String alias, String condition, final int today, SubjectLimitDefinition limitDefinition, boolean joinWithEntity) throws SQLException {
+	private long addEntities(final Table table, final String alias, String condition, final int today, SubjectLimitDefinition limitDefinition, final boolean joinWithEntity) throws SQLException {
 		String select =
 			"Select " + pkList(table, alias) +
 			" From " + quoting.requote(table.getName()) + " " + alias + " Where (" + condition + ")";
