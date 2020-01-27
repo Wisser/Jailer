@@ -505,7 +505,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	    	    			if (mdTable.getSchema().isConstraintsLoaded()) {
 	    	    	        	UIUtil.invokeLater(doRunGetConstraints);
 	    	    			}
-						} catch (Throwable t) {
+						} catch (final Throwable t) {
 							UIUtil.invokeLater(new Runnable() {
 								@Override
 								public void run() {
