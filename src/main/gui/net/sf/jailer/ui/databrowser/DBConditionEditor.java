@@ -104,7 +104,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 				if (ok && initialCondition.equals(editorPane.getText())) {
 					ok = false;
 				}
-				consume(ok? UIUtil.toSingleLineSQL(editorPane.getText()) : null);
+				consume(ok? UIUtil.toSingleLineSQL(editorPane.getText().replaceFirst("(?is)^\\s*where\\b\\s*", "")) : null);
 			}
 		});
 		

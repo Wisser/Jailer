@@ -779,6 +779,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				if (cond != null) {
 					if (!condition.getText().equals((cond))) {
 						condition.setText((cond));
+						try {
+							condition.setCaretPosition(0);
+						} catch (Exception e) {
+							// ignore
+						}
 						needsSave = true;
 						ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
 					}
@@ -793,6 +798,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					if (!restrictionEditor.restriction.getText().equals((cond))) {
 						restrictionEditor.restriction.setText((cond));
 						onApply(true);
+						try {
+							restrictionEditor.restriction.setCaretPosition(0);
+						} catch (Exception e) {
+							// ignore
+						}
 					}
 				}
 			}
@@ -2043,6 +2053,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			initialRestrictionCondition = association.isIgnored()? null : restrictionCondition;
 			restrictionEditor.restriction.setText(restrictionCondition == null? "" : (restrictionCondition));
+			try {
+				restrictionEditor.restriction.setCaretPosition(0);
+			} catch (Exception e) {
+				// ignore
+			}
 			if (association.isIgnored()) {
 				restrictionEditor.ignore.getModel().setSelected(true);
 			} else {
