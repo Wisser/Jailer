@@ -1,3 +1,9 @@
+9.3
+  - The number of rows of a subject table to be exported can now be limited
+    taking into account a possible column order.
+  - Nullable primary key columns could lead to incorrect results under certain circumstances.
+  - In the data browser, the user interface sometimes blocked when the acquisition of database metadata took a long time.
+
 9.2.2
   - When deleting rows, an IllegalStateException sometimes occurred incorrectly.
   - Improved performance of deletion script generation.
