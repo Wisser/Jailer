@@ -459,7 +459,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					f = false;
 					String value;
 					Boolean isNull;
-					String name = quoting.quote(pk.name);
+					String name = quoting.unquote(pk.name);
 					if (val.containsKey(name)) {
 						value = val.get(name);
 						isNull = valIsNull.get(name);
