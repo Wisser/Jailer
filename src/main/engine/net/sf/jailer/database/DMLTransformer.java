@@ -177,7 +177,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 	private final ImportFilterTransformer importFilterTransformer;
 	
 	private final Set<String> primaryKeyColumnNames;
-
+	private final Set<String> nullableColumnNames;
+	
 	/**
 	 * Factory.
 	 */
@@ -275,8 +276,14 @@ public class DMLTransformer extends AbstractResultSetReader {
 			}
 		}
 		this.primaryKeyColumnNames = new HashSet<String>();
+		this.nullableColumnNames = new HashSet<String>();
 		for (Column c: table.getNonVirtualPKColumns(session)) {
 			this.primaryKeyColumnNames.add(c.name.toUpperCase(Locale.ENGLISH));
+		}
+		for (Column c: table.getColumns()) {
+			if (c.isNullable) {
+				this.nullableColumnNames.add(c.name.toUpperCase(Locale.ENGLISH));
+			}
 		}
 	}
 
@@ -437,6 +444,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				String insertHead = "Insert into " + qualifiedTableName(table) + "(" + columnsWONull + ") ";
 				f = true;
 				StringBuffer whereForTerminator = new StringBuffer("");
+				StringBuffer whereForTerminatorWONull = new StringBuffer("");
 				StringBuffer where = new StringBuffer("");
 				StringBuffer whereWOAlias = new StringBuffer("");
 				
@@ -444,22 +452,34 @@ public class DMLTransformer extends AbstractResultSetReader {
 				for (Column pk: table.getNonVirtualPKColumns(session)) {
 					if (!f) {
 						whereForTerminator.append(" and ");
+						whereForTerminatorWONull.append(" and ");
 						where.append(" and ");
 						whereWOAlias.append(" and ");
 					}
 					f = false;
-					whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
 					String value;
+					Boolean isNull;
 					String name = quoting.quote(pk.name);
 					if (val.containsKey(name)) {
 						value = val.get(name);
+						isNull = valIsNull.get(name);
 					} else if (val.containsKey(name.toLowerCase(Locale.ENGLISH))) {
 						value = val.get(name.toLowerCase(Locale.ENGLISH));
+						isNull = valIsNull.get(name.toLowerCase(Locale.ENGLISH));
 					} else {
 						value = val.get(name.toUpperCase(Locale.ENGLISH));
+						isNull = valIsNull.get(name.toUpperCase(Locale.ENGLISH));
 					}
-					where.append("T." + quoting.requote(pk.name) + "=" + value);
-					whereWOAlias.append(quoting.requote(pk.name) + "=" + value);
+					String op = Boolean.TRUE.equals(isNull)? " is null" : ("=" + value);
+					where.append("T." + quoting.requote(pk.name) + op);
+					whereWOAlias.append(quoting.requote(pk.name) + op);
+					if (pk.isNullable) {
+						whereForTerminator.append("(T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
+						whereForTerminator.append(" or (T." + quoting.requote(pk.name) + " is null and Q." + quoting.requote(pk.name) + " is null))");
+					} else {
+						whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
+					}
+					whereForTerminatorWONull.append("T." + quoting.requote(pk.name) + (Boolean.TRUE.equals(isNull)? " is null" : ("=Q." + quoting.requote(pk.name))));
 				}
 
 				if (currentDialect.getUpsertMode() == UPSERT_MODE.MERGE && !tableHasLobs) {
@@ -504,7 +524,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					}
 				
 					String item = "Select " + valueList + " from dual";
-					if (!sb.isAppendable(insertHead, item)) {
+					if (!sb.isAppendable(insertHead)) {
 						writeToScriptFile(sb.build(), true);
 					}
 					if (sb.isEmpty()) {
@@ -515,7 +535,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					insertHead += "Select * From (values ";
 					StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
-					terminator.append(whereForTerminator + ");" + PrintUtil.LINE_SEPARATOR);
+					terminator.append(whereForTerminatorWONull + ");" + PrintUtil.LINE_SEPARATOR);
 					
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -524,7 +544,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					}
 				
 					String item = (maxBodySize > 1? PrintUtil.LINE_SEPARATOR + " " : "") + "(" + valuesWONull + ")";
-					if (!sb.isAppendable(insertHead, item)) {
+					if (!sb.isAppendable(insertHead)) {
 						writeToScriptFile(sb.build(), true);
 					}
 					sb.append(insertHead, item, ", ", terminator.toString());
@@ -532,7 +552,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					insertHead += "Select * From (" + PrintUtil.LINE_SEPARATOR + " Select ";
 					StringBuffer terminator = new StringBuffer(") as Q " + PrintUtil.LINE_SEPARATOR + "Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
-					terminator.append(whereForTerminator + ");" + PrintUtil.LINE_SEPARATOR);
+					terminator.append(whereForTerminatorWONull + ");" + PrintUtil.LINE_SEPARATOR);
 					
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
@@ -542,7 +562,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				
 					String item;
 					item = valuesWONull.toString();
-					if (!sb.isAppendable(insertHead, item)) {
+					if (!sb.isAppendable(insertHead)) {
 						writeToScriptFile(sb.build(), true);
 					}
 					if (sb.isEmpty()) {
@@ -564,7 +584,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 						upsertInsertStatementBuilder.put(insertHead, sb);
 					}
 				
-					if (!sb.isAppendable(insertHead, item)) {
+					if (!sb.isAppendable(insertHead)) {
 						writeToScriptFile(sb.build(), true);
 					}
 					sb.append(insertHead, item, ", ", terminator.toString());
@@ -602,7 +622,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 						if (set.length() > 0) {
 							String headAsString = head.toString();
 							String itemAsString = item.toString();
-							if (!updateStatementBuilder.isAppendable(headAsString, itemAsString)) {
+							if (!updateStatementBuilder.isAppendable(headAsString)) {
 								writeToScriptFile(updateStatementBuilder.build(), true);
 							}
 							updateStatementBuilder.append(
@@ -622,6 +642,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 								  : ("Update " + qualifiedTableName(table) + " T join (" + PrintUtil.LINE_SEPARATOR));
 						f = true;
 						boolean tf = true;
+						boolean withLabel = !updateStatementBuilder.isAppendable(head.toString());
 						for (int i = 1; i <= columnCount; ++i) {
 							if (columnLabel[i] == null || (emptyLobValue[i] != null && !valIsNull.get(columnLabel[i]))) {
 								continue;
@@ -636,7 +657,12 @@ public class DMLTransformer extends AbstractResultSetReader {
 									terminator.append(" and ");
 								}
 								tf = false;
-								terminator.append("T." + columnLabel[i] + "=Q." + columnLabel[i]);
+								if (isNullableColumn(columnLabel[i])) {
+									terminator.append("(T." + columnLabel[i] + "=Q." + columnLabel[i]);
+									terminator.append(" or (T." + columnLabel[i] + " is null and Q." + columnLabel[i] + " is null))");
+								} else {
+									terminator.append("T." + columnLabel[i] + "=Q." + columnLabel[i]);
+								}
 							} else {
 								if (set.length() > 0) {
 									set.append(", ");
@@ -644,7 +670,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 								set.append("T." + columnLabel[i] + "=Q." + columnLabel[i]);
 							}
 							item.append(val.get(columnLabel[i]));
-							if (!ms && updateStatementBuilder.isEmpty()) {
+							if (!ms && updateStatementBuilder.isEmpty() || withLabel) {
 								item.append(" " + columnLabel[i]);
 							}
 							if (ms) {
@@ -663,7 +689,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 							}
 							terminator.append(";").append(PrintUtil.LINE_SEPARATOR);
 							String terminatorAsString = (ms? (") Q(" + columns + ") on ") : ") Q on ") + terminator.toString();
-							if (!terminatorAsString.equals(updateStatementBuilderTerminator) || !updateStatementBuilder.isAppendable(headAsString, itemAsString)) {
+							if (!terminatorAsString.equals(updateStatementBuilderTerminator) || !updateStatementBuilder.isAppendable(headAsString)) {
 								writeToScriptFile(updateStatementBuilder.build(), true);
 							}
 							updateStatementBuilderTerminator = terminatorAsString;
@@ -700,7 +726,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				if (DBMS.DB2_ZOS.equals(targetDBMSConfiguration) && maxBodySize > 1) {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 					String item = PrintUtil.LINE_SEPARATOR + " Select " + valueList + " From sysibm.sysdummy1";
-					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
 					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
@@ -719,14 +745,14 @@ public class DMLTransformer extends AbstractResultSetReader {
 				} else if (DBMS.SQLITE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 					String item = PrintUtil.LINE_SEPARATOR + " Select " + valueList + " ";
-					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
 					insertStatementBuilder.append(insertSchema, item, " Union all ", ";" + PrintUtil.LINE_SEPARATOR);
 				} else {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
 					String item = (maxBodySize > 1? PrintUtil.LINE_SEPARATOR + " " : "") + "(" + valueList + ")";
-					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
 					}
 					insertStatementBuilder.append(insertSchema, item, ", ", ";" + PrintUtil.LINE_SEPARATOR);
@@ -808,6 +834,10 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 */
 	private boolean isPrimaryKeyColumn(String column) {
 		return primaryKeyColumnNames.contains(column.toUpperCase(Locale.ENGLISH));
+	}
+
+	private boolean isNullableColumn(String column) {
+		return nullableColumnNames.contains(column.toUpperCase(Locale.ENGLISH));
 	}
 
 	/**

@@ -69,6 +69,8 @@ public class StatementBuilder {
 	 * @param head the statements head
 	 * @param item the item
 	 * @return <code>true</code> iff item is appendable
+	 * 
+	 * @deprecated use {@link #isAppendable(String)} instead
 	 */
 	public boolean isAppendable(String head, String item) {
 		return body.size() < maxBodySize && (this.head == null || this.head.equals(head));

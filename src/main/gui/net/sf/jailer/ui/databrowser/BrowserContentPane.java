@@ -1007,7 +1007,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 					if (!isSelected && (table == rowsTable || !cellSelected)) {
 						if (BrowserContentPane.this.getQueryBuilderDialog() != null && // SQL Console
-							BrowserContentPane.this.rowsClosure.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).nonEmptyRowId))) {
+							BrowserContentPane.this.rowsClosure.currentClosureRowIDs != null && row < rows.size() && rowSorter.convertRowIndexToModel(row) < rows.size() && BrowserContentPane.this.rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).nonEmptyRowId))) {
 							((JLabel) render).setBackground((row % 2) == 0? BG3 : BG3_2);
 							if (BrowserContentPane.this.rowsClosure.currentClosureRootID != null
 									&& !BrowserContentPane.this.rowsClosure.currentClosureRootID.isEmpty()

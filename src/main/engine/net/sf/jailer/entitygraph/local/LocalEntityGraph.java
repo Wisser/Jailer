@@ -144,6 +144,9 @@ public class LocalEntityGraph extends EntityGraph {
 		@Override
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
 			String value = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
+			if (DBMS.POSTGRESQL.equals(remoteSession.dbms) && "null".equalsIgnoreCase(value)) {
+				value += "::" + resultSetMetaData.getColumnTypeName(i);
+			}
 			if (allUPK || isUPKColumn(columnNames[i - 1])) {
 				// value = cellContentConverter.toSql(value);
 				value = "'" + localDBMSConfiguration.convertToStringLiteral(value) + "'";

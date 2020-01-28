@@ -161,16 +161,24 @@ public class DeletionTransformer extends AbstractResultSetReader {
 			
 			CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
 			List<Column> nonVirtualColumns = table.getNonVirtualPKColumns(session);
-			if (DBMS.SYBASE.equals(targetDBMSConfiguration) || (currentDialect != null && !currentDialect.isSupportsInClauseForDeletes())) {
+			boolean hasNullablePKColumn = false;
+			for (Column pkColumn: nonVirtualColumns) {
+				if (pkColumn.isNullable) {
+					hasNullablePKColumn = true;
+					break;
+				}
+			}
+			if (hasNullablePKColumn || DBMS.SYBASE.equals(targetDBMSConfiguration) || (currentDialect != null && !currentDialect.isSupportsInClauseForDeletes())) {
 				String deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
 				boolean firstTime = true;
 				String item = "";
 				for (Column pkColumn: nonVirtualColumns) {
-					item += (firstTime? "" : " and ") + quoting.requote(pkColumn.name) + "="
-							+ cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
+					Object value = cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name));
+					item += (firstTime? "" : " and ") + quoting.requote(pkColumn.name)
+							+ (value != null? "=" + cellContentConverter.toSql(value) : " is null");
 					firstTime = false;
 				}
-				if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
+				if (!deleteStatementBuilder.isAppendable(deleteHead)) {
 					writeToScriptFile(deleteStatementBuilder.build());
 				}
 				deleteStatementBuilder.append(deleteHead, item, ") or (", ");\n");
@@ -195,7 +203,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 						deleteHead += "values ";
 					}
 				}
-				if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
+				if (!deleteStatementBuilder.isAppendable(deleteHead)) {
 					writeToScriptFile(deleteStatementBuilder.build());
 				}
 				deleteStatementBuilder.append(deleteHead, item, ", ", ");\n");

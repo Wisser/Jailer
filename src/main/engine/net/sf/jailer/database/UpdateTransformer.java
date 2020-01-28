@@ -253,6 +253,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 			}
 
 			Map<String, String> val = new HashMap<String, String>();
+			Map<String, Boolean> valIsNull = new HashMap<String, Boolean>();
 			StringBuffer valuesWONull = new StringBuffer("");
 			StringBuffer columnsWONull = new StringBuffer("");
 			f = true;
@@ -272,6 +273,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 						cVal = "time " + cVal;
 					}
 				}
+				valIsNull.put(columnLabel[i], content == null);
 				val.put(columnLabel[i], cVal);
 				if (content != null) {
 					if (!f) {
@@ -286,6 +288,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 			
 			f = true;
 			StringBuffer whereForTerminator = new StringBuffer("");
+			StringBuffer whereForTerminatorWONull = new StringBuffer("");
 			StringBuffer where = new StringBuffer("");
 			StringBuffer whereWOAlias = new StringBuffer("");
 			
@@ -293,22 +296,35 @@ public class UpdateTransformer extends AbstractResultSetReader {
 			for (Column pk: table.getNonVirtualPKColumns(session)) {
 				if (!f) {
 					whereForTerminator.append(" and ");
+					whereForTerminatorWONull.append(" and ");
 					where.append(" and ");
 					whereWOAlias.append(" and ");
 				}
 				f = false;
 				whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
 				String value;
+				Boolean isNull;
 				String name = quoting.quote(pk.name);
 				if (val.containsKey(name)) {
 					value = val.get(name);
+					isNull = valIsNull.get(name);
 				} else if (val.containsKey(name.toLowerCase(Locale.ENGLISH))) {
 					value = val.get(name.toLowerCase(Locale.ENGLISH));
+					isNull = valIsNull.get(name.toLowerCase(Locale.ENGLISH));
 				} else {
 					value = val.get(name.toUpperCase(Locale.ENGLISH));
+					isNull = valIsNull.get(name.toUpperCase(Locale.ENGLISH));
 				}
-				where.append("T." + quoting.requote(pk.name) + "=" + value);
-				whereWOAlias.append(quoting.requote(pk.name) + "=" + value);
+				String op = Boolean.TRUE.equals(isNull)? " is null" : ("=" + value);
+				where.append("T." + quoting.requote(pk.name) + op);
+				whereWOAlias.append(quoting.requote(pk.name) + op);
+				if (pk.isNullable) {
+					whereForTerminator.append("(T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
+					whereForTerminator.append(" or (T." + quoting.requote(pk.name) + " is null and Q." + quoting.requote(pk.name) + " is null))");
+				} else {
+					whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
+				}
+				whereForTerminatorWONull.append("T." + quoting.requote(pk.name) + (Boolean.TRUE.equals(isNull)? " is null" : ("=Q." + quoting.requote(pk.name))));
 			}
 
 			if (currentDialect.getUpsertMode() == UPSERT_MODE.MERGE) {
@@ -353,7 +369,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 				}
 			
 				String item = "Select " + valueList + " from dual";
-				if (!sb.isAppendable(insertHead, item)) {
+				if (!sb.isAppendable(insertHead)) {
 					writeToScriptFile(sb.build(), true);
 				}
 				if (sb.isEmpty()) {
