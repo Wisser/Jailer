@@ -27,6 +27,7 @@ public class AWTWatchdog {
 				@Override
 				public void run() {
 					boolean issueSent = false;
+					int activeCD = 5;
 					for (;;) {
 						try {
 							long t = System.currentTimeMillis();
@@ -61,7 +62,10 @@ public class AWTWatchdog {
 								String iMsg = "AWT-Thread working";
 								Session._log.info(iMsg);
 								UIUtil.sendIssue("AWTHanging", iMsg);
-								return;
+								issueSent = false;
+								if (--activeCD <= 0) {
+									return;
+								}
 							}
 						}
 						if (st == 0) {

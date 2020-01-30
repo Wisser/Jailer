@@ -120,15 +120,15 @@ public class Environment {
 	}
 
 	public static class JEventQueue extends EventQueue {
-		boolean active = true;
+		int activeCD = 5;
 
 		@Override
 		protected void dispatchEvent(AWTEvent newEvent) {
 		    try {
 		        super.dispatchEvent(newEvent);
 		    } catch (Throwable t) {
-		        if (active) {
-		        	active = false;
+		        if (activeCD > 0) {
+		        	--activeCD;
 		        	try {
 		        		UIUtil.showException(null, "Error", t, "AWT");
 				    } catch (Throwable t2) {

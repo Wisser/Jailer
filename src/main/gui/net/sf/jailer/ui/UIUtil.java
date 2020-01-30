@@ -1055,6 +1055,9 @@ public class UIUtil {
         System.exit(0);
     }
 
+    private static int issueCount = 0;
+    private static long lastIssueTS = 0;
+
     public static void sendIssue(final String type, final String issue) {
 		new Thread(new Runnable() {
 			@Override
@@ -1062,9 +1065,11 @@ public class UIUtil {
 		    	try {
 					final int MAX_CL = 1300;
 					int maxEIssueLength = 4 * MAX_CL;
+					String ipf = ++issueCount + "z" + (lastIssueTS != 0? (System.currentTimeMillis() - lastIssueTS) / 1000 + "s." : "");
+					lastIssueTS = System.currentTimeMillis();
 					String url;
 					do {
-						String eIssue = URLEncoder.encode(issue, "UTF-8");
+						String eIssue = URLEncoder.encode(ipf + issue, "UTF-8");
 			            if (eIssue.length() > maxEIssueLength) {
 			            	eIssue = eIssue.substring(0, maxEIssueLength);
 			            }
