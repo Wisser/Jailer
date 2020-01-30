@@ -119,7 +119,6 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -4182,19 +4181,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rowsTable.getSelectionModel().clearSelection();
 			rowsTable.setRowHeight(initialRowHeight);
 
-			JTableHeader headerWithTooltips = new JTableHeader(rowsTable.getColumnModel()) {
-			    public String getToolTipText(MouseEvent e) {
-			        java.awt.Point p = e.getPoint();
-			        int index = columnModel.getColumnIndexAtX(p.x);
-			        Object value = null;
-			        if (index >= 0) {
-			        	value = columnModel.getColumn(index).getHeaderValue();
-			        }
-			        return value == null? null : value.toString();
-			    }
-			};
-			rowsTable.setTableHeader(headerWithTooltips);
-			
 			noRowsFoundPanel.setVisible(dtm.getRowCount() == 0 && getAndConditionText().length() > 0);
 
 			final int defaultSortColumn = getDefaultSortColumn();
