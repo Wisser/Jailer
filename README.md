@@ -18,6 +18,7 @@ Jailer is a tool for database subsetting and relational data browsing.
  - Generates topologically sorted SQL-DML, hierarchically structured XML and DbUnit datasets.
  - Data Browsing. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
  - SQL Console with code completion, syntax highlighting and database metadata visualization.
+ - A demo database is included with which you can get a first impression without any configuration effort.
 
 ## Prerequisites
 
