@@ -1665,7 +1665,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	                TreePath path = metaDataTree.getSelectionPath();
 	                if (path != null) {
 	                    Rectangle bounds = metaDataTree.getPathBounds(path);
-	                    metaDataTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
+	                    if (bounds != null) {
+	                    	metaDataTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
+	                    }
 	                }
 	            }
 	        });
