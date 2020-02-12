@@ -58,7 +58,8 @@ public class Environment {
 			}
 		}
 		if (new File(".singleuser").exists() // legacy
-				|| new File(".multiuser").exists()) {
+				|| new File(".multiuser").exists()
+				|| isJPacked()) {
 			home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
 			LogUtil.reloadLog4jConfig(home);
@@ -95,6 +96,7 @@ public class Environment {
 		int stateOffset = 100;
 		state = (new File(".singleuser").exists() ? 1 : 0) // legacy
 				+ (new File(".multiuser").exists() ? 2 : 0) + (new File("..", "dbeauty").exists() ? 4 : 0)
+				+ (isJPacked() ? 1000 : 0)
 				+ (!testCreateTempFile() ? 8 : 0)
 				+ stateOffset;
 		AWTWatchdog.start();
@@ -108,6 +110,11 @@ public class Environment {
 		        LogUtil.setWarn(null);
 			}
 		});
+	}
+
+	private static boolean isJPacked() {
+		// TODO
+		return false;
 	}
 
 	private static void initUI() {

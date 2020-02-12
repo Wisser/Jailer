@@ -2277,7 +2277,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				};
 				dataModelManagerDialog.start();
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			UIUtil.showException(null, "Error", e);
 			UIUtil.checkTermination();
 		}

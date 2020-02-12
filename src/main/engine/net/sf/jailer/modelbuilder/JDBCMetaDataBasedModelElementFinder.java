@@ -1143,9 +1143,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * @param userName schema with this name may be empty
 	 */ 
 	public static String getDefaultSchema(Session session, String userName, List<String> schemaNames) {
-		
-		// TODO: in MSSQL, should default schema be userName if SCHEMA_NAME() is "dbo"?
-		
 		if (session.dbms.getDefaultSchemaQuery() != null) {
 			try {
 				final String[] database = new String[1];
