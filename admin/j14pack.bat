@@ -39,10 +39,10 @@ cp admin\jailer.ico c:\tmp\_
 cp admin\databrowserlauncher.properties c:\tmp\_
 
 cd c:\tmp\_
+echo "" > .singleuser
 
 jlink --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.management,java.scripting,java.sql,java.xml,java.rmi,java.scripting,java.xml.crypto --output myjre 
-
-jpackage --name myapp --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group JailerJ14 --vendor Wisser --app-version 2.9 --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --add-launcher "Jailer Data Browser"=databrowserlauncher.properties --runtime-image myjre
+jpackage --name myapp --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group JailerJ14 --vendor Wisser --app-version 2.12 --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --add-launcher "Jailer Data Browser"=databrowserlauncher.properties --runtime-image myjre
 
 
 pause

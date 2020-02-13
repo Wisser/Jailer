@@ -38,7 +38,7 @@ cp admin/jailer.png ~/tmp/_
 cp admin/databrowserlauncher.properties ~/tmp/_
 
 cd ~/tmp/_
+echo "" > .singleuser
 
 ~/jdk-14/bin/jlink --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.management,java.scripting,java.sql,java.xml,java.rmi,java.scripting,java.xml.crypto --output myjre 
-
 ~/jdk-14/bin/jpackage --name Jailer --input . --main-jar jailer.jar --type deb --icon jailer.png --vendor Wisser --app-version 2.8 --add-launcher "Jailer Data Browser"=databrowserlauncher.properties --runtime-image myjre
