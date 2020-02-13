@@ -37,6 +37,37 @@ cp -r render ~/tmp/_
 cp admin/jailer.png ~/tmp/_
 cp admin/databrowserlauncher.properties ~/tmp/_
 
+cp -r ~/tmp/_/lib ~/tmp/_/jdbc_lib
+rm ~/tmp/_/lib/*
+rm ~/tmp/_/*.bat
+rm ~/tmp/_/*.exe
+rm ~/tmp/_/*.sh
+
+mv ~/tmp/_/jdbc_lib/activation-1.0.2.jar ~/tmp/_/lib/activation-1.0.2.jar
+mv ~/tmp/_/jdbc_lib/args4j.jar ~/tmp/_/lib/args4j.jar
+mv ~/tmp/_/jdbc_lib/jaxb-api-2.3.0-b170201.1204.jar ~/tmp/_/lib/jaxb-api-2.3.0-b170201.1204.jar
+mv ~/tmp/_/jdbc_lib/jaxb-core-2.3.0-b170127.1453.jar ~/tmp/_/lib/jaxb-core-2.3.0-b170127.1453.jar
+mv ~/tmp/_/jdbc_lib/jaxb-impl-2.3.0-b170127.1453.jar ~/tmp/_/lib/jaxb-impl-2.3.0-b170127.1453.jar
+mv ~/tmp/_/jdbc_lib/jsqlparser-1.3.jar ~/tmp/_/lib/jsqlparser-1.3.jar
+mv ~/tmp/_/jdbc_lib/log4j.jar ~/tmp/_/lib/log4j.jar
+mv ~/tmp/_/jdbc_lib/prefuse.jar ~/tmp/_/lib/prefuse.jar
+mv ~/tmp/_/jdbc_lib/sdoc-0.5.0-beta.jar ~/tmp/_/lib/sdoc-0.5.0-beta.jar
+mv ~/tmp/_/jdbc_lib/tablefilter-swing-5.3.1.jar ~/tmp/_/lib/tablefilter-swing-5.3.1.jar
+
+rm ~/tmp/_/jdbc_lib/dbunit-2.4.4.jar
+rm ~/tmp/_/jdbc_lib/h2-1.3.160.jar
+rm ~/tmp/_/jdbc_lib/h2-1.3.175.jar
+rm ~/tmp/_/jdbc_lib/jsqlparser-1.1.jar
+rm ~/tmp/_/jdbc_lib/junit-4.4.jar
+rm ~/tmp/_/jdbc_lib/postgresql-42.2.0.jre7.jar
+
+cd 
+SETLOCAL ENABLEDELAYEDEXPANSION
+for /f "tokens=*" %%f in ('dir /b ~/tmp/_/jdbc_lib/*') do (
+  move ~/tmp/_/jdbc_lib/"%%f" ~/tmp/_/jdbc_lib/"%%f.x"
+)
+exit
+
 cd ~/tmp/_
 echo "" > .singleuser
 
