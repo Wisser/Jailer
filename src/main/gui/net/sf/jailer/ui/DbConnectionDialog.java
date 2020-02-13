@@ -118,6 +118,18 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		public ConnectionInfo(ExecutionContext executionContext) {
 			dataModelFolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 		}
+		
+		public void assign(ConnectionInfo ci) {
+			alias = ci.alias;
+			driverClass = ci.driverClass;
+			url = ci.url;
+			user = ci.user;
+			password = ci.password;
+			jar1 = ci.jar1;
+			jar2 = ci.jar2;
+			jar3 = ci.jar3;
+			jar4 = ci.jar4;
+		}
 	}
 
 	/**
@@ -911,8 +923,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
 		ConnectionInfo ci = new ConnectionInfo(executionContext);
 		try {
-			File csvFile = new File("driverlist.csv");
-			
+			File csvFile = Environment.newWorkingFolderFile("driverlist.csv");
+
 			// check existence of "driverlist.csv"
 			FileInputStream is = new FileInputStream(csvFile);
 			is.close();

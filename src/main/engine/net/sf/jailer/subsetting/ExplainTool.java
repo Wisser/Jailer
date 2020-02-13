@@ -165,13 +165,13 @@ package net.sf.jailer.subsetting;
 //	
 //	private static File newFile(String name) {
 //		File home = null;
-//		if (new File(".singleuser").exists() // legacy 
-//				|| new File(".multiuser").exists()) {
+//		if (new File(applicationBase, ".singleuser").exists() // legacy 
+//				|| new File(applicationBase, ".multiuser").exists()) {
 //			home = new File(System.getProperty("user.home"), ".jailer");
 //			home.mkdirs();
 //		}
 //		if (home == null || new File(name).isAbsolute()) {
-//			return new File(name);
+//			return new File(applicationBase, name);
 //		}
 //		return new File(home, name);
 //	}

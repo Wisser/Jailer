@@ -48,6 +48,26 @@ public class Environment {
 
 	public static void init() {
 		initUI();
+		try {
+			File app;
+			app = new File("lib", "app"); // Linux // TODO test
+			if (new File(app, "jailer.xml").exists()) {
+				applicationBase = app;
+			} else {
+				app = new File("Contents", "app"); // macOS
+				if (new File(app, "jailer.xml").exists()) {
+					applicationBase = app;
+				} else {
+					app = new File("app"); // Windows
+					if (new File(app, "jailer.xml").exists()) {
+						applicationBase = app;
+					}
+				}
+			}
+			Configuration.applicationBase = applicationBase;
+		} catch (Throwable t) {
+			// ignore
+		}
 		String osName = System.getProperty("os.name");
 		if (osName != null) {
 			if (osName.toLowerCase(Locale.ENGLISH).contains("mac os")) {
@@ -74,6 +94,30 @@ public class Environment {
 				copyIfNotExists("demo-scott-subset-1.4.mv.db");
 				copyIfNotExists("example");
 				copyIfNotExists("render");
+				
+				if (isJPacked()) {
+					File lib = newFile("lib");
+					lib.mkdirs();
+					File jdbcJar = newWorkingFolderFile("jdbc_lib");
+					if (jdbcJar.exists() && jdbcJar.isDirectory()) {
+						String[] fl = jdbcJar.list();
+						if (fl != null) {
+							for (String f: fl) {
+								String nf = f.replaceAll("\\.x$", "");
+								if (!nf.equals(f)) {
+									File tf = new File(lib, nf);
+									if (!tf.exists()) {
+										try {
+											Files.copy(new File(jdbcJar, f).toPath(), tf.toPath());
+										} catch (Throwable t) {
+											// ignore
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 
 				configuration.setTempFileFolder(newFile("tmp").getPath());
 				HtmlDataModelRenderer renderer = configuration.getRenderer();
@@ -114,18 +158,6 @@ public class Environment {
 
 	private static File applicationBase = null;
 
-	// TODO init, lib/ in app/ or null
-	private static File libFolder = null;
-
-	// TODO init applicationBase
-	// TODO use newWorkingFolderFile for driver.csv, template, render, local db jdbc jar. Inject applicationBase into engine.
-	// TODO HttpUtil, FileBasedScriptEnhancer
-
-	// TODO jdbc jars in lib: rename prior packing, copy into user dir, adjust file name in connection configs (!exists(f) && exists(~/lib/f) -> f =~ /lib/f)
-	// TODO default dir for *.jar in FileCh. is ~/lib
-
-	// TODO no bat/exe/sh in app/
-
 	public static File newWorkingFolderFile(String name) {
 		if (applicationBase == null || new File(name).isAbsolute()) {
 			return new File(name);
@@ -133,7 +165,7 @@ public class Environment {
 		return new File(applicationBase, name);
 	}
 
-	private static boolean isJPacked() {
+	public static boolean isJPacked() {
 		return applicationBase != null;
 	}
 
@@ -169,10 +201,10 @@ public class Environment {
 	}
 
 	private static boolean copyIfNotExists(String f) throws IOException {
-		File sFile = new File(f);
-		File dFile = new File(home, f);
+		File sFile = newWorkingFolderFile(f);
+		File dFile = newFile(f);
 
-		if (dFile.exists() || !sFile.exists()) {
+		if (!sFile.exists()) {
 			return false;
 		}
 
@@ -202,7 +234,10 @@ public class Environment {
 		@Override
 		public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
 			try {
-				Files.copy(file, sourcePath == null ? targetPath : targetPath.resolve(sourcePath.relativize(file)));
+				Path target = sourcePath == null ? targetPath : targetPath.resolve(sourcePath.relativize(file));
+				if (!target.toFile().exists()) {
+					Files.copy(file, target);
+				}
 			} catch (Exception e) {
 				// ignore
 			}

@@ -120,7 +120,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton1.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fn = UIUtil.choseFile(null, new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
 					jar1.setText(fn);
 				}
@@ -129,7 +129,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton2.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fn = UIUtil.choseFile(null, new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
 					jar2.setText(fn);
 				}
@@ -138,7 +138,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton3.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fn = UIUtil.choseFile(null, new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
 					jar3.setText(fn);
 				}
@@ -147,7 +147,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton4.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fn = UIUtil.choseFile(null, new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
 					jar4.setText(fn);
 				}
@@ -559,10 +559,13 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	}//GEN-LAST:event_cancelButtonActionPerformed
 
 	private void testConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testConnectionButtonActionPerformed
+		ConnectionInfo oldCi = new ConnectionInfo();
+		oldCi.assign(ci);
 		if (fillConnectionInfo()) {
 			if (DbConnectionDialog.testConnection(isVisible()? this : parent, ci)) {
 				JOptionPane.showMessageDialog(isVisible()? this : parent, "Successfully established connection.", "Connected", JOptionPane.INFORMATION_MESSAGE);
 			}
+			ci.assign(oldCi);
 		}
 	}//GEN-LAST:event_testConnectionButtonActionPerformed
 
