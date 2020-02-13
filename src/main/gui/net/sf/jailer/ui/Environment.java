@@ -112,9 +112,32 @@ public class Environment {
 		});
 	}
 
+	// TODO move to engine
+	private static File applicationBase = null;
+
+	// TODO init, lib/ in app/ or null
+	private static File libFolder = null;
+
+	// TODO init applicationBase
+	// TODO use newWorkingFolderFile for jailer.xml, driver.csv, template, script, render, local db jdbc jar
+	// TODO HttpUtil, FileBasedScriptEnhancer
+
+	// TODO jdbc jars in lib: rename prior packing, copy into user dir, adjust file name in connection configs (!exists(f) && exists(~/lib/f) -> f =~ /lib/f)
+	// TODO default dir for *.jar in FileCh. is ~/lib
+	
+	// TODO config: test, does this work in DBrowser? -> LogUtil.class.getResourceAsStream("/log4j.properties")
+	
+	// TODO no bat/exe/sh in app/
+
+	public static File newWorkingFolderFile(String name) {
+		if (applicationBase == null || new File(name).isAbsolute()) {
+			return new File(name);
+		}
+		return new File(applicationBase, name);
+	}
+
 	private static boolean isJPacked() {
-		// TODO
-		return false;
+		return applicationBase != null;
 	}
 
 	private static void initUI() {

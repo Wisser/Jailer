@@ -35,6 +35,7 @@ public class HttpUtil {
 			// fall through
 		}
 	    try {
+			// TODO in jpack mode app/jailer.jar
 	        Process p = Runtime.getRuntime().exec("java -classpath jailer.jar -Djava.net.useSystemProxies=true " + HttpUtil.class.getName() + " " + url);
         	BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String line;

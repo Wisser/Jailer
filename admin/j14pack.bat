@@ -1,6 +1,7 @@
 set PATH=d:\jdk-14\bin;%PATH%
 
 rm -r c:\tmp\_
+rm -r c:\tmp\myjre
 mkdir c:\tmp\_
 cd ..
 
@@ -39,7 +40,9 @@ cp admin\databrowserlauncher.properties c:\tmp\_
 
 cd c:\tmp\_
 
-jpackage --name myapp --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group JailerJ14 --vendor Wisser --app-version 2.6 --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --add-launcher "Jailer Data Browser"=databrowserlauncher.properties
+jlink --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.management,java.scripting,java.sql,java.xml,java.rmi,java.scripting,java.xml.crypto --output myjre 
+
+jpackage --name myapp --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group JailerJ14 --vendor Wisser --app-version 2.9 --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --add-launcher "Jailer Data Browser"=databrowserlauncher.properties --runtime-image myjre
 
 
 pause
