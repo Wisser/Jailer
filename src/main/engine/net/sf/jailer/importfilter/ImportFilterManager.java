@@ -237,15 +237,24 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		}
 		Map<String, String> arguments = new HashMap<String, String>();
 		arguments.put("constraint", contraint);
-
+		
+		String suffix = "";
+		String prefix = "";
+		String tableProperties = configuration.getTableProperties();
+		prefix = tableProperties.replaceFirst("^\\s*CREATE\\s+(.*)\\s+TABLE\\s*$", "$1");
+		if (prefix.equals(tableProperties)) {
+			prefix = "";
+			suffix = tableProperties;
+		}
+		
 		String tableName = mapColumns.get(0).mappingTableName;
 		arguments.put("mapping-table", tableName);
 		arguments.put("schema", schema);
 		arguments.put("index-schema", Boolean.TRUE.equals(configuration.getSupportsSchemasInIndexDefinitions())? schema : "");
 		arguments.put("table-suffix", "");
 		arguments.put("drop-table", "DROP TABLE ");
-		arguments.put("create-table", "CREATE TABLE ");
-		arguments.put("create-table-suffix", configuration.getTableProperties());
+		arguments.put("create-table", !"".equals(prefix)? "CREATE " + prefix + " TABLE " : "CREATE TABLE ");
+		arguments.put("create-table-suffix", suffix);
 		arguments.put("create-index", "CREATE INDEX ");
 		arguments.put("create-index-suffix", "");
 		arguments.put("index-table-prefix", "");
