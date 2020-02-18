@@ -22,7 +22,7 @@ rm -rf docs/api
 rm -rf out
 
 rm -rf C:/tmp/jailer
-cp -r . C:/tmp/jailer
+cp -r . C:/tmp/jailer/
 rm -rf C:/tmp/jailer/admin
 
 sed s/%VERSION%/$1/g admin/Jailer.nsi > admin/tmp.nsi
