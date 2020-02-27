@@ -105,6 +105,7 @@ import net.sf.jailer.datamodel.RestrictionDefinition;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
+import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
@@ -2048,9 +2049,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			restrictionEditor.type.setForeground(typeColor);
 			restrictionEditor.joinCondition.setText(association.getUnrestrictedJoinCondition());
 			String restrictionCondition = association.getRestrictionCondition();
-			if (restrictionCondition != null && restrictionCondition.startsWith("(") && restrictionCondition.endsWith(")")) {
-				restrictionCondition = restrictionCondition.substring(1, restrictionCondition.length() - 1);
-			}
 			initialRestrictionCondition = association.isIgnored()? null : restrictionCondition;
 			restrictionEditor.restriction.setText(restrictionCondition == null? "" : (restrictionCondition));
 			try {
@@ -2088,7 +2086,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private void initRestrictedDependencyWarningField() {
 		boolean restrictedDep = currentAssociation != null && !ScriptFormat.XML.equals(scriptFormat) && currentAssociation.isInsertDestinationBeforeSource() && currentAssociation.isRestricted();
 		restrictionEditor.restrictedDependencyWarning.setVisible(restrictedDep);
-		restrictionEditor.fkToNullCheckBox.setVisible(restrictedDep);
+		restrictionEditor.fkToNullCheckBox.setVisible(restrictedDep && (RestrictionModel.IGNORE.equals(currentAssociation.getRestrictionCondition()) || "false".equals(currentAssociation.getRestrictionCondition())));
 		restrictionEditor.fkToNullCheckBox.setEnabled(restrictedDep && currentAssociation.hasNullableFK());
 		restrictionEditor.fkToNullCheckBox.setSelected(restrictedDep && currentAssociation.fkHasNullFilter());
 	}
@@ -2125,10 +2123,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	public void onApply(boolean applyButtonKlicked) {
 		restrictionEditor.resetBGColor();
 		if (currentAssociation != null) {
-			markDirty();
-
 			if (restrictionEditor.restricted.isSelected() && currentAssociation.hasNullableFK() && currentAssociation.fkHasNullFilter()) {
 				setOrResetFKNullFilter(currentAssociation, false);
+				markDirty();
 			}
 
 			String condition;
@@ -2143,9 +2140,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					}
 				} else {
 					condition = (restrictionEditor.restriction.getText()).trim();
+					initialRestrictionCondition = condition;
 				}
 			}
-			addRestriction(currentAssociation.source, currentAssociation, condition, true);
+			if (addRestriction(currentAssociation.source, currentAssociation, condition, true)) {
+				markDirty();
+			}
 			updateView();
 		}
 	}
@@ -3071,17 +3071,19 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * @param association the association
 	 * @param condition the restriction-condition
 	 */
-	private void addRestriction(final Table source, final Association association, String condition, final boolean withWhere) {
+	private boolean addRestriction(final Table source, final Association association, String condition, final boolean withWhere) {
 		final String oldRestriction;
-		String oc = dataModel.getRestrictionModel().getRestriction(association);
-		
+		String oc = association.getRestrictionCondition();
+
 		if (oc == null) {
 			oc = "";
+		} else if ("false".equals(oc)) {
+			oc = RestrictionModel.IGNORE;
 		}
 		oldRestriction = oc;
 		
 		if (oldRestriction.equals(condition)) {
-			return;
+			return false;
 		}
 		
 		boolean resetFilter = dataModel.getRestrictionModel().addRestriction(source, association, condition, "GUI", true, new HashMap<String, String>());
@@ -3119,6 +3121,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			});
 		}
+		
+		return true;
 	}
 
 	/**
@@ -3282,9 +3286,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					if (extractionModelFrame != null && extractionModelFrame.restrictedDependenciesView != null) {
 						extractionModelFrame.restrictedDependenciesView.refresh();
 					}
+					rootTable.setSelectedItem(dataModel.getDisplayName(layout.root));
 				}
 				rootTableItemStateChangedSetRoot = false;
-				rootTable.setSelectedItem(dataModel.getDisplayName(layout.root));
 			} finally {
 				--captureLevel;
 				rootTableItemStateChangedSetRoot = true;
@@ -3350,6 +3354,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     private void setOrResetFKNullFilter(final Association association, final boolean set) {
     	if (association.setOrResetFKNullFilter(set)) {
+    		markDirty();
     		undoManager.push(new CompensationAction(1, set? "set filter" : "removed filter", !set? "set filter" : "removed filter", dataModel.getDisplayName(association.source)) {
     			@Override
     			public void run() {
