@@ -98,7 +98,7 @@ public class JobManager {
 						incrementJobsInExecutionCounter();
 						job.run();
 						incrementJobsDoneCounter();
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						setException(e);
 					} finally {
 						decrementJobsInExecutionCounter();
@@ -277,8 +277,8 @@ public class JobManager {
 	/**
 	 * Sets an exception.
 	 */
-	private synchronized void setException(Exception e) {
-		exception = e == null? null : (e instanceof CancellationException || e instanceof SQLException)? e 
+	private synchronized void setException(Throwable e) {
+		exception = e == null? null : (e instanceof CancellationException || e instanceof SQLException)? (Exception) e 
 				: new RuntimeException(Thread.currentThread().getName() + " failed", e);
 		jobs = null;
 	}

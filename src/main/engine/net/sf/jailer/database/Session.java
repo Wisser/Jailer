@@ -522,7 +522,11 @@ public class Session {
 			statement = theConnection.createStatement();
 			if (dbms != null) {
 				if (dbms.getFetchSize() != null) {
-					statement.setFetchSize(dbms.getFetchSize());
+					try {
+						statement.setFetchSize(dbms.getFetchSize());
+					} catch (Throwable t) {
+						// ignore
+					}
 				}
 			}
 			CancellationHandler.begin(statement, context);

@@ -390,7 +390,7 @@ union all
                 <value>true</value>
             </entry>
         </jdbcProperties>
-		<!-- <fetchSize>-2147483648</fetchSize> -->  <!-- setFetchSize(Integer.MIN_VALUE) should enable result set streaming -->
+		<fetchSize>-2147483648</fetchSize>  <!-- setFetchSize(Integer.MIN_VALUE) enables result set streaming -->
         <statisticRenovator>
             <scriptFileName>script/mysql/update_statistics.sql</scriptFileName>
         </statisticRenovator>
@@ -597,7 +597,7 @@ union all
                 <value>true</value>
             </entry>
         </jdbcProperties>
-		<!-- <fetchSize>-2147483648</fetchSize> -->  <!-- setFetchSize(Integer.MIN_VALUE) should enable result set streaming -->
+		<fetchSize>4096</fetchSize>
         <statisticRenovator>
             <scriptFileName>script/mysql/update_statistics.sql</scriptFileName>
         </statisticRenovator>
@@ -1282,7 +1282,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
             </entry>
         </typeReplacement>
         <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
-        <fetchSize>1000</fetchSize>
+        <fetchSize>4096</fetchSize>
 
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties>CREATE UNLOGGED TABLE</tableProperties>
@@ -1434,7 +1434,7 @@ union all
             </entry>
         </typeReplacement>
         <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
-        <fetchSize>1000</fetchSize>
+        <fetchSize>4096</fetchSize>
 
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties>CREATE UNLOGGED TABLE</tableProperties>
