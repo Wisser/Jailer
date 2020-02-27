@@ -310,12 +310,31 @@ public class Association extends ModelElement {
 					r = SqlUtil.reversRestrictionCondition(r);
 				}
 				if (r.startsWith("(") && r.endsWith(")")) {
-					r = r.substring(1, r.length() - 1);
+					String rWOParentheses = r.substring(1, r.length() - 1);
+					if (checkParentheses(r) && checkParentheses(rWOParentheses)) {
+						r = rWOParentheses;
+					}
 				}
 				return r;
 			}
 		}
 		return null;
+	}
+
+	private static boolean checkParentheses(String condition) {
+		int level = 0;
+		for (int i = 0; i < condition.length(); ++i) {
+			char c = condition.charAt(i);
+			if (c == '(') {
+				++level;
+			} else if (c == ')') {
+				--level;
+				if (level < 0) {
+					return false;
+				}
+			}
+		}
+		return level == 0;
 	}
 
 	/**
