@@ -1,3 +1,6 @@
+9.3.2
+  - Fixed "Conditions with () have leading and trailing parans removed" https://github.com/Wisser/Jailer/issues/28
+
 9.3.1
   - Fixed "Syntax error creating tables in PostgreSQL" https://github.com/Wisser/Jailer/issues/27
   - Modifications to the connection properties in the "Connection" dialog were sometimes retained after a "cancel".
