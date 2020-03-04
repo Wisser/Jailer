@@ -310,6 +310,7 @@ public class CellContentConverter {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	public static class TimestampWithNano extends Timestamp {
 		public TimestampWithNano(long time) {
 			super(time);
