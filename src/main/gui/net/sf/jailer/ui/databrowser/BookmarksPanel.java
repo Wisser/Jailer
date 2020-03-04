@@ -19,6 +19,9 @@ import java.awt.Color;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.Serializable;
@@ -72,6 +75,19 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		this.desktop = desktop;
 		this.executionContext = executionContext;
 		initComponents();
+		
+		nameTextField.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				for (int i = 0; i < INVALID_FILENAME_CHARACTERS.length; i++) {
+					if (c == INVALID_FILENAME_CHARACTERS[i]) {
+						java.awt.Toolkit.getDefaultToolkit().beep();
+						e.consume();
+					}
+				}
+			}
+		});
 	}
 
 	public String newBookmark(String defaultName) {
@@ -108,8 +124,10 @@ public class BookmarksPanel extends javax.swing.JPanel {
  		return name;
     }
 
+	private final char[] INVALID_FILENAME_CHARACTERS = new char[] {'\\', '/', ':', '*', '?', '"', '<', '>', '|'};
+    
 	private String toValidFileName(String text) {
-		return text.replaceAll("['`\"/\\\\\\~]+", " ").trim();
+		return text.replaceAll("[:\\*\\?<>'`\"/\\\\\\~]+", " ").trim();
 	}
 
 	public void editBookmarks() {
