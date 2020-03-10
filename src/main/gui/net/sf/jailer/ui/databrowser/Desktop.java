@@ -2893,7 +2893,7 @@ public abstract class Desktop extends JDesktopPane {
 	public void storeSession(BookmarksPanel bookmarksPanel) {
 		String fnProp = null;
 		int propLen = 0;
-		final String INVALID_CHARS = "[:\\*\\?<>'`\"/\\\\\\~]+";
+		final String INVALID_CHARS = "[:;\\*\\?<>'`\"/\\\\\\~]+";
 		for (RowBrowser rb : tableBrowsers) {
 			if (rb.browserContentPane.table != null) {
 				if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {

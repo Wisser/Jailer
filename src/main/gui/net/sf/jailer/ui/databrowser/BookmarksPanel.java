@@ -21,12 +21,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -80,11 +80,8 @@ public class BookmarksPanel extends javax.swing.JPanel {
 			@Override
 			public void keyTyped(KeyEvent e) {
 				char c = e.getKeyChar();
-				for (int i = 0; i < INVALID_FILENAME_CHARACTERS.length; i++) {
-					if (c == INVALID_FILENAME_CHARACTERS[i]) {
-						java.awt.Toolkit.getDefaultToolkit().beep();
-						e.consume();
-					}
+				if (c == '\n') {
+					okButton.doClick();
 				}
 			}
 		});
@@ -93,10 +90,17 @@ public class BookmarksPanel extends javax.swing.JPanel {
 	public String newBookmark(String defaultName) {
     	dialog = new EscapableDialog(owner, "New Bookmark") {
         };
+        dialog.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowActivated(WindowEvent e) {
+				super.windowActivated(e);
+				nameTextField.grabFocus();
+			}
+		});
         dialog.setModal(true);
  		dialog.getContentPane().add(this);
  		dialog.pack();
- 		dialog.setSize(340, 440);
+ 		dialog.setSize(440, 440);
  		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
  		UIUtil.fit(dialog);
 
@@ -124,19 +128,13 @@ public class BookmarksPanel extends javax.swing.JPanel {
  		return name;
     }
 
-	private final char[] INVALID_FILENAME_CHARACTERS = new char[] {'\\', '/', ':', '*', '?', '"', '<', '>', '|'};
-    
-	private String toValidFileName(String text) {
-		return text.replaceAll("[:\\*\\?<>'`\"/\\\\\\~]+", " ").trim();
-	}
-
 	public void editBookmarks() {
 		dialog = new EscapableDialog(owner, "Edit Bookmarks") {
         };
         dialog.setModal(true);
  		dialog.getContentPane().add(this);
  		dialog.pack();
- 		dialog.setSize(340, 440);
+ 		dialog.setSize(440, 440);
  		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
  		UIUtil.fit(dialog);
 
@@ -161,7 +159,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		
 		for (StringBuilder bm: loadBookmarks(executionContext)) {
 			if (!bookmarksSet.contains(bm.toString())) {
-				new File(getBookmarksFolder(executionContext), bm.toString()).delete();
+				new File(getBookmarksFolder(executionContext), toValidFileName(bm.toString())).delete();
 			}
 		}
 	}
@@ -201,9 +199,9 @@ public class BookmarksPanel extends javax.swing.JPanel {
 					StringBuilder source = element;
 					if (dest.length() > 0 && !dest.equals(source.toString())) {
 						new File(getBookmarksFolder(executionContext), dest).delete();
-						new File(getBookmarksFolder(executionContext), source.toString()).renameTo(new File(getBookmarksFolder(executionContext), dest));
+						new File(getBookmarksFolder(executionContext), toValidFileName(source.toString())).renameTo(new File(getBookmarksFolder(executionContext), dest));
 						source.setLength(0);
-						source.append(dest.toString());
+						source.append(renameTextField.getText() + BOOKMARKFILE_EXTENSION);
 					}
 				}
 			}
@@ -389,6 +387,14 @@ public class BookmarksPanel extends javax.swing.JPanel {
 			return null;
 		}
 		File bmFile = new File(getBookmarksFolder(executionContext), bookmark + BOOKMARKFILE_EXTENSION);
+		try {
+			if (bmFile.exists()) {
+				return bmFile;
+			}
+		} catch (Exception e) {
+			// ignore
+		}
+		bmFile = new File(getBookmarksFolder(executionContext), toValidFileName(bookmark) + BOOKMARKFILE_EXTENSION);
 		if (bmFile.exists()) {
 			return bmFile;
 		} else {
@@ -416,7 +422,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						UISettings.s6 += 1000;
-						desktop.restoreSession(null, new File(getBookmarksFolder(executionContext), nb));
+						desktop.restoreSession(null, new File(getBookmarksFolder(executionContext), toValidFileName(nb)));
 						new File(getBookmarksFolder(executionContext), nb).setLastModified(System.currentTimeMillis());
 						updateBookmarksMenu();
 				 		UISettings.addRecentBookmarks(new BookmarkId(bmName, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping()));
@@ -444,7 +450,12 @@ public class BookmarksPanel extends javax.swing.JPanel {
 					return name.endsWith(BOOKMARKFILE_EXTENSION);
 				}
 			});
-			ArrayList<String> result = fileList != null? new ArrayList<String>(Arrays.asList(fileList)) : new ArrayList<String>();
+			ArrayList<String> result = new ArrayList<String>();
+			if (fileList != null) {
+				for (String vf: fileList) {
+					result.add(fromValidFileName(vf));
+				}
+			}
 			Collections.sort(result, new Comparator<String>() {
 				@Override
 				public int compare(String o1, String o2) {
@@ -535,6 +546,32 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		}
 
 		private static final long serialVersionUID = -7491145126834345194L;
+	}
+
+	private static final String[] INVALID_FILENAME_CHARACTERS = new String[] {"\\", "/", ":", ";", "*", "?", "\"", "<", ">", "|"};
+	private static final String[][] INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT = new String[INVALID_FILENAME_CHARACTERS.length][];
+	static {
+    	for (int i = 0; i < INVALID_FILENAME_CHARACTERS.length; ++i) {
+    		INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT[i] 
+    				= new String[] { 
+    						new String(INVALID_FILENAME_CHARACTERS[i]), 
+    						String.format("%%%02X", 0xFF & (int) (INVALID_FILENAME_CHARACTERS[i].charAt(0)))
+    				};
+    	}
+    }
+
+	private static String toValidFileName(String text) {
+		for (String[] cp: INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT) {
+			text = text.replace(cp[0], cp[1]);
+		}
+		return text.trim();
+	}
+
+	private static String fromValidFileName(String text) {
+		for (String[] cp: INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT) {
+			text = text.replace(cp[1], cp[0]);
+		}
+		return text.trim();
 	}
 
 	/**
