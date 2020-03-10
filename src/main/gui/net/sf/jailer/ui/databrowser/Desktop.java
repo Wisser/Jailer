@@ -2952,6 +2952,9 @@ public abstract class Desktop extends JDesktopPane {
 			if (bookmarksPanel == null) {
 				currentSessionFileName = sFile;
 			} else {
+				if (sFile != null && new File(sFile).exists()) {
+					new File(sFile).setLastModified(System.currentTimeMillis());
+				}
 				bookmarksPanel.updateBookmarksMenu();
 				updateAllBookmarkMenues();
 			}
