@@ -422,7 +422,11 @@ public class BookmarksPanel extends javax.swing.JPanel {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						UISettings.s6 += 1000;
-						desktop.restoreSession(null, new File(getBookmarksFolder(executionContext), toValidFileName(nb)));
+						File bookMarkFile = new File(getBookmarksFolder(executionContext), toValidFileName(nb));
+						desktop.restoreSession(null, bookMarkFile);
+						if (bookMarkFile.exists()) {
+							bookMarkFile.setLastModified(System.currentTimeMillis());
+						}
 						new File(getBookmarksFolder(executionContext), nb).setLastModified(System.currentTimeMillis());
 						updateBookmarksMenu();
 				 		UISettings.addRecentBookmarks(new BookmarkId(bmName, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping()));
@@ -459,8 +463,8 @@ public class BookmarksPanel extends javax.swing.JPanel {
 			Collections.sort(result, new Comparator<String>() {
 				@Override
 				public int compare(String o1, String o2) {
-					long l1 = new File(bookmarksFolder, o1).lastModified();
-					long l2 = new File(bookmarksFolder, o2).lastModified();
+					long l1 = new File(bookmarksFolder, toValidFileName(o1)).lastModified();
+					long l2 = new File(bookmarksFolder, toValidFileName(o2)).lastModified();
 					if (l1 > l2) {
 						return -1;
 					} else if (l1 < l2) {
