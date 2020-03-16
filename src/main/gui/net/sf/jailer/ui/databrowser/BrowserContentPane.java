@@ -159,6 +159,7 @@ import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.databrowser.Desktop.RowToRowLink;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
@@ -414,9 +415,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		protected void sortRowsByParentViewIndex() {
-			if (parentBrowser != null && parentBrowser.browserContentPane != null && parentBrowser.browserContentPane.rowsTable != null) {
-				final RowSorter<? extends TableModel> parentSorter = parentBrowser.browserContentPane.rowsTable.getRowSorter();
-				Collections.sort(rows, new Comparator<Row>() {
+			// inherit from child-ancestor
+			RowBrowser rb = getRowBrowser();
+			Map<Row, Row> parentRow = new IdentityHashMap<Row, Row>();
+			Set<Integer> distinctParentRowModelIndex = new HashSet<Integer>();
+			if (rb != null && rb.browserContentPane != null && rb.parent != null && rb.association != null && rb.rowToRowLinks != null && rb.association.isInsertDestinationBeforeSource()) {
+				for (RowToRowLink l: rb.rowToRowLinks) {
+					if (!parentRow.containsKey(l.childRow)) {
+						parentRow.put(l.childRow, l.parentRow);
+						distinctParentRowModelIndex.add(l.parentRow.getParentModelIndex());
+					}
+				}
+			}
+
+			useInheritedBlockNumbers = false;
+
+			if (rb != null && rb.parent != null && rb.parent.browserContentPane != null && rb.parent.browserContentPane.rowsTable != null) {
+				final RowSorter<? extends TableModel> parentSorter = rb.parent.browserContentPane.rowsTable.getRowSorter();
+				Comparator<Row> comparator = new Comparator<Row>() {
 					@Override
 					public int compare(Row a, Row b) {
 						int avi = a.getParentModelIndex();
@@ -429,7 +445,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 						return avi - bvi;
 					}
-				});
+				};
+				Collections.sort(rows, comparator);
+				if (!parentRow.isEmpty() && distinctParentRowModelIndex.size() < parentRow.size() && !rb.parent.browserContentPane.useInheritedBlockNumbers) {
+					useInheritedBlockNumbers = true;
+					for (Row row: rows) {
+						Row pRow = parentRow.get(row);
+						if (pRow != null) {
+							row.setInheritedParentModelIndex(pRow.getParentModelIndex());
+						}
+					}
+				}
+				Collections.sort(rows, comparator);
 			}
 		}
 
@@ -560,6 +587,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private DetailsView singleRowDetailsView;
 	private MouseListener rowTableListener;
 	private int initialRowHeight;
+	private boolean useInheritedBlockNumbers;
 
 	public static class RowsClosure {
 		Set<Pair<BrowserContentPane, Row>> currentClosure = Collections.synchronizedSet(new HashSet<Pair<BrowserContentPane, Row>>());
@@ -838,7 +866,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 				g2d.setPaint(null);
 				
-				if (BrowserContentPane.this.association != null && BrowserContentPane.this.association.isInsertDestinationBeforeSource()) {
+				if (!useInheritedBlockNumbers && BrowserContentPane.this.association != null && BrowserContentPane.this.association.isInsertDestinationBeforeSource()) {
 					return;
 				}
 
@@ -849,8 +877,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						continue;
 					}
 					Row row = rows.get(mi);
-					if (row.getParentModelIndex() != lastPMIndex) {
-						lastPMIndex = row.getParentModelIndex();
+					int parentModelIndex = useInheritedBlockNumbers? row.getInheritedParentModelIndex() : row.getParentModelIndex();
+					if (parentModelIndex != lastPMIndex) {
+						lastPMIndex = parentModelIndex;
 						int vi = i;
 						g2d.setColor(color);
 						Rectangle r = rowsTable.getCellRect(vi, 0, false);
@@ -3881,11 +3910,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	public static class TableModelItem {
 		public final int blockNr;
+		public final int inheritedBlockNumber;
 		public final Object value;
 		private String valueAsString = null;
 
-		public TableModelItem(int blockNr, Object value) {
+		public TableModelItem(int blockNr, int inheritedBlockNumber, Object value) {
 			this.blockNr = blockNr;
+			this.inheritedBlockNumber = inheritedBlockNumber;
 			this.value = value;
 		}
 
@@ -3936,7 +3967,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			isUpdatingTableModel = false;
 		}
 	}
-
+	
+	private boolean dontPaintSortIcon = false;
+	
 	private void doUpdateTableModel(int limit, boolean limitExceeded, boolean closureLimitExceeded) {
 		lastLimit = limit;
 		lastLimitExceeded = limitExceeded;
@@ -4126,7 +4159,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					tableContentViewFilter.filter(rowData, columnNameMap);
 				}
 				for (int i = 0; i < columns.size(); ++i) {
-					TableModelItem item = new TableModelItem(row.getParentModelIndex(), rowData[i]);
+					TableModelItem item = new TableModelItem(row.getParentModelIndex(), row.getInheritedParentModelIndex(), rowData[i]);
 					rowData[i] = item;
 				}
 				dtm.addRow(rowData);
@@ -4190,7 +4223,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				protected boolean useToString(int column) {
 					return false;
 				}
-
+				
+				@Override
+			    public List<? extends SortKey> getSortKeys() {
+					if (dontPaintSortIcon) {
+						return new ArrayList<SortKey>();
+					}
+			        return super.getSortKeys();
+			    }
+				
 				@Override
 			    public void toggleSortOrder(int column) {
 					if (association != null && association.isInsertDestinationBeforeSource()) {
@@ -4226,17 +4267,49 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						@Override
 						public int compare(Object o1, Object o2) {
 							RowSorter pSorter = null;
+							RowSorter ppSorter = null;
 							RowBrowser pb = getParentBrowser();
 							if (pb != null) {
 								if (pb.browserContentPane != null) {
 									if (pb.browserContentPane.rowsTable != null) {
 										pSorter = pb.browserContentPane.rowsTable.getRowSorter();
+										if (pb.browserContentPane.getParentBrowser() != null) {
+											if (pb.browserContentPane.getParentBrowser().browserContentPane != null) {
+												if (pb.browserContentPane.getParentBrowser().browserContentPane.rowsTable != null) {
+													ppSorter = pb.browserContentPane.getParentBrowser().browserContentPane.rowsTable.getRowSorter();
+												}
+											}
+										}
 									}
 								}
 							}
 							if (o1 instanceof TableModelItem && o2 instanceof TableModelItem) {
+								if (useInheritedBlockNumbers) {
+									int b1 = ((TableModelItem) o1).inheritedBlockNumber;
+									int b2 = ((TableModelItem) o2).inheritedBlockNumber;
+									
+									if (ppSorter != null) {
+										int b;
+										b = b1 < ppSorter.getModelRowCount()? ppSorter.convertRowIndexToView(b1) : -1;
+										if (b < 0) {
+											b = b1 + Integer.MAX_VALUE / 2;
+										}
+										b1 = b;
+										b = b2 < ppSorter.getModelRowCount()? ppSorter.convertRowIndexToView(b2) : -1;
+										if (b < 0) {
+											b = b2 + Integer.MAX_VALUE / 2;
+										}
+										b2 = b;
+									}
+									if (b1 != b2) {
+										return (b1 - b2) * (desc? -1 : 1);
+									}
+
+								}
+								
 								int b1 = ((TableModelItem) o1).blockNr;
 								int b2 = ((TableModelItem) o2).blockNr;
+								
 								if (pSorter != null) {
 									int b;
 									b = b1 < pSorter.getModelRowCount()? pSorter.convertRowIndexToView(b1) : -1;
@@ -4422,6 +4495,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			browserInClosure.add(rid.a);
 		}
 		updateRowsCountLabel(browserInClosure);
+		
+		final TableCellRenderer origRenderer = rowsTable.getTableHeader().getDefaultRenderer();
+		rowsTable.getTableHeader().setDefaultRenderer(new TableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+					boolean hasFocus, int row, int column) {
+				try {
+					dontPaintSortIcon = association != null && association.isInsertDestinationBeforeSource();
+					return origRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				} finally {
+					dontPaintSortIcon = false;
+				}
+			}
+		});
 		
 		int nndr = noNonDistinctRows;
 		if (noDistinctRows + noNonDistinctRows >= limit) {
