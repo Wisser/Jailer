@@ -1037,6 +1037,11 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				RowBrowser tb = addTableBrowser(parent, parent, table, newAssociation, andConditionText, null, tableBrowser.internalFrame.getTitle(), false);
 				tb.internalFrame.setBounds(tableBrowser.internalFrame.getBounds());
+				try {
+					tb.internalFrame.setIcon(!tableBrowser.internalFrame.isVisible());
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
 				for (RowBrowser child: getChildBrowsers()) {
 					if (child != childToIgnore) {
 						child.browserContentPane.copy(tb, child.association, null, null, false);
