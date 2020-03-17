@@ -3014,7 +3014,7 @@ public abstract class Desktop extends JDesktopPane {
 						+ (rb.association == null ? "" : CsvFile.encodeCell(rb.association.getName())) + "; ";
 			}
 			csv += rb.isHidden() + "; ";
-			csv += serializedSortKey(rb.browserContentPane.rowsTable);
+			csv += rb.browserContentPane.ignoreSortKey? "" : serializedSortKey(rb.browserContentPane.rowsTable);
 			out.append(csv).append(LF);
 			for (RowBrowser child : tableBrowsers) {
 				if (child.parent == rb) {
