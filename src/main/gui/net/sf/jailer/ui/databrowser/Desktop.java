@@ -61,6 +61,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -682,9 +683,12 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 
+			boolean forceAdjustRows = true;
+			
 			@Override
 			protected void beforeReload() {
 				synchronized (Desktop.this) {
+					forceAdjustRows = true;
 					addedRowPairs = new HashSet<Pair<Row,Row>>();
 					tableBrowser.rowToRowLinks.clear();
 				}
@@ -911,7 +915,8 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne) {
-				Desktop.this.adjustClosure(tabu, thisOne);
+				Desktop.this.adjustClosure(tabu, thisOne, forceAdjustRows);
+				forceAdjustRows = false;
 			}
 
 			@Override
@@ -2635,7 +2640,7 @@ public abstract class Desktop extends JDesktopPane {
 					(int) (fixed.y * scale - getVisibleRect().height / 2)), getVisibleRect().width, getVisibleRect().height);
 			desktopAnimation.scrollRectToVisible(vr, true);
 			updateMenu(layoutMode);
-			adjustClosure(null, null);
+			adjustClosure(null, null, false);
 		} finally {
 			UIUtil.resetWaitCursor(this);
 		}
@@ -3302,8 +3307,9 @@ public abstract class Desktop extends JDesktopPane {
 	 * 
 	 * @param tabu don't adjust this one
 	 * @param thisOne only adjust this one if it is not <code>null</code>
+	 * @param force 
 	 */
-	protected synchronized void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne) {
+	protected synchronized void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne, boolean force) {
 		for (RowBrowser rb : tableBrowsers) {
 			if (rb.browserContentPane == tabu) {
 				continue;
@@ -3311,12 +3317,31 @@ public abstract class Desktop extends JDesktopPane {
 			if (thisOne != null && rb.browserContentPane != thisOne) {
 				continue;
 			}
-			List<Row> rowsOfRB = new ArrayList<Row>();
-			for (Pair<BrowserContentPane, Row> r : rowsClosure.currentClosure) {
-				if (r.a == rb.browserContentPane) {
-					rowsOfRB.add(r.b);
+
+			Set<Row> rowsOfParent = new HashSet<Row>();
+			if (rb.parent != null) {
+				for (Pair<BrowserContentPane, Row> r : rowsClosure.currentClosure) {
+					if (r.a == rb.parent.browserContentPane) {
+						rowsOfParent.add(r.b);
+					}
 				}
 			}
+
+			List<Row> rowsOfRB = new ArrayList<Row>();
+			Set<Row> rowsOfRBSet = new LinkedHashSet<Row>();
+			for (RowToRowLink link: rb.rowToRowLinks) {
+				if (rowsOfParent.contains(link.parentRow)) {
+					rowsOfRBSet.add(link.childRow);
+				}
+			}
+			for (Pair<BrowserContentPane, Row> r : rowsClosure.currentClosure) {
+				if (r.a == rb.browserContentPane) {
+					if (rowsOfRBSet.isEmpty() || rowsOfRBSet.contains(r.b)) {
+						rowsOfRB.add(r.b);
+					}
+				}
+			}
+
 			if (!rowsOfRB.isEmpty()) {
 				Rectangle firstRowPos = null;
 				Rectangle lastRowPos = null;
@@ -3331,13 +3356,15 @@ public abstract class Desktop extends JDesktopPane {
 							}
 						}
 					}
+
 					if (index < 0) {
 						// not visible due to distinct selection
 						continue;
 					}
 					index = rb.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(index);
 					Rectangle pos = rb.browserContentPane.rowsTable.getCellRect(index, 0, false);
-					if (pos.y >= visibleRect.y && pos.y + pos.height < visibleRect.y + visibleRect.height) {
+
+					if (!force && pos.y >= visibleRect.y && pos.y + pos.height < visibleRect.y + visibleRect.height) {
 						// already a visible row
 						firstRowPos = null;
 						lastRowPos = null;
