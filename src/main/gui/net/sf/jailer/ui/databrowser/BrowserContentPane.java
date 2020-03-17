@@ -4532,7 +4532,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			--nndr;
 		}
 		selectDistinctCheckBox.setVisible(nndr > 0);
-		selectDistinctCheckBox.setText("select distinct (-" + nndr + " row" + (nndr == 1? "" : "s") + ")");
+		selectDistinctCheckBox.setText("select distinct (-" + nndr + ")");
 
 		if (filterHeader != null) {
 			if (rowsTable.getRowSorter() != null && rowsTable.getRowSorter().getViewRowCount() == 0) {
