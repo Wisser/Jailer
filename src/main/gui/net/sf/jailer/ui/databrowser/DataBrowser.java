@@ -2954,6 +2954,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
             final JToggleButton toggleButton = new JToggleButton();
             toggleButton.setText(rb.internalFrame.getTitle());
+            toggleButton.setIcon(UIUtil.readImage("/jailerlight.png"));
             toggleButton.setSelected(false);
 
             toggleButton.addActionListener(new ActionListener() {
