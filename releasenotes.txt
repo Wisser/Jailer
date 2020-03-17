@@ -1,5 +1,6 @@
 9.3.3
   - Fix: Characters in bookmark names that are not valid in file names caused errors when saving the bookmarks.
+  - Minor improvements to the GUI of the data-browser.
 
 9.3.2
   - Fixed "Conditions with () have leading and trailing parans removed" https://github.com/Wisser/Jailer/issues/28
