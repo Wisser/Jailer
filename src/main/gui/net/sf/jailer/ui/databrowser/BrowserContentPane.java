@@ -6122,23 +6122,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 	
 	private void sortChildren() {
+		try {
+			if (rowsTable.getRowSorter().getSortKeys().isEmpty()) {
+				List<SortKey> sk = new ArrayList<SortKey>();
+				sk.add(new SortKey(rowsTable.getColumnCount() - 1, SortOrder.ASCENDING));
+				rowsTable.getRowSorter().setSortKeys(sk);
+				ignoreSortKey = true;
+			}
+			adjustClosure(null, BrowserContentPane.this);
+		} catch (Exception e) {
+			// ignore
+		}
 		((TableRowSorter) rowsTable.getRowSorter()).sort();
 		for (RowBrowser ch: getChildBrowsers()) {
 			if (ch.browserContentPane != null) {
-				try {
-					if (ch.browserContentPane.useInheritedBlockNumbers) {
-						if (ch.browserContentPane.rowsTable.getRowSorter().getSortKeys().isEmpty()) {
-							List<SortKey> sk = new ArrayList<SortKey>();
-							sk.add(new SortKey(ch.browserContentPane.rowsTable.getColumnCount() - 1, SortOrder.ASCENDING));
-							ch.browserContentPane.rowsTable.getRowSorter().setSortKeys(sk);
-							ch.browserContentPane.ignoreSortKey = true;
-						}
-						ch.browserContentPane.sortChildren();
-						adjustClosure(null, ch.browserContentPane);
-					}
-				} catch (Exception e) {
-					// ignore
-				}
 				ch.browserContentPane.sortChildren();
 			}
 		}
