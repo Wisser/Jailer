@@ -3377,7 +3377,7 @@ public abstract class Desktop extends JDesktopPane {
 						lastRowPos = pos;
 					}
 				}
-				if (forceAdjustRows && rb.browserContentPane.rowsTable.getRowCount() > 0) {
+				if (lastRowPos != null && firstRowPos != null && rb.browserContentPane.rowsTable.getRowCount() > 0) {
 					lastRowPos = rb.browserContentPane.rowsTable.getCellRect(rb.browserContentPane.rowsTable.getRowCount(), 0, false);
 				}
 				if (lastRowPos != null) {
