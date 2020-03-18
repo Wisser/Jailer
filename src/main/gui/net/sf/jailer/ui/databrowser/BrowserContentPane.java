@@ -197,6 +197,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		private final ResultSet inputResultSet;
 		private final RowBrowser parentBrowser;
 		private Session theSession;
+		private final Boolean forceAdjustRows;
 		public boolean closureLimitExceeded = false;
 		
 		public LoadJob(int limit, String andCond, RowBrowser parentBrowser, boolean selectDistinct) {
@@ -208,6 +209,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				finished = false;
 				isCanceled = false;
 				this.parentBrowser = parentBrowser;
+				this.forceAdjustRows = Desktop.forceAdjustRows;
 			}
 		}
 
@@ -220,6 +222,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				finished = false;
 				isCanceled = false;
 				parentBrowser = null;
+				this.forceAdjustRows = Desktop.forceAdjustRows;
 			}
 		}
 
@@ -310,106 +313,112 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					Throwable e;
-					int l;
-					boolean limitExceeded = false;
-					synchronized (rows) {
-						e = exception;
-						l = limit;
-						while (rows.size() > limit) {
-							limitExceeded = true;
-							rows.remove(rows.size() - 1);
+					Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
+					try	{
+						Desktop.forceAdjustRows = forceAdjustRows;
+						Throwable e;
+						int l;
+						boolean limitExceeded = false;
+						synchronized (rows) {
+							e = exception;
+							l = limit;
+							while (rows.size() > limit) {
+								limitExceeded = true;
+								rows.remove(rows.size() - 1);
+							}
+							isCanceled = true; // done
+							sortRowsByParentViewIndex();
 						}
-						isCanceled = true; // done
-						sortRowsByParentViewIndex();
-					}
-					if (e != null) {
-						updateMode("error", null);
-						unhide();
-						if (theSession == null || !theSession.isDown()) {
-							errorMessageTextArea.setText(e.getMessage());
-							errorMessageTextArea.setToolTipText(UIUtil.toHTML(UIUtil.lineWrap(e.getMessage(), 100).toString(), 120));
-							errorMessageTextArea.setCaretPosition(0);
-							if (shouldShowLoadErrors()) {
-								SQLException sqlException = null;
-								if (e instanceof SqlException && e.getCause() != null && e.getCause() instanceof SQLException) {
-									sqlException = (SQLException) e.getCause();
-								}
-								if (sqlException != null && sqlException.getMessage() != null && sqlException.getMessage().trim().length() > 0) {
-									currentErrorDetail = e;
-									errorDetailsButton.setVisible(true);
-									errorMessageTextArea.setText(sqlException.getMessage());
-									errorMessageTextArea.setToolTipText(UIUtil.toHTML(UIUtil.lineWrap(e.getMessage(), 100).toString(), 120));
-									if (e instanceof SqlException) {
-										String sqlStatement = ((SqlException) e).sqlStatement;
-										if (sqlStatement != null && sqlStatement.trim().length() > 0) {
-											String HR = "(!insHorizontRulHere!)";
-											String sql = HR
-													+ new BasicFormatterImpl().format(sqlStatement);
-											errorMessageTextArea.setToolTipText(
-													UIUtil.toHTML(UIUtil.lineWrap(sqlException.getMessage().trim(), 100).toString()
-															+ UIUtil.LINE_SEPARATOR + sql, 120).replace(HR, "<hr>"));
-										}
+						if (e != null) {
+							updateMode("error", null);
+							unhide();
+							if (theSession == null || !theSession.isDown()) {
+								errorMessageTextArea.setText(e.getMessage());
+								errorMessageTextArea.setToolTipText(UIUtil.toHTML(UIUtil.lineWrap(e.getMessage(), 100).toString(), 120));
+								errorMessageTextArea.setCaretPosition(0);
+								if (shouldShowLoadErrors()) {
+									SQLException sqlException = null;
+									if (e instanceof SqlException && e.getCause() != null && e.getCause() instanceof SQLException) {
+										sqlException = (SQLException) e.getCause();
 									}
-									errorMessageTextArea.setCaretPosition(0);
-								} else if (!showingLoadErrorNow) {
-									if (getRowBrowser() != null && getRowBrowser().internalFrame != null && getRowBrowser().internalFrame.isVisible()) {
-										try {
-											showingLoadErrorNow = true;
-											UIUtil.showException(BrowserContentPane.this, "Error", e);	
-										} finally {
-											showingLoadErrorNow = false;
+									if (sqlException != null && sqlException.getMessage() != null && sqlException.getMessage().trim().length() > 0) {
+										currentErrorDetail = e;
+										errorDetailsButton.setVisible(true);
+										errorMessageTextArea.setText(sqlException.getMessage());
+										errorMessageTextArea.setToolTipText(UIUtil.toHTML(UIUtil.lineWrap(e.getMessage(), 100).toString(), 120));
+										if (e instanceof SqlException) {
+											String sqlStatement = ((SqlException) e).sqlStatement;
+											if (sqlStatement != null && sqlStatement.trim().length() > 0) {
+												String HR = "(!insHorizontRulHere!)";
+												String sql = HR
+														+ new BasicFormatterImpl().format(sqlStatement);
+												errorMessageTextArea.setToolTipText(
+														UIUtil.toHTML(UIUtil.lineWrap(sqlException.getMessage().trim(), 100).toString()
+																+ UIUtil.LINE_SEPARATOR + sql, 120).replace(HR, "<hr>"));
+											}
+										}
+										errorMessageTextArea.setCaretPosition(0);
+									} else if (!showingLoadErrorNow) {
+										if (getRowBrowser() != null && getRowBrowser().internalFrame != null && getRowBrowser().internalFrame.isVisible()) {
+											try {
+												showingLoadErrorNow = true;
+												UIUtil.showException(BrowserContentPane.this, "Error", e);	
+											} finally {
+												showingLoadErrorNow = false;
+											}
 										}
 									}
 								}
+							} else {
+								theSession = null;
 							}
 						} else {
-							theSession = null;
-						}
-					} else {
-						Set<String> prevIDs = new TreeSet<String>();
-						long prevHash = 0;
-						for (Row r: BrowserContentPane.this.rows) {
-							prevIDs.add(r.nonEmptyRowId);
-							try {
-								for (Object v: r.values) {
-									if (v != null) {
-										prevHash = 2 * prevHash + v.hashCode();
-									}
-								}
-							} catch (RuntimeException e1) {
-								// ignore
-							}
-						}
-						onContentChange(new ArrayList<Row>(), false);
-						BrowserContentPane.this.rows.clear();
-						BrowserContentPane.this.rows.addAll(rows);
-						updateTableModel(l, limitExceeded, closureLimitExceeded);
-						Set<String> currentIDs = new TreeSet<String>();
-						long currentHash = 0;
-						if (rows != null) {
-							for (Row r: rows) {
-								currentIDs.add(r.nonEmptyRowId);
+							Set<String> prevIDs = new TreeSet<String>();
+							long prevHash = 0;
+							for (Row r: BrowserContentPane.this.rows) {
+								prevIDs.add(r.nonEmptyRowId);
 								try {
 									for (Object v: r.values) {
 										if (v != null) {
-											currentHash = 2 * currentHash + v.hashCode();
+											prevHash = 2 * prevHash + v.hashCode();
 										}
 									}
 								} catch (RuntimeException e1) {
 									// ignore
 								}
 							}
+							onContentChange(new ArrayList<Row>(), false);
+							BrowserContentPane.this.rows.clear();
+							BrowserContentPane.this.rows.addAll(rows);
+							updateTableModel(l, limitExceeded, closureLimitExceeded);
+							Set<String> currentIDs = new TreeSet<String>();
+							long currentHash = 0;
+							if (rows != null) {
+								for (Row r: rows) {
+									currentIDs.add(r.nonEmptyRowId);
+									try {
+										for (Object v: r.values) {
+											if (v != null) {
+												currentHash = 2 * currentHash + v.hashCode();
+											}
+										}
+									} catch (RuntimeException e1) {
+										// ignore
+									}
+								}
+							}
+							setPendingState(false, true);
+							onContentChange(rows, true); // rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
+							updateMode("table", null);
+							updateWhereField();
+							if (reloadAction != null) {
+								reloadAction.run();
+							}
 						}
-						setPendingState(false, true);
-						onContentChange(rows, true); // rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
-						updateMode("table", null);
-						updateWhereField();
-						if (reloadAction != null) {
-							reloadAction.run();
-						}
+						afterReload();
+					} finally {
+						Desktop.forceAdjustRows = oldForceAdjustRows;
 					}
-					afterReload();
 				}
 			});
 		}
@@ -2069,10 +2078,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			editMode.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					setEditMode(!isEditMode);
-					updateTableModel();
-					if (repaint != null) {
-						UIUtil.invokeLater(repaint);
+					Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
+					try {
+						Desktop.forceAdjustRows = null;
+						setEditMode(!isEditMode);
+						updateTableModel();
+						if (repaint != null) {
+							UIUtil.invokeLater(repaint);
+						}
+					} finally {
+						Desktop.forceAdjustRows = oldForceAdjustRows;
 					}
 				}
 			});
@@ -2931,7 +2946,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		for (RowBrowser ch: getChildBrowsers()) {
 			if (ch.browserContentPane != null) {
 				if (ch.browserContentPane.isLimitExceeded) {
-					ch.browserContentPane.reloadRows("because rows limit is exceeded");
+					Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
+					try {
+						Desktop.forceAdjustRows = true;
+						ch.browserContentPane.reloadRows("because rows limit is exceeded");
+					} finally {
+						Desktop.forceAdjustRows = oldForceAdjustRows;
+					}
 				} else {
 					ch.browserContentPane.reloadChildrenIfLimitIsExceeded();
 				}

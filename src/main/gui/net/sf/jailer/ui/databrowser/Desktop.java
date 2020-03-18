@@ -683,12 +683,9 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 
-			boolean forceAdjustRows = true;
-			
 			@Override
 			protected void beforeReload() {
 				synchronized (Desktop.this) {
-					forceAdjustRows = true;
 					addedRowPairs = new HashSet<Pair<Row,Row>>();
 					tableBrowser.rowToRowLinks.clear();
 				}
@@ -915,8 +912,7 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne) {
-				Desktop.this.adjustClosure(tabu, thisOne, forceAdjustRows);
-				forceAdjustRows = false;
+				Desktop.this.adjustClosure(tabu, thisOne);
 			}
 
 			@Override
@@ -2640,7 +2636,7 @@ public abstract class Desktop extends JDesktopPane {
 					(int) (fixed.y * scale - getVisibleRect().height / 2)), getVisibleRect().width, getVisibleRect().height);
 			desktopAnimation.scrollRectToVisible(vr, true);
 			updateMenu(layoutMode);
-			adjustClosure(null, null, false);
+			adjustClosure(null, null);
 		} finally {
 			UIUtil.resetWaitCursor(this);
 		}
@@ -3301,15 +3297,19 @@ public abstract class Desktop extends JDesktopPane {
 		return roots;
 	}
 
+	public static Boolean forceAdjustRows = false;
+
 	/**
 	 * Adjusts scroll-position of each table browser s.t. rows in closure are
 	 * visible.
 	 * 
 	 * @param tabu don't adjust this one
 	 * @param thisOne only adjust this one if it is not <code>null</code>
-	 * @param force 
 	 */
-	protected synchronized void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne, boolean force) {
+	protected synchronized void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne) {
+		if (forceAdjustRows == null) {
+			return;
+		}
 		for (RowBrowser rb : tableBrowsers) {
 			if (rb.browserContentPane == tabu) {
 				continue;
@@ -3364,7 +3364,7 @@ public abstract class Desktop extends JDesktopPane {
 					index = rb.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(index);
 					Rectangle pos = rb.browserContentPane.rowsTable.getCellRect(index, 0, false);
 
-					if (!force && pos.y >= visibleRect.y && pos.y + pos.height < visibleRect.y + visibleRect.height) {
+					if (!forceAdjustRows && pos.y >= visibleRect.y && pos.y + pos.height < visibleRect.y + visibleRect.height) {
 						// already a visible row
 						firstRowPos = null;
 						lastRowPos = null;
@@ -3376,6 +3376,9 @@ public abstract class Desktop extends JDesktopPane {
 					if (lastRowPos == null || lastRowPos.y < pos.y) {
 						lastRowPos = pos;
 					}
+				}
+				if (forceAdjustRows && rb.browserContentPane.rowsTable.getRowCount() > 0) {
+					lastRowPos = rb.browserContentPane.rowsTable.getCellRect(rb.browserContentPane.rowsTable.getRowCount(), 0, false);
 				}
 				if (lastRowPos != null) {
 					rb.browserContentPane.rowsTable
