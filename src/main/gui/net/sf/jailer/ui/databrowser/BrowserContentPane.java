@@ -1764,13 +1764,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Component parent = null;
+				Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
 				try {
+					Desktop.forceAdjustRows = null;
 					parent = SwingUtilities.getWindowAncestor(contextJTable);
 					UIUtil.setWaitCursor(parent);
 					isTableFilterEnabled = !isTableFilterEnabled;
 					updateTableModel();
 				} finally {
 					UIUtil.resetWaitCursor(parent);
+					Desktop.forceAdjustRows = oldForceAdjustRows;
 				}
 			}
 		});
@@ -2268,13 +2271,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Component parent = null;
+				Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
 				try {
+					Desktop.forceAdjustRows = null;
 					parent = SwingUtilities.getWindowAncestor(parentComponent);
 					UIUtil.setWaitCursor(parent);
 					isTableFilterEnabled = !isTableFilterEnabled;
 					updateTableModel();
 				} finally {
 					UIUtil.resetWaitCursor(parent);
+					Desktop.forceAdjustRows = oldForceAdjustRows;
 				}
 			}
 		});
@@ -2286,8 +2292,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		editMode.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				setEditMode(!isEditMode);
-				updateTableModel();
+				Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
+				try {
+					Desktop.forceAdjustRows = null;
+					setEditMode(!isEditMode);
+					updateTableModel();
+				} finally {
+					Desktop.forceAdjustRows = oldForceAdjustRows;
+				}
 			}
 		});
 		popup.add(editMode);
@@ -2878,21 +2890,39 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	private void appendClosure() {
 		if (getParentBrowser() != null) {
-			BrowserContentPane parentContentPane = getParentBrowser().browserContentPane;
-	
-			Set<Pair<BrowserContentPane, Row>> newElements = new HashSet<Pair<BrowserContentPane, Row>>();
-			for (Pair<BrowserContentPane, Row> e: rowsClosure.currentClosure) {
-				if (e.a == parentContentPane) {
-					parentContentPane.findClosure(e.b, newElements, true);
+			if (rowsClosure.currentClosureRootPane == this) {
+				List<Integer> selectedRows = new ArrayList<Integer>();
+				RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
+				for (int i = rows.size() - 1; i >= 0; --i) {
+					if (rowsClosure.currentClosureRootID.contains(rows.get(i).nonEmptyRowId)) {
+						int vi = rowSorter.convertRowIndexToView(i);
+						if (vi >= 0) {
+							selectedRows.add(vi);
+						}
+					}
 				}
+				resetCurrentRowSelection();
+				for (int si: selectedRows ) {
+					setCurrentRowSelection(si, true);
+				}
+				setCurrentRowSelection(-1, true);
+			} else {
+				BrowserContentPane parentContentPane = getParentBrowser().browserContentPane;
+		
+				Set<Pair<BrowserContentPane, Row>> newElements = new HashSet<Pair<BrowserContentPane, Row>>();
+				for (Pair<BrowserContentPane, Row> e: rowsClosure.currentClosure) {
+					if (e.a == parentContentPane) {
+						parentContentPane.findClosure(e.b, newElements, true);
+					}
+				}
+				rowsClosure.currentClosure.addAll(newElements);
+				rowsClosure.currentClosureRowIDs.clear();
+				for (Pair<BrowserContentPane, Row> r: rowsClosure.currentClosure) {
+					rowsClosure.currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.nonEmptyRowId));
+				}
+				rowsTable.repaint();
+				adjustClosure(null, this);
 			}
-			rowsClosure.currentClosure.addAll(newElements);
-			rowsClosure.currentClosureRowIDs.clear();
-			for (Pair<BrowserContentPane, Row> r: rowsClosure.currentClosure) {
-				rowsClosure.currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.nonEmptyRowId));
-			}
-			rowsTable.repaint();
-			adjustClosure(null, this);
 		}
 	}
 
