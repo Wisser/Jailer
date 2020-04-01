@@ -1,3 +1,6 @@
+9.3.4
+  - Instant visualization of the contents of the row under the mouse pointer in the data browser.
+
 9.3.3
   - Fixed: Characters in bookmark names that are not valid in file names caused errors when saving the bookmarks.
   - Minor improvements to the GUI of the data-browser.
