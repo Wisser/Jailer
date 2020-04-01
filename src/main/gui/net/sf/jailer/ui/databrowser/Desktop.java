@@ -42,6 +42,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
@@ -624,7 +626,55 @@ public abstract class Desktop extends JDesktopPane {
 
 		final BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null ? null : parent.browserContentPane.rows,
 				association, parentFrame, rowsClosure, selectDistinct, reload, executionContext) {
+			{
+				MouseListener ml = new MouseAdapter() {
+					@Override
+					public void mouseMoved(MouseEvent e) {
+						updateRowView(e);
+					}
+					@Override
+					public void mouseExited(MouseEvent e) {
+						if (null != currentlyViewedRow) {
+							onRowSelect(table, null);
+							currentlyViewedRow = null;
+						}
+					}
+				};
+				singleRowViewScrollPane.addMouseListener(ml);
+				singleRowViewScrollPane.addMouseMotionListener((MouseMotionListener) ml);
+				singleRowViewContainterPanel.addMouseListener(ml);
+				singleRowViewContainterPanel.addMouseMotionListener((MouseMotionListener) ml);
+				rowsTable.addMouseListener(ml);
+				rowsTable.addMouseMotionListener((MouseMotionListener) ml);
+			}
 
+			private void updateRowView(MouseEvent e) {
+				int ri;
+				JComponent source = (JComponent) e.getSource();
+				if (source == rowsTable) {
+					ri = rowsTable.rowAtPoint(e.getPoint());
+				} else {
+					ri = 0;
+				}
+				if (ri >= 0 && !rows.isEmpty() && rowsTable.getRowSorter().getViewRowCount() > 0) {
+					int i = 0;
+					if (source == rowsTable) {
+						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
+					} else if (source == rowsTableScrollPane || source == singleRowViewContainterPanel) {
+						if (rows.size() != 1 || getQueryBuilderDialog() == null /* SQL Console */) {
+							return;
+						}
+						ri = 0;
+						i = 0;
+					}
+					Row row = rows.get(i);
+					if (row != currentlyViewedRow) {
+						onRowSelect(table, row);
+						currentlyViewedRow = row;
+					}
+				}
+			}
+			
 			@Override
 			protected void reloadDataModel() throws Exception {
 				Desktop.this.reloadDataModel(schemaMapping);
@@ -3462,7 +3512,8 @@ public abstract class Desktop extends JDesktopPane {
 	protected abstract boolean isDesktopVisible();
 	protected abstract void checkAnchorRetension();
 	protected abstract void changeColumnOrder(Table table);
-	
+	protected abstract void onRowSelect(Table table, Row row);
+
 	/**
 	 * Scrolls an iFrame to the center of the desktop.
 	 */
@@ -3630,6 +3681,8 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		return mapping.toString();
 	}
+
+	private Row currentlyViewedRow = null;
 
 	/**
 	 * Maximum number of concurrent DB connections.

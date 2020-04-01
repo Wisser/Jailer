@@ -87,7 +87,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	private final JPanel ddlPanel;
 	private final JPanel constraintsPanel;
 	private final Map<Pair<MetaDataDetails, MDTable>, JComponent> detailsViews = new HashMap<Pair<MetaDataDetails, MDTable>, JComponent>();
-	private final Map<Table, JComponent> tableDetailsViews = new HashMap<Table, JComponent>();
+	private final Map<Table, TableDetailsView> tableDetailsViews = new HashMap<Table, TableDetailsView>();
 
     /**
      * Creates new form MetaDataDetailsPanell 
@@ -161,21 +161,21 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     	otherPanel.repaint();
 	}
 
-    public void showMetaDataDetails(final MDTable mdTable, Table table, DataModel dataModel) {
+    public void showMetaDataDetails(final MDTable mdTable, Table table, Row row, boolean onlyTable, DataModel dataModel) {
     	setVisible(true);
         ((CardLayout) getLayout()).show(this, "table");
     	tableDetailsPanel.removeAll();
     	if (table != null) {
-    		JComponent view = tableDetailsViews.get(table);
-    		if (view == null) {
-    			TableDetailsView tdv = new TableDetailsView(table, mdTable, this, dataModel);
+    		TableDetailsView view = tableDetailsViews.get(table);
+    		if (row != null || view == null) {
+    			TableDetailsView tdv = new TableDetailsView(table, mdTable, this, row, dataModel, (TableDetailsView) view);
     			view = tdv;
-    			if (tdv.isCacheable()) {
+    			if (row == null && tdv.isCacheable()) {
     				tableDetailsViews.put(table, view);
     			}
     		}
     		tableDetailsPanel.add(view);
-    	} else if (!ModelBuilder.isJailerTable(mdTable.getUnquotedName())) {
+    	} else if (mdTable != null && !ModelBuilder.isJailerTable(mdTable.getUnquotedName())) {
     		JButton analyseButton = new JButton("Analyse schema \"" + mdTable.getSchema().getUnquotedName() + "\"");
     		analyseButton.addActionListener(new ActionListener() {
 				@Override
@@ -225,6 +225,9 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     		}
     	}
 		tabbedPane.repaint();
+		if (onlyTable) {
+			return;
+		}
     	for (BlockingQueue<Runnable> queue: queues) {
     		queue.clear();
     	}

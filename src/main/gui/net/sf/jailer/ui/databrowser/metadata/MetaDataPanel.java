@@ -115,6 +115,7 @@ import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.IconWithText;
+import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -1842,6 +1843,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     protected abstract void open(MDTable mdTable);
     protected abstract void analyseSchema(String schemaName);
     protected abstract void onTableSelect(MDTable mdTable);
+    protected abstract void onRowSelect(Table mdTable, Row row);
     protected abstract void onSchemaSelect(MDSchema mdSchema);
 	protected abstract void onMDOtherSelect(MDGeneric mdOther, ExecutionContext executionContext);
     protected abstract void openNewTableBrowser();

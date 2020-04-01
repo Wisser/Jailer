@@ -5623,7 +5623,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     protected javax.swing.JScrollPane rowsTableScrollPane;
     private javax.swing.JPanel rrPanel;
     javax.swing.JCheckBox selectDistinctCheckBox;
-    private javax.swing.JPanel singleRowViewContainterPanel;
+    protected javax.swing.JPanel singleRowViewContainterPanel;
     private javax.swing.JPanel singleRowViewScrollContentPanel;
     javax.swing.JScrollPane singleRowViewScrollPane;
     private javax.swing.JPanel singleRowViewScrollPaneContainer;

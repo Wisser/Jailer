@@ -644,6 +644,13 @@ public class DataBrowser extends javax.swing.JFrame {
 			protected void changeColumnOrder(Table table) {
 				openColumnOrderEditor(table);
 			}
+
+			@Override
+			protected void onRowSelect(Table table, Row row) {
+				if (metaDataDetailsPanel != null) {
+					metaDataDetailsPanel.showMetaDataDetails(getMetaDataSource(session).toMDTable(table), table, row, true, datamodel);
+				}
+			}
         };
         new BookmarksPanel(this, bookmarkMenu, desktop, executionContext).updateBookmarksMenu();
 
@@ -3667,9 +3674,15 @@ public class DataBrowser extends javax.swing.JFrame {
 							@Override
 							protected void onTableSelect(MDTable mdTable) {
 								metaDataDetailsPanel
-									.showMetaDataDetails(mdTable, getMetaDataSource(session).toTable(mdTable), datamodel.get());
+									.showMetaDataDetails(mdTable, getMetaDataSource(session).toTable(mdTable), null, false, datamodel.get());
 							}
-		
+
+							@Override
+							protected void onRowSelect(Table table, Row row) {
+								metaDataDetailsPanel
+									.showMetaDataDetails(null, table, row, true, datamodel.get());
+							}
+
 							@Override
 							protected void onMDOtherSelect(MDGeneric mdOther, ExecutionContext executionContext) {
 								metaDataDetailsPanel

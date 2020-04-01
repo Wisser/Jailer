@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.databrowser.metadata;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
@@ -23,8 +24,10 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,6 +36,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -48,8 +52,9 @@ public class TableDetailsView extends javax.swing.JPanel {
 	
 	/**
      * Creates new form TableDetailsView
+	 * @param row 
      */
-    public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, final DataModel dataModel) {
+    public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, Row row, final DataModel dataModel, TableDetailsView currentView) {
         initComponents();
         if (jScrollPane1.getHorizontalScrollBar() != null) {
         	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
@@ -57,7 +62,14 @@ public class TableDetailsView extends javax.swing.JPanel {
         if (jScrollPane1.getVerticalScrollBar() != null) {
         	jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
         }
+        if (currentView != null) {
+        	sortColumnsCheckBox.setSelected(currentView.sortColumnsCheckBox.isSelected());
+        }
         updateColumnsTable = new Runnable() {
+        	final Font font = new JLabel().getFont();
+			final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
+			final Font italic = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC, nonbold.getSize());
+			
 			@Override
 			public void run() {
 		        String typeLabel = "";
@@ -96,6 +108,12 @@ public class TableDetailsView extends javax.swing.JPanel {
 		
 				int y = 1;
 				List<Column> columns = table.getColumns();
+				Map<Column, Object> columnValue = new IdentityHashMap<Column, Object>();
+				for (int i = 0; i < columns.size(); ++i) {
+					if (row != null && row.values.length > i) {
+						columnValue.put(columns.get(i), row.values[i]);
+					}
+				}
 				if (sortColumnsCheckBox.isSelected()) {
 					columns = new ArrayList<Column>(columns);
 					Collections.sort(columns, new Comparator<Column>() {
@@ -106,6 +124,11 @@ public class TableDetailsView extends javax.swing.JPanel {
 					});
 				}
 				columnsPanel.removeAll();
+				java.awt.Color bgDarker = new java.awt.Color(255, 255, 190);
+				boolean hasConstraints = false;
+				for (Column column: columns) {
+					hasConstraints = hasConstraints || !column.isNullable  || column.isVirtual ||  column.isIdentityColumn;
+				}
 				for (Column column: columns) {
 					boolean isPk = false;
 					if (table.primaryKey.getColumns() != null) {
@@ -117,7 +140,11 @@ public class TableDetailsView extends javax.swing.JPanel {
 					}
 					
 					JPanel panel = new JPanel();
-					panel.setOpaque(false);
+					if (y % 2 == 0) {
+						panel.setOpaque(false);
+					} else {
+						panel.setBackground(bgDarker);
+					}
 			        panel.setLayout(new java.awt.GridBagLayout());
 		
 			        JLabel label;
@@ -135,45 +162,88 @@ public class TableDetailsView extends javax.swing.JPanel {
 			        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 			        gridBagConstraints.weightx = 1.0;
 			        panel.add(label, gridBagConstraints);
-		
-			        label = new JLabel();
-			        label.setForeground(Color.gray);
-			        label.setText(column.toSQL("").substring(column.name.length()).trim());
-			        gridBagConstraints = new java.awt.GridBagConstraints();
-			        gridBagConstraints.gridx = 2;
-			        gridBagConstraints.gridy = y;
-			        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-			        gridBagConstraints.weightx = 1.0;
-			        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-			        panel.add(label, gridBagConstraints);
-		
-			        StringBuilder constraints = new StringBuilder();
-			        
-			        if (!column.isNullable) {
-			        	constraints.append("not null ");
-			        }
-			        if (column.isVirtual) {
-			        	constraints.append("virtual ");
-			        }
-			        if (column.isIdentityColumn) {
-			        	constraints.append("identity ");
-			        }
-			        
-			        if (constraints.length() > 0) {
-				        label = new JLabel();
-				        label.setForeground(Color.gray);
-			        	if (column.type.toUpperCase(Locale.ENGLISH).equals(column.type)) {
-							label.setText(constraints.toString().toUpperCase(Locale.ENGLISH));
-			        	} else {
-							label.setText(constraints.toString());
-			        	}
+
+			        if (row != null) {
+			        	final JLabel finalLabel = label;
+			        	label = new JLabel() {
+							@Override
+							public Dimension getPreferredSize() {
+								Dimension preferredSize = super.getPreferredSize();
+						        int maxWidth = TableDetailsView.this.getWidth() - finalLabel.getPreferredSize().width - 34;
+						        if (maxWidth < 1) {
+						        	maxWidth = 1;
+						        }
+								preferredSize.setSize(Math.min(preferredSize.width, maxWidth), preferredSize.height);
+								return preferredSize;
+							}
+			        	};
+				        Object obj = columnValue.get(column);
+				        label.setForeground(obj == null? Color.gray : Color.black);
+				        if (obj == null) {
+				        	label.setFont(italic);
+				        }
+						label.setText(String.valueOf(obj));
 				        gridBagConstraints = new java.awt.GridBagConstraints();
-				        gridBagConstraints.gridx = 3;
+				        gridBagConstraints.gridx = 2;
 				        gridBagConstraints.gridy = y;
 				        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-				        gridBagConstraints.weightx = 0;
+				        gridBagConstraints.weightx = 1.0;
 				        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-				        columnsPanel.add(label, gridBagConstraints);
+				        panel.add(label, gridBagConstraints);
+			        } else {
+				        label = new JLabel();
+				        label.setForeground(Color.gray);
+				        label.setText(column.toSQL("").substring(column.name.length()).trim());
+				        gridBagConstraints = new java.awt.GridBagConstraints();
+				        gridBagConstraints.gridx = 2;
+				        gridBagConstraints.gridy = y;
+				        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+				        gridBagConstraints.weightx = 1.0;
+				        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+				        panel.add(label, gridBagConstraints);
+			
+				        StringBuilder constraints = new StringBuilder();
+				        
+				        if (!column.isNullable) {
+				        	constraints.append("not null ");
+				        }
+				        if (column.isVirtual) {
+				        	constraints.append("virtual ");
+				        }
+				        if (column.isIdentityColumn) {
+				        	constraints.append("identity ");
+				        }
+				        
+				        if (hasConstraints) {
+					        label = new JLabel();
+					        label.setForeground(Color.gray);
+					        JPanel panelC = new JPanel();
+							if (y % 2 == 0) {
+								panelC.setOpaque(false);
+							} else {
+								panelC.setBackground(bgDarker);
+							}
+							panelC.setLayout(new java.awt.GridBagLayout());
+					        if (column.type.toUpperCase(Locale.ENGLISH).equals(column.type)) {
+								label.setText(" " + constraints.toString().toUpperCase(Locale.ENGLISH));
+				        	} else {
+								label.setText(" " + constraints.toString());
+				        	}
+					        gridBagConstraints = new java.awt.GridBagConstraints();
+					        gridBagConstraints.gridx = 1;
+					        gridBagConstraints.gridy = 1;
+					        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+					        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+					        gridBagConstraints.weightx = 1;
+					        panelC.add(label, gridBagConstraints);
+					        gridBagConstraints = new java.awt.GridBagConstraints();
+					        gridBagConstraints.gridx = 3;
+					        gridBagConstraints.gridy = y;
+					        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+					        gridBagConstraints.weightx = 0;
+					        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+					        columnsPanel.add(panelC, gridBagConstraints);
+				        }
 			        }
 		
 			        gridBagConstraints = new java.awt.GridBagConstraints();
@@ -188,6 +258,9 @@ public class TableDetailsView extends javax.swing.JPanel {
 			}
 		};
 		updateColumnsTable.run();
+        if (currentView != null) {
+        	jPanel1.scrollRectToVisible(currentView.jPanel1.getVisibleRect());
+        }
     }
 
     public boolean isCacheable() {
