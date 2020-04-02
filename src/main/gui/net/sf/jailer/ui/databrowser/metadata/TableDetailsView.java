@@ -19,23 +19,34 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.StringSearchPanel;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.util.Quoting;
 
@@ -47,8 +58,10 @@ import net.sf.jailer.util.Quoting;
 @SuppressWarnings("serial")
 public class TableDetailsView extends javax.swing.JPanel {
 
+	private final Color selectedBG = new Color(255, 200, 200);
 	private final Runnable updateColumnsTable;
 	private boolean cacheable = true;
+	private Map<String, JComponent> rows = new HashMap<String, JComponent>();
 	
 	/**
      * Creates new form TableDetailsView
@@ -64,8 +77,53 @@ public class TableDetailsView extends javax.swing.JPanel {
         }
         if (currentView != null) {
         	sortColumnsCheckBox.setSelected(currentView.sortColumnsCheckBox.isSelected());
+        	foundColumn = currentView.foundColumn;
         }
-        updateColumnsTable = new Runnable() {
+		findColumnsLabel.setText(null);
+		findColumnsLabel.setToolTipText("Find Column...");
+		findColumnsLabel.setIcon(StringSearchPanel.getSearchIcon(false, this));
+
+		findColumnsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+			private boolean in = false;
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (findColumnsLabel.isEnabled()) {
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							in = false;
+							updateBorder();
+							if (findColumnsPanel.isShowing()) {
+								Point point = new Point();
+								SwingUtilities.convertPointToScreen(point, findColumnsPanel);
+								findColumns((int) point.getX(), (int) point.getY());
+							}
+						}
+					});
+				}
+			}
+
+			@Override
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				if (findColumnsLabel.isEnabled()) {
+					in = true;
+					updateBorder();
+				}
+			}
+
+			@Override
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				in = false;
+				updateBorder();
+			}
+
+			private void updateBorder() {
+				findColumnsPanel.setBackground(in? new Color(240, 240, 0) : null);
+				findColumnsPanel.setOpaque(in);
+			}
+		});
+		updateColumnsTable = new Runnable() {
         	final Font font = new JLabel().getFont();
 			final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
 			final Font italic = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC, nonbold.getSize());
@@ -129,6 +187,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				for (Column column: columns) {
 					hasConstraints = hasConstraints || !column.isNullable  || column.isVirtual ||  column.isIdentityColumn;
 				}
+				rows.clear();
 				for (Column column: columns) {
 					boolean isPk = false;
 					if (table.primaryKey.getColumns() != null) {
@@ -140,12 +199,17 @@ public class TableDetailsView extends javax.swing.JPanel {
 					}
 					
 					JPanel panel = new JPanel();
+					rows.put(column.name, panel);
 					if (y % 2 == 0) {
 						panel.setOpaque(false);
 					} else {
 						panel.setBackground(bgDarker);
 					}
 			        panel.setLayout(new java.awt.GridBagLayout());
+			        if (column.name.equals(foundColumn)) {
+			        	panel.setOpaque(true);
+			        	panel.setBackground(selectedBG);
+			        }
 		
 			        JLabel label;
 			        label = new JLabel();
@@ -223,6 +287,10 @@ public class TableDetailsView extends javax.swing.JPanel {
 							} else {
 								panelC.setBackground(bgDarker);
 							}
+							if (column.name.equals(foundColumn)) {
+								panelC.setOpaque(true);
+								panelC.setBackground(selectedBG);
+					        }
 							panelC.setLayout(new java.awt.GridBagLayout());
 					        if (column.type.toUpperCase(Locale.ENGLISH).equals(column.type)) {
 								label.setText(" " + constraints.toString().toUpperCase(Locale.ENGLISH));
@@ -263,6 +331,82 @@ public class TableDetailsView extends javax.swing.JPanel {
         }
     }
 
+    private String foundColumn;
+
+    private void findColumns(final int x, final int y) {
+		List<String> columNames = new ArrayList<String>();
+		Map<String, Integer> columNamesCount = new HashMap<String, Integer>();
+		for (String nameObj: rows.keySet()) {
+			if (nameObj != null) {
+				String name = nameObj.toString();
+				if (columNamesCount.containsKey(name)) {
+					columNamesCount.put(name, columNamesCount.get(name) + 1);
+				} else {
+					columNames.add(name);
+					columNamesCount.put(name, 1);
+				}
+			}
+		}
+		Collections.sort(columNames, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o1.compareToIgnoreCase(o2);
+			}
+		});
+
+		final Window owner = SwingUtilities.getWindowAncestor(this);
+
+		final JComboBox combobox = new JComboBox();
+		combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
+		StringSearchPanel searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
+			@Override
+			public void run() {
+				Object selected = combobox.getSelectedItem();
+				if (selected != null) {
+					foundColumn = null;
+					for (String name: rows.keySet()) {
+						if (name != null && name.equals(selected)) {
+							Rectangle visibleRect = jPanel1.getVisibleRect();
+							Rectangle cellRect = rows.get(name).getBounds();
+							foundColumn = name;
+							updateColumnsTable.run();
+							jPanel1.scrollRectToVisible(
+									new Rectangle(
+											visibleRect.x + visibleRect.width / 2, 
+											cellRect.y + columnsPanel.getBounds().y - 32, 
+											1, cellRect.height + 64));
+							break;
+						}
+					}
+				}
+			}
+		}) {
+			@Override
+			protected Integer preferredWidth() {
+				return 260;
+			}
+			@Override
+			protected Integer maxX() {
+				if (owner != null) {
+					return owner.getX() + owner.getWidth() - preferredWidth();
+				} else {
+					return null;
+				}
+			}
+			@Override
+			protected Integer maxY(int height) {
+				if (owner != null) {
+					return owner.getY() + owner.getHeight() - height - 8;
+				} else {
+					return null;
+				}
+			}
+		};
+
+		searchPanel.setStringCount(columNamesCount);
+		searchPanel.find(owner, "Find Column", x, y, true);
+	}
+
     public boolean isCacheable() {
 		return cacheable;
 	}
@@ -288,6 +432,8 @@ public class TableDetailsView extends javax.swing.JPanel {
         warnLabel1 = new javax.swing.JLabel();
         warnLabel2 = new javax.swing.JLabel();
         sortColumnsCheckBox = new javax.swing.JCheckBox();
+        findColumnsPanel = new javax.swing.JPanel();
+        findColumnsLabel = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 216));
         setLayout(new java.awt.GridBagLayout());
@@ -372,8 +518,9 @@ public class TableDetailsView extends javax.swing.JPanel {
         jScrollPane1.setViewportView(jPanel1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -382,8 +529,7 @@ public class TableDetailsView extends javax.swing.JPanel {
         sortColumnsCheckBox.setText("sort columns      ");
         sortColumnsCheckBox.setOpaque(false);
         sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sortColumnsCheckBoxActionPerformed(evt);
             }
         });
@@ -392,6 +538,22 @@ public class TableDetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         add(sortColumnsCheckBox, gridBagConstraints);
+
+        findColumnsPanel.setOpaque(false);
+        findColumnsPanel.setLayout(new java.awt.GridBagLayout());
+
+        findColumnsLabel.setText("Find Columns");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 6);
+        findColumnsPanel.add(findColumnsLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        add(findColumnsPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void sortColumnsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortColumnsCheckBoxActionPerformed
@@ -402,6 +564,8 @@ public class TableDetailsView extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton analyseButton;
     private javax.swing.JPanel columnsPanel;
+    private javax.swing.JLabel findColumnsLabel;
+    public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
