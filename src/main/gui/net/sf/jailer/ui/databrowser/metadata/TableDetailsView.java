@@ -67,7 +67,7 @@ public class TableDetailsView extends javax.swing.JPanel {
      * Creates new form TableDetailsView
 	 * @param row 
      */
-    public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, Row row, final DataModel dataModel, TableDetailsView currentView) {
+    public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, final Row row, final DataModel dataModel, TableDetailsView currentView) {
         initComponents();
         if (jScrollPane1.getHorizontalScrollBar() != null) {
         	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
