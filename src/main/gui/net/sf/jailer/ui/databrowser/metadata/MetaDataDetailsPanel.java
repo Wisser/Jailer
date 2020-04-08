@@ -49,7 +49,9 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -64,7 +66,6 @@ import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.util.Pair;
-import net.sf.jailer.util.Quoting;
 
 /**
  * Meta Data Details View.
@@ -177,6 +178,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     		tableDetailsPanel.add(view);
     	} else if (mdTable != null && !ModelBuilder.isJailerTable(mdTable.getUnquotedName())) {
     		JButton analyseButton = new JButton("Analyse schema \"" + mdTable.getSchema().getUnquotedName() + "\"");
+    		analyseButton.setIcon(MetaDataPanel.getScaledIcon(this, MetaDataPanel.warnIcon, false));
     		analyseButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -200,29 +202,41 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     		panel.add(new JLabel("  is not part of the data model."), gridBagConstraints);
     		gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 1;
+	        gridBagConstraints.gridy = 4;
+	        gridBagConstraints.gridwidth = 1;
+	        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+	        gridBagConstraints.weightx = 1;
+	        gridBagConstraints.weighty = 1;
+	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+    		if (mdTable.isLoaded()) {
+    			List<Column> pkColumns = new ArrayList<Column>();
+				List<Column> columns = new ArrayList<Column>();
+	    		for (Column c: mdTable.getColumnTypes()) {
+	    			columns.add(c);
+	    			try {
+						for (String pk: mdTable.getPrimaryKeyColumns()) {
+							if (pk.equals(c.name)) {
+								pkColumns.add(c);
+								break;
+							}
+						}
+					} catch (SQLException e1) {
+						// ignore
+					}
+	    		}
+	    		PrimaryKey pks = new PrimaryKey(pkColumns, false);
+				Table tTable = new Table(mdTable.getName(), pks, false, false);
+	    		tTable.setColumns(columns);
+				panel.add(new TableDetailsView(tTable, mdTable, this, null, dataModel, null), gridBagConstraints);
+    		}
+    		gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 1;
 	        gridBagConstraints.gridy = 3;
 	        gridBagConstraints.gridwidth = 1;
 	        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
 	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
     		panel.add(analyseButton, gridBagConstraints);
     		tableDetailsPanel.add(panel);
-    		if (tabbedPane.getSelectedIndex() == 0) {
-	    		if (!mdTable.getSchema().isDefaultSchema) {
-	    			boolean dmContainsSchema = false;
-	    			for (Table tab: dataModel.getTables()) {
-	    				String tabSchema = tab.getSchema("");
-	    				if (Quoting.equalsIgnoreQuotingAndCase(mdTable.getSchema().getName(), tabSchema)) {
-	    					dmContainsSchema = true;
-	    					break;
-	    				}
-	    			}
-	    			if (!dmContainsSchema) {
-	    				if (tabbedPane.getTabCount() > 1) {
-	    					tabbedPane.setSelectedIndex(1);
-	    				}
-	    			}
-	    		}
-    		}
     	}
 		tabbedPane.repaint();
 		if (onlyTable) {

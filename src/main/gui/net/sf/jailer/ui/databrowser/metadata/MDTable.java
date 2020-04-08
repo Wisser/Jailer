@@ -554,6 +554,10 @@ public class MDTable extends MDObject {
         return sb.toString();
     }
 
+    public List<Column> getColumnTypes() {
+		return columnTypes;
+	}
+
     public boolean isDDLLoaded() {
         return ddlLoaded.get();
     }
