@@ -44,6 +44,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
@@ -652,6 +653,36 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
         };
+        
+		desktop.addMouseMotionListener(new MouseMotionListener() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				double buttonWidth = anchorManager.getButtonWidth() * 1.4;
+				double minDist = Double.MAX_VALUE;
+				RowBrowser nearest = null;
+				for (RowBrowser br : desktop.getBrowsers()) {
+					if (br.internalFrame != null && br.internalFrame.isVisible()) {
+						if (e.getX() - buttonWidth <= br.internalFrame.getX()) {
+							double dx = e.getX() - br.internalFrame.getX();
+							double dy = e.getY() - br.internalFrame.getY();
+							double dist2 = dx * dx + dy * dy;
+							if (nearest == null || dist2 < minDist) {
+								nearest = br;
+								minDist = dist2;
+							}
+						}
+					}
+				}
+				if (nearest != null) {
+					anchorManager.onTableBrowserNeared(nearest);
+				}
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+			}
+		});
+
         new BookmarksPanel(this, bookmarkMenu, desktop, executionContext).updateBookmarksMenu();
 
         jScrollPane1.setViewportView(desktop);

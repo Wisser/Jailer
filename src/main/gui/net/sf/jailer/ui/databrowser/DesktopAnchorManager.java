@@ -90,6 +90,12 @@ public abstract class DesktopAnchorManager {
 			}
 		});
 	}
+	
+	public void onTableBrowserNeared(RowBrowser tableBrowser) {
+		if (isApplicable(tableBrowser)) {
+			showButton(tableBrowser);
+		}
+	}
 
 	public void onNewTableBrowser(final RowBrowser tableBrowser) {
 		newestBrowser = tableBrowser;
@@ -253,7 +259,11 @@ public abstract class DesktopAnchorManager {
 			reset();
 		}
 	}
-	
+
+	public int getButtonWidth() {
+		return anchorButton.getWidth();
+	}
+
 	protected abstract void layout(RowBrowser anchor);
 	protected abstract boolean isApplicable(RowBrowser tableBrowser);
 
