@@ -191,7 +191,7 @@ public class ColumnsTable extends JTable {
 
 		setDefaultRenderer(Object.class, new TableCellRenderer() {
 			final Color BGCOLUMNS = new Color(255, 255, 220);
-//			final Color BGSELECTED  = new Color(130, 200, 255);
+			final Color BGSELECTED  = new Color(255, 230, 220);
 			final Font font = new JLabel().getFont();
 			final Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
 			@Override
@@ -202,10 +202,13 @@ public class ColumnsTable extends JTable {
 					--dmColumn;
 				}
 				Component render = rowsTable.getCellRenderer(dmColumn, row).getTableCellRendererComponent(ColumnsTable.this, value, isSelected, hasFocus, dmColumn, row);
+				int currentColumn = rb.getCurrentRowSelection();
 				if (render instanceof JLabel) {
 					if (column == 0) {
 						((JLabel) render).setFont(italic);
 						((JLabel) render).setBackground(BGCOLUMNS);
+					} else if (column - 1 == currentColumn) {
+						((JLabel) render).setBackground(BGSELECTED);
 					}
 				}
 				return render;
@@ -293,6 +296,22 @@ public class ColumnsTable extends JTable {
 				}
 			}
 			column.setPreferredWidth(Math.min(maxWidth, width));
+		}
+	}
+
+	public void scrollToCurrentRow() {
+		final int currentColumn = rb.getCurrentRowSelection();
+		if (currentColumn >= 0 && currentColumn + 1 < getColumnCount()) {
+			UIUtil.invokeLater(2, new Runnable() {
+				@Override
+				public void run() {
+					Rectangle cellRect = getCellRect(0, currentColumn + 1, true);
+					Rectangle visRect = getVisibleRect();
+					int b = 16;
+					scrollRectToVisible(new Rectangle(0, visRect.y + visRect.height / 2, 1, Math.max(cellRect.height + b, 1)));
+					scrollRectToVisible(new Rectangle(Math.max(cellRect.x + cellRect.width + b, 1), visRect.y + visRect.height / 2, 1, Math.max(cellRect.height + b, 1)));
+				}
+			});
 		}
 	}
 

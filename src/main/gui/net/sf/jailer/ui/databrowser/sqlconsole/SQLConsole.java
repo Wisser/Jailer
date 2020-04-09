@@ -989,6 +989,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								initialTabbedPaneSelection = tabContentPanel.tabbedPane.getSelectedIndex();
 								initialTabbedPaneSelectionLoc = loc;
 								updateColumnsAndTextView(rb, tabContentPanel);
+								if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel) {
+									columnsTable.scrollToCurrentRow();
+								}
 							}
 						});
                         removeLastErrorTab();

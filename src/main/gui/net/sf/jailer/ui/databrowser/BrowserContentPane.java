@@ -598,6 +598,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private int currentRowSelection = -1;
 
+	public int getCurrentRowSelection() {
+		return currentRowSelection;
+	}
+
 	private List<Row> parentRows;
 	private DetailsView singleRowDetailsView;
 	private MouseListener rowTableListener;
