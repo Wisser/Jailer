@@ -123,6 +123,7 @@ import net.sf.jailer.ui.databrowser.metadata.ResultSetRenderer;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
+import net.sf.jailer.ui.util.FixedColumnTable;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
@@ -1037,6 +1038,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							}
 							columnsTable = new ColumnsTable(rb);
 							tabContentPanel.columnsScrollPane.setViewportView(columnsTable);
+							new FixedColumnTable(1, tabContentPanel.columnsScrollPane);
 							if (vp != null) {
 								if (tabContentPanel.columnsScrollPane.getViewport() != null) {
 									tabContentPanel.columnsScrollPane.getViewport().setViewPosition(vp);

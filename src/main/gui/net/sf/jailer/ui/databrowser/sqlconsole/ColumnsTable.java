@@ -60,7 +60,7 @@ import net.sf.jailer.ui.databrowser.Row;
 public class ColumnsTable extends JTable {
 	private static final long serialVersionUID = 1L;
 
-	private final int MAX_ROWS = 198;
+	private final int MAX_ROWS = 498;
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	final BrowserContentPane rb;
 	
@@ -306,10 +306,11 @@ public class ColumnsTable extends JTable {
 				@Override
 				public void run() {
 					Rectangle cellRect = getCellRect(0, currentColumn + 1, true);
+					Rectangle cellRectLast = getCellRect(0, getColumnCount() - 1, true);
 					Rectangle visRect = getVisibleRect();
-					int b = 16;
-					scrollRectToVisible(new Rectangle(0, visRect.y + visRect.height / 2, 1, Math.max(cellRect.height + b, 1)));
-					scrollRectToVisible(new Rectangle(Math.max(cellRect.x + cellRect.width + b, 1), visRect.y + visRect.height / 2, 1, Math.max(cellRect.height + b, 1)));
+					int b = Math.max(cellRect.width / 4, 16);
+					scrollRectToVisible(new Rectangle(Math.max(cellRectLast.x + cellRectLast.width + b, 1), visRect.y + visRect.height / 2, 1, Math.max(cellRect.height + b, 1)));
+					scrollRectToVisible(new Rectangle(Math.max(cellRect.x - b, 1), visRect.y + visRect.height / 2, 1, Math.max(cellRect.height + b, 1)));
 				}
 			});
 		}
