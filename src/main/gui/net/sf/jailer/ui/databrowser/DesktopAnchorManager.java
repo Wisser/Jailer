@@ -94,6 +94,8 @@ public abstract class DesktopAnchorManager {
 	public void onTableBrowserNeared(RowBrowser tableBrowser) {
 		if (isApplicable(tableBrowser)) {
 			showButton(tableBrowser);
+		} else {
+			reset();
 		}
 	}
 
