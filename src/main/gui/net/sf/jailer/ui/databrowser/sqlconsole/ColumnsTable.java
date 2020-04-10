@@ -308,9 +308,11 @@ public class ColumnsTable extends JTable {
 					Rectangle cellRect = getCellRect(0, currentColumn + 1, true);
 					Rectangle cellRectLast = getCellRect(0, getColumnCount() - 1, true);
 					Rectangle visRect = getVisibleRect();
-					int b = Math.max(cellRect.width / 4, 16);
-					scrollRectToVisible(new Rectangle(Math.max(cellRectLast.x + cellRectLast.width + b, 1), visRect.y + visRect.height / 2, 1, Math.max(cellRect.height + b, 1)));
-					scrollRectToVisible(new Rectangle(Math.max(cellRect.x - b, 1), visRect.y + visRect.height / 2, 1, Math.max(cellRect.height + b, 1)));
+					int b = 0; // Math.max(cellRect.width / 4, 16);
+					if (cellRect.x < visRect.x || cellRect.x + cellRect.width > visRect.x + visRect.width) {
+						scrollRectToVisible(new Rectangle(Math.max(cellRectLast.x + cellRectLast.width + b, 1), visRect.y + visRect.height / 2, 1, Math.max(cellRect.height + b, 1)));
+						scrollRectToVisible(new Rectangle(Math.max(cellRect.x - b, 1), visRect.y + visRect.height / 2, 1, Math.max(cellRect.height + b, 1)));
+					}
 				}
 			});
 		}
