@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.kohsuke.args4j.CmdLineParser;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.ui.UIUtil;
 
 /**
@@ -41,6 +42,7 @@ public class UICommandLineParser {
 	public static UICommandLine parse(String[] args, boolean silent) throws Exception {
 		UICommandLine commandLine = new UICommandLine();
 		try {
+			args = CommandLineParser.preprocessFileLookup(args);
 			List<String> theArgs = new ArrayList<String>();
 			StringBuilder allArgs = new StringBuilder(UIUtil.LINE_SEPARATOR + "Arguments: ");
 			

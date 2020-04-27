@@ -15,6 +15,11 @@
  */
 package net.sf.jailer;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +43,9 @@ public class CommandLineParser {
 	public static CommandLine parse(String[] args, boolean silent) throws Exception {
 		CommandLine commandLine = new CommandLine();
 		try {
+			args = preprocessFileLookup(args);
 			List<String> theArgs = new ArrayList<String>();
 			
-			// TODO "-@" prefix unterst. Next Parameter via file. Auch GUI. Vor ESC_PREFIX verarbeiten. "- -@" swappen. Nur 1. Zeile lesen (eg. named pipe)
 			final String ESC_PREFIX = "((!JAILER_MINUS_ESC!!)";
 
 			int i = 0;
@@ -77,6 +82,25 @@ public class CommandLineParser {
 			printUsage(args);
 			throw e;
 		}
+	}
+
+	public static String[] preprocessFileLookup(String[] cArgs) throws IOException {
+		List<String> result = new ArrayList<String>();
+		for (int i = 0; i < cArgs.length; ++i) {
+			if ("-file-lookup".equals(cArgs[i]) && i < cArgs.length - 1) {
+				BufferedReader in = new BufferedReader(new FileReader(new File(cArgs[i + 1])));
+				String line = in.readLine();
+				in.close();
+				if (line == null) {
+					throw new RuntimeException("File \"" + cArgs[i + 1] + "\" is empty");
+				}
+				result.add(line);
+				++i;
+			} else {
+				result.add(cArgs[i]);
+			}
+		}
+		return result.toArray(new String[0]);
 	}
 
 	/**
