@@ -3392,6 +3392,39 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 
+			int topBorder = -1;
+			if (rb.parent != null) {
+				Rectangle firstParentRowPos = null;
+				for (Row r : rowsOfParent) {
+					int index = rb.parent.browserContentPane.rows.indexOf(r);
+					if (index < 0) {
+						for (int n = 0; n < rb.parent.browserContentPane.rows.size(); ++n) {
+							if (r.nonEmptyRowId.equals(rb.parent.browserContentPane.rows.get(n).nonEmptyRowId)) {
+								index = n;
+								break;
+							}
+						}
+					}
+
+					if (index < 0) {
+						// not visible due to distinct selection
+						continue;
+					}
+					index = rb.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(index);
+					Rectangle pos = rb.parent.browserContentPane.rowsTable.getCellRect(index, 0, false);
+
+					if (firstParentRowPos == null || firstParentRowPos.y > pos.y) {
+						firstParentRowPos = pos;
+					}
+				}
+				if (firstParentRowPos != null) {
+					Rectangle visibleRect = rb.parent.browserContentPane.rowsTable.getVisibleRect();
+					if (!(firstParentRowPos.y > visibleRect.getMaxY() || firstParentRowPos.y < visibleRect.getMinY())) {
+						topBorder = (int) (firstParentRowPos.y - visibleRect.getMinY());
+					}
+				}
+			}
+			
 			if (!rowsOfRB.isEmpty()) {
 				Rectangle firstRowPos = null;
 				Rectangle lastRowPos = null;
@@ -3435,8 +3468,13 @@ public abstract class Desktop extends JDesktopPane {
 							.scrollRectToVisible(new Rectangle(visibleRect.x, lastRowPos.y - lastRowPos.height, 1, 3 * lastRowPos.height));
 				}
 				if (firstRowPos != null) {
-					rb.browserContentPane.rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, firstRowPos.y - firstRowPos.height, 1,
+					if (topBorder >= 0 && topBorder < firstRowPos.y) {
+						rb.browserContentPane.rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, firstRowPos.y - topBorder, 1,
+								topBorder + firstRowPos.height));
+					} else {
+						rb.browserContentPane.rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, firstRowPos.y - firstRowPos.height, 1,
 							3 * firstRowPos.height));
+					}
 				}
 			}
 		}
