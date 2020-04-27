@@ -58,6 +58,9 @@ public class UICommandLine {
 	@Option(name="-password", usage="Database password.")
 	public String password = null;
 	
+	@Option(name="-file-lookup", usage="read the next parameter from the (1st line of the) file named VAL. \n(This is especially useful for not making passwords visible by querying the command line parameters)")
+	public List<String> parameterFile = new ArrayList<String>();
+
 	@Option(name="-bookmark", usage="Bookmark to open.")
 	public String bookmark = null;
 

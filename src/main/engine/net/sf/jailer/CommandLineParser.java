@@ -40,6 +40,7 @@ public class CommandLineParser {
 		try {
 			List<String> theArgs = new ArrayList<String>();
 			
+			// TODO "-@" prefix unterst. Next Parameter via file. Auch GUI. Vor ESC_PREFIX verarbeiten. "- -@" swappen. Nur 1. Zeile lesen (eg. named pipe)
 			final String ESC_PREFIX = "((!JAILER_MINUS_ESC!!)";
 
 			int i = 0;
