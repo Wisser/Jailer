@@ -109,6 +109,8 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		removeCurrentAssociationsCheckBox.setEnabled(numAssociations > 0);
 		removeCurrentTablesCheckBox.setEnabled(numTables > 0);
 		
+		jLabel3.setIcon(UIUtil.scaleIcon(jLabel3, UIUtil.readImage("/explain.png")));
+		
 		pack();
 		setLocation(parent.getLocation().x + parent.getSize().width/2 - getPreferredSize().width/2,
 				parent.getLocation().y + parent.getSize().height/2 - getPreferredSize().height/2);
@@ -287,6 +289,9 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         keepManTablesCheckBox = new javax.swing.JCheckBox();
         removeCurrentAssociationsCheckBox = new javax.swing.JCheckBox();
         keepManAssociationsCheckBox = new javax.swing.JCheckBox();
+        jPanel6 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
         jPanel1 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -384,8 +389,36 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
         jPanel5.add(jPanel2, gridBagConstraints);
+
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        jLabel3.setText("<html><i>If&nbsp;you&nbsp;want&nbsp;to&nbsp;analyze&nbsp;multiple&nbsp;schemes, <br>do&nbsp;it&nbsp;one&nbsp;after&nbsp;the&nbsp;other.</i></html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel6.add(jLabel3, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel6.add(jSeparator1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel5.add(jPanel6, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -416,7 +449,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 20;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
@@ -505,6 +538,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         getContentPane().add(jPanel4, gridBagConstraints);
 
         pack();
@@ -555,11 +589,14 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox keepManAssociationsCheckBox;
     private javax.swing.JCheckBox keepManTablesCheckBox;
     private javax.swing.JButton okButton;
