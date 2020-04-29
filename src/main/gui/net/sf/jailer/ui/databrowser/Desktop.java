@@ -3468,7 +3468,7 @@ public abstract class Desktop extends JDesktopPane {
 							.scrollRectToVisible(new Rectangle(visibleRect.x, lastRowPos.y - lastRowPos.height, 1, 3 * lastRowPos.height));
 				}
 				if (firstRowPos != null) {
-					if (topBorder >= 0 && topBorder < firstRowPos.y) {
+					if (topBorder >= 0 && topBorder < firstRowPos.y && topBorder + 2 * firstRowPos.height < visibleRect.height) {
 						rb.browserContentPane.rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, firstRowPos.y - topBorder, 1,
 								topBorder + firstRowPos.height));
 					} else {
