@@ -19,6 +19,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -2249,7 +2250,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 										UIUtil.showException(finalExtractionModelFrame, "Error", e);
 									}
 									if (withStartupWizzard && finalExtractionModelFrame.showWizzard) {
-										new StartupWizzardDialog(finalExtractionModelFrame) {
+										Point pos = null;
+										if (finalExtractionModelFrame.extractionModelEditor != null && finalExtractionModelFrame.extractionModelEditor.layeredPane != null) {
+											pos = new Point(14, 40);
+											SwingUtilities.convertPointToScreen(pos, finalExtractionModelFrame.extractionModelEditor.layeredPane);
+										}
+										new StartupWizzardDialog(finalExtractionModelFrame, pos) {
 											@Override
 											protected void onClose() {
 												try {

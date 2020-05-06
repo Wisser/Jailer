@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -36,7 +37,7 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 	private static final long serialVersionUID = -6737420167295938488L;
 	
 	/** Creates new form SqlErrorDialog */
-	public StartupWizzardDialog(Window parent) {
+	public StartupWizzardDialog(Window parent, Point pos) {
 		super(parent, ModalityType.MODELESS);
 		setUndecorated(true);
 		initComponents();
@@ -103,7 +104,9 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 		loadButton.addKeyListener(keyListener);
 		
 		pack();
-		if (parent == null) {
+		if (pos != null) {
+			setLocation(pos);
+		} else if (parent == null) {
 			setLocation(200, 100);
 		} else {
 			setLocation(getParent().getX() + (getParent().getWidth() - getWidth()) / 2, getParent().getY() + (getParent().getHeight() - getHeight()) / 2);
@@ -142,7 +145,7 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 
         newModelButton.setText("New Model");
         newModelButton.setToolTipText("New Model without Restrictions");
-        newModelButton.setMargin(new java.awt.Insets(6, 14, 6, 14));
+        newModelButton.setMargin(new java.awt.Insets(4, 10, 4, 10));
         newModelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newModelButtonActionPerformed(evt);
@@ -152,12 +155,12 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         messagePanel.add(newModelButton, gridBagConstraints);
 
-        newModelWRjButton.setText("    New Model with Restrictions    ");
+        newModelWRjButton.setText("  New Model with Restrictions  ");
         newModelWRjButton.setToolTipText("New Model with disabled non-dependencies");
-        newModelWRjButton.setMargin(new java.awt.Insets(6, 14, 6, 14));
+        newModelWRjButton.setMargin(new java.awt.Insets(4, 10, 4, 10));
         newModelWRjButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newModelWRjButtonActionPerformed(evt);
@@ -167,11 +170,11 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         messagePanel.add(newModelWRjButton, gridBagConstraints);
 
         loadButton.setText("Load Model");
-        loadButton.setMargin(new java.awt.Insets(6, 14, 6, 14));
+        loadButton.setMargin(new java.awt.Insets(4, 10, 4, 10));
         loadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadButtonActionPerformed(evt);
@@ -181,7 +184,7 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         messagePanel.add(loadButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -189,7 +192,7 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 8);
         jPanel1.add(messagePanel, gridBagConstraints);
 
         iconLabel.setText("jLabel1");
@@ -197,7 +200,7 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
         jPanel1.add(iconLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

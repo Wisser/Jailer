@@ -63,10 +63,15 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
+import javax.swing.RowSorter;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -164,14 +169,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-		final javax.swing.JComboBox comboBox1 = searchComboBox;
+		final JComboBox comboBox1 = searchComboBox;
         JToggleButton searchButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox1, "Find Table", new Runnable() {
 			@Override
 			public void run() {
 				findButtonActionPerformed(null);
 			}
 		}, null, null, null, false, null, false);
-		tablePanel.add(searchButton, gridBagConstraints);
+        closureTablePanel.add(searchButton, gridBagConstraints);
         
         searchComboBox.setVisible(false);
         findButton.setVisible(false);
@@ -200,7 +205,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		if (currentSelection instanceof String) {
 			source = getDataModel().getTableByDisplayName((String) currentSelection);
 		}
-        final javax.swing.JComboBox comboBox = findPathComboBox;
+        final JComboBox comboBox = findPathComboBox;
         JToggleButton stFindButtonButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox, 
     		new Object() {
 				public String toString() {
@@ -236,7 +241,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			        return historyPanel;
 				}
 			}, false);
-		tablePanel.add(stFindButtonButton, gridBagConstraints);
+		closureTablePanel.add(stFindButtonButton, gridBagConstraints);
         
         findPathComboBox.setVisible(false);
         findPathButton.setVisible(false);
@@ -323,18 +328,28 @@ public abstract class ClosureView extends javax.swing.JDialog {
         closureTable.getTableHeader().setReorderingAllowed(false);
 		jScrollPane1.setViewportView(closureTable);
 
-		closureTable.addMouseListener(new MouseListener() {
+		MouseListener ml = new MouseListener() {
 			@Override
 			public void mouseClicked(final MouseEvent e) {
 			}
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				// context menu
+				if (!(e.getComponent() instanceof JTable)) {
+					return;
+				}
+				JTable theTable = (JTable) e.getComponent();
 				if (SwingUtilities.isRightMouseButton(e)) {
-					int row = closureTable.rowAtPoint(e.getPoint());
-					int column = closureTable.columnAtPoint(e.getPoint());
+					int row = theTable.rowAtPoint(e.getPoint());
+					int column = theTable.columnAtPoint(e.getPoint());
 					if (row < 0 || column < 0) return;
-					Object value = closureTable.getModel().getValueAt(row, column);
+					Object value;
+					RowSorter<? extends TableModel> rowSorter = theTable.getRowSorter();
+					if (theTable != neighborTable) {
+						value = theTable.getModel().getValueAt(row, column);
+					} else {
+						value = theTable.getModel().getValueAt(rowSorter.convertRowIndexToModel(row), column);
+					}
 					if (value == null || !(value instanceof String)) return;
 					Table table = getDataModel().getTableByDisplayName((String) value);
 					if (table != null) {
@@ -343,13 +358,19 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					}
 				}
 				if (SwingUtilities.isLeftMouseButton(e)) {
-					int row = closureTable.rowAtPoint(e.getPoint());
-					int column = closureTable.columnAtPoint(e.getPoint());
+					int row = theTable.rowAtPoint(e.getPoint());
+					int column = theTable.columnAtPoint(e.getPoint());
 					if (row < 0 || column < 0) return;
 					
-					final Rectangle cellRect = closureTable.getCellRect(row, column, false);
+					final Rectangle cellRect = theTable.getCellRect(row, column, false);
 					
-					Object value = closureTable.getModel().getValueAt(row, column);
+					Object value;
+					RowSorter<? extends TableModel> rowSorter = theTable.getRowSorter();
+					if (theTable != neighborTable) {
+						value = theTable.getModel().getValueAt(row, column);
+					} else {
+						value = theTable.getModel().getValueAt(rowSorter.convertRowIndexToModel(row), column);
+					}
 					if (value == null || !(value instanceof String)) return;
 					final Table table = getDataModel().getTableByDisplayName((String) value);
 					if (table != null) {
@@ -435,7 +456,12 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						popup.add(remove);
 						
 						if (cellInfo.containsKey(value)) {
-							selectTableCell(column, row);
+							if (theTable == neighborTable) {
+								CellInfo ci = cellInfo.get(value);
+								selectTableCell(ci.column, ci.row);
+							} else {
+								selectTableCell(column, row);
+							}
 						}
 						
 						ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, null, false);
@@ -452,7 +478,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			@Override
 			public void mousePressed(MouseEvent e) {
 			}
-		});
+		};
+		closureTable.addMouseListener(ml);
+		neighborTable.addMouseListener(ml);
 		
 		searchComboBox.setMaximumRowCount(30);
 		
@@ -485,7 +513,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					} else {
 						((JLabel) render).setToolTipText(null);
 					}
-					if (row == 0) {
+					if (row == 0 && table != neighborTable) {
 						((JLabel) render).setFont(bold);
 					}
 					if (cellInfo != null && selectedTable != null) {
@@ -494,7 +522,10 @@ public abstract class ClosureView extends javax.swing.JDialog {
 							((JLabel) render).setBackground(new Color(255, 230, 200));
 						}
 					}
-					Table t = getDataModel().getTableByDisplayName((String) value);
+					if (table == neighborTable) {
+						((JLabel) render).setBackground(row % 2 == 0? BG1 : BG2);
+					}
+					Table t = value instanceof String? getDataModel().getTableByDisplayName((String) value) : null;
 					if (t != null) {
 						boolean allDisabled = true;
 						boolean someRestricted = false;
@@ -523,7 +554,24 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			}
 		});
 //		closureTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
 		closureTable.setRowSelectionAllowed(false);
+		
+		neighborTable.setRowSelectionAllowed(false);
+		neighborTable.setIntercellSpacing(new Dimension(0, 0));
+		neighborTable.setDefaultRenderer(Object.class, closureTable.getDefaultRenderer(Object.class));
+		neighborTable.setAutoCreateRowSorter(true);
+		neighborTable.getTableHeader().setReorderingAllowed(false);
+		neighborTable.getTableHeader().setToolTipText("<html>The degree of a table is the total number of adjacent tables<br>that can be reached directly with an enabled association.</html>");
+		try {
+			List<SortKey> keys = new ArrayList<SortKey>();
+			keys.add(new SortKey(1, SortOrder.DESCENDING));
+			neighborTable.getRowSorter().setSortKeys(keys);
+		} catch (Exception e) {
+			e.printStackTrace();
+			// ignore
+		}
+		
 		rootTable.addItemListener(new java.awt.event.ItemListener() {
 			@Override
 			public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -687,6 +735,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 								return;
 							}
 						}
+						Rectangle aRect = closureTable.getCellRect(row, col, true);
+						aRect.setBounds(aRect.x, Math.max(0, aRect.y - aRect.height), aRect.width, aRect.height * 3);
+						closureTable.scrollRectToVisible(aRect);
 						extractionModelEditor.incCaptureLevel();
 						try {
 							if (!toSelect.isEmpty()) {
@@ -748,6 +799,12 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	
 	private Map<Table, Integer> currentForcedDistance = null;
 	
+	private final Color BG1 = new Color(255, 255, 255);
+	private final Color BG2 = new Color(242, 255, 242);
+	private final Color BG3 = new Color(255, 255, 240);
+	private final Color BG4 = new Color(220, 220, 220);
+	private final Color BG5 = new Color(255, 240, 240);
+	
 	/**
 	 * Refreshes the table model.
 	 * @param excludedTables 
@@ -762,6 +819,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		}
 		Table selectedTable = getSelectedTable();
 		refreshAssociationView(selectedTable);
+		refreshNeigborView(selectedTable);
 
 		Object[] columns = new Object[tablesPerLine + 1];
 		for (int i = 0; i < columns.length; ++i) {
@@ -789,11 +847,6 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		final int OMEGA = Integer.MAX_VALUE / 2;
 		boolean isolated = false;
 		
-		final Color BG1 = new Color(255, 255, 255);
-		final Color BG2 = new Color(242, 255, 242);
-		final Color BG3 = new Color(255, 255, 240);
-		final Color BG4 = new Color(220, 220, 220);
-		final Color BG5 = new Color(255, 240, 240);
 		bgColor.clear();
 		
 		TreeSet<String> nonIsolated = new TreeSet<String>();
@@ -1338,6 +1391,55 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		}
 	}
 
+	private void refreshNeigborView(Table selectedTable) {
+		DefaultTableModel tableModel = new DefaultTableModel(new Object[] { "Table", "Degree" }, 0) {
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+			@Override
+            public Class<?> getColumnClass(int columnIndex) {
+				if(columnIndex == 1){
+                    return Integer.class;
+                }
+                return super.getColumnClass(columnIndex);
+            }
+			private static final long serialVersionUID = -6639310191624899380L;
+		};
+		
+		while (tableModel.getRowCount() > 0) {
+			tableModel.removeRow(0);
+		}
+		if (selectedTable != null) {
+			Set<Table> closure = selectedTable.closure(true);
+			for (Table table: closure) {
+				Set<Table> neighbors = new HashSet<Table>();
+				for (Association a: table.associations) {
+					if (a.getJoinCondition() != null) {
+						neighbors.add(a.destination);
+					}
+				}
+				tableModel.addRow(new Object[] { getDataModel().getDisplayName(table), neighbors.size() });
+			}
+		}
+
+		List<? extends SortKey> keys = null;
+		try {
+			keys = neighborTable.getRowSorter().getSortKeys();
+		} catch (Exception e) {
+			// ignore
+		}
+		neighborTable.setModel(tableModel);
+		adjustTableColumnsWidth(neighborTable);
+		if (keys != null) {
+			try {
+				neighborTable.getRowSorter().setSortKeys(keys);
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+	}
+
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
@@ -1351,6 +1453,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
         tabbedPane = new javax.swing.JTabbedPane();
         tablePane = new javax.swing.JPanel();
         tablePanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        closureTablePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
         searchComboBox = new JComboBox();
@@ -1359,6 +1464,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
         findButton = new javax.swing.JButton();
         findPathComboBox = new JComboBox();
         findPathButton = new javax.swing.JButton();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        neighborTable = new javax.swing.JTable();
         associationPane = new javax.swing.JPanel();
         associationPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -1391,6 +1498,15 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         tablePanel.setLayout(new java.awt.GridBagLayout());
 
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jSplitPane1.setResizeWeight(0.75);
+        jSplitPane1.setToolTipText("");
+        jSplitPane1.setContinuousLayout(true);
+        jSplitPane1.setOneTouchExpandable(true);
+
+        closureTablePanel.setLayout(new java.awt.GridBagLayout());
+
         jScrollPane1.setMinimumSize(new java.awt.Dimension(23, 64));
 
         closureTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -1418,7 +1534,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
-        tablePanel.add(jScrollPane1, gridBagConstraints);
+        closureTablePanel.add(jScrollPane1, gridBagConstraints);
 
         searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         searchComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -1429,7 +1545,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        tablePanel.add(searchComboBox, gridBagConstraints);
+        closureTablePanel.add(searchComboBox, gridBagConstraints);
 
         jLabel7.setText("Columns ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1437,7 +1553,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        tablePanel.add(jLabel7, gridBagConstraints);
+        closureTablePanel.add(jLabel7, gridBagConstraints);
 
         columnsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -1447,7 +1563,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
-        tablePanel.add(columnsComboBox, gridBagConstraints);
+        closureTablePanel.add(columnsComboBox, gridBagConstraints);
 
         findButton.setText("Search");
         findButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1460,7 +1576,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        tablePanel.add(findButton, gridBagConstraints);
+        closureTablePanel.add(findButton, gridBagConstraints);
 
         findPathComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         findPathComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -1471,7 +1587,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 2;
-        tablePanel.add(findPathComboBox, gridBagConstraints);
+        closureTablePanel.add(findPathComboBox, gridBagConstraints);
 
         findPathButton.setText("Search");
         findPathButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1484,7 +1600,39 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        tablePanel.add(findPathButton, gridBagConstraints);
+        closureTablePanel.add(findPathButton, gridBagConstraints);
+
+        jSplitPane1.setLeftComponent(closureTablePanel);
+
+        neighborTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(neighborTable);
+
+        jSplitPane1.setRightComponent(jScrollPane3);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jSplitPane1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 100;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        tablePanel.add(jPanel1, gridBagConstraints);
 
         tablePane.add(tablePanel);
 
@@ -1730,6 +1878,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JPanel associationPane;
     private javax.swing.JPanel associationPanel;
     private javax.swing.JTable closureTable;
+    private javax.swing.JPanel closureTablePanel;
     private JComboBox columnsComboBox;
     public javax.swing.JPanel contentPanel;
     private javax.swing.JButton findButton;
@@ -1741,9 +1890,13 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JTable neighborTable;
     private JComboBox searchComboBox;
     private javax.swing.JCheckBox showOnlyEnabledCheckBox;
     private javax.swing.JPanel tabAssAssPanel;
@@ -1759,7 +1912,28 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	private Font normalfont = new JLabel("normal").getFont();
 	private Font nonbold = new Font(normalfont.getName(), normalfont.getStyle() & ~Font.BOLD, normalfont.getSize());
 
-	public void addTabComponent(String titel, Container tab) {
+    public void adjustTableColumnsWidth(JTable table) {
+		DefaultTableModel dtm = (DefaultTableModel) table.getModel();
+		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
+		for (int i = 0; i < table.getColumnCount(); i++) {
+			TableColumn column = table.getColumnModel().getColumn(i);
+			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(table, column.getHeaderValue(), false, false, 0, i);
+			int width = 1;
+			width = Math.max(width, comp.getPreferredSize().width);
+
+			int line = 0;
+			for (; line < table.getRowCount(); ++line) {
+				comp = table.getCellRenderer(line, i).getTableCellRendererComponent(table, dtm.getValueAt(line, i), false, false, line, i);
+				width = Math.max(width, comp.getPreferredSize().width);
+			}
+			column.setPreferredWidth(Math.min(width, 400));
+			if (i == 0) {
+				column.setWidth(column.getPreferredWidth());
+			}
+		}
+	}
+
+    public void addTabComponent(String titel, Container tab) {
 		 tabbedPane.addTab(titel, tab);
 	}
 
