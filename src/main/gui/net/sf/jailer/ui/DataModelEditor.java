@@ -519,7 +519,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 			width = Math.max(width, comp.getPreferredSize().width);
 
 			int line = 0;
-			for (; line < table.getRowCount(); ++line) {
+			for (; line < table.getRowCount() && line < 1000; ++line) {
 				comp = table.getCellRenderer(line, i).getTableCellRendererComponent(table, dtm.getValueAt(line, i), false, false, line, i);
 				width = Math.max(width, comp.getPreferredSize().width);
 			}
