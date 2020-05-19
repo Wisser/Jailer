@@ -649,7 +649,8 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected void onRowSelect(Table table, Row row) {
 				if (metaDataDetailsPanel != null) {
-					metaDataDetailsPanel.showMetaDataDetails(getMetaDataSource(session).toMDTable(table), table, row, true, datamodel);
+					MetaDataSource metaDataSource = getMetaDataSource(session);
+					metaDataDetailsPanel.showMetaDataDetails(metaDataSource.isInitialized()? metaDataSource.toMDTable(table): null, table, row, true, datamodel);
 				}
 			}
         };
