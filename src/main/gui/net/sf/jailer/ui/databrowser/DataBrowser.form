@@ -146,7 +146,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="menuTools">
           <Properties>
-            <Property name="text" type="java.lang.String" value="DataModel"/>
+            <Property name="text" type="java.lang.String" value="Model"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="analyseMenuItem">
@@ -213,6 +213,14 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
               </AuxValues>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="consistencyCheckMenuItem1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Check referential Consistency"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="consistencyCheckMenuItem1ActionPerformed"/>
+              </Events>
             </MenuItem>
           </SubComponents>
         </Menu>

@@ -121,4 +121,9 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 		return result;
 	}
 
+	@Override
+	protected boolean isInitialized() {
+		return metaDataSource.isInitialized();
+	}
+
 }

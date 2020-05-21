@@ -5848,6 +5848,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		d.setLocation(x, y);
 		d.setSize(400, d.getHeight() + 20);
 		UIUtil.fit(d);
+		Window p = SwingUtilities.getWindowAncestor(this);
+		if (p != null) {
+			int maxX = p.getX() + p.getWidth() - d.getWidth();
+			d.setLocation(Math.max(0, Math.min(maxX, d.getX())), d.getY());
+			int maxY = p.getY() + p.getHeight() - d.getHeight();
+			if (maxY < d.getY()) {
+				int deltaH = Math.min(d.getY() - maxY, (int) (0.30 * d.getHeight()));
+				maxY += deltaH;
+				d.setSize(d.getWidth(), d.getHeight() - deltaH);
+				d.setLocation(d.getX(), Math.max(0, maxY));
+			}
+		}
 		d.setVisible(true);
 		setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
 		onRedraw();
@@ -5929,10 +5941,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			d.setSize(400, d.getHeight() + 20);
 			UIUtil.fit(d);
 		}
+		Window p = SwingUtilities.getWindowAncestor(this);
+		if (p != null) {
+			int maxX = p.getX() + p.getWidth() - d.getWidth();
+			d.setLocation(Math.max(0, Math.min(maxX, d.getX())), d.getY());
+			int maxY = p.getY() + p.getHeight() - d.getHeight();
+			if (maxY < d.getY()) {
+				int deltaH = Math.min(d.getY() - maxY, (int) (0.30 * d.getHeight()));
+				maxY += deltaH;
+				d.setSize(d.getWidth(), d.getHeight() - deltaH);
+				d.setLocation(d.getX(), Math.max(0, maxY));
+			}
+		}
 		d.setVisible(true);
 		setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
 		onRedraw();
-		}
+	}
 
 	public void updateSingleRowDetailsView() {
 		if (singleRowDetailsView != null) {

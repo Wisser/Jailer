@@ -1,4 +1,5 @@
 9.4.1
+  - Improved database metadata management.
   - Increased initial responsiveness of the Data Browser.
 
 9.4

@@ -366,6 +366,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jSeparator15 = new javax.swing.JPopupMenu.Separator();
         modelMigrationMenuItem = new javax.swing.JMenuItem();
         checkPKMenuItem = new javax.swing.JMenuItem();
+        consistencyCheckMenuItem1 = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         undoMenuItem = new javax.swing.JMenuItem();
         redoMenuItem = new javax.swing.JMenuItem();
@@ -586,7 +587,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(fileMenu);
 
-        jMenu1.setText("DataModel");
+        jMenu1.setText("Model");
 
         updateDataModel.setText("Analyze Database");
         updateDataModel.addActionListener(new java.awt.event.ActionListener() {
@@ -638,6 +639,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu1.add(checkPKMenuItem);
+
+        consistencyCheckMenuItem1.setText("Check referential Consistency");
+        consistencyCheckMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                consistencyCheckMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(consistencyCheckMenuItem1);
 
         jMenuBar2.add(jMenu1);
 
@@ -1999,6 +2008,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	}
     }//GEN-LAST:event_consistencyCheckMenuItemActionPerformed
 
+    private void consistencyCheckMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consistencyCheckMenuItem1ActionPerformed
+    	consistencyCheckMenuItemActionPerformed(evt);
+    }//GEN-LAST:event_consistencyCheckMenuItem1ActionPerformed
+
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
         String extractionModelFile = extractionModelEditor.extractionModelFile;
@@ -2340,6 +2353,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem columnOrderItem;
     private javax.swing.JCheckBoxMenuItem connectDb;
     private javax.swing.JMenuItem consistencyCheckMenuItem;
+    private javax.swing.JMenuItem consistencyCheckMenuItem1;
     private javax.swing.JMenuItem createCLIItem;
     private javax.swing.JMenuItem cycleView;
     private javax.swing.JMenuItem dataExport;

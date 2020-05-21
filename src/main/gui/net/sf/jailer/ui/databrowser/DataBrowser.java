@@ -1214,6 +1214,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jSeparator10 = new javax.swing.JPopupMenu.Separator();
         showDataModelMenuItem = new javax.swing.JCheckBoxMenuItem();
         checkPKMenuItem = new javax.swing.JMenuItem();
+        consistencyCheckMenuItem1 = new javax.swing.JMenuItem();
         jviewMenu = new javax.swing.JMenu();
         rowLimitMenu = new javax.swing.JMenu();
         bookmarkMenu = new javax.swing.JMenu();
@@ -1437,7 +1438,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 24, 35);
+        layeredPaneContent.setBounds(0, 0, 24, 42);
 
         desktopSplitPane.setLeftComponent(jLayeredPane1);
 
@@ -1861,7 +1862,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         menuBar.add(jMenu1);
 
-        menuTools.setText("DataModel");
+        menuTools.setText("Model");
 
         analyseMenuItem.setText("Analyse Database");
         analyseMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1921,6 +1922,14 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         menuTools.add(checkPKMenuItem);
+
+        consistencyCheckMenuItem1.setText("Check referential Consistency");
+        consistencyCheckMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                consistencyCheckMenuItem1ActionPerformed(evt);
+            }
+        });
+        menuTools.add(consistencyCheckMenuItem1);
 
         menuBar.add(menuTools);
 
@@ -2742,6 +2751,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem columnOrderItem;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JMenuItem consistencyCheckMenuItem;
+    private javax.swing.JMenuItem consistencyCheckMenuItem1;
     private javax.swing.JPanel consoleDummyPanel;
     private javax.swing.JMenuItem createCLIItem;
     private javax.swing.JMenuItem createExtractionModelMenuItem;
@@ -4115,6 +4125,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		new CLIPanel(dbConnectionDialog, true, null, mapping, bookmarks, bookmark, executionContext).open(this);
     }//GEN-LAST:event_createCLIItemActionPerformed
+
+    private void consistencyCheckMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consistencyCheckMenuItem1ActionPerformed
+    	consistencyCheckMenuItemActionPerformed(evt);
+    }//GEN-LAST:event_consistencyCheckMenuItem1ActionPerformed
 
     private String bookmarkName(String bookmarkFileName) {
 		if (bookmarkFileName.endsWith(BookmarksPanel.BOOKMARKFILE_EXTENSION)) {

@@ -1362,5 +1362,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     protected abstract String getSchemaName(SCHEMA schema);
     protected abstract List<SCHEMA> getSchemas(SOURCE metaDataSource);
     protected abstract List<Association> getAssociations(TABLE source, TABLE destination);
+	protected abstract boolean isInitialized();
 
 };

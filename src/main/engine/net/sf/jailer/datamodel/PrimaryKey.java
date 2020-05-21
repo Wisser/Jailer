@@ -111,7 +111,7 @@ public class PrimaryKey {
 		}
 		
 		if (match.size() != primaryKey.columns.size()) {
-			LogUtil.warn(new IllegalStateException("Incomplete pk-upk-match. (" + minimize + ")\n"
+			LogUtil.warn(new IllegalStateException("incomplete PK-UPK-match (" + minimize + ")\n"
 					+ "PK: " + primaryKey.toSQL(null) + "\n"
 					+ "UPK: " + toSQL(null) + "\n"
 					+ "Match: " + match + "\n"));

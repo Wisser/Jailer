@@ -20,8 +20,11 @@ import java.awt.Component;
 
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 
 import org.fife.ui.autocomplete.AutoCompletion;
+import org.fife.ui.autocomplete.AutoCompletionEvent;
+import org.fife.ui.autocomplete.AutoCompletionListener;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.CompletionCellRenderer;
@@ -87,6 +90,20 @@ public class SQLAutoCompletion extends AutoCompletion {
 				}
 				
 				setText(sb.toString());
+			}
+		});
+		addAutoCompletionListener(new AutoCompletionListener() {
+			@SuppressWarnings("rawtypes")
+			@Override
+			public void autoCompleteUpdate(AutoCompletionEvent e) {
+				if (provider instanceof SQLCompletionProvider) {
+					if (!((SQLCompletionProvider) provider).isInitialized()) {
+						if (e.getEventType() == AutoCompletionEvent.Type.POPUP_SHOWN) {
+							JOptionPane.showMessageDialog(editorPane, "The database metadata is still being loaded.\r\n" + 
+									"Auto-complete is therefore not yet available.", "Auto-Complete not yet available", JOptionPane.INFORMATION_MESSAGE);
+						}
+					}
+				}
 			}
 		});
 	}

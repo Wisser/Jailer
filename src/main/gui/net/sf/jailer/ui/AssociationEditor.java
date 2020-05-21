@@ -582,6 +582,11 @@ public class AssociationEditor extends javax.swing.JDialog {
 				}
 			}
 		}
+
+		@Override
+		protected boolean isInitialized() {
+			return true;
+		}
 	}
 	
 	private static final long serialVersionUID = 603961628104674406L;
