@@ -42,7 +42,7 @@ public class SQLAutoCompletion extends AutoCompletion {
 	
 	private final RTextArea editorPane;
 
-	public SQLAutoCompletion(CompletionProvider provider, RTextArea editorPane) {
+	public SQLAutoCompletion(final CompletionProvider provider, final RTextArea editorPane) {
 		super(provider);
 		this.editorPane = editorPane;
 		install(editorPane);
