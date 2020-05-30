@@ -459,7 +459,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				};
 				Collections.sort(rows, comparator);
-				if (!parentRow.isEmpty() && distinctParentRowModelIndex.size() < parentRow.size() && !rb.parent.browserContentPane.useInheritedBlockNumbers) {
+				if (!parentRow.isEmpty() && singleBlockRows.isEmpty() && distinctParentRowModelIndex.size() < parentRow.size() && !rb.parent.browserContentPane.useInheritedBlockNumbers) {
 					useInheritedBlockNumbers = true;
 					for (Row row: rows) {
 						Row pRow = parentRow.get(row);
@@ -467,11 +467,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							row.setInheritedParentModelIndex(pRow.getParentModelIndex());
 						}
 					}
-					for (Row row: singleBlockRows) {
-						row.setInheritedParentModelIndex(row.getInheritedParentModelIndex() + 0.25);
-					}
 				}
-//				Collections.sort(rows, comparator);
 			}
 		}
 

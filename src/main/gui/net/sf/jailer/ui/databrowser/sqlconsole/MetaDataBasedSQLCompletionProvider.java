@@ -123,7 +123,7 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 
 	@Override
 	protected boolean isInitialized() {
-		return metaDataSource.isInitialized();
+		return metaDataSource.isInitialized() && (metaDataSource.getDefaultSchema() == null || metaDataSource.getDefaultSchema().isLoaded());
 	}
 
 }

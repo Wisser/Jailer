@@ -149,8 +149,9 @@ public class TableDetailsView extends javax.swing.JPanel {
 					} else {
 						mdTableIsUpTodate = mdTable.isUptodate(table);
 					}
+				} else {
+					cacheable = false;
 				}
-						
 				if (mdTable != null && !mdTableIsUpTodate && !ModelBuilder.isJailerTable(table.getUnqualifiedName())) {
 					warnLabel.setIcon(MetaDataPanel.getScaledIcon(TableDetailsView.this, MetaDataPanel.warnIcon, false));
 					analyseButton.setText("Analyse schema \"" + mdTable.getSchema().getUnquotedName() + "\"");

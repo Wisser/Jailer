@@ -1200,7 +1200,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 						metaDataSource.clear();
 					}
 				} finally {
-			        UIUtil.invokeLater(new Runnable() {
+					UIUtil.invokeLater(new Runnable() {
 			            @Override
 			            public void run() {
 		                	if (--inResetCount <= 0) {
@@ -1208,13 +1208,30 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				                    metaDataDetailsPanel.reset();
 				                    updateTreeModel(metaDataSource);
 				                    if (finalSelectedTable != null) {
-				                        MDSchema schema = metaDataSource.find(finalSelectedTable.getSchema().getName());
-				                        if (schema != null) {
-				                            MDTable table = schema.find(finalSelectedTable.getName());
-				                            if (table != null) {
-				                            	select(table);
-				                            }
-				                        }
+				                        final MDSchema schema = metaDataSource.find(finalSelectedTable.getSchema().getName());
+				                        ActionListener al = new ActionListener() {
+				                        	int cnt = 10;
+				                			@Override
+				                			public void actionPerformed(ActionEvent e) {
+				                				if (schema != null) {
+				                					if (!schema.isLoaded()) {
+				                						if (--cnt > 0) {
+				                							Timer timer = new Timer(200, this);
+				    				                		timer.setRepeats(false);
+				    				                		timer.start();
+				                						}
+			    				                		return;
+				                					}
+						                            MDTable table = schema.find(finalSelectedTable.getName());
+						                            if (table != null) {
+						                            	select(table);
+						                            }
+				                				}
+				                			}
+				                        };
+				                        Timer timer = new Timer(100, al);
+				                		timer.setRepeats(false);
+				                		timer.start();
 				                    }
 				                } finally {
 				                	refreshButton.setEnabled(true);

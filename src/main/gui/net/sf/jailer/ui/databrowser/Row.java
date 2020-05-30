@@ -84,19 +84,19 @@ public class Row {
 	/**
 	 * The inherited block number.
 	 */
-	private double inheritedParentModelIndex = 0;
+	private int inheritedParentModelIndex = 0;
 
 	/**
-	 * @return the parentModelInndex
+	 * @return the parentModelIndex
 	 */
-	public double getInheritedParentModelIndex() {
+	public int getInheritedParentModelIndex() {
 		return inheritedParentModelIndex;
 	}
 
 	/**
-	 * @param inheritedParentModelIndex the inheritedParentModelInndex to set
+	 * @param inheritedParentModelIndex the inheritedParentModelIndex to set
 	 */
-	public void setInheritedParentModelIndex(double inheritedParentModelIndex) {
+	public void setInheritedParentModelIndex(int inheritedParentModelIndex) {
 		this.inheritedParentModelIndex = inheritedParentModelIndex;
 	}
 
