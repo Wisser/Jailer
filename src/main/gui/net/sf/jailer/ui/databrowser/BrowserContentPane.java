@@ -4584,7 +4584,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		selectDistinctCheckBox.setVisible(nndr > 0);
 		selectDistinctCheckBox.setText("select distinct (-" + nndr + ")");
-
+		if (getParentBrowser() != null) {
+			BrowserContentPane pBrowser = getParentBrowser().browserContentPane;
+			if (pBrowser.selectDistinctCheckBox.isVisible() && !pBrowser.selectDistinctCheckBox.isSelected()) {
+				if (selectDistinctCheckBox.isSelected()) {
+					selectDistinctCheckBox.setVisible(false);
+				}
+			}
+		}
+		
 		if (filterHeader != null) {
 			if (rowsTable.getRowSorter() != null && rowsTable.getRowSorter().getViewRowCount() == 0) {
 				filterHeader.setTable(null);

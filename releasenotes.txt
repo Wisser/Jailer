@@ -1,8 +1,8 @@
-9.4.1
+9.4.2
   - Improved database metadata management.
   - Increased initial responsiveness of the Data Browser.
 
-9.4
+9.4.1
   - The new "Degree view" allows quick and easy editing of the associations of tables with the highest connectivity.
 
 9.3.6
