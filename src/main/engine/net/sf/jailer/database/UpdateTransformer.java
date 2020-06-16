@@ -301,8 +301,6 @@ public class UpdateTransformer extends AbstractResultSetReader {
 					whereWOAlias.append(" and ");
 				}
 				f = false;
-				// TODO
-				whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
 				String value;
 				Boolean isNull;
 				String name = quoting.quote(pk.name);

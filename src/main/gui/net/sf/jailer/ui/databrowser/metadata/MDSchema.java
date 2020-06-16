@@ -36,6 +36,7 @@ import javax.swing.ImageIcon;
 
 import org.apache.log4j.Logger;
 
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
@@ -149,13 +150,19 @@ public class MDSchema extends MDObject {
 		synchronized (getTablesLock) {
 			if (tables == null) {
 				try {
+					// TODO readEstimatedRowCounts concurrently (dedicated queue)
+					long t = System.currentTimeMillis();
 					tables = new ArrayList<MDTable>();
 					Map<String, Long> estimatedRowCounts = readEstimatedRowCounts();
+					t = System.currentTimeMillis() - t;
+					if (t > 4000) {
+						DBMS dbms = getMetaDataSource().getSession().dbms;
+						UIUtil.sendIssue("getTables", " " + t + " " + (dbms != null? dbms.getId() : null) + " " + estimatedRowCounts.size());
+					}
 					if (estimatedRowCounts.size() > 10000) {
 						// rendering many ERCs is too expensive
 						estimatedRowCounts.clear();
 					}
-					// TODO readEstimatedRowCounts concurrently (dedicated queue)
 					
 					MetaDataSource metaDataSource = getMetaDataSource();
 					synchronized (metaDataSource.getSession().getMetaData()) {

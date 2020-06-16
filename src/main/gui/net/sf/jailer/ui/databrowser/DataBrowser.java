@@ -650,8 +650,17 @@ public class DataBrowser extends javax.swing.JFrame {
 			protected void onRowSelect(Table table, Row row) {
 				if (metaDataDetailsPanel != null) {
 					MetaDataSource metaDataSource = getMetaDataSource(session);
-					// TODO check schema.isInitialized() of table's schema. Trigger loading once if not loaded.
-					metaDataDetailsPanel.showMetaDataDetails(metaDataSource.isInitialized() && metaDataSource.getDefaultSchema() != null && metaDataSource.getDefaultSchema().isLoaded()? metaDataSource.toMDTable(table): null, table, row, true, datamodel);
+					boolean passTable = metaDataSource.isInitialized() && metaDataSource.getDefaultSchema() != null && metaDataSource.getDefaultSchema().isLoaded();
+					if (passTable) {
+						MDSchema schema = metaDataSource.getSchemaOfTable(table);
+						if (schema != null && schema != metaDataSource.getDefaultSchema()) {
+							if (!schema.isLoaded()) {
+								passTable = false;
+								schema.loadTables(true, null, null);
+							}
+						}
+					}
+					metaDataDetailsPanel.showMetaDataDetails(passTable? metaDataSource.toMDTable(table): null, table, row, true, datamodel);
 				}
 			}
         };

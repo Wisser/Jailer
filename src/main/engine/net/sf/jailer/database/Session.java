@@ -255,7 +255,6 @@ public class Session {
 			private Random random = new Random();
 			@Override
 			public synchronized Connection getConnection() throws SQLException {
-				@SuppressWarnings("resource")
 				Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;
 
 				if (con == null && Boolean.TRUE.equals(sharesConnection.get())) {
