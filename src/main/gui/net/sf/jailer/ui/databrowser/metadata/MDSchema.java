@@ -155,6 +155,8 @@ public class MDSchema extends MDObject {
 						// rendering many ERCs is too expensive
 						estimatedRowCounts.clear();
 					}
+					// TODO readEstimatedRowCounts concurrently (dedicated queue)
+					
 					MetaDataSource metaDataSource = getMetaDataSource();
 					synchronized (metaDataSource.getSession().getMetaData()) {
 						ResultSet rs = metaDataSource.readTables(getName());

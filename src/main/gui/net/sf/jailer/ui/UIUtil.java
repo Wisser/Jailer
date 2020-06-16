@@ -117,7 +117,6 @@ import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
-import net.sf.jailer.util.LogUtil;
 
 /**
  * Some utility methods.
@@ -808,6 +807,8 @@ public class UIUtil {
      */
     public static void showException(Component parent, String title, Throwable t, Object context, JComponent additionalControl) {
     	Throwable original = t;
+    	
+    	// TODO exception stack trace stripping ala AWTWatchdog#sendThreadDump
     	
     	if (context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_MB_USER_ERROR) {
         	if (t instanceof IndexOutOfBoundsException

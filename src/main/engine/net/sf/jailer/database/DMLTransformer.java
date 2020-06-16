@@ -497,7 +497,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 						if (columnLabel[i] == null) {
 							continue;
 						}
-						if  (!isPrimaryKeyColumn(columnLabel[i])) {
+						if (!isPrimaryKeyColumn(columnLabel[i])) {
 							if (sets.length() > 0) {
 								sets.append(", ");
 							}

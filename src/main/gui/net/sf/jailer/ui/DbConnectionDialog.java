@@ -1324,4 +1324,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         // load images
     	warnIcon = UIUtil.readImage("/wanr.png");
 	}
+    
+    // TODO warn if more than one driver could connect. Propose restart.
+    
 }

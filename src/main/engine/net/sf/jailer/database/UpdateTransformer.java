@@ -301,6 +301,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 					whereWOAlias.append(" and ");
 				}
 				f = false;
+				// TODO
 				whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
 				String value;
 				Boolean isNull;
@@ -341,7 +342,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 					if (columnLabel[i] == null) {
 						continue;
 					}
-					if  (!isPrimaryKeyColumn(columnLabel[i])) {
+					if (!isPrimaryKeyColumn(columnLabel[i])) {
 						if (columnNamesLower.contains(columnLabel[i].toLowerCase(Locale.ENGLISH))) {
 							if (sets.length() > 0) {
 								sets.append(", ");

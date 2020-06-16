@@ -443,7 +443,7 @@ public class RemoteEntityGraph extends EntityGraph {
 					throw new RuntimeException(new SqlException("\"" + e.getMessage() + "\" in statement \"" + insert + "\"", finalSelect, e));
 	            }
 			}
-		}, null, null, limitDefinition.limit, false);
+		}, null, null, limitDefinition.limit != null? limitDefinition.limit : 0, false);
 
 		if (updateStatistics != null) {
 			updateStatistics.run();
