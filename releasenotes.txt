@@ -1,3 +1,6 @@
+9.4.3
+  - Fixed issue "Error when running sql script" https://sourceforge.net/p/jailer/discussion/700499/thread/90600d12b6
+
 9.4.2
   - Improved database metadata management.
   - Increased initial responsiveness of the Data Browser.
