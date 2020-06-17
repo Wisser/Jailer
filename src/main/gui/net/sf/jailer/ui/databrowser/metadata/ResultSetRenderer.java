@@ -42,6 +42,7 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.Desktop;
+import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
@@ -218,7 +219,7 @@ public class ResultSetRenderer extends javax.swing.JPanel {
             return new ArrayList<RowBrowser>();
         }
         @Override
-        protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward) {
+        protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward, FindClosureContext findClosureContext) {
         }
         @Override
         protected void findClosure(Row row) {}

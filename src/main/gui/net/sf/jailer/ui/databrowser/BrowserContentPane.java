@@ -158,6 +158,7 @@ import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Desktop.RowToRowLink;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
@@ -2910,9 +2911,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				BrowserContentPane parentContentPane = getParentBrowser().browserContentPane;
 		
 				Set<Pair<BrowserContentPane, Row>> newElements = new HashSet<Pair<BrowserContentPane, Row>>();
-				for (Pair<BrowserContentPane, Row> e: rowsClosure.currentClosure) {
-					if (e.a == parentContentPane) {
-						parentContentPane.findClosure(e.b, newElements, true);
+				synchronized (getMonitorForFindClosure()) {
+					FindClosureContext findClosureContext = new FindClosureContext();
+					for (Pair<BrowserContentPane, Row> e: rowsClosure.currentClosure) {
+						if (e.a == parentContentPane) {
+							parentContentPane.findClosure(e.b, newElements, true, findClosureContext);
+						}
 					}
 				}
 				rowsClosure.currentClosure.addAll(newElements);
@@ -5773,8 +5777,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract JFrame getOwner();
 
 	protected abstract void findClosure(Row row);
+	protected Object getMonitorForFindClosure() {
+		return "";
+	}
 	protected void findTempClosure(Row row) {};
-	protected abstract void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward);
+	protected abstract void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward, FindClosureContext findClosureContext);
 
 	protected abstract QueryBuilderDialog getQueryBuilderDialog();
 

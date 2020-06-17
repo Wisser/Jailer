@@ -747,14 +747,21 @@ public abstract class Desktop extends JDesktopPane {
 					addedRowPairs = null;
 				}
 			}
-
+			@Override
+			protected Object getMonitorForFindClosure() {
+				return Desktop.this;
+			}
+			
 			@Override
 			protected void findClosure(Row row) {
 				Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
-				findClosure(row, rows, false);
-				rowsClosure.currentClosure.addAll(rows);
-				rows = new HashSet<Pair<BrowserContentPane, Row>>();
-				findClosure(row, rows, true);
+				synchronized (Desktop.this) {
+					FindClosureContext findClosureContext = new FindClosureContext();
+					findClosure(row, rows, false, findClosureContext);
+					rowsClosure.currentClosure.addAll(rows);
+					rows = new HashSet<Pair<BrowserContentPane, Row>>();
+					findClosure(row, rows, true, findClosureContext);
+				}
 				rowsClosure.currentClosure.addAll(rows);
 				rowsClosure.parentPath.clear();
 				rowsClosure.parentPath.add(this);
@@ -780,11 +787,14 @@ public abstract class Desktop extends JDesktopPane {
 			protected void findTempClosure(Row row) {
 				Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
 				Set<Pair<BrowserContentPane, Row>> closure = new HashSet<Pair<BrowserContentPane, Row>>();
-				findClosure(row, rows, false);
-				closure.addAll(rows);
-				rows = new HashSet<Pair<BrowserContentPane, Row>>();
-				findClosure(row, rows, true);
-				closure.addAll(rows);
+				FindClosureContext findClosureContext = new FindClosureContext();
+				synchronized (Desktop.this) {
+					findClosure(row, rows, false, findClosureContext);
+					closure.addAll(rows);
+					rows = new HashSet<Pair<BrowserContentPane, Row>>();
+					findClosure(row, rows, true, findClosureContext);
+					closure.addAll(rows);
+				}
 				
 				rowsClosure.tempClosure.clear();
 				for (Pair<BrowserContentPane, Row> p: closure) {
@@ -793,7 +803,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward) {
+			protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward, FindClosureContext findClosureContext) {
 				synchronized (Desktop.this) {
 					Pair<BrowserContentPane, Row> thisRow = new Pair<BrowserContentPane, Row>(this, row);
 					if (!closure.contains(thisRow)) {
@@ -801,28 +811,31 @@ public abstract class Desktop extends JDesktopPane {
 						if (forward) {
 							for (RowBrowser child : tableBrowsers) {
 								if (child.parent == tableBrowser) {
-									for (RowToRowLink rowToRowLink : child.rowToRowLinks) {
-										if (row.nonEmptyRowId.equals(rowToRowLink.parentRow.nonEmptyRowId)) {
-											child.browserContentPane.findClosure(rowToRowLink.childRow, closure, forward);
-										}
+									for (RowToRowLink rowToRowLink : findClosureContext.getParentPartition(child, row)) {
+//									for (RowToRowLink rowToRowLink : child.rowToRowLinks) {
+//										if (row.nonEmptyRowId.equals(rowToRowLink.parentRow.nonEmptyRowId)) {
+											child.browserContentPane.findClosure(rowToRowLink.childRow, closure, forward, findClosureContext);
+//										}
 									}
 								}
 							}
 						} else {
 							if (tableBrowser.parent != null) {
-								for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
-									if (row.nonEmptyRowId.equals(rowToRowLink.childRow.nonEmptyRowId)) {
-										tableBrowser.parent.browserContentPane.findClosure(rowToRowLink.parentRow, closure, forward);
+								for (RowToRowLink rowToRowLink : findClosureContext.getChildPartition(tableBrowser, row)) {
+//								for (RowToRowLink rowToRowLink : tableBrowser.rowToRowLinks) {
+//									if (row.nonEmptyRowId.equals(rowToRowLink.childRow.nonEmptyRowId)) {
+										tableBrowser.parent.browserContentPane.findClosure(rowToRowLink.parentRow, closure, forward, findClosureContext);
 										for (RowBrowser sibling : tableBrowsers) {
 											if (sibling.parent == tableBrowser.parent && sibling.browserContentPane != this) {
-												for (RowToRowLink sRowToRowLink: sibling.rowToRowLinks) {
-													if (rowToRowLink.parentRow.nonEmptyRowId.equals(sRowToRowLink.parentRow.nonEmptyRowId)) {
-														sibling.browserContentPane.findClosure(sRowToRowLink.childRow, closure, true);
-													}
+												for (RowToRowLink sRowToRowLink: findClosureContext.getParentPartition(sibling, rowToRowLink.parentRow)) {
+//												for (RowToRowLink sRowToRowLink: sibling.rowToRowLinks) {
+//													if (rowToRowLink.parentRow.nonEmptyRowId.equals(sRowToRowLink.parentRow.nonEmptyRowId)) {
+														sibling.browserContentPane.findClosure(sRowToRowLink.childRow, closure, true, findClosureContext);
+//													}
 												}
 											}
 										}
-									}
+//									}
 								}
 							}
 						}
@@ -3721,6 +3734,56 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private Row currentlyViewedRow = null;
+	
+	public static class FindClosureContext {
+		Map<RowBrowser, Map<String, Collection<RowToRowLink>>> childRowsPartitions = new HashMap<Desktop.RowBrowser, Map<String,Collection<RowToRowLink>>>();
+		Map<RowBrowser, Map<String, Collection<RowToRowLink>>> parentRowsPartitions = new HashMap<Desktop.RowBrowser, Map<String,Collection<RowToRowLink>>>();
+		
+		Collection<RowToRowLink> getChildPartition(RowBrowser browser, Row row) {
+			Map<String, Collection<RowToRowLink>> partitionPerBrowser = childRowsPartitions.get(browser);
+			if (partitionPerBrowser == null) {
+				partitionPerBrowser = new HashMap<String, Collection<RowToRowLink>>();
+				childRowsPartitions.put(browser, partitionPerBrowser);
+				for (RowToRowLink link: browser.rowToRowLinks) {
+					Collection<RowToRowLink> partition = partitionPerBrowser.get(link.childRow.nonEmptyRowId);
+					if (partition == null) {
+						partition = new ArrayList<RowToRowLink>();
+						partitionPerBrowser.put(link.childRow.nonEmptyRowId, partition);
+					}
+					partition.add(link);
+				}
+			}
+			Collection<RowToRowLink> partition = partitionPerBrowser.get(row.nonEmptyRowId);
+			if (partition == null) {
+				partition = new ArrayList<RowToRowLink>();
+				partitionPerBrowser.put(row.nonEmptyRowId, partition);
+			}
+			return partition;
+		}
+		
+		Collection<RowToRowLink> getParentPartition(RowBrowser browser, Row row) {
+			Map<String, Collection<RowToRowLink>> partitionPerBrowser = parentRowsPartitions.get(browser);
+			if (partitionPerBrowser == null) {
+				partitionPerBrowser = new HashMap<String, Collection<RowToRowLink>>();
+				parentRowsPartitions.put(browser, partitionPerBrowser);
+				for (RowToRowLink link: browser.rowToRowLinks) {
+					Collection<RowToRowLink> partition = partitionPerBrowser.get(link.parentRow.nonEmptyRowId);
+					if (partition == null) {
+						partition = new ArrayList<RowToRowLink>();
+						partitionPerBrowser.put(link.parentRow.nonEmptyRowId, partition);
+					}
+					partition.add(link);
+				}
+			}
+			Collection<RowToRowLink> partition = partitionPerBrowser.get(row.nonEmptyRowId);
+			if (partition == null) {
+				partition = new ArrayList<RowToRowLink>();
+				partitionPerBrowser.put(row.nonEmptyRowId, partition);
+			}
+			return partition;
+		}
+
+	}
 
 	/**
 	 * Maximum number of concurrent DB connections.
