@@ -3815,4 +3815,6 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	// TODO highlight rowToRowLinks acc. to temp-closure
+
 }
