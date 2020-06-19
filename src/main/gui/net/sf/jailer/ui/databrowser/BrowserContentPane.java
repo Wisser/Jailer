@@ -167,6 +167,7 @@ import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
+import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
@@ -874,8 +875,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						x[1] = (int) visRect.getMinX() + width;
 						y[1] = (int) r.getMaxY();
 						GradientPaint paint = new GradientPaint(
-								x[0], y[0], new Color(255, 0, 0, 50),
-								x[0] + width, y[1], new Color(255, 0, 0, 0));
+								x[0], y[0], new Color(255, 0, 0, 60),
+								x[0] + width, y[1], new Color(255, 0, 0, 10));
 						g2d.setPaint(paint);
 						g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
 					}
@@ -6465,6 +6466,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					findTempClosure(currentRow);
 				}
 				onRedraw();
+				AnimationController.activateAnimation(SwingUtilities.getWindowAncestor(BrowserContentPane.this));
 			}
 		}
 

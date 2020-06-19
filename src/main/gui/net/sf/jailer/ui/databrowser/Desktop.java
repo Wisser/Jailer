@@ -1787,10 +1787,11 @@ public abstract class Desktop extends JDesktopPane {
 		public final Color color2;
 		public final boolean dotted, intersect;
 		public final boolean inClosure;
+		public final boolean inTempClosure;
 		public final boolean restricted;
 		
 		public Link(RowBrowser from, RowBrowser to, String sourceRowID, String destRowID, int x1, int y1, int x2, int y2, Color color1, Color color2, boolean dotted,
-				boolean intersect, boolean inClosure, boolean restricted) {
+				boolean intersect, boolean inClosure, boolean inTempClosure, boolean restricted) {
 			this.from = from;
 			this.to = to;
 			this.sourceRowID = sourceRowID;
@@ -1804,6 +1805,7 @@ public abstract class Desktop extends JDesktopPane {
 			this.dotted = dotted;
 			this.intersect = intersect;
 			this.inClosure = inClosure;
+			this.inTempClosure = inTempClosure;
 			this.restricted = restricted;
 		}
 	};
@@ -1843,17 +1845,23 @@ public abstract class Desktop extends JDesktopPane {
 									String sourceRowID = rowToRowLink.childRow.nonEmptyRowId;
 									String destRowID = rowToRowLink.parentRow.nonEmptyRowId;
 									boolean inClosure = false;
-	
+									boolean inTempClosure = false;
+									
 									if (tableBrowser.parent != null) {
 										if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.browserContentPane, rowToRowLink.childRow))) {
 											if (rowsClosure.currentClosure.contains(new Pair<BrowserContentPane, Row>(tableBrowser.parent.browserContentPane, rowToRowLink.parentRow))) {
 												inClosure = true;
 											}
 										}
+										if (rowsClosure.tempClosure.contains(rowToRowLink.childRow)) {
+											if (rowsClosure.tempClosure.contains(rowToRowLink.parentRow)) {
+												inTempClosure = true;
+											}
+										}
 									}
 	
 									Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, rowToRowLink.x1, rowToRowLink.y1,
-											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure, restricted);
+											rowToRowLink.x2, rowToRowLink.y2, color1, color2, false, false, inClosure, inTempClosure, restricted);
 									List<Link> l = links.get(sourceRowID);
 									if (l == null) {
 										l = new ArrayList<Link>();
@@ -1867,9 +1875,10 @@ public abstract class Desktop extends JDesktopPane {
 							String sourceRowID = ALL;
 							String destRowID = ALL;
 							boolean inClosure = false;
+							boolean inTempClosure = false;
 
 							Link link = new Link(tableBrowser, tableBrowser.parent, sourceRowID, destRowID, tableBrowser.x1, tableBrowser.y1,
-									tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure, restricted);
+									tableBrowser.x2, tableBrowser.y2, color1, color2, true, true, inClosure, inTempClosure, restricted);
 							List<Link> l = links.get(sourceRowID);
 							if (l == null) {
 								l = new ArrayList<Link>();
@@ -1915,7 +1924,7 @@ public abstract class Desktop extends JDesktopPane {
 										boolean intersect = link.intersect;
 										boolean dotted = link.dotted || toJoin.dotted;
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
-												Color.yellow.darker().darker(), Color.yellow.darker(), dotted, intersect, link.inClosure && toJoin.inClosure, link.restricted || toJoin.restricted));
+												Color.yellow.darker().darker(), Color.yellow.darker(), dotted, intersect, link.inClosure && toJoin.inClosure, link.inTempClosure && toJoin.inTempClosure, link.restricted || toJoin.restricted));
 									}
 								}
 							}
@@ -2035,12 +2044,15 @@ public abstract class Desktop extends JDesktopPane {
 									lastInClosure = link.inClosure;
 									Color cl = pbg ? Color.white : light? link.color1 : link.color2;
 									if (!Environment.nimbus) {
-										if (cl.getGreen() > cl.getBlue() && cl.getGreen() > cl.getRed()) {
-											if (link.restricted) {
-												cl = cl.brighter();
-											}
+										if (cl.getGreen() > cl.getBlue() && cl.getGreen() >= cl.getRed()) {
+//											if (link.restricted) {
+												cl = new Color(
+														(int) (cl.getRed()),
+														(int) (cl.getGreen() * 0.75f),
+														(0));
+//											}
 										} else {
-											double f = link.restricted? 2.0 : 1.5;
+											double f = link.restricted? 1.7 : 1.1;
 											cl = new Color(
 													brighter(cl.getRed(), f),
 													brighter(cl.getGreen(), f),
@@ -2067,7 +2079,7 @@ public abstract class Desktop extends JDesktopPane {
 												link.dotted,
 												linksToRender.size() == 1 ? 0.5 : (ir + 1) * 1.0 / linksToRender.size(),
 												finalLight, followMe,
-												link.sourceRowID, link.inClosure, inClosureRootPath,
+												link.sourceRowID, link.inClosure, link.inTempClosure, inClosureRootPath,
 												isToParentLink,
 												doPaint);
 										}
@@ -2151,10 +2163,14 @@ public abstract class Desktop extends JDesktopPane {
 
 	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser,
 			boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light,
-			Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inClosureRootPath,
+			Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inTempClosure, boolean inClosureRootPath,
 			boolean isToParentLink, boolean doPaint) {
 		if (doPaint) {
-			g2d.setColor(color);
+			if (Environment.nimbus) {
+				g2d.setColor(inTempClosure && !pbg? new Color(220, 220, 255) : color);
+			} else {
+				g2d.setColor(inTempClosure && pbg? new Color(200, 100, 200) : color);
+			}
 			BasicStroke stroke = new BasicStroke((!intersect ? (pbg ? inClosure? 3 : 2 : 1) : (pbg ? 3 : 2)));
 			if (inClosure) {
 				final int LENGTH = 16;
@@ -3815,6 +3831,6 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	// TODO highlight rowToRowLinks acc. to temp-closure
+	// TODO render incomplete neighborhood if limit of child-browser is exceeded
 
 }
