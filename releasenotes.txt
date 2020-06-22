@@ -1,3 +1,6 @@
+9.5
+  - Extensive internal redesigns since the last major release.
+
 9.4.3
   - Fixed issue "Error when running sql script" https://sourceforge.net/p/jailer/discussion/700499/thread/90600d12b6
 
