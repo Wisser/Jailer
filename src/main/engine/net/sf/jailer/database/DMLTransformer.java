@@ -776,6 +776,9 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 */
 	protected String convertToSql(CellContentConverter cellContentConverter, ResultSet resultSet, int i, Object content, int callerId, String suffix) throws SQLException {
 		String cVal = cellContentConverter.toSql(content);
+		if (i > selectionClause.size()) {
+			throw new IllegalStateException("Table \"" + table.getName() + "\": Too many columns in the result set. Check the filter definitions.");
+		}
 		Column column = selectionClause.get(i - 1);
 		Filter filter = column.getFilter();
 		
