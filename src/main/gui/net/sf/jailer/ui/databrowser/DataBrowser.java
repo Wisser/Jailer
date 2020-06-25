@@ -656,7 +656,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						if (schema != null && schema != metaDataSource.getDefaultSchema()) {
 							if (!schema.isLoaded()) {
 								passTable = false;
-								schema.loadTables(true, null, null);
+								schema.loadTables(true, null, null, null);
 							}
 						}
 					}
@@ -3571,6 +3571,13 @@ public class DataBrowser extends javax.swing.JFrame {
 												}
 											}
 										});
+									}
+								}, new Runnable() {
+									@Override
+									public void run() {
+										if (metaDataPanel != null) {
+											metaDataPanel.refresh();
+										}
 									}
 								});
 							} else {

@@ -363,7 +363,7 @@ public class UIUtil {
 	public static boolean canRunJailer() {
 		if (currentConsoleFrame != null) {
 			currentConsoleFrame.toFront();
-			JOptionPane.showMessageDialog(currentConsoleFrame, "Please complete this process before starting another.", "Engine already running...",
+			JOptionPane.showMessageDialog(currentConsoleFrame, "Please complete this process before starting another one.", "Engine already running...",
                     JOptionPane.INFORMATION_MESSAGE);
 			return false;
 		}

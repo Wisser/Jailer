@@ -939,7 +939,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         isView = ((MDTable) uo).isView();
                         isSynonym = ((MDTable) uo).isSynonym();
                         if (!isView) {
-                        	estRowCount = ((MDTable) uo).estimatedRowCount;
+                        	estRowCount = ((MDTable) uo).getEstimatedRowCount();
                         }
                         if (isView) {
                         	image = viewIcon;
@@ -956,22 +956,24 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 Component comp = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             	if (comp instanceof JLabel) {
             		String text = ((JLabel) comp).getText();
-            		if (estRowCount != null) {
-            			Color fg = ((JLabel) comp).getForeground();
-            			String estRowCountFormatted;
-            			if (estRowCount >= 1000000) {
-            				estRowCountFormatted = String.format("%,1.1f M", (double) estRowCount / 1000000.0);
-            			} else if (estRowCount >= 1000) {
-            				estRowCountFormatted = String.format("%,1.1f K", (double) estRowCount / 1000.0);
-            			} else {
-            				estRowCountFormatted = estRowCount.toString();
-            			}
-            			if (fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
-            				((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#7777ff\">~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\"></font>");
-            			} else {
-            				((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#aaaaff\">~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\"></font>");
-            			}
-            		}
+            		Color fg = ((JLabel) comp).getForeground();
+            		String estRowCountFormatted;
+            		if (estRowCount == null) {
+            			((JLabel) comp).setText(text + "                                ");
+                 	} else {
+                 		if (estRowCount >= 1000000) {
+                 			estRowCountFormatted = String.format("%,1.1f M", (double) estRowCount / 1000000.0);
+                 		} else if (estRowCount >= 1000) {
+                 			estRowCountFormatted = String.format("%,1.1f K", (double) estRowCount / 1000.0);
+                 		} else {
+                 			estRowCountFormatted = estRowCount.toString();
+                 		}
+                 		if (fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
+                 			((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#7777ff\">~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\"></font>");
+                 		} else {
+                 			((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#aaaaff\">~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\"></font>");
+                 		}
+                 	}
             	}
                 if (isJailerTable && !sel) {
                 	if (comp instanceof JLabel) {
@@ -1139,7 +1141,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         tablesComboBox.setModel(model);
         
         for (MDSchema schema: toLoad) {
-        	schema.loadTables(true, null, null);
+        	schema.loadTables(true, null, null, null);
         }
     }
 
@@ -1251,7 +1253,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     public void select(Table table) {
     	MDSchema mdSchema = metaDataSource.getSchemaOfTable(table);
     	if (mdSchema != null && !mdSchema.isLoaded()) {
-    		mdSchema.loadTables(true, null, null);
+    		mdSchema.loadTables(true, null, null, null);
     		return;
     	}
     	select(metaDataSource.toMDTable(table));
@@ -1364,6 +1366,11 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				public Iterator<Object> iterator() {
 					List<Object> leafs = new ArrayList<Object>();
 		            for (MDTable table: schema.getTables(true, new Runnable() {
+						@Override
+						public void run() {
+							refresh();
+						}
+					}, new Runnable() {
 						@Override
 						public void run() {
 							refresh();
@@ -1890,7 +1897,16 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     }
 
     public void refresh() {
-    	metaDataTree.repaint();
+    	if (SwingUtilities.isEventDispatchThread()) {
+    		metaDataTree.repaint();
+    	} else {
+    		UIUtil.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					metaDataTree.repaint();
+				}
+			});
+    	}
     }
 
     static ImageIcon warnIcon;

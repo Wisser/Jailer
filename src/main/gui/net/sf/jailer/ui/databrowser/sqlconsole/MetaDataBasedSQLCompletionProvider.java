@@ -63,8 +63,10 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 	@Override
 	protected MDTable findTable(MDSchema schema, String name) {
 		if (!schema.isLoaded()) {
-			schema.loadTables(true, null, null);
-    		return null;
+			getTables(schema);
+		}
+		if (!schema.isLoaded()) {
+			return null;
     	}
 		return schema.find(name);
 	}
@@ -77,7 +79,17 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 	@Override
 	protected List<MDTable> getTables(MDSchema schema) {
 		if (!schema.isLoaded()) {
-			schema.loadTables(true, null, null);
+			schema.loadTables(true, null, null, null);
+			for (int i = 0; i < 10; ++i) {
+				if (schema.isLoaded()) {
+					return schema.getTables();
+				}
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// ignore
+				}
+			}
     		return Collections.emptyList();
     	}
 		return schema.getTables();

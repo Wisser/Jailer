@@ -72,7 +72,7 @@ public class MDTable extends MDObject {
     private final boolean isView;
     private final boolean isSynonym;
 
-    public final Long estimatedRowCount;
+    private Long estimatedRowCount;
 
     // DDL of the table or <code>null</code>, if no DDL is available
     private volatile String ddl;
@@ -83,12 +83,11 @@ public class MDTable extends MDObject {
      * @param name table name
      * @param schema the tables schema
      */
-    public MDTable(String name, MDSchema schema, boolean isView, boolean isSynonym, Long estimatedRowCount) {
+    public MDTable(String name, MDSchema schema, boolean isView, boolean isSynonym) {
         super(name, schema.getMetaDataSource());
         this.isView = isView;
         this.isSynonym = isSynonym;
         this.schema = schema;
-        this.estimatedRowCount = estimatedRowCount;
     }
 
     /**
@@ -561,7 +560,15 @@ public class MDTable extends MDObject {
     public boolean isDDLLoaded() {
         return ddlLoaded.get();
     }
+
+    public Long getEstimatedRowCount() {
+		return estimatedRowCount;
+	}
+    
+    public void setEstimatedRowCount(Long erc) {
+		estimatedRowCount = erc;
+	}
     
     private AtomicBoolean ddlLoaded = new AtomicBoolean(false);
-    
+
 }

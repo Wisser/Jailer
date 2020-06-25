@@ -376,7 +376,7 @@ public class QueryTypeAnalyser {
 										if (mdSchema != null) {
 											MDTable mdTable;
 											if (!mdSchema.isLoaded()) {
-												mdSchema.loadTables(true, null, null);
+												mdSchema.loadTables(true, null, null, null);
 												mdTable = null;
 									    	} else {
 									    		mdTable = mdSchema.find(name);

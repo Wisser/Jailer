@@ -36,7 +36,6 @@ import javax.swing.ImageIcon;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
@@ -135,7 +134,7 @@ public class MDSchema extends MDObject {
 	 * @return tables of schema
 	 */
 	public List<MDTable> getTables() {
-		return getTables(true, null);
+		return getTables(true, null, null);
 	}
 
 	private Object getTablesLock = new String("getTablesLock");
@@ -146,24 +145,11 @@ public class MDSchema extends MDObject {
 	 * 
 	 * @return tables of schema
 	 */
-	public List<MDTable> getTables(boolean loadTableColumns, Runnable afterLoadAction) {
+	public List<MDTable> getTables(boolean loadTableColumns, Runnable afterLoadAction, final Runnable afterLoadERCAction) {
 		synchronized (getTablesLock) {
 			if (tables == null) {
 				try {
-					// TODO readEstimatedRowCounts concurrently (dedicated queue)
-					long t = System.currentTimeMillis();
 					tables = new ArrayList<MDTable>();
-					Map<String, Long> estimatedRowCounts = readEstimatedRowCounts();
-					t = System.currentTimeMillis() - t;
-					if (t > 4000) {
-						DBMS dbms = getMetaDataSource().getSession().dbms;
-						UIUtil.sendIssue("getTables", " " + t + " " + (dbms != null? dbms.getId() : null) + " " + estimatedRowCounts.size());
-					}
-					if (estimatedRowCounts.size() > 10000) {
-						// rendering many ERCs is too expensive
-						estimatedRowCounts.clear();
-					}
-					
 					MetaDataSource metaDataSource = getMetaDataSource();
 					synchronized (metaDataSource.getSession().getMetaData()) {
 						ResultSet rs = metaDataSource.readTables(getName());
@@ -172,8 +158,7 @@ public class MDSchema extends MDObject {
 							String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
 							final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)),
 									"SYNONYM".equalsIgnoreCase(rs.getString(4))
-								 || "ALIAS".equalsIgnoreCase(rs.getString(4)), 
-								 	estimatedRowCounts.get(rs.getString(3)));
+								 || "ALIAS".equalsIgnoreCase(rs.getString(4)));
 							tables.add(table);
 							if (loadTableColumns) {
 								loadJobs.put(tableName, new Runnable() {
@@ -191,6 +176,7 @@ public class MDSchema extends MDObject {
 							}
 						}
 						rs.close();
+						
 						for (Runnable loadJob : loadJobs.values()) {
 							loadTableColumnsQueue.add(loadJob);
 						}
@@ -210,7 +196,46 @@ public class MDSchema extends MDObject {
 					loaded.set(true);
 				}
 			}
+			if (tables != null && afterLoadERCAction != null) {
+				loadMetaDataQueues[1].add(new Runnable() {
+					@Override
+					public void run() {
+						loadEstimatedRowCounts(afterLoadERCAction);
+					}
+				});
+			}
 			return tables;
+		}
+	}
+
+	private Map<String, Long> estimatedRowCounts;
+	private Object estimatedRowCountsLock = new String("estimatedRowCounts");
+
+	private void loadEstimatedRowCounts(final Runnable afterLoadAction) {
+		synchronized (estimatedRowCountsLock) {
+			if (estimatedRowCounts == null) {
+				estimatedRowCounts = readEstimatedRowCounts();
+				
+				if (estimatedRowCounts.size() > 10000) {
+					// rendering many ERCs is too expensive
+					estimatedRowCounts.clear();
+				}
+			}
+			UIUtil.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					MetaDataSource metaDataSource = getMetaDataSource();
+					for (MDTable table: tables) {
+						table.setEstimatedRowCount(
+								estimatedRowCounts.get(
+										metaDataSource.getQuoting().unquote(
+												table.getName())));
+					}
+					if (afterLoadAction != null) {
+						afterLoadAction.run();
+					}
+				}
+			});
 		}
 	}
 
@@ -248,11 +273,11 @@ public class MDSchema extends MDObject {
 	/**
 	 * Asynchronously loads the tables.
 	 */
-	public void loadTables(final boolean loadTableColumns, final Runnable afterLoadAction, final Runnable afterAvailableAction) {
+	public void loadTables(final boolean loadTableColumns, final Runnable afterLoadAction, final Runnable afterAvailableAction, final Runnable afterLoadESTAction) {
 		loadTablesQueue.add(new Runnable() {
 			@Override
 			public void run() {
-				getTables(loadTableColumns, afterLoadAction);
+				getTables(loadTableColumns, afterLoadAction, afterLoadESTAction);
 				if (afterAvailableAction != null) {
 					afterAvailableAction.run();
 				}
