@@ -1226,7 +1226,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				// ignore
 			}
 		}
-	};
+	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable associationsTable;

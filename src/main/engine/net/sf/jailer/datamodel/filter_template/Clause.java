@@ -85,8 +85,8 @@ public class Clause {
 		public String toString() {
 			return description;
 		}
-	};
-	
+	}
+
 	/**
 	 * Predicates.
 	 */
@@ -242,8 +242,8 @@ public class Clause {
 		public String toString() {
 			return description;
 		}
-	};
-	
+	}
+
 	/**
 	 * The subject.
 	 */

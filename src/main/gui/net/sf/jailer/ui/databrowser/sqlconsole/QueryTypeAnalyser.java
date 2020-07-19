@@ -154,7 +154,7 @@ public class QueryTypeAnalyser {
 
 	@SuppressWarnings("serial")
 	private static class QueryTooComplexException extends RuntimeException {
-	};
+	}
 
 	/**
 	 * Parses a SQL query and tries to find out the type.

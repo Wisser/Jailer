@@ -76,8 +76,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			this.name = name;
 			this.color = color;
 		}
-	};
-	
+	}
+
 	/**
 	 * Association model for this UI.
 	 */
@@ -117,8 +117,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		DataModel getDataModel();
 		
-	};
-	
+	}
+
 	/**
 	 * Default implementation of an association model for this UI.
 	 */
@@ -207,8 +207,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			return association.hashCode();
 		}
 
-	};
-	
+	}
+
 	/**
 	 * The model.
 	 */
@@ -312,8 +312,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			}
 			return fg;
 		}
-	};
-	
+	}
+
 	private static class TypeGetter extends ColumnContentGetter {
 		@Override
 		public String getContent(AssociationModel association) {
@@ -323,8 +323,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		public String getDisplayName() {
 			return "Type";
 		}
-	};
-	
+	}
+
 	private static class SourceGetter extends ColumnContentGetter {
 		@Override
 		public String getContent(AssociationModel association) {
@@ -338,7 +338,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		public Color getFgColor(Collection<AssociationModel> group) {
 			return null;
 		}
-	};
+	}
 
 	private static class DestinationGetter extends ColumnContentGetter {
 		@Override
@@ -349,7 +349,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		public String getDisplayName() {
 			return "To";
 		}
-	};
+	}
 
 	private static class AssociationNameGetter extends ColumnContentGetter {
 		@Override
@@ -360,7 +360,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		public String getDisplayName() {
 			return "Association Name";
 		}
-	};
+	}
 
 	private class Node {
 		public final Collection<AssociationModel> associations;
@@ -417,8 +417,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		public String toString() {
 			return displayName;
 		}
-	};
-	
+	}
+
 	private List<MouseListener> allMouseListener = new ArrayList<MouseListener>();
 	private Map<Node, List<MouseListener>> mouseListenerPerNode = new HashMap<Node, List<MouseListener>>();
 	private List<Node> roots;

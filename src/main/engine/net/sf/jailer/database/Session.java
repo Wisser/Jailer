@@ -181,7 +181,7 @@ public class Session {
 	 */
 	public interface ConnectionFactory {
 		Connection getConnection() throws SQLException;
-	};
+	}
 	
 	/**
 	 * Connection factory.

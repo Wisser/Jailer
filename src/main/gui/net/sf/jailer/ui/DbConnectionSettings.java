@@ -247,7 +247,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 					break;
 				}
 			}			
-		};
+		}
 
 		updateUrl();
 	}

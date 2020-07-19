@@ -338,6 +338,6 @@ public class XmlRowWriter {
 				throw new RuntimeException(e);
 			}
 		}
-	};
+	}
 
 }

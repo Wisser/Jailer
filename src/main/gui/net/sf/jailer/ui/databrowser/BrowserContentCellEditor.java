@@ -209,8 +209,8 @@ public class BrowserContentCellEditor {
 		abstract boolean isEditable(int columnType, Object content);
 		abstract String cellContentToText(int columnType, Object content);
 		abstract Object textToContent(int columnType, String text, Object oldContent);
-	};
-	
+	}
+
 	private Map<Integer, Converter> converterPerType = new HashMap<Integer, Converter>();
 	{
 		converterPerType.put(Types.DECIMAL, Converter.DECMAL);

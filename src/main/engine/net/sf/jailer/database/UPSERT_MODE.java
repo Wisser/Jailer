@@ -24,7 +24,7 @@ public enum UPSERT_MODE {
 	FROM_JL_DUAL, // ("Select 1, 2 From $ where not exists(Select * from $ T where T.c1=1)")
 	FROM_SYSDUMMY1, // ("Select 1, 2 From sysibm.sysdummy1 where not exists(Select * from $ T where T.c1=1)")
 	UNION_ALL,
-	MERGE; // ("MERGE INTO $ T " +
+	MERGE // ("MERGE INTO $ T " +
 //						  "USING (SELECT 1 c1, 2 c2 from dual) incoming " +
 //						  "ON (T.c1 = incoming.c1) " +
 //						  "WHEN MATCHED THEN " +

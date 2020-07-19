@@ -147,8 +147,8 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			collectRemaining();
 		}
 		
-	};
-	
+	}
+
 	private AdditionalSubjectListEditor additionalSubjectListEditor;
 	
 	

@@ -29,7 +29,7 @@ public class MemorizedResultSetTransformer {
 
     public interface AggregateFunction {
         Object eval(List<Object[]> group, int columnIndex);
-    };
+    }
 
     public static class ListAggregation implements AggregateFunction {
         @Override
@@ -45,7 +45,7 @@ public class MemorizedResultSetTransformer {
         	}
         	return sb.toString();
         }
-    };
+    }
 
     /**
      * Definition of a column transformation.
@@ -57,7 +57,7 @@ public class MemorizedResultSetTransformer {
             this.columnIndex = columnIndex;
             this.aggregateFunction = aggregateFunction;
         }
-    };
+    }
 
     /**
      * Transforms (sort/select/group) Memorized Result sets.

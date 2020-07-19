@@ -118,7 +118,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		public ResultSetReader create(Table table) throws SQLException {
 			return new DeletionTransformer(table, scriptFileWriter, maxBodySize, session, targetDBMSConfiguration, executionContext);
 		}
-	};
+	}
 
 	/**
 	 * Constructor.

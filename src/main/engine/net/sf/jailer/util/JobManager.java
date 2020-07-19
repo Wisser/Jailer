@@ -39,7 +39,7 @@ public class JobManager {
 		 * Runs the job.
 		 */
 		void run() throws SQLException, CancellationException;
-	};
+	}
 
 	/**
 	 * The logger.

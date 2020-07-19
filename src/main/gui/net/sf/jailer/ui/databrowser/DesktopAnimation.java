@@ -56,7 +56,7 @@ public class DesktopAnimation {
 			stopScrolling = false;
 		}
 		abstract boolean animate(double f);
-	};
+	}
 
 	/**
 	 * Animation per subject (started).

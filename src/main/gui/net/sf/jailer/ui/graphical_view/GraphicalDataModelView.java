@@ -1068,7 +1068,7 @@ public class GraphicalDataModelView extends JPanel {
 			public void run() {
 				changeExcludeFromDeletion(old, table);
 			}
-		});;
+		});
 	}
 
 	private void changeExportMode(Boolean mode, final Table table) {
@@ -1088,7 +1088,7 @@ public class GraphicalDataModelView extends JPanel {
 			public void run() {
 				changeExportMode(old, table);
 			}
-		});;
+		});
 	}
 
 	/**

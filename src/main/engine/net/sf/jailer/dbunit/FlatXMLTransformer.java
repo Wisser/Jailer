@@ -276,7 +276,7 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 		}
 
 		return object.toString();
-	};
+	}
 
 	/**
 	 * Finalizes reading.

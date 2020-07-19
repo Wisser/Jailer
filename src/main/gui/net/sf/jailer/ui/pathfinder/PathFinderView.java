@@ -116,7 +116,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 			this.pathStations = new ArrayList<Table>(pathStations);
 			this.excludedTables = new HashSet<Table>(excludedTables);
 		}
-	};
+	}
 	
 	private State lastState = null;
 	private Stack<State> undoStack = new Stack<State>();

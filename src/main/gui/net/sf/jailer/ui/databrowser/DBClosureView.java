@@ -400,7 +400,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
             }
         }
         Table table;
-    };
+    }
 
     /**
      * Holds infos about a cell in the closure-table.

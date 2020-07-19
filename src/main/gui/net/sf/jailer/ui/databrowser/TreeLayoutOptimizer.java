@@ -134,7 +134,7 @@ public class TreeLayoutOptimizer<T> {
 			}
 			return quality;
 		}
-	};
+	}
 
 	public static <T> void optimizeTreeLayout(Node<T> root) {
 		int numNodes = root.getNodesCount();
