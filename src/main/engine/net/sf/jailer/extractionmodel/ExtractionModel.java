@@ -466,7 +466,7 @@ public class ExtractionModel {
 			String name = a.reversed? a.reversalAssociation.getName() : a.getName();
 			if (!known.contains(name)) {
 				if (a.isInsertSourceBeforeDestination()) {
-					dataModel.getRestrictionModel().addRestriction(a.source, a, "false", "SYSTEM", true, new HashMap<String, String>());
+					dataModel.getRestrictionModel().addRestriction(a, "false", "SYSTEM", true, new HashMap<String, String>());
 				}
 				dataModel.decisionPending.add(name);
 			}
