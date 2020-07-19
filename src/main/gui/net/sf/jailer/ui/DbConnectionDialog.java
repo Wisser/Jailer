@@ -1293,9 +1293,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		ci.dataModelFolder = cli.datamodelFolder;
 		ci.driverClass = cli.driver;
 		ci.jar1 = cli.jdbcjar != null? cli.jdbcjar : "";
-		ci.jar2 = cli.jdbcjar2 != null? cli.jdbcjar2 : "";;
-		ci.jar3 = cli.jdbcjar3 != null? cli.jdbcjar3 : "";;
-		ci.jar4 = cli.jdbcjar4 != null? cli.jdbcjar4 : "";;
+		ci.jar2 = cli.jdbcjar2 != null? cli.jdbcjar2 : "";
+		ci.jar3 = cli.jdbcjar3 != null? cli.jdbcjar3 : "";
+		ci.jar4 = cli.jdbcjar4 != null? cli.jdbcjar4 : "";
 		ci.url = cli.url;
 		ci.user = cli.user;
 		ci.password = cli.password;

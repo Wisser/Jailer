@@ -99,7 +99,7 @@ public class CyclesView extends javax.swing.JDialog {
 	private class CellInfo {
 		public int row, column;
 		boolean arrowLeft, arrowRight;
-	};
+	}
 
 	/**
 	 * Holds infos about a cell in the view.

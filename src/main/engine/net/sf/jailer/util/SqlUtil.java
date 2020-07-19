@@ -286,8 +286,8 @@ public class SqlUtil {
 			typeCache.put(i, type);
 		}
 		return type;
-	};
-	
+	}
+
 	/**
 	 * Gets type of column from result-set.
 	 * 

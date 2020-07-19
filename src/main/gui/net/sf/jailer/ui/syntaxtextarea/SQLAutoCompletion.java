@@ -115,4 +115,4 @@ public class SQLAutoCompletion extends AutoCompletion {
 		editorPane.endAtomicEdit();
 	}
 
-};
+}

@@ -218,8 +218,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					load(bmFile);
 				}
 			});
-		};
-        
+		}
+
 		updateMenuItems();
 
 		cycleViewDialog = new CyclesView(this);
@@ -1982,7 +1982,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_checkPKMenuItemActionPerformed
 
     private void createCLIItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createCLIItemActionPerformed
-		new CLIPanel(dbConnectionDialog, false, extractionModelEditor.extractionModelFile, null, null, null, executionContext).open(this);;
+		new CLIPanel(dbConnectionDialog, false, extractionModelEditor.extractionModelFile, null, null, null, executionContext).open(this);
     }//GEN-LAST:event_createCLIItemActionPerformed
 
     @SuppressWarnings("serial")

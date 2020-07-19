@@ -96,8 +96,8 @@ public class CsvFile {
 			}
 			return sb.toString();
 		}
-	};
-	
+	}
+
 	public static interface LineFilter {
 		boolean accept(Line line);
 	}

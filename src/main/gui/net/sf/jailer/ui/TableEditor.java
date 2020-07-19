@@ -220,9 +220,9 @@ public abstract class TableEditor extends javax.swing.JDialog {
 			return new Dimension(300, 0);
 		}
 
-	};
+	}
 
-	/** 
+	/**
 	 * Creates new form TableEditor
 	 * 
 	 * @param tables all tables (as csv-lines)

@@ -346,7 +346,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				underlyingTable = u2TableInfo.underlyingTable;
 			}
 		}
-	};
+	}
 
 	/**
 	 * Finds all tables in DB schema.
@@ -1483,7 +1483,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	
 	public static interface PrivilegedSessionProvider {
 		Session askForSessionWithPermissionToReadSchema(Session session, Table view, String schema, String tableName, ExecutionContext executionContext);
-	};
+	}
 	
 	public static PrivilegedSessionProvider privilegedSessionProvider;
 	

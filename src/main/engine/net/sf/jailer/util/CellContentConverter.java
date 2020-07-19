@@ -435,8 +435,8 @@ public class CellContentConverter {
 			}
 		}
 		return object;
-	};
-	
+	}
+
 	private boolean isPostgresObjectType(String columnTypeName) {
 		if (columnTypeName == null) {
 			return false;

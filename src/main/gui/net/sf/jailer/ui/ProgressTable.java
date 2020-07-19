@@ -83,7 +83,7 @@ public class ProgressTable extends JTable {
 		public List<CellInfo> parents;
 		public boolean inProgress = false;
 		public boolean hasSelectedChild = false;
-	};
+	}
 
 	/**
 	 * Holds infos about a cells.

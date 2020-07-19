@@ -231,7 +231,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 			this.importFilterTransformer = importFilterManager;
 		}
 
-	};
+	}
 
 	private final List<Column> selectionClause;
 	

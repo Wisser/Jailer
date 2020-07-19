@@ -228,7 +228,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		protected Dimension detailsViewMinSize() {
 			return new Dimension(400, 1);
 		}
-	};
+	}
 
 	@SuppressWarnings("serial")
 	private class TemplateList extends ListEditor<FilterTemplate> {
@@ -375,8 +375,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		protected Dimension detailsViewMaxSize() {
 			return new Dimension(400, 500);
 		}
-	};
-	
+	}
+
 	@SuppressWarnings("serial")
 	private class DerivedFilterList extends ListEditor<FilterModel> {
 		private final Table rootTable;
@@ -453,7 +453,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			super.setModel(model);
 		}
 
-	};
+	}
 
 	private FilterConditionEditor createConditionEditor() {
 		return new FilterConditionEditor(parent, new ParameterSelector.ParametersGetter() {

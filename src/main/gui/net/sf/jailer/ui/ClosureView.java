@@ -133,7 +133,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			}
 		}
 		Table table;
-	};
+	}
 
 	/**
 	 * Holds infos about a cell in the closure-table.

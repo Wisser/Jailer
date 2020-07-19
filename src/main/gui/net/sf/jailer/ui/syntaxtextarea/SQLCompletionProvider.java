@@ -1291,7 +1291,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         Clause(String name) {
             this.name = name;
         }
-    };
+    }
 
     private Clause currentClause(String sql) {
         Pattern pattern = Pattern.compile(".*\\b(select|from|where|group|having|order|join|on|update|set|into|table)\\b(.*?)$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
@@ -1364,4 +1364,4 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     protected abstract List<Association> getAssociations(TABLE source, TABLE destination);
 	protected abstract boolean isInitialized();
 
-};
+}

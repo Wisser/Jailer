@@ -551,7 +551,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			String sql = upsertInsertStatementBuilder.build();
 			return session.executeUpdate(sql + (withSemicolon? ";" : ""));
 		}
-	};
+	}
 
 	/**
 	 * Uses "INSERT" statements followed by "UPDATE" statements. (Postgres dialect);
@@ -586,7 +586,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			long rc = session.executeUpdate(sql);
 			return rc + insertWhereNotExists(table, sqlSelect);
 		}
-	};
+	}
 
 	/**
 	 * Uses "INSERT" statements followed by "UPDATE" statements. (MySQL dialect);
@@ -621,7 +621,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			long rc = session.executeUpdate(sql);
 			return rc + insertWhereNotExists(table, sqlSelect);
 		}
-	};
+	}
 
 	/**
 	 * Uses "INSERT" statements followed by "UPDATE" statements. (Standard SQL);
@@ -670,7 +670,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			long rc = session.executeUpdate(sql);
 			return rc + insertWhereNotExists(table, sqlSelect);
 		}
-	};
+	}
 
 	private UpsertStrategy upsertStrategy;
 	private List<UpsertStrategy> upsertStrategies;

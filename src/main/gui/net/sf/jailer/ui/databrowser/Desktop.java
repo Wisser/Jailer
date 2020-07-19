@@ -489,7 +489,7 @@ public abstract class Desktop extends JDesktopPane {
 			this.mdTable = mdTable;
 		}
 
-	};
+	}
 
 	/**
 	 * All row-browsers.
@@ -1808,7 +1808,7 @@ public abstract class Desktop extends JDesktopPane {
 			this.inTempClosure = inTempClosure;
 			this.restricted = restricted;
 		}
-	};
+	}
 
 	private Map<RowBrowser, Map<String, List<Link>>> rbSourceToLinks = null;
 	private long paintDuration = 0;

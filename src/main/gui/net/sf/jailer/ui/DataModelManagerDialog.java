@@ -106,7 +106,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	/**
 	 * Model base folders.
 	 */
-	private List<String> baseFolders = new ArrayList<String>();;
+	private List<String> baseFolders = new ArrayList<String>();
 
 	private final ExecutionContext executionContext = new ExecutionContext();
 

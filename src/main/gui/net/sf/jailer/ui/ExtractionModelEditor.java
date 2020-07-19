@@ -3212,8 +3212,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private static class Layout {
 		Table root;
 		Map<String, double[]> positions = new HashMap<String,double[]>();
-	};
-	
+	}
+
 	private Deque<Layout> navigationStack = new ArrayDeque<Layout>();
 	
 	private int captureLevel = 0;

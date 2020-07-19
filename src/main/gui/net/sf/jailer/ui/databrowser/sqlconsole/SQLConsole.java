@@ -1316,7 +1316,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             Pair<Integer, Integer> thePair = pairs.get(i);
 			boolean ok = false;
 			int findA = thePair.a + 1;
-            Pair<Integer, Integer> pair = pairsPerEnd.get(thePair.b - 1);;
+            Pair<Integer, Integer> pair = pairsPerEnd.get(thePair.b - 1);
             while (pair != null) {
     			if (findA == pair.a) {
     				ok = true;
@@ -1879,7 +1879,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		@Override
 		protected void deselectChildrenIfNeededWithoutReload() {
 		}
-    };
+    }
 
     private class TitelPanel extends JPanel {
     	public final JComponent rTabContainer;

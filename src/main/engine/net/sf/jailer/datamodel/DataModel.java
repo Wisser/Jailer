@@ -106,8 +106,8 @@ public class DataModel {
 	 */
 	public enum ColumnOrderPriority {
 		HI, LO
-	};
-	
+	}
+
 	/**
 	 * Maps normalized column name to order priority.
 	 */

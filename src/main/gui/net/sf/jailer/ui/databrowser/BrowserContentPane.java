@@ -615,7 +615,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Set<BrowserContentPane> parentPath = new HashSet<BrowserContentPane>();
 		
 		Set<Row> tempClosure = new HashSet<Row>();
-	};
+	}
 
 	private final RowsClosure rowsClosure;
 	
@@ -808,7 +808,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							andCondition.setToolTipText("<html>" + ttInfo);
 						}
 					}
-				};
+				}
 			});
 		}
 
@@ -1721,8 +1721,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 		
-	};
-	
+	}
+
 	private String currentSelectedRowCondition = "";
 
 	/**
@@ -5781,7 +5781,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected Object getMonitorForFindClosure() {
 		return "";
 	}
-	protected void findTempClosure(Row row) {};
+	protected void findTempClosure(Row row) {}
 	protected abstract void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward, FindClosureContext findClosureContext);
 
 	protected abstract QueryBuilderDialog getQueryBuilderDialog();
@@ -5811,15 +5811,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 	protected RowBrowser getRowBrowser() {
 		return null;
-	};
+	}
 	protected boolean shouldShowLoadErrors() {
 		return true;
 	}
 	
 	public interface RunnableWithPriority extends Runnable {
 		int getPriority();
-	};
-	
+	}
+
 	protected abstract PriorityBlockingQueue<RunnableWithPriority> getRunnableQueue();
 	
 	/**

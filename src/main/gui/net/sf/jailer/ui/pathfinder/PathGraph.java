@@ -43,7 +43,7 @@ public class PathGraph {
 	private Map<Pair<Node, Node>, EdgeType> edgeTypes = new HashMap<Pair<Node, Node>, EdgeType>();
 	private Set<Table> visitedExcludedTables = new HashSet<Table>();
 
-	public enum EdgeType { PARENT, CHILD, ASSOCIATION, IGNORED };
+	public enum EdgeType { PARENT, CHILD, ASSOCIATION, IGNORED }
 	
 	public class Node {
 		Table table;

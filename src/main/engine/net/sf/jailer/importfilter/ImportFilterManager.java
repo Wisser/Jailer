@@ -99,7 +99,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		public String newValueColumnName;
 		public String type;
 		public String filterExpression;
-	};
+	}
 	
 	public static String MAPPINGTABLE_NAME_PREFIX = "JAILER_IFM";
 	
