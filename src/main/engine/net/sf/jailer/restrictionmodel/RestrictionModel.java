@@ -144,7 +144,7 @@ public class RestrictionModel {
 					_log.warn(location + ": missing condition");
 					continue;
 				}
-				addRestriction(null, association, condition, location, parameters);
+				addRestriction(association, condition, location, parameters);
 				continue;
 			}
 			Table from;
@@ -197,7 +197,7 @@ public class RestrictionModel {
 					for (Association a: table.associations) {
 						if (a.destination.equals(to)) {
 							if (!a.isInsertDestinationBeforeSource()) {
-								addRestriction(table, a, condition, location, parameters);
+								addRestriction(a, condition, location, parameters);
 							}
 						}
 					}
@@ -206,14 +206,14 @@ public class RestrictionModel {
 				for (Association a: from.associations) {
 					if (!a.isInsertDestinationBeforeSource()) {
 						if (excludeTo == null || !excludeTo.contains(a.destination)) {
-							addRestriction(from, a, condition, location, parameters);
+							addRestriction(a, condition, location, parameters);
 						}
 					}
 			}
 			} else {
 				for (Association a: from.associations) {
 					if (a.destination.equals(to)) {
-						addRestriction(from, a, condition, location, parameters);
+						addRestriction(a, condition, location, parameters);
 					}
 				}
 			}
@@ -229,8 +229,8 @@ public class RestrictionModel {
 	 * @param parameters apply this parameter-value mapping to all restriction conditions 
 	 * @param location location in CSV-file
 	 */
-	public void addRestriction(Table source, Association association, String condition, String location, Map<String, String> parameters) {
-		addRestriction(source, association, condition, location, false, parameters);
+	public void addRestriction(Association association, String condition, String location, Map<String, String> parameters) {
+		addRestriction(association, condition, location, false, parameters);
 	}
 
 	/**
@@ -244,15 +244,11 @@ public class RestrictionModel {
 	 * 
 	 * @return <code>true</code> iff null filter has been removed
 	 */
-	public boolean addRestriction(Table source, Association association, String condition, String location, boolean removePreviousRestriction, Map<String, String> parameters) {
+	public boolean addRestriction(Association association, String condition, String location, boolean removePreviousRestriction, Map<String, String> parameters) {
 		if (dataModel != null) {
 			dataModel.version++;
 		}
 		condition = ParameterHandler.assignParameterValues(condition, parameters);
-//        if (association.isInsertDestinationBeforeSource()) {
-//            String aName = source == null? association.getName() : (source.getName() + "->" + association.destination.getName());
-//            throw new RuntimeException(location + ": can't restrict dependency: " + aName + " condition: " + condition);
-//        }
 		if ("ignore".equalsIgnoreCase(condition) || "false".equalsIgnoreCase(condition)) {
 			condition = null;
 		}

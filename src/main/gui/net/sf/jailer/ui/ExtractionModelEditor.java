@@ -2143,7 +2143,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					initialRestrictionCondition = condition;
 				}
 			}
-			if (addRestriction(currentAssociation.source, currentAssociation, condition, true)) {
+			if (addRestriction(currentAssociation, condition, true)) {
 				markDirty();
 			}
 			updateView();
@@ -2167,7 +2167,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		for (Association association: associations) {
 			markDirty();
 			String condition = "";
-			addRestriction(association.source, association, condition, false);
+			addRestriction(association, condition, false);
 			graphView.setSelection(association);
 		}
 		afterAddRestriction();
@@ -2976,7 +2976,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			for (Association association: table.associations) {
 //				if (!association.isInsertDestinationBeforeSource()) {
 					if (context == null || association.source.equals(context) || association.destination.equals(context)) {
-						addRestriction(table, association, "", context != null);
+						addRestriction(association, "", context != null);
 					}
 //				}
 			}
@@ -3011,7 +3011,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				if (!association.isInsertDestinationBeforeSource()) {
 					if (association.getName() != null && !"".equals(association.getName().trim())) {
 						if (context == null || association.source.equals(context) || association.destination.equals(context)) {
-							addRestriction(table, association, "false", context != null);
+							addRestriction(association, "false", context != null);
 						}
 					}
 				}
@@ -3044,7 +3044,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Add restriction.
 	 */
 	public void ignorAssociation(Association association) {
-		addRestriction(association.source, association, "false", false);
+		addRestriction(association, "false", false);
 		afterAddRestriction();
 	}
 
@@ -3052,7 +3052,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Removes restrictions.
 	 */
 	public void removeRestriction(Association association) {
-		addRestriction(association.source, association, "", true);
+		addRestriction(association, "", true);
 		afterAddRestriction();
 	}
 
@@ -3071,7 +3071,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * @param association the association
 	 * @param condition the restriction-condition
 	 */
-	private boolean addRestriction(final Table source, final Association association, String condition, final boolean withWhere) {
+	private boolean addRestriction(final Association association, String condition, final boolean withWhere) {
 		final String oldRestriction;
 		String oc = association.getRestrictionCondition();
 
@@ -3086,7 +3086,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			return false;
 		}
 		
-		boolean resetFilter = dataModel.getRestrictionModel().addRestriction(source, association, condition, "GUI", true, new HashMap<String, String>());
+		boolean resetFilter = dataModel.getRestrictionModel().addRestriction(association, condition, "GUI", true, new HashMap<String, String>());
 		pendingDecisionsPanel.decisionMade(association);
 		if (withWhere) {
 			++UISettings.s4;
@@ -3099,7 +3099,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				withWhere? dataModel.getDisplayName(association.destination) : null) {
 			@Override
 			public void run() {
-				addRestriction(source, association, oldRestriction, withWhere);
+				addRestriction(association, oldRestriction, withWhere);
 				if (!afterAddRestrictionCallPending) {
 					UIUtil.invokeLater(new Runnable() {
 						@Override
