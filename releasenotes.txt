@@ -1,3 +1,7 @@
+9.5.1
+  - Fix for "[jailer:bugs] #43 PostgreSQL: Export of inet and interval"
+    https://sourceforge.net/p/jailer/bugs/43/
+
 9.5
   - Increased initial responsiveness of the Data Browser.
   - Extensive internal redesigns since the last major release.
