@@ -496,6 +496,28 @@ public class Session {
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
 	 */
 	private long executeQuery(Connection theConnection, String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, long limit, int timeout, boolean withExplicitCommit) throws SQLException {
+		if (!transactional) {
+			synchronized (theConnection) {
+				return executeQuery0(theConnection, sqlQuery, reader, alternativeSQL, context, limit, timeout, withExplicitCommit);
+			}
+		} else {
+			return executeQuery0(theConnection, sqlQuery, reader, alternativeSQL, context, limit, timeout, withExplicitCommit);
+		}
+	}
+	
+	/**
+	 * Executes a SQL-Query (SELECT) with timeout.
+	 * 
+	 * @param theConnection connection to use
+	 * @param sqlQuery the query in SQL
+	 * @param reader the reader for the result
+	 * @param alternativeSQL query to be executed if sqlQuery fails
+	 * @param context cancellation context
+	 * @param limit row limit, 0 for unlimited
+	 * @param timeout the timeout in sec
+	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
+	 */
+	private long executeQuery0(Connection theConnection, String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, long limit, int timeout, boolean withExplicitCommit) throws SQLException {
 		if (withExplicitCommit) {
 			synchronized (theConnection) {
 				if (theConnection.getAutoCommit()) {

@@ -1946,7 +1946,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jPanel1.add(jPanel3, gridBagConstraints);
 
         transactional.setText("transactional"); // NOI18N
-        transactional.setToolTipText("Perform export in a single transaction");
+        transactional.setToolTipText("<html>Perform export in a single transaction. <br>Caution: the use of more than 1 parallel thread can cause problems.</html>");
         transactional.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         transactional.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

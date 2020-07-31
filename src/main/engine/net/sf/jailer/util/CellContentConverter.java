@@ -466,7 +466,14 @@ public class CellContentConverter {
 		} catch (SQLException e) {
 			return resultSet.getString(i);
 		}
-		Object object = resultSet.getObject(i);
+		
+		Object object;
+		if (DBMS.POSTGRESQL.equals(configuration) && "money".equals(columnTypeName)) {
+			// avoid SQLException
+			object = resultSet.getString(i);
+		} else {
+			object = resultSet.getObject(i);
+		}
 
 		// TODO mssql: if type is (VAR|LONGVAR)BINARY or (VAR|LONGVAR)(N)CHAR then use #get...Stream(), put data into a B|C|NCLOB implementation
 

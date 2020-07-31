@@ -1334,6 +1334,10 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
                 <key>polygon</key>
                 <value>'$1'::$2</value>
             </entry>
+       	    <entry>
+                <key>money</key>
+                <value>'$1'::$2</value>
+            </entry>
         </sqlExpressionRule>
         <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
         <fetchSize>4096</fetchSize>
@@ -1538,6 +1542,10 @@ union all
             </entry>
        	    <entry>
                 <key>polygon</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>money</key>
                 <value>'$1'::$2</value>
             </entry>
         </sqlExpressionRule>

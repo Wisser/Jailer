@@ -1096,7 +1096,7 @@
                 <Component class="javax.swing.JCheckBox" name="transactional">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="transactional" noResource="true"/>
-                    <Property name="toolTipText" type="java.lang.String" value="Perform export in a single transaction"/>
+                    <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Perform export in a single transaction. &lt;br&gt;Caution: the use of more than 1 parallel thread can cause problems.&lt;/html&gt;"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
