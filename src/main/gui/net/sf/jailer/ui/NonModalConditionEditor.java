@@ -450,6 +450,8 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 			scalarSQIconToggleButton.setVisible(true);
 			scalarSQIconToggleButton.setIcon(dropDownIcon);
 		}
+		
+		scalarSQIconToggleButton.setEnabled(table1 != null && !table1.associations.isEmpty());
 
 		this.table1 = table1;
 		this.table2 = table2;

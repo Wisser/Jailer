@@ -365,6 +365,8 @@ public class ConditionEditor extends EscapableDialog {
 			scalarSQIconToggleButton.setVisible(true);
 		}
 		
+		scalarSQIconToggleButton.setEnabled(table1 != null && !table1.associations.isEmpty());
+
 		this.table1 = table1;
 		this.table2 = table2;
 		this.table1alias = table1alias;

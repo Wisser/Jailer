@@ -469,13 +469,13 @@ public class CellContentConverter {
 		
 		Object object;
 		if (DBMS.POSTGRESQL.equals(configuration) && "money".equals(columnTypeName)) {
-			// avoid SQLException
+			// workaround for https://github.com/pgjdbc/pgjdbc/issues/100
 			object = resultSet.getString(i);
 		} else {
 			object = resultSet.getObject(i);
 		}
 
-		// TODO mssql: if type is (VAR|LONGVAR)BINARY or (VAR|LONGVAR)(N)CHAR then use #get...Stream(), put data into a B|C|NCLOB implementation
+		// TODO mssql: if type is (VAR|LONGVAR)BINARY or (VAR|LONGVAR)(N)CHAR then use #get...Stream(), put data into a B|C|NCLOB implementation (? not sure if that's a good idea)
 
 		if (type == TIMESTAMP_WITH_NANO && object instanceof Timestamp) {
 			long t = ((Timestamp) object).getTime();
