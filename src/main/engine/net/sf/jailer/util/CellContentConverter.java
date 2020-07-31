@@ -49,6 +49,7 @@ public class CellContentConverter {
 
 	private final ResultSetMetaData resultSetMetaData;
 	private final Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
+	private final Map<Integer, String> typenameCache = new HashMap<Integer, String>();
 	private final Map<String, Integer> columnIndex = new HashMap<String, Integer>();
 	private final Map<Class<?>, Boolean> isPGObjectClass = new HashMap<Class<?>, Boolean>();
 	private final Session session;
@@ -83,6 +84,9 @@ public class CellContentConverter {
 			return "null";
 		}
 
+		if (content instanceof SQLExpressionWrapper) {
+			return ((SQLExpressionWrapper) content).getExpression();
+		}
 		if (content instanceof java.sql.Date) {
 			if (targetConfiguration.getDatePattern() != null) {
 				return targetConfiguration.createDateFormat().format((Date) content);
@@ -214,6 +218,67 @@ public class CellContentConverter {
 		POSTGRES_EXTENSIONS.addAll(Arrays.asList("hstore", "ghstore", "json", "jsonb", "_hstore", "_json", "_jsonb", "_ghstore"));
 	}
 	
+	private class SQLExpressionWrapper implements Comparable<SQLExpressionWrapper> {
+		private final Object value;
+		private final String type;
+		private final String pattern;
+		public SQLExpressionWrapper(Object value, String type, String pattern) {
+			this.value = value;
+			this.type = type;
+			this.pattern = pattern;
+		}
+		public String getExpression() {
+			String expression;
+			if (pattern.contains("'$1'")) {
+				expression = pattern.replace("$1", value == null? "null" : targetConfiguration.convertToStringLiteral(String.valueOf(value)));
+			} else {
+				expression = pattern.replace("$1", value == null? "null" : String.valueOf(value));
+			}
+			expression = expression.replace("$2", type);
+			return expression;
+		}
+		@Override
+		public String toString() {
+			return String.valueOf(value);
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((type == null) ? 0 : type.hashCode());
+			result = prime * result + ((value == null) ? 0 : value.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			SQLExpressionWrapper other = (SQLExpressionWrapper) obj;
+			if (type == null) {
+				if (other.type != null)
+					return false;
+			} else if (!type.equals(other.type))
+				return false;
+			if (value == null) {
+				if (other.value != null)
+					return false;
+			} else if (!value.equals(other.value))
+				return false;
+			return true;
+		}
+		@Override
+		public int compareTo(SQLExpressionWrapper o) {
+			if (o instanceof SQLExpressionWrapper) {
+				return toString().compareTo(o.toString());
+			}
+			return 0;
+		}
+	}
+
 	public static class PObjectWrapper implements Comparable<PObjectWrapper> {
 		private final String value;
 		private final String type;
@@ -326,10 +391,11 @@ public class CellContentConverter {
 	 */
 	public Object getObject(ResultSet resultSet, int i) throws SQLException {
 		Integer type = typeCache.get(i);
+		String columnTypeName = typenameCache.get(i);
 		if (type == null) {
 			try {
 				type = resultSetMetaData.getColumnType(i);
-				String columnTypeName = resultSetMetaData.getColumnTypeName(i);
+				columnTypeName = resultSetMetaData.getColumnTypeName(i);
 				if (configuration.getTimestampWithNanoTypeName() != null && configuration.getTimestampWithNanoTypeName().equalsIgnoreCase(columnTypeName)) {
 					type = TIMESTAMP_WITH_NANO;
 				}
@@ -370,6 +436,7 @@ public class CellContentConverter {
 				type = Types.OTHER;
 			}
 			typeCache.put(i, type);
+			typenameCache.put(i, columnTypeName);
 		}
 		try {
 			if (type == Types.ROWID) {
@@ -434,6 +501,18 @@ public class CellContentConverter {
 				}
 			}
 		}
+		
+		if (!configuration.getSqlExpressionRule().isEmpty() && columnTypeName != null && object != null) {
+			int id = columnTypeName.lastIndexOf('.');
+			if (id >= 0) {
+				columnTypeName = columnTypeName.substring(id + 1);
+			}
+			String expr = configuration.getSqlExpressionRule().get(columnTypeName.toLowerCase());
+			if (expr != null) {
+				return new SQLExpressionWrapper(object, columnTypeName, expr);
+			}
+		}
+		
 		return object;
 	}
 

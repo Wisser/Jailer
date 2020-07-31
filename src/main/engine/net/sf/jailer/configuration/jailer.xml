@@ -1281,6 +1281,60 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
                 <value>varchar</value>
             </entry>
         </typeReplacement>
+        <sqlExpressionRule>
+       	    <entry>
+                <key>point</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>interval</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>inet</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>int4range</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>int8range</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>box</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>cidr</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>circle</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>line</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>lseg</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>macaddr</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>path</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>polygon</key>
+                <value>'$1'::$2</value>
+            </entry>
+        </sqlExpressionRule>
         <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
         <fetchSize>4096</fetchSize>
 
@@ -1433,6 +1487,60 @@ union all
                 <value>varchar</value>
             </entry>
         </typeReplacement>
+        <sqlExpressionRule>
+       	    <entry>
+                <key>point</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>interval</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>inet</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>int4range</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>int8range</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>box</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>cidr</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>circle</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>line</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>lseg</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>macaddr</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>path</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>polygon</key>
+                <value>'$1'::$2</value>
+            </entry>
+        </sqlExpressionRule>
         <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
         <fetchSize>4096</fetchSize>
 

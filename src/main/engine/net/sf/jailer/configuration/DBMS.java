@@ -207,6 +207,8 @@ public class DBMS {
 	 */
 	private Map<String, String> typeReplacement = new HashMap<String, String>();
 	
+	private Map<String, String> sqlExpressionRule = new HashMap<String, String>();
+	
 	/**
 	 * Replacement map for column types used for DDL generation. Only used if DBMS accept it.
 	 */
@@ -1200,6 +1202,14 @@ public class DBMS {
 	 */
 	public void setFetchSize(Integer fetchSize) {
 		this.fetchSize = fetchSize;
+	}
+
+	public Map<String, String> getSqlExpressionRule() {
+		return sqlExpressionRule;
+	}
+
+	public void setSqlExpressionRule(Map<String, String> sqlExpressionRule) {
+		this.sqlExpressionRule = sqlExpressionRule;
 	}
 
 	/* (non-Javadoc)
