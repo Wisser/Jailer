@@ -1,6 +1,8 @@
 9.5.1
   - Fix for "[jailer:bugs] #43 PostgreSQL: Export of inet and interval"
     https://sourceforge.net/p/jailer/bugs/43/
+  - Fix for "[jailer:bugs] #44 not a proxy instance if WorkingTableScope.LOCAL_DATABASEand Tomcat jdbc pool"
+    https://sourceforge.net/p/jailer/bugs/44/
 
 9.5
   - Increased initial responsiveness of the Data Browser.
