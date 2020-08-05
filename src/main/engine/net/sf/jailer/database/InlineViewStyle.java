@@ -293,6 +293,39 @@ public enum InlineViewStyle {
 			StringBuilder sb = new StringBuilder(" from sysmaster:\"informix\".sysdual) " + name);
 			return sb.toString();
 		}
+	},
+	FIREBIRD("(Select 1 A, '2' B, 3 C from RDB$DATABASE Union all "
+			+ "Select 4, '5', 6 from RDB$DATABASE) %s") {
+		@Override
+		public String head(String[] columnNames) throws SQLException {
+			return "(Select ";
+		}
+
+		@Override
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
+				}
+				sb.append(values[i - 1]);
+				if (rowNumber == 0) {
+					sb.append(" " + columnNames[i - 1]);
+				}
+			}
+			return sb.toString();
+		}
+
+		@Override
+		public String separator() throws SQLException {
+			return " from RDB$DATABASE Union all Select ";
+		}
+
+		@Override
+		public String terminator(String name, String[] columnNames) throws SQLException {
+			StringBuilder sb = new StringBuilder(" from RDB$DATABASE) " + name);
+			return sb.toString();
+		}
 	};
 
 	public final String example;
