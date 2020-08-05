@@ -78,6 +78,7 @@ public class ProgressTable extends JTable {
 		public String tableName;
 		public long numberOfRows;
 		public Set<String> parentNames;
+		public boolean excludeFromDeletion;
 		// Calculated
 		public int row, column;
 		public List<CellInfo> parents;
@@ -132,6 +133,7 @@ public class ProgressTable extends JTable {
 	private final JLabel numberRender = new JLabel("");
 	private final JLabel iconRender = new JLabel(" ");
 	private final Icon scaledSourceIcon;
+	private final Icon scaledExcludeFromDeletionImage;
 	
 	/** Creates new table */
 	public ProgressTable() {
@@ -139,7 +141,7 @@ public class ProgressTable extends JTable {
 		setSurrendersFocusOnKeystroke(true);
 		
 		scaledSourceIcon = UIUtil.scaleIcon(iconRender, sourceIcon, 1.4);
-		
+		scaledExcludeFromDeletionImage = UIUtil.scaleIcon(iconRender, excludeFromDeletionImage, 1.4);
 		tableRender.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		numberRender.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 		cellPanel.setLayout(new GridBagLayout());
@@ -211,6 +213,9 @@ public class ProgressTable extends JTable {
 					CellInfo cellInfo = (CellInfo) value;
 					
 					iconRender.setIcon(null);
+					if (cellInfo.excludeFromDeletion) {
+						iconRender.setIcon(scaledExcludeFromDeletionImage);
+					}
 					if (cellInfo.tableName.equals(selectedTableName)) {
 						outer.setBorder(selBorder);
 					} else if (cellInfo.hasSelectedChild) {
@@ -872,9 +877,11 @@ public class ProgressTable extends JTable {
 	}
 
 	private static ImageIcon sourceIcon;
+	private static ImageIcon excludeFromDeletionImage;
 	{
 		// load images
 		sourceIcon = UIUtil.readImage("/source.png");
+		excludeFromDeletionImage = UIUtil.readImage("/database-lock.png");
 	}
 
 	private static final long serialVersionUID = -6284876860992859979L;

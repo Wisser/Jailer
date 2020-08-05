@@ -250,6 +250,8 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 				if (day == today || e.getValue() != null && e.getValue() > 0) {
 					cell.parentNames.add(dataModel.getDisplayName(((Association) e.getKey()).source));
 				}
+			} else if (e.getKey() instanceof Table) {
+				cell.excludeFromDeletion = ((Table) e.getKey()).isExcludedFromDeletion();
 			}
 		}
 		final List<ProgressTable.CellInfo> theRow = new ArrayList<ProgressTable.CellInfo>(row.values());
