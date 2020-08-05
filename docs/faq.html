@@ -197,7 +197,7 @@
                                   </tr>
 
                                   <tr>
-                                    <td style="vertical-align: top;">$DISTANCE</td>
+                                    <td style="vertical-align: top;"><b>A.$DISTANCE</b> or <b>B.$DISTANCE</b></td>
 
                                     <td style="vertical-align: top;">INTEGER &nbsp;</td>
 
@@ -207,19 +207,27 @@
                                   </tr>
 
                                   <tr>
-                                    <td>$BIRTHDAY</td>
+                                    <td><b>A.$BIRTHDAY</b></td>
 
                                     <td>INTEGER</td>
 
-                                    <td>Synonym for $DISTANCE.</td>
+                                    <td>Synonym for A.$DISTANCE</td>
                                   </tr>
 
                                   <tr>
-                                    <td>$IS_SUBJECT</td>
+                                    <td><b>A.$IS_SUBJECT</b></td>
 
                                     <td>BOOLEAN</td>
 
-                                    <td>Synonym for $DISTANCE=0.</td>
+                                    <td>Synonym for A.$DISTANCE=0</td>
+                                  </tr>
+                                  
+                                  <tr>
+                                    <td><b>$IN_DELETE_MODE</b></td>
+
+                                    <td>BOOLEAN</td>
+
+                                    <td>Is <i>true</i> during "Delete Reduction" stage, otherwise <i>false</i></td>
                                   </tr>
                                 </tbody>
                               </table><br />

@@ -1045,6 +1045,9 @@ public class RemoteEntityGraph extends EntityGraph {
 			int setId = getNextSetId();
 			jc = SqlUtil.resolvePseudoColumns(jc, association.reversed? "EB" : "EA", association.reversed? "EA" : "EB", 0, birthdayOfSubject, "orig_birthday", inDeleteMode);
 			boolean checkDest = allTables.contains(association.source);
+			if (!checkDest) {
+				jc = jc.replace("EA.orig_birthday", "(-1)");
+			}
 
 			String remove = "Insert into " + dmlTableReference(ENTITY_SET_ELEMENT, session) + "(set_id, type, " + universalPrimaryKey.columnList(null) + ") " +
 				"Select distinct " + setId + ", EB.type, " + universalPrimaryKey.columnList("EB.") + " from " + dmlTableReference(ENTITY, session) + " EB " +

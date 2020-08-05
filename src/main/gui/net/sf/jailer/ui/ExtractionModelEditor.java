@@ -774,7 +774,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		modelPath.setText(modelpath);
 		
-		subjectConditionEditor = new NonModalConditionEditor(extractionModelFrame, parametersGetter, dataModel) {
+		subjectConditionEditor = new NonModalConditionEditor(extractionModelFrame, parametersGetter, false, dataModel) {
 			@Override
 			protected void consume(String cond) {
 				if (cond != null) {
@@ -792,7 +792,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		};
 		subjectConditionEditor.setTitle("Subject condition");
-		restrictionConditionEditor = new NonModalConditionEditor(extractionModelFrame, parametersGetter, dataModel) {
+		restrictionConditionEditor = new NonModalConditionEditor(extractionModelFrame, parametersGetter, true, dataModel) {
 			@Override
 			protected void consume(String cond) {
 				if (cond != null) {

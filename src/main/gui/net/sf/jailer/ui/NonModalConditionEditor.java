@@ -78,20 +78,21 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	private ParameterSelector parameterSelector;
 	private DataModelBasedSQLCompletionProvider provider;
 
-	/** Creates new form ConditionEditor */
-	public NonModalConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel) {
+	/** Creates new form ConditionEditor 
+	 * @param withPseudoColumns */
+	public NonModalConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, boolean withPseudoColumns, DataModel dataModel) {
 		super(parent, false);
-		init(parametersGetter, dataModel);
+		init(parametersGetter, dataModel, withPseudoColumns);
 	}
 
 	/** Creates new form ConditionEditor */
 	public NonModalConditionEditor(Dialog parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel) {
 		super(parent, false);
-		init(parametersGetter, dataModel);
+		init(parametersGetter, dataModel, false);
 	}
 
 	@SuppressWarnings("serial")
-	private void init(ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel) {
+	private void init(ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel, final boolean withPseudoColumns) {
 		setUndecorated(true);
 		initComponents();
 
@@ -172,7 +173,17 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		
 		if (dataModel != null) {
 			try {
-				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
+				provider = new DataModelBasedSQLCompletionProvider(null, dataModel) {
+					@Override
+					protected List<String> getColumns(Table table, long timeOut, JComponent waitCursorSubject) {
+						List<String> columns = super.getColumns(table, timeOut, waitCursorSubject);
+						if (withPseudoColumns) {
+							columns.add("$DISTANCE");
+							columns.add("$IS_SUBJECT");
+						}
+						return columns;
+					}
+				};
 				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
 				sqlAutoCompletion = new SQLAutoCompletion(provider, editorPane);
 			} catch (SQLException e) {
