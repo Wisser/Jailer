@@ -86,7 +86,7 @@ public enum InlineViewStyle {
 			return sb.toString();
 		}
 	},
-	DB2("(values (1, '2', 3), (4, '5', 6)) %s(A, B, C)") {
+	Db2("(values (1, '2', 3), (4, '5', 6)) %s(A, B, C)") {
 		@Override
 		public String head(String[] columnNames) throws SQLException {
 			return "(values ";
