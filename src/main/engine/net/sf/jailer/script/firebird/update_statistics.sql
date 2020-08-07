@@ -1,5 +1,4 @@
--- keeps DB-statistic up-to-date for the following tables:
--- JAILER_ENTITY
--- JAILER_GRAPH
--- JAILER_DEPENDENCY
--- JAILER_SET
+EXECUTE BLOCK AS declare variable index_name VARCHAR(31); BEGIN for select RDB$INDEX_NAME from RDB$INDICES where RDB$RELATION_NAME = '${TABLE_JAILER_GRAPH}' into :index_name do execute statement 'SET statistics INDEX ' || :index_name || ';'; END;
+EXECUTE BLOCK AS declare variable index_name VARCHAR(31); BEGIN for select RDB$INDEX_NAME from RDB$INDICES where RDB$RELATION_NAME = '${TABLE_JAILER_ENTITY}' into :index_name do execute statement 'SET statistics INDEX ' || :index_name || ';'; END;
+EXECUTE BLOCK AS declare variable index_name VARCHAR(31); BEGIN for select RDB$INDEX_NAME from RDB$INDICES where RDB$RELATION_NAME = '${TABLE_JAILER_SET}' into :index_name do execute statement 'SET statistics INDEX ' || :index_name || ';'; END;
+EXECUTE BLOCK AS declare variable index_name VARCHAR(31); BEGIN for select RDB$INDEX_NAME from RDB$INDICES where RDB$RELATION_NAME = '${TABLE_JAILER_DEPENDENCY}' into :index_name do execute statement 'SET statistics INDEX ' || :index_name || ';'; END;
