@@ -558,13 +558,17 @@ public abstract class EntityGraph {
 			}
 		});
 		if (count[0] == 1) {
+			boolean wasSilent = getSession().getSilent();
 			try {
+				getSession().setSilent(true);
 				getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(DEPENDENCY, getSession(), executionContext));
 				getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(ENTITY, getSession(), executionContext));
 				getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext));
 			} catch (SQLException e) {
 				// "truncate" not supported
 				return;
+			} finally {
+				getSession().setSilent(wasSilent);
 			}
 			isTruncated  = true;
 		}

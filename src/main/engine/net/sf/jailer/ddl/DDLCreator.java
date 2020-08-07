@@ -402,7 +402,7 @@ public class DDLCreator {
 							"WHERE jversion='" + JailerVersion.WORKING_TABLE_VERSION + "' and jkey='" + testId + "'");
 				}
 				return uptodate[0];
-			} catch (Exception e) {
+			} catch (Throwable t) {
 				try {
 					// [bugs:#37] PostreSQL: transactional execution
 					session.getConnection().commit();
@@ -413,7 +413,7 @@ public class DDLCreator {
 			} finally {
 				session.setSilent(wasSilent);
 			}
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			return false;
 		}
 	}
