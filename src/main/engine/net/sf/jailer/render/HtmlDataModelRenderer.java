@@ -389,6 +389,11 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @param file the file
 	 */
 	public static void writeFile(File file, String content) throws IOException {
+		try {
+			file.getParentFile().mkdir();
+		} catch (Throwable t) {
+			// ignore
+		}
 		PrintWriter out = new PrintWriter(new FileOutputStream(file));
 		out.print(content);
 		out.close();

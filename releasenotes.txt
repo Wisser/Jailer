@@ -1,3 +1,9 @@
+9.5.2
+  - Fix for "[Bug] firebird database - No suitable Inline-View Style known #32"
+    https://github.com/Wisser/Jailer/issues/32
+  - Fix for "Delete Reduction is not deleting rows"
+    https://sourceforge.net/p/jailer/discussion/700499/thread/3d16e17980/
+
 9.5.1
   - Fix for "[jailer:bugs] #43 PostgreSQL: Export of inet and interval"
     https://sourceforge.net/p/jailer/bugs/43/
