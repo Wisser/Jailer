@@ -76,18 +76,23 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 		return table.getName();
 	}
 
+	private boolean tryToLoadSchema = true;
+	
 	@Override
 	protected List<MDTable> getTables(MDSchema schema) {
 		if (!schema.isLoaded()) {
-			schema.loadTables(true, null, null, null);
-			for (int i = 0; i < 10; ++i) {
-				if (schema.isLoaded()) {
-					return schema.getTables();
-				}
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					// ignore
+			if (tryToLoadSchema) {
+				tryToLoadSchema = false;
+				schema.loadTables(true, null, null, null);
+				for (int i = 0; i < 10; ++i) {
+					if (schema.isLoaded()) {
+						return schema.getTables();
+					}
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// ignore
+					}
 				}
 			}
     		return Collections.emptyList();
