@@ -1,3 +1,6 @@
+9.5.3
+  - Minor fixes.
+
 9.5.2
   - Fix for "[Bug] firebird database - No suitable Inline-View Style known #32"
     https://github.com/Wisser/Jailer/issues/32
