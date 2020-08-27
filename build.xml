@@ -107,6 +107,7 @@ available targets:
 		<java
 		    fork="true"
 		    failonerror="true"
+			logError="true"
 			classname="net.sf.jailer.JailerVersion"
 			outputproperty="VERSION">
 			<classpath>
