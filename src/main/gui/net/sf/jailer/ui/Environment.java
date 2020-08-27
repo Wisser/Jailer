@@ -28,7 +28,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Locale;
 import java.util.Random;
 
 import net.sf.jailer.ExecutionContext;
@@ -68,15 +67,13 @@ public class Environment {
 		} catch (Throwable t) {
 			// ignore
 		}
-//		String osName = System.getProperty("os.name");
-//		if (osName != null) {
-//			if (osName.toLowerCase(Locale.ENGLISH).contains("mac os")) {
-				// https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
-				// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8215200
-				// https://bugs.openjdk.java.net/browse/JDK-8215200
-				System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
-//			}
-//		}
+
+		// see:
+		// https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
+		// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8215200
+		// https://bugs.openjdk.java.net/browse/JDK-8215200
+		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+
 		if (new File(".singleuser").exists() // legacy
 				|| new File(".multiuser").exists()
 				|| isJPacked()) {
