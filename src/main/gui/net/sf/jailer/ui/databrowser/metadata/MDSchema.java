@@ -277,9 +277,11 @@ public class MDSchema extends MDObject {
 		loadTablesQueue.add(new Runnable() {
 			@Override
 			public void run() {
-				getTables(loadTableColumns, afterLoadAction, afterLoadESTAction);
-				if (afterAvailableAction != null) {
-					afterAvailableAction.run();
+				if (!getMetaDataSource().getSession().isDown()) {
+					getTables(loadTableColumns, afterLoadAction, afterLoadESTAction);
+					if (afterAvailableAction != null) {
+						afterAvailableAction.run();
+					}
 				}
 			}
 		});
