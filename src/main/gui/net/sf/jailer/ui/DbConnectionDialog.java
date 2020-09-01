@@ -26,12 +26,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -922,9 +924,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
 		ConnectionInfo ci = new ConnectionInfo(executionContext);
-		try {
-			File csvFile = Environment.newWorkingFolderFile("driverlist.csv");
+		final String DRIVERLIST_FILE = "driverlist.csv";
+		File csvFile = Environment.newWorkingFolderFile(DRIVERLIST_FILE);
 
+		try {
 			// check existence of "driverlist.csv"
 			FileInputStream is = new FileInputStream(csvFile);
 			is.close();
@@ -956,6 +959,42 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					break;
 				}
 			}
+		} catch (FileNotFoundException e) {
+			StringBuilder info = new StringBuilder();
+			List<String> fileList = new ArrayList<String>();
+			try {
+				info.append(csvFile.getAbsolutePath() + ": ");
+				File[] files = csvFile.getAbsoluteFile().getParentFile().listFiles();
+				if (files == null) {
+					info.append("null");
+				} else {
+					for (File file: files) {
+						String ord;
+						String name = file.getName();
+						if (!file.exists()) {
+							ord = "1";
+						} else {
+							ord = "2";
+						}
+						int state = 0;
+						state += file.exists()? 1 : 0;
+						state += file.isFile()? 2 : 0;
+						state += file.isDirectory()? 4 : 0;
+						fileList.add(ord + name + "/" + Integer.toHexString(state));
+						if (DRIVERLIST_FILE.equalsIgnoreCase(name)) {
+							ord = "1";
+							fileList.add(ord + "!" + name + "/" + Integer.toHexString(state));
+						}
+					}
+				}
+				Collections.sort(fileList);
+				for (int i = 0; i < fileList.size(); ++i) {
+					fileList.set(i, fileList.get(i).substring(1));
+				}
+			} catch (Throwable t) {
+				info.append(" err: " + t.getMessage() + ": ");
+			}
+			UIUtil.showException(this, "Error", new FileNotFoundException(e.getMessage() + " / (" + info + fileList + ")"));
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
