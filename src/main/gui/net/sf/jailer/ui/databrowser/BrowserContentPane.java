@@ -431,13 +431,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Map<Row, Row> parentRow = new HashMap<Row, Row>();
 			Set<Integer> distinctParentRowModelIndex = new HashSet<Integer>();
 			Set<Row> singleBlockRows = new HashSet<Row>();
-			if (rb != null && rb.browserContentPane != null && rb.parent != null && rb.association != null && rb.rowToRowLinks != null && rb.association.isInsertDestinationBeforeSource()) {
-				for (RowToRowLink l: rb.rowToRowLinks) {
-					if (!parentRow.containsKey(l.childRow)) {
-						parentRow.put(l.childRow, l.parentRow);
-						distinctParentRowModelIndex.add(l.parentRow.getParentModelIndex());
-					} else {
-						singleBlockRows.add(l.childRow);
+			synchronized (getMonitorForFindClosure()) {
+				if (rb != null && rb.browserContentPane != null && rb.parent != null && rb.association != null && rb.rowToRowLinks != null && rb.association.isInsertDestinationBeforeSource()) {
+					for (RowToRowLink l: rb.rowToRowLinks) {
+						if (!parentRow.containsKey(l.childRow)) {
+							parentRow.put(l.childRow, l.parentRow);
+							distinctParentRowModelIndex.add(l.parentRow.getParentModelIndex());
+						} else {
+							singleBlockRows.add(l.childRow);
+						}
 					}
 				}
 			}
