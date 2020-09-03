@@ -982,7 +982,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						state += file.isDirectory()? 4 : 0;
 						fileList.add(ord + name + "/" + Integer.toHexString(state));
 						if (DRIVERLIST_FILE.equalsIgnoreCase(name)) {
-							ord = "1";
+							ord = "0";
 							fileList.add(ord + "!" + name + "/" + Integer.toHexString(state));
 						}
 					}
