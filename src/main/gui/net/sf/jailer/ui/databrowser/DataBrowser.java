@@ -1899,7 +1899,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuTools.add(schemaMappingMenuItem);
         menuTools.add(jSeparator2);
 
-        columnOrderItem.setText("Column Ordering");
+        columnOrderItem.setText("Define Column Order");
         columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 columnOrderItemActionPerformed(evt);
@@ -1933,7 +1933,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuTools.add(checkPKMenuItem);
 
-        consistencyCheckMenuItem1.setText("Check referential Consistency");
+        consistencyCheckMenuItem1.setText("Check Referential Consistency");
         consistencyCheckMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 consistencyCheckMenuItem1ActionPerformed(evt);

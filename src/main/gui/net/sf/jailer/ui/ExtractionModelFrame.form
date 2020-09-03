@@ -134,7 +134,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="columnOrderItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Column Ordering"/>
+                <Property name="text" type="java.lang.String" value="Define Column Order"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="columnOrderItemActionPerformed"/>
@@ -176,7 +176,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="consistencyCheckMenuItem1">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Check referential Consistency"/>
+                <Property name="text" type="java.lang.String" value="Check Referential Consistency"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="consistencyCheckMenuItem1ActionPerformed"/>
@@ -406,7 +406,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="renderHtml">
               <Properties>
-                <Property name="text" type="java.lang.String" value="HTML Rendering"/>
+                <Property name="text" type="java.lang.String" value="HTML Renderer"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="renderHtmlActionPerformed"/>
