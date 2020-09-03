@@ -1,4 +1,5 @@
 9.5.3
+  - Improved Connection Settings Wizard.
   - Some diagnostic means have been added.
   - Minor fixes.
 

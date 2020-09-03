@@ -16,6 +16,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Font;
@@ -34,11 +35,13 @@ import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -63,21 +66,37 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 	private Map<Integer, Map<String, String>> oldContent = new HashMap<Integer, Map<String, String>>();
 	private JLabel pLabel[];
 	private JTextField pTextField[];
+	private JLabel defaultLabel[];
 	private JButton pButton[];
+	private JToggleButton defaultButton[];
 	private String url;
 
+	private Font FONT_ITALICS;
+	private Font FONT_NORMAL;
+	
+	private static ImageIcon leftIcon;
+	
 	/**
      * Creates new form DBConnectionSetings
      */
     public DbConnectionSettings(Component root) {
     	this.owner = root;
         initComponents();
+        pTextFieldBGColor = paramField1.getBackground();
+        FONT_NORMAL = defaultAllLabel.getFont().deriveFont(defaultAllLabel.getFont().getStyle() & ~Font.BOLD);
+        FONT_ITALICS = FONT_NORMAL.deriveFont(FONT_NORMAL.getStyle() & ~Font.BOLD | Font.ITALIC);
     	pLabel = new JLabel[] { paramLabel1, paramLabel2, paramLabel3, paramLabel4 };
     	pTextField = new JTextField[] { paramField1, paramField2, paramField3, paramField4 };
+    	defaultLabel = new JLabel[] { defaultLabel1, defaultLabel2, defaultLabel3, defaultLabel4 };
     	pButton = new JButton[] { paramButton1, paramButton2, paramButton3, paramButton4 };
+    	defaultButton = new JToggleButton[] { defaultButton1, defaultButton2, defaultButton3, defaultButton4 };
+    	defaultAllButton.setIcon(UIUtil.scaleIcon(this, leftIcon));
+    	defaultAllButton.setText(null);
     	for (int i = 0; i < pLabel.length; ++i) {
     		final int finalI = i;
-    		pTextField[i].addFocusListener(new FocusListener() {
+    		defaultButton[i].setIcon(UIUtil.scaleIcon(this, leftIcon));
+    		defaultButton[i].setText(null);
+            pTextField[i].addFocusListener(new FocusListener() {
 				@Override
 				public void focusLost(FocusEvent e) {
 				}
@@ -93,15 +112,20 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			pTextField[i].getDocument().addDocumentListener(new DocumentListener() {
 				@Override
 				public void removeUpdate(DocumentEvent e) {
-					updateUrl();
+					update();
 				}
 				@Override
 				public void insertUpdate(DocumentEvent e) {
-					updateUrl();
+					update();
 				}
 				@Override
 				public void changedUpdate(DocumentEvent e) {
+					update();
+				}
+				private void update() {
 					updateUrl();
+					updateDefaultButton(finalI);
+					updateDefaultAllButton();
 				}
 			});
 			pButton[i].setText(null);
@@ -114,7 +138,33 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 					}
 				}
 			});
+			defaultButton[i].addActionListener(new java.awt.event.ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (defaultButton[finalI].isSelected()) {
+						pTextField[finalI].grabFocus();
+						String def = defValues.get(finalI);
+						pTextField[finalI].setText(def == null? "" : def);
+						pTextField[finalI].selectAll();
+					}
+				}
+			});
     	}
+    	defaultAllButton.addActionListener(new java.awt.event.ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (defaultAllButton.isSelected()) {
+					updateUrl();
+					for (int i = 0; i < defValues.size(); ++i) {
+						String def = defValues.get(i);
+						pTextField[i].setText(def == null? "" : def);
+						pTextField[i].selectAll();
+						updateDefaultButton(i);
+					}
+					updateDefaultAllButton();
+				}
+			}
+		});
     }
 
 	public Pair<String, String> edit(List<Line> lines) {
@@ -162,6 +212,8 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			pLabel[i].setVisible(true);
 			pTextField[i].setVisible(true);
 			pButton[i].setVisible(true);
+			defaultLabel[i].setVisible(true);
+			defaultButton[i].setVisible(true);
 		}
 		dialog.pack();
 		dialog.setSize(Math.max(dialog.getWidth(), 540), dialog.getHeight());
@@ -182,6 +234,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 	}
 
 	private int selIndex = -1;
+	private Color pTextFieldBGColor;
 
 	private void updateFields() {
 		if (dbmsComboBox.getSelectedItem() instanceof Line) {
@@ -218,6 +271,8 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			pLabel[i].setVisible(false);
 			pTextField[i].setVisible(false);
 			pButton[i].setVisible(false);
+			defaultLabel[i].setVisible(false);
+			defaultButton[i].setVisible(false);
 		}
 		int i = 0;
 		while (matcher.find()) {
@@ -229,6 +284,8 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 				pLabel[i].setText((param.length() <= 3? param.toUpperCase() : (param.substring(0, 1).toUpperCase() + (param.substring(1).toLowerCase()))) + ":");
 				pLabel[i].setVisible(true);
 				pTextField[i].setVisible(true);
+				defaultLabel[i].setVisible(true);
+				defaultButton[i].setVisible(true);
 				if (oldContent.get(selIndex).containsKey(param)) {
 					pTextField[i].setText(oldContent.get(selIndex).get(param));
 				} else {
@@ -239,17 +296,61 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 					pButton[i].setIcon(loadIcon);
 				}
 				names.add(param);
+				if (defValue == null) {
+					defValue = "";
+				}
 				defValues.add(defValue);
 				isOptional.add(optional);
+				
+				defaultLabel[i].setText(defValue.isEmpty()? "empty" : defValue);
+				defaultLabel[i].setFont(defValue.isEmpty()? FONT_ITALICS : FONT_NORMAL);
+				defaultButton[i].setEnabled(defValue != null && !defValue.equals(pTextField[i].getText()));
+				defaultButton[i].setSelected(defValue != null && defValue.equals(pTextField[i].getText()));
 
 				i++;
 				if (i >= pLabel.length) {
 					break;
 				}
-			}			
+			}
 		}
-
+		for (i = 0; i < pLabel.length; ++i) {
+			if (i < defValues.size() && defValues.size() > 1) {
+				if (defValues.get(i).isEmpty() && !isOptional.get(i)) {
+					defaultLabel[i].setVisible(false);
+					defaultButton[i].setVisible(false);
+				}
+			}
+		}
+		updateDefaultAllButton();
 		updateUrl();
+	}
+
+	private void updateDefaultAllButton() {
+		boolean enabled = false;
+		boolean selected = true;
+		Color red;
+		if (pTextFieldBGColor != null && pTextFieldBGColor.getRed() + pTextFieldBGColor.getBlue() + pTextFieldBGColor.getGreen() < (256 * 3) / 2) {
+			red = new Color(150, 0, 0);
+		} else {
+			red = new Color(255, 220, 220);
+		}
+		for (int i = 0; i < pTextField.length; ++i) {
+			if (defaultButton[i].isVisible()) {
+				enabled |= defaultButton[i].isEnabled();
+				selected &= defaultButton[i].isSelected();
+			}
+			if (pTextField[i].isVisible()) {
+				if (isOptional.size() > i) {
+					if (!isOptional.get(i) && pTextField[i].getText().isEmpty()) {
+						pTextField[i].setBackground(red);
+					} else {
+						pTextField[i].setBackground(pTextFieldBGColor);
+					}
+				}
+			}
+		}
+		defaultAllButton.setEnabled(enabled);
+		defaultAllButton.setSelected(selected);
 	}
 
 	private void updateUrl() {
@@ -298,6 +399,17 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         urlLabel = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         dbmsComboBox = new javax.swing.JComboBox<>();
+        defaultButton1 = new javax.swing.JToggleButton();
+        defaultButton2 = new javax.swing.JToggleButton();
+        defaultButton3 = new javax.swing.JToggleButton();
+        defaultButton4 = new javax.swing.JToggleButton();
+        defaultAllButton = new javax.swing.JToggleButton();
+        defaultLabel1 = new javax.swing.JLabel();
+        defaultLabel2 = new javax.swing.JLabel();
+        defaultLabel3 = new javax.swing.JLabel();
+        defaultLabel4 = new javax.swing.JLabel();
+        defaultAllLabel = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -330,7 +442,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 100;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
@@ -352,25 +464,25 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 96;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 12, 0);
         add(jSeparator1, gridBagConstraints);
 
         paramLabel1.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
         add(paramLabel1, gridBagConstraints);
 
         paramLabel2.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 4);
         add(paramLabel2, gridBagConstraints);
@@ -378,7 +490,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         paramLabel3.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 4);
         add(paramLabel3, gridBagConstraints);
@@ -386,7 +498,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         paramLabel4.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 4);
         add(paramLabel4, gridBagConstraints);
@@ -394,16 +506,16 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         paramField1.setText("jTextField2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(paramField1, gridBagConstraints);
 
         paramField2.setText("jTextField2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
@@ -412,7 +524,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         paramField3.setText("jTextField2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
@@ -421,7 +533,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         paramField4.setText("jTextField2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
@@ -429,29 +541,29 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 
         paramButton1.setText("jButton1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 2);
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
         add(paramButton1, gridBagConstraints);
 
         paramButton2.setText("jButton1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
         add(paramButton2, gridBagConstraints);
 
         paramButton3.setText("jButton1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
         add(paramButton3, gridBagConstraints);
 
         paramButton4.setText("jButton1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
         add(paramButton4, gridBagConstraints);
 
@@ -460,7 +572,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 98;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         add(urlLabel, gridBagConstraints);
@@ -485,6 +597,94 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(dbmsComboBox, gridBagConstraints);
+
+        defaultButton1.setText("jToggleButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        add(defaultButton1, gridBagConstraints);
+
+        defaultButton2.setText("jToggleButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        add(defaultButton2, gridBagConstraints);
+
+        defaultButton3.setText("jToggleButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        add(defaultButton3, gridBagConstraints);
+
+        defaultButton4.setText("jToggleButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        add(defaultButton4, gridBagConstraints);
+
+        defaultAllButton.setText("jToggleButton1");
+        defaultAllButton.setIconTextGap(0);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        add(defaultAllButton, gridBagConstraints);
+
+        defaultLabel1.setFont(defaultLabel1.getFont().deriveFont(defaultLabel1.getFont().getStyle() | java.awt.Font.BOLD));
+        defaultLabel1.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
+        add(defaultLabel1, gridBagConstraints);
+
+        defaultLabel2.setFont(defaultLabel2.getFont().deriveFont(defaultLabel2.getFont().getStyle() | java.awt.Font.BOLD));
+        defaultLabel2.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
+        add(defaultLabel2, gridBagConstraints);
+
+        defaultLabel3.setFont(defaultLabel3.getFont().deriveFont(defaultLabel3.getFont().getStyle() | java.awt.Font.BOLD));
+        defaultLabel3.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
+        add(defaultLabel3, gridBagConstraints);
+
+        defaultLabel4.setFont(defaultLabel4.getFont().deriveFont(defaultLabel4.getFont().getStyle() | java.awt.Font.BOLD));
+        defaultLabel4.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
+        add(defaultLabel4, gridBagConstraints);
+
+        defaultAllLabel.setFont(defaultAllLabel.getFont().deriveFont(defaultAllLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        defaultAllLabel.setText("Use defaults");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 10);
+        add(defaultAllLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 0);
+        add(jSeparator2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -501,16 +701,35 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         updateFields();
     }//GEN-LAST:event_dbmsComboBoxActionPerformed
 
-    private boolean ok;
+    private void updateDefaultButton(final int i) {
+		if (defValues.size() > i) {
+			String defValue = defValues.get(i);
+			defaultButton[i].setEnabled(defValue != null && !defValue.equals(pTextField[i].getText()));
+			defaultButton[i].setSelected(defValue != null && defValue.equals(pTextField[i].getText()));
+		}
+	}
+
+	private boolean ok;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JComboBox<Line> dbmsComboBox;
+    private javax.swing.JToggleButton defaultAllButton;
+    private javax.swing.JLabel defaultAllLabel;
+    private javax.swing.JToggleButton defaultButton1;
+    private javax.swing.JToggleButton defaultButton2;
+    private javax.swing.JToggleButton defaultButton3;
+    private javax.swing.JToggleButton defaultButton4;
+    private javax.swing.JLabel defaultLabel1;
+    private javax.swing.JLabel defaultLabel2;
+    private javax.swing.JLabel defaultLabel3;
+    private javax.swing.JLabel defaultLabel4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JButton okButton;
     private javax.swing.JButton paramButton1;
     private javax.swing.JButton paramButton2;
@@ -531,6 +750,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 	{
 		// load images
 		loadIcon = UIUtil.readImage("/load.png");
+		leftIcon = UIUtil.readImage("/left.png");
 	}
 
 }

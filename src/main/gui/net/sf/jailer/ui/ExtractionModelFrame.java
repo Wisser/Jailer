@@ -606,7 +606,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu1.add(openDataModelEditor);
         jMenu1.add(jSeparator3);
 
-        columnOrderItem.setText("Column Ordering");
+        columnOrderItem.setText("Define Column Order");
         columnOrderItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 columnOrderItemActionPerformed(evt);
@@ -640,7 +640,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu1.add(checkPKMenuItem);
 
-        consistencyCheckMenuItem1.setText("Check referential Consistency");
+        consistencyCheckMenuItem1.setText("Check Referential Consistency");
         consistencyCheckMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 consistencyCheckMenuItem1ActionPerformed(evt);
@@ -829,7 +829,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu3.add(cycleView);
 
-        renderHtml.setText("HTML Rendering");
+        renderHtml.setText("HTML Renderer");
         renderHtml.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renderHtmlActionPerformed(evt);
