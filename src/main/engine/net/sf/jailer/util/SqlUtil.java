@@ -188,7 +188,7 @@ public class SqlUtil {
 		condition = condition.replaceAll("(?i:a\\s*\\.\\s*\\$is_subject)", Matcher.quoteReplacement(aIsSubject));
 		condition = condition.replaceAll("(?i:b\\s*\\.\\s*\\$is_subject)", Matcher.quoteReplacement(bIsSubject));
 
-		condition = condition.replaceAll("(?i:$in_delete_mode)", Matcher.quoteReplacement(inDeleteMode? "(1=1)" : "(1=0)"));
+		condition = condition.replaceAll("(?i:\\$in_delete_mode)", Matcher.quoteReplacement(inDeleteMode? "(1=1)" : "(1=0)"));
 		
 		return condition;
 	}
