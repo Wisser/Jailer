@@ -758,11 +758,11 @@ public class DataModel {
 			for (Association a: table.associations) {
 				if (associations == null || associations.contains(a)) {
 					if (tableSet.contains(a.destination)) {
-						if (a.getJoinCondition() != null) {
+						// if (a.getJoinCondition() != null) {
 							if (a.isInsertDestinationBeforeSource()) {
 								depends = true;
 								break;
-							}
+						//	}
 						}
 					}
 				}
