@@ -452,7 +452,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	private void checkPseudoColumns(Table table, String condition) {
 		if (condition != null) {
-			if (!condition.equals(SqlUtil.resolvePseudoColumns(condition, "A", "B", 0, 0, inDeleteMode))) {
+			if (!condition.equals(SqlUtil.resolvePseudoColumns(condition, "A", "B", 0, 0, "birthday", null))) {
 				throw new IllegalArgumentException(
 						"Unsupported use of pseudo-columns in condition:\n\"" + condition + "\"\n(Table " + table.getName() + ")\n\n" +
 						"When generating delete-scripts, the pseudo-columns $DISTANCE and $IS_SUBJECT are currently not supported " +
