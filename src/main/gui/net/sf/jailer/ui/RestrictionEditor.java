@@ -21,6 +21,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -43,6 +44,11 @@ public class RestrictionEditor extends javax.swing.JPanel {
 		source.setFont(boldFont);
 		destination.setFont(boldFont);
 		
+		ImageIcon scaledWarnIcon = UIUtil.scaleIcon(this, warnIcon, 1);
+		
+		restrictedDependencyWarning.setIcon(scaledWarnIcon);
+		fk20DisabledHintLabel.setIcon(scaledWarnIcon);
+				
 		ButtonGroup buttonGroup = new ButtonGroup();
 
 		buttonGroup.add(restricted);
@@ -115,7 +121,10 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel9 = new javax.swing.JPanel();
         restriction = new javax.swing.JTextField();
         apply = new javax.swing.JButton();
+        jPanel10 = new javax.swing.JPanel();
         fkToNullCheckBox = new javax.swing.JCheckBox();
+        jLabel5 = new javax.swing.JLabel();
+        fk20DisabledHintLabel = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         columnsA = new javax.swing.JLabel();
         source = new javax.swing.JLabel();
@@ -167,12 +176,12 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel1.setOpaque(false);
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
-        ignore.setText("Disabled");
+        ignore.setText("Disabled    ");
         ignore.setOpaque(false);
         jPanel1.add(ignore);
 
         restrictedDependencyWarning.setForeground(new java.awt.Color(255, 0, 51));
-        restrictedDependencyWarning.setText("   Restricted Dependency! ");
+        restrictedDependencyWarning.setText("Restricted Dependency! ");
         jPanel1.add(restrictedDependencyWarning);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -218,15 +227,51 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         jPanel7.add(jPanel9, gridBagConstraints);
 
-        fkToNullCheckBox.setText("Set foreign key columns to null");
-        fkToNullCheckBox.setOpaque(false);
+        jPanel10.setOpaque(false);
+        jPanel10.setLayout(new java.awt.GridBagLayout());
+
+        fkToNullCheckBox.setText("Set dangling foreign key columns to null ");
+        fkToNullCheckBox.setToolTipText("<html><i>on Export</i>: Set all foreign keys to null to which the row with the corresponding primary key is not exported. <br><hr>\n<i>on Delete</i>: Set all foreign keys in the rows that cannot be deleted to null when the row with the corresponding primary key is deleted.</html>");
+        fkToNullCheckBox.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                fkToNullCheckBoxComponentShown(evt);
+            }
+        });
+        fkToNullCheckBox.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                fkToNullCheckBoxPropertyChange(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel10.add(fkToNullCheckBox, gridBagConstraints);
+
+        jLabel5.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        jPanel10.add(jLabel5, gridBagConstraints);
+
+        fk20DisabledHintLabel.setForeground(java.awt.Color.red);
+        fk20DisabledHintLabel.setText("(Foreign key is not nullable)");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        jPanel10.add(fk20DisabledHintLabel, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        jPanel7.add(fkToNullCheckBox, gridBagConstraints);
+        gridBagConstraints.weightx = 1.0;
+        jPanel7.add(jPanel10, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -313,6 +358,15 @@ public class RestrictionEditor extends javax.swing.JPanel {
         add(jPanel6, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void fkToNullCheckBoxPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_fkToNullCheckBoxPropertyChange
+    	fk20DisabledHintLabel.setVisible(fkToNullCheckBox.isVisible() && !fkToNullCheckBox.isEnabled());
+    	fk20DisabledHintLabel.setToolTipText(fkToNullCheckBox.getToolTipText());
+    }//GEN-LAST:event_fkToNullCheckBoxPropertyChange
+
+    private void fkToNullCheckBoxComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_fkToNullCheckBoxComponentShown
+    	fkToNullCheckBoxPropertyChange(null);
+    }//GEN-LAST:event_fkToNullCheckBoxComponentShown
+
 	private String getConditionToolTip() {
 		return "<html><i>Ctrl+Space</i> for code completion.";
 	}
@@ -323,13 +377,16 @@ public class RestrictionEditor extends javax.swing.JPanel {
     javax.swing.JLabel columnsA;
     javax.swing.JLabel columnsB;
     public javax.swing.JLabel destination;
+    private javax.swing.JLabel fk20DisabledHintLabel;
     public javax.swing.JCheckBox fkToNullCheckBox;
     public javax.swing.JRadioButton ignore;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -349,5 +406,11 @@ public class RestrictionEditor extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 	
 	private static final long serialVersionUID = -6735468124049608700L;
+	
+	static ImageIcon warnIcon;
+    static {
+        // load images
+        warnIcon = UIUtil.readImage("/wanr.png");
+    }
 
 }

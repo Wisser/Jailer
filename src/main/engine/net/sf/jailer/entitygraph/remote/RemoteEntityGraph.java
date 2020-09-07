@@ -645,7 +645,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				fromEqualsPK.append(" and ");
 			}
 			if (match.get(column) != null) {
-				if (match.get(column) != null) {
+				if (match.get(column).isNullable) {
 					fromEqualsPK.append("(D.FROM_" + column.name + "=" + dmlTableReference(ENTITY, session) + "." + column.name + " or (");
 					fromEqualsPK.append("D.FROM_" + column.name + " is null and " + dmlTableReference(ENTITY, session) + "." + column.name + " is null))");
 				} else {
