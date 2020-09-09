@@ -2086,7 +2086,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private void initRestrictedDependencyWarningField() {
 		boolean restrictedDep = currentAssociation != null && !ScriptFormat.XML.equals(scriptFormat) && currentAssociation.isInsertDestinationBeforeSource() && currentAssociation.isRestricted();
 		restrictionEditor.restrictedDependencyWarning.setVisible(restrictedDep);
-		restrictionEditor.fkToNullCheckBox.setVisible(restrictedDep && (RestrictionModel.IGNORE.equals(currentAssociation.getRestrictionCondition()) || "false".equals(currentAssociation.getRestrictionCondition())));
+		restrictionEditor.fkToNullCheckBox.setVisible(restrictedDep && (RestrictionModel.IGNORE.equals(currentAssociation.getRestrictionCondition()) || "false".equals(currentAssociation.getRestrictionCondition()))); // TODO
 		restrictionEditor.fkToNullCheckBox.setEnabled(restrictedDep && currentAssociation.hasNullableFK());
 		restrictionEditor.fkToNullCheckBox.setSelected(restrictedDep && currentAssociation.fkHasNullFilter());
 	}
@@ -2123,7 +2123,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	public void onApply(boolean applyButtonKlicked) {
 		restrictionEditor.resetBGColor();
 		if (currentAssociation != null) {
-			if (restrictionEditor.restricted.isSelected() && currentAssociation.hasNullableFK() && currentAssociation.fkHasNullFilter()) {
+			if (restrictionEditor.restricted.isSelected() /* TODO && restrictionEditor.restriction.getText().trim().length() == 0 */ && currentAssociation.hasNullableFK() && currentAssociation.fkHasNullFilter()) {
 				setOrResetFKNullFilter(currentAssociation, false);
 				markDirty();
 			}

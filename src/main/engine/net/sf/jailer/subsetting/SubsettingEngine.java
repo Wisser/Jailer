@@ -1487,14 +1487,29 @@ public class SubsettingEngine {
 			
 			afterCollectionTimestamp = System.currentTimeMillis();
 			
-			if (explain) {
-//				executionContext.getProgressListenerRegistry().fireNewStage("generating explain-log", false, false);
-//				ExplainTool.explain(entityGraph, session, executionContext);
-			}
-	
 			totalProgress = datamodel.normalize(totalProgress);
 			subjects = datamodel.normalize(subjects);
 	
+			/* TODO Differentiated filtering of restricted dependencies 
+			Map<Table, Set<Column>> foreignKeysWithNullFilter = new HashMap<Table, Set<Column>>();
+			for (Table table: totalProgress) {
+				for (Association association: table.associations) {
+					if (totalProgress.contains(association.source) && totalProgress.contains(association.destination)) {
+						if (association.getRestrictionCondition() != null) {
+							if (association.fkHasNullFilter() && association.hasNullableFK()) {
+								Set<Column> fks = foreignKeysWithNullFilter.get(table);
+								if (fks == null) {
+									fks = new HashSet<Column>();
+									foreignKeysWithNullFilter.put(table, fks);
+								}
+								fks.addAll(association.createSourceToDestinationKeyMapping().keySet());
+							}
+						}
+					}
+				}
+			}
+			*/
+
 			if (deleteScriptFileName != null) {
 				exportedEntities = entityGraph.copy(EntityGraph.createUniqueGraphID(), session);
 			}
@@ -1515,10 +1530,37 @@ public class SubsettingEngine {
 				executionContext.getProgressListenerRegistry().fireNewStage("delete", false, false);
 				executionContext.getProgressListenerRegistry().fireNewStage("delete-reduction", false, false);
 				setEntityGraph(exportedEntities);
+				
+				/* TODO Differentiated filtering of restricted dependencies 
+				final EntityGraph reduction;
+				if (!foreignKeysWithNullFilter.isEmpty()) {
+					reduction = exportedEntities.copy(EntityGraph.createUniqueGraphID(), session);
+				} else {
+					reduction = null;
+				}
+				*/
+				
 				try {
 					List<Runnable> resetFilters = removeFilters(datamodel);
 					Table.clearSessionProperties(session);
 					deleteEntities(subjects, totalProgress, session);
+
+					/* TODO Differentiated filtering of restricted dependencies 
+					if (reduction != null) {
+						final EntityGraph finalExportedEntities = exportedEntities;
+						for (final Table table: totalProgress) {
+							List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
+							jobs.add(new Job() {
+								@Override
+								public void run() throws SQLException, CancellationException {
+									reduction.removeAll(finalExportedEntities, table);
+								}
+							});
+							jobManager.executeJobs(jobs);
+						}
+					}
+					*/
+					
 					datamodel.transpose();
 					writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session, "writing delete-script", null, null);
 					for (Runnable rf: resetFilters) {
@@ -1528,6 +1570,12 @@ public class SubsettingEngine {
 					exportedEntities.delete();
 				} finally {
 					setEntityGraph(entityGraph);
+
+					/* TODO Differentiated filtering of restricted dependencies 
+					if (reduction != null) {
+						reduction.delete();
+					}
+					*/
 				}
 				datamodel.transpose();
 			}

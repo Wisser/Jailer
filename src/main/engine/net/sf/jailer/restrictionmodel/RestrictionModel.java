@@ -268,7 +268,7 @@ public class RestrictionModel {
 			}
 			restriction.put(association, condition);
 		}
-		if (!association.isIgnored()) {
+		if (association.getRestrictionCondition() == null) {
 			if (association.hasNullableFK() && association.fkHasNullFilter()) {
 				return association.setOrResetFKNullFilter(false);
 			}

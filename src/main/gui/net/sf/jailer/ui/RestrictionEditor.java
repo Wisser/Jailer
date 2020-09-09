@@ -247,7 +247,6 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel10.add(fkToNullCheckBox, gridBagConstraints);
 
         jLabel5.setText(" ");
@@ -277,7 +276,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 10;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 0);
         jPanel2.add(jPanel7, gridBagConstraints);
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));

@@ -17,6 +17,7 @@ package net.sf.jailer.entitygraph;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -31,11 +32,13 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.configuration.LimitTransactionSizeInfo;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.database.SqlException;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.importfilter.ImportFilterManager;
@@ -603,6 +606,132 @@ public abstract class EntityGraph {
 	public long getExportedCount() {
 		Long cnt = (Long) getSession().getSessionProperty(EntityGraph.class, "ExportedCount");
 		return cnt == null? 0 : cnt;
+	}
+
+	public void removeAll(EntityGraph other, Table table) throws SQLException {
+		RowIdSupport rowIdSupport = new RowIdSupport(dataModel, getSession().dbms, executionContext);
+		removeAll(other, table, rowIdSupport);
+	}
+	
+	private void removeAll(EntityGraph other, Table table, RowIdSupport rowIdSupport) throws SQLException {
+		PrimaryKey universalPrimaryKey = getUniversalPrimaryKey();
+		final Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
+		final int MAX_BATCH_SIZE = 200;
+
+		StringBuffer pkList = new StringBuffer();
+		StringBuffer eq = new StringBuffer();
+		for (Column column: universalPrimaryKey.getColumns()) {
+			if (pkList.length() > 0) {
+				pkList.append(", ");
+			}
+			if (eq.length() > 0) {
+				eq.append(" and ");
+			}
+			Column tableColumn = match.get(column);
+			if (tableColumn != null) {
+				pkList.append(column.name);
+				if (tableColumn.isNullable) {
+					eq.append("(");
+				}
+				eq.append(column.name + " = ?");
+				if (tableColumn.isNullable) {
+					eq.append(" or (");
+					eq.append(column.name + " is null and ? is null)");
+				}
+				if (tableColumn.isNullable) {
+					eq.append(")");
+				}
+			} else {
+				eq.append(column.name);
+				eq.append(" is null");
+			}
+		}
+
+		String select =
+				"Select " + pkList +
+				" From " + dmlTableReference(ENTITY, getSession()) +
+				" Where r_entitygraph=" + other.graphID + " and type=" + typeName(table);
+
+		String delete =
+				"Delete from " + dmlTableReference(ENTITY, getSession()) +
+				" Where r_entitygraph=" + graphID + " and type=" + typeName(table) +
+				" and (" + eq + ")";
+		
+		final PreparedStatement del = getSession().getConnection().prepareStatement(delete);
+		final String finalSelect = select;
+		
+		getSession().executeQuery(select, new Session.AbstractResultSetReader() {
+			int batchSize = 0;
+			Map<Integer, Integer> columnType = null;
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+                try {
+                	if (columnType == null) {
+                		columnType = new HashMap<Integer, Integer>();
+                		ResultSetMetaData md = getMetaData(resultSet);
+                		int ci = 1;
+    					for (Column column: universalPrimaryKey.getColumns()) {
+    						Column tableColumn = match.get(column);
+    						if (tableColumn != null) {
+    							columnType.put(ci, md.getColumnType(ci));
+    							++ci;
+    						}
+    					}
+    					Session._log.info("batch delete (EntityGraph): " + delete);
+                	}
+                	
+					int delI = 1;
+					int ci = 1;
+					for (Column column: universalPrimaryKey.getColumns()) {
+						Column tableColumn = match.get(column);
+						if (tableColumn != null) {
+							Object v = resultSet.getObject(ci++);
+							
+							setObject(del, delI++, v);
+							if (tableColumn.isNullable) {
+								setObject(del, delI++, v);
+							}
+						}
+					}
+
+					del.addBatch();
+					
+	                ++batchSize;
+	                if (batchSize >= MAX_BATCH_SIZE) {
+                    	executeBatch();
+                        batchSize = 0;
+                    }
+                } catch (SQLException e) {
+                	throw new SqlException("\"" + e.getMessage() + "\" (" + columnType + ") in statement \"" + delete + "\"", finalSelect, e);
+                }
+			}
+			private void setObject(final PreparedStatement statement, int i, Object value) throws SQLException {
+				if (value == null) {
+					statement.setNull(i, columnType.get(i));
+				} else {
+					statement.setObject(i, value);
+				}
+			}
+			private void executeBatch() throws SQLException {
+				if (del != null) {
+					del.executeBatch();
+				}
+			}
+			@Override
+			public void close() {
+                try {
+                	if (batchSize > 0) {
+						executeBatch();
+					}
+                    batchSize = 0;
+                    if (del != null) {
+                    	del.close();
+                    }
+				} catch (SQLException e) {
+					throw new RuntimeException(new SqlException("\"" + e.getMessage() + "\" in statement \"" + delete + "\"", finalSelect, e));
+	            }
+			}
+		}, null, null, 0, false);
 	}
 
 }
