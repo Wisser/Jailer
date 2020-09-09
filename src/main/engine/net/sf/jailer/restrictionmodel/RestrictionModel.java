@@ -268,7 +268,10 @@ public class RestrictionModel {
 			}
 			restriction.put(association, condition);
 		}
-		if (association.getRestrictionCondition() == null) {
+		
+		// TODO Differentiated filtering of restricted dependencies
+		// if (association.getRestrictionCondition() == null) {
+		if (!association.isIgnored()) {
 			if (association.hasNullableFK() && association.fkHasNullFilter()) {
 				return association.setOrResetFKNullFilter(false);
 			}
