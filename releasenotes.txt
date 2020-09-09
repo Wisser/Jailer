@@ -1,6 +1,8 @@
 9.5.4
   - Deactivated dependencies had no effect on topological sorting. This was corrected.
     https://sourceforge.net/p/jailer/discussion/700499/thread/b3685a49
+  - Fix for "NoClassDefFoundError was not logged, Jailer failed without showing reason #33"
+    https://github.com/Wisser/Jailer/issues/33
 
 9.5.3
   - Improved Connection Settings Wizard.

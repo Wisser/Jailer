@@ -305,17 +305,17 @@ public class Jailer {
 				return false;
 			}
 			return true;
-		} catch (Exception e) {
-			if (e instanceof CancellationException) {
+		} catch (Throwable t) {
+			if (t instanceof CancellationException) {
 				_log.warn("cancelled");
-				throw e;
+				throw t;
 			}
-			_log.error(e.getMessage(), e);
-			System.err.println("Error: " + e.getClass().getName() + ": " + e.getMessage());
+			_log.error(t.getMessage(), t);
+			System.err.println("Error: " + t.getClass().getName() + ": " + t.getMessage());
 			CommandLineParser.printAruments(System.err, args, pw);
 			String workingDirectory = System.getProperty("user.dir");
 			_log.error("working directory is " + workingDirectory);
-			throw e;
+			throw t;
 		}
 	}
 
