@@ -1,3 +1,7 @@
+9.5.4
+  - Deactivated dependencies had no effect on topological sorting. This was corrected.
+    https://sourceforge.net/p/jailer/discussion/700499/thread/b3685a49
+
 9.5.3
   - Improved Connection Settings Wizard.
   - Some diagnostic means have been added.
