@@ -3471,4 +3471,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 	private static final long serialVersionUID = -5640822484296649670L;
 
+	// TODO make "nullFks-filters" distictable from others. Migrate such filters. Avoid loading restriction-model-files more than once.
+
 }
