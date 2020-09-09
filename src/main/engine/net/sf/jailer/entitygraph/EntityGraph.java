@@ -614,7 +614,7 @@ public abstract class EntityGraph {
 	}
 	
 	private void removeAll(EntityGraph other, Table table, RowIdSupport rowIdSupport) throws SQLException {
-		PrimaryKey universalPrimaryKey = getUniversalPrimaryKey();
+		final PrimaryKey universalPrimaryKey = getUniversalPrimaryKey();
 		final Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
 		final int MAX_BATCH_SIZE = 200;
 
@@ -652,7 +652,7 @@ public abstract class EntityGraph {
 				" From " + dmlTableReference(ENTITY, getSession()) +
 				" Where r_entitygraph=" + other.graphID + " and type=" + typeName(table);
 
-		String delete =
+		final String delete =
 				"Delete from " + dmlTableReference(ENTITY, getSession()) +
 				" Where r_entitygraph=" + graphID + " and type=" + typeName(table) +
 				" and (" + eq + ")";
