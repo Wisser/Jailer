@@ -534,4 +534,6 @@ public class ModelBuilder {
 	
 	public static CsvFile.LineFilter assocFilter = null;
 	
+	// TODO allow analyzing multiple schemas at once. GUI + CLI.
+	
 }
