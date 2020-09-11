@@ -1,6 +1,6 @@
 9.5.5
   - Fix for "Need help understanding delete script"
-   (A further release was necessary, as this was not completely corrected at first)
+    (A further release was necessary, as this was not completely corrected at first)
   - Fix for "Delete Reduction is not deleting rows"
     https://sourceforge.net/p/jailer/discussion/700499/thread/3d16e17980/
   - removed "field-procs"
