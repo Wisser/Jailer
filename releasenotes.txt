@@ -3,7 +3,7 @@
    (A further release was necessary, as this was not completely corrected at first)
   - Fix for "Delete Reduction is not deleting rows"
     https://sourceforge.net/p/jailer/discussion/700499/thread/3d16e17980/
-  - removed "field-procs", improved csv -handling
+  - removed "field-procs", improved csv-handling
  
 9.5.4
   - Deactivated dependencies had no effect on topological sorting. This was corrected.
