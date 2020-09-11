@@ -346,7 +346,8 @@ public class CsvFile {
 		if (blocks == null) {
 			throw new IllegalStateException();
 		}
-		return blocks.get(block == null? DEFAULT_BLOCK : block);
+		List<Line> lines = blocks.get(block == null? DEFAULT_BLOCK : block);
+		return lines != null? lines : new ArrayList<CsvFile.Line>();
 	}
 
 	/**
