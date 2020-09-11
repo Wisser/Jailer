@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.Pair;
@@ -593,6 +595,17 @@ public class Association extends ModelElement {
 		}
 	}
 
+	private static final String NULL_FILTER_COMMENT_PREFIX = "disabled dependency: ";
+	private static final Pattern NULL_FILTER_PATTERN = Pattern.compile("(?i:\\s*(/\\*.*\\*/\\s*)?null(\\s*/\\*.*\\*/)?)\\s*");
+	
+	private boolean isNullFilter(Filter filter) {
+		return filter.getExpression() != null 
+				&& 
+				(NULL_FILTER_PATTERN.matcher(filter.getExpression()).matches()
+				||
+				Filter.EXCLUDED_VALUE.equals(filter.getExpression()));
+	}
+	
 	public boolean hasNullableFK() {
 		if (!isInsertDestinationBeforeSource()) {
 			return false;
@@ -605,7 +618,7 @@ public class Association extends ModelElement {
 			if (!c.isNullable) {
 				return false;
 			}
-			if (c.getFilter() != null && !c.getFilter().isDerived() && !c.getFilter().isNullFilter()) {
+			if (c.getFilter() != null && !c.getFilter().isDerived() && !isNullFilter(c.getFilter())) {
 				return false;
 			}
 			for (Column pk: source.primaryKey.getColumns()) {
@@ -620,7 +633,17 @@ public class Association extends ModelElement {
 	public boolean fkHasNullFilter() {
 		Map<Column, Column> sdMap = createSourceToDestinationKeyMapping();
 		for (Column c: sdMap.keySet()) {
-			if (c.getFilter() == null || !c.getFilter().isNullFilter()) {
+			if (c.getFilter() == null || !isNullFilter(c.getFilter())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean fkHasExcludeFilter() {
+		Map<Column, Column> sdMap = createSourceToDestinationKeyMapping();
+		for (Column c: sdMap.keySet()) {
+			if (c.getFilter() == null || !Filter.EXCLUDED_VALUE.equals(c.getFilter().getExpression())) {
 				return false;
 			}
 		}
@@ -632,15 +655,15 @@ public class Association extends ModelElement {
 		Map<Column, Column> sdMap = createSourceToDestinationKeyMapping();
 		for (Column c: sdMap.keySet()) {
 			if (set) {
-				if (c.getFilter() == null || !"null".equals(c.getFilter().getExpression())) {
+				if (c.getFilter() == null || !isNullFilter(c.getFilter())) {
+					c.setFilter(new Filter("null /* " + NULL_FILTER_COMMENT_PREFIX + getName() + " */", null, false, null));
 					changed = true;
 				}
-				c.setFilter(new Filter("null", null, false, null));
 			} else {
 				if (c.getFilter() != null) {
+					c.setFilter(null);
 					changed = true;
 				}
-				c.setFilter(null);
 			}
 		}
 		getDataModel().deriveFilters();

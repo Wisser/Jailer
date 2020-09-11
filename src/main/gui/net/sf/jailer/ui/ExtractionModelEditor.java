@@ -2085,12 +2085,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 	private void initRestrictedDependencyWarningField() {
 		boolean restrictedDep = currentAssociation != null && !ScriptFormat.XML.equals(scriptFormat) && currentAssociation.isInsertDestinationBeforeSource() && currentAssociation.isRestricted();
-		restrictionEditor.restrictedDependencyWarning.setVisible(restrictedDep);
 		
 		// TODO Differentiated filtering of restricted dependencies
 		restrictionEditor.fkToNullCheckBox.setVisible(restrictedDep && (RestrictionModel.IGNORE.equals(currentAssociation.getRestrictionCondition()) || "false".equals(currentAssociation.getRestrictionCondition()))); // TODO
-		restrictionEditor.fkToNullCheckBox.setEnabled(restrictedDep && currentAssociation.hasNullableFK());
+		restrictionEditor.fkToNullCheckBox.setEnabled(restrictedDep && currentAssociation.hasNullableFK() && !currentAssociation.fkHasExcludeFilter());
 		restrictionEditor.fkToNullCheckBox.setSelected(restrictedDep && currentAssociation.fkHasNullFilter());
+		restrictionEditor.restrictedDependencyWarning.setVisible(restrictedDep && !currentAssociation.fkHasNullFilter());
+		restrictionEditor.updateHint();
 	}
 
 	/**
@@ -3470,7 +3471,5 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 
 	private static final long serialVersionUID = -5640822484296649670L;
-
-	// TODO make "nullFks-filters" distictable from others. Migrate such filters. Avoid loading restriction-model-files more than once.
 
 }

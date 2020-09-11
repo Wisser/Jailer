@@ -257,18 +257,6 @@ public class LocalEntityGraph extends EntityGraph {
 		this.localInlineViewStyle = InlineViewStyle.forSession(localSession);
 		this.remoteInlineViewStyle = InlineViewStyle.forSession(remoteSession);
 		new DDLCreator(executionContext).createDDL(getDatamodel(), localSession, WorkingTableScope.GLOBAL, rowIdSupport, null);
-	 
-		File fieldProcTablesFile = new File("field-proc-tables.csv");
-		if (fieldProcTablesFile.exists()) {
-			try {
-				for (CsvFile.Line line: new CsvFile(fieldProcTablesFile).getLines()) {
-					fieldProcTables.add(line.cells.get(0).toLowerCase(Locale.ENGLISH));
-				}
-				Session._log.info("tables with field procedures: " + fieldProcTables);
-			} catch (Exception e) {
-				throw new RuntimeException(e.getMessage(), e);
-			}
-		}
 	}
 
 	/**
@@ -1166,9 +1154,11 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	@Override
 	public long removeAssociatedDestinations(final Association association, final boolean deletedEntitiesAreMarked, Set<Table> allTables) throws SQLException {
-		final String jc = association.getJoinCondition();
+		String jc = association.getJoinCondition();
 		checkPseudoColumns(association.source, jc);
 		if (jc != null) {
+			jc = SqlUtil.resolvePseudoColumns(association.getJoinCondition(), 0, birthdayOfSubject, association.reversed, inDeleteMode);
+			
 			final String destAlias;
 			final String sourceAlias;
 			if (association.reversed) {
@@ -1189,7 +1179,9 @@ public class LocalEntityGraph extends EntityGraph {
 					"Select " + upkColumnList(association.destination, "EB", "") + " from " + dmlTableReference(ENTITY, localSession) + " EB " +
 					"Where " + (deletedEntitiesAreMarked? "EB.birthday>=0 and " : "") +
 					"EB.r_entitygraph=" + graphID + " and EB.type=" + typeName(association.destination) + " ";
-		
+			
+			final String finalJc = jc;
+			
 			localSession.executeQuery(selectEB, new RemoteInlineViewBuilder("EB", upkColumnList(association.destination, ""), true) {
 				
 				@Override
@@ -1198,7 +1190,7 @@ public class LocalEntityGraph extends EntityGraph {
 					String selectSource =
 							"Select distinct " + upkColumnList(association.destination, "EB", "") + (checkDest? sep + pkList(association.source, sourceAlias, "") : "") + " from " + inlineView + " " +
 									"join " + quoting.requote(association.destination.getName()) + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB", "", false) + " " +
-									"join " + quoting.requote(association.source.getName()) + " " + sourceAlias + " " + " on " + jc;
+									"join " + quoting.requote(association.source.getName()) + " " + sourceAlias + " " + " on " + finalJc;
 
 					remoteSession.executeQuery(selectSource, new LocalInlineViewBuilder("EBA", upkColumnList(association.destination, null, "EB") + (checkDest? sep + upkColumnList(association.source, "A") : ""), true) {
 						

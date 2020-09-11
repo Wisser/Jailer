@@ -318,7 +318,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		if (merge && modelFinderColumnFile.exists()) {
 			for (CsvFile.Line l: new CsvFile(modelFinderColumnFile).getLines()) {
 				CsvFile.Line ol = columns.get(l.cells.get(0));
-				if (ol == null || !ol.cells.equals(l.cells)) {
+				if (ol == null || !ol.toString().equals(l.toString())) {
 					modifiedColumnTables.add(l.cells.get(0));
 					markDirty();
 				}

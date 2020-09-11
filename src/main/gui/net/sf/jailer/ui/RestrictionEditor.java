@@ -230,7 +230,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel10.setOpaque(false);
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
-        fkToNullCheckBox.setText("Set dangling foreign key columns to null ");
+        fkToNullCheckBox.setText("Set foreign key columns to null ");
         fkToNullCheckBox.setToolTipText("<html><i>on Export</i>: Set all foreign keys to null to which the row with the corresponding primary key is not exported. <br><hr>\n<i>on Delete</i>: Set all foreign keys in the rows that cannot be deleted to null when the row with the corresponding primary key is deleted.</html>");
         fkToNullCheckBox.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -358,9 +358,13 @@ public class RestrictionEditor extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void fkToNullCheckBoxPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_fkToNullCheckBoxPropertyChange
-    	fk20DisabledHintLabel.setVisible(fkToNullCheckBox.isVisible() && !fkToNullCheckBox.isEnabled());
-    	fk20DisabledHintLabel.setToolTipText(fkToNullCheckBox.getToolTipText());
+    	updateHint();
     }//GEN-LAST:event_fkToNullCheckBoxPropertyChange
+
+	public void updateHint() {
+		fk20DisabledHintLabel.setVisible(fkToNullCheckBox.isVisible() && !fkToNullCheckBox.isEnabled() && !fkToNullCheckBox.isSelected());
+    	fk20DisabledHintLabel.setToolTipText(fkToNullCheckBox.getToolTipText());
+	}
 
     private void fkToNullCheckBoxComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_fkToNullCheckBoxComponentShown
     	fkToNullCheckBoxPropertyChange(null);
@@ -376,7 +380,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
     javax.swing.JLabel columnsA;
     javax.swing.JLabel columnsB;
     public javax.swing.JLabel destination;
-    private javax.swing.JLabel fk20DisabledHintLabel;
+    public javax.swing.JLabel fk20DisabledHintLabel;
     public javax.swing.JCheckBox fkToNullCheckBox;
     public javax.swing.JRadioButton ignore;
     private javax.swing.JLabel jLabel1;

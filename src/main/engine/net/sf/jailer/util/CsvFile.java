@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Parser for CSV-files.
@@ -59,7 +61,7 @@ public class CsvFile {
 		 */
 		public Line(String location, List<String> cells) {
 			this.location = location;
-			this.cells = new ArrayList<String>(cells);
+			this.cells = cells;
 			int num = 0;
 			int l = 0;
 			for (String s : cells) {
@@ -68,8 +70,8 @@ public class CsvFile {
 					l = num;
 				}
 			}
-			for (int i = 0; i < 10; ++i) {
-				this.cells.add("");
+			for (int i = 0; i < 32; ++i) {
+				this.cells.add(""); // legacy
 			}
 			this.length = l;
 		}
@@ -171,14 +173,11 @@ public class CsvFile {
 				if (!inBlock) {
 					continue;
 				}
-				List<String> row = new ArrayList<String>();
 				String[] col = decodeLine(line);
+				List<String> row = new ArrayList<String>(col.length + 34);
 				for (int i = 0; i < col.length; ++i) {
 					String s = col[i];
 					row.add(s.trim());
-				}
-				while (row.size() < 100) {
-					row.add("");
 				}
 				Line cvsLine = new Line(csvFile.getName() + ", line " + lineNr, row);
 				if (filter == null || filter.accept(cvsLine)) {
@@ -188,7 +187,17 @@ public class CsvFile {
 			reader.close();
 		}
 	}
-	
+
+	/**
+	 * Special block-name for reading default block and cache all others.
+	 * 
+	 * @see CsvFile#getLines()
+	 */
+	public static final String ALL_BLOCKS = "all-blocks";
+
+	private static final String DEFAULT_BLOCK = "default-block";
+	private Map<String, List<Line>> blocks = null;
+
 	/**
 	 * Constructor.
 	 * 
@@ -200,39 +209,51 @@ public class CsvFile {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 			String line = null;
 			int lineNr = 0;
+			boolean all = ALL_BLOCKS.equals(block);
+			if (all) {
+				block = null;
+				blocks = new HashMap<String, List<Line>>();
+			}
 			boolean inBlock = block == null;
+			String blockName = null;
 			while ((line = reader.readLine()) != null) {
 				++lineNr;
 				if (line.trim().length() == 0) {
 					continue;
 				}
 				if (line.trim().startsWith(BLOCK_INDICATOR)) {
-					if (inBlock) {
-						break;
+					if (all) {
+						blocks.put(blockName == null? DEFAULT_BLOCK : blockName, rows);
+						rows = new ArrayList<CsvFile.Line>();
+					} else {
+						if (inBlock) {
+							break;
+						}
 					}
-					String blockName = line.trim().substring(BLOCK_INDICATOR.length()).trim();
-					inBlock = block.equals(blockName);
+					blockName = line.trim().substring(BLOCK_INDICATOR.length()).trim();
+					inBlock = blockName.equals(block);
 					continue;
 				}
 				if (line.trim().startsWith("#")) {
 					continue;
 				}
-				if (!inBlock) {
+				if (!inBlock && !all) {
 					continue;
 				}
-				List<String> row = new ArrayList<String>();
 				String[] col = decodeLine(line);
+				List<String> row = new ArrayList<String>(col.length + 34);
 				for (int i = 0; i < col.length; ++i) {
 					String s = col[i];
 					row.add(s.trim());
-				}
-				while (row.size() < 100) {
-					row.add("");
 				}
 				Line cvsLine = new Line(location + ", " + "line " + lineNr, row);
 				if (filter == null || filter.accept(cvsLine)) {
 					rows.add(cvsLine);
 				}
+			}
+			if (all) {
+				blocks.put(blockName == null? DEFAULT_BLOCK : blockName, rows);
+				rows = new ArrayList<CsvFile.Line>();
 			}
 			in.close();
 		}
@@ -307,7 +328,25 @@ public class CsvFile {
 	 * @return list of lists of cell-contents
 	 */
 	public List<Line> getLines() {
-		return rows;
+		if (blocks != null) {
+			return getLines(null);
+		} else {
+			return rows;
+		}
+	}
+
+	/**
+	 * Gets the list of lines of a cached block.
+	 * 
+	 * @return list of lists of cell-contents of given block
+	 * 
+	 * @see CsvFile#ALL_BLOCKS
+	 */
+	public List<Line> getLines(String block) {
+		if (blocks == null) {
+			throw new IllegalStateException();
+		}
+		return blocks.get(block == null? DEFAULT_BLOCK : block);
 	}
 
 	/**

@@ -95,20 +95,8 @@ public class RemoteEntityGraph extends EntityGraph {
 		this.universalPrimaryKey = universalPrimaryKey;
 		this.updateStatistics = updateStatistics;
 		this.rowIdSupport = new RowIdSupport(dataModel, session.dbms, executionContext);
-		
-		File fieldProcTablesFile = new File("field-proc-tables.csv");
-		if (fieldProcTablesFile.exists()) {
-			try {
-				for (CsvFile.Line line: new CsvFile(fieldProcTablesFile).getLines()) {
-					fieldProcTables.add(line.cells.get(0).toLowerCase(Locale.ENGLISH));
-				}
-				Session._log.info("tables with field procedures: " + fieldProcTables);
-			} catch (Exception e) {
-				throw new RuntimeException(e.getMessage(), e);
-			}
-		}
 	}
-	
+
 	private final Quoting quoting;
 
 	/**

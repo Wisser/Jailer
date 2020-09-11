@@ -945,6 +945,9 @@ public abstract class TableEditor extends javax.swing.JDialog {
 			// update author
 			for (int i = 0; i < tableLine.cells.size() ; ++i) {
 				if ("".equals(tableLine.cells.get(i))) {
+					while (tableLine.cells.size() <= i) {
+						tableLine.cells.add("");
+					}
 					tableLine.cells.set(i+1, DataModelEditor.DATA_MODEL_EDITOR_AUTHOR);
 					break;
 				}

@@ -115,17 +115,27 @@ public class RestrictionModel {
 		}
 		return rest;
 	}
-	
+
 	/**
 	 * Adds restrictions defined in a restriction-file.
 	 * 
 	 * @param parameters apply this parameter-value mapping to all restriction conditions
 	 */
 	public void addRestrictionDefinition(URL extractionModelURL, Map<String, String> parameters) throws Exception {
+		addRestrictionDefinition(new CsvFile(extractionModelURL.openStream(), null, extractionModelURL.toString(), null), extractionModelURL.toString(), parameters);
+	}
+
+	/**
+	 * Adds restrictions defined in a restriction-file.
+	 * 
+	 * @param parameters apply this parameter-value mapping to all restriction conditions
+	 * @param fileName 
+	 */
+	public void addRestrictionDefinition(CsvFile csvFile, String fileName, Map<String, String> parameters) throws Exception {
 		if (dataModel != null) {
 			dataModel.version++;
 		}
-		List<CsvFile.Line> lines = new CsvFile(extractionModelURL.openStream(), null, extractionModelURL.toString(), null).getLines();
+		List<CsvFile.Line> lines = csvFile.getLines();
 		int nr = 0;
 		for (CsvFile.Line line: lines) {
 			++nr;
@@ -218,7 +228,7 @@ public class RestrictionModel {
 				}
 			}
 		}
-		filesRead.add(extractionModelURL.toString());
+		filesRead.add(fileName);
 	}
 
 	/**
