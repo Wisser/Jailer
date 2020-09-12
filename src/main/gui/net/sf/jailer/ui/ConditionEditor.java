@@ -537,11 +537,11 @@ public class ConditionEditor extends EscapableDialog {
     private javax.swing.JButton toSubQueryButton;
     // End of variables declaration//GEN-END:variables
 	
-	private Icon dropDownIcon;
+	private static Icon dropDownIcon;
 	private static ImageIcon redDotIcon;
 	private static ImageIcon blueDotIcon;
 	private static ImageIcon greenDotIcon;
-	{
+	static {
 		// load images
 		dropDownIcon = UIUtil.readImage("/dropdown.png");
 		redDotIcon = UIUtil.readImage("/reddot.gif");
