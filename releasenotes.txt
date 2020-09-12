@@ -1,10 +1,8 @@
 9.5.5
   - Fix for "Need help understanding delete script"
+    https://sourceforge.net/p/jailer/discussion/700499/thread/b3685a49/
     (A further release was necessary, as this was not completely corrected at first)
-  - Fix for "Delete Reduction is not deleting rows"
-    https://sourceforge.net/p/jailer/discussion/700499/thread/3d16e17980/
-  - removed "field-procs"
-  - proved CSV-handling
+  - improved CSV-handling
  
 9.5.4
   - Deactivated dependencies had no effect on topological sorting. This was corrected.
