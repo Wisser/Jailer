@@ -56,6 +56,10 @@ import javax.swing.table.TableColumn;
  */
 public class ProgressTable extends JTable {
 
+	
+	// TODO delicon nur wenn delscript erzeugt wird
+	
+	
 	/**
 	 * Maximum number of tables in a closure-table's line.
 	 */
@@ -213,7 +217,7 @@ public class ProgressTable extends JTable {
 					CellInfo cellInfo = (CellInfo) value;
 					
 					iconRender.setIcon(null);
-					if (cellInfo.excludeFromDeletion) {
+					if (showExcludeFromDeletionImage && cellInfo.excludeFromDeletion) {
 						iconRender.setIcon(scaledExcludeFromDeletionImage);
 					}
 					if (cellInfo.tableName.equals(selectedTableName)) {
@@ -875,10 +879,16 @@ public class ProgressTable extends JTable {
 			col.setMaxWidth(w);
 		}
 	}
+	
+	private boolean showExcludeFromDeletionImage = true;
+
+	public void setShowExcludeFromDeletionImage(boolean showExcludeFromDeletionImage) {
+		this.showExcludeFromDeletionImage = showExcludeFromDeletionImage;
+	}
 
 	private static ImageIcon sourceIcon;
 	private static ImageIcon excludeFromDeletionImage;
-	{
+	static {
 		// load images
 		sourceIcon = UIUtil.readImage("/source.png");
 		excludeFromDeletionImage = UIUtil.readImage("/database-lock.png");

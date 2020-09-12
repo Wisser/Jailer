@@ -66,6 +66,7 @@ public class ProgressPanel extends javax.swing.JPanel {
 		progressTableHolder.setColumnHeaderView(null);
 		progressTableHolderForDelete.setColumnHeaderView(null);
 		if (!withDelete) {
+			progressTable.setShowExcludeFromDeletionImage(false);
 			deletedRowsLabel.setVisible(false);
 			deletedRowsTitelLabel.setVisible(false);
 			jTabbedPane1.remove(panel4);
