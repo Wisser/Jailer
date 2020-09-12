@@ -125,7 +125,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         analyzeButton = new javax.swing.JButton();
         restoreSessionButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
-        tableComboBox = new net.sf.jailer.ui.JComboBox();
+        tableComboBox = new net.sf.jailer.ui.JComboBox2();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -237,7 +237,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
     private javax.swing.JButton okButton;
     private javax.swing.JButton restoreSessionButton;
     @SuppressWarnings("rawtypes")
-	private net.sf.jailer.ui.JComboBox tableComboBox;
+	private net.sf.jailer.ui.JComboBox2 tableComboBox;
     // End of variables declaration//GEN-END:variables
 
 }

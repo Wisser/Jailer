@@ -296,7 +296,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         schemaLabel = new javax.swing.JLabel();
-        schemaComboBox = new JComboBox();
+        schemaComboBox = new JComboBox2();
         jPanel3 = new javax.swing.JPanel();
         analyseAlias = new javax.swing.JCheckBox();
         analyseSynonyms = new javax.swing.JCheckBox();
@@ -602,7 +602,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
     private javax.swing.JButton okButton;
     private javax.swing.JCheckBox removeCurrentAssociationsCheckBox;
     private javax.swing.JCheckBox removeCurrentTablesCheckBox;
-    private JComboBox schemaComboBox;
+    private JComboBox2 schemaComboBox;
     private javax.swing.JLabel schemaLabel;
     // End of variables declaration//GEN-END:variables
 

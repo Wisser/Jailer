@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.entitygraph.remote;
 
-import java.io.File;
 import java.io.OutputStreamWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -45,7 +44,6 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.util.CellContentConverter;
-import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -1261,8 +1259,6 @@ public class RemoteEntityGraph extends EntityGraph {
 		return pkEqualsEntityID(table, tableAlias, entityAlias, "");
 	}
 
-	private final Set<String> fieldProcTables = new HashSet<String>();
-	
 	/**
 	 * Gets a SQL comparison expression for comparing rows with entities.
 	 * 
@@ -1282,15 +1278,11 @@ public class RemoteEntityGraph extends EntityGraph {
 					sb.append("(");
 				}
 				sb.append(entityAlias + "." + columnPrefix + column.name);
-				if (fieldProcTables.contains(table.getUnqualifiedName().toLowerCase(Locale.ENGLISH))) {
-					sb.append(" = " + tableColumn.type + "(" + tableAlias + "." + quoting.requote(tableColumn.name) + ")");
-				} else {
-					sb.append("=" + tableAlias + "." + quoting.requote(tableColumn.name));
-					if (tableColumn.isNullable) {
-						sb.append(" or (");
-						sb.append(entityAlias + "." + columnPrefix + column.name + " is null and ");
-						sb.append(tableAlias + "." + quoting.requote(tableColumn.name) + " is null)");
-					}
+				sb.append("=" + tableAlias + "." + quoting.requote(tableColumn.name));
+				if (tableColumn.isNullable) {
+					sb.append(" or (");
+					sb.append(entityAlias + "." + columnPrefix + column.name + " is null and ");
+					sb.append(tableAlias + "." + quoting.requote(tableColumn.name) + " is null)");
 				}
 				if (tableColumn.isNullable) {
 					sb.append(")");

@@ -111,7 +111,7 @@ import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.AutoCompletion;
-import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.IconWithText;
@@ -132,7 +132,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	private static final Logger logger = Logger.getLogger(MetaDataPanel.class);
 
     private final MetaDataSource metaDataSource;
-    private final JComboBox<String> tablesComboBox;
+    private final JComboBox2<String> tablesComboBox;
     private final DataModel dataModel;
     private final MetaDataDetailsPanel metaDataDetailsPanel;
     private final Frame parent;
@@ -585,7 +585,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             }
         });
         
-        tablesComboBox = new JComboBox<String>() {
+        tablesComboBox = new JComboBox2<String>() {
             @Override
             public Dimension getMinimumSize() {
                 return new Dimension(40, super.getMinimumSize().height);

@@ -153,7 +153,7 @@ import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
-import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.StringSearchPanel;
@@ -395,18 +395,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							updateTableModel(l, limitExceeded, closureLimitExceeded);
 							Set<String> currentIDs = new TreeSet<String>();
 							long currentHash = 0;
-							if (rows != null) {
-								for (Row r: rows) {
-									currentIDs.add(r.nonEmptyRowId);
-									try {
-										for (Object v: r.values) {
-											if (v != null) {
-												currentHash = 2 * currentHash + v.hashCode();
-											}
+							for (Row r: rows) {
+								currentIDs.add(r.nonEmptyRowId);
+								try {
+									for (Object v: r.values) {
+										if (v != null) {
+											currentHash = 2 * currentHash + v.hashCode();
 										}
-									} catch (RuntimeException e1) {
-										// ignore
 									}
+								} catch (RuntimeException e1) {
+									// ignore
 								}
 							}
 							setPendingState(false, true);
@@ -752,7 +750,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 
-		andCondition = new JComboBox();
+		andCondition = new JComboBox2();
 		andCondition.setEditable(true);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6376,7 +6374,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		final Window owner = SwingUtilities.getWindowAncestor(contextJTable);
 
-		final JComboBox combobox = new JComboBox();
+		final JComboBox2 combobox = new JComboBox2();
 		combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
 		StringSearchPanel searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
 			@Override

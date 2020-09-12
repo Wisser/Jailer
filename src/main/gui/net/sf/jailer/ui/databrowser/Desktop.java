@@ -314,8 +314,7 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 			}, "Databrowser-Animator");
-			updateUIThread.setDaemon(true);
-			updateUIThread.start();
+			UIUtil.startDemon(updateUIThread);
 			
 			AbstractAction a = new AbstractAction() {
 				@Override
@@ -2517,8 +2516,7 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 			});
-			thread.setDaemon(true);
-			thread.start();
+			UIUtil.startDemon(thread);
 		}
 	}
 

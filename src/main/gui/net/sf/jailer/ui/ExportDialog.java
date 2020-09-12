@@ -158,7 +158,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private final String tmpFileName;
 	private final ExecutionContext executionContext;
 
-	private static final String NO_SCHEMA_INFO = new String("");
+	private static final Object NO_SCHEMA_INFO = new String("");
 	private static final String NO_SCHEMA_INFO_LABEL = "<html><i>no further schema information</i></html>";
 
 	/** Creates new form DbConnectionDialog 
@@ -263,7 +263,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			synchronized (schemaInfo) {
 				allSchemas = new ArrayList<String>(schemaInfo);
 				if (!schemaInfoRead.get()) {
-					allSchemas.add(NO_SCHEMA_INFO);
+					allSchemas.add((String) NO_SCHEMA_INFO);
 				}
 			} 
 			initWorkingTableSchemaBox(session, allSchemas, defaultSchema);
@@ -728,7 +728,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			return;
 		}
 		for (String schema: schemas) {
-			if (DEFAULT_SCHEMA.equals(schema) || NO_SCHEMA_INFO == schema) {
+			if (DEFAULT_SCHEMA.equals(schema) || schema.equals(NO_SCHEMA_INFO)) {
 				result.add(schema);
 			} else {
 				int iDot = schema.indexOf('.');
@@ -828,7 +828,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			} else {
 				deleteSchemaMappingPanel.add(b, gridBagConstraints);
 			}
-			JComboBox cb = new JComboBox();
+			JComboBox2 cb = new JComboBox2();
 			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
 			setComboboxRenderer(cb);
@@ -937,7 +937,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			} else {
 				schemaMappingPanel.add(a, gridBagConstraints);
 			}
-			JComboBox cb = new JComboBox();
+			JComboBox2 cb = new JComboBox2();
 			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
 			setComboboxRenderer(cb);
@@ -1028,7 +1028,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			} else {
 				sourceSchemaMappingPanel.add(b, gridBagConstraints);
 			}
-			JComboBox cb = new JComboBox();
+			JComboBox2 cb = new JComboBox2();
 			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
 			setComboboxRenderer(cb);

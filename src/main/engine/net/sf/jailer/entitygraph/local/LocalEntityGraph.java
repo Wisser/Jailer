@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.entitygraph.local;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -52,7 +51,6 @@ import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.util.CellContentConverter;
-import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -209,7 +207,7 @@ public class LocalEntityGraph extends EntityGraph {
 			Session remoteSession, Session localSession, LocalDatabase localDatabase,
 			InlineViewStyle localInlineViewStyle,
 			InlineViewStyle remoteInlineViewStyle, Set<String> upkColumnNames,
-			PrimaryKey universalPrimaryKey, int birthdayOfSubject, Set<String> fieldProcTables,
+			PrimaryKey universalPrimaryKey, int birthdayOfSubject,
 			RowIdSupport rowIdSupport, ExecutionContext executionContext) throws SQLException {
 		super(graphID, dataModel, executionContext);
 		this.remoteSession = remoteSession;
@@ -220,7 +218,6 @@ public class LocalEntityGraph extends EntityGraph {
 		this.upkColumnNames = upkColumnNames;
 		this.universalPrimaryKey = universalPrimaryKey;
 		this.birthdayOfSubject = birthdayOfSubject;
-		this.fieldProcTables.addAll(fieldProcTables);
 		this.rowIdSupport = rowIdSupport;
 		this.quoting = new Quoting(remoteSession);
 	}
@@ -331,7 +328,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	@Override
 	public EntityGraph copy(int newGraphID, Session globalSession) throws SQLException {
-		LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables, rowIdSupport, executionContext);
+		LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, rowIdSupport, executionContext);
 		entityGraph.setBirthdayOfSubject(birthdayOfSubject);
 		localSession.executeUpdate(
 				"Insert into " + dmlTableReference(ENTITY, localSession) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
@@ -1445,8 +1442,6 @@ public class LocalEntityGraph extends EntityGraph {
 		return sb.toString();
 	}
 
-	private final Set<String> fieldProcTables = new HashSet<String>();
-	
 	/**
 	 * Gets a SQL comparison expression for comparing rows with entities.
 	 * 
@@ -1467,15 +1462,11 @@ public class LocalEntityGraph extends EntityGraph {
 						sb.append("(");
 					}
 					sb.append(entityAlias + "." + columnPrefix + column.name);
-					if (fieldProcTables.contains(table.getUnqualifiedName().toLowerCase(Locale.ENGLISH))) {
-						sb.append(" = " + tableColumn.type + "(" + tableAlias + "." + quoting.requote(tableColumn.name) + ")");
-					} else {
-						sb.append("=" + tableAlias + "." + quoting.requote(tableColumn.name));
-						if (tableColumn.isNullable) {
-							sb.append(" or (");
-							sb.append(entityAlias + "." + columnPrefix + column.name + " is null and ");
-							sb.append(tableAlias + "." + quoting.requote(tableColumn.name) + " is null)");
-						}
+					sb.append("=" + tableAlias + "." + quoting.requote(tableColumn.name));
+					if (tableColumn.isNullable) {
+						sb.append(" or (");
+						sb.append(entityAlias + "." + columnPrefix + column.name + " is null and ");
+						sb.append(tableAlias + "." + quoting.requote(tableColumn.name) + " is null)");
 					}
 					if (tableColumn.isNullable) {
 						sb.append(")");

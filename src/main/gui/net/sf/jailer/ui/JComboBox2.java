@@ -24,15 +24,15 @@ import java.util.Vector;
  * 
  * @author Ralf Wisser
  */
-public class JComboBox<T> extends javax.swing.JComboBox<T> {
+public class JComboBox2<T> extends javax.swing.JComboBox<T> {
 	private static final long serialVersionUID = 1404824459186814788L;
 	private boolean layingOut = false;
 
-	public JComboBox(Vector<T> model) {
+	public JComboBox2(Vector<T> model) {
 		super(model);
 	}
 
-	public JComboBox() {
+	public JComboBox2() {
 	}
 
 	@Override

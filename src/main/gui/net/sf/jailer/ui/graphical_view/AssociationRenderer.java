@@ -250,17 +250,21 @@ public class AssociationRenderer extends EdgeRenderer {
 	public void render(Graphics2D g, VisualItem item, boolean isSelected) {
 		Association association = (Association) item.get("association");
 		item.setSize(isSelected? 3 : 1);
-		int color;
+		int color = 0;
 		if (!Boolean.TRUE.equals(item.get("full"))) {
 			if (!full) {
 				return;
 			}
-			color = associationColor(association);
+			if (association != null) {
+				color = associationColor(association);
+			}
 		} else {
 			if (full) {
 				return;
 			}
-			color = reversed? associationColor(association.reversalAssociation) : associationColor(association);
+			if (association != null) {
+				color = reversed? associationColor(association.reversalAssociation) : associationColor(association);
+			}
 		}
 		boolean restricted = false;
 		BasicStroke stroke = item.getStroke();

@@ -302,7 +302,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         detailsPanel = new javax.swing.JPanel();
-        detailsComboBox = new JComboBox();
+        detailsComboBox = new JComboBox2();
         detailsLabel = new javax.swing.JLabel();
         detailsCondtition = new javax.swing.JTextField();
         detailsWhere = new javax.swing.JLabel();
@@ -620,7 +620,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
     private javax.swing.JButton addAllButton;
     private javax.swing.JButton addIsolatedlButton;
     private javax.swing.JButton cancelButton;
-    private JComboBox detailsComboBox;
+    private JComboBox2 detailsComboBox;
     private javax.swing.JTextField detailsCondtition;
     private javax.swing.JLabel detailsLabel;
     private javax.swing.JPanel detailsPanel;

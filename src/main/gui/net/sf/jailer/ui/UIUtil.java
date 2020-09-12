@@ -1615,6 +1615,11 @@ public class UIUtil {
 				removeSingleLineComments(text).replaceAll("\\s*\\n\\s*", " "));
 	}
 
+	public static void startDemon(Thread thread) {
+		thread.setDaemon(true);
+		thread.start();
+	}
+
 	private static Map<String, ImageIcon> images = new HashMap<String, ImageIcon>();
 	
 	public static ImageIcon readImage(String resource) {

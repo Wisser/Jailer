@@ -31,7 +31,7 @@ import javax.swing.JLabel;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -133,7 +133,7 @@ public class AssociationPathPanel extends javax.swing.JPanel {
 	        		for (Association a: associations) {
 	        			model.add(a.getName());
 	        		}
-	        		final JComboBox comboBox = new JComboBox(model);
+	        		final JComboBox2 comboBox = new JComboBox2(model);
 	        		comboBox.setSelectedIndex(0);
 	        		comboBox.addItemListener(new ItemListener() {
 						@Override

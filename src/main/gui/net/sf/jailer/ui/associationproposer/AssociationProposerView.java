@@ -118,15 +118,14 @@ public class AssociationProposerView extends javax.swing.JPanel {
 		jinfoLabe.setFont(infoFont);
 		jinfoLabe1.setFont(infoFont);
 	
-		if (dataModel != null) {
-			try {
-				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
-				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-				new SQLAutoCompletion(provider, editorPane);
-			} catch (SQLException e) {
-			}
+		try {
+			provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
+			provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
+			new SQLAutoCompletion(provider, editorPane);
+		} catch (Exception e) {
+			// ignore
 		}
-        editorPane.setRows(6);
+		editorPane.setRows(6);
         editorPane.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {

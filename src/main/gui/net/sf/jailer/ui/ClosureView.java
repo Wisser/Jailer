@@ -141,11 +141,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	private Map<String, CellInfo> cellInfo = new HashMap<String, CellInfo>();
 	private Set<Pair<String, String>> dependencies = new HashSet<Pair<String,String>>();
 	
-	private final JComboBox rootTable;
+	private final JComboBox2 rootTable;
 	
 	/** Creates new form FindDialog 
 	 * @param rootTable */
-	public ClosureView(ExtractionModelEditor extractionModelEditor, JComboBox rootTable) {
+	public ClosureView(ExtractionModelEditor extractionModelEditor, JComboBox2 rootTable) {
 		super();
 		this.extractionModelEditor = extractionModelEditor;
 		this.rootTable = rootTable;
@@ -169,7 +169,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-		final JComboBox comboBox1 = searchComboBox;
+		final JComboBox2 comboBox1 = searchComboBox;
         JToggleButton searchButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox1, "Find Table", new Runnable() {
 			@Override
 			public void run() {
@@ -205,7 +205,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		if (currentSelection instanceof String) {
 			source = getDataModel().getTableByDisplayName((String) currentSelection);
 		}
-        final JComboBox comboBox = findPathComboBox;
+        final JComboBox2 comboBox = findPathComboBox;
         JToggleButton stFindButtonButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, comboBox, 
     		new Object() {
 				public String toString() {
@@ -1458,11 +1458,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
         closureTablePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
-        searchComboBox = new JComboBox();
+        searchComboBox = new JComboBox2();
         jLabel7 = new javax.swing.JLabel();
-        columnsComboBox = new JComboBox();
+        columnsComboBox = new JComboBox2();
         findButton = new javax.swing.JButton();
-        findPathComboBox = new JComboBox();
+        findPathComboBox = new JComboBox2();
         findPathButton = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
         neighborTable = new javax.swing.JTable();
@@ -1879,11 +1879,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JPanel associationPanel;
     private javax.swing.JTable closureTable;
     private javax.swing.JPanel closureTablePanel;
-    private JComboBox columnsComboBox;
+    private JComboBox2 columnsComboBox;
     public javax.swing.JPanel contentPanel;
     private javax.swing.JButton findButton;
     private javax.swing.JButton findPathButton;
-    private JComboBox findPathComboBox;
+    private JComboBox2 findPathComboBox;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1897,7 +1897,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JTable neighborTable;
-    private JComboBox searchComboBox;
+    private JComboBox2 searchComboBox;
     private javax.swing.JCheckBox showOnlyEnabledCheckBox;
     private javax.swing.JPanel tabAssAssPanel;
     private javax.swing.JPanel tabAssPanel;

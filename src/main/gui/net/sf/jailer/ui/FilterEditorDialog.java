@@ -696,7 +696,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	/**
 	 * Maps columns to the text-field with which to edit the filter expression.
 	 */
-	private Map<Column, JComboBox> filterApplyAtCBPerColumn = new IdentityHashMap<Column, JComboBox>();
+	private Map<Column, JComboBox2> filterApplyAtCBPerColumn = new IdentityHashMap<Column, JComboBox2>();
 		
 	/**
 	 * The editor for filter conditions.
@@ -817,7 +817,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					toolTip = sb.toString();
 				}
 				
-				final JComboBox applyAtCB = new JComboBox();
+				final JComboBox2 applyAtCB = new JComboBox2();
 				filterApplyAtCBPerColumn.put(c, applyAtCB);
 				applyAtCB.setModel(new DefaultComboBoxModel<String>(new String[] { "Export", "Import" }));
 				if (c.getFilter() != null) {
@@ -1352,16 +1352,16 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         templatesDetailsClausePanel = new javax.swing.JPanel();
         jLabel13 = new javax.swing.JLabel();
         jPanel13 = new javax.swing.JPanel();
-        templatesDetailsApplyAtComboBox = new JComboBox();
+        templatesDetailsApplyAtComboBox = new JComboBox2();
         templateDetailsTypeLabel = new javax.swing.JLabel();
         templateDetailsTypeField = new javax.swing.JTextField();
         templateDetailsExcludedCheckBox = new javax.swing.JCheckBox();
         clauseDetailsPanel = new javax.swing.JPanel();
         jPanel9 = new javax.swing.JPanel();
         jPanel10 = new javax.swing.JPanel();
-        clauseDetailsSubjectComboBox = new JComboBox();
-        clauseDetailsPredicateComboBox = new JComboBox();
-        clauseDetailsObjectTextField = new JComboBox();
+        clauseDetailsSubjectComboBox = new JComboBox2();
+        clauseDetailsPredicateComboBox = new JComboBox2();
+        clauseDetailsObjectTextField = new JComboBox2();
         jPanel11 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
         clausePredHelpRE = new javax.swing.JPanel();
@@ -1391,7 +1391,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         Panel2 = new javax.swing.JPanel();
         derivedPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        tableBox = new JComboBox();
+        tableBox = new JComboBox2();
         jLabel2 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
@@ -2058,10 +2058,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private javax.swing.JPanel allFiltersPanel;
     private javax.swing.JButton applyButton;
     private javax.swing.JButton cancelButton;
-    private JComboBox clauseDetailsObjectTextField;
+    private JComboBox2 clauseDetailsObjectTextField;
     private javax.swing.JPanel clauseDetailsPanel;
-    private JComboBox clauseDetailsPredicateComboBox;
-    private JComboBox clauseDetailsSubjectComboBox;
+    private JComboBox2 clauseDetailsPredicateComboBox;
+    private JComboBox2 clauseDetailsSubjectComboBox;
     private javax.swing.JPanel clausePredHelpLike;
     private javax.swing.JPanel clausePredHelpRE;
     private javax.swing.JPanel derivedPanel1;
@@ -2102,7 +2102,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton okButton;
-    private JComboBox tableBox;
+    private JComboBox2 tableBox;
     private javax.swing.JCheckBox templateDetailsEnabledCheckBox;
     private javax.swing.JCheckBox templateDetailsExcludedCheckBox;
     private javax.swing.JTextField templateDetailsNameField;
@@ -2110,7 +2110,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private javax.swing.JPanel templateDetailsPanel;
     private javax.swing.JTextField templateDetailsTypeField;
     private javax.swing.JLabel templateDetailsTypeLabel;
-    private JComboBox templatesDetailsApplyAtComboBox;
+    private JComboBox2 templatesDetailsApplyAtComboBox;
     private javax.swing.JPanel templatesDetailsClausePanel;
     private javax.swing.JLabel templatesDetailsMulitlineLabel;
     private javax.swing.JPanel templatesPane;

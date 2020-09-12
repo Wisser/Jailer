@@ -556,7 +556,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 				relationshipsPanel.add(label, gridBagConstraints);
 			} else if (relationship.association != null) {
-				JComboBox joinCB = new JComboBox();
+				JComboBox2 joinCB = new JComboBox2();
 				DefaultComboBoxModel aModel = new DefaultComboBoxModel(
 						JoinOperator.values());
 				joinCB.setModel(aModel);
@@ -585,9 +585,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			gridBagConstraints.insets = new Insets(0,
 					0 + relationship.level * 12, 2, 0);
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-			JComboBox tableCB = null;
+			JComboBox2 tableCB = null;
 			if (relationship != rootRelationship) {
-				tableCB = new JComboBox() {
+				tableCB = new JComboBox2() {
 					private boolean layingOut = false;
 
 					@Override
@@ -711,7 +711,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				gridBagConstraints.insets = new Insets(0, 4, 0, 0);
 
 				minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
-				final JComboBox combobox = tableCB;
+				final JComboBox2 combobox = tableCB;
 				minusLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 					@Override
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -793,7 +793,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				relationshipsPanel.add(label, gridBagConstraints);
 
 				String alias = "";
-				if (relationship != null && relationship.aliasTextField != null) {
+				if (relationship.aliasTextField != null) {
 					alias = relationship.aliasTextField.getText();
 				}
 				JTextField aliasField = new JTextField(alias);

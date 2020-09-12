@@ -132,7 +132,7 @@ import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.ImportDialog;
-import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.PrivilegedSessionProviderDialog;
 import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
@@ -204,7 +204,7 @@ public class DataBrowser extends javax.swing.JFrame {
      */
     private final ExecutionContext executionContext;
 
-    private final JComboBox<String> tablesComboBox; 
+    private final JComboBox2<String> tablesComboBox; 
 	private boolean initialized = false;
 
 	/**
@@ -272,7 +272,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         initialized = true;
 
-        tablesComboBox = new JComboBox<String>() {
+        tablesComboBox = new JComboBox2<String>() {
         	@Override
         	public Dimension getMinimumSize() {
 				return new Dimension(40, super.getMinimumSize().height);
@@ -1042,15 +1042,13 @@ public class DataBrowser extends javax.swing.JFrame {
 	                onNewSession(session);
 	                desktop.openSchemaMappingDialog(true);
 	                updateStatusBar();
-	                if (desktop != null) {
-	                    desktop.updateMenu();
-	                    for (RowBrowser rb : desktop.getBrowsers()) {
-	                        rb.browserContentPane.session = session;
-	                        rb.browserContentPane.rows.clear();
-	                    }
-	                    for (RowBrowser rb : desktop.getRootBrowsers(false)) {
-	                        rb.browserContentPane.reloadRows();
-	                    }
+	                desktop.updateMenu();
+	                for (RowBrowser rb : desktop.getBrowsers()) {
+	                	rb.browserContentPane.session = session;
+	                	rb.browserContentPane.rows.clear();
+	                }
+	                for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+	                	rb.browserContentPane.reloadRows();
 	                }
                 }
             }

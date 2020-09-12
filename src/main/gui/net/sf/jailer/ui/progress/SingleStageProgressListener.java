@@ -191,8 +191,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 				});
 			}
 		});
-		thread.setDaemon(true);
-		thread.start();
+		UIUtil.startDemon(thread);
 	}
 
 	/**

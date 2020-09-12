@@ -259,7 +259,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		this.updateStatementBuilder = new StatementBuilder(maxBodySize);
 		this.quoting = createQuoting(session);
 		this.importFilterTransformer = importFilterTransformer;
-		if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
+		if (targetDBMSConfiguration != session.dbms) {
 			if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
 				this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
 			}

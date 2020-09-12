@@ -348,7 +348,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         okButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jinfoLabe = new javax.swing.JLabel();
-        tablesComboBox = new JComboBox<>();
+        tablesComboBox = new JComboBox2<>();
         dummyLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -494,7 +494,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel jinfoLabe;
     private javax.swing.JButton okButton;
-    private JComboBox<String> tablesComboBox;
+    private JComboBox2<String> tablesComboBox;
     // End of variables declaration//GEN-END:variables
 
     public void adjustTableColumnsWidth() {

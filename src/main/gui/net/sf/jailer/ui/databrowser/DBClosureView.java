@@ -70,7 +70,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.AutoCompletion;
-import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.StringSearchPanel.AdditionalComponentFactory;
 import net.sf.jailer.ui.UIUtil;
@@ -1153,7 +1153,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         tablePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
-        searchComboBox = new JComboBox();
+        searchComboBox = new JComboBox2();
         jLabel7 = new javax.swing.JLabel();
         columnsComboBox = new javax.swing.JComboBox();
         findButton = new javax.swing.JButton();
@@ -1165,7 +1165,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         jLabel6 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
-        findPathComboBox = new JComboBox();
+        findPathComboBox = new JComboBox2();
         findPathButton = new javax.swing.JButton();
 
         contentPanel.setLayout(new java.awt.GridBagLayout());
@@ -1379,7 +1379,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     public javax.swing.JPanel contentPanel;
     private javax.swing.JButton findButton;
     private javax.swing.JButton findPathButton;
-    private JComboBox findPathComboBox;
+    private JComboBox2 findPathComboBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -1390,7 +1390,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
-    private JComboBox searchComboBox;
+    private JComboBox2 searchComboBox;
     public javax.swing.JPanel tablePanel;
     // End of variables declaration//GEN-END:variables
     

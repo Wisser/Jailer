@@ -25,7 +25,7 @@ import javax.swing.text.PlainDocument;
  * http://creativecommons.org/licenses/publicdomain/
  */
 public class AutoCompletion extends PlainDocument {
-	net.sf.jailer.ui.JComboBox comboBox;
+	net.sf.jailer.ui.JComboBox2 comboBox;
 	ComboBoxModel model;
 	JTextComponent editor;
 	// flag to indicate if setSelectedItem has been called
@@ -38,7 +38,7 @@ public class AutoCompletion extends PlainDocument {
 	KeyListener editorKeyListener;
 	FocusListener editorFocusListener;
 
-	public AutoCompletion(final net.sf.jailer.ui.JComboBox detailsComboBox) {
+	public AutoCompletion(final net.sf.jailer.ui.JComboBox2 detailsComboBox) {
 		this.comboBox = detailsComboBox;
 		model = detailsComboBox.getModel();
 		detailsComboBox.addActionListener(new ActionListener() {
@@ -103,7 +103,7 @@ public class AutoCompletion extends PlainDocument {
 		highlightCompletedText(0);
 	}
 
-	public static void enable(net.sf.jailer.ui.JComboBox detailsComboBox) {
+	public static void enable(net.sf.jailer.ui.JComboBox2 detailsComboBox) {
 		// has to be editable
 		detailsComboBox.setEditable(true);
 		// change the editor's document

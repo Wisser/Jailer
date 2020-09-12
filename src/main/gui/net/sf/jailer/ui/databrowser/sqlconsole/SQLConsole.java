@@ -101,7 +101,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
-import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
@@ -396,8 +396,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 } while (action != STOP);
             }
         }, "SQLConsole-" + (threadNum++));
-        thread.setDaemon(true);
-        thread.start();
+        UIUtil.startDemon(thread);
     }
 
 	protected void initMenuItems() {
@@ -2112,7 +2111,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     private final String HISTORY_FILE = ".history";
     private final String LF = System.getProperty("line.separator", "\n");
-    private final JComboBox historyComboBox = new JComboBox() {
+    private final JComboBox2 historyComboBox = new JComboBox2() {
         @Override
         public java.awt.Dimension getMinimumSize() {
             Dimension s = super.getMinimumSize();

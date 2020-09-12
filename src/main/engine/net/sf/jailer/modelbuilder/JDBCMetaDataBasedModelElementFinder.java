@@ -258,17 +258,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 								fkMap.get(fkName).appendCondition("A." + fkColumn + "=B." + pkColumn);
 							}
 						} else {
-							if (pkTable != null && fkTable != null) {
-								Association association = new Association(fkTable, pkTable, false, true, "A." + fkColumn + "=B." + pkColumn, dataModel, false, Cardinality.MANY_TO_ONE);
-								association.setAuthor(metaData.getDriverName());
-								associations.add(association);
-								fkMap.put(fkName, association);
-								if (foreignKey != null) {
-									namingSuggestion.put(association, new String[] { foreignKey, fkTable.getUnqualifiedName() + "." + foreignKey });
-								}
-								if (fkColumn == null || pkColumn == null) {
-									toRemove.add(association);
-								}
+							Association association = new Association(fkTable, pkTable, false, true, "A." + fkColumn + "=B." + pkColumn, dataModel, false, Cardinality.MANY_TO_ONE);
+							association.setAuthor(metaData.getDriverName());
+							associations.add(association);
+							fkMap.put(fkName, association);
+							if (foreignKey != null) {
+								namingSuggestion.put(association, new String[] { foreignKey, fkTable.getUnqualifiedName() + "." + foreignKey });
+							}
+							if (fkColumn == null || pkColumn == null) {
+								toRemove.add(association);
 							}
 						}
 					}
