@@ -3,7 +3,7 @@
     https://sourceforge.net/p/jailer/discussion/700499/thread/b3685a49/
     (A further release was necessary, as this was not completely corrected at first)
   - improved CSV-handling
- 
+
 9.5.4
   - Deactivated dependencies had no effect on topological sorting. This was corrected.
     https://sourceforge.net/p/jailer/discussion/700499/thread/b3685a49
