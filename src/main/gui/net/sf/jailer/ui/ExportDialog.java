@@ -549,7 +549,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			
 			pack();
 			updateCLIArea();
-			setSize(Math.max(Math.min(getSize().width, 900), 580), getSize().height);
+			setSize(Math.max(Math.min(getSize().width, 900), 700), getSize().height);
 			placeholder.setVisible(false);
 			placeholder1.setVisible(false);
 			UIUtil.initPeer();
@@ -1195,7 +1195,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         jScrollPane2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         jPanel6.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jPanel6.setLayout(new java.awt.GridBagLayout());

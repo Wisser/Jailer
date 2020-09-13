@@ -35,7 +35,6 @@
             <EmptyBorder/>
           </Border>
         </Property>
-        <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
