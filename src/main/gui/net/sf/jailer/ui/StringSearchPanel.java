@@ -60,6 +60,7 @@ import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -110,8 +111,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel) {
 		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, false, null, true);
 	}
-
+	
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton) {
+		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, alternativeIcon, additionalComponentFactory, locateUnderButton, false);
+	}
+
+	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText) {
 		final JToggleButton button = new JToggleButton();
 		button.setIcon(getSearchIcon(alternativeIcon, button));
 		button.addActionListener(new ActionListener() {
@@ -131,6 +136,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					        		location = buttonLocation;
 					        	}
 								StringSearchPanel searchPanel = new StringSearchPanel(button, comboBox, metaDataSource, dataModel, prepare, onSuccess);
+								searchPanel.keepSearchText = keepSearchText;
 								if (additionalComponentFactory != null) {
 									searchPanel.plugInPanel.add(additionalComponentFactory.create(searchPanel), java.awt.BorderLayout.CENTER);
 									searchPanel.plugInPanel.setVisible(true);
@@ -281,6 +287,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		if (button != null) {
 			button.setSelected(true);
 		}
+		if (combobox != null && keepSearchText) {
+			try {
+				JTextField c;
+				c = (JTextField) combobox.getEditor().getEditorComponent();
+				searchTextField.setText(c.getText());
+			} catch (ClassCastException e) {
+				// ignore
+			}
+		}
 		dialog.setVisible(true);
 	}
 
@@ -299,7 +314,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private final int MAX_LIST_LENGTH = 80;
 	private boolean showAll = false;
 	private String showAllLabel;
-	 
+	private boolean keepSearchText = false;
+	
 	private void updateList() {
 		DefaultListModel<String> matches = new DefaultListModel<String>();
 		String text = searchTextField.getText();

@@ -141,11 +141,15 @@ public class MetaDataSource {
 		try {
 			return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW", "SYNONYM", "ALIAS" });
 		} catch (Exception e) {
-			logger.info("error", e);
-			return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW" });
+			if (!session.isDown()) {
+				logger.info("error", e);
+				return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW" });
+			} else {
+				throw e;
+			}
 		}
 	}
-	
+
 	/**
 	 * @return the schemas
 	 */

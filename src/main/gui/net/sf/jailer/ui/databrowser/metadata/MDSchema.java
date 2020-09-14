@@ -191,7 +191,9 @@ public class MDSchema extends MDObject {
 						}
 					});
 				} catch (SQLException e) {
-					logger.info("error", e);
+					if (!getMetaDataSource().getSession().isDown()) {
+						logger.info("error", e);
+					}
 				} finally {
 					loaded.set(true);
 				}

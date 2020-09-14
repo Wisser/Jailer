@@ -457,7 +457,7 @@ public class GraphicalDataModelView extends JPanel {
 				Display display = (Display)e.getComponent();
 				Point p = e.getPoint();
 				zoom(display, p,
-					 1 + 0.1f * e.getWheelRotation(), false);
+					 1 - 0.1f * e.getWheelRotation(), false);
 			}
 
 		});

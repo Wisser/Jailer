@@ -23,8 +23,11 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -49,6 +52,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
@@ -61,6 +65,7 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableColumnModel;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Column;
@@ -469,6 +474,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	private final ParameterSelector.ParametersGetter parametersGetter;
 	
 	/** Creates new form FilterEditor */
+	@SuppressWarnings("serial")
 	public FilterEditorDialog(ExtractionModelFrame parent, final ParameterSelector.ParametersGetter parametersGetter, ExecutionContext executionContext) {
 		super(parent, true);
 		this.executionContext = executionContext;
@@ -476,6 +482,12 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		this.parent = parent;
 		this.conditionEditor = createConditionEditor();
 		initComponents();
+		
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+		final JComboBox comboBox = clauseDetailsObjectTextField;
+        jPanel14.add(StringSearchPanel.createSearchButton(null, comboBox, "Value", null, null, null, null, false, null, true, true), gridBagConstraints);
 		
 		ActionListener l = new ActionListener() {
 			@Override
@@ -488,7 +500,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		templatesDetailsApplyAtComboBox.addActionListener(l);
 		
 		AutoCompletion.enable(tableBox);
-		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
@@ -923,6 +935,19 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 						applyButton.setEnabled(needsSave());
 					}
 				});
+				typeField.addFocusListener(new FocusListener() {
+					
+					@Override
+					public void focusLost(FocusEvent e) {
+						if (applyButton.isEnabled()) {
+							apply();
+						}
+					}
+					
+					@Override
+					public void focusGained(FocusEvent e) {
+					}
+				});
 				if (c.getFilter() != null && !c.getFilter().isDerived() && !c.getFilter().isApplyAtExport()) {
 					typeField.setText(c.getFilter().getType() == null? type.trim() : c.getFilter().getType());
 					typeTextfieldsPerColumn.put(c, typeField);
@@ -990,6 +1015,19 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 							textField.setForeground(Color.black);
 						}
 						applyButton.setEnabled(needsSave());
+					}
+				});
+				textField.addFocusListener(new FocusListener() {
+					
+					@Override
+					public void focusLost(FocusEvent e) {
+						if (applyButton.isEnabled()) {
+							apply();
+						}
+					}
+					
+					@Override
+					public void focusGained(FocusEvent e) {
 					}
 				});
 				textField.setText(initialExpr);
@@ -1326,7 +1364,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 							return true;
 						}
 					}
-					
+				} else {
+					if (type != null) {
+						return true;
+					}
 				}
 			}
 		}
@@ -1361,6 +1402,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         jPanel10 = new javax.swing.JPanel();
         clauseDetailsSubjectComboBox = new JComboBox2();
         clauseDetailsPredicateComboBox = new JComboBox2();
+        jPanel14 = new javax.swing.JPanel();
         clauseDetailsObjectTextField = new JComboBox2();
         jPanel11 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
@@ -1541,10 +1583,19 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
         jPanel9.add(jPanel10);
 
+        jPanel14.setLayout(new java.awt.GridBagLayout());
+
         clauseDetailsObjectTextField.setEditable(true);
         clauseDetailsObjectTextField.setMaximumRowCount(22);
         clauseDetailsObjectTextField.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        jPanel9.add(clauseDetailsObjectTextField);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel14.add(clauseDetailsObjectTextField, gridBagConstraints);
+
+        jPanel9.add(jPanel14);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2019,6 +2070,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 	private void onClauseDetailsPredicateChanged(Predicate predicate) {
 		clauseDetailsObjectTextField.setVisible(predicate.needsObject);
+		jPanel14.setVisible(predicate.needsObject);
 		JComponent help = helpComponents.get(predicate);
 		for (JComponent component: helpComponents.values()) {
 			component.setVisible(false);
@@ -2089,6 +2141,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel13;
+    private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;

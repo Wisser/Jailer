@@ -319,7 +319,7 @@ public class CyclesView extends javax.swing.JDialog {
 			gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
 			getContentPane().add(label, gridBagConstraints);
 
-			jButton1.setText(" Stop ");
+			jButton1.setText(" Stop now and display all cycles found so far ");
 			jButton1.addActionListener(new java.awt.event.ActionListener() {
 				@Override
 				public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -330,7 +330,7 @@ public class CyclesView extends javax.swing.JDialog {
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = 10;
 			gridBagConstraints.gridwidth = 2;
-			gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
+			gridBagConstraints.insets = new java.awt.Insets(12, 24, 12, 24);
 			getContentPane().add(jButton1, gridBagConstraints);
 
 			pack();
