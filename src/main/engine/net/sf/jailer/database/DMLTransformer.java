@@ -308,7 +308,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 			labelCSL = "";
 			tableHasLobs = false;
 			for (int i = 1; i <= columnCount; ++i) {
-				String mdColumnLabel = quoting.quote(getMetaData(resultSet).getColumnLabel(i));
+				// TODO get rid of #getColumnLabel(int). Pass selection-clause as list of columns (for all Transformers).
+				String mdColumnLabel = SqlUtil.columnLabel(quoting, session, targetDBMSConfiguration, table, getMetaData(resultSet).getColumnLabel(i));
 				int mdColumnType = getMetaData(resultSet).getColumnType(i);
 				
 				if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.NCLOB || mdColumnType == Types.SQLXML) && !DBMS.SQLITE.equals(targetDBMSConfiguration)) {

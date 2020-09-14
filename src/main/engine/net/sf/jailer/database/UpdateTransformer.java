@@ -207,7 +207,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 			columnLabel = new String[columnCount + 1];
 			labelCSL = "";
 			for (int i = 1; i <= columnCount; ++i) {
-				String mdColumnLabel = quoting.quote(getMetaData(resultSet).getColumnLabel(i));
+				String mdColumnLabel = SqlUtil.columnLabel(quoting, session, targetDBMSConfiguration, table, getMetaData(resultSet).getColumnLabel(i));
 				
 				columnLabel[i] = mdColumnLabel;
 				if (labelCSL.length() > 0) {

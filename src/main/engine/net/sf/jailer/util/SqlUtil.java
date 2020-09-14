@@ -33,7 +33,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
+import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
@@ -589,6 +592,23 @@ public class SqlUtil {
 		}
 		matcher.appendTail(sb);
 		return sb.toString();
+	}
+
+	public static String columnLabel(Quoting quoting, Session session, DBMS targetDBMSConfiguration, Table table, String columnLabel) {
+		if (targetDBMSConfiguration != session.dbms) {
+			int count = 0;
+			String name = null;
+			for (Column column: table.getColumns()) {
+				if (Quoting.equalsIgnoreQuotingAndCase(columnLabel, column.name)) {
+					++count;
+					name = quoting.requote(column.name);
+				}
+			}
+			if (count == 1 && name != null) {
+				return name;
+			}
+		}
+		return quoting.quote(columnLabel);
 	}
 
 }
