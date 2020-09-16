@@ -4215,7 +4215,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					if (stripHour[i] && (rowData[i] instanceof java.sql.Date || rowData[i] instanceof java.sql.Timestamp)) {
 						String asString = rowData[i].toString();
-						rowData[i] = asString.substring(0, asString.length() - HOUR.length());
+						int endIndex = asString.length() - HOUR.length();
+						if (endIndex > 0) {
+							rowData[i] = asString.substring(0, endIndex);
+						}
 					}
 				}
 				if (tableContentViewFilter != null) {

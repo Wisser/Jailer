@@ -56,10 +56,6 @@ import javax.swing.table.TableColumn;
  */
 public class ProgressTable extends JTable {
 
-	
-	// TODO delicon nur wenn delscript erzeugt wird
-	
-	
 	/**
 	 * Maximum number of tables in a closure-table's line.
 	 */

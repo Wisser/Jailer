@@ -1865,6 +1865,4 @@ public class SubsettingEngine {
 		return resetFilters;
 	}
 
-	// TODO: write-entities: without topo-sort & number if threads == 1 -> write out lexicograhically
-
 }

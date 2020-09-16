@@ -2087,7 +2087,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		boolean restrictedDep = currentAssociation != null && !ScriptFormat.XML.equals(scriptFormat) && currentAssociation.isInsertDestinationBeforeSource() && currentAssociation.isRestricted();
 		
 		// TODO Differentiated filtering of restricted dependencies
-		restrictionEditor.fkToNullCheckBox.setVisible(restrictedDep && (RestrictionModel.IGNORE.equals(currentAssociation.getRestrictionCondition()) || "false".equals(currentAssociation.getRestrictionCondition()))); // TODO
+		restrictionEditor.fkToNullCheckBox.setVisible(restrictedDep && (RestrictionModel.IGNORE.equals(currentAssociation.getRestrictionCondition()) || "false".equals(currentAssociation.getRestrictionCondition())));
 		restrictionEditor.fkToNullCheckBox.setEnabled(restrictedDep && currentAssociation.hasNullableFK() && !currentAssociation.fkHasExcludeFilter());
 		restrictionEditor.fkToNullCheckBox.setSelected(restrictedDep && currentAssociation.fkHasNullFilter());
 		restrictionEditor.restrictedDependencyWarning.setVisible(restrictedDep && !currentAssociation.fkHasNullFilter());
