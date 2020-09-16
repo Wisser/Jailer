@@ -17,7 +17,9 @@ package net.sf.jailer;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.sql.DataSource;
@@ -42,6 +45,8 @@ import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.extractionmodel.ExtractionModel;
+import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.render.DataModelRenderer;
@@ -52,6 +57,7 @@ import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.PrintUtil;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 
@@ -162,7 +168,9 @@ public class Jailer {
 			String command = commandLine.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
 				if (!"find-association".equalsIgnoreCase(command)) {
-					_log.info("Jailer " + JailerVersion.VERSION);
+					if (!"print-closure".equalsIgnoreCase(command)) {
+						_log.info("Jailer " + JailerVersion.VERSION);
+					}
 				}
 			}
 			
@@ -207,6 +215,7 @@ public class Jailer {
 						System.out.println("missing '-e' option");
 						CommandLineParser.printUsage(args);
 					} else {
+						updateDataModelFolder(commandLine, commandLine.arguments.get(1), executionContext);
 						if (!commandLine.independentWorkingTables) {
 							PrimaryKeyFactory.createUPKScope(commandLine.arguments.get(1), executionContext);
 						}
@@ -227,6 +236,7 @@ public class Jailer {
 						System.out.println("can't delete: missing '-d' option");
 						CommandLineParser.printUsage(args);
 					} else {
+						updateDataModelFolder(commandLine, commandLine.arguments.get(1), executionContext);
 						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
 								commandLine.arguments.get(4), commandLine.arguments.get(5), 0, jdbcJarURLs);
 						// note we are passing null for script format and the export script name, as we are using the export tool
@@ -238,6 +248,13 @@ public class Jailer {
 						new SubsettingEngine(executionContext).export(commandLine.where, modelURL, /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName,
 								dataSource, dataSource.dbms, commandLine.explain, /*scriptFormat*/ null, 0);
 					}
+				}
+			} else if ("print-closure".equalsIgnoreCase(command)) {
+				if (commandLine.arguments.size() < 2) {
+					CommandLineParser.printUsage(args);
+				} else {
+					updateDataModelFolder(commandLine, commandLine.arguments.get(1), executionContext);
+					printClosure(commandLine.arguments.get(1), commandLine.arguments.size() > 2? commandLine.arguments.get(2) : null, executionContext);
 				}
 			} else if ("find-association".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() < 3) {
@@ -252,13 +269,7 @@ public class Jailer {
 				} else if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 1) {
 					extractionModelFileName = commandLine.arguments.get(1);
 				}
-				if ("datamodel".equals(commandLine.datamodelFolder) && extractionModelFileName == null
-						||
-					!"datamodel".equals(commandLine.datamodelFolder) && extractionModelFileName != null) {
-					if (fromCli) {
-						throw new RuntimeException("Please specify either a data model (e.g., \"-datamodel datamodel/Demo-Scott\") or an extraction model (But not both)");
-					}
-				}
+				updateDataModelFolder(commandLine, extractionModelFileName, executionContext);
 				if (commandLine.arguments.size() >= 5) {
 					pw = commandLine.arguments.get(4);
 					if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 5) {
@@ -316,6 +327,51 @@ public class Jailer {
 			String workingDirectory = System.getProperty("user.dir");
 			_log.error("working directory is " + workingDirectory);
 			throw t;
+		}
+	}
+
+	private static void printClosure(String extractionModelFileName, String separator, ExecutionContext executionContext) throws MalformedURLException, IOException {
+		ExtractionModel extractionModel = new ExtractionModel(new File(extractionModelFileName).toURI().toURL(), executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext, true);
+		Set<Table> subjects = new HashSet<Table>();
+		if (extractionModel.additionalSubjects != null) {
+			for (AdditionalSubject as: extractionModel.additionalSubjects) {
+				subjects.add(as.getSubject());
+			}
+		}
+		subjects.add(extractionModel.subject);
+		
+		Set<String> closure = new TreeSet<String>();
+		Set<Table> toIgnore = new HashSet<Table>();
+		for (Table subject: subjects) {
+			for (Table table: subject.closure(toIgnore, true)) {
+				closure.add(Quoting.unquotedTableName(table, executionContext));
+				toIgnore.add(table);
+			}
+		}
+		
+		int row = 0;
+		for (String tableName: closure) {
+			if (separator == null) {
+				System.out.println(tableName);
+			} else {
+				if (row++ > 0) {
+					System.out.print(separator);
+				}
+				System.out.print(tableName);
+			}
+		}
+		if (separator != null) {
+			System.out.println();
+		}
+	}
+
+	private static void updateDataModelFolder(CommandLine commandLine, String extractionModelFileName,
+			ExecutionContext executionContext) throws IOException {
+		if (extractionModelFileName != null && "datamodel".equals(commandLine.datamodelFolder)) {
+			String datamodelFolder = ExtractionModel.loadDatamodelFolder(extractionModelFileName, executionContext);
+			if (datamodelFolder != null) {
+				executionContext.setCurrentModelSubfolder(datamodelFolder);
+			}
 		}
 	}
 
