@@ -4419,10 +4419,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								return 0;
 							}
 							if (o1 == null) {
-								return -1;
+								return 1;
 							}
 							if (o2 == null) {
-								return 1;
+								return -1;
 							}
 							if (o1.getClass().equals(o2.getClass())) {
 								if (o1 instanceof Comparable<?>) {
