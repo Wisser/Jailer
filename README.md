@@ -10,6 +10,7 @@ Jailer is a tool for database subsetting and relational data browsing.
 
 <img src="/docs/screenshot.png" width="850" />
 
+
 ## Features
 
  - Exports consistent and referentially intact row-sets from your productive database
@@ -20,11 +21,13 @@ Jailer is a tool for database subsetting and relational data browsing.
  - SQL Console with code completion, syntax highlighting and database metadata visualization.
  - A demo database is included with which you can get a first impression without any configuration effort.
 
+
 ## Prerequisites
 
  - Java JRE 7 (or above)
    Important: due to HiDPI graphics support, Java JRE 11 (or above) is strongly recommended.
  - JDBC-driver for your RDBMS
+
 
 ## News
 
@@ -60,6 +63,7 @@ See also <a href="http://jailer.sourceforge.net/faq.html#multiuser">http://jaile
     - On windows platform execute "jailerDataBrowser.exe", or "jailerDataBrowser.bat"
     - On Unix/Linux platform execute the script "jailerDataBrowser.sh"
 
+
 ## Building
 
 Clone the git repository:
@@ -71,7 +75,40 @@ To build the tool you can just use ant: ( https://ant.apache.org )
 * `cd Jailer`
 * `ant`
 
+
 ## Contact
  - Home:    http://jailer.sourceforge.net/ or https://github.com/Wisser/Jailer
  - Forum:   https://sourceforge.net/p/jailer/discussion/
  - Support: rwisser@users.sourceforge.net
+
+ 
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/Wisser/Jailer/graphs/contributors"><img src="https://opencollective.com/Jailer/contributors.svg?width=890&button=false" /></a>
+
+### Financial Contributors
+
+Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/Jailer/contribute)]
+
+#### Individuals
+
+<a href="https://opencollective.com/Jailer"><img src="https://opencollective.com/Jailer/individuals.svg?width=890"></a>
+
+#### Organizations
+
+Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/Jailer/contribute)]
+
+<a href="https://opencollective.com/Jailer/organization/0/website"><img src="https://opencollective.com/Jailer/organization/0/avatar.svg"></a>
+<a href="https://opencollective.com/Jailer/organization/1/website"><img src="https://opencollective.com/Jailer/organization/1/avatar.svg"></a>
+<a href="https://opencollective.com/Jailer/organization/2/website"><img src="https://opencollective.com/Jailer/organization/2/avatar.svg"></a>
+<a href="https://opencollective.com/Jailer/organization/3/website"><img src="https://opencollective.com/Jailer/organization/3/avatar.svg"></a>
+<a href="https://opencollective.com/Jailer/organization/4/website"><img src="https://opencollective.com/Jailer/organization/4/avatar.svg"></a>
+<a href="https://opencollective.com/Jailer/organization/5/website"><img src="https://opencollective.com/Jailer/organization/5/avatar.svg"></a>
+<a href="https://opencollective.com/Jailer/organization/6/website"><img src="https://opencollective.com/Jailer/organization/6/avatar.svg"></a>
+<a href="https://opencollective.com/Jailer/organization/7/website"><img src="https://opencollective.com/Jailer/organization/7/avatar.svg"></a>
+<a href="https://opencollective.com/Jailer/organization/8/website"><img src="https://opencollective.com/Jailer/organization/8/avatar.svg"></a>
+<a href="https://opencollective.com/Jailer/organization/9/website"><img src="https://opencollective.com/Jailer/organization/9/avatar.svg"></a>
+ 
