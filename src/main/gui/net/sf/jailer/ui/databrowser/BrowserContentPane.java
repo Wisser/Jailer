@@ -4409,6 +4409,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							if (o2 instanceof TableModelItem) {
 								o2 = ((TableModelItem) o2).value;
 							}
+							if (o1 == UIUtil.NULL) {
+								o1 = null;
+							}
+							if (o2 == UIUtil.NULL) {
+								o2 = null;
+							}
 							if (o1 == null && o2 == null) {
 								return 0;
 							}
