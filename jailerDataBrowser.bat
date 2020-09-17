@@ -1,4 +1,4 @@
-echo off
+@echo off
 set LIB=lib
 
 rem JDBC-driver

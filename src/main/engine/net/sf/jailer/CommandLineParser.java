@@ -117,7 +117,7 @@ public class CommandLineParser {
 		System.out.println("    -xml-timestamp pattern for time-stamps in XML and LIQUIBASE_XML export file");
 		System.out.println();
 		System.out.println("  jailer import <sql-script> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
-		System.out.println("    imports data (with CLOX/BLOB/XML support)");
+		System.out.println("    imports data (with CLOB/BLOB/XML support)");
 		System.out.println();
 		System.out.println("  jailer delete [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
 		System.out.println("    Like export, but skips the export and creates a delete-script (see option '-d')");
