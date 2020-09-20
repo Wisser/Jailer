@@ -70,6 +70,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.AutoCompletion;
+import net.sf.jailer.ui.ClosureView;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.StringSearchPanel.AdditionalComponentFactory;
@@ -245,7 +246,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 //		            });
 		            JMenuItem pathFinder = new JMenuItem("Find more complex path to " + getDataModel().getDisplayName(table));
 		            Table rt = getRootTable();
-		            if (rt == null || !rt.closure(false).contains(table)) {
+		            if (rt == null || !ClosureView.getBiDirClosure(rt).contains(table)) {
 		            	pathFinder.setEnabled(false);
 		            }
 		            pathFinder.addActionListener(new ActionListener() {
@@ -256,7 +257,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		            });
 		            
 		            JMenuItem openPath = new JMenuItem("Open path to " + getDataModel().getDisplayName(table));
-                    if (rt == null || !rt.closure(false).contains(table)) {
+                    if (rt == null || !ClosureView.getBiDirClosure(rt).contains(table)) {
 		            	openPath.setEnabled(false);
 		            }
                     openPath.addActionListener(new ActionListener() {

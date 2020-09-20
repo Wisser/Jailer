@@ -1455,7 +1455,7 @@ public class GraphicalDataModelView extends JPanel {
 		
 		if (table != null) {
 			if (!modelEditor.extractionModelFrame.showDisabledAssociations()) {
-				initiallyVisibleTables.retainAll(table.closure(true));
+				initiallyVisibleTables.retainAll(table.closure());
 			} else {
 				initiallyVisibleTables.retainAll(table.unrestrictedClosure(new HashSet<Table>()));
 			}
@@ -2003,7 +2003,7 @@ public class GraphicalDataModelView extends JPanel {
 						int size = model.getTables().size();
 						if (root != null) {
 							if (!modelEditor.extractionModelFrame.showDisabledAssociations()) {
-								size = root.closure(true).size();
+								size = root.closure().size();
 							} else {
 								size = root.unrestrictedClosure(new HashSet<Table>()).size();
 							}

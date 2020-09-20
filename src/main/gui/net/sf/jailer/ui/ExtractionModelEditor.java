@@ -3204,7 +3204,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			
 			currentSubjectClosure = new HashSet<Table>();
 			for (Table subject: subjects) {
-				for (Table table: subject.closure(currentSubjectClosure, true)) {
+				for (Table table: subject.closure(currentSubjectClosure)) {
 					currentSubjectClosure.add(table);
 				}
 			}

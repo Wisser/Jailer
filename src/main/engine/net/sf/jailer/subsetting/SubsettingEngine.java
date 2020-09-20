@@ -447,10 +447,6 @@ public class SubsettingEngine {
 		}
 		jobManager.executeJobs(jobs);
 
-		if (EntityGraph.maxTotalRowcount > 0 && EntityGraph.maxTotalRowcount < entityGraph.getTotalRowcount()) {
-			throw new RuntimeException("found more than " + EntityGraph.maxTotalRowcount + " entities.");
-		}
-
 		return progress;
 	}
 

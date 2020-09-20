@@ -2565,7 +2565,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		Set<Table> closure = new HashSet<Table>();
 		
 		for (Table subject: subjects) {
-			Set<Table> toCheck = new HashSet<Table>(subject.closure(closure, true));
+			Set<Table> toCheck = new HashSet<Table>(subject.closure(closure));
 			closure.addAll(toCheck);
 		}
 		return closure;

@@ -249,12 +249,10 @@ public class Table extends ModelElement implements Comparable<Table> {
 	/**
 	 * Gets the closure of the table.
 	 * 
-	 * @param directed consider associations as directed?
-	 * 
 	 * @return closure of the table (all tables associated (in-)direct with table)
 	 */
-	public Set<Table> closure(boolean directed) {
-		return closure(new HashSet<Table>(), new HashSet<Table>(), directed);
+	public Set<Table> closure() {
+		return closure(new HashSet<Table>(), new HashSet<Table>());
 	}
 
 	/**
@@ -265,8 +263,8 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * 
 	 * @return closure of the table (all tables associated (in-)direct with table)
 	 */
-	public Set<Table> closure(Set<Table> tablesToIgnore, boolean directed) {
-		return closure(new HashSet<Table>(), tablesToIgnore, directed);
+	public Set<Table> closure(Set<Table> tablesToIgnore) {
+		return closure(new HashSet<Table>(), tablesToIgnore);
 	}
 
 	/**
@@ -278,15 +276,15 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * 
 	 * @return closure of the table (all tables associated (in-)directly with table)
 	 */
-	private Set<Table> closure(Set<Table> tables, Set<Table> tablesToIgnore, boolean directed) {
+	private Set<Table> closure(Set<Table> tables, Set<Table> tablesToIgnore) {
 		Set<Table> closure = new HashSet<Table>();
 		if (!tables.contains(this) && !tablesToIgnore.contains(this)) {
 			closure.add(this);
 			tables.add(this);
 			for (Association association: associations) {
 				if (!tables.contains(association.destination)) {
-					if (association.getJoinCondition() != null || (association.reversalAssociation.getJoinCondition() != null && !directed)) {
-						closure.addAll(association.destination.closure(tables, tablesToIgnore, directed));
+					if (association.getJoinCondition() != null) {
+						closure.addAll(association.destination.closure(tables, tablesToIgnore));
 					}
 				}
 			}

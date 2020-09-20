@@ -127,11 +127,14 @@ public class CommandLineParser {
 		System.out.println("    creates the DDL for the working-tables and prints it to stdout");
 		System.out.println();
 		System.out.println("  jailer create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password> [<extraction-model> -independent-working-tables] [-no-rowid]");
-		System.out.println("    creates the DDL for the working-tables and executes it");
+		System.out.println("    creates the working-tables");
 		System.out.println();
 		System.out.println("  jailer build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password>");
 		System.out.println("    determines table and relationship information through database analysis");
 		System.out.println("    -schema <schema>: limits analysis to the schema <schema>");
+		System.out.println();
+		System.out.println("  jailer render-datamodel [-datamodel VAL] [<extraction-model>] ");
+		System.out.println("    generates a HTML render of the (restricted) data model into directory 'render'");
 		System.out.println();
 		System.out.println("  jailer print-closure <extraction-model> [<separator>] [-datamodel VAL]");
 		System.out.println("    prints a list of all tables that are directly or transitively associated with a subject table,");
@@ -140,7 +143,7 @@ public class CommandLineParser {
 		System.out.println();
 		System.out.println("options:");
 		CmdLineParser cmdLineParser = new CmdLineParser(new CommandLine());
-		cmdLineParser.setUsageWidth(120);
+		cmdLineParser.setUsageWidth(160);
 		cmdLineParser.printUsage(System.out);
 		System.out.println();
 		printAruments(System.out, args, null);

@@ -229,7 +229,7 @@ public class PrimaryKeyFactory {
 		Set<String> upkDomain = new HashSet<String>();
 		Set<Table> toIgnore = new HashSet<Table>();
 		for (Table subject: subjects) {
-			for (Table table: subject.closure(toIgnore, true)) {
+			for (Table table: subject.closure(toIgnore)) {
 				upkDomain.add(table.getName());
 				toIgnore.add(table);
 			}

@@ -1330,7 +1330,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				next.add(a.reversalAssociation);
 			}
 			
-			Set<Table> closure = selectedTable.closure(true);
+			Set<Table> closure = selectedTable.closure();
 			while (!next.isEmpty()) {
 				Set<Association> neighbors  = new HashSet<Association>();
 				List<String> assocList = new ArrayList<String>();
@@ -1411,7 +1411,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			tableModel.removeRow(0);
 		}
 		if (selectedTable != null) {
-			Set<Table> closure = selectedTable.closure(true);
+			Set<Table> closure = selectedTable.closure();
 			for (Table table: closure) {
 				Set<Table> neighbors = new HashSet<Table>();
 				for (Association a: table.associations) {
@@ -1803,7 +1803,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		Object currentSelection = rootTable.getSelectedItem();
 		if (currentSelection instanceof String) {
 			final Table source = getDataModel().getTableByDisplayName((String) currentSelection);
-			 if (source.closure(false).contains(table)) {
+			if (getBiDirClosure(source).contains(table)) {
 				findPath.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
@@ -1817,6 +1817,26 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		return findPath;
 	}
 
+	public static Set<Table> getBiDirClosure(final Table source) {
+		return getBiDirClosure(source, new HashSet<Table>(), new HashSet<Table>());
+	}
+
+	private static Set<Table> getBiDirClosure(Table table, Set<Table> tables, Set<Table> tablesToIgnore) {
+		Set<Table> closure = new HashSet<Table>();
+		if (!tables.contains(table) && !tablesToIgnore.contains(table)) {
+			closure.add(table);
+			tables.add(table);
+			for (Association association: table.associations) {
+				if (!tables.contains(association.destination)) {
+					if (association.getJoinCondition() != null || (association.reversalAssociation.getJoinCondition() != null)) {
+						closure.addAll(getBiDirClosure(association.destination, tables, tablesToIgnore));
+					}
+				}
+			}
+		}
+		return closure;
+	}
+	
 	private void findPath(Table source, Table destination, boolean fromHistory) {
 		Frame parent = null;
 		Window w = SwingUtilities.getWindowAncestor(rootTable);

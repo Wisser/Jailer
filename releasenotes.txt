@@ -1,3 +1,9 @@
+9.5.6
+  - New CLI tool for printing the closure of subject tables.
+    https://github.com/Wisser/Jailer/issues/34
+  - The command line interface has been cleaned up and simplified.
+  - An error in the HTML rendering of a data model was corrected.
+
 9.5.5
   - Fix for "Need help understanding delete script"
     https://sourceforge.net/p/jailer/discussion/700499/thread/b3685a49/

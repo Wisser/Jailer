@@ -54,27 +54,6 @@ public class CommandLine {
 	@Option(name="-xml-timestamp",usage="pattern for time-stamps in XML and LIQUIBASE_XML export file",metaVar="pattern")
 	public String xmlTimeStampPattern = "yyyy-MM-dd-HH.mm.ss";
 	
-	@Option(name="-c",usage="print restricted data-model with closures")
-	public boolean withClosures = false;
-	
-	@Option(name="-explain",usage="(no longer used)")
-	public boolean dummyExplain;
-
-	// explain is always false
-	public boolean explain = false;
-
-	@Option(name="-u",usage="consider associations as un-directed")
-	public boolean undirected = false;
-	
-	@Option(name="-m", usage="(no longer used)")
-	public int maxNumberOfEntities = 0;
-	
-	@Option(name="-script-enhancer", usage="(no longer used)")
-	public String scriptEnhancer = "";
-
-	@Option(name="-t", usage="(no longer used)")
-	public String tabu = "";
-
 	@Option(name="-e",usage="name of the export-script file (compressed if it ends with '.zip' or '.gz')", metaVar="export-script")
 	public String exportScriptFileName = null;
 
@@ -174,7 +153,7 @@ public class CommandLine {
 	@Option(name="-row-limit", usage="maximum allowed number of exported rows. If this limit is exceeded, the export aborts with an error.")
 	public String limit = null;
 
-	@Option(name="-", usage="do not interpret the next word as an option, even if it begins with '-'. For example, if the username is \"-abc\", use \"- -abc\".")
+	@Option(name="-", usage="do not interpret the next word as an option, even if it begins with a '-'. E.g. if the username is: \"-abc\", use: \"- -abc\".")
 	public List<String> escapedWords = new ArrayList<String>();
 	
 	@Option(name="-file-lookup", usage="read the next parameter from the (1st line of the) file named VAL. \n(This is especially useful for not making passwords visible by querying the command line parameters)")

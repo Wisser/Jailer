@@ -401,8 +401,6 @@ public abstract class EntityGraph {
 
 	public abstract DataModel getDatamodel();
 	
-	public static long maxTotalRowcount;
-	
 	/**
 	 * Closes the graph. Deletes the local database.
 	 */

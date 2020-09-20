@@ -797,10 +797,6 @@ public class DataModel {
 		}
 		for (Table table: sortedTables) {
 			str.append(table);
-			if (printClosures) {
-				str.append("  closure =");
-				str.append(new PrintUtil().tableSetAsString(table.closure(true)) + "\n\n");
-			}
 		}
 		return str.toString();
 	}
@@ -821,11 +817,6 @@ public class DataModel {
 		});
 		return sortedTables;
 	}
-
-	/**
-	 * Printing-mode.
-	 */
-	public static boolean printClosures = false;
 
 	/**
 	 * Normalizes a set of tables.
@@ -915,7 +906,7 @@ public class DataModel {
 	public Set<Table> checkForPrimaryKey(Set<Table> subjects, boolean hasRowID) throws NoPrimaryKeyException {
 		Set<Table> checked = new HashSet<Table>();
 		for (Table subject: subjects) {
-			Set<Table> toCheck = new HashSet<Table>(subject.closure(checked, true));
+			Set<Table> toCheck = new HashSet<Table>(subject.closure(checked));
 			for (Table table: toCheck) {
 				if (!hasRowID) {
 					if (table.primaryKey.getColumns().isEmpty()) {

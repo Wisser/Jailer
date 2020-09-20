@@ -230,7 +230,7 @@ union all
     <dbms>
         <id>MSSQL</id>
         <displayName>MS SQL Server</displayName>
-        <urlPattern>jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*</urlPattern>
+        <urlPattern>jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*|jdbc:JSQLConnect.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
             <supportsInClauseForDeletes>false</supportsInClauseForDeletes>

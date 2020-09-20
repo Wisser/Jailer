@@ -275,7 +275,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
 		Set<Table> closure;
 		if (subject != null) {
-			closure = subject.closure(true);
+			closure = subject.closure();
 		} else {
 			closure = new HashSet<Table>();
 		}

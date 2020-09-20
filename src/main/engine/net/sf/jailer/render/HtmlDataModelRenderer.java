@@ -108,7 +108,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			for (Table table: tableList) {
 				tablesColumn.add(linkTo(table));
 				StringBuffer legend = new StringBuffer();
-				String closure = "";
+				String closure = renderClosure(table, legend);
 				closure = new PrintUtil().applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure", "", closure });
 				String columns = generateColumnsTable(table);
 				if (columns == null) {
@@ -139,12 +139,62 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 		}
 	}
 
-	protected boolean excludeFromClosure(Table table) {
-		return false;
-	}
-
-	protected boolean excludeFromNeighborhood(Table table) {
-		return false;
+	/**
+	 * Renders the closure of a table.
+	 * 
+	 * @param table the table
+	 * 
+	 * @return render of closure
+	 */
+	private String renderClosure(Table table, StringBuffer legend) throws FileNotFoundException, IOException {
+		StringBuffer lines = new StringBuffer();
+		int distance = 0;
+		Set<Table> closure = new HashSet<Table>();
+		Set<Table> associatedTables = new HashSet<Table>();
+		boolean printLegend = false;
+		do {
+			associatedTables.clear();
+			if (distance == 0) {
+				associatedTables.add(table);
+			} else {
+				for (Table c: closure) {
+					for (Association a: c.associations) {
+						if (a.getJoinCondition() != null) {
+							Table destinationTable = a.destination;
+							if (!closure.contains(destinationTable)) {
+								associatedTables.add(destinationTable);
+							}
+						}
+					}
+				}
+			}
+			
+			List<Table> cl = new ArrayList<Table>(associatedTables);
+			Collections.sort(cl, new Comparator<Table>() {
+				@Override
+				public int compare(Table o1, Table o2) {
+					return o1.compareTo(o2);
+				}
+			});
+			StringBuffer ts = new StringBuffer();
+			boolean firstTime = true;
+			for (Table dt: cl) {
+				if (!firstTime) {
+					ts.append(", ");
+				}
+				ts.append(dt.equals(table)? dt.getName() : linkTo(dt));
+				firstTime = false;
+			}
+			if (!cl.isEmpty()) {
+				lines.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { "", "&nbsp;&nbsp;distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), COLOR_KEYWORDS, distance % 2 != 0? "class=\"highlightedrow\"" : "" }));
+			}
+			++distance;
+			closure.addAll(associatedTables);
+		} while (!associatedTables.isEmpty());
+		if (printLegend) {
+			legend.append(new PrintUtil().applyTemplate("template" + File.separatorChar + "legend.html", new Object[0]));
+		}
+		return lines.toString();
 	}
 
 	/**
@@ -240,17 +290,15 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			boolean firstTime = true;
 			for (Association association: all) {
 				if (!rendered.contains(association.destination)) {
-					if (!excludeFromNeighborhood(association.destination)) {
-						String tableBody = renderTableBody(association.destination, current, depth + 1, indent + 1, alreadyRendered);
-						if (tableBody.length() > 0) {
-							if (!firstTime) {
-								result.append("<br>");
-							}
-							firstTime = false;
+					String tableBody = renderTableBody(association.destination, current, depth + 1, indent + 1, alreadyRendered);
+					if (tableBody.length() > 0) {
+						if (!firstTime) {
+							result.append("<br>");
 						}
-						result.append(tableBody);
-						rendered.add(association.destination);
+						firstTime = false;
 					}
+					result.append(tableBody);
+					rendered.add(association.destination);
 				}
 			}
 		}
