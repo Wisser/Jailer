@@ -49,25 +49,36 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.JSqlParserUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.CreateFunctionalStatement;
+import net.sf.jsqlparser.statement.DeclareStatement;
+import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.ShowColumnsStatement;
+import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.schema.CreateSchema;
+import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
@@ -91,6 +102,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * Finds associations and tables by analyzing the JDBC meta data.
@@ -201,7 +213,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				
 				String fkColumn = quoting.quote(resultSet.getString(8));
 				if (uti != null) {
-					fkColumn = uti.columnMapping.get(fkColumn);
+					fkColumn = uti.origColumnName.get(quoting.normalizeCase(Quoting.staticUnquote(fkColumn)));
+					if (fkColumn == null) {
+						fkColumn = uti.columnMapping.get(quoting.normalizeCase(Quoting.staticUnquote(fkColumn)));
+					}
+					fkColumn = quoting.quote(fkColumn);
 				}
 
 				// collect all PKTables
@@ -223,7 +239,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					
 					UnderlyingTableInfo info = e.getValue();
 					if (info != null) {
-						pkColumn = info.columnMapping.get(pkColumn);
+						pkColumn = info.columnMapping.get(quoting.normalizeCase(Quoting.staticUnquote(pkColumn)));
 					}
 
 					if (pkTable != null) {
@@ -324,7 +340,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	private class UnderlyingTableInfo {
 		Table underlyingTable;
 		Map<String, String> columnMapping = new LinkedHashMap<String, String>();
-
+		Map<String, String> origColumnName = new LinkedHashMap<String, String>();
+		
 		@Override
 		public String toString() {
 			return "UnderlyingTableInfo [underlyingTable=" + underlyingTable + ", columnMapping=" + columnMapping + "]";
@@ -338,6 +355,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					String cMapped = columnMapping.get(e.getValue());
 					if (cMapped != null) {
 						newColumnMapping.put(e.getKey(), cMapped);
+						origColumnName.put(e.getKey(), u2TableInfo.origColumnName.get(e.getKey()));
 					}
 				}
 				columnMapping = newColumnMapping;
@@ -598,7 +616,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			final boolean[] isValid = new boolean[] { true };
 			final boolean[] selectExists = new boolean[] { false };
 			final UnderlyingTableInfo underlyingTableInfo = new UnderlyingTableInfo();
-			st = CCJSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(viewText));
+			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(viewText));
 			st.accept(new StatementVisitor() {
 				@Override
 				public void visit(Upsert arg0) {
@@ -633,18 +651,21 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 													}
 												}
 												underlyingTableInfo.columnMapping.put(quoting.normalizeCase(Quoting.staticUnquote(column)), quoting.normalizeCase(Quoting.staticUnquote(alias)));
+												underlyingTableInfo.origColumnName.put(quoting.normalizeCase(Quoting.staticUnquote(column)), Quoting.staticUnquote(alias));
 											}
 										}
 										@Override
 										public void visit(AllTableColumns arg0) {
 											for (Column column: columns) {
 												underlyingTableInfo.columnMapping.put(quoting.normalizeCase(Quoting.staticUnquote(column.name)), quoting.normalizeCase(Quoting.staticUnquote(column.name)));
+												underlyingTableInfo.origColumnName.put(quoting.normalizeCase(Quoting.staticUnquote(column.name)), Quoting.staticUnquote(column.name));
 											}
 										}
 										@Override
 										public void visit(AllColumns arg0) {
 											for (Column column: columns) {
 												underlyingTableInfo.columnMapping.put(quoting.normalizeCase(Quoting.staticUnquote(column.name)), quoting.normalizeCase(Quoting.staticUnquote(column.name)));
+												underlyingTableInfo.origColumnName.put(quoting.normalizeCase(Quoting.staticUnquote(column.name)), Quoting.staticUnquote(column.name));
 											}
 										}
 									});
@@ -735,6 +756,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 								plainSelect.getFromItem().accept(fromItemVisitor);
 							}
 						}
+						@Override
+						public void visit(ValuesStatement arg0) {
+							
+						}
 					});
 				}
 				@Override
@@ -790,6 +815,54 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				}
 				@Override
 				public void visit(Block arg0) {
+				}
+				@Override
+				public void visit(Comment arg0) {
+					
+				}
+				@Override
+				public void visit(CreateSchema arg0) {
+					
+				}
+				@Override
+				public void visit(ShowColumnsStatement arg0) {
+					
+				}
+				@Override
+				public void visit(ValuesStatement arg0) {
+					
+				}
+				@Override
+				public void visit(DescribeStatement arg0) {
+					
+				}
+				@Override
+				public void visit(ExplainStatement arg0) {
+					
+				}
+				@Override
+				public void visit(ShowStatement arg0) {
+					
+				}
+				@Override
+				public void visit(DeclareStatement arg0) {
+					
+				}
+				@Override
+				public void visit(Grant arg0) {
+					
+				}
+				@Override
+				public void visit(CreateSequence arg0) {
+					
+				}
+				@Override
+				public void visit(AlterSequence arg0) {
+					
+				}
+				@Override
+				public void visit(CreateFunctionalStatement arg0) {
+					
 				}
 			});
 			if (isValid[0] && selectExists[0] && underlyingTableInfo.underlyingTable != null) {
@@ -1218,6 +1291,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			defaultSchema = getDefaultSchema(session, session.getSchema());
 			_log.info("default schema is '" + defaultSchema + "'");
 		}
+		UnderlyingTableInfo uti = underlyingTableInfos.get(table.getName());
 		String schemaName = quoting.unquote(table.getOriginalSchema(defaultSchema));
 		String tableName = quoting.unquote(table.getUnqualifiedName());
 		_log.info("getting columns for " + table.getOriginalSchema(defaultSchema) + "." + tableName);
@@ -1274,6 +1348,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			column.isNullable = resultSet.getInt(11) == DatabaseMetaData.columnNullable;
 			Boolean isVirtual = null;
 			if (session.dbms.getExportBlocks().contains(sqlType)) {
+				isVirtual = true;
+			}
+			if (uti != null && !uti.columnMapping.containsKey(quoting.normalizeCase(Quoting.staticUnquote(colName)))) {
 				isVirtual = true;
 			}
 			if (isVirtual == null) {

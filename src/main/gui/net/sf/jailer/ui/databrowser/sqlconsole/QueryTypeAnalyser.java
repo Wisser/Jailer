@@ -33,14 +33,17 @@ import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.util.JSqlParserUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
+import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
+import net.sf.jsqlparser.expression.CollateExpression;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -55,6 +58,7 @@ import net.sf.jsqlparser.expression.JsonExpression;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
+import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
@@ -78,6 +82,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseRightShift;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseXor;
 import net.sf.jsqlparser.expression.operators.arithmetic.Concat;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.IntegerDivision;
 import net.sf.jsqlparser.expression.operators.arithmetic.Modulo;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
@@ -86,9 +91,11 @@ import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
+import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
@@ -98,23 +105,34 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.CreateFunctionalStatement;
+import net.sf.jsqlparser.statement.DeclareStatement;
+import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.ShowColumnsStatement;
+import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.schema.CreateSchema;
+import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
@@ -139,6 +157,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * Parses a SQL query and tries to find out the type.
@@ -165,10 +184,10 @@ public class QueryTypeAnalyser {
 	public static List<Table> getType(String sqlSelect, final MetaDataSource metaDataSource) {
 		net.sf.jsqlparser.statement.Statement st;
 		try {
-			st = CCJSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlSelect));
+			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlSelect));
 			Map<Pair<String, String>, Collection<Pair<String, String>>> equivs = new HashMap<Pair<String,String>, Collection<Pair<String,String>>>();
 			final LinkedHashMap<String, MDTable> fromClause = analyseFromClause(st, equivs, metaDataSource);
-			final List<Pair<String	, String>> selectClause = new ArrayList<Pair<String, String>>();
+			final List<Pair<String, String>> selectClause = new ArrayList<Pair<String, String>>();
 			st.accept(new DefaultStatementVisitor() {
 				@Override
 				public void visit(Select select) {
@@ -268,6 +287,11 @@ public class QueryTypeAnalyser {
 								}
 							}
 						}
+
+						@Override
+						public void visit(ValuesStatement aThis) {
+							
+						}
 					});
 				}
 			});
@@ -284,7 +308,8 @@ public class QueryTypeAnalyser {
 							columnNames.add(null);
 						}
 					}
-					Table table = createTable(theTable, tableAlias, columnNames, selectClause, equivs, metaDataSource);
+					Table origTable = metaDataSource.toTable(theTable);
+					Table table = createTable(theTable, origTable, tableAlias, columnNames, selectClause, equivs, metaDataSource);
 					if (table != null) {
 						result.add(table);
 					}
@@ -415,6 +440,11 @@ public class QueryTypeAnalyser {
 						}
 						equivs.putAll(expressionAnalyzer.getEquivs());
 					}
+
+					@Override
+					public void visit(ValuesStatement aThis) {
+						
+					}
 				});
 			}
 		});
@@ -422,10 +452,7 @@ public class QueryTypeAnalyser {
 		return result;
 	}
 
-	private static Table createTable(MDTable theTable, String tableAlias, List<String> columnNames, List<Pair<String, String>> selectClause, Map<Pair<String, String>, Collection<Pair<String, String>>> equivs, MetaDataSource metaDataSource) throws SQLException {
-//		if (theTable.getPrimaryKeyColumns().isEmpty()) {
-//			return null;
-//		}
+	private static Table createTable(MDTable theTable, Table origTable, String tableAlias, List<String> columnNames, List<Pair<String, String>> selectClause, Map<Pair<String, String>, Collection<Pair<String, String>>> equivs, MetaDataSource metaDataSource) throws SQLException {
 		for (String pk: theTable.getPrimaryKeyColumns()) {
 			if (!columnNames.contains(pk)) {
 				boolean ok = false;
@@ -464,7 +491,18 @@ public class QueryTypeAnalyser {
 		}
 		List<net.sf.jailer.datamodel.Column> columns = new ArrayList<net.sf.jailer.datamodel.Column>();
 		for (String pk: columnNames) {
-			columns.add(new net.sf.jailer.datamodel.Column(pk, "", 0, -1));
+			net.sf.jailer.datamodel.Column col = new net.sf.jailer.datamodel.Column(pk, "", 0, -1);
+			columns.add(col);
+			if (origTable != null) {
+				origTable.getColumns()
+					.stream()
+					.filter(column -> Quoting.equalsIgnoreQuotingAndCase(col.name, column.name))
+					.findFirst().ifPresent(column -> {
+						col.isVirtual = column.isVirtual;
+						col.isNullable = column.isNullable;
+						col.isIdentityColumn = column.isIdentityColumn;
+					});
+			}
 		}
 		table.setColumns(columns);
 		table.setIsArtifical(true);
@@ -823,6 +861,41 @@ public class QueryTypeAnalyser {
 			public void visit(ValueListExpression valueList) {
 				noSubexpression[0] = false;
 			}
+
+			@Override
+			public void visit(IntegerDivision division) {
+				
+			}
+
+			@Override
+			public void visit(FullTextSearch fullTextSearch) {
+				
+			}
+
+			@Override
+			public void visit(IsBooleanExpression isBooleanExpression) {
+				
+			}
+
+			@Override
+			public void visit(NextValExpression aThis) {
+				
+			}
+
+			@Override
+			public void visit(CollateExpression aThis) {
+				
+			}
+
+			@Override
+			public void visit(SimilarToExpression aThis) {
+				
+			}
+
+			@Override
+			public void visit(ArrayExpression aThis) {
+				
+			}
 		};
 	}
 
@@ -925,6 +998,66 @@ public class QueryTypeAnalyser {
 
 		@Override
 		public void visit(Block arg0) {
+		}
+
+		@Override
+		public void visit(Comment comment) {
+			
+		}
+
+		@Override
+		public void visit(CreateSchema aThis) {
+			
+		}
+
+		@Override
+		public void visit(ShowColumnsStatement set) {
+			
+		}
+
+		@Override
+		public void visit(ValuesStatement values) {
+			
+		}
+
+		@Override
+		public void visit(DescribeStatement describe) {
+			
+		}
+
+		@Override
+		public void visit(ExplainStatement aThis) {
+			
+		}
+
+		@Override
+		public void visit(ShowStatement aThis) {
+			
+		}
+
+		@Override
+		public void visit(DeclareStatement aThis) {
+		
+		}
+
+		@Override
+		public void visit(Grant grant) {
+			
+		}
+
+		@Override
+		public void visit(CreateSequence createSequence) {
+			
+		}
+
+		@Override
+		public void visit(AlterSequence alterSequence) {
+			
+		}
+
+		@Override
+		public void visit(CreateFunctionalStatement createFunctionalStatement) {
+			
 		}
 		
 	}

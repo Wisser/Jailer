@@ -31,6 +31,7 @@ import java.util.UUID;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.util.JSqlParserUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -45,24 +46,34 @@ import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.WhenClause;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Block;
 import net.sf.jsqlparser.statement.Commit;
+import net.sf.jsqlparser.statement.CreateFunctionalStatement;
+import net.sf.jsqlparser.statement.DeclareStatement;
+import net.sf.jsqlparser.statement.DescribeStatement;
+import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.ShowColumnsStatement;
+import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
+import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.schema.CreateSchema;
+import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.execute.Execute;
+import net.sf.jsqlparser.statement.grant.Grant;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.merge.Merge;
 import net.sf.jsqlparser.statement.replace.Replace;
@@ -88,6 +99,7 @@ import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * Analyzes SQL statements and proposes association definitions. <br>
@@ -140,7 +152,7 @@ public class AssociationProposer {
 		sqlStatement = SqlUtil.removeNonMeaningfulFragments(sqlStatement);
 		net.sf.jsqlparser.statement.Statement st;
 		try {
-			st = CCJSqlParserUtil.parse(sqlStatement);
+			st = JSqlParserUtil.parse(sqlStatement);
 		} catch (JSQLParserException e) {
 			String prefix = "Line " + startLineNumber + ": ";
 			if (e.getCause() instanceof ParseException) {
@@ -578,6 +590,66 @@ public class AssociationProposer {
 		@Override
 		public void visit(Block arg0) {
 			// ignore
+		}
+
+		@Override
+		public void visit(Comment comment) {
+			
+		}
+
+		@Override
+		public void visit(CreateSchema aThis) {
+			
+		}
+
+		@Override
+		public void visit(ShowColumnsStatement set) {
+			
+		}
+
+		@Override
+		public void visit(ValuesStatement values) {
+			
+		}
+
+		@Override
+		public void visit(DescribeStatement describe) {
+
+		}
+
+		@Override
+		public void visit(ExplainStatement aThis) {
+			
+		}
+
+		@Override
+		public void visit(ShowStatement aThis) {
+			
+		}
+
+		@Override
+		public void visit(DeclareStatement aThis) {
+			
+		}
+
+		@Override
+		public void visit(Grant grant) {
+			
+		}
+
+		@Override
+		public void visit(CreateSequence createSequence) {
+			
+		}
+
+		@Override
+		public void visit(AlterSequence alterSequence) {
+			
+		}
+
+		@Override
+		public void visit(CreateFunctionalStatement createFunctionalStatement) {
+			
 		}
 	}
 

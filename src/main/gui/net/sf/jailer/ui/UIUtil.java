@@ -117,6 +117,7 @@ import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 
 /**
  * Some utility methods.
@@ -192,19 +193,7 @@ public class UIUtil {
             fileChooser.setFile(selectedFile.getName());
         } else if (extension != null && extension.length() > 0) {
             if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
-                // workaround: http://bugs.java.com/view_bug.do?bug_id=8021943
-                boolean set = true;
-                Matcher m = Pattern.compile("1.7.0_(\\d+).*").matcher(System.getProperty("java.version", ""));
-                if (m.matches()) {
-                    try {
-                        set = Integer.parseInt(m.group(1)) > 40;
-                    } catch (NumberFormatException e) {
-                        // ignore;
-                    }
-                }
-                if (set) {
-                    fileChooser.setFile("*" + extension + (allowZip ? ";*" + ".zip;*" + ".gz" : ""));
-                }
+            	fileChooser.setFile("*" + extension + (allowZip ? ";*" + ".zip;*" + ".gz" : ""));
             }
         }
         FilenameFilter filter = new FilenameFilter() {
@@ -1366,6 +1355,11 @@ public class UIUtil {
 				new RSyntaxTextArea();
 			} catch (Throwable t) {
 				// ignore
+			}
+			try {
+				new CCJSqlParser("Select 1");
+			} catch (Throwable t) {
+				UIUtil.showException(null, "Error", t);
 			}
 		}
 	}

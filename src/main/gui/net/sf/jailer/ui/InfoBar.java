@@ -100,6 +100,10 @@ public class InfoBar extends JPanel {
 	public void setIcon(Icon errorIcon) {
 		iconLabel.setIcon(errorIcon);
 	}
+	
+	public void shrink() {
+		jLabel1.setVisible(false);
+	}
 
 	/**
 	 * This method is called from within the constructor to initialize the form.

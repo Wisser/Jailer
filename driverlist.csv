@@ -1,7 +1,8 @@
-PostgreSQL;jdbc:postgresql://<HOST(localhost)>[:<PORT(5432)>]/[<DATABASE>];org.postgresql.Driver;lib/postgresql-42.2.6.jre7.jar
+PostgreSQL;jdbc:postgresql://<HOST(localhost)>[:<PORT(5432)>]/[<DATABASE>];org.postgresql.Driver;lib/postgresql-42.2.16.jar
 Oracle Thin;jdbc:oracle:thin:@<HOST(localhost)>:<PORT(1521)>:<SID>;oracle.jdbc.driver.OracleDriver
 Oracle OCI;jdbc:oracle:oci:@<TNS_NAME>;oracle.jdbc.driver.OracleDriver
-MySQL;jdbc:mysql://<HOST(localhost)>:<PORT(3306)>[/<DATABASE>];org.gjt.mm.mysql.Driver;lib/mysql-connector-java-5.1.5-bin.jar
+MySQL 8;jdbc:mysql://<HOST(localhost)>:<PORT(3306)>[/<DATABASE>];com.mysql.jdbc.Driver;lib/mysql-connector-java-8.0.21.jar
+MySQL 5;jdbc:mysql://<HOST(localhost)>:<PORT(3306)>[/<DATABASE>];org.gjt.mm.mysql.Driver;lib/mysql-connector-java-5.1.5-bin.jar
 MariaDB;jdbc:mariadb://<HOST(localhost)>:<PORT(3306)>[/<DATABASE>];org.mariadb.jdbc.Driver;lib/mariadb-java-client-2.4.4.jar
 Microsoft SQL Server;jdbc:sqlserver://<HOST(localhost)>[\\<INSTANCE>][:<PORT>];com.microsoft.sqlserver.jdbc.SQLServerDriver;lib/mssql-jdbc-7.2.1.jre8.jar
 IBM Db2;jdbc:db2://<HOST(localhost)>:<PORT(50000)>/<DATABASE>;COM.ibm.db2.jdbc.app.DB2Driver

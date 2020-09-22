@@ -24,7 +24,7 @@ Jailer is a tool for database subsetting and relational data browsing.
 
 ## Prerequisites
 
- - Java JRE 7 (or above)
+ - Java JRE 8 (or above)
    Important: due to HiDPI graphics support, Java JRE 11 (or above) is strongly recommended.
  - JDBC-driver for your RDBMS
 

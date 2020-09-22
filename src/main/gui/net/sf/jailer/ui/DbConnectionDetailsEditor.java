@@ -16,13 +16,25 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.Icon;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.Timer;
 
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 
@@ -102,20 +114,38 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		this.parent = parent;
 		this.needsTest = needsTest;
 		initComponents();
+		feedbackTimer = new Timer(4000, e -> {
+			feedbackLabel.setText(" ");
+		});
+		feedbackTimer.setRepeats(false);
+		textFields = new JTextField[] {
+	    		alias,
+	    		jar1,
+	    		jar2,
+	    		jar3,
+	    		jar4,
+	    		driverClass,
+	    		dbUrl,
+	    		user
+	    };
 		if (needsTest) {
 			testConnectionButton.setVisible(false);
 		} else {
 			selectConnectionButton.setVisible(false);
 		}
+		InfoBar theInfoBar = null;
 		if (infoBar != null) {
-			UIUtil.replace(infoBarLabel, infoBar);
+			UIUtil.replace(infoBarLabel, theInfoBar = infoBar);
 		} else if (forNew) {
-			UIUtil.replace(infoBarLabel, new InfoBar("New Connection",
+			UIUtil.replace(infoBarLabel, theInfoBar = new InfoBar("New Connection",
 					"Enter connection credentials for the database.\n" +
 					"Replace placeholders (\"<...>\") with appropriate URL parameters.", null));
 		} else {
-			UIUtil.replace(infoBarLabel, new InfoBar("Edit Connection",
+			UIUtil.replace(infoBarLabel, theInfoBar = new InfoBar("Edit Connection",
 					"Edit connection credentials for the database.", null));
+		}
+		if (theInfoBar != null) {
+			theInfoBar.shrink();
 		}
 		loadButton1.addActionListener(new java.awt.event.ActionListener() {
 			@Override
@@ -179,6 +209,18 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton2.setIcon(loadIcon);
 		loadButton3.setIcon(loadIcon);
 		loadButton4.setIcon(loadIcon);
+		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+				alias.grabFocus();
+			}
+			@Override
+			public void windowClosed(WindowEvent e) {
+				feedbackTimer.stop();
+			}
+		});
+		
 		pack();
 		setSize(Math.max(570, getWidth()), getHeight());
 		if (parent != null) {
@@ -222,7 +264,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         password = new javax.swing.JPasswordField();
         helpjdbc = new javax.swing.JLabel();
         alias = new javax.swing.JTextField();
-        infoBarLabel = new javax.swing.JLabel();
         loadButton1 = new javax.swing.JButton();
         loadButton2 = new javax.swing.JButton();
         jar3 = new javax.swing.JTextField();
@@ -231,6 +272,14 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jLabel12 = new javax.swing.JLabel();
         loadButton3 = new javax.swing.JButton();
         loadButton4 = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        infoBarLabel = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        exportCBButton = new javax.swing.JButton();
+        importCBButton = new javax.swing.JButton();
+        feedbackLabel = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Database Connection");
@@ -407,7 +456,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 80;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weighty = 1.0;
         jPanel1.add(password, gridBagConstraints);
 
         helpjdbc.setText("help");
@@ -423,15 +471,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(alias, gridBagConstraints);
-
-        infoBarLabel.setText("info bar");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 11;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        jPanel1.add(infoBarLabel, gridBagConstraints);
 
         loadButton1.setText(" Browse..");
         loadButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -502,6 +541,88 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 42;
         jPanel1.add(loadButton4, gridBagConstraints);
+
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        infoBarLabel.setText("info bar");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        jPanel4.add(infoBarLabel, gridBagConstraints);
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        exportCBButton.setText("Copy credentials");
+        exportCBButton.setToolTipText("Copy credentials to clipboard");
+        exportCBButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportCBButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel5.add(exportCBButton, gridBagConstraints);
+
+        importCBButton.setText("Paste credentials");
+        importCBButton.setToolTipText("Paste credentials from clipboard");
+        importCBButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importCBButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel5.add(importCBButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        jPanel3.add(jPanel5, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 4);
+        jPanel4.add(jPanel3, gridBagConstraints);
+
+        feedbackLabel.setFont(feedbackLabel.getFont().deriveFont((feedbackLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
+        feedbackLabel.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 8);
+        jPanel4.add(feedbackLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jPanel4, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 16, 0);
+        jPanel1.add(jSeparator1, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -585,7 +706,54 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         onSelect();
     }//GEN-LAST:event_selectConnectionButtonActionPerformed
 
-    protected void onSelect() {
+    private final static String[] SEPARATORS = new String[] { "|", ";", ",", "#", "*", "~", "!", "-" };
+	
+    private void exportCBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportCBButtonActionPerformed
+    	try {
+        	Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        	String content;
+        	String rawContent = Arrays.stream(textFields).map(field -> field.getText()).collect(Collectors.joining());
+        	String separator = Arrays.stream(SEPARATORS).filter(sep -> !rawContent.contains(sep)).findAny().orElseGet(() -> null);
+        	if (separator != null) {
+        		content = separator + Arrays.stream(textFields).map(field -> field.getText()).collect(Collectors.joining(separator)) + separator;
+        		StringSelection contents = new StringSelection(content);
+        		clipboard.setContents(contents, contents);
+        		showFeedback("credentials copied to clipboard");
+        		return;
+        	}
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+		Toolkit.getDefaultToolkit().beep();
+    }//GEN-LAST:event_exportCBButtonActionPerformed
+
+    private void importCBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importCBButtonActionPerformed
+    	String content = null;
+    	try {
+    		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    		Transferable contents = clipboard.getContents(this);
+    		if (contents != null) {
+    			content = contents.getTransferData(DataFlavor.stringFlavor).toString().trim();
+    			if (content.length() > 1
+    					&& content.substring(0, 1).equals(content.substring(content.length() - 1))
+    					&& Arrays.asList(SEPARATORS).contains(content.substring(0, 1))) {
+    				String separator = content.substring(0, 1);
+    				content = content.substring(1);
+    				String[] fields = content.split(Pattern.quote(separator));
+    				for (int i = 0; i < textFields.length && i < fields.length; ++i) {
+    					textFields[i].setText(fields[i]);
+    				}
+    				showFeedback("credentials taken from clipboard");
+            		return;
+    			}
+    		}
+    	} catch (Exception e) {
+    		// ignore
+    	}
+    	Toolkit.getDefaultToolkit().beep();
+    }//GEN-LAST:event_importCBButtonActionPerformed
+
+	protected void onSelect() {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -593,7 +761,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JButton cancelButton;
     public javax.swing.JTextField dbUrl;
     public javax.swing.JTextField driverClass;
+    private javax.swing.JButton exportCBButton;
+    private javax.swing.JLabel feedbackLabel;
     private javax.swing.JLabel helpjdbc;
+    private javax.swing.JButton importCBButton;
     private javax.swing.JLabel infoBarLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -609,6 +780,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField jar1;
     private javax.swing.JTextField jar2;
     private javax.swing.JTextField jar3;
@@ -624,6 +799,15 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     public javax.swing.JTextField user;
     // End of variables declaration//GEN-END:variables
 
+    private final Timer feedbackTimer;
+    
+    private void showFeedback(String message) {
+		feedbackLabel.setText(message);
+		feedbackTimer.restart();
+	}
+
+    private javax.swing.JTextField[] textFields;
+    
 	private Icon helpIcon;
 	private Icon loadIcon;
 	{

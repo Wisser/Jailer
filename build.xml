@@ -39,7 +39,7 @@ available targets:
 	<target name="compile-engine" depends="clean">
 		<delete file="${JAR-ENGINE}" />
 		<mkdir dir="${COMPILE_DIR}" />
-		<javac source="1.7" target="1.7" destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/engine" debug="on" deprecation="off" encoding="ISO-8859-1">
+		<javac source="1.8" target="1.8" destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/engine" debug="on" deprecation="off" encoding="ISO-8859-1">
 			<classpath>
 				<path refid="default.classpath" />
 			</classpath>
@@ -65,7 +65,7 @@ available targets:
 	<target name="compile-gui" depends="compile-engine">
 		<delete file="${JAR}" />
 		<mkdir dir="${COMPILE_DIR}" />
-		<javac source="1.7" target="1.7" destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/gui" debug="on" deprecation="off" encoding="ISO-8859-1">
+		<javac source="1.8" target="1.8" destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/gui" debug="on" deprecation="off" encoding="ISO-8859-1">
 			<classpath>
 				<path refid="default.classpath" />
 			</classpath>
@@ -91,7 +91,7 @@ available targets:
 		<jar destfile="${JAR}" basedir="${COMPILE_DIR}">
 			<manifest>
 				<attribute name="Main-Class" value="net.sf.jailer.ui.ExtractionModelFrame" />
-				<attribute name="Class-Path" value="lib/activation-1.0.2.jar lib/jaxb-core-2.3.0-b170127.1453.jar lib/jaxb-impl-2.3.0-b170127.1453.jar lib/jaxb-api-2.3.0-b170201.1204.jar lib/prefuse.jar config/ lib/log4j.jar lib/args4j.jar lib/sdoc-0.5.0-beta.jar lib/jsqlparser-1.3.jar lib/tablefilter-swing-5.3.1.jar" />
+				<attribute name="Class-Path" value="lib/activation-1.0.2.jar lib/jaxb-core-2.3.0-b170127.1453.jar lib/jaxb-impl-2.3.0-b170127.1453.jar lib/jaxb-api-2.3.0-b170201.1204.jar lib/prefuse.jar config/ lib/log4j.jar lib/args4j.jar lib/sdoc-0.5.0-beta.jar lib/jsqlparser-3.2.jar lib/tablefilter-swing-5.3.1.jar" />
 			</manifest>
 		</jar>
 		<copy todir=".">
@@ -119,7 +119,7 @@ available targets:
 
 	<target name="compile-test" depends="compile-engine">
 		<mkdir dir="${TEST_DIR}" />
-		<javac source="1.7" target="1.7" destdir="${TEST_DIR}" srcdir="${SRC_DIR}/test" debug="on" deprecation="off" encoding="ISO-8859-1">
+		<javac source="1.8" target="1.8" destdir="${TEST_DIR}" srcdir="${SRC_DIR}/test" debug="on" deprecation="off" encoding="ISO-8859-1">
 			<classpath>
 				<path refid="test.classpath" />
 			</classpath>

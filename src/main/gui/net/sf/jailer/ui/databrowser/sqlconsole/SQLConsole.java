@@ -96,6 +96,7 @@ import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
@@ -808,11 +809,24 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
                 Table resultType = null;
                 if (nfResultTypes != null && !nfResultTypes.isEmpty()) {
-                    if (nfResultTypes.size() == 1) {
+                	int columnCount = metaData.getColumnCount();
+                	List<Column> columnsT0 = nfResultTypes.get(0).getColumns();
+                	boolean multiTabResult = false;
+                    for (int ti = 1; ti < nfResultTypes.size() && !multiTabResult; ++ti) {
+                		List<Column> columns = nfResultTypes.get(ti).getColumns();
+                		for (int i = 0; i < columns.size(); ++i) {
+                    		Column column = columns.get(i);
+                    		if (column.name != null && columnsT0.get(i).name == null) {
+                    			multiTabResult = true;
+                    			break;
+                    		}
+                    	}
+                	}
+                	
+                    if (nfResultTypes.size() == 1 || !multiTabResult) {
                         resultType = nfResultTypes.get(0);
                     }
-					int columnCount = metaData.getColumnCount();
-                    for (Table table: nfResultTypes) {
+					for (Table table: nfResultTypes) {
                         while (table.getColumns().size() < columnCount) {
                             table.getColumns().add(new net.sf.jailer.datamodel.Column(null, "", 0, -1));
                         }
@@ -2455,5 +2469,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         cancelIcon = UIUtil.readImage("/Cancel.png");
         explainIcon = UIUtil.readImage("/explain.png");
     }
+
+    // TODO automatically generated SQL statements from Desktop like: 
+    // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
+    // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
 }

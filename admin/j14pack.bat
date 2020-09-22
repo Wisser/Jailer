@@ -49,7 +49,7 @@ mv c:\tmp\_\jdbc_lib\args4j.jar c:\tmp\_\lib\args4j.jar
 mv c:\tmp\_\jdbc_lib\jaxb-api-2.3.0-b170201.1204.jar c:\tmp\_\lib\jaxb-api-2.3.0-b170201.1204.jar
 mv c:\tmp\_\jdbc_lib\jaxb-core-2.3.0-b170127.1453.jar c:\tmp\_\lib\jaxb-core-2.3.0-b170127.1453.jar
 mv c:\tmp\_\jdbc_lib\jaxb-impl-2.3.0-b170127.1453.jar c:\tmp\_\lib\jaxb-impl-2.3.0-b170127.1453.jar
-mv c:\tmp\_\jdbc_lib\jsqlparser-1.3.jar c:\tmp\_\lib\jsqlparser-1.3.jar
+mv c:\tmp\_\jdbc_lib\jsqlparser-3.2.jar c:\tmp\_\lib\jsqlparser-3.2.jar
 mv c:\tmp\_\jdbc_lib\log4j.jar c:\tmp\_\lib\log4j.jar
 mv c:\tmp\_\jdbc_lib\prefuse.jar c:\tmp\_\lib\prefuse.jar
 mv c:\tmp\_\jdbc_lib\sdoc-0.5.0-beta.jar c:\tmp\_\lib\sdoc-0.5.0-beta.jar

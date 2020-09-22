@@ -30,6 +30,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Random;
 
+import javax.swing.JOptionPane;
+
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.render.HtmlDataModelRenderer;
@@ -183,7 +185,10 @@ public class Environment {
 		    try {
 		        super.dispatchEvent(newEvent);
 		    } catch (Throwable t) {
-		        if (activeCD > 0) {
+		    	if (t instanceof OutOfMemoryError) {
+	        		JOptionPane.showMessageDialog(null, "Out of memory!" + (t.getMessage() != null? " (" + t.getMessage() + ")" : ""), "Error", JOptionPane.ERROR_MESSAGE);
+	        	}
+	        	if (activeCD > 0) {
 		        	--activeCD;
 		        	try {
 		        		UIUtil.showException(null, "Error", t, "AWT");

@@ -101,21 +101,15 @@ public abstract class PrimaryKeyValidator {
 				jobListToAddTo = jobsUDPK;
 			}
 
-			jobListToAddTo.add(new JobManager.Job() {
-				@Override
-				public void run() throws SQLException {
-					checkUniqueness(session, table, Quoting.getQuoting(session));
-					numDone.getAndIncrement();
-					updateProgressBar();
-				}
+			jobListToAddTo.add(() -> {
+				checkUniqueness(session, table, Quoting.getQuoting(session));
+				numDone.getAndIncrement();
+				updateProgressBar();
 			});
-			jobListToAddTo.add(new JobManager.Job() {
-				@Override
-				public void run() throws SQLException {
-					checkNoNull(session, table, Quoting.getQuoting(session));
-					numDone.getAndIncrement();
-					updateProgressBar();
-				}
+			jobListToAddTo.add(() -> {
+				checkNoNull(session, table, Quoting.getQuoting(session));
+				numDone.getAndIncrement();
+				updateProgressBar();
 			});
 		}
 
