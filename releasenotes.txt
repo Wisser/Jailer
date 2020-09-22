@@ -1,3 +1,7 @@
+10.0
+  - Java 7 support was dropped in favor of reduced development overheads.
+  - Third party libraries and JDBC drivers have been upgraded accordingly.
+
 9.5.6
   - New CLI tool for printing the closure of subject tables.
     https://github.com/Wisser/Jailer/issues/34
