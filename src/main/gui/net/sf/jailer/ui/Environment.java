@@ -48,6 +48,12 @@ public class Environment {
 	private static File home = null;
 
 	public static void init() {
+		// see:
+		// https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
+		// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8215200
+		// https://bugs.openjdk.java.net/browse/JDK-8215200
+		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+
 		initUI();
 		try {
 			File app;
@@ -69,12 +75,6 @@ public class Environment {
 		} catch (Throwable t) {
 			// ignore
 		}
-
-		// see:
-		// https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
-		// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8215200
-		// https://bugs.openjdk.java.net/browse/JDK-8215200
-		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
 		if (new File(".singleuser").exists() // legacy
 				|| new File(".multiuser").exists()
