@@ -23,4 +23,4 @@ set CP=%CP%;%LIB%\jsqlparser-3.2.jar
 set CP=%CP%;%LIB%\tablefilter-swing-5.3.1.jar
 set CP=%CP%;jailer.jar
 
-start javaw -Xmx1024M -cp %CP% net.sf.jailer.ui.databrowser.DataBrowser %*
+start javaw -Xmx1024M -Djava.util.Arrays.useLegacyMergeSort=true -cp %CP% net.sf.jailer.ui.databrowser.DataBrowser %*
