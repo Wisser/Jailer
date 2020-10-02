@@ -27,5 +27,5 @@ CP=$CP:jailer.jar
 
 # echo $CP
 
-java -Xmx1200M -cp $CP net.sf.jailer.ui.ExtractionModelFrame "$@"
+java -Xmx1200M -Djava.util.Arrays.useLegacyMergeSort=true -cp $CP net.sf.jailer.ui.ExtractionModelFrame "$@"
 
