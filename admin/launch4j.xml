@@ -37,5 +37,6 @@
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64/32</runtimeBits>
     <maxHeapSize>1200</maxHeapSize>
+    <opt>-Djava.util.Arrays.useLegacyMergeSort=true</opt>
   </jre>
 </launch4jConfig>
