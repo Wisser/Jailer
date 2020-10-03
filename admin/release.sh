@@ -1,9 +1,7 @@
 rm -rf ~/tmp/jailer*
-rm -rf ~/tmp/dbeauty*
 rm -rf ~/tmp/$1
 rm -rf ~/tmp/$1.co
 mkdir C:/tmp/jailer
-mkdir C:/tmp/dbeauty
 mkdir ~/tmp/jailer
 mkdir ~/tmp/$1
 mkdir ~/tmp/$1.co
@@ -31,21 +29,6 @@ makensis tmp.nsi
 cd ..
 rm admin/tmp.nsi
 
-rm -rf C:/tmp/dbeauty
-cp -r . C:/tmp/dbeauty/
-rm -rf C:/tmp/dbeauty/admin
-
-sed s/%VERSION%/$1/g admin/dbeauty.nsi > admin/tmp.nsi
-cd admin
-makensis tmp.nsi
-
-cd ..
-rm admin/tmp.nsi
-
-sed s/%VERSION%/$1/g admin/Jailer.nsi > admin/tmp.nsi
-makensis admin/tmp.nsi
-rm admin/tmp.nsi
-
 mv admin/*nstall* ..
 
 dos2unix *.sh
@@ -57,8 +40,6 @@ rm -rf admin
 cd ..
 rm $1.zip
 zip -r jailer_$1.zip jailer
-cp -r jailer dbeauty
-zip -r dbeauty_$1.zip dbeauty 
 
 # Web upload
 # cd docs

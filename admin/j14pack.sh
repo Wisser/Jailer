@@ -8,9 +8,6 @@ cp -r bookmark ~/tmp/_
 cp -r build.xml ~/tmp/_
 cp -r config ~/tmp/_
 cp -r datamodel ~/tmp/_
-cp -r dbeauty.bat ~/tmp/_
-cp -r dbeauty.exe ~/tmp/_
-cp -r dbeauty.sh ~/tmp/_
 cp -r demo-sakila-1.4.mv.db ~/tmp/_
 cp -r demo-scott-1.4.mv.db ~/tmp/_
 cp -r demo-scott-subset-1.4.mv.db ~/tmp/_

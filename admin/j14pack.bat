@@ -9,9 +9,6 @@ cp -r bookmark c:\tmp\_
 cp -r build.xml c:\tmp\_
 cp -r config c:\tmp\_
 cp -r datamodel c:\tmp\_
-cp -r dbeauty.bat c:\tmp\_
-cp -r dbeauty.exe c:\tmp\_
-cp -r dbeauty.sh c:\tmp\_
 cp -r demo-sakila-1.4.mv.db c:\tmp\_
 cp -r demo-scott-1.4.mv.db c:\tmp\_
 cp -r demo-scott-subset-1.4.mv.db c:\tmp\_

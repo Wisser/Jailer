@@ -8,11 +8,8 @@ for filename in *.zip; do
 	mkdir ~/_
 	unzip $filename -d ~/_ > /dev/null
 	chmod a+x ~/_/jailer/*.sh
-	chmod a+x ~/_/dbeauty/*.sh
 	chmod a+x ~/_/jailer/*.bat
-	chmod a+x ~/_/dbeauty/*.bat
 	chmod a+x ~/_/jailer/*.exe
-	chmod a+x ~/_/dbeauty/*.exe
 	cd ~/_
 	zip -r $dir/result/$filename *
 	cd $dir
