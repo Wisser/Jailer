@@ -206,7 +206,7 @@ public class XmlUtil {
 		} else if (node instanceof Element) {
 			if (NS_URI.equals(node.getNamespaceURI()) && ASSOCIATION_TAG.equals(node.getLocalName()) && node.getTextContent() != null) {
 				visitor.visitAssociationElement(((Element) node).getTextContent().trim());
-			} else if (node instanceof Element) {
+			} else {
 				Element e = (Element) node;
 				NamedNodeMap attr = e.getAttributes();
 				String[] aNames = new String[0];

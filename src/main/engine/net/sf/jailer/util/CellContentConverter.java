@@ -272,10 +272,7 @@ public class CellContentConverter {
 		}
 		@Override
 		public int compareTo(SQLExpressionWrapper o) {
-			if (o instanceof SQLExpressionWrapper) {
-				return toString().compareTo(o.toString());
-			}
-			return 0;
+			return toString().compareTo(o.toString());
 		}
 	}
 
@@ -327,10 +324,7 @@ public class CellContentConverter {
 		}
 		@Override
 		public int compareTo(PObjectWrapper o) {
-			if (o instanceof PObjectWrapper) {
-				return toString().compareTo(o.toString());
-			}
-			return 0;
+			return toString().compareTo(o.toString());
 		}
 	}
 
@@ -368,10 +362,7 @@ public class CellContentConverter {
 		}
 		@Override
 		public int compareTo(NCharWrapper o) {
-			if (o instanceof NCharWrapper) {
-				return toString().compareTo(o.toString());
-			}
-			return 0;
+			return toString().compareTo(o.toString());
 		}
 	}
 
