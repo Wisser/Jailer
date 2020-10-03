@@ -138,9 +138,10 @@ public class Environment {
 		}
 		int stateOffset = 100;
 		state = (new File(".singleuser").exists() ? 1 : 0) // legacy
-				+ (new File(".multiuser").exists() ? 2 : 0) + (new File("..", "dbeauty").exists() ? 4 : 0)
-				+ (isJPacked() ? 1000 : 0)
+				+ (new File(".multiuser").exists() ? 2 : 0)
+				// + 4 no longer used
 				+ (!testCreateTempFile() ? 8 : 0)
+				+ (isJPacked() ? 1000 : 0)
 				+ stateOffset;
 		AWTWatchdog.start();
 		LogUtil.setWarn(new LogUtil.Warn() {
