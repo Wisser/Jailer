@@ -27,7 +27,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -35,8 +39,14 @@ import javax.swing.Icon;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.Timer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.util.ConcurrentTaskControl;
+import net.sf.jailer.ui.util.HttpDownload;
+import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.CsvFile.Line;
 
 /**
  * "Connect with DB" dialog.
@@ -104,6 +114,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	}
 
 	private final Window parent;
+	private List<Line> driverlist;
 	
 	/** Creates new form DbConnectionDialog 
 	 * @param forNew 
@@ -128,6 +139,32 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	    		dbUrl,
 	    		user
 	    };
+		try {
+			CsvFile drivers = new CsvFile(Environment.newWorkingFolderFile("driverlist.csv"));
+			driverlist = new ArrayList<Line>(drivers.getLines());
+		} catch (Throwable t) {
+			driverlist = null;
+		}
+		
+		Arrays.asList(jar1, jar2, jar3, jar4, dbUrl).forEach(f -> f.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				check();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				check();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				check();
+			}
+			private void check() {
+				List<String> driverURLs = retrieveDriverURLs(driverlist);
+				downloadButton.setEnabled(driverURLs != null
+						&& Arrays.asList(jar1, jar2, jar3, jar4).stream().allMatch(f -> f.getText().trim().isEmpty()));
+			}
+		}));
 		if (needsTest) {
 			testConnectionButton.setVisible(false);
 		} else {
@@ -212,8 +249,41 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
-			public void windowOpened(WindowEvent e) {
+			public void windowOpened(WindowEvent evt) {
 				alias.grabFocus();
+				UIUtil.invokeLater(4, () -> {
+					List<String> driverURLs = retrieveDriverURLs(driverlist);
+					if (forNew && driverURLs != null && downloadButton.isEnabled() && driverURLs.stream().allMatch(
+							url -> {
+								try {
+									return new File(Environment.newFile(HttpDownload.DOWNLOADFOLDER), HttpDownload.toFileName(new URL(url))).exists();
+								} catch (Exception e) {
+									return false;
+								}
+							})) {
+						UIUtil.invokeLater(() -> {
+							List<String> files = driverURLs.stream().map(url -> {
+								try {
+									return new File(Environment.newFile(HttpDownload.DOWNLOADFOLDER), HttpDownload.toFileName(new URL(url))).getAbsolutePath();
+								} catch (Exception e) {
+									return "";
+								}
+							}).collect(Collectors.toList());
+							if (files.size() > 0) {
+								jar1.setText(files.get(0));
+							}
+							if (files.size() > 1) {
+								jar2.setText(files.get(1));
+							}
+							if (files.size() > 2) {
+								jar3.setText(files.get(2));
+							}
+							if (files.size() > 3) {
+								jar4.setText(files.get(3));
+							}
+						});
+					}
+				});
 			}
 			@Override
 			public void windowClosed(WindowEvent e) {
@@ -230,6 +300,17 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		}
 		UIUtil.initPeer();
 	 }
+
+	protected List<String> retrieveDriverURLs(List<Line> driverlist) {
+		if (driverlist != null) {
+			String url = dbUrl.getText().trim().replaceAll("^(\\w+:\\w+:).*", "$1");
+			Line line = driverlist.stream().filter(l -> l.cells.get(1).startsWith(url)).findFirst().orElse(null);
+			if (line != null && !line.cells.get(4).isEmpty()) {
+				return new ArrayList<String>(Arrays.asList(line.cells.get(4).split("\\s+")));
+			}
+		}
+		return null;
+	}
 
 	/** This method is called from within the constructor to
 	 * initialize the form.
@@ -280,6 +361,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         importCBButton = new javax.swing.JButton();
         feedbackLabel = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
+        downloadButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Database Connection");
@@ -624,6 +706,20 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 16, 0);
         jPanel1.add(jSeparator1, gridBagConstraints);
 
+        downloadButton.setText("Download Driver");
+        downloadButton.setEnabled(false);
+        downloadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                downloadButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 44;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel1.add(downloadButton, gridBagConstraints);
+
         getContentPane().add(jPanel1, "card2");
 
         pack();
@@ -753,6 +849,86 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     	Toolkit.getDefaultToolkit().beep();
     }//GEN-LAST:event_importCBButtonActionPerformed
 
+	private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
+    	List<String> driverURLs = retrieveDriverURLs(driverlist);
+		if (driverURLs != null) {
+			final List<String> files;
+			final Object LOCK = new Object();
+			synchronized (LOCK) {
+				files = new ArrayList<String>();
+			}
+			
+			AtomicBoolean ok = new AtomicBoolean(true);
+			
+			@SuppressWarnings("serial")
+			final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(
+					this, "Downloading Driver") {
+
+				@Override
+				protected void onError(Throwable error) {
+					UIUtil.showException(this, "Error", error);
+					ok.set(false);
+					closeWindow();
+				}
+
+				@Override
+				protected void onCancellation() {
+					ok.set(false);
+					closeWindow();
+				}
+			};
+
+			ConcurrentTaskControl.openInModalDialog(this, concurrentTaskControl, 
+					new ConcurrentTaskControl.Task() {
+				@Override
+				public void run() throws Throwable {
+					long[] total = { 0 };
+					driverURLs.forEach(url -> {
+						try {
+							String result = HttpDownload.get(url, vol -> {
+								UIUtil.invokeLater(() -> {
+									total[0] += vol;
+									concurrentTaskControl.master.infoLabel.setText("Downloading... (" + total[0] / 1024 + "k)");
+								});
+							});
+							if (result.length() == 0) {
+								throw new RuntimeException("cannot download \"" + url + "\"");
+							}
+							synchronized (LOCK) {
+								files.add(result.toString());
+							}
+						} catch (Throwable t) {
+							throw new RuntimeException("cannot download \"" + url + "\"", t);
+						}
+					});
+
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							if (ok.get()) {
+								synchronized (LOCK) {
+									if (files.size() > 0) {
+										jar1.setText(files.get(0));
+									}
+									if (files.size() > 1) {
+										jar2.setText(files.get(1));
+									}
+									if (files.size() > 2) {
+										jar3.setText(files.get(2));
+									}
+									if (files.size() > 3) {
+										jar4.setText(files.get(3));
+									}
+								}
+							}
+							concurrentTaskControl.closeWindow();
+						}
+					});
+				}
+			}, "Downloading Driver");
+		}
+    }//GEN-LAST:event_downloadButtonActionPerformed
+
 	protected void onSelect() {
 	}
 
@@ -760,6 +936,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     public javax.swing.JTextField alias;
     private javax.swing.JButton cancelButton;
     public javax.swing.JTextField dbUrl;
+    private javax.swing.JButton downloadButton;
     public javax.swing.JTextField driverClass;
     private javax.swing.JButton exportCBButton;
     private javax.swing.JLabel feedbackLabel;
