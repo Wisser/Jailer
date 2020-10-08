@@ -23,6 +23,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -32,12 +33,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -163,6 +167,9 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 				List<String> driverURLs = retrieveDriverURLs(driverlist);
 				downloadButton.setEnabled(driverURLs != null
 						&& Arrays.asList(jar1, jar2, jar3, jar4).stream().allMatch(f -> f.getText().trim().isEmpty()));
+				downloadButton.setToolTipText(driverURLs == null? null :
+					driverURLs.stream().collect(Collectors.joining("<br>", "<html>", "</html>"))
+					);
 			}
 		}));
 		if (needsTest) {
@@ -270,16 +277,16 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 								}
 							}).collect(Collectors.toList());
 							if (files.size() > 0) {
-								jar1.setText(files.get(0));
+								jar1.setText(toRelFileName(files.get(0)));
 							}
 							if (files.size() > 1) {
-								jar2.setText(files.get(1));
+								jar2.setText(toRelFileName(files.get(1)));
 							}
 							if (files.size() > 2) {
-								jar3.setText(files.get(2));
+								jar3.setText(toRelFileName(files.get(2)));
 							}
 							if (files.size() > 3) {
-								jar4.setText(files.get(3));
+								jar4.setText(toRelFileName(files.get(3)));
 							}
 						});
 					}
@@ -326,7 +333,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
@@ -362,6 +368,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         feedbackLabel = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         downloadButton = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JSeparator();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Database Connection");
@@ -394,12 +401,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 15;
         jPanel1.add(jLabel4, gridBagConstraints);
-
-        jLabel5.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 45;
-        jPanel1.add(jLabel5, gridBagConstraints);
 
         jLabel6.setText(" Driver-Class");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -640,7 +641,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
-        exportCBButton.setText("Copy credentials");
+        exportCBButton.setText("Copy Credentials");
         exportCBButton.setToolTipText("Copy credentials to clipboard");
         exportCBButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -654,7 +655,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel5.add(exportCBButton, gridBagConstraints);
 
-        importCBButton.setText("Paste credentials");
+        importCBButton.setText("Paste Credentials");
         importCBButton.setToolTipText("Paste credentials from clipboard");
         importCBButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -718,7 +719,15 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 44;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(downloadButton, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 46;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 16, 0);
+        jPanel1.add(jSeparator2, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -728,7 +737,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     	if (fillConnectionInfo()) {
     		if (needsTest) {
-    			if (!DbConnectionDialog.testConnection(isVisible()? this : parent, ci)) {
+    			if (!DbConnectionDialog.testConnection(isVisible()? this : parent, ci, createDownloadButton())) {
     				return;
     			}
     		}
@@ -779,12 +788,32 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		ConnectionInfo oldCi = new ConnectionInfo();
 		oldCi.assign(ci);
 		if (fillConnectionInfo()) {
-			if (DbConnectionDialog.testConnection(isVisible()? this : parent, ci)) {
+			if (DbConnectionDialog.testConnection(isVisible()? this : parent, ci, createDownloadButton())) {
 				JOptionPane.showMessageDialog(isVisible()? this : parent, "Successfully established connection.", "Connected", JOptionPane.INFORMATION_MESSAGE);
 			}
 			ci.assign(oldCi);
 		}
 	}//GEN-LAST:event_testConnectionButtonActionPerformed
+
+	private JButton createDownloadButton() {
+		JButton button = null;
+		if (downloadButton.isEnabled()) {
+			JButton finalButton = new JButton("Download Driver");
+			button = finalButton;
+			button.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Window window = SwingUtilities.getWindowAncestor(finalButton);
+					if (window != null) {
+						window.setVisible(false);
+						window.dispose();
+					}
+					downloadButton.doClick();
+				}
+			});
+		}
+		return button;
+	}
 
 	private void loadButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButton1ActionPerformed
 	}//GEN-LAST:event_loadButton1ActionPerformed
@@ -859,10 +888,15 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 			
 			AtomicBoolean ok = new AtomicBoolean(true);
+			Function<Long, String> updateInfo = total -> {
+				String text = "<html><b>Downloading... " + (total > 0? "(" + total / 1024 + "K)" : "") + "</b><br>"
+						+ driverURLs.stream().collect(Collectors.joining("<br>")) + "</html>";
+				return text;
+			};
 			
 			@SuppressWarnings("serial")
 			final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(
-					this, "Downloading Driver") {
+					this, updateInfo.apply(0L)) {
 
 				@Override
 				protected void onError(Throwable error) {
@@ -877,7 +911,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					closeWindow();
 				}
 			};
-
+			
 			ConcurrentTaskControl.openInModalDialog(this, concurrentTaskControl, 
 					new ConcurrentTaskControl.Task() {
 				@Override
@@ -886,9 +920,9 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					driverURLs.forEach(url -> {
 						try {
 							String result = HttpDownload.get(url, vol -> {
+								String text = updateInfo.apply(total[0] += vol);
 								UIUtil.invokeLater(() -> {
-									total[0] += vol;
-									concurrentTaskControl.master.infoLabel.setText("Downloading... (" + total[0] / 1024 + "k)");
+									concurrentTaskControl.master.infoLabel.setText(text);
 								});
 							});
 							if (result.length() == 0) {
@@ -908,16 +942,16 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 							if (ok.get()) {
 								synchronized (LOCK) {
 									if (files.size() > 0) {
-										jar1.setText(files.get(0));
+										jar1.setText(toRelFileName(files.get(0)));
 									}
 									if (files.size() > 1) {
-										jar2.setText(files.get(1));
+										jar2.setText(toRelFileName(files.get(1)));
 									}
 									if (files.size() > 2) {
-										jar3.setText(files.get(2));
+										jar3.setText(toRelFileName(files.get(2)));
 									}
 									if (files.size() > 3) {
-										jar4.setText(files.get(3));
+										jar4.setText(toRelFileName(files.get(3)));
 									}
 								}
 							}
@@ -928,6 +962,26 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}, "Downloading Driver");
 		}
     }//GEN-LAST:event_downloadButtonActionPerformed
+
+	private String toRelFileName(final String fileName) {
+		try {
+            File f = new File(fileName);
+            String work = new File(".").getCanonicalPath();
+            if (f.getCanonicalPath().startsWith(work)) {
+                String fn = f.getName();
+                f = f.getParentFile();
+                while (f != null && !f.getCanonicalPath().equals(work)) {
+                    fn = f.getName() + File.separator + fn;
+                    f = f.getParentFile();
+                }
+                return fn;
+            } else {
+                return fileName;
+            }
+		} catch (Throwable t) {
+			return fileName;
+		}
+	}
 
 	protected void onSelect() {
 	}
@@ -950,7 +1004,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -961,6 +1014,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextField jar1;
     private javax.swing.JTextField jar2;
     private javax.swing.JTextField jar3;

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -202,14 +203,24 @@ public class BasicDataSource implements DataSource {
 
 	private static Set<String> registeredDriverClassNames = new HashSet<String>();
 	
+	private DriverShim currentDriver;
+	private static Map<Class<Driver>, DriverShim> drivers = new IdentityHashMap<Class<Driver>, BasicDataSource.DriverShim>();
+	
 	private void loadDriver(URL[] jdbcDriverURL) {
 		ClassLoader classLoaderForJdbcDriver = addJarToClasspath(jdbcDriverURL);
 		try {
 			if (classLoaderForJdbcDriver != null) {
-				Driver d;
 				try {
-					d = (Driver) Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();
-					DriverManager.registerDriver(new DriverShim(d));
+					@SuppressWarnings("unchecked")
+					Class<Driver> driverClass = (Class<Driver>) Class.forName(driverClassName, true, classLoaderForJdbcDriver);
+					synchronized (drivers) {
+						currentDriver = drivers.get(driverClass);
+						if (currentDriver == null) {
+							currentDriver = new DriverShim((Driver) driverClass.newInstance());
+							drivers.put(driverClass, currentDriver);
+						}
+					}
+					DriverManager.registerDriver(currentDriver);
 					registeredDriverClassNames.add(driverClassName);
 				} catch (InstantiationException e) {
 					throw new RuntimeException(e);
@@ -349,14 +360,38 @@ public class BasicDataSource implements DataSource {
 				 for (Map.Entry<String, String> entry: jdbcProperties.entrySet()) {
 					 info.put(entry.getKey(), entry.getValue());
 				 }
-				 con = DriverManager.getConnection(dbUrl, info);
+				 try {
+					 con = DriverManager.getConnection(dbUrl, info);
+				 } catch (SQLException e3) {
+					 if (currentDriver != null && currentDriver.acceptsURL(dbUrl)) {
+						 con = currentDriver.connect(dbUrl, info);
+					 }
+				 }
 			} catch (SQLException e2) {
 				// ignore
 			}
 		}
 		
 		if (con == null) {
-			con = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+			try {
+				con = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+			} catch (SQLException e) {
+				try {
+					if (currentDriver != null && currentDriver.acceptsURL(dbUrl)) {
+						java.util.Properties info = new java.util.Properties();
+
+				        if (dbUser != null) {
+				            info.put("user", dbUser);
+				        }
+				        if (dbPassword != null) {
+				            info.put("password", dbPassword);
+				        }
+				        con = currentDriver.connect(dbUrl, info);
+					}
+				} catch (SQLException e1) {
+					throw e;
+				}
+			}
 		}
 		
 		if (maxPoolSize == 0) {

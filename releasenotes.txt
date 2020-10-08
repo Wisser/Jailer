@@ -1,3 +1,10 @@
+10.1
+  - Automatic download of JDBC drivers.
+  - Workaround for bug "JDK-8215200 : IllegalArgumentException in sun.lwawt.macosx.CPlatformWindow"
+      https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
+      https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8215200
+      https://bugs.openjdk.java.net/browse/JDK-8215200
+
 10.0
   - Java 7 support was dropped in favor of reduced development overheads.
   - Third party libraries and JDBC drivers have been upgraded accordingly.

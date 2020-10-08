@@ -32,15 +32,14 @@ import net.sf.jailer.ui.Environment;
 
 public class HttpDownload {
 	
-	public static final String DOWNLOADFOLDER = "download";
+	public static final String DOWNLOADFOLDER = "downloads";
 	
 	public static String get(final String url, Consumer<Long> volConsumer) throws Throwable {
 		Throwable t = null;
 		StringBuilder result = new StringBuilder();
 		try {
-			if (get(url, result, volConsumer) == 200) {
-				return result.toString();
-			}
+			get(url, result, volConsumer);
+			return result.toString();
 		} catch (Throwable err) {
 			t = err;
 		}
@@ -61,24 +60,28 @@ public class HttpDownload {
 				throw t;
 			}
 		}
+		if (result.length() == 0 && t != null) {
+			throw t;
+		}
 		return result.toString();
 	}
 
-	public static int get(final String url, final StringBuilder result, Consumer<Long> volConsumer) throws MalformedURLException, IOException {
+	public static void get(final String url, final StringBuilder result, Consumer<Long> volConsumer) throws MalformedURLException, IOException {
 		URL theUrl;
 		theUrl = new URL(url);
 		long t0 = System.currentTimeMillis();
-		URLConnection con = theUrl.openConnection();
-		((HttpURLConnection) con).setInstanceFollowRedirects(true);
-		InputStream in = con.getInputStream();
-		int rc = ((HttpURLConnection) con).getResponseCode();
-		if (rc == 200) {
-			File dir = Environment.newFile(DOWNLOADFOLDER);
-			dir.mkdir();
-			String name = toFileName(theUrl);
-			File tmpFile = new File(dir, name + "." + System.currentTimeMillis());
-			File file = new File(dir, name);
-			if (!file.exists()) {
+		String name = toFileName(theUrl);
+		File dir = Environment.newFile(DOWNLOADFOLDER);
+		dir.mkdir();
+		File file = new File(dir, name);
+		int rc = 200;
+		if (!file.exists()) {
+			URLConnection con = theUrl.openConnection();
+			((HttpURLConnection) con).setInstanceFollowRedirects(true);
+			InputStream in = con.getInputStream();
+			rc = ((HttpURLConnection) con).getResponseCode();
+			if (rc == 200) {
+				File tmpFile = new File(dir, name + "." + System.currentTimeMillis());
 				OutputStream out = new FileOutputStream(tmpFile);
 				int c;
 				long total = 0;
@@ -98,16 +101,18 @@ public class HttpDownload {
 				}
 				out.close();
 				if (!tmpFile.renameTo(file)) {
-					throw new RuntimeException("can't rename \"" + tmpFile.getAbsolutePath() + "\"");
+					throw new HttpException("can't rename \"" + tmpFile.getAbsolutePath() + "\"");
 				};
 				if (total < 1024 * 100L) {
-					return 0;
+					throw new HttpException("download failed");
 				}
 			}
 			in.close();
-			result.append(new File(DOWNLOADFOLDER, name).getAbsolutePath());
 		}
-		return rc;
+		result.append(new File(DOWNLOADFOLDER, name).getAbsolutePath());
+		if (rc != 200) {
+			throw new HttpException("Response code " + rc + " received");
+		}
 	}
 
 	public static String toFileName(URL theUrl) {
@@ -121,8 +126,14 @@ public class HttpDownload {
 			get(args[0], result, null);
 			System.out.println(result);
 		} catch (Throwable e) {
-			e.printStackTrace();
+			// ignore
 		}
 	}
 
+	@SuppressWarnings("serial")
+	public static class HttpException extends RuntimeException {
+		public HttpException(String message) {
+			super(message);
+		}
+	}
 }

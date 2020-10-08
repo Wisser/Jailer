@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -1067,7 +1068,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		try {
 			UIUtil.setWaitCursor(root);
-			if (testConnection(mainPanel, currentConnection)) {
+			if (testConnection(mainPanel, currentConnection, null)) {
 				isConnected = true;
 				executionContext.setCurrentConnectionAlias(currentConnection.alias);
 				onConnect(currentConnection);
@@ -1088,7 +1089,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		connect();
 	}// GEN-LAST:event_jButton1ActionPerformed
 
-	public static boolean testConnection(Component parent, ConnectionInfo ci) {
+	public static boolean testConnection(Component parent, ConnectionInfo ci, JButton downloadButton) {
 		String d1 = ci.jar1.trim();
 		String d2 = ci.jar2.trim();
 		String d3 = ci.jar3.trim();
@@ -1154,9 +1155,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			return false;
 		} catch (Throwable e) {
 			if (e.getCause() instanceof ClassNotFoundException) {
-				UIUtil.showException(parent, "Could not connect to DB", new ClassNotFoundException("JDBC driver class not found: '" + e.getMessage() + "'", e.getCause()), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR);
+				UIUtil.showException(parent, "Could not connect", new ClassNotFoundException("JDBC driver class not found: '" + e.getMessage() + "'" + (downloadButton == null? "" : ".\nTry to download the driver."), e.getCause()), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR, downloadButton);
 			} else {
-				UIUtil.showException(parent, "Could not connect to DB (" + (e.getClass().getSimpleName()) + ")", e, UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR);
+				UIUtil.showException(parent, "Could not connect (" + (e.getClass().getSimpleName()) + ")", e, UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR);
 			}
 			return false;
 		}
@@ -1341,7 +1342,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (ci.driverClass != null
 				&& ci.url != null
 				&& ci.user != null) {
-			if (testConnection(parent, ci)) {
+			if (testConnection(parent, ci, null)) {
 				currentConnection = ci;
 				executionContext.setCurrentConnectionAlias(currentConnection.alias);
 				isConnected = true;

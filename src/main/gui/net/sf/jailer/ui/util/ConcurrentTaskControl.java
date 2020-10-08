@@ -259,7 +259,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 					result.set(call.call());
 					done.set(true);
 				} finally {
-					UIUtil.invokeLater(new Runnable() {
+					UIUtil.invokeLater(100, new Runnable() {
 						@Override
 						public void run() {
 							concurrentTaskControl.closeWindow();
