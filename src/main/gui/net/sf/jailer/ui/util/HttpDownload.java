@@ -71,7 +71,7 @@ public class HttpDownload {
 		theUrl = new URL(url);
 		long t0 = System.currentTimeMillis();
 		String name = toFileName(theUrl);
-		File dir = Environment.newFile(DOWNLOADFOLDER);
+		final File dir = Environment.newFile(DOWNLOADFOLDER);
 		dir.mkdir();
 		File file = new File(dir, name);
 		int rc = 200;
@@ -109,7 +109,7 @@ public class HttpDownload {
 			}
 			in.close();
 		}
-		result.append(new File(DOWNLOADFOLDER, name).getAbsolutePath());
+		result.append(new File(dir, name).getAbsolutePath());
 		if (rc != 200) {
 			throw new HttpException("Response code " + rc + " received");
 		}
