@@ -48,6 +48,10 @@ public class About extends javax.swing.JDialog {
 		
 		jTextField4.setText(JailerVersion.VERSION);
 		jTextField5.setText(props("", "java.vm.name", " ", "java.vm.version"));
+		Object p = System.getProperties().get("java.version");
+		if (p != null) {
+			jTextField5.setText(jTextField5.getText() + " (" + p + ")");
+		}
 		
 		jTextField6.setText(props("", "os.name", " Version ", "os.version", " running on ", "os.arch", "; ", "file.encoding", "; ", "user.country"));
 		File path = new File("x").getAbsoluteFile();
