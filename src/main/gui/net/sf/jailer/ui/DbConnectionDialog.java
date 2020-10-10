@@ -1154,10 +1154,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 			return false;
 		} catch (Throwable e) {
-			if (e.getCause() instanceof ClassNotFoundException) {
-				UIUtil.showException(parent, "Could not connect", new ClassNotFoundException("JDBC driver class not found: '" + e.getMessage() + "'" + (downloadButton == null? "" : ".\nTry to download the driver."), e.getCause()), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR, downloadButton);
+			if (e.getCause() instanceof ClassNotFoundException && e.getCause().getMessage() != null && e.getCause().getMessage().contains(ci.driverClass)) {
+				UIUtil.showException(parent, "Unable to connect", new ClassNotFoundException("JDBC driver class not found: '" + ci.driverClass + "'" + (downloadButton == null? "" : ".\nTry to download the driver.")), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR, downloadButton);
 			} else {
-				UIUtil.showException(parent, "Could not connect (" + (e.getClass().getSimpleName()) + ")", e, UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR);
+				UIUtil.showException(parent, "Unable to connect (" + (e.getClass().getSimpleName()) + ")", e, UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR);
 			}
 			return false;
 		}
@@ -1363,7 +1363,5 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         // load images
     	warnIcon = UIUtil.readImage("/wanr.png");
 	}
-    
-    // TODO warn if more than one driver could connect. Propose restart.
-    
+
 }
