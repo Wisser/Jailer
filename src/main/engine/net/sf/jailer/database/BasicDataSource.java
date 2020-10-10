@@ -201,11 +201,11 @@ public class BasicDataSource implements DataSource {
 		}
 	}
 
-	private static Set<String> registeredDriverClassNames = new HashSet<String>();
-	
+	private static Set<String> registeredDriverClassNames = Collections.synchronizedSet(new HashSet<String>());
+
 	private DriverShim currentDriver;
 	private static Map<Class<Driver>, DriverShim> drivers = new IdentityHashMap<Class<Driver>, BasicDataSource.DriverShim>();
-	
+
 	private void loadDriver(URL[] jdbcDriverURL) {
 		ClassLoader classLoaderForJdbcDriver = addJarToClasspath(jdbcDriverURL);
 		try {
@@ -346,54 +346,28 @@ public class BasicDataSource implements DataSource {
 				}
 			}
 		}
-		
-		Map<String, String> jdbcProperties = theDbms.getJdbcProperties();
-		if (con == null && jdbcProperties != null) {
-			try {
-				 java.util.Properties info = new java.util.Properties();
-				 if (dbUser != null) {
-					 info.put("user", dbUser);
-				 }
-				 if (dbPassword != null) {
-					 info.put("password", dbPassword);
-				 }
-				 for (Map.Entry<String, String> entry: jdbcProperties.entrySet()) {
-					 info.put(entry.getKey(), entry.getValue());
-				 }
-				 try {
-					 con = DriverManager.getConnection(dbUrl, info);
-				 } catch (SQLException e3) {
-					 if (currentDriver != null && currentDriver.acceptsURL(dbUrl)) {
-						 con = currentDriver.connect(dbUrl, info);
-					 }
-				 }
-			} catch (SQLException e2) {
-				// ignore
-			}
-		}
-		
-		if (con == null) {
-			try {
-				con = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-			} catch (SQLException e) {
-				try {
-					if (currentDriver != null && currentDriver.acceptsURL(dbUrl)) {
-						java.util.Properties info = new java.util.Properties();
 
-				        if (dbUser != null) {
-				            info.put("user", dbUser);
-				        }
-				        if (dbPassword != null) {
-				            info.put("password", dbPassword);
-				        }
-				        con = currentDriver.connect(dbUrl, info);
-					}
-				} catch (SQLException e1) {
-					throw e;
+		Map<String, String> jdbcProperties = theDbms.getJdbcProperties();
+		if (con == null) {
+			java.util.Properties info = new java.util.Properties();
+			if (dbUser != null) {
+				info.put("user", dbUser);
+			}
+			if (dbPassword != null) {
+				info.put("password", dbPassword);
+			}
+			if (jdbcProperties != null) {
+				for (Map.Entry<String, String> entry: jdbcProperties.entrySet()) {
+					info.put(entry.getKey(), entry.getValue());
 				}
 			}
+			if (currentDriver != null && currentDriver.acceptsURL(dbUrl)) {
+				con = currentDriver.connect(dbUrl, info);
+			} else {
+				con = DriverManager.getConnection(dbUrl, info);
+			}
 		}
-		
+
 		if (maxPoolSize == 0) {
 			return con;
 		}

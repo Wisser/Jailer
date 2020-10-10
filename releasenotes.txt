@@ -1,4 +1,4 @@
-10.1
+10.1.1
   - Automatic download of JDBC drivers.
   - Workaround for bug "JDK-8215200 : IllegalArgumentException in sun.lwawt.macosx.CPlatformWindow"
       https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
