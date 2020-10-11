@@ -372,7 +372,7 @@ public class BasicDataSource implements DataSource {
 						throw e;
 					}
 				} catch (SQLException e2) {
-					throw e;
+					// fall back
 				}
 			}
 			if (con == null) {
