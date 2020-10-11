@@ -206,6 +206,7 @@ public class BasicDataSource implements DataSource {
 	private DriverShim currentDriver;
 	private static Map<Class<Driver>, DriverShim> drivers = new IdentityHashMap<Class<Driver>, BasicDataSource.DriverShim>();
 
+	@SuppressWarnings("deprecation")
 	private void loadDriver(URL[] jdbcDriverURL) {
 		ClassLoader classLoaderForJdbcDriver = addJarToClasspath(jdbcDriverURL);
 		try {
