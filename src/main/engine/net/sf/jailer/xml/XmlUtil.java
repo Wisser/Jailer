@@ -123,7 +123,7 @@ public class XmlUtil {
 		if (transformerWODecl == null) {
 			TransformerFactory xformFactory = TransformerFactory.newInstance();
 			try {
-				xformFactory.setAttribute("indent-number", new Integer(4));
+				xformFactory.setAttribute("indent-number", 4);
 			} catch (IllegalArgumentException e) {
 				// ignore
 			}
@@ -147,7 +147,7 @@ public class XmlUtil {
 		if (transformer == null) {
 			TransformerFactory xformFactory = TransformerFactory.newInstance();
 			try {
-				xformFactory.setAttribute("indent-number", new Integer(4));
+				xformFactory.setAttribute("indent-number", 4);
 			} catch (IllegalArgumentException e) {
 				// ignore
 			}
@@ -242,7 +242,7 @@ public class XmlUtil {
 			throws SAXException {
 		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
 		try {
-			tf.setAttribute("indent-number", new Integer(2));
+			tf.setAttribute("indent-number", 2);
 		} catch (Exception e) {
 			// ignore, workaround for JDK 1.5 bug, see http://forum.java.sun.com/thread.jspa?threadID=562510
 		}
