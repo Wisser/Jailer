@@ -363,7 +363,8 @@ public class BasicDataSource implements DataSource {
 			}
 			if (currentDriver != null && currentDriver.acceptsURL(dbUrl)) {
 				con = currentDriver.connect(dbUrl, info);
-			} else {
+			}
+			if (con == null) {
 				con = DriverManager.getConnection(dbUrl, info);
 			}
 		}
