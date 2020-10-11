@@ -362,8 +362,14 @@ public class BasicDataSource implements DataSource {
 					info.put(entry.getKey(), entry.getValue());
 				}
 			}
-			if (currentDriver != null /* && currentDriver.acceptsURL(dbUrl) */) {
-				con = currentDriver.connect(dbUrl, info);
+			try {
+				if (currentDriver != null) {
+					con = currentDriver.connect(dbUrl, info);
+				}
+			} catch (SQLException e) {
+				if (currentDriver.acceptsURL(dbUrl)) {
+					throw e;
+				}
 			}
 			if (con == null) {
 				con = DriverManager.getConnection(dbUrl, info);
