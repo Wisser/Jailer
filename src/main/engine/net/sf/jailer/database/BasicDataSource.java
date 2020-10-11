@@ -367,7 +367,11 @@ public class BasicDataSource implements DataSource {
 					con = currentDriver.connect(dbUrl, info);
 				}
 			} catch (SQLException e) {
-				if (currentDriver.acceptsURL(dbUrl)) {
+				try {
+					if (currentDriver.acceptsURL(dbUrl)) {
+						throw e;
+					}
+				} catch (SQLException e2) {
 					throw e;
 				}
 			}
