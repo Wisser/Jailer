@@ -56,7 +56,7 @@ public class LocalDatabase {
 			urlArray = ClasspathUtil.toURLArray(jarfile, null, null, null);
 		} catch (FileNotFoundException e) {
 			urlArray = new URL[0];
-			urlException = e;
+			urlException = new FileNotFoundException(e.getMessage() + ". This file is required for using WorkingTableScope.LOCAL_DATABASE. Make the file available or add it to the classpath.");
 		}
 		if (urlException != null) {
 			try {
