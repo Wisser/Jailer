@@ -439,7 +439,19 @@ public class BasicDataSource implements DataSource {
 			return classloaders.get(mapKey);
 		}
 		_log.info("added '" + mapKey + "' to classpath");
-		URLClassLoader urlLoader = new URLClassLoader(jdbcDriverURL);
+		List<URL> withJAXB = new ArrayList<URL>();
+		for (URL url: jdbcDriverURL) {
+			withJAXB.add(url);
+		}
+		try {
+			withJAXB.add(new File("lib", "activation-1.0.2.jar").toURI().toURL());
+			withJAXB.add(new File("lib", "jaxb-api-2.3.0-b170201.1204.jar").toURI().toURL());
+			withJAXB.add(new File("lib", "jaxb-core-2.3.0-b170127.1453.jar").toURI().toURL());
+			withJAXB.add(new File("lib", "jaxb-impl-2.3.0-b170127.1453.jar").toURI().toURL());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		URLClassLoader urlLoader = new URLClassLoader(withJAXB.toArray(new URL[0]));
 		classloaders.put(mapKey, urlLoader);
 		return urlLoader;
 	}

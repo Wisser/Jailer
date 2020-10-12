@@ -1,4 +1,4 @@
-set version=10.1.1
+set version=10.1.1.x
 
 set PATH=C:\Program Files\Java\jdk-15\bin;%PATH%
 
@@ -6,7 +6,7 @@ del /S /Q c:\tmp\_
 del /S /Q c:\tmp\jlrjre%version%
 mkdir c:\tmp\_
 cd ..
-
+cc
 xcopy /S /E bookmark c:\tmp\_\bookmark\
 xcopy build.xml c:\tmp\_\
 xcopy /S /E config c:\tmp\_\config\
