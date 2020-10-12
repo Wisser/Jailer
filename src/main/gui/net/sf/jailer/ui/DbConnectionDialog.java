@@ -1155,7 +1155,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			return false;
 		} catch (Throwable e) {
 			if (e.getCause() instanceof ClassNotFoundException && e.getCause().getMessage() != null && e.getCause().getMessage().contains(ci.driverClass)) {
-				UIUtil.showException(parent, "Unable to connect", new ClassNotFoundException("JDBC driver class not found: '" + ci.driverClass + "'" + (downloadButton == null? "" : ".\nTry to download the driver.")), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR, downloadButton);
+				UIUtil.showException(parent, "Unable to connect", new ClassNotFoundException("JDBC driver class not found: '" + ci.driverClass + "'"
+						+ (downloadButton == null? "" : ".\nYou can download the driver with the button \"Download Driver\".")), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR, downloadButton);
 			} else {
 				UIUtil.showException(parent, "Unable to connect (" + (e.getClass().getSimpleName()) + ")", e, UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR);
 			}
