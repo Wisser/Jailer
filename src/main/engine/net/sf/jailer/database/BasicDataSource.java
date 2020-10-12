@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
+import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
@@ -451,6 +452,8 @@ public class BasicDataSource implements DataSource {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		// TODO
+		JOptionPane.showInputDialog(withJAXB.toString());
 		URLClassLoader urlLoader = new URLClassLoader(withJAXB.toArray(new URL[0]));
 		classloaders.put(mapKey, urlLoader);
 		return urlLoader;
