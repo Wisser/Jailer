@@ -77,6 +77,19 @@ public class Quoting {
 		return quoting;
 	}
 
+	@FunctionalInterface
+	private interface FSSupplier<T> {
+		T get() throws Throwable;
+	}
+	
+	private <T> T tryGet(FSSupplier<T> get, T fallback) {
+		try {
+			return get.get();
+		} catch (Throwable t) {
+			return fallback;
+		}
+	}
+	
 	/**
 	 * Constructor.
 	 * 
@@ -84,22 +97,22 @@ public class Quoting {
 	 */
 	public Quoting(Session session) throws SQLException {
 		DatabaseMetaData metaData = session.getMetaData();
-		String quoteString = metaData.getIdentifierQuoteString();
+		String quoteString = tryGet(() -> metaData.getIdentifierQuoteString(), "\"");
 		if (quoteString != null
 				&& (quoteString.equals(" ") || quoteString.equals(""))) {
 			quoteString = "\"";
 		}
 		quote = quoteString;
-		unquotedIdentifierInUpperCase = metaData.storesUpperCaseIdentifiers();
+		unquotedIdentifierInUpperCase = tryGet(() -> metaData.storesUpperCaseIdentifiers(), false);
 		
 		if (session.dbUrl != null && session.dbUrl.toLowerCase(Locale.ENGLISH).startsWith("jdbc:jtds:")) {
 			// workaround for JTDS-bug
 			unquotedIdentifierInMixedCase = true;
 		} else {
-			unquotedIdentifierInMixedCase = metaData.storesMixedCaseIdentifiers();
+			unquotedIdentifierInMixedCase = tryGet(() -> metaData.storesMixedCaseIdentifiers(), true);
 		}
 		
-		String k = metaData.getSQLKeywords();
+		String k = tryGet(() -> metaData.getSQLKeywords(), "");
 		if (k == null) {
 			k = "";
 		}
