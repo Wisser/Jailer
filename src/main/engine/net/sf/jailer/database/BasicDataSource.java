@@ -38,6 +38,7 @@ import org.apache.log4j.Logger;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.Configuration.UrlRewriteRule;
 import net.sf.jailer.configuration.DBMS;
+import net.sf.jailer.ui.Environment;
 
 /**
  * Basic implementation of {@link DataSource}. Uses {@link DriverManager} to create connections.
@@ -445,10 +446,10 @@ public class BasicDataSource implements DataSource {
 			withJAXB.add(url);
 		}
 		try {
-			withJAXB.add(new File("lib", "activation-1.0.2.jar").toURI().toURL());
-			withJAXB.add(new File("lib", "jaxb-api-2.3.0-b170201.1204.jar").toURI().toURL());
-			withJAXB.add(new File("lib", "jaxb-core-2.3.0-b170127.1453.jar").toURI().toURL());
-			withJAXB.add(new File("lib", "jaxb-impl-2.3.0-b170127.1453.jar").toURI().toURL());
+			withJAXB.add(Environment.newWorkingFolderFile("lib" + File.separator + "activation-1.0.2.jar").toURI().toURL());
+			withJAXB.add(Environment.newWorkingFolderFile("lib" + File.separator + "jaxb-api-2.3.0-b170201.1204.jar").toURI().toURL());
+			withJAXB.add(Environment.newWorkingFolderFile("lib" + File.separator + "jaxb-core-2.3.0-b170127.1453.jar").toURI().toURL());
+			withJAXB.add(Environment.newWorkingFolderFile("lib" + File.separator + "jaxb-impl-2.3.0-b170127.1453.jar").toURI().toURL());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
