@@ -39,9 +39,7 @@ xcopy admin\databrowserlauncher.properties c:\tmp\_
 
 xcopy /S /E c:\tmp\_\lib c:\tmp\_\jdbc_lib\
 del /Q c:\tmp\_\lib\*
-del /Q c:\tmp\_\*.bat
 del /Q c:\tmp\_\*.exe
-del /Q c:\tmp\_\*.sh
 
 move c:\tmp\_\jdbc_lib\activation-1.0.2.jar c:\tmp\_\lib\activation-1.0.2.jar
 move c:\tmp\_\jdbc_lib\args4j.jar c:\tmp\_\lib\args4j.jar
