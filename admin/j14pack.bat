@@ -70,7 +70,7 @@ for /f "tokens=*" %%f in ('dir /b c:\tmp\_\jdbc_lib\*') do (
 cd c:\tmp\_
 echo "" > .singleuser
 
-jlink --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.management,java.scripting,java.sql,java.xml,java.rmi,java.scripting,java.xml.crypto --output jlrjre%version% 
+jlink --add-modules java.base,java.naming,java.datatransfer,java.desktop,java.logging,java.management,java.scripting,java.sql,java.xml,java.rmi,java.scripting,java.xml.crypto --output jlrjre%version% 
 jpackage --name "Jailer %version%" --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group Jailer --vendor Wisser --app-version %version% --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --add-launcher "Jailer %version% Data Browser"=databrowserlauncher.properties --runtime-image jlrjre%version%
 
 move *.msi c:\tmp\"Jailer-%version%-withJavaJRE.msi"

@@ -31,14 +31,12 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
-import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.Configuration.UrlRewriteRule;
 import net.sf.jailer.configuration.DBMS;
-import net.sf.jailer.ui.Environment;
 
 /**
  * Basic implementation of {@link DataSource}. Uses {@link DriverManager} to create connections.
@@ -441,21 +439,7 @@ public class BasicDataSource implements DataSource {
 			return classloaders.get(mapKey);
 		}
 		_log.info("added '" + mapKey + "' to classpath");
-		List<URL> withJAXB = new ArrayList<URL>();
-		for (URL url: jdbcDriverURL) {
-			withJAXB.add(url);
-		}
-		try {
-			withJAXB.add(Environment.newWorkingFolderFile("lib" + File.separator + "activation-1.0.2.jar").toURI().toURL());
-			withJAXB.add(Environment.newWorkingFolderFile("lib" + File.separator + "jaxb-api-2.3.0-b170201.1204.jar").toURI().toURL());
-			withJAXB.add(Environment.newWorkingFolderFile("lib" + File.separator + "jaxb-core-2.3.0-b170127.1453.jar").toURI().toURL());
-			withJAXB.add(Environment.newWorkingFolderFile("lib" + File.separator + "jaxb-impl-2.3.0-b170127.1453.jar").toURI().toURL());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		// TODO
-		JOptionPane.showInputDialog(withJAXB.toString());
-		URLClassLoader urlLoader = new URLClassLoader(withJAXB.toArray(new URL[0]));
+		URLClassLoader urlLoader = new URLClassLoader(jdbcDriverURL);
 		classloaders.put(mapKey, urlLoader);
 		return urlLoader;
 	}
