@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
 
 import javax.sql.DataSource;
 
@@ -76,7 +79,7 @@ public class Jailer {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(Jailer.class);
+	private static Logger _log;
 
 	/**
 	 * Main-method for CLI.
@@ -100,6 +103,16 @@ public class Jailer {
 			}
 		});
 
+		try {
+			java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
+			rootLogger.setLevel(Level.OFF);
+			for (Handler h : rootLogger.getHandlers()) {
+			    h.setLevel(Level.OFF);
+			}
+			System.setProperty("com.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize", "true");
+		} catch (Exception e) {
+		}
+
 		if (new File(".singleuser").exists() // legacy 
 				|| new File(".multiuser").exists()) {
 			File home = new File(System.getProperty("user.home"), ".jailer");
@@ -108,6 +121,7 @@ public class Jailer {
 			Configuration configuration = Configuration.getInstance();
 			configuration.setTempFileFolder(new File(home, "tmp").getPath());
 		}
+		_log  = Logger.getLogger(Jailer.class);
 		try {
 			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
 		} catch (Exception e) {

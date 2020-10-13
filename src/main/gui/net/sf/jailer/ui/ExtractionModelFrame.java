@@ -2085,13 +2085,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public static void main(String args[]) {
 		try {
+			if (args.length > 0 && "JailerDataBrowser".equals(args[0])) {
+				DataBrowser.main(new String[0]);
+				return;
+			}
 			start(args);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			UIUtil.showException(null, "Error", t);
 		}
 	}
-	
+
 	/**
 	 * @param args the command line arguments
 	 */

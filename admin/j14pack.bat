@@ -6,9 +6,8 @@ del /S /Q c:\tmp\_
 del /S /Q c:\tmp\jlrjre%version%
 mkdir c:\tmp\_
 cd ..
-cc
+
 xcopy /S /E bookmark c:\tmp\_\bookmark\
-xcopy build.xml c:\tmp\_\
 xcopy /S /E config c:\tmp\_\config\
 xcopy /S /E datamodel c:\tmp\_\datamodel\
 xcopy demo-sakila-1.4.mv.db c:\tmp\_
