@@ -128,6 +128,14 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 
 	/**
+	 * Set of sql types (uppercase) not listed in {@link Types} which don't accept a length argument.
+	 */
+	public static final Set<String> TYPES_WITHOUT_LENGTH = new HashSet<String>();
+	static {
+		TYPES_WITHOUT_LENGTH.add("HIERARCHYID"); // MSSQL
+	}
+
+	/**
 	 * Set of the names of user defined types.
 	 */
 	private Set<String> userDefinedTypes = null;
@@ -480,7 +488,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					}
 				}
 				if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase(Locale.ENGLISH)) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
-					length = resultSet.getInt(7);
+					if (!TYPES_WITHOUT_LENGTH.contains(sqlType.toUpperCase(Locale.ENGLISH))) {
+						length = resultSet.getInt(7);
+					}
 				}
 				if (DBMS.MSSQL.equals(session.dbms) && sqlType != null && sqlType.equalsIgnoreCase("timestamp")) {
 					length = 0;

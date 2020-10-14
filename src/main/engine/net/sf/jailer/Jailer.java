@@ -79,7 +79,17 @@ public class Jailer {
 	/**
 	 * The logger.
 	 */
-	private static Logger _log;
+	private static Logger logger;
+
+	/**
+	 * Gets the logger.
+	 */
+	private static synchronized Logger getLogger() {
+		if (logger == null) {
+			logger = Logger.getLogger(Jailer.class);
+		}
+		return logger;
+	}
 
 	/**
 	 * Main-method for CLI.
@@ -121,7 +131,7 @@ public class Jailer {
 			Configuration configuration = Configuration.getInstance();
 			configuration.setTempFileFolder(new File(home, "tmp").getPath());
 		}
-		_log  = Logger.getLogger(Jailer.class);
+		getLogger();
 		try {
 			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
 		} catch (Exception e) {
@@ -173,7 +183,7 @@ public class Jailer {
 			String command = commandLine.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
 				if (!"print-closure".equalsIgnoreCase(command)) {
-					_log.info("Jailer " + JailerVersion.VERSION);
+					getLogger().info("Jailer " + JailerVersion.VERSION);
 				}
 			}
 			
@@ -292,7 +302,7 @@ public class Jailer {
 					CommandLineParser.printUsage(args);
 				} else {
 					pw = commandLine.arguments.get(4);
-					_log.info("Building data model.");
+					getLogger().info("Building data model.");
 					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), 0, jdbcJarURLs);
 					ModelBuilder.build(dataSource, dataSource.dbms, commandLine.schema, warnings, executionContext);
 				}
@@ -301,7 +311,7 @@ public class Jailer {
 					CommandLineParser.printUsage(args);
 				} else {
 					pw = commandLine.arguments.get(4);
-					_log.info("Building data model.");
+					getLogger().info("Building data model.");
 					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), 0, jdbcJarURLs);
 					ModelBuilder.buildAndMerge(dataSource, dataSource.dbms, commandLine.schema, warnings, executionContext);
 				}
@@ -312,14 +322,14 @@ public class Jailer {
 			return true;
 		} catch (Throwable t) {
 			if (t instanceof CancellationException) {
-				_log.warn("cancelled");
+				getLogger().warn("cancelled");
 				throw t;
 			}
-			_log.error(t.getMessage(), t);
+			getLogger().error(t.getMessage(), t);
 			System.err.println("Error: " + t.getClass().getName() + ": " + t.getMessage());
 			CommandLineParser.printAruments(System.err, args, pw);
 			String workingDirectory = System.getProperty("user.dir");
-			_log.error("working directory is " + workingDirectory);
+			getLogger().error("working directory is " + workingDirectory);
 			throw t;
 		}
 	}
