@@ -1,3 +1,7 @@
+10.2
+  - Support for the MS SQL data type "hierarchyid".
+  - Severe error in log file creation was fixed.
+
 10.1.2
   - Automatic download of JDBC drivers.
   - Workaround for bug "JDK-8215200 : IllegalArgumentException in sun.lwawt.macosx.CPlatformWindow"
