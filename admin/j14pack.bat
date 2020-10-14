@@ -1,12 +1,13 @@
-set version=10.x
+set version=10.2.0.x
 
 set PATH=C:\Program Files\Java\jdk-15\bin;%PATH%
 
 del /S /Q c:\tmp\_
-del /S /Q c:\tmp\jlrjre%version%
+del /S /Q c:\tmp\jre%version%
 mkdir c:\tmp\_
 cd ..
 
+xcopy /S /E maven-artifacts c:\tmp\_\maven-artifacts\
 xcopy /S /E bookmark c:\tmp\_\bookmark\
 xcopy /S /E config c:\tmp\_\config\
 xcopy /S /E datamodel c:\tmp\_\datamodel\
@@ -68,9 +69,9 @@ for /f "tokens=*" %%f in ('dir /b c:\tmp\_\jdbc_lib\*') do (
 cd c:\tmp\_
 echo "" > .singleuser
 
-jlink --add-modules java.se --output jlrjre%version% 
-jpackage --name "Jailer %version%" --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group Jailer --vendor Wisser --app-version %version% --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --add-launcher "Jailer %version% Data Browser"=databrowserlauncher.properties --runtime-image jlrjre%version%
+jlink --add-modules java.se --output jre%version% 
+jpackage --name "Jailer %version%" --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group Jailer --vendor Wisser --app-version %version% --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --add-launcher "Jailer %version% Data Browser"=databrowserlauncher.properties --runtime-image jre%version%
 
-move *.msi c:\tmp\"Jailer-%version%-withJavaJRE.msi"
+move *.msi c:\tmp\"Jailer-%version%-with-java-JRE.msi"
 
 pause
