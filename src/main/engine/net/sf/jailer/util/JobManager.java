@@ -278,9 +278,13 @@ public class JobManager {
 	 * Sets an exception.
 	 */
 	private synchronized void setException(Throwable e) {
-		exception = e == null? null : (e instanceof CancellationException || e instanceof SQLException)? (Exception) e 
+		if (exception == null) {
+			exception = e == null? null : (e instanceof CancellationException || e instanceof SQLException)? (Exception) e 
 				: new RuntimeException(Thread.currentThread().getName() + " failed", e);
+		}
 		jobs = null;
 	}
+
+	// TODO cancel on error
 	
 }
