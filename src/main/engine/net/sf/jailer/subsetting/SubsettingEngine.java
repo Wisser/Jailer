@@ -111,7 +111,22 @@ public class SubsettingEngine {
 		this.executionContext = executionContext;
 		this.collectedRowsCounter = new CollectedRowsCounter();
 		this.executionContext.getProgressListenerRegistry().addProgressListener(collectedRowsCounter);
-		jobManager = new JobManager(executionContext.getNumberOfThreads());
+		jobManager = new JobManager(executionContext.getNumberOfThreads()) {
+			@Override
+			protected void onException(Throwable t) {
+				EntityGraph eg = getEntityGraph();
+				if (eg != null) {
+					Session session = eg.getSession();
+					Session targetSession = eg.getTargetSession();
+					if (session != null) {
+						session.killRunningStatements();
+					}
+					if (targetSession != null && targetSession != session) {
+						targetSession.killRunningStatements();
+					}
+				}
+			}
+		};
 	}
 
 	/**
@@ -152,12 +167,22 @@ public class SubsettingEngine {
 	private ExportStatistic exportStatistic;
 	
 	/**
+	 * Gets the entity-graph to be used for finding the transitive closure.
+	 * 
+	 * @return
+	 *            the entity-graph to be used for finding the transitive closure
+	 */
+	private synchronized EntityGraph getEntityGraph() {
+		return entityGraph;
+	}
+
+	/**
 	 * Sets the entity-graph to be used for finding the transitive closure.
 	 * 
 	 * @param entityGraph
 	 *            the entity-graph to be used for finding the transitive closure
 	 */
-	private void setEntityGraph(EntityGraph entityGraph) {
+	private synchronized void setEntityGraph(EntityGraph entityGraph) {
 		this.entityGraph = entityGraph;
 	}
 

@@ -76,6 +76,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			boolean isPG = DBMS.POSTGRESQL.equals(session.dbms);
 			
 			if (isPG) {
+				// TODO try nothing else than UpsertPGUS?
 				upsertStrategies.add(new UpsertPGUS());
 			}
 			upsertStrategies.add(new MergeUS(true));
@@ -350,6 +351,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		boolean done = false;
 		StringBuilder sqlErrorMessages = new StringBuilder();
 		StringBuilder sqlErrorStatements = new StringBuilder();
+		String firstSQLState = null;
 		long rc = 0;
 		synchronized (this) {
 			us = upsertStrategy;
@@ -370,6 +372,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					sqlErrorMessages.append("  - " + e.getMessage().replaceAll("\\s+", " ") + "\n");
 					if (e instanceof SqlException) {
 						sqlErrorStatements.append("- " + ((SqlException) e).sqlStatement.replaceAll("\\s+", " ") + "\n");
+					}
+					if (firstSQLState == null) {
+						firstSQLState = e.getSQLState();
 					}
 					// try another strategy
 				} finally {
@@ -401,11 +406,11 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 							if (sqlErrorMessages.length() > 0) {
 								SqlException se = new SqlException(
 										"Tried various update strategies but all failed:\n" +
-										sqlErrorMessages.toString(), sqlErrorStatements.toString(), null);
+										sqlErrorMessages.toString(), sqlErrorStatements.toString(), null, firstSQLState);
 								se.setFormatted(true);
 								throw se;
 							} else {
-								throw new SqlException(e.getMessage() + sqlErrorMessages, ((SqlException) e).sqlStatement, null);
+								throw new SqlException(e.getMessage() + sqlErrorMessages, ((SqlException) e).sqlStatement, null, firstSQLState);
 							}
 						}
 						throw new SQLException(e.getMessage() + sqlErrorMessages, e);

@@ -44,6 +44,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.configuration.DBMS;
+import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 
@@ -550,7 +551,7 @@ public class Session {
 					}
 				}
 			}
-			CancellationHandler.begin(statement, context);
+			begin(statement, context);
 			ResultSet resultSet;
 			try {
 				if (limit > 0 && limit < Integer.MAX_VALUE - 1) {
@@ -565,10 +566,12 @@ public class Session {
 				}
 				resultSet = statement.executeQuery(sqlQuery);
 			} catch (SQLException e) {
+				checkKilled();
+				CancellationHandler.checkForCancellation(context);
+
 				if (alternativeSQL != null) {
 					_log.warn("query failed, using alternative query. Reason: " + e.getMessage());
 					_log.info(alternativeSQL);
-					CancellationHandler.checkForCancellation(context);
 					resultSet = statement.executeQuery(alternativeSQL);
 				} else {
 					throw e;
@@ -581,6 +584,7 @@ public class Session {
 				reader.readCurrentRow(resultSet);
 				++rc;
 				if (rc % 100 == 0) {
+					checkKilled();
 					CancellationHandler.checkForCancellation(context);
 				}
 				if (limit > 0 && rc >= limit) {
@@ -596,7 +600,7 @@ public class Session {
 				} catch (SQLException e) {
 					// ignore
 				}
-				CancellationHandler.end(statement, context);
+				end(statement, context);
 			}
 		}
 		if (getLogStatements()) {
@@ -689,7 +693,7 @@ public class Session {
 				Statement statement = null;
 				try {
 					statement = connectionFactory.getConnection().createStatement();
-					CancellationHandler.begin(statement, null);
+					begin(statement, null);
 					if (serializeAccess) {
 						boolean acquired;
 						try {
@@ -724,14 +728,15 @@ public class Session {
 						}
 					}
 
-					CancellationHandler.end(statement, null);
+					end(statement, null);
 					ok = true;
 					if (getLogStatements()) {
 						_log.info("" + rowCount + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");
 					}
 				} catch (SQLException e) {
+					checkKilled();
 					CancellationHandler.checkForCancellation(null);
-					CancellationHandler.end(statement, null);
+					end(statement, null);
 
 					boolean isRetrieable = isRetrieable(e);
 					if (++failures > MAXIMUM_NUMBER_OF_FAILURES || !isRetrieable) {
@@ -779,20 +784,20 @@ public class Session {
 		if (getLogStatements()) {
 			_log.info(sqlUpdate);
 		}
+		PreparedStatement statement = null;
 		try {
 			CancellationHandler.checkForCancellation(null);
 			int rowCount = 0;
 			long startTime = System.currentTimeMillis();
-			PreparedStatement statement = null;
 			try {
 				statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-				CancellationHandler.begin(statement, null);
+				begin(statement, null);
 				int i = 1;
 				for (Object p: parameter) {
 					statement.setObject(i++, p);
 				}
 				rowCount = statement.executeUpdate();
-				CancellationHandler.end(statement, null);
+				end(statement, null);
 				if (getLogStatements()) {
 					_log.info("" + rowCount + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");
 				}
@@ -803,6 +808,7 @@ public class Session {
 			}
 			return rowCount;
 		} catch (SQLException e) {
+			checkKilled();
 			CancellationHandler.checkForCancellation(null);
 			if (!silent) {
 				_log.error("Error executing statement", e);
@@ -822,19 +828,20 @@ public class Session {
 		PreparedStatement statement = null;
 		try {
 			statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-			CancellationHandler.begin(statement, null);
+			begin(statement, null);
 			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8");
 			statement.setCharacterStream(1, inputStreamReader, (int) length);
 			statement.execute();
 			inputStreamReader.close();
 		} catch (SQLException e) {
+			checkKilled();
 			CancellationHandler.checkForCancellation(null);
 			throw e;
 		} finally {
 			if (statement != null) {
 				try {
 					statement.close();
-					CancellationHandler.end(statement, null);
+					end(statement, null);
 				} catch (SQLException e) {
 				}
 			}
@@ -850,19 +857,20 @@ public class Session {
 		PreparedStatement statement = null;
 		try {
 			statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-			CancellationHandler.begin(statement, null);
+			begin(statement, null);
 			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8");
 			statement.setCharacterStream(1, inputStreamReader, (int) length);
 			statement.execute();
 			inputStreamReader.close();
 		} catch (SQLException e) {
+			checkKilled();
 			CancellationHandler.checkForCancellation(null);
 			throw e;
 		} finally {
 			if (statement != null) {
 				try {
 					statement.close();
-					CancellationHandler.end(statement, null);
+					end(statement, null);
 				} catch (SQLException e) {
 				}
 			}
@@ -878,19 +886,20 @@ public class Session {
 		PreparedStatement statement = null;
 		try {
 			statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-			CancellationHandler.begin(statement, null);
+			begin(statement, null);
 			FileInputStream fileInputStream = new FileInputStream(lobFile);
 			statement.setBinaryStream(1, fileInputStream, (int) lobFile.length());
 			statement.execute();
 			fileInputStream.close();
 		} catch (SQLException e) {
+			checkKilled();
 			CancellationHandler.checkForCancellation(null);
 			throw e;
 		} finally {
 			if (statement != null) {
 				try {
 					statement.close();
-					CancellationHandler.end(statement, null);
+					end(statement, null);
 				} catch (SQLException e) {
 				}
 			}
@@ -927,7 +936,7 @@ public class Session {
 				Statement statement = null;
 				try {
 					statement = connectionFactory.getConnection().createStatement();
-					CancellationHandler.begin(statement, null);
+					begin(statement, null);
 					if (serializeAccess) {
 						boolean acquired;
 						try {
@@ -978,14 +987,15 @@ public class Session {
 						}
 					}
 
-					CancellationHandler.end(statement, null);
+					end(statement, null);
 					ok = true;
 					if (getLogStatements()) {
 						_log.info("" + rowCount + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");
 					}
 				} catch (SQLException e) {
+					checkKilled();
 					CancellationHandler.checkForCancellation(null);
-					CancellationHandler.end(statement, null);
+					end(statement, null);
 
 					boolean isRetrieable = isRetrieable(e);
 					if (++failures > MAXIMUM_NUMBER_OF_FAILURES || !isRetrieable) {
@@ -1079,6 +1089,52 @@ public class Session {
 
 	public boolean isDown() {
 		return down.get();
+	}
+
+	/**
+	 * Cancels all currently running statements.
+	 */
+	public synchronized void killRunningStatements() {
+		final IdentityHashMap<Statement, Statement> toBeCanceled = new IdentityHashMap<Statement, Statement>(runningStatements);
+		runningStatements.clear();
+		++currentVersion;
+		for (final IdentityHashMap.Entry<Statement, Statement> statement: toBeCanceled.entrySet()) {
+			Thread thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						statement.getKey().cancel();
+					} catch (Exception e) {
+						// ignore
+					}
+				}
+			});
+			thread.setDaemon(true);
+			thread.start();
+		}
+	}
+
+	private long currentVersion = 0;
+	private static ThreadLocal<Long> runningVersion = new ThreadLocal<Long>();
+	private Map<Statement, Statement> runningStatements = new IdentityHashMap<Statement, Statement>();
+
+	private synchronized void begin(Statement statement, Object context) {
+		CancellationHandler.begin(statement, context);
+		runningStatements.put(statement, statement);
+		runningVersion.set(currentVersion);
+	}
+
+	private synchronized void end(Statement statement, Object context) {
+		CancellationHandler.end(statement, context);
+		runningStatements.remove(statement);
+		runningVersion.set(null);
+	}
+
+	private synchronized void checkKilled() {
+		Long v = runningVersion.get();
+		if (v != null && v != currentVersion) {
+			throw new CancellationException();
+		}
 	}
 
 	/**

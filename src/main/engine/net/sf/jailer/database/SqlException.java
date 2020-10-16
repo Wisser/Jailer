@@ -29,13 +29,23 @@ public class SqlException extends SQLException {
 	public final String sqlStatement;
 	private boolean insufficientPrivileges = false;
 	private boolean isFormatted = false;
+	private final String sqlState;
 
 	public SqlException(String message, String sqlStatement, Throwable t) {
 		this(null, message, sqlStatement, t);
 	}
+	
+	public SqlException(String message, String sqlStatement, Throwable t, String sqlLState) {
+		this(null, message, sqlStatement, t, sqlLState);
+	}
 
 	public SqlException(String errorDialogTitle, String message, String sqlStatement, Throwable t) {
+		this(errorDialogTitle, message, sqlStatement, t, null);
+	}
+
+	public SqlException(String errorDialogTitle, String message, String sqlStatement, Throwable t, String sqlState) {
 		super(message, t);
+		this.sqlState = sqlState;
 		this.errorDialogTitle = errorDialogTitle;
 		this.message = t == null? message : t.getMessage();
 		this.sqlStatement = sqlStatement;
@@ -57,6 +67,18 @@ public class SqlException extends SQLException {
 
 	public void setFormatted(boolean isFormatted) {
 		this.isFormatted = isFormatted;
+	}
+
+	@Override
+	public String getSQLState() {
+		if (sqlState != null) {
+			return sqlState;
+		}
+		Throwable cause = getCause();
+		if (cause instanceof SQLException) {
+			return ((SQLException) cause).getSQLState();
+		}
+		return super.getSQLState();
 	}
 
 }

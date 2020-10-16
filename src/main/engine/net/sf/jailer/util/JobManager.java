@@ -23,12 +23,14 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import net.sf.jailer.ui.UIUtil;
+
 /**
  * Executes a job-list in a concurrent way.
  *  
  * @author Ralf Wisser
  */
-public class JobManager {
+public abstract class JobManager {
 
 	/**
 	 * A job to be managed by a {@link JobManager}.
@@ -197,6 +199,11 @@ public class JobManager {
 	private int jobsDoneCounter;
 	
 	/**
+	 * Number of jobs waiting for primary cause.
+	 */
+	private int jobsWaitingForPrimaryCauseCounter;
+	
+	/**
 	 * Number of jobs currently executed.
 	 */
 	private int jobsInExecutionCounter;
@@ -217,6 +224,7 @@ public class JobManager {
 	 */
 	private synchronized void setJobs(List<Job> jobs) {
 		jobsDoneCounter = 0;
+		jobsWaitingForPrimaryCauseCounter = 0;
 		jobsInExecutionCounter = 0;
 		this.jobs = jobs;
 		exception = null;
@@ -230,10 +238,24 @@ public class JobManager {
 	}
 
 	/**
+	 * Gets the Number of jobs waiting for primary cause.
+	 */
+	private synchronized int getJobsWaitingForPrimaryCauseCounter() {
+		return jobsWaitingForPrimaryCauseCounter;
+	}
+
+	/**
 	 * Increments the Number of executed jobs.
 	 */
 	private synchronized void incrementJobsDoneCounter() {
 		++jobsDoneCounter;
+	}
+
+	/**
+	 * Increments the Number of jobs Wwaiting for primary cause.
+	 */
+	private synchronized void incrementJobsWaitingForPrimaryCauseCounter() {
+		++jobsWaitingForPrimaryCauseCounter;
 	}
 
 	/**
@@ -277,14 +299,47 @@ public class JobManager {
 	/**
 	 * Sets an exception.
 	 */
-	private synchronized void setException(Throwable e) {
-		if (exception == null) {
-			exception = e == null? null : (e instanceof CancellationException || e instanceof SQLException)? (Exception) e 
-				: new RuntimeException(Thread.currentThread().getName() + " failed", e);
+	private void setException(Throwable e) {
+		if (isPotentiallyConsequentialError(e)) {
+			// wait for primary error
+			// wait for other jobs
+			incrementJobsWaitingForPrimaryCauseCounter();
+			int i = 0;
+			while (getJobsInExecutionCounter() - getJobsWaitingForPrimaryCauseCounter() > 0) {
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e1) {
+					throw new RuntimeException(e1);
+				}
+				if (i++ > (1000 * 10) / 50) {
+					UIUtil.sendIssue("JobManager", "aborted WaitingForPrimaryCause after 10 sec (" +  getJobsInExecutionCounter() + ", " + getJobsWaitingForPrimaryCauseCounter() + ")"); // TODO remove
+					break;
+				}
+			}
 		}
-		jobs = null;
+		synchronized (this) {
+			if (exception == null) {
+				exception = e == null? null : (e instanceof CancellationException || e instanceof SQLException)? (Exception) e 
+					: new RuntimeException(Thread.currentThread().getName() + " failed", e);
+				if (e != null && !(e instanceof CancellationException)) {
+					onException(e);
+				}
+			}
+			jobs = null;
+		}
 	}
 
-	// TODO cancel on error
-	
+	private synchronized boolean isPotentiallyConsequentialError(Throwable e) {
+		if (exception == null) {
+			if (e instanceof SQLException) {
+				if ("25P02".equals(((SQLException)e).getSQLState())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	protected abstract void onException(Throwable t);
+
 }

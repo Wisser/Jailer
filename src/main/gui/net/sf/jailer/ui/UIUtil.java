@@ -1393,7 +1393,14 @@ public class UIUtil {
 				@Override
 				public void run() throws Throwable {
 					Session session = new Session(basicDataSource, basicDataSource.dbms, null);
-					JobManager jobManager = new JobManager(tables.size() > 1? 4 : 1);
+					JobManager jobManager = new JobManager(tables.size() > 1? 4 : 1) {
+						@Override
+						protected void onException(Throwable t) {
+							if (tables.size() > 1) {
+								session.killRunningStatements();
+							}
+						}
+					};
 					try {
 						new PrimaryKeyValidator(cancellationContext) {
 							boolean initialized = false;
