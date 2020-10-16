@@ -252,10 +252,17 @@ public abstract class JobManager {
 	}
 
 	/**
-	 * Increments the Number of jobs Wwaiting for primary cause.
+	 * Increments the Number of jobs Waiting for primary cause.
 	 */
 	private synchronized void incrementJobsWaitingForPrimaryCauseCounter() {
 		++jobsWaitingForPrimaryCauseCounter;
+	}
+
+	/**
+	 * Decrements the Number of jobs Waiting for primary cause.
+	 */
+	private synchronized void decrementJobsWaitingForPrimaryCauseCounter() {
+		--jobsWaitingForPrimaryCauseCounter;
 	}
 
 	/**
@@ -316,6 +323,7 @@ public abstract class JobManager {
 					break;
 				}
 			}
+			decrementJobsWaitingForPrimaryCauseCounter();
 		}
 		synchronized (this) {
 			if (exception == null) {
