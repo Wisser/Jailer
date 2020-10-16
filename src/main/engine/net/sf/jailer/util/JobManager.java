@@ -318,8 +318,8 @@ public abstract class JobManager {
 				} catch (InterruptedException e1) {
 					throw new RuntimeException(e1);
 				}
-				if (i++ > (1000 * 10) / 50) {
-					UIUtil.sendIssue("JobManager", "aborted WaitingForPrimaryCause after 10 sec (" +  getJobsInExecutionCounter() + ", " + getJobsWaitingForPrimaryCauseCounter() + ")"); // TODO remove
+				if (i++ > (1000 * 20) / 50) {
+					UIUtil.sendIssue("JobManager", "aborted WaitingForPrimaryCause after 20 sec (" +  getJobsInExecutionCounter() + ", " + getJobsWaitingForPrimaryCauseCounter() + ")"); // TODO remove
 					break;
 				}
 			}
