@@ -23,8 +23,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.ui.UIUtil;
-
 /**
  * Executes a job-list in a concurrent way.
  *  
@@ -318,8 +316,8 @@ public abstract class JobManager {
 				} catch (InterruptedException e1) {
 					throw new RuntimeException(e1);
 				}
-				if (i++ > (1000 * 20) / 50) {
-					UIUtil.sendIssue("JobManager", "aborted WaitingForPrimaryCause after 20 sec (" +  getJobsInExecutionCounter() + ", " + getJobsWaitingForPrimaryCauseCounter() + ")"); // TODO remove
+				++i;
+				if (getException() != null || (i > (1000 * 20) / 50) /* 20 sec */) {
 					break;
 				}
 			}

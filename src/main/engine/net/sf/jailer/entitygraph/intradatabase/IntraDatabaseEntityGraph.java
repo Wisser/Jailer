@@ -73,19 +73,15 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			upsertStrategy = null;
 			upsertStrategies = new ArrayList<UpsertStrategy>();
 			
-			boolean isPG = DBMS.POSTGRESQL.equals(session.dbms);
-			
-			if (isPG) {
-				// TODO try nothing else than UpsertPGUS?
+			if (DBMS.POSTGRESQL.equals(session.dbms)) {
 				upsertStrategies.add(new UpsertPGUS());
-			}
-			upsertStrategies.add(new MergeUS(true));
-			upsertStrategies.add(new MergeUS(false));
-			upsertStrategies.add(new UpsertMYSQLUS());
-			if (!isPG) {
+			} else {
+				upsertStrategies.add(new MergeUS(true));
+				upsertStrategies.add(new MergeUS(false));
+				upsertStrategies.add(new UpsertMYSQLUS());
 				upsertStrategies.add(new UpsertPGUS());
+				upsertStrategies.add(new UpsertStandardUS());
 			}
-			upsertStrategies.add(new UpsertStandardUS());
 		}
 		quoting = Quoting.getQuoting(session);
 	}
@@ -347,6 +343,10 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					+ table.getName() + "\".\n" + "No primary key.");
 		}
 
+		if (upsertStrategies.size() == 1) {
+			return upsertStrategies.get(0).upsert(table, sqlSelect);
+		}
+		
 		UpsertStrategy us;
 		boolean done = false;
 		StringBuilder sqlErrorMessages = new StringBuilder();
