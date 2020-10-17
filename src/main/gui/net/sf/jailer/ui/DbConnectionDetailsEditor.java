@@ -312,8 +312,13 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		if (driverlist != null) {
 			String url = dbUrl.getText().trim().replaceAll("^(\\w+:\\w+:).*", "$1");
 			Line line = driverlist.stream().filter(l -> l.cells.get(1).startsWith(url)).findFirst().orElse(null);
-			if (line != null && !line.cells.get(4).isEmpty()) {
-				return new ArrayList<String>(Arrays.asList(line.cells.get(4).split("\\s+")));
+			if (line != null) {
+				if (!line.cells.get(4).isEmpty()) {
+					return new ArrayList<String>(Arrays.asList(line.cells.get(4).split("\\s+")));
+				}
+				if (!line.cells.get(3).isEmpty()) {
+					return Arrays.stream(line.cells.get(3).split("\\s+")).map(fileName -> " " + fileName).collect(Collectors.toList());
+				}
 			}
 		}
 		return null;
@@ -919,17 +924,23 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					long[] total = { 0 };
 					driverURLs.forEach(url -> {
 						try {
-							String result = HttpDownload.get(url, vol -> {
-								String text = updateInfo.apply(total[0] += vol);
-								UIUtil.invokeLater(() -> {
-									concurrentTaskControl.master.infoLabel.setText(text);
+							if (url.startsWith(" ")) {
+								synchronized (LOCK) {
+									files.add(url.substring(1));
+								}
+							} else {
+								String result = HttpDownload.get(url, vol -> {
+									String text = updateInfo.apply(total[0] += vol);
+									UIUtil.invokeLater(() -> {
+										concurrentTaskControl.master.infoLabel.setText(text);
+									});
 								});
-							});
-							if (result.length() == 0) {
-								throw new RuntimeException("cannot download \"" + url + "\"");
-							}
-							synchronized (LOCK) {
-								files.add(result.toString());
+								if (result.length() == 0) {
+									throw new RuntimeException("cannot download \"" + url + "\"");
+								}
+								synchronized (LOCK) {
+									files.add(result.toString());
+								}
 							}
 						} catch (Throwable t) {
 							throw new RuntimeException("cannot download \"" + url + "\"", t);
