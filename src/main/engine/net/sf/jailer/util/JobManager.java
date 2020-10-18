@@ -306,6 +306,9 @@ public abstract class JobManager {
 	 */
 	private void setException(Throwable e) {
 		if (isPotentiallyConsequentialError(e)) {
+			synchronized (this) {
+				jobs = null;
+			}
 			// wait for primary error
 			// wait for other jobs
 			incrementJobsWaitingForPrimaryCauseCounter();
