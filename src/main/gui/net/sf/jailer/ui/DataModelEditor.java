@@ -20,6 +20,8 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -39,7 +41,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -272,6 +276,22 @@ public class DataModelEditor extends javax.swing.JDialog {
 		filterHeader.setMaxVisibleRows(20);
 		filterHeader.setRowHeightDelta(2);
 		
+		Function<JButton, MouseAdapter> editOnDoubleKlickListener = 
+				button -> 
+					new MouseAdapter() {
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							if (e.getClickCount() > 1) {
+								UIUtil.invokeLater(() -> {
+									button.doClick();
+								});
+							}
+						}
+					};
+
+		tablesTable.addMouseListener(editOnDoubleKlickListener.apply(editTable));
+		associationsTable.addMouseListener(editOnDoubleKlickListener.apply(editAssociation));
+
 		String modelpath = executionContext.getQualifiedDatamodelFolder();
 		try {
 			modelpath = new File(modelpath).getAbsolutePath();
@@ -302,10 +322,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				markDirty();
 			}
 		});
-		
-		UIUtil.wireComponentWithButton(tablesTable, editTable);
-		UIUtil.wireComponentWithButton(associationsTable, editAssociation);
-		
+
 		setLocation(100, 32);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		if (screenSize == null || screenSize.width < 1200) {
