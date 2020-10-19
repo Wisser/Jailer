@@ -22,6 +22,8 @@ import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -295,7 +297,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 							boolean hasFocus, int row, int column) {
 						Component render = defaultTableCellRenderer
 								.getTableCellRendererComponent(table, value,
-										isSelected, hasFocus, row, column);
+										isSelected, false /* hasFocus */, row, column);
 						if (render instanceof JLabel) {
 							if (!isSelected) {
 								final Color BG1 = new Color(255, 255, 255);
@@ -323,6 +325,38 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						return render;
 					}
 				});
+		
+		KeyListener keyListener = new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+            
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+            
+            @Override
+            public void keyPressed(KeyEvent e) {
+            	int delta = 0;
+                if (e.getKeyCode() == KeyEvent.VK_UP) {
+                	delta = -1;
+                } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                	delta = 1;
+                }
+                if (delta != 0) {
+                	int selectedRow = connectionsTable.getSelectedRow();
+                	if (selectedRow >= 0) {
+                		selectedRow += delta;
+            			if (selectedRow >= 0 && selectedRow < connectionsTable.getRowCount()) {
+            				connectionsTable.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
+                		}
+                	}
+                }
+            }
+        };
+        jButton1.addKeyListener(keyListener);
+        closeButton.addKeyListener(keyListener);
+		
 		connectionsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		connectionsTable.getSelectionModel().addListSelectionListener(
 				new ListSelectionListener() {
@@ -424,7 +458,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (inRefresh) return;
 		inRefresh = true;
 		try {
-			int selectedRow = connectionsTable.getSelectedRow();
+			final int selectedRow = connectionsTable.getSelectedRow();
 			Object[][] data = initTableModel();
 			RowSorter<?> rowSorter = connectionsTable.getRowSorter();
 			int selectedRowIndex = -1;
@@ -453,7 +487,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 									 getTableCellRendererComponent(
 											 connectionsTable, data[line][i],
 										 false, false, line, i);
-					width = Math.max(width, Math.min(250, comp.getPreferredSize().width));
+					width = Math.max(width, Math.min(220, comp.getPreferredSize().width));
 				}
 				
 				column.setPreferredWidth(width);

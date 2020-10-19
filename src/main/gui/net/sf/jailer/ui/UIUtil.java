@@ -32,10 +32,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -71,7 +67,6 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -975,37 +970,6 @@ public class UIUtil {
         if (replacement != null) {
             parent.add(replacement, c);
         }
-    }
-
-    public static void wireComponentWithButton(JComponent component, final JButton button) {
-        component.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() > 1) {
-                    if (button.isEnabled()) {
-                        button.doClick();
-                    }
-                }
-            }
-        });
-        component.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == '\n') {
-                    if (button.isEnabled()) {
-                        button.doClick();
-                    }
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent arg0) {
-            }
-
-            @Override
-            public void keyPressed(KeyEvent arg0) {
-            }
-        });
     }
 
     public static void fit(JPopupMenu popup) {

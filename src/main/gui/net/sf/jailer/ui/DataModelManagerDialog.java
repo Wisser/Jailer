@@ -210,7 +210,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							boolean hasFocus, int row, int column) {
 						Component render = defaultTableCellRenderer
 								.getTableCellRendererComponent(table, value,
-										false, hasFocus, row, column);
+										false, false /* hasFocus */, row, column);
 						if (render instanceof JLabel) {
 							final Color BG1 = new Color(255, 255, 255);
 							final Color BG2 = new Color(242, 255, 242);
@@ -524,7 +524,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 						boolean hasFocus, int row, int column) {
 					Component render = defaultTableCellRenderer
 							.getTableCellRendererComponent(table, value,
-									false, hasFocus, row, column);
+									false, false /* hasFocus */, row, column);
 					if (render instanceof JLabel) {
 						final Color BG1 = new Color(255, 255, 255);
 						final Color BG2 = new Color(242, 255, 242);
@@ -645,7 +645,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							boolean hasFocus, int row, int column) {
 						Component render = defaultTableCellRenderer
 								.getTableCellRendererComponent(table, value,
-										false, hasFocus, row, column);
+										false, false /* hasFocus */, row, column);
 						if (render instanceof JLabel) {
 							final Color BG1 = new Color(255, 255, 255);
 							final Color BG2 = new Color(242, 255, 242);
