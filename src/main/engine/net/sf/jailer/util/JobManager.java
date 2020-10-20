@@ -23,8 +23,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.ui.UIUtil;
-
 /**
  * Executes a job-list in a concurrent way.
  *  
