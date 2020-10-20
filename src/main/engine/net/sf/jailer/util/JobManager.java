@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import net.sf.jailer.ui.UIUtil;
+
 /**
  * Executes a job-list in a concurrent way.
  *  
@@ -320,7 +322,11 @@ public abstract class JobManager {
 					throw new RuntimeException(e1);
 				}
 				++i;
-				if (getException() != null || (i > (1000 * 20) / 50) /* 20 sec */) {
+				if (getException() != null) {
+					break;
+				}
+				if (i > (1000 * 20) / 50 /* 20 sec */) {
+					LogUtil.warn(new RuntimeException("No prim. cause. " + getJobsInExecutionCounter() + " " + getJobsWaitingForPrimaryCauseCounter()));
 					break;
 				}
 			}
