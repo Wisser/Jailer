@@ -1,3 +1,5 @@
+echo on
+
 echo $JAVA_HOME
 
 echo "$JAVA_HOME/bin/java" -version 
