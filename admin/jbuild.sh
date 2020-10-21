@@ -26,6 +26,10 @@ cd _$1
 unzip ../jailer_$1.zip 
 cd jailer/
 
+unzip docs/admin.zip
+cd admin
+j14pack.bat $1
+
 cd
 cd tmp
 cd _$1

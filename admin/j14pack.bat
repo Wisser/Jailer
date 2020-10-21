@@ -1,4 +1,4 @@
-set version=10.2.0.x
+set version=$1
 
 set PATH=C:\Program Files\Java\jdk-15\bin;%PATH%
 
