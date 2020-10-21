@@ -73,5 +73,3 @@ jlink --add-modules java.se --output jre%version%
 jpackage --name "Jailer %version%" --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group Jailer --vendor Wisser --app-version %version% --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --add-launcher "Jailer %version% Data Browser"=databrowserlauncher.properties --runtime-image jre%version%
 
 move *.msi c:\tmp\"Jailer-%version%-with-java-JRE.msi"
-
-pause

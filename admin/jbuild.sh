@@ -28,7 +28,6 @@ cd _$1
 unzip ../jailer_$1.zip 
 cd jailer/
 
-echo on
 unzip docs/admin.zip
 cd admin
 ./j14pack.bat $1
