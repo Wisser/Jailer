@@ -5,4 +5,4 @@ cd git/Jailer/admin
 dos2unix *.sh
 sh jbuild.sh $1 > buildprotokoll.txt
 
-# move c:\tmp\*msi c:\Users\ralfw\tmp\
+# mv c:/tmp/*.msi c:/Users/ralfw/tmp/
