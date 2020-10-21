@@ -31,7 +31,7 @@ cd jailer/
 echo on
 unzip docs/admin.zip
 cd admin
-j14pack.bat $1
+./j14pack.bat $1
 
 cd
 cd tmp
