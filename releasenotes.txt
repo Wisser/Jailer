@@ -1,5 +1,5 @@
 10.2.1
-  - The response time in case of errors has been improved by immediately aborting all running SQL statements.
+  - The response time in case of errors has been improved by immediately terminating all running SQL statements.
 
 10.2
   - Support for the MS SQL data type "hierarchyid".
