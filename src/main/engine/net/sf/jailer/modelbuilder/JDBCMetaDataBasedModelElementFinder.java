@@ -508,7 +508,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					length = 0;
 					precision = -1;
 				}
-				Column column = new Column(colName, filterType(sqlType, length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
+				Column column = new Column(colName, filterType(sqlType, length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterLength(length, precision, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterPrecision(length, precision, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)));
 				for (int i: pk.keySet()) {
 					if (pk.get(i).name.equals(column.name)) {
 						pk.put(i, column);
@@ -1354,7 +1354,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				precision = -1;
 			}
 			_log.debug("column info: '" + colName + "' '" + sqlType + "' " + type + " '" + resultSet.getString(6) + "'");
-			Column column = new Column(colName, filterType(sqlType, length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
+			Column column = new Column(colName, filterType(sqlType, length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterLength(length, precision, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterPrecision(length, precision, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)));
 			column.isNullable = resultSet.getInt(11) == DatabaseMetaData.columnNullable;
 			Boolean isVirtual = null;
 			if (session.dbms.getExportBlocks().contains(sqlType)) {
@@ -1415,14 +1415,18 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * Filters the length attribute of a column in a DBMS specific way.
 	 * 
 	 * @param length the length as given from driver
+	 * @param precision the precision as given from driver
 	 * @param the type name
 	 * @param type the sql type
 	 * @param dbms the DBMS
 	 * 
 	 * @return filtered length
 	 */
-	public static int filterLength(int length, String typeName, int type, DBMS dbms, int origLength) {
+	public static int filterLength(int length, int precision, String typeName, int type, DBMS dbms, int origLength) {
 		if (length > 0) {
+			if (length == 65535 && precision == 32767 && "DECIMAL".equals(typeName) && DBMS.H2.equals(dbms)) {
+				return 0;
+			}
 			if (DBMS.POSTGRESQL.equals(dbms)) {
 				if (type == Types.VARCHAR && length >= 10485760) {
 					length = 0;
@@ -1445,6 +1449,24 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 		}
 		return length;
+	}
+
+	/**
+	 * Filters the precision attribute of a column in a DBMS specific way.
+	 * 
+	 * @param length the length as given from driver
+	 * @param precision 
+	 * @param the type name
+	 * @param type the sql type
+	 * @param dbms the DBMS
+	 * 
+	 * @return filtered length
+	 */
+	public static int filterPrecision(int length, int precision, String typeName, int type, DBMS dbms, int origLength) {
+		if (length == 65535 && precision == 32767 && "DECIMAL".equals(typeName) && DBMS.H2.equals(dbms)) {
+			return -1;
+		}
+		return precision;
 	}
 
 	/**
@@ -1544,7 +1566,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			length = 0;
 			precision = -1;
 		}
-		Column column = new Column(colName, filterType(sqlType, length, metaData.getColumnTypeName(i), type, session.dbms, metaData.getPrecision(i)), filterLength(length, metaData.getColumnTypeName(i), type, session.dbms, metaData.getPrecision(i)), precision);
+		Column column = new Column(colName, filterType(sqlType, length, metaData.getColumnTypeName(i), type, session.dbms, metaData.getPrecision(i)), filterLength(length, precision, metaData.getColumnTypeName(i), type, session.dbms, metaData.getPrecision(i)), filterPrecision(length, precision, metaData.getColumnTypeName(i), type, session.dbms, metaData.getPrecision(i)));
 		column.isNullable = metaData.isNullable(i) != ResultSetMetaData.columnNoNulls;
 		return column;
 	}

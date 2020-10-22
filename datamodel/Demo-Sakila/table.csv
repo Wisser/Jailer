@@ -1,5 +1,5 @@
 # Name; Upsert; Primary Key; ; Author
-ACTOR; N; ACTOR_ID DECIMAL(65535, 32767); ; H2 JDBC Driver; ; 
+ACTOR; N; ACTOR_ID DECIMAL; ; H2 JDBC Driver; ; 
 ADDRESS; N; ADDRESS_ID INTEGER; ; H2 JDBC Driver; ; 
 CATEGORY; N; CATEGORY_ID SMALLINT; ; H2 JDBC Driver; ; 
 CITY; N; CITY_ID INTEGER; ; H2 JDBC Driver; ; 
