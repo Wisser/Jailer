@@ -5,6 +5,7 @@ rm -r ~/tmp/myjre
 cd ..
 
 cp -r bookmark ~/tmp/_
+cp -r template ~/tmp/_
 cp -r build.xml ~/tmp/_
 cp -r config ~/tmp/_
 cp -r datamodel ~/tmp/_

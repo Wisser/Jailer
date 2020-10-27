@@ -11,6 +11,7 @@ xcopy /S /E maven-artifacts c:\tmp\_\maven-artifacts\
 xcopy /S /E bookmark c:\tmp\_\bookmark\
 xcopy /S /E config c:\tmp\_\config\
 xcopy /S /E datamodel c:\tmp\_\datamodel\
+xcopy /S /E template c:\tmp\_\template\
 xcopy demo-sakila-1.4.mv.db c:\tmp\_
 xcopy demo-scott-1.4.mv.db c:\tmp\_
 xcopy demo-scott-subset-1.4.mv.db c:\tmp\_
