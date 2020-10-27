@@ -541,13 +541,20 @@ public class Session {
 		long startTime = System.currentTimeMillis();
 		Statement statement = null;
 		try {
+			final String woSuffix = " /*!*/";
+			boolean wo = sqlQuery.endsWith(woSuffix);
+			if (wo) {
+				sqlQuery = sqlQuery.substring(0, sqlQuery.length() - woSuffix.length());
+			}
 			statement = theConnection.createStatement();
 			if (dbms != null) {
 				if (dbms.getFetchSize() != null) {
-					try {
-						statement.setFetchSize(dbms.getFetchSize());
-					} catch (Throwable t) {
-						// ignore
+					if (!wo || !DBMS.MySQL.equals(dbms)) {
+						try {
+							statement.setFetchSize(dbms.getFetchSize());
+						} catch (Throwable t) {
+							// ignore
+						}
 					}
 				}
 			}

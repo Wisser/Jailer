@@ -334,7 +334,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		final long[] rc = new long[] { 0 };
 		final boolean[] rcValid = new boolean[] { true };
 
-		session.executeQuery(select, new Session.AbstractResultSetReader() {
+		session.executeQuery(select + " /*!*/", new Session.AbstractResultSetReader() {
 			int batchSize = 0;
 			Map<Integer, Integer> columnType = null;
 			@Override
