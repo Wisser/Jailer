@@ -1,3 +1,6 @@
+10.2.2
+  - Error "Streaming result set is still active" when a limit is defined on the subject was fixed (MySQL)
+
 10.2.1
   - The response time in case of errors has been improved by immediately terminating all running SQL statements.
 
