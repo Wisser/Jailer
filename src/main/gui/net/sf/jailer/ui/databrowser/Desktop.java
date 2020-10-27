@@ -3387,6 +3387,24 @@ public abstract class Desktop extends JDesktopPane {
 		if (forceAdjustRows == null) {
 			return;
 		}
+		if (tabu != null && thisOne == null) {
+			if (pendingTabu == null) {
+				pendingTabu = tabu;
+				UIUtil.invokeLater(() -> {
+					doAdjustClosure(pendingTabu, null);
+					pendingTabu = null;
+				});
+			} else if (pendingTabu != tabu) {
+				doAdjustClosure(tabu, thisOne);
+			}
+		} else {
+			doAdjustClosure(tabu, thisOne);
+		}
+	}
+	
+	private BrowserContentPane pendingTabu = null;
+	
+	private synchronized void doAdjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne) {
 		for (RowBrowser rb : tableBrowsers) {
 			if (rb.browserContentPane == tabu) {
 				continue;
