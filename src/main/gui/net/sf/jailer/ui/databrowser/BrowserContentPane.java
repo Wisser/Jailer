@@ -1256,8 +1256,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rowsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 				List<Integer> prevSelectedRows = null;
 				Timer timer = null;
+				boolean pending = false;
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
+					if (!pending) {
+						pending = true;
+						UIUtil.invokeLater(() -> {
+							selectRows();
+							pending = false;
+						});
+					}
+				}
+				private void selectRows() {
 					List<Integer> selectedRows = new ArrayList<Integer>();
 					if (isUpdatingTableModel) {
 						prevSelectedRows = selectedRows;
