@@ -1,9 +1,11 @@
+set version=$1
 
 rm -r ~/tmp/_
 mkdir ~/tmp/_
-rm -r ~/tmp/myjre
+rm -r ~/tmp/jre$1
 cd ..
 
+cp -r maven-artifacts ~/tmp/_
 cp -r bookmark ~/tmp/_
 cp -r template ~/tmp/_
 cp -r build.xml ~/tmp/_
@@ -51,6 +53,7 @@ mv ~/tmp/_/jdbc_lib/log4j.jar ~/tmp/_/lib/log4j.jar
 mv ~/tmp/_/jdbc_lib/prefuse.jar ~/tmp/_/lib/prefuse.jar
 mv ~/tmp/_/jdbc_lib/sdoc-0.5.0-beta.jar ~/tmp/_/lib/sdoc-0.5.0-beta.jar
 mv ~/tmp/_/jdbc_lib/tablefilter-swing-5.3.1.jar ~/tmp/_/lib/tablefilter-swing-5.3.1.jar
+cp ~/tmp/_/jdbc_lib/h2-1.4.199.jar ~/tmp/_/lib/h2-1.4.199.jar
 
 rm ~/tmp/_/jdbc_lib/dbunit-2.4.4.jar
 rm ~/tmp/_/jdbc_lib/h2-1.3.160.jar
@@ -69,5 +72,5 @@ exit
 cd ~/tmp/_
 echo "" > .singleuser
 
-~/jdk-14/bin/jlink --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.management,java.scripting,java.sql,java.xml,java.rmi,java.scripting,java.xml.crypto --output myjre 
-~/jdk-14/bin/jpackage --name Jailer --input . --main-jar jailer.jar --type deb --icon jailer.png --vendor Wisser --app-version 2.8 --add-launcher "Jailer Data Browser"=databrowserlauncher.properties --runtime-image myjre
+~/jdk-14/bin/jlink --add-modules java.se --output jre$1 
+~/jdk-14/bin/jpackage --name Jailer --input . --main-jar jailer.jar --type deb --icon jailer.png --vendor Wisser --app-version $1 --add-launcher "Jailer Data Browser"=databrowserlauncher.properties --runtime-image jre$1
