@@ -442,12 +442,20 @@ public class AssociationRenderer extends EdgeRenderer {
 	private final double PENDING_SIZE = 0.32;
 	{
 		// load images
-		starImage = UIUtil.readImage("/star.png").getImage();
-		starWidth = starImage.getWidth(null);
-		starHeight = starImage.getHeight(null);
-		pendingImage = UIUtil.readImage("/wanr.png").getImage();
-		pendingWidth = pendingImage.getWidth(null);
-		pendingHeight = pendingImage.getHeight(null);
+		try {
+			starImage = UIUtil.readImage("/star.png").getImage();
+			starWidth = starImage.getWidth(null);
+			starHeight = starImage.getHeight(null);
+		} catch (Throwable t) {
+			// ignore
+		}
+		try {
+			pendingImage = UIUtil.readImage("/wanr.png").getImage();
+			pendingWidth = pendingImage.getWidth(null);
+			pendingHeight = pendingImage.getHeight(null);
+		} catch (Throwable t) {
+			// ignore
+		}
 	}
-	
+
 }

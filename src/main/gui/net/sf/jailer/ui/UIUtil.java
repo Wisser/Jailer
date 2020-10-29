@@ -112,6 +112,7 @@ import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 
 /**
@@ -1593,7 +1594,7 @@ public class UIUtil {
 			try {
 				result = new ImageIcon(ImageIO.read(UIUtil.class.getResource("/net/sf/jailer/ui/resource" + resource)));
 			} catch (Throwable e) {
-				e.printStackTrace();
+				LogUtil.warn(e);
 				result = null;
 			}
 			images.put(resource, result);

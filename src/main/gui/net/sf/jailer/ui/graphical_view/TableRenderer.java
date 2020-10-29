@@ -1203,12 +1203,12 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 	private Image filterImage = null;
 	{
 		// load images
-		excludeFromDeletionImage = UIUtil.readImage("/database-lock.png").getImage();
-		collapsedImage = UIUtil.readImage("/collapsed.png").getImage();
-		collapsedRedImage = UIUtil.readImage("/collapsedred.png").getImage();
-		upsertImage = UIUtil.readImage("/upsert.png").getImage();
-		subjectImage = UIUtil.readImage("/subject.png").getImage();
-		filterImage = UIUtil.readImage("/filter.png").getImage();
+		try { excludeFromDeletionImage = UIUtil.readImage("/database-lock.png").getImage(); } catch (Throwable t) {}
+		try { collapsedImage = UIUtil.readImage("/collapsed.png").getImage(); } catch (Throwable t) {}
+		try { collapsedRedImage = UIUtil.readImage("/collapsedred.png").getImage(); } catch (Throwable t) {}
+		try { upsertImage = UIUtil.readImage("/upsert.png").getImage(); } catch (Throwable t) {}
+		try { subjectImage = UIUtil.readImage("/subject.png").getImage(); } catch (Throwable t) {}
+		try { filterImage = UIUtil.readImage("/filter.png").getImage(); } catch (Throwable t) {}
 	}
 	
 }

@@ -159,10 +159,10 @@ public class Environment {
 		AWTWatchdog.start();
 		LogUtil.setWarn(new LogUtil.Warn() {
 			@Override
-			public void warn(Exception e) {
+			public void warn(Throwable t) {
 				StringWriter sw = new StringWriter();
 		        PrintWriter pw = new PrintWriter(sw);
-		        e.printStackTrace(pw);
+		        t.printStackTrace(pw);
 		        UIUtil.sendIssue("warn", sw.toString().replaceAll("at (.*)?\\.((\\w|\\$)+\\.(\\w|\\$)+\\()", "$2"));
 		        LogUtil.setWarn(null);
 			}
