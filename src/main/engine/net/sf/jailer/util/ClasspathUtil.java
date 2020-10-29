@@ -66,7 +66,6 @@ public class ClasspathUtil {
 		for (String fn: jars) {
 			File file = new File(fn);
 			if (!file.exists() && !file.isAbsolute() && Configuration.applicationBase != null) {
-				// TODO test
 				File home = new File(System.getProperty("user.home"), ".jailer");
 				File uFile = new File(home, fn);
 				if (uFile.exists()) {

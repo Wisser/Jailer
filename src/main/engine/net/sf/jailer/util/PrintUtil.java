@@ -98,7 +98,7 @@ public class PrintUtil {
 		StringBuffer sb;
 		sb = new StringBuffer();
 		File newFile;
-		if (Configuration.applicationBase == null) { // TODO test
+		if (Configuration.applicationBase == null) {
 			newFile = new File(name);
 		} else {
 			newFile = new File(Configuration.applicationBase, name);

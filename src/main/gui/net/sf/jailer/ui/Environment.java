@@ -70,7 +70,7 @@ public class Environment {
 		initUI();
 		try {
 			File app;
-			app = new File("lib", "app"); // Linux // TODO test
+			app = new File("lib", "app"); // Linux
 			if (new File(app, "jailer.xml").exists()) {
 				applicationBase = app;
 			} else {
