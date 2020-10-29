@@ -112,7 +112,6 @@ import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
-import net.sf.jailer.util.LogUtil;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 
 /**
@@ -1587,14 +1586,19 @@ public class UIUtil {
 	}
 
 	private static Map<String, ImageIcon> images = new HashMap<String, ImageIcon>();
+	private static boolean errorSeen = false;
 	
 	public static ImageIcon readImage(String resource) {
 		ImageIcon result = images.get(resource);
 		if (result == null) {
+			String name = "/net/sf/jailer/ui/resource" + resource;
 			try {
-				result = new ImageIcon(ImageIO.read(UIUtil.class.getResource("/net/sf/jailer/ui/resource" + resource)));
-			} catch (Throwable e) {
-				LogUtil.warn(e);
+				result = new ImageIcon(ImageIO.read(UIUtil.class.getResource(name)));
+			} catch (Throwable t) {
+				if (!errorSeen) {
+					errorSeen = true;
+					invokeLater(8, () -> showException(null, "Error", new IOException("unable to load image " + name + ": " + t.getMessage(), t), EXCEPTION_CONTEXT_MB_USER_ERROR));
+				}
 				result = null;
 			}
 			images.put(resource, result);
