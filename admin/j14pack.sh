@@ -36,6 +36,7 @@ cp -r releasenotes.txt ~/tmp/_
 cp -r render ~/tmp/_ 
 cp admin/jailer.png ~/tmp/_ 
 cp admin/databrowserlauncher.properties ~/tmp/_ 
+cp admin/databrowserlauncher-linux.properties ~/tmp/_ 
  
 cp -r ~/tmp/_/lib ~/tmp/_/jdbc_lib 
 rm ~/tmp/_/lib/* 
@@ -70,5 +71,5 @@ done
 cd ~/tmp/_ 
 echo "" > .singleuser 
 
-sudo /home/ralf/jdk-15.0.1/bin/jlink --add-modules java.se --output jre$1  
-sudo /home/ralf/jdk-15.0.1/bin/jpackage --name Jailer --input . --main-jar jailer.jar --type deb --icon jailer.png --vendor Wisser --app-version $1 --add-launcher "Jailer Data Browser"=databrowserlauncher.properties --runtime-image jre$1 
+/home/ralf/jdk-15.0.1/bin/jlink --add-modules java.se --output jre$1  
+/home/ralf/jdk-15.0.1/bin/jpackage --name "Jailer UI" --arguments "-jpack" --input . --main-jar jailer.jar --type deb --icon jailer.png --vendor Wisser --app-version "$1" --add-launcher "Jailer Data Browser"=databrowserlauncher-linux.properties --runtime-image jre$1 
