@@ -2085,8 +2085,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public static void main(String args[]) {
 		try {
-			if (args.length > 0 && "JailerDataBrowser".equals(args[0])) {
-				DataBrowser.main(args);
+			List<String> aList = new ArrayList<String>(Arrays.asList(args));
+			if (aList.remove("JailerDataBrowser")) {
+				DataBrowser.main(aList.toArray(new String[0]));
 				return;
 			}
 			start(args);
