@@ -2501,9 +2501,9 @@ public class DataBrowser extends javax.swing.JFrame {
      * @param args
      *            the command line arguments
      */
-    private static void start(final String args[]) {
+    private static void start(String args[]) {
         try {
-        	Environment.init();
+        	args = Environment.init(args);
         } catch (Throwable e) {
         	e.printStackTrace();
 			UIUtil.showException(null, "Error", e);

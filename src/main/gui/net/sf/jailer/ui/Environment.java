@@ -23,11 +23,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -50,7 +54,7 @@ public class Environment {
 
 	private static File home = null;
 
-	public static void init() {
+	public static String[] init(String[] args) {
 		// see:
 		// https://github.com/AdoptOpenJDK/openjdk-jdk11/issues/10
 		// https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8215200
@@ -67,12 +71,24 @@ public class Environment {
 		} catch (Exception e) {
 		}
 
+		boolean jpack = false;
+		File jPackApp = null;
+		if (args != null) {
+			List<String> aList = new ArrayList<String>(Arrays.asList(args));
+			if (aList.remove("-jpack")) {
+				args = aList.toArray(new String[0]);
+				jpack = true;
+				URL url = Environment.class.getProtectionDomain().getCodeSource().getLocation();
+				jPackApp = new File(url.getPath()).getParentFile();
+			}
+		}
+		
 		initUI();
 		try {
 			File app;
-			app = new File("lib", "app"); // Linux
-			if (new File(app, "jailer.xml").exists()) {
-				applicationBase = app;
+			// app = new File("lib", "app"); // Linux
+			if (jpack) {
+				applicationBase = jPackApp;
 			} else {
 				app = new File("Contents", "app"); // macOS
 				if (new File(app, "jailer.xml").exists()) {
@@ -167,6 +183,8 @@ public class Environment {
 		        LogUtil.setWarn(null);
 			}
 		});
+		
+		return args;
 	}
 
 	private static File applicationBase = null;

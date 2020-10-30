@@ -2086,7 +2086,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	public static void main(String args[]) {
 		try {
 			if (args.length > 0 && "JailerDataBrowser".equals(args[0])) {
-				DataBrowser.main(new String[0]);
+				DataBrowser.main(args);
 				return;
 			}
 			start(args);
@@ -2099,9 +2099,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	/**
 	 * @param args the command line arguments
 	 */
-	private static void start(final String args[]) {
+	private static void start(String args[]) {
 		try {
-			Environment.init();
+			args = Environment.init(args);
 		} catch (Throwable e) {
 			e.printStackTrace();
 			UIUtil.showException(null, "Error", e);
