@@ -23,10 +23,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -79,7 +81,15 @@ public class Environment {
 				args = aList.toArray(new String[0]);
 				jpack = true;
 				URL url = Environment.class.getProtectionDomain().getCodeSource().getLocation();
-				jPackApp = new File(url.getPath()).getParentFile();
+				try {
+					jPackApp = new File(url.toURI()).getParentFile();
+				} catch (URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
+				File configFile = new File(jPackApp, "jailer.xml");
+				if (!configFile.exists()) {
+					throw new IllegalStateException("missing file \"" + configFile + "\". Base URL: " + url);
+				}
 			}
 		}
 		
@@ -90,14 +100,15 @@ public class Environment {
 			if (jpack) {
 				applicationBase = jPackApp;
 			} else {
-				app = new File("Contents", "app"); // macOS
+				app = new File("app"); // Windows
 				if (new File(app, "jailer.xml").exists()) {
 					applicationBase = app;
 				} else {
-					app = new File("app"); // Windows
-					if (new File(app, "jailer.xml").exists()) {
-						applicationBase = app;
-					}
+					// not yet supported
+//					app = new File("Contents", "app"); // macOS
+//					if (new File(app, "jailer.xml").exists()) {
+//						applicationBase = app;
+//					}
 				}
 			}
 			Configuration.applicationBase = applicationBase;

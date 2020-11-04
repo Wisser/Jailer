@@ -42,7 +42,8 @@ cp -r ~/tmp/_/lib ~/tmp/_/jdbc_lib
 rm ~/tmp/_/lib/* 
 rm ~/tmp/_/*.bat 
 rm ~/tmp/_/*.exe 
-rm ~/tmp/_/*.sh 
+
+chmod a+x ~/tmp/_/*.sh 
  
 mv ~/tmp/_/jdbc_lib/activation-1.0.2.jar ~/tmp/_/lib/activation-1.0.2.jar 
 mv ~/tmp/_/jdbc_lib/args4j.jar ~/tmp/_/lib/args4j.jar 
@@ -62,7 +63,7 @@ rm ~/tmp/_/jdbc_lib/h2-1.3.175.jar
 rm ~/tmp/_/jdbc_lib/jsqlparser-1.1.jar 
 rm ~/tmp/_/jdbc_lib/junit-4.4.jar 
 rm ~/tmp/_/jdbc_lib/postgresql-42.2.0.jre7.jar 
- 
+
 cd  
 for file in ~/tmp/_/jdbc_lib/*; do
   mv $file $file.x
