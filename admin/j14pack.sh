@@ -73,4 +73,4 @@ cd ~/tmp/_
 echo "" > .singleuser 
 
 /home/ralf/jdk-15.0.1/bin/jlink --add-modules java.se --output jre$1  
-/home/ralf/jdk-15.0.1/bin/jpackage --name "Jailer UI" --arguments "-jpack" --input . --main-jar jailer.jar --type deb --icon jailer.png --vendor Wisser --app-version "$1" --add-launcher "Jailer Data Browser"=databrowserlauncher-linux.properties --runtime-image jre$1 
+/home/ralf/jdk-15.0.1/bin/jpackage --name "Jailer" --linux-package-name jailer-database-tools --arguments "-jpack" --input . --main-jar jailer.jar --type deb --icon jailer.png --vendor Wisser --app-version "$1" --add-launcher "Jailer Data Browser"=databrowserlauncher-linux.properties --runtime-image jre$1 
