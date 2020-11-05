@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.InputMap;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -1330,18 +1331,22 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								
 								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, executionContext) {
 									@Override
-									protected boolean checkForPKs() {
+									protected boolean checkForPKs(JCheckBox checkBox) {
 										try {
 											extractionModelEditor.dataModel.checkForPrimaryKey(new HashSet<Table>(toCheck), false);
 										} catch (Exception e) {
 											if (e instanceof DataModel.NoPrimaryKeyException) {
-												if (JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, new Object[] { "Edit Table", "Cancel" }, null) == 0) {
+												int result = JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, new Object[] { "Edit Table", checkBox.getText(), "Cancel" }, null);
+												if (result == 0) {
 													dispose();
 													setVisible(false);
 													openDataModelEditor(((NoPrimaryKeyException) e).table == null? extractionModelEditor.subject : ((NoPrimaryKeyException) e).table, false);
 													if (onDataModelUpdate != null) {
 														onDataModelUpdate.run();
 													}
+												} else if (result == 1) {
+													checkBox.setSelected(true);
+													return true;
 												}
 											} else {
 												UIUtil.showException(this, "Error", e);

@@ -1247,6 +1247,8 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         <statisticRenovator>
             <scriptFileName>script/postgres/update_statistics.sql</scriptFileName>
         </statisticRenovator>
+        <rowidName>ctid</rowidName>
+        <rowidType>tid</rowidType>
         <typeReplacement>
             <entry>
                 <key>DOUBLE</key>
@@ -1336,6 +1338,10 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
             </entry>
        	    <entry>
                 <key>money</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>tid</key>
                 <value>'$1'::$2</value>
             </entry>
         </sqlExpressionRule>
@@ -1457,6 +1463,8 @@ union all
         <statisticRenovator>
             <scriptFileName>script/postgres/update_statistics.sql</scriptFileName>
         </statisticRenovator>
+        <rowidName>ctid</rowidName>
+        <rowidType>tid</rowidType>
         <typeReplacement>
             <entry>
                 <key>DOUBLE</key>
@@ -1546,6 +1554,10 @@ union all
             </entry>
        	    <entry>
                 <key>money</key>
+                <value>'$1'::$2</value>
+            </entry>
+       	    <entry>
+                <key>tid</key>
                 <value>'$1'::$2</value>
             </entry>
         </sqlExpressionRule>

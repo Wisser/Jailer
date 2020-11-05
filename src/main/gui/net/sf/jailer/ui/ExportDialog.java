@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -401,8 +402,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			if (session.dbms.getRowidName() == null) {
 				useRowIds.setSelected(true);
 				useRowIds.setVisible(false);
+			} else {
+				useRowIds.setText(useRowIds.getText().replaceFirst("(<i>).*(</i>)", "$1" + session.dbms.getRowidName() + "$2"));
+				useRowIds.setToolTipText("<html>If this option is selected, tables that do not have a primary key can also be exported.<br>" + 
+						"Please note that generating <i>upsert-</i>statements for these tables will still not be possible.");
 			}
-
+			// TODO allow using rowid for tables without pk only. (Mod. DataModel + undo-Mod. add virtual column per tab. without pk. Avoid name-collisions)
+			
 			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
 
 			theSettings.restore(settingsContext, settingsContextSecondaryKey);
@@ -1124,8 +1130,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         delete = new javax.swing.JTextField();
         threads = new javax.swing.JTextField();
         rowsPerThread = new javax.swing.JTextField();
-        upsertCheckbox = new javax.swing.JCheckBox();
-        explain = new javax.swing.JCheckBox();
         placeholder = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
@@ -1154,15 +1158,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jLabel25 = new javax.swing.JLabel();
         copyButton = new javax.swing.JButton();
         placeholder1 = new javax.swing.JLabel();
-        sortedCheckBox = new javax.swing.JCheckBox();
-        unicode = new javax.swing.JCheckBox();
         openWhereEditor = new javax.swing.JLabel();
         additSubsLabel = new javax.swing.JLabel();
         additSubsLabelTitel = new javax.swing.JLabel();
-        useRowIds = new javax.swing.JCheckBox();
         jLabel10 = new javax.swing.JLabel();
         workingTableSchemaComboBox = new javax.swing.JComboBox();
-        confirmInsert = new javax.swing.JCheckBox();
         jLabel17 = new javax.swing.JLabel();
         toLabel = new javax.swing.JLabel();
         targetDBMSComboBox = new javax.swing.JComboBox();
@@ -1171,16 +1171,23 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         iFMTPanel = new javax.swing.JPanel();
         jLabel29 = new javax.swing.JLabel();
         jLabel30 = new javax.swing.JLabel();
+        jPanel5 = new javax.swing.JPanel();
+        sortedCheckBox = new javax.swing.JCheckBox();
+        upsertCheckbox = new javax.swing.JCheckBox();
+        explain = new javax.swing.JCheckBox();
+        transactional = new javax.swing.JCheckBox();
+        independentWorkingTables = new javax.swing.JCheckBox();
+        orderByPKCheckbox = new javax.swing.JCheckBox();
+        unicode = new javax.swing.JCheckBox();
+        confirmInsert = new javax.swing.JCheckBox();
+        insertIncrementally = new javax.swing.JCheckBox();
+        useRowIds = new javax.swing.JCheckBox();
         browseInsertButton = new javax.swing.JButton();
         browseDeleteButton = new javax.swing.JButton();
-        insertIncrementally = new javax.swing.JCheckBox();
         targetDBMSLabel1 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         isolationLevelComboBox = new javax.swing.JComboBox();
         iLHintLabel = new javax.swing.JLabel();
-        transactional = new javax.swing.JCheckBox();
-        independentWorkingTables = new javax.swing.JCheckBox();
-        orderByPKCheckbox = new javax.swing.JCheckBox();
         jLabel13 = new javax.swing.JLabel();
         rowLimit = new javax.swing.JTextField();
         jLabel18 = new javax.swing.JLabel();
@@ -1436,25 +1443,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(rowsPerThread, gridBagConstraints);
 
-        upsertCheckbox.setText("upsert-statements (overwrite) for all rows"); // NOI18N
-        upsertCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 38;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        jPanel1.add(upsertCheckbox, gridBagConstraints);
-
-        explain.setText("explain"); // NOI18N
-        explain.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 47;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        jPanel1.add(explain, gridBagConstraints);
-
         placeholder.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -1698,36 +1686,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(placeholder1, gridBagConstraints);
 
-        sortedCheckBox.setText("sort topologically");
-        sortedCheckBox.setToolTipText("sort exported rows according to dependencies");
-        sortedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        sortedCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sortedCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 37;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        jPanel1.add(sortedCheckBox, gridBagConstraints);
-
-        unicode.setText("UTF-8 encoding"); // NOI18N
-        unicode.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        unicode.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                unicodeActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 45;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        jPanel1.add(unicode, gridBagConstraints);
-
         openWhereEditor.setText("jLabel28");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1749,20 +1707,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(additSubsLabelTitel, gridBagConstraints);
-
-        useRowIds.setText("use \"ROWID\" column"); // NOI18N
-        useRowIds.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        useRowIds.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                useRowIdsActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 60;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
-        jPanel1.add(useRowIds, gridBagConstraints);
 
         jLabel10.setText(" Working table schema "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1786,20 +1730,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(workingTableSchemaComboBox, gridBagConstraints);
-
-        confirmInsert.setText("ask for permission to insert into target schema"); // NOI18N
-        confirmInsert.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        confirmInsert.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                confirmInsertActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 46;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        jPanel1.add(confirmInsert, gridBagConstraints);
 
         jLabel17.setText(" To"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1872,6 +1802,147 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(iFMTPanel, gridBagConstraints);
 
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        sortedCheckBox.setText("sort topologically");
+        sortedCheckBox.setToolTipText("sort exported rows according to dependencies");
+        sortedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        sortedCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortedCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 37;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(sortedCheckBox, gridBagConstraints);
+
+        upsertCheckbox.setText("upsert-statements (overwrite) for all rows"); // NOI18N
+        upsertCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 38;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(upsertCheckbox, gridBagConstraints);
+
+        explain.setText("explain"); // NOI18N
+        explain.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 47;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(explain, gridBagConstraints);
+
+        transactional.setText("transactional"); // NOI18N
+        transactional.setToolTipText("<html>Perform export in a single transaction. <br>Caution: the use of more than 1 parallel thread can cause problems.</html>");
+        transactional.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        transactional.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                transactionalActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 62;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(transactional, gridBagConstraints);
+
+        independentWorkingTables.setText("independent working tables"); // NOI18N
+        independentWorkingTables.setToolTipText("<html>Create working tables that are independent of the extraction model. <br>(Potentially less efficient)</html>");
+        independentWorkingTables.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        independentWorkingTables.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                independentWorkingTablesActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 49;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(independentWorkingTables, gridBagConstraints);
+
+        orderByPKCheckbox.setText("order by primary key"); // NOI18N
+        orderByPKCheckbox.setToolTipText("<html>Orders the exported rows according to the primary key. This makes the result script deterministic.<br>\n<b>Please take into account that this can affect the performance.</b></html>\n");
+        orderByPKCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 39;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(orderByPKCheckbox, gridBagConstraints);
+
+        unicode.setText("UTF-8 encoding"); // NOI18N
+        unicode.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        unicode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                unicodeActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 45;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(unicode, gridBagConstraints);
+
+        confirmInsert.setText("ask for permission to insert into target schema"); // NOI18N
+        confirmInsert.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        confirmInsert.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confirmInsertActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 46;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(confirmInsert, gridBagConstraints);
+
+        insertIncrementally.setText("limit transaction size"); // NOI18N
+        insertIncrementally.setToolTipText("<html>Collects the rows using multiple insert operations with a limited number of rows per operation.<br>Use this option if otherwise the transactions become too big.</html>");
+        insertIncrementally.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        insertIncrementally.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                insertIncrementallyActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 48;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(insertIncrementally, gridBagConstraints);
+
+        useRowIds.setSelected(true);
+        useRowIds.setText("<html>use <i>ROWID</i> pseudo column for row identification</html>"); // NOI18N
+        useRowIds.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        useRowIds.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useRowIdsActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 60;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel5.add(useRowIds, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 37;
+        jPanel1.add(jPanel5, gridBagConstraints);
+
         browseInsertButton.setText(" Browse..");
         browseInsertButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1893,21 +1964,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 34;
         jPanel1.add(browseDeleteButton, gridBagConstraints);
-
-        insertIncrementally.setText("limit transaction size"); // NOI18N
-        insertIncrementally.setToolTipText("<html>Collects the rows using multiple insert operations with a limited number of rows per operation.<br>Use this option if otherwise the transactions become too big.</html>");
-        insertIncrementally.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        insertIncrementally.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insertIncrementallyActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 48;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        jPanel1.add(insertIncrementally, gridBagConstraints);
 
         targetDBMSLabel1.setText(" Isolation level"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1943,47 +1999,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jPanel3, gridBagConstraints);
-
-        transactional.setText("transactional"); // NOI18N
-        transactional.setToolTipText("<html>Perform export in a single transaction. <br>Caution: the use of more than 1 parallel thread can cause problems.</html>");
-        transactional.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        transactional.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                transactionalActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 52;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 8, 0);
-        jPanel1.add(transactional, gridBagConstraints);
-
-        independentWorkingTables.setText("independent working tables"); // NOI18N
-        independentWorkingTables.setToolTipText("<html>Create working tables that are independent of the extraction model. <br>(Potentially less efficient)</html>");
-        independentWorkingTables.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        independentWorkingTables.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                independentWorkingTablesActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 49;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        jPanel1.add(independentWorkingTables, gridBagConstraints);
-
-        orderByPKCheckbox.setText("order by primary key"); // NOI18N
-        orderByPKCheckbox.setToolTipText("<html>Orders the exported rows according to the primary key. This makes the result script deterministic.<br>\n<b>Please take into account that this can affect the performance.</b></html>\n");
-        orderByPKCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 39;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        jPanel1.add(orderByPKCheckbox, gridBagConstraints);
 
         jLabel13.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2127,7 +2142,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			JOptionPane.showMessageDialog(this, "Unfilled mandatory fields", "Error", JOptionPane.ERROR_MESSAGE);
 		} else {
 			if (useRowIds.isVisible() && !useRowIds.isSelected()) {
-				if (!checkForPKs()) {
+				if (!checkForPKs(useRowIds)) {
 					return;
 				}
 			}
@@ -2146,7 +2161,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 	}//GEN-LAST:event_jButton1ActionPerformed
 
-	protected abstract boolean checkForPKs();
+	protected abstract boolean checkForPKs(JCheckBox checkBox);
 
 	private boolean createWorkingTables() {
 		List<String> ddlArgs = new ArrayList<String>();
@@ -2675,6 +2690,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;

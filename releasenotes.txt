@@ -1,3 +1,7 @@
+10.2.3
+  - When working with PostgreSQL, you can use the "ctid" pseudo columns instead of primary keys
+    for row identification. See https://github.com/Wisser/Jailer/issues/36
+
 10.2.2
   - Error "Streaming result set is still active" when a limit is defined on the subject was fixed (MySQL)
 
