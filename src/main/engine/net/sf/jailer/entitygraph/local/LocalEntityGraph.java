@@ -646,7 +646,7 @@ public class LocalEntityGraph extends EntityGraph {
 			protected void process(String inlineView) throws SQLException {
 				String upkColumnList = upkColumnList(from, "E1", null);
 				String select = 
-						"Select " + upkColumnList + ", " + pkList(to, toAlias) +
+						"Select " + upkColumnList + ", " + pkList(to, toAlias, "R") +
 						" From " + inlineView + ", " +
 						 quoting.requote(from.getName()) + " " + fromAlias + ", " + quoting.requote(to.getName()) + " " + toAlias +
 						" Where (" + condition + ")" +
