@@ -20,6 +20,21 @@ cd git/Jailer
 git pull
 sh admin/release.sh $1
 
+# make *.sh executable
+cd
+cd tmp
+rm -r _2$1
+mkdir _2$1
+echo wsl rm -rf /home/ralf/jailer > _.bat
+./_.bat
+echo wsl unzip /mnt/c/Users/ralfw/tmp/jailer_$1.zip -d /home/ralf/ > _.bat
+./_.bat
+echo wsl chmod a+x /home/ralf/jailer/*.sh > _.bat
+./_.bat
+rm jailer_$1.zip
+echo "wsl cd; zip -r /mnt/c/Users/ralfw/tmp/jailer_$1.zip jailer" > _.bat
+./_.bat
+
 cd
 cd tmp
 rm -r _$1
