@@ -407,7 +407,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				useRowIds.setToolTipText("<html>If this option is selected, tables that do not have a primary key can also be exported.<br>" + 
 						"Please note that generating <i>upsert-</i>statements for these tables will still not be possible.");
 			}
-			// TODO allow using rowid for tables without pk only. (Mod. DataModel + undo-Mod. add virtual column per tab. without pk. Avoid name-collisions)
+			// TODO allow using rowid for tables without pk only
 			
 			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
 
@@ -2120,7 +2120,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				f.setText(DEFAULT_SCHEMA);
 			}
 		}
-		theSettings.save(settingsContext, settingsContextSecondaryKey);
 
 		boolean err = false;
 		if (insert.getText().trim().length() == 0 && (!delete.isVisible() || delete.getText().trim().length() == 0)) {
@@ -2142,10 +2141,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			JOptionPane.showMessageDialog(this, "Unfilled mandatory fields", "Error", JOptionPane.ERROR_MESSAGE);
 		} else {
 			if (useRowIds.isVisible() && !useRowIds.isSelected()) {
-				if (!checkForPKs(useRowIds)) {
+				if (!checkForPKs(useRowIds, () -> theSettings.save(settingsContext, settingsContextSecondaryKey))) {
 					return;
 				}
 			}
+			theSettings.save(settingsContext, settingsContextSecondaryKey);
 			UIUtil.setWaitCursor(this);
 			boolean cwt;
 			try {
@@ -2161,7 +2161,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 	}//GEN-LAST:event_jButton1ActionPerformed
 
-	protected abstract boolean checkForPKs(JCheckBox checkBox);
+	protected abstract boolean checkForPKs(JCheckBox checkBox, Runnable saveSettings);
 
 	private boolean createWorkingTables() {
 		List<String> ddlArgs = new ArrayList<String>();

@@ -1331,19 +1331,23 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								
 								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, executionContext) {
 									@Override
-									protected boolean checkForPKs(JCheckBox checkBox) {
+									protected boolean checkForPKs(JCheckBox checkBox, Runnable saveSettings) {
 										try {
 											extractionModelEditor.dataModel.checkForPrimaryKey(new HashSet<Table>(toCheck), false);
 										} catch (Exception e) {
 											if (e instanceof DataModel.NoPrimaryKeyException) {
 												int result = JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, new Object[] { "Edit Table", checkBox.getText(), "Cancel" }, null);
 												if (result == 0) {
+													if (saveSettings != null) {
+														saveSettings.run();
+													}
 													dispose();
 													setVisible(false);
 													openDataModelEditor(((NoPrimaryKeyException) e).table == null? extractionModelEditor.subject : ((NoPrimaryKeyException) e).table, false);
 													if (onDataModelUpdate != null) {
 														onDataModelUpdate.run();
 													}
+													UIUtil.invokeLater(() -> openExportDialog(checkRI, onDataModelUpdate, cleanup));
 												} else if (result == 1) {
 													checkBox.setSelected(true);
 													return true;
@@ -2142,7 +2146,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				if (!Boolean.TRUE.equals(UISettings.restore(UISettings.USE_NATIVE_PLAF))) {
 					try {
 						for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-							UIManager.put("nimbusBase", new Color(55, 108, 160)); // orig. color: 51, 98, 140
+							UIManager.put("nimbusBase", new Color(61, 112, 167)); // orig. color: 51, 98, 140
             				if ("Nimbus".equals(info.getName())) {
 					            UIManager.setLookAndFeel(info.getClassName());
                                 Environment.nimbus = true;
@@ -2160,8 +2164,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	                    if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
 	                    	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
 	                    }
-	
-	                    // UIUtil.prepareUI();
 	                } catch (Exception x) {
 					}
 				}

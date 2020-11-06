@@ -2545,7 +2545,7 @@ public class DataBrowser extends javax.swing.JFrame {
             			try {
             				for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 	                            if ("Nimbus".equals(info.getName())) {
-	                            	UIManager.put("nimbusBase", new Color(55, 108, 160)); // orig. color: 51, 98, 140
+	    							UIManager.put("nimbusBase", new Color(61, 112, 167)); // orig. color: 51, 98, 140
 	                				UIManager.setLookAndFeel(info.getClassName());
 	                                Environment.nimbus = true;
 	                                break;
@@ -2561,8 +2561,6 @@ public class DataBrowser extends javax.swing.JFrame {
 	                        if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
 	                        	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
 	                        }
-	                        
-	                        // UIUtil.prepareUI();
 	                    } catch (Exception x) {
 	                    	UIUtil.showException(null, "Error", x);
 	                    }

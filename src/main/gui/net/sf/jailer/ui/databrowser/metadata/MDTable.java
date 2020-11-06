@@ -392,6 +392,7 @@ public class MDTable extends MDObject {
 	            }
 	            if (ddl == null) {
 	                try {
+	                	readColumns(true); // load primary key
 	                	ddl = createDDL();
 		            } catch (Exception e) {
 		            	ddl = "-- DDL not available";
@@ -444,7 +445,7 @@ public class MDTable extends MDObject {
 			}
 			rs.close();
 	        
-	        for (Entry<String, StringBuilder> e: result.entrySet()) {
+			for (Entry<String, StringBuilder> e: result.entrySet()) {
 	        	List<Pair<Integer, String>> cols = columns.get(e.getKey());
 	        	if (cols == null) {
 	        		e.getValue().setLength(0);
