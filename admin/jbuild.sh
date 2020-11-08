@@ -17,7 +17,7 @@ fi
 
 cd
 cd git/Jailer
-git pull
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! git pull
 sh admin/release.sh $1
 
 # make *.sh executable
@@ -46,6 +46,26 @@ cd jailer/
 unzip docs/admin.zip
 cd admin
 ./j14pack.bat $1
+cd
+cp /mnt/c/tmp/*.msi .
+
+cd
+cd tmp
+rm -r _$1
+mkdir _$1
+cd _$1
+unzip ../jailer_$1.zip 
+cd jailer/
+
+unzip docs/admin.zip
+cd admin
+dos2unix *.sh
+echo "wsl sh j14pack.sh" > _.bat
+./_.bat
+
+read -p "Press [Enter] key"
+
+exit
 
 cd
 cd tmp
