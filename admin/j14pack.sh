@@ -76,5 +76,3 @@ echo "" > .singleuser
 /home/ralf/jdk-15.0.1/bin/jpackage --name "Jailer" --linux-package-name jailer-database-tools --arguments "-jpack" --input . --main-jar jailer.jar --type deb --icon jailer.png --vendor Wisser --app-version "$1" --add-launcher "Jailer Data Browser"=databrowserlauncher-linux.properties --runtime-image ../jre$1 
 
 cp *.deb /mnt/c/Users/ralfw/tmp/
-
-sudo alien -r *.deb

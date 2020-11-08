@@ -17,7 +17,7 @@ fi
 
 cd
 cd git/Jailer
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! git pull
+git pull
 sh admin/release.sh $1
 
 # make *.sh executable
@@ -62,10 +62,6 @@ cd admin
 dos2unix *.sh
 echo "wsl sh j14pack.sh $1" > _.bat
 ./_.bat
-
-read -p "Press [Enter] key"
-
-exit
 
 cd
 cd tmp
