@@ -60,7 +60,7 @@ cd jailer/
 unzip docs/admin.zip
 cd admin
 dos2unix *.sh
-echo "wsl sh j14pack.sh" > _.bat
+echo "wsl sh j14pack.sh $1" > _.bat
 ./_.bat
 
 read -p "Press [Enter] key"
