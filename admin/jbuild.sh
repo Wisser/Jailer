@@ -51,8 +51,6 @@ sed s/VERSION/$1/g admin/oss/jailer-engine.pom > ../../oss/jailer-engine-$1.pom
 sed s/VERSION/$1/g admin/oss/oss.bat > ../../oss/oss.bat
 cp maven-artifacts/* ../../oss/
 ./../../oss/oss.bat
-read -p "Press [Enter] key"
-exit
 
 cd admin
 ./j14pack.bat $1
