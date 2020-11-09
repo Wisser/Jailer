@@ -44,6 +44,11 @@ unzip ../jailer_$1.zip
 cd jailer/
 
 unzip docs/admin.zip
+rm -rf ../oss
+cp -r admin/oss ..
+cp maven-artifacts/* ../oss/
+
+
 cd admin
 ./j14pack.bat $1
 cd
