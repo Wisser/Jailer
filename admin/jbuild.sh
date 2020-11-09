@@ -55,7 +55,7 @@ cd admin
 ./j14pack.bat $1
 cd
 cp /mnt/c/tmp/*.msi .
-exit
+
 cd
 cd tmp
 rm -r _$1
