@@ -50,13 +50,12 @@ mkdir ../../oss
 sed s/VERSION/$1/g admin/oss/jailer-engine.pom > ../../oss/jailer-engine-$1.pom
 sed s/VERSION/$1/g admin/oss/oss.bat > ../../oss/oss.bat
 cp maven-artifacts/* ../../oss/
-./../../oss/oss.bat
 
 cd admin
 ./j14pack.bat $1
 cd
 cp /mnt/c/tmp/*.msi .
-
+exit
 cd
 cd tmp
 rm -r _$1
