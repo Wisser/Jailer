@@ -1,6 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  
+
   <title>Jailer - Installation</title>
   <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
   <meta name="keywords" content="Data Export Tool" />
@@ -111,102 +111,29 @@
 
                   <tr>
                     <td class="content" height="520" valign="top" width="100%">
-                      <p><small><small>&nbsp;</small></small><br />
-                      Unpack the file <span style=
-                      "font-style: italic;">jailer_n.n.n.zip.</span> You will get the
-                      following files:<br /></p>
+                      <p>If you do not want to install Java yourself, use the installation file <i>&quot;Jailer-n.n.n-with-java-JRE.msi&quot;</i> (for Windows) or <i>&quot;jailer-database-tools_10.2.2-x64-with-java-JRE.deb&quot;</i> (for Linux).
+</p><p>Otherwise use the installer <i>&quot;Jailer-Install-n.n.n.exe&quot;</i> or unzip the file <i>&quot;jailer_n.n.n.zip&quot;</i>.<br> See also <a href="faq.html#multiuser">FAQ "How do I setup multi-user mode?"</a><br>
+</p>To start the tool from the unpacked zip:
+<ul><li>Database Subsetter
+<ul><li>On windows platform execute <i>&quot;Jailer.exe&quot;</i>. You can also start <i>&quot;jailerGUI.bat&quot;</i></li><li>On Unix/Linux platform execute the script <i>&quot;jailerGUI.sh&quot;</i> or use <i>&quot;java -jar jailer.jar&quot;</i>
+</li></ul></li></ul><ul>
+
+<li>Data Browser
+<ul>
+<li>On windows platform execute <i>&quot;jailerDataBrowser.exe&quot;</i>, or <i>&quot;jailerDataBrowser.bat&quot;</i>
+</li><li>On Unix/Linux platform execute the script <i>&quot;jailerDataBrowser.sh&quot;</i>
+</li></ul></li></ul>
+<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /></p>
 
                       <table style="width: 100%; text-align: left;" border="0"
                       cellpadding="0" cellspacing="0">
                         <tbody>
                           <tr>
-                            <td style=
-                            "vertical-align: top; background-color: rgb(242, 242, 242);">
-                            <span style="font-family: monospace;">$unzip
-                            jailer_3.6.4.zip<br />
-                            $cd jailer<br style=
-                            "font-family: monospace;" /></span><span style=
-                            "font-family: monospace;">$ll</span><br style=
-                            "font-family: monospace;" />
-                            <span style="font-family: monospace;">-rw-r--r-- 1 wisser
-                            users &nbsp;&nbsp;5090 2011-08-04 08:46 build.xml<br />
-                            drwxr-xr-x 2 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            datamodel<br />
-                            -rw-r--r-- 1 wisser users &nbsp;&nbsp;3527 2011-08-04 08:46
-                            Demo.csv<br />
-                            drwxr-xr-x 2 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            domainmodel<br />
-                            -rwxr-xr-x 1 wisser users &nbsp;&nbsp;2784 2011-08-04 08:46
-                            driverlist.csv<br />
-                            drwxr-xr-x 4 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            epilog<br />
-                            drwxr-xr-x 2 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            example<br />
-                            drwxr-xr-x 2 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            extractionmodel<br />
-                            -rw-r--r-- 1 wisser users &nbsp;&nbsp;&nbsp;429 2011-08-04
-                            08:46 jailer.bat<br />
-                            -rw-r--r-- 1 wisser users &nbsp;&nbsp;&nbsp;500 2011-08-04
-                            08:46 jailerDataBrowser.bat<br />
-                            -rwxr-xr-x 1 wisser users &nbsp;43008 2011-08-04 08:46
-                            jailerDataBrowser.exe<br />
-                            -rwxr-xr-x 1 wisser users &nbsp;&nbsp;&nbsp;444 2011-08-04
-                            08:46 jailerDataBrowser.sh<br />
-                            -rwxr-xr-x 1 wisser users &nbsp;36352 2011-08-04 08:46
-                            Jailer.exe<br />
-                            -rw-r--r-- 1 wisser users &nbsp;&nbsp;&nbsp;497 2011-08-04
-                            08:46 jailerGUI.bat<br />
-                            -rw-r--r-- 1 wisser users &nbsp;&nbsp;&nbsp;441 2011-08-04
-                            08:46 jailerGUI.sh<br />
-                            -rw-r--r-- 1 wisser users &nbsp;&nbsp;&nbsp;129 2011-08-04
-                            08:46 Jailer.html<br />
-                            -rw-r--r-- 1 wisser users 934386 2011-08-04 08:46
-                            jailer.jar<br />
-                            -rw-r--r-- 1 wisser users &nbsp;&nbsp;&nbsp;378 2011-08-04
-                            08:46 jailer.sh<br />
-                            -rw-r--r-- 1 wisser users &nbsp;12448 2011-08-04 08:46
-                            jailer.xml<br />
-                            drwxr-xr-x 2 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            lib<br />
-                            -rw-r--r-- 1 wisser users &nbsp;&nbsp;1573 2011-08-04 08:46
-                            license-prefuse.txt<br />
-                            -rw-r--r-- 1 wisser users &nbsp;10172 2011-08-04 08:46
-                            license.txt<br />
-                            drwxr-xr-x 4 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            prolog<br />
-                            -rw-r--r-- 1 wisser users &nbsp;&nbsp;2340 2011-08-04 08:46
-                            README<br />
-                            -rw-r--r-- 1 wisser users &nbsp;10694 2011-08-04 08:46
-                            releasenotes.txt<br />
-                            drwxr-xr-x 2 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            render<br />
-                            drwxr-xr-x 9 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            script<br />
-                            drwxr-xr-x 4 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            src<br />
-                            drwxr-xr-x 2 wisser users &nbsp;&nbsp;4096 2011-08-04 08:46
-                            template<br /></span></td>
+
                           </tr>
                         </tbody>
-                      </table><br />
-                      <b>Database Subsetter</b><br />
+                      </table>
 
-                      <p>On windows platform execute <span style=
-                      "font-style: italic;">Jailer.exe</span>. You can also start
-                      <span style="font-style: italic;">jailerGUI.bat</span> or start
-                      Jailer by double-clicking the <span style=
-                      "font-style: italic;">jailer.jar</span> file.<br />
-                      On Unix/Linux platform execute the script <span style=
-                      "font-style: italic;">jailerGUI.sh</span> or use <span style=
-                      "font-style: italic;">java -jar jailer.jar</span></p><br />
-                      <b>Data Browser</b><br />
-
-                      <p>On windows platform execute <span style=
-                      "font-style: italic;">jailerDataBrowser.exe</span>, or use
-                      <span style=
-                      "font-style: italic;">jailerDataBrowser.bat</span><br />
-                      On Unix/Linux platform execute the script <span style=
-                      "font-style: italic;">jailerDataBrowser.sh</span></p>
 
                       <p><br /></p>
                     </td>
@@ -215,9 +142,7 @@
               </table>
             </div>
 
-            <p><br /></p>
-
-            <p><br /></p>
+            <br>
 
             <p><br />
             &nbsp;</p>

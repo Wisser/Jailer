@@ -1,10 +1,10 @@
 # Jailer Database Tool
 
-Jailer is a tool for database subsetting and relational data browsing. 
+Jailer is a tool for database subsetting and relational data browsing.
 
  - The Subsetter exports consistent, referentially intact row-sets from relational databases,
    generates topologically sorted SQL-DML, DbUnit datasets and hierarchically structured XML.
- - The Data Browser allows bidirectional navigation through the database 
+ - The Data Browser allows bidirectional navigation through the database
    by following foreign-key-based or user-defined relationships.
 
 
@@ -53,8 +53,12 @@ Jailer is a tool for database subsetting and relational data browsing.
 
 ## Installation
 
-Use the installer "Jailer-Install-n.n.n.exe" or unzip the file "jailer_n.n.n.zip".
+If you do not want to install Java yourself, use the installation file "Jailer-n.n.n-with-java-JRE.msi" (for Windows) or "jailer-database-tools_10.2.2-x64-with-java-JRE.deb" (for Linux).
+
+Otherwise use the installer "Jailer-Install-n.n.n.exe" or unzip the file "jailer_n.n.n.zip".
 See also <a href="http://jailer.sourceforge.net/faq.html#multiuser">http://jailer.sourceforge.net/faq.html#multiuser</a>
+
+To start the tool from the unpacked zip:
 
  - Database Subsetter
     - On windows platform execute "Jailer.exe". You can also start "jailerGUI.bat".
@@ -82,7 +86,7 @@ To build the tool you can just use ant: ( https://ant.apache.org )
  - Forum:   https://sourceforge.net/p/jailer/discussion/
  - Support: rwisser@users.sourceforge.net
 
- 
+
 ## Contributors
 
 ### Code Contributors
@@ -112,4 +116,3 @@ Support this project with your organization. Your logo will show up here with a 
 <a href="https://opencollective.com/Jailer/organization/7/website"><img src="https://opencollective.com/Jailer/organization/7/avatar.svg"></a>
 <a href="https://opencollective.com/Jailer/organization/8/website"><img src="https://opencollective.com/Jailer/organization/8/avatar.svg"></a>
 <a href="https://opencollective.com/Jailer/organization/9/website"><img src="https://opencollective.com/Jailer/organization/9/avatar.svg"></a>
- 
