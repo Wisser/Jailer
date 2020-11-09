@@ -46,6 +46,7 @@ cd jailer/
 unzip docs/admin.zip
 echo rm -rf ../../oss
 rm -rf ../../oss
+mkdir ../../oss
 sed s/VERSION/$1/g admin/oss/jailer-engine.pom > ../../oss/jailer-engine-$1.pom
 sed s/VERSION/$1/g admin/oss/oss.bat > ../../oss/oss.bat
 cp maven-artifacts/* ../../oss/
