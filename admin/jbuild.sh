@@ -44,9 +44,11 @@ unzip ../jailer_$1.zip
 cd jailer/
 
 unzip docs/admin.zip
+echo rm -rf ../oss
 rm -rf ../oss
 cp -r admin/oss ..
 cp maven-artifacts/* ../oss/
+read -p "Press [Enter] key"
 
 
 cd admin
