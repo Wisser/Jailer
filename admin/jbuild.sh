@@ -49,7 +49,7 @@ rm -rf ../../oss
 cp -r admin/oss ../..
 cp maven-artifacts/* ../../oss/
 read -p "Press [Enter] key"
-
+exit
 
 cd admin
 ./j14pack.bat $1
