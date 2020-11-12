@@ -1431,17 +1431,21 @@ public class SubsettingEngine {
 
 			if (executionContext.getScope() == WorkingTableScope.SESSION_LOCAL
 			 || executionContext.getScope() == WorkingTableScope.TRANSACTION_LOCAL) {
-				ReadWriteLock workingTablesLock = getWorkingTablesLock(executionContext.getScope());
-				writeLock = workingTablesLock.writeLock();
-				writeLock.lock();
-				ddlCreator.createDDL(extractionModel.dataModel, session, executionContext.getScope(), executionContext.getWorkingTableSchema());
-				// Lock downgrading
-				// Reentrancy also allows downgrading from the write lock to a read lock,
-				// by acquiring the write lock, then the read lock and then releasing the write lock.
-				readLock = workingTablesLock.readLock();
-				readLock.lock();
-				writeLock.unlock();
-				writeLock = null;
+				if (dbms != null && dbms.getSessionTemporaryTableManager() != null && dbms.getSessionTemporaryTableManager().isNeedsExclusiveAccess()) {
+					ReadWriteLock workingTablesLock = getWorkingTablesLock(executionContext.getScope());
+					writeLock = workingTablesLock.writeLock();
+					writeLock.lock();
+					ddlCreator.createDDL(extractionModel.dataModel, session, executionContext.getScope(), executionContext.getWorkingTableSchema());
+					// Lock downgrading
+					// Reentrancy also allows downgrading from the write lock to a read lock,
+					// by acquiring the write lock, then the read lock and then releasing the write lock.
+					readLock = workingTablesLock.readLock();
+					readLock.lock();
+					writeLock.unlock();
+					writeLock = null;
+				} else {
+					ddlCreator.createDDL(extractionModel.dataModel, session, executionContext.getScope(), executionContext.getWorkingTableSchema());
+				}
 			} else if (executionContext.getScope() == WorkingTableScope.GLOBAL) {
 				ReadWriteLock workingTablesLock = getWorkingTablesLock(executionContext.getScope());
 				if (!ddlCreator.isUptodate(session, executionContext.getUseRowid(), executionContext.getUseRowIdsOnlyForTablesWithoutPK(), executionContext.getWorkingTableSchema())) {

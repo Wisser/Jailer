@@ -17,7 +17,7 @@ package net.sf.jailer.database;
 
 /**
  * Default implementation of {@link TemporaryTableManager}.
- * 
+ *
  * @author Ralf Wisser
  */
 public class DefaultTemporaryTableManager implements TemporaryTableManager {
@@ -31,37 +31,40 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 	 * Prefix of references to a temporary table in DDL statements.
 	 */
 	private String ddlTableReferencePrefix = "";
-	
+
 	/**
 	 * Prefix of DDL statement to create temporary table.
 	 */
 	private String createTablePrefix;
-	
+
 	/**
 	 * Suffix of DDL statement to create temporary table.
 	 */
 	private String createTableSuffix;
-	
+
 	/**
 	 * Prefix of DDL statement to create temporary index.
 	 */
 	private String createIndexPrefix;
-	
+
 	/**
 	 * Suffix of DDL statement to create temporary index.
 	 */
 	private String createIndexSuffix;
-	
+
 	/**
 	 * Prefix of table name to be used in DDL for creating temporary index.
 	 */
 	private String indexTablePrefix;
-	
+
 	/**
 	 * Prefix to be used in DDL for dropping temporary tables.
 	 */
 	private String dropTablePrefix;
-	
+
+	// Whether temp tables are shared between sessions.
+	private boolean needsExclusiveAccess = true;
+
 	/**
 	 * Gets prefix of DDL statement to create temporary table.
 	 */
@@ -77,14 +80,14 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 	public String getIndexTablePrefix() {
 		return indexTablePrefix;
 	}
-	
+
 	/**
 	 * Sets prefix of table name to be used in DDL for creating temporary index.
 	 */
 	public void setIndexTablePrefix(String v) {
 		this.indexTablePrefix = v;
 	}
-	
+
 	/**
 	 * Gets suffix of DDL statement to create temporary table.
 	 */
@@ -92,7 +95,7 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 	public String getCreateTableSuffix() {
 		return createTableSuffix;
 	}
-	
+
 	/**
 	 * Gets prefix of DDL statement to create temporary index.
 	 */
@@ -129,7 +132,7 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 	public void setCreateTableSuffix(String v) {
 		createTableSuffix = v;
 	}
-	
+
 	/**
 	 * Gets prefix of DDL statement to create temporary index.
 	 */
@@ -143,7 +146,7 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 	public void setCreateIndexSuffix(String v) {
 		createIndexSuffix = v;
 	}
-	
+
 	/**
 	 * Gets prefix to be used in DDL for dropping temporary tables.
 	 */
@@ -174,9 +177,27 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 	public void setDdlTableReferencePrefix(String ddlTableReferencePrefix) {
 		this.ddlTableReferencePrefix = ddlTableReferencePrefix;
 	}
-	
+
 	public String getDdlTableReferencePrefix() {
 		return ddlTableReferencePrefix;
+	}
+
+	/**
+	 * Whether temp tables are shared between sessions.
+	 *
+	 * @return whether temp tables are shared between sessions
+	 */
+	public boolean isNeedsExclusiveAccess() {
+		return needsExclusiveAccess;
+	}
+
+	/**
+	 * Whether temp tables are shared between sessions.
+	 *
+	 * @param needsExclusiveAccess whether temp tables are shared between sessions
+	 */
+	public void setNeedsExclusiveAccess(boolean needsExclusiveAccess) {
+		this.needsExclusiveAccess = needsExclusiveAccess;
 	}
 
 }

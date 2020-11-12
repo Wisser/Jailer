@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <configuration>
-    
+
     <!-- Configuration of the local database -->
     <localDatabase>
         <databaseFolder>local</databaseFolder>
@@ -13,17 +13,17 @@
         <user></user>
         <password></password>
     </localDatabase>
-    
+
     <!--
     nullColumnPlaceholder:
-    
+
 	For DBUnit flat XML files, null columns can carry a placeholder value
 	which can later be replaced using a ReplacementDataSet.
 	In Flat XML files the first row of a table defines the metadata. If a null
 	column is omitted, none of the following rows can have this column! This is the
 	default behaviour of Jailer.
 	Thus, define a null placeholder and replace it with a null value when you load
-	the data set with DBUnit.     
+	the data set with DBUnit.
     -->
 	<!--
 	<nullColumnPlaceholder>[NULL]</nullColumnPlaceholder>
@@ -31,19 +31,19 @@
 
 	<!--  number of columns per import-filter-mapping-table -->
 	<columnsPerIFMTable>8</columnsPerIFMTable>
-    
+
     <!--
 		If minimize-UPK is true, the UPK don't preserve order. This minimizes
 		the size of the UPK.
 	-->
 	<doMinimizeUPK>false</doMinimizeUPK>
 
-    <!-- HTML renderer -->	
+    <!-- HTML renderer -->
     <renderer>
         <maxDepth>0</maxDepth>
         <outputFolder>render</outputFolder>
     </renderer>
-    
+
     <!-- additional SQL keywords -->
 	<additionalSQLKeywords>sensitive, datetime</additionalSQLKeywords>
 
@@ -61,7 +61,7 @@
 	-->
 
 	<!--
-		Also include 'null's in the generated upsert statements. 
+		Also include 'null's in the generated upsert statements.
 		Useful if a column contains 'null', but its default value is non-null.
 	<generateUpsertStatementsWithoutNulls>false</generateUpsertStatementsWithoutNulls>
 	-->
@@ -108,6 +108,7 @@
             <createTableSuffix>ON COMMIT PRESERVE ROWS</createTableSuffix>
             <dropTablePrefix>DROP TABLE </dropTablePrefix>
             <indexTablePrefix></indexTablePrefix>
+            <needsExclusiveAccess>true</needsExclusiveAccess>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
         <datePattern>'to_date('''yyyy-MM-dd''', ''YYYY-MM-DD'')'</datePattern>
@@ -120,10 +121,10 @@
         <toNClob>to_nclob('%s')</toNClob>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>hextoraw('%s')</binaryPattern>
-        
+
         <!--  <avoidLeftJoin>true</avoidLeftJoin> -->
         <avoidLeftJoin>false</avoidLeftJoin>
-        
+
         <limitTransactionSize>
         	<limit>30000</limit>
         	<additionalWhereCondition>rownum &lt;= %1$s</additionalWhereCondition>
@@ -179,15 +180,15 @@ union all
 		(
 		Select i.INDEX_NAME CNAME, i.TABLE_NAME TNAME, c.COLUMN_NAME COLNAME, c.COLUMN_POSITION POS
 		from USER_INDEXES i, USER_IND_COLUMNS c
-		where 
+		where
 		  i.TABLE_OWNER = '%1$s'
 		  and i.UNIQUENESS = 'UNIQUE'
 		  and i.TABLE_NAME not like 'BIN$%%'
 		  and i.TABLE_NAME = c.TABLE_NAME
 		  and i.INDEX_NAME = c.INDEX_NAME
 		  and i.INDEX_NAME not in
-		  	(Select CONSTRAINT_NAME 
-		  	from user_constraints 
+		  	(Select CONSTRAINT_NAME
+		  	from user_constraints
 		  	where CONSTRAINT_TYPE = 'P'
 			and STATUS = 'ENABLED'
 			and TABLE_NAME not like 'BIN$%%'
@@ -256,7 +257,7 @@ union all
             </entry>
         </stringLiteralEscapeSequences>
         <sqlLimitSuffix>TOP %s</sqlLimitSuffix>
-        
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
 
@@ -269,8 +270,9 @@ union all
 			<createIndexSuffix></createIndexSuffix>
 			<indexTablePrefix></indexTablePrefix>
 			<dropTablePrefix>DROP TABLE </dropTablePrefix>
+            <needsExclusiveAccess>false</needsExclusiveAccess>
 		</sessionTemporaryTableManager>
-        
+
         <ncharPrefix>N</ncharPrefix>
         <exportBlocks>timestamp</exportBlocks>
         <exportBlocks>TIMESTAMP</exportBlocks>
@@ -315,7 +317,7 @@ WHERE SCHEMA_NAME(tbl.schema_id)='%s'
 		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
         <virtualColumnsQuery>SELECT sysobjects.name AS TableName, syscolumns.name AS ColumnName FROM syscolumns JOIN sysobjects ON syscolumns.id = sysobjects.id AND sysobjects.xtype = 'U' WHERE syscolumns.iscomputed = 1</virtualColumnsQuery>
 		<userDefinedColumnsQuery>SELECT distinct DOMAIN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '%s' AND DOMAIN_NAME is not null</userDefinedColumnsQuery>
-<!-- 
+<!--
 		<importedKeysQuery>SELECT null, PKCU.TABLE_SCHEMA, PKCU.TABLE_NAME, PKCU.COLUMN_NAME, null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME AND KCU.TABLE_CATALOG = RC.CONSTRAINT_CATALOG JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME AND PKCU.TABLE_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}' ORDER BY KCU.ORDINAL_POSITION</importedKeysQuery>
         <primaryKeysQuery>SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME   FROM   INFORMATION_SCHEMA.TABLE_CONSTRAINTS C   JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU     ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA   AND KCU.TABLE_NAME = C.TABLE_NAME    AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME   WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'       AND  KCU.TABLE_SCHEMA = '${SCHEMA}'   ORDER BY KCU.ORDINAL_POSITION</primaryKeysQuery>
 -->
@@ -328,7 +330,7 @@ WHERE SCHEMA_NAME(tbl.schema_id)='%s'
 Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 (
 	Select KCU.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'PK' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 1 TYPEPOS
-    From 
+    From
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
     join
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
@@ -341,7 +343,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         AND KCU.TABLE_SCHEMA = '%1$s'
 union all
 	Select C.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'Unique' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 2 TYPEPOS
-    From 
+    From
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
     join
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
@@ -354,7 +356,7 @@ union all
         AND KCU.TABLE_SCHEMA = '%1$s'
 	union all
 	Select C.CONSTRAINT_NAME CNAME, C.TABLE_NAME TNAME, CU.COLUMN_NAME COLNAME, 'Check' CTYPE, CHECK_CLAUSE DETAIL, 1 POS, 3 TYPEPOS
-	From 
+	From
 		INFORMATION_SCHEMA.CHECK_CONSTRAINTS CC
 	join
 		INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE CU
@@ -371,7 +373,7 @@ union all
 ) pk order by TYPEPOS, CNAME, TNAME, POS, COLNAME
 		</constraintsQuery>
     </dbms>
-    
+
     <!-- for MySQL -->
     <dbms>
         <id>MySQL</id>
@@ -501,7 +503,7 @@ union all
             </entry>
         </stringLiteralEscapeSequences>
         <sqlLimitSuffix>LIMIT 0, %s</sqlLimitSuffix>
-        
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
 
@@ -524,7 +526,7 @@ union all
         <defaultSchemaQuery>Select DATABASE()</defaultSchemaQuery>
 		<estimatedRowCountQuery>select TABLE_NAME, max(CARDINALITY) from INFORMATION_SCHEMA.STATISTICS where TABLE_SCHEMA = '%s' group by TABLE_NAME</estimatedRowCountQuery>
 		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
-        
+
 		<virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'</virtualColumnsQuery>
 <!--
         <importedKeysQuery>SELECT PKCU.TABLE_SCHEMA, null, PKCU.TABLE_NAME, PKCU.COLUMN_NAME, KCU.TABLE_SCHEMA, null, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,        null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU    ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU    ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG        AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA       AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME AND PKCU.TABLE_NAME = RC.REFERENCED_TABLE_NAME AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION  WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'  ORDER BY KCU.ORDINAL_POSITION</importedKeysQuery>
@@ -542,7 +544,7 @@ union all
 Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 (
 	Select concat('pk_', KCU.TABLE_NAME) CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'PK' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 1 TYPEPOS
-    From 
+    From
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
     join
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
@@ -555,7 +557,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         AND KCU.TABLE_SCHEMA = '%1$s'
 union all
 	Select C.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'Unique' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 2 TYPEPOS
-    From 
+    From
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
     join
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
@@ -708,7 +710,7 @@ union all
             </entry>
         </stringLiteralEscapeSequences>
         <sqlLimitSuffix>LIMIT 0, %s</sqlLimitSuffix>
-        
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
 
@@ -731,7 +733,7 @@ union all
         <defaultSchemaQuery>Select DATABASE()</defaultSchemaQuery>
 		<estimatedRowCountQuery>select TABLE_NAME, max(CARDINALITY) from INFORMATION_SCHEMA.STATISTICS where TABLE_SCHEMA = '%s' group by TABLE_NAME</estimatedRowCountQuery>
 		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
-        
+
 		<virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'</virtualColumnsQuery>
 <!--
         <importedKeysQuery>SELECT PKCU.TABLE_SCHEMA, null, PKCU.TABLE_NAME, PKCU.COLUMN_NAME, KCU.TABLE_SCHEMA, null, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,        null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU    ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU    ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG        AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA       AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME AND PKCU.TABLE_NAME = RC.REFERENCED_TABLE_NAME AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION  WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'  ORDER BY KCU.ORDINAL_POSITION</importedKeysQuery>
@@ -749,7 +751,7 @@ union all
 Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 (
 	Select concat('pk_', KCU.TABLE_NAME) CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'PK' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 1 TYPEPOS
-    From 
+    From
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
     join
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
@@ -762,7 +764,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         AND KCU.TABLE_SCHEMA = '%1$s'
 union all
 	Select C.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'Unique' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 2 TYPEPOS
-    From 
+    From
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
     join
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
@@ -833,6 +835,7 @@ union all
             <createTableSuffix>ON COMMIT PRESERVE ROWS NOT LOGGED</createTableSuffix>
             <dropTablePrefix>DROP TABLE SESSION.</dropTablePrefix>
             <indexTablePrefix>SESSION.</indexTablePrefix>
+            <needsExclusiveAccess>true</needsExclusiveAccess>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
         <emptyBLOBValue>blob('')</emptyBLOBValue>
@@ -846,7 +849,7 @@ union all
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <estimatedRowCountQuery>SELECT TABNAME, CARD FROM SYSSTAT.TABLES WHERE TABSCHEMA = '%s'</estimatedRowCountQuery>
-        <viewTextOrDDLQuery>SELECT TEXT FROM SYSCAT.VIEWS WHERE VIEWSCHEMA = '%1$s' and VIEWNAME = '%2$s'</viewTextOrDDLQuery> 
+        <viewTextOrDDLQuery>SELECT TEXT FROM SYSCAT.VIEWS WHERE VIEWSCHEMA = '%1$s' and VIEWNAME = '%2$s'</viewTextOrDDLQuery>
         <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
         <importedKeysQuery> SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME,        null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ,        null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}'   ORDER BY FKCOL.COLSEQ</importedKeysQuery>
         <primaryKeysQuery>   SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
@@ -854,14 +857,14 @@ union all
         <procedureDetailNeedsSpecificName>true</procedureDetailNeedsSpecificName>
         <functionSourceQuery>SELECT 'Source', cast(ROUTINE_DEFINITION as varchar) FROM SYSIBM.ROUTINES where ROUTINE_SCHEMA = '%1$s' and SPECIFIC_NAME = '%2$s' and ROUTINE_DEFINITION is not null</functionSourceQuery>
         <procedureSourceQuery>SELECT 'Source', cast(ROUTINE_DEFINITION as varchar) FROM SYSIBM.ROUTINES where ROUTINE_SCHEMA = '%1$s' and SPECIFIC_NAME = '%2$s' and ROUTINE_DEFINITION is not null</procedureSourceQuery>
-        
+
         <explainCreateExplainTable>CALL SYSPROC.SYSINSTALLOBJECTS('EXPLAIN', 'C',CAST (NULL AS VARCHAR(128)), CAST (NULL AS VARCHAR(128)))</explainCreateExplainTable>
         <explainPrepare>explain plan for %1$s</explainPrepare>
         <explainQuery><![CDATA[
 WITH tree(operator_ID, level, path, explain_time, cycle)
 AS
 (
-SELECT 1 operator_id 
+SELECT 1 operator_id
      , 0 level
      , CAST('001' AS VARCHAR(1000)) path
      , max(explain_time) explain_time
@@ -883,19 +886,19 @@ SELECT s.source_id
    AND tree.cycle = 0
    AND level < 100
 )
-SELECT * 
+SELECT *
   FROM (
 SELECT "Explain Plan"
   FROM (
 SELECT CAST(   LPAD(id,        MAX(LENGTH(id))        OVER(), ' ')
-            || ' | ' 
+            || ' | '
             || RPAD(operation, MAX(LENGTH(operation)) OVER(), ' ')
-            || ' | ' 
+            || ' | '
             || LPAD(rows,      MAX(LENGTH(rows))      OVER(), ' ')
-            || ' | ' 
-            -- Don't show ActualRows columns if there are no actuals available at all 
+            || ' | '
+            -- Don't show ActualRows columns if there are no actuals available at all
             || CASE WHEN COUNT(ActualRows) OVER () > 1 -- the heading 'ActualRows' is always present, so "1" means no OTHER values
-                    THEN LPAD(ActualRows, MAX(LENGTH(ActualRows)) OVER(), ' ') || ' | ' 
+                    THEN LPAD(ActualRows, MAX(LENGTH(ActualRows)) OVER(), ' ') || ' | '
                     ELSE ''
                END
             || LPAD(cost,      MAX(LENGTH(cost))      OVER(), ' ')
@@ -916,10 +919,10 @@ SELECT CAST(tree.operator_id as VARCHAR(254)) ID
        || CASE WHEN tree.cycle = 1
                THEN '(cycle) '
                ELSE ''
-          END     
+          END
        || COALESCE (
              TRIM(O.Operator_Type)
-          || COALESCE(' (' || argument || ')', '') 
+          || COALESCE(' (' || argument || ')', '')
           || ' '
           || COALESCE(S.Object_Name,'')
           , ''
@@ -987,7 +990,7 @@ SELECT CAST(tree.operator_id as VARCHAR(254)) ID
     ON (    o.operator_id  = tree.operator_id
         AND o.explain_time = tree.explain_time
         AND o.explain_requester = SESSION_USER
-       ) 
+       )
   LEFT JOIN (SELECT LISTAGG (CASE argument_type
                              WHEN 'UNIQUE' THEN
                                   CASE WHEN argument_value = 'TRUE'
@@ -998,13 +1001,13 @@ SELECT CAST(tree.operator_id as VARCHAR(254)) ID
                                   CASE WHEN argument_value = 'TRUE'
                                        THEN 'TOP-N'
                                   ELSE NULL
-                                  END   
+                                  END
                              WHEN 'SCANDIR' THEN
                                   CASE WHEN argument_value != 'FORWARD'
                                        THEN argument_value
                                   ELSE NULL
-                                  END                     
-                             ELSE argument_value     
+                                  END
+                             ELSE argument_value
                              END
                            , ' ') argument
                   , operator_id
@@ -1036,7 +1039,7 @@ SELECT CAST (LPAD(CASE WHEN operator_id = LAG  (operator_id)
                 , MAX(LENGTH(operator_id )+4) OVER()
                 , ' ')
              || how_applied
-             || ' ' 
+             || ' '
              || predicate_text
           AS VARCHAR(100)) "Predicate Information"
      , 'P' || LPAD(id_order, 5, '0') || pred_order path
@@ -1062,12 +1065,12 @@ ORDER BY path
 )]]>
 		</explainQuery>
         <explainCleanup></explainCleanup>
-        
+
         <constraintsQuery>
 Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 (
 	Select CONST.CONSTNAME CNAME, CONST.TABNAME TNAME, PKCOL.COLNAME COLNAME, 'PK' CTYPE, null DETAIL, PKCOL.COLSEQ POS, 1 TYPEPOS
-	From 
+	From
 	    syscat.tabconst CONST,
         syscat.keycoluse PKCOL
     WHERE
@@ -1088,7 +1091,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 			and i.TABSCHEMA = '%1$s'
 	union all
 		Select C.CONSTNAME CNAME, C.TABNAME TNAME, ' ' COLNAME, 'Check' CTYPE, cast(TEXT as varchar) DETAIL, 1 POS, 3 TYPEPOS
-		From 
+		From
 			syscat.checks C
 		where
 			C.TYPE = 'C'
@@ -1160,6 +1163,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
             <createTableSuffix>ON COMMIT PRESERVE ROWS NOT LOGGED</createTableSuffix>
             <dropTablePrefix>DROP TABLE SESSION.</dropTablePrefix>
             <indexTablePrefix>SESSION.</indexTablePrefix>
+            <needsExclusiveAccess>true</needsExclusiveAccess>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
         <emptyBLOBValue>blob('')</emptyBLOBValue>
@@ -1172,7 +1176,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
-        <viewTextOrDDLQuery>SELECT TEXT FROM SYSCAT.VIEWS WHERE VIEWSCHEMA = '%1$s' and VIEWNAME = '%2$s'</viewTextOrDDLQuery> 
+        <viewTextOrDDLQuery>SELECT TEXT FROM SYSCAT.VIEWS WHERE VIEWSCHEMA = '%1$s' and VIEWNAME = '%2$s'</viewTextOrDDLQuery>
         <estimatedRowCountQuery>SELECT TABNAME, CARD FROM SYSSTAT.TABLES WHERE TABSCHEMA = '%s'</estimatedRowCountQuery>
         <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
         <importedKeysQuery>SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME, null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ, null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}' ORDER BY FKCOL.COLSEQ</importedKeysQuery>
@@ -1222,6 +1226,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
             <createTableSuffix> WITH NO LOG</createTableSuffix>
             <dropTablePrefix>DROP TABLE </dropTablePrefix>
             <indexTablePrefix></indexTablePrefix>
+            <needsExclusiveAccess>true</needsExclusiveAccess>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
         <timestampPattern>'cast('''yyyy-MM-dd HH.mm.ss'.${NANO}'' as datetime year to fraction)'</timestampPattern>
@@ -1231,7 +1236,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
     </dbms>
-    
+
     <!-- for PostgreSQL -->
     <dbms>
         <id>POSTGRESQL</id>
@@ -1350,7 +1355,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties>CREATE UNLOGGED TABLE</tableProperties>
-        
+
         <sessionTemporaryTableManager>
             <createIndexPrefix>CREATE INDEX </createIndexPrefix>
             <createIndexSuffix></createIndexSuffix>
@@ -1358,6 +1363,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
             <createTableSuffix></createTableSuffix>
             <dropTablePrefix>-- DROP TABLE </dropTablePrefix>
             <indexTablePrefix></indexTablePrefix>
+            <needsExclusiveAccess>false</needsExclusiveAccess>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
         <datePattern>''yyyy-MM-dd'''::date'</datePattern>
@@ -1388,7 +1394,7 @@ WHERE p.proname = '%2$s' AND n.nspname = '%1$s'
 Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 (
 	Select KCU.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'PK' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 1 TYPEPOS
-    From 
+    From
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
     join
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
@@ -1401,7 +1407,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         AND KCU.TABLE_SCHEMA = '%1$s'
 union all
 	Select C.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'Unique' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 2 TYPEPOS
-    From 
+    From
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
     join
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
@@ -1414,7 +1420,7 @@ union all
         AND KCU.TABLE_SCHEMA = '%1$s'
 	union all
 	Select C.CONSTRAINT_NAME CNAME, C.TABLE_NAME TNAME, CU.COLUMN_NAME COLNAME, 'Check' CTYPE, CHECK_CLAUSE DETAIL, 1 POS, 3 TYPEPOS
-	From 
+	From
 		INFORMATION_SCHEMA.CHECK_CONSTRAINTS CC
 	join
 		INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE CU
@@ -1566,7 +1572,7 @@ union all
 
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties>CREATE UNLOGGED TABLE</tableProperties>
-        
+
         <sessionTemporaryTableManager>
             <createIndexPrefix>CREATE INDEX </createIndexPrefix>
             <createIndexSuffix></createIndexSuffix>
@@ -1574,6 +1580,7 @@ union all
             <createTableSuffix></createTableSuffix>
             <dropTablePrefix>-- DROP TABLE </dropTablePrefix>
             <indexTablePrefix></indexTablePrefix>
+            <needsExclusiveAccess>false</needsExclusiveAccess>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
         <datePattern>''yyyy-MM-dd'''::date'</datePattern>
@@ -1604,7 +1611,7 @@ WHERE p.proname = '%2$s' AND n.nspname = '%1$s'
 Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 (
 	Select KCU.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'PK' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 1 TYPEPOS
-    From 
+    From
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
     join
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
@@ -1617,7 +1624,7 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         AND KCU.TABLE_SCHEMA = '%1$s'
 union all
 	Select C.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'Unique' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 2 TYPEPOS
-    From 
+    From
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
     join
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
@@ -1630,7 +1637,7 @@ union all
         AND KCU.TABLE_SCHEMA = '%1$s'
 	union all
 	Select C.CONSTRAINT_NAME CNAME, C.TABLE_NAME TNAME, CU.COLUMN_NAME COLNAME, 'Check' CTYPE, CHECK_CLAUSE DETAIL, 1 POS, 3 TYPEPOS
-	From 
+	From
 		INFORMATION_SCHEMA.CHECK_CONSTRAINTS CC
 	join
 		INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE CU
@@ -1678,10 +1685,10 @@ union all
         <statisticRenovator>
             <scriptFileName>script/cloudscape/update_statistics.sql</scriptFileName>
         </statisticRenovator>
-        
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
-        
+
         <identityInserts>false</identityInserts>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
@@ -1689,7 +1696,7 @@ union all
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
     </dbms>
-    
+
     <!-- for Firebird -->
     <dbms>
         <id>FIREBIRD</id>
@@ -1710,10 +1717,10 @@ union all
                 <value>DOUBLE PRECISION</value>
             </entry>
         </typeReplacement>
-        
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
-        
+
         <identityInserts>false</identityInserts>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
@@ -1721,7 +1728,7 @@ union all
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
     </dbms>
-    
+
     <!-- for Derby -->
     <dbms>
         <id>DERBY</id>
@@ -1736,10 +1743,10 @@ union all
         <statisticRenovator>
             <scriptFileName>script/derby/update_statistics.sql</scriptFileName>
         </statisticRenovator>
-        
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
-        
+
         <identityInserts>false</identityInserts>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
@@ -1747,7 +1754,7 @@ union all
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
     </dbms>
-    
+
     <!-- for SyBASE -->
     <dbms>
         <id>SYBASE</id>
@@ -1763,10 +1770,10 @@ union all
             <scriptFileName>script/sybase/update_statistics.sql</scriptFileName>
         </statisticRenovator>
         <sqlLimitSuffix>TOP %s</sqlLimitSuffix>
-        
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
-        
+
         <sessionTemporaryTableManager>
 			<dmlTableReferencePrefix>#</dmlTableReferencePrefix>
 			<ddlTableReferencePrefix>#</ddlTableReferencePrefix>
@@ -1776,6 +1783,7 @@ union all
 			<createIndexSuffix></createIndexSuffix>
 			<indexTablePrefix></indexTablePrefix>
 			<dropTablePrefix>DROP TABLE </dropTablePrefix>
+            <needsExclusiveAccess>true</needsExclusiveAccess>
         </sessionTemporaryTableManager>
         <exportBlocks>timestamp</exportBlocks>
         <exportBlocks>TIMESTAMP</exportBlocks>
@@ -1801,7 +1809,7 @@ union all
         	<afterSelect>TOP(%1$s)</afterSelect>
         </limitTransactionSize>
     </dbms>
-    
+
     <!-- for SQLite -->
     <dbms>
         <id>SQLITE</id>
@@ -1824,10 +1832,10 @@ union all
             </entry>
         </typeReplacement>
         <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
-        
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
-        
+
         <sessionTemporaryTableManager>
             <createIndexPrefix>CREATE INDEX </createIndexPrefix>
             <createIndexSuffix></createIndexSuffix>
@@ -1835,6 +1843,7 @@ union all
             <createTableSuffix></createTableSuffix>
             <dropTablePrefix>DROP TABLE </dropTablePrefix>
             <indexTablePrefix></indexTablePrefix>
+            <needsExclusiveAccess>true</needsExclusiveAccess>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
@@ -1843,7 +1852,7 @@ union all
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
     </dbms>
-    
+
     <!-- for HSQLDB -->
     <dbms>
         <id>HSQL</id>
@@ -1856,10 +1865,10 @@ union all
             <upsertMode>FROM_JL_DUAL</upsertMode>
         </sqlDialect>
         <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
-        
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties>NOLOGGING</tableProperties>
-        
+
         <identityInserts>false</identityInserts>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
@@ -1867,7 +1876,7 @@ union all
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
     </dbms>
-    
+
     <!-- for H2 -->
     <dbms>
         <id>H2</id>
@@ -1906,7 +1915,7 @@ union all
             </entry>
         </stringLiteralEscapeSequences>
         <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
-        
+
         <!-- NOLOGGING, TABLESPACE-spec., etc. -->
         <tableProperties></tableProperties>
 
@@ -1926,21 +1935,21 @@ union all
 Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 (
 	Select C.CONSTRAINT_NAME CNAME, C.TABLE_NAME TNAME, C.COLUMN_LIST COLNAME, 'PK' CTYPE, null DETAIL, 1 POS, 1 TYPEPOS
-	From 
+	From
 		INFORMATION_SCHEMA.CONSTRAINTS C
 	where
 		C.CONSTRAINT_TYPE = 'PRIMARY KEY'
 		AND C.TABLE_SCHEMA = '%1$s'
 	union all
 	Select I.INDEX_NAME CNAME, I.TABLE_NAME TNAME, I.COLUMN_NAME COLNAME, 'Unique' CTYPE, null DETAIL, I.ORDINAL_POSITION POS, 2 TYPEPOS
-	From 
+	From
 		INFORMATION_SCHEMA.INDEXES I
 	where
 		I.INDEX_TYPE_NAME = 'UNIQUE INDEX'
 		AND I.TABLE_SCHEMA = '%1$s'
 	union all
 	Select C.CONSTRAINT_NAME CNAME, C.TABLE_NAME TNAME, case when C.COLUMN_LIST is null then '' else C.COLUMN_LIST end COLNAME, 'Check' CTYPE, CHECK_EXPRESSION DETAIL, 1 POS, 3 TYPEPOS
-	From 
+	From
 		INFORMATION_SCHEMA.CONSTRAINTS C
 	where
 		C.CONSTRAINT_TYPE = 'CHECK'

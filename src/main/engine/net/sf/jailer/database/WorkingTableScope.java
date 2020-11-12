@@ -17,29 +17,29 @@ package net.sf.jailer.database;
 
 /**
  * Working-tables scopes.
- * 
+ *
  * @author Ralf Wisser
  */
 public enum WorkingTableScope {
-	
+
 	/**
 	 * Create the working-tables (JAILER_*) in the source database.
 	 */
 	GLOBAL,
-	
+
 	/**
 	 * Create the working-tables (JAILER_*) as temporary tables in the source database.
 	 */
 	SESSION_LOCAL,
-	
+
 	/**
-	 * Not supported.
+	 * Not supported. Do not use.
 	 */
 	TRANSACTION_LOCAL, // not supported
-	
+
 	/**
 	 * Create a local database (H2) for the working-tables (JAILER_*).
 	 */
 	LOCAL_DATABASE
-	
+
 }
