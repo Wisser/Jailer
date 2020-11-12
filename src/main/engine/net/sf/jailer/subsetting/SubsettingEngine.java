@@ -1431,7 +1431,11 @@ public class SubsettingEngine {
 
 			if (executionContext.getScope() == WorkingTableScope.SESSION_LOCAL
 			 || executionContext.getScope() == WorkingTableScope.TRANSACTION_LOCAL) {
-				if (dbms != null && dbms.getSessionTemporaryTableManager() != null && dbms.getSessionTemporaryTableManager().isNeedsExclusiveAccess()) {
+				boolean doLock = true;
+				if (dbms != null && dbms.getSessionTemporaryTableManager() != null && !dbms.getSessionTemporaryTableManager().isNeedsExclusiveAccess()) {
+					doLock = false;
+				}
+				if (doLock) {
 					ReadWriteLock workingTablesLock = getWorkingTablesLock(executionContext.getScope());
 					writeLock = workingTablesLock.writeLock();
 					writeLock.lock();
