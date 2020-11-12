@@ -1,6 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  
+
   <title>Jailer - FAQ</title>
   <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
   <meta name="keywords" content="Data Export Tool" />
@@ -142,7 +142,7 @@
                             until you get all the rows you are looking for.<br />
                             &nbsp;<br />
                             It is easier to get a working extraction model in this way, but it is more difficult to ensure that the model is not too restrictive, i.e. that you get <b>all</b> the rows you want.<br><br />
-                            
+
                             In my experience the best way to define an extraction model
                             is to use the "<span style="font-weight: bold;">Closure</span>" view.<br />
                             &nbsp;<br />
@@ -221,7 +221,7 @@
 
                                     <td>Synonym for A.$DISTANCE=0</td>
                                   </tr>
-                                  
+
                                   <tr>
                                     <td><b>$IN_DELETE_MODE</b></td>
 
@@ -326,9 +326,9 @@
                             <td>Jailer cannot handle tables without a primary key.
                             Exporting data is not possible if the subject table is associated with a table without a primary key. In this case, you should manually define a primary key in the data model of the tool (not in the database!) using the <i>Data Model Editor</i>. Note that a key must be unique.<br />
                             <br />
-                            
+
                             However, when working with Oracle or PostgreSQL, you can use the <i>rowid</i> respectively the <i>ctid</i> pseudo columns instead of primary keys. <br>
-                            To do this, select the checkbox <i>"use rowid/ctid pseudo column for row identification"</i> in the <i>"Data Export"</i> dialog.
+                            See section <i>"Row identification"</i> in the <i>"Data Export"</i> dialog.
                             <br />
                             &nbsp;</td>
                           </tr>

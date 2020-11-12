@@ -42,6 +42,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -97,14 +100,14 @@ import net.sf.jailer.xml.XmlUtil;
 
 /**
  * The Subsetting Engine.
- * 
+ *
  * @author Ralf Wisser
  */
 public class SubsettingEngine {
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param executionContext the command line arguments
 	 */
 	public SubsettingEngine(ExecutionContext executionContext) {
@@ -138,14 +141,14 @@ public class SubsettingEngine {
 	 * The entity-graph to be used for finding the transitive closure.
 	 */
 	private EntityGraph entityGraph;
-	
+
 	/**
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
-	
+
 	private final CollectedRowsCounter collectedRowsCounter;
-	
+
 	/**
 	 * The job-manager to be used for concurrent execution of jobs.
 	 */
@@ -160,15 +163,15 @@ public class SubsettingEngine {
 	 * Comment header of the export-script.
 	 */
 	private StringBuffer commentHeader = new StringBuffer();
-	
+
 	/**
 	 * Export statistic.
 	 */
 	private ExportStatistic exportStatistic;
-	
+
 	/**
 	 * Gets the entity-graph to be used for finding the transitive closure.
-	 * 
+	 *
 	 * @return
 	 *            the entity-graph to be used for finding the transitive closure
 	 */
@@ -178,7 +181,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Sets the entity-graph to be used for finding the transitive closure.
-	 * 
+	 *
 	 * @param entityGraph
 	 *            the entity-graph to be used for finding the transitive closure
 	 */
@@ -188,7 +191,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Sets the restricted data-model to be used for extraction.
-	 * 
+	 *
 	 * @param dataModel
 	 *            the restricted data-model to be used for extraction
 	 */
@@ -198,7 +201,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Appends a line to the comment-header of the export script.
-	 * 
+	 *
 	 * @param comment
 	 *            the comment line (without '--'-prefix)
 	 */
@@ -212,15 +215,15 @@ public class SubsettingEngine {
 
 	/**
 	 * Exports rows from table.
-	 * 
+	 *
 	 * @param table
 	 *            the table
 	 * @param condition
 	 *            the condition (in SQL) the exported rows must fulfill
 	 * @param progressOfYesterday
 	 *            set of tables to account for resolvation
-	 * @param completedTables 
-	 * 
+	 * @param completedTables
+	 *
 	 * @return set of tables from which entities are added
 	 */
 	private Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, Set<Table> completedTables) throws SQLException {
@@ -277,15 +280,23 @@ public class SubsettingEngine {
 
 	/**
 	 * Exports all entities from initial-data tables.
-	 * 
+	 *
 	 * @param extractionModel the extraction model
 	 */
 	private Set<Table> exportSubjects(ExtractionModel extractionModel, Set<Table> completedTables) throws CancellationException, SQLException {
 		List<AdditionalSubject> allSubjects = new ArrayList<ExtractionModel.AdditionalSubject>();
+		Set<Table> st = new HashSet<Table>();
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
 			allSubjects.add(new AdditionalSubject(as.getSubject(), ParameterHandler.assignParameterValues(as.getCondition(), executionContext.getParameters()), as.getSubjectLimitDefinition()));
+			st.add(as.getSubject());
 		}
 		allSubjects.add(new AdditionalSubject(extractionModel.subject, subjectCondition.equals("1=1")? "" : subjectCondition, extractionModel.subjectLimitDefinition));
+		st.add(extractionModel.subject);
+
+		if (entityGraph.getTargetSession().dbms.getRowidName() == null || (!executionContext.getUseRowid() && !executionContext.getUseRowIdsOnlyForTablesWithoutPK())) {
+			datamodel.checkForPrimaryKey(st, false);
+		}
+
 		Map<Table, String> conditionPerUnlimitedTable = new HashMap<Table, String>();
 		Map<Table, List<AdditionalSubject>> subjectsPerTables = new HashMap<Table, List<AdditionalSubject>>();
 		for (AdditionalSubject as: allSubjects) {
@@ -346,7 +357,7 @@ public class SubsettingEngine {
 							joinWithEntity = true;
 						}
 						checkRowLimit(rc);
-						
+
 						if (condition.length() == 0 || "1=1".equals(condition)) {
 							// no more rows left
 							moreRows = false;
@@ -389,13 +400,13 @@ public class SubsettingEngine {
 
 	/**
 	 * Resolves all associations defined in data-model.
-	 * 
+	 *
 	 * @param today
 	 *            birthday of newly created entities
 	 * @param progressOfYesterday
 	 *            set of tables to account for resolvation
-	 * @param completedTables 
-	 * 
+	 * @param completedTables
+	 *
 	 * @return map from tables from which entities are added to all associations
 	 *         which lead to the entities
 	 */
@@ -419,7 +430,7 @@ public class SubsettingEngine {
 					_log.info("skip association " + datamodel.getDisplayName(table) + " -> " + datamodel.getDisplayName(association.destination) + ". All rows exported.");
 					continue;
 				}
-				
+
 				String jc = association.getJoinCondition();
 				if (jc != null) {
 					executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, association);
@@ -477,7 +488,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Adds all dependencies.
-	 * 
+	 *
 	 * @param progress
 	 *            set of tables to take into account
 	 */
@@ -549,7 +560,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Writes entities into extract-SQL-script.
-	 * 
+	 *
 	 * @param table
 	 *            write entities from this table only
 	 * @param orderByPK
@@ -561,7 +572,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Retrieves the configuration of the target DBMS.
-	 * 
+	 *
 	 * @param session the session
 	 * @return configuration of the target DBMS
 	 */
@@ -575,7 +586,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Creates a factory for transformers for processing the rows to be exported.
-	 * 
+	 *
 	 * @param outputWriter
 	 *            writer into export file
 	 * @param transformerHandler
@@ -583,7 +594,7 @@ public class SubsettingEngine {
 	 *            if script format is not XML.
 	 * @param scriptType
 	 *            the script type
-	 * 
+	 *
 	 * @return result set reader for processing the rows to be exported
 	 */
 	private TransformerFactory createTransformerFactory(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, String filepath) throws SQLException	{
@@ -610,14 +621,14 @@ public class SubsettingEngine {
 
 	/**
 	 * Writes entities into extract-SQL-script.
-	 * 
+	 *
 	 * @param sqlScriptFile
 	 *            the name of the sql-script to write the data to
 	 * @param progress
 	 *            set of tables to account for extraction
 	 * @param stage stage name for {@link ProgressListener}
-	 * @param afterCollectionTimestamp 
-	 * @param startTimestamp 
+	 * @param afterCollectionTimestamp
+	 * @param startTimestamp
 	 */
 	private void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session, String stage, Long startTimestamp, Long afterCollectionTimestamp) throws IOException, SAXException, SQLException {
 		_log.info("writing file '" + sqlScriptFile + "'...");
@@ -651,20 +662,20 @@ public class SubsettingEngine {
 			StreamResult streamResult = new StreamResult(
 					new OutputStreamWriter(outputStream,
 							charset));
-			
-		
-			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "", streamResult, charset);	//root tag removed to add namespaces 
+
+
+			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "", streamResult, charset);	//root tag removed to add namespaces
 
 			AttributesImpl attrdatabaseChangeLog = new AttributesImpl();
 			attrdatabaseChangeLog.addAttribute("", "", "xmlns:xsi", "", "http://www.w3.org/2001/XMLSchema-instance");
 			attrdatabaseChangeLog.addAttribute("", "", "xmlns:ext", "", "http://www.liquibase.org/xml/ns/dbchangelog-ext");
 			attrdatabaseChangeLog.addAttribute("", "", "xsi:schemaLocation", "", "http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd");
 			transformerHandler.startElement("http://www.liquibase.org/xml/ns/dbchangelog", "", "databaseChangeLog",attrdatabaseChangeLog);
-			
+
 			AttributesImpl attrchangeset = new AttributesImpl();
 			attrchangeset.addAttribute("", "", "id", "","JailerExport" );
 			attrchangeset.addAttribute("", "", "author", "",System.getProperty("user.name") );
-			
+
 			transformerHandler.startElement("", "", "changeSet", attrchangeset);
 		} else {
 			if (executionContext.getUTF8()) {
@@ -704,22 +715,22 @@ public class SubsettingEngine {
 		if (importFilterManager != null && entityGraph.getTransformerFactory() instanceof DMLTransformer.Factory) {
 			((DMLTransformer.Factory) entityGraph.getTransformerFactory()).setImportFilterTransformer(importFilterManager);
 		}
-		
+
 		Session targetSession = entityGraph.getTargetSession();
 		entityGraph.fillAndWriteMappingTables(jobManager, result, executionContext.getNumberOfEntities(), targetSession, targetDBMSConfiguration(targetSession), session.dbms);
 
 		executionContext.getProgressListenerRegistry().fireNewStage(stage, false, false);
-		
+
 		long rest = 0;
 		Set<Table> dependentTables = null;
 		Set<Table> currentProgress = new TreeSet<Table>(progress);
-		
+
 		while (!currentProgress.isEmpty()) {
 			// first write entities of independent tables
 			dependentTables = writeEntitiesOfIndependentTables(result, transformerHandler, scriptType, currentProgress, sqlScriptFile);
 			Set<Table> prevProgress = currentProgress;
 			currentProgress = new TreeSet<Table>();
-			
+
 			// then write entities of tables having cyclic-dependencies
 			Set<Table> descendants = getDescentants(dependentTables);
 			if (!descendants.isEmpty()) {
@@ -737,14 +748,14 @@ public class SubsettingEngine {
 			} else {
 				_log.warn("skipping topological sorting");
 			}
-	
+
 			rest = 0;
-	
-			if (scriptType == ScriptType.INSERT && 
+
+			if (scriptType == ScriptType.INSERT &&
 					(ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())
 					|| ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat()))) {
 				Set<Table> remaining = new HashSet<Table>(dependentTables);
-	
+
 				// topologically sort remaining tables while ignoring reflexive
 				// dependencies
 				// and dependencies for which no edge exists in entity graph
@@ -786,13 +797,13 @@ public class SubsettingEngine {
 				if (rest > 0) {
 					EntityGraph egCopy = entityGraph.copy(EntityGraph.createUniqueGraphID(), entityGraph.getSession());
 					egCopy.setImportFilterManager(entityGraph.getImportFilterManager());
-					
+
 					_log.info(rest + " entities in cycle. Involved tables: " + new PrintUtil().tableSetAsString(dependentTables));
 					Map<Table, Set<Column>> nullableForeignKeys = findAndRemoveNullableForeignKeys(dependentTables, entityGraph, scriptType != ScriptType.DELETE);
 					_log.info("nullable foreign keys: " + nullableForeignKeys.values());
 
 					ScriptFormat scriptFormat = executionContext.getScriptFormat();
-					
+
 					List<Runnable> resetFilters = new ArrayList<Runnable>();
 					for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
 						for (final Column column: entry.getValue()) {
@@ -813,25 +824,25 @@ public class SubsettingEngine {
 
 					if (scriptType != ScriptType.DELETE) {
 						rest = writeIndependentEntities(result, dependentTables, entityGraph);
-						
+
 						for (Runnable runnable: resetFilters) {
 							runnable.run();
 						}
-						
+
 						appendSync(result);
 						updateNullableForeignKeys(result, egCopy, nullableForeignKeys, false);
-						
+
 					} else {
 						updateNullableForeignKeys(result, egCopy, nullableForeignKeys, true);
 
 						for (Runnable runnable: resetFilters) {
 							runnable.run();
 						}
-						
+
 						appendSync(result);
 						rest = writeIndependentEntities(result, dependentTables, entityGraph);
 					}
-					
+
 					egCopy.delete();
 					appendSync(result);
 				}
@@ -840,11 +851,11 @@ public class SubsettingEngine {
 				break;
 			}
 		}
-		
+
 		if (importFilterManager != null) {
 			importFilterManager.shutDown();
 		}
-			
+
 		if (result != null) {
 			entityGraph.dropMappingTables(result, targetDBMSConfiguration(targetSession));
 			if (executionContext.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
@@ -877,9 +888,9 @@ public class SubsettingEngine {
 
 				transformerHandler.endElement("","", "changeSet");
 				transformerHandler.endElement("","", "databaseChangeLog");
-				
+
 			} else if (ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())) {
-				transformerHandler.endElement("", "", "dataset");			
+				transformerHandler.endElement("", "", "dataset");
 			}
 			transformerHandler.endDocument();
 
@@ -946,7 +957,7 @@ public class SubsettingEngine {
 
 	private Map<Table, Set<Column>> findAndRemoveNullableForeignKeys(Set<Table> tables, EntityGraph theEntityGraph, boolean fkIsInSource) throws SQLException {
 		Map<Table, Set<Column>> result = new HashMap<Table, Set<Column>>();
-		
+
 		for (Table table: tables) {
 			for (Association association: table.associations) {
 				if (!tables.contains(association.source) || !tables.contains(association.destination)) {
@@ -975,14 +986,14 @@ public class SubsettingEngine {
 				}
 			}
 		}
-		
+
 		return result;
 	}
 
 	/**
 	 * Iteratively mark and write out independent entities from a given {@link EntityGraph}
 	 * until no independent entity remains.
-	 * 
+	 *
 	 * @param result writer to output file
 	 * @param dependentTables tables to consider
 	 * @param theEntityGraph the entity graph
@@ -1028,10 +1039,10 @@ public class SubsettingEngine {
 		}
 		return rest;
 	}
-	
+
 	/**
 	 * Gets set of all tables, which are no parents (recursiv).
-	 * 
+	 *
 	 * @param tables all tables
 	 * @return subset of tables
 	 */
@@ -1061,13 +1072,13 @@ public class SubsettingEngine {
 				break;
 			}
 		}
-		
+
 		return result;
 	}
 
 	/**
 	 * Removes all single-row cycles from dependency table.
-	 * 
+	 *
 	 * @param progress
 	 *            set of all tables from which rows are collected
 	 * @param session
@@ -1090,7 +1101,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Writes entities into XML-document.
-	 * 
+	 *
 	 * @param xmlFile
 	 *            the name of the xml-file to write the data to
 	 * @param progress
@@ -1166,7 +1177,7 @@ public class SubsettingEngine {
 			_log.warn("remaining tables after sorting: " + new PrintUtil().tableSetAsString(new HashSet<Table>(lexSortedTables)));
 			sortedTables.addAll(lexSortedTables);
 		}
-		
+
 		Set<Table> cyclicAggregatedTables = getCyclicAggregatedTables(progress);
 		_log.info("cyclic aggregated tables: " + new PrintUtil().tableSetAsString(cyclicAggregatedTables));
 
@@ -1174,7 +1185,7 @@ public class SubsettingEngine {
 		if (executionContext.getUTF8()) {
 			charset = Charset.forName("UTF8");
 		}
-		
+
 		XmlExportTransformer reader;
 		try {
 			reader = new XmlExportTransformer(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables,
@@ -1231,7 +1242,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Checks whether some entities are not exported due to cyclic aggregation.
-	 * 
+	 *
 	 * @param cyclicAggregatedTables
 	 *            tables to check
 	 */
@@ -1253,12 +1264,12 @@ public class SubsettingEngine {
 
 	/**
 	 * Writes entities of independent tables.
-	 * 
+	 *
 	 * @param result
 	 *            a writer for the extract-script
 	 * @param progress
 	 *            set of tables involved in export
-	 * 
+	 *
 	 * @return set of tables from which no entities are written
 	 */
 	private Set<Table> writeEntitiesOfIndependentTables(final OutputStreamWriter result, final TransformerHandler transformerHandler, final ScriptType scriptType,
@@ -1271,7 +1282,7 @@ public class SubsettingEngine {
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			for (final Table independentTable : independentTables) {
 				if (executionContext.getOrderByPK()
-						|| ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat()) 
+						|| ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())
 						|| ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat())) {
 					// export rows sequentially, don't mix rows of different
 					// tables in a dataset!
@@ -1297,13 +1308,13 @@ public class SubsettingEngine {
 
 		return tables;
 	}
-	
+
 	private void appendSync(OutputStreamWriter result) throws IOException {
 		if (executionContext.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
 			result.append("-- sync" + PrintUtil.LINE_SEPARATOR);
 		}
 	}
-	
+
 	/**
 	 * Prevents multiple shutdowns.
 	 */
@@ -1322,7 +1333,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Stringifies progress-set.
-	 * 
+	 *
 	 * @param progress
 	 *            the progress-set
 	 * @return the progress-set as string
@@ -1351,7 +1362,7 @@ public class SubsettingEngine {
 			Session session = entityGraph.getSession();
 			if (lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
 				lastRunstats = entityGraph.getTotalRowcount();
-	
+
 				StatisticRenovator statisticRenovator = session.dbms.getStatisticRenovator();
 				if (statisticRenovator != null) {
 					_log.info("gather statistics after " + lastRunstats + " inserted rows...");
@@ -1367,319 +1378,368 @@ public class SubsettingEngine {
 
 	private String subjectCondition;
 	private static Map<String, List<ExtractionModel>> modelPool = new HashMap<String, List<ExtractionModel>>();
-	
+	private static ReadWriteLock workingTablesLockGlobal;
+	private static ReadWriteLock workingTablesLockTemp;
+
+	private synchronized static ReadWriteLock getWorkingTablesLock(WorkingTableScope workingTableScope) {
+		if (workingTableScope == WorkingTableScope.GLOBAL) {
+			if (workingTablesLockGlobal == null) {
+				workingTablesLockGlobal = new ReentrantReadWriteLock(true);
+			}
+			return workingTablesLockGlobal;
+		} else {
+			if (workingTablesLockTemp == null) {
+				workingTablesLockTemp = new ReentrantReadWriteLock(true);
+			}
+			return workingTablesLockTemp;
+		}
+	}
+
 	/**
 	 * Exports entities.
-	 * 
+	 *
 	 * @param datamodelBaseURL URL of datamodel folder
 	 * @param modelPoolSize size of extraction-model pool
-	 * 
+	 *
 	 * @return statistic
 	 */
 	public ExportStatistic export(String whereClause, URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat, int modelPoolSize) throws SQLException, IOException, SAXException {
-		exportStatistic = new ExportStatistic();
-		
-		if (scriptFile != null) {
-			_log.info("exporting '" + extractionModelURL + "' to '" + scriptFile + "'");
-		}
+		Lock readLock = null;
+		Lock writeLock = null;
+		try {
+			exportStatistic = new ExportStatistic();
 
-		Session session = new Session(dataSource, dbms, executionContext.getIsolationLevel(), executionContext.getScope(), executionContext.getTransactional());
-		ExtractionModel extractionModel = null;
-		if (modelPoolSize > 0) {
-			synchronized (modelPool) {
-				List<ExtractionModel> models = modelPool.get(extractionModelURL.toString());
-				if (models != null && models.size() > 0) {
-					extractionModel = models.remove(0);
+			if (scriptFile != null) {
+				_log.info("exporting '" + extractionModelURL + "' to '" + scriptFile + "'");
+			}
+
+			Session session = new Session(dataSource, dbms, executionContext.getIsolationLevel(), executionContext.getScope(), executionContext.getTransactional());
+			ExtractionModel extractionModel = null;
+			if (modelPoolSize > 0) {
+				synchronized (modelPool) {
+					List<ExtractionModel> models = modelPool.get(extractionModelURL.toString());
+					if (models != null && models.size() > 0) {
+						extractionModel = models.remove(0);
+					}
 				}
 			}
-		}
-		if (extractionModel == null) {
-			extractionModel = new ExtractionModel(extractionModelURL, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext, true);
-		}
+			if (extractionModel == null) {
+				extractionModel = new ExtractionModel(extractionModelURL, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext, true);
+			}
 
-		DDLCreator ddlCreator = new DDLCreator(executionContext);
-		if (executionContext.getScope() == WorkingTableScope.SESSION_LOCAL
-		 || executionContext.getScope() == WorkingTableScope.TRANSACTION_LOCAL) {
-			ddlCreator.createDDL(extractionModel.dataModel, session, executionContext.getScope(), executionContext.getWorkingTableSchema());
-		} else if (executionContext.getScope() == WorkingTableScope.GLOBAL) {
-			if (!ddlCreator.isUptodate(session, !executionContext.getNoRowid(), executionContext.getWorkingTableSchema())) {
+			DDLCreator ddlCreator = new DDLCreator(executionContext);
+
+			if (executionContext.getScope() == WorkingTableScope.SESSION_LOCAL
+			 || executionContext.getScope() == WorkingTableScope.TRANSACTION_LOCAL) {
+				ReadWriteLock workingTablesLock = getWorkingTablesLock(executionContext.getScope());
+				writeLock = workingTablesLock.writeLock();
+				writeLock.lock();
 				ddlCreator.createDDL(extractionModel.dataModel, session, executionContext.getScope(), executionContext.getWorkingTableSchema());
+				// Lock downgrading
+				// Reentrancy also allows downgrading from the write lock to a read lock,
+				// by acquiring the write lock, then the read lock and then releasing the write lock.
+				readLock = workingTablesLock.readLock();
+				readLock.lock();
+				writeLock.unlock();
+				writeLock = null;
+			} else if (executionContext.getScope() == WorkingTableScope.GLOBAL) {
+				ReadWriteLock workingTablesLock = getWorkingTablesLock(executionContext.getScope());
+				if (!ddlCreator.isUptodate(session, executionContext.getUseRowid(), executionContext.getUseRowIdsOnlyForTablesWithoutPK(), executionContext.getWorkingTableSchema())) {
+					writeLock = workingTablesLock.writeLock();
+					writeLock.lock();
+					ddlCreator.createDDL(extractionModel.dataModel, session, executionContext.getScope(), executionContext.getWorkingTableSchema());
+					// Lock downgrading
+					readLock = workingTablesLock.readLock();
+					readLock.lock();
+					writeLock.unlock();
+					writeLock = null;
+				} else {
+					readLock = workingTablesLock.readLock();
+					readLock.lock();
+				}
 			}
-		}
 
-		_log.info(session.dbms.getSqlDialect());
-		
-		Runnable updateStatistics = new Runnable() {
-			@Override
-			public void run() {
+			_log.info(session.dbms.getSqlDialect());
+
+			Runnable updateStatistics = new Runnable() {
+				@Override
+				public void run() {
+					runstats();
+				}
+			};
+
+			EntityGraph entityGraph;
+			if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
+				RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
+				entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), updateStatistics, executionContext);
+			} else if (executionContext.getScope() == WorkingTableScope.LOCAL_DATABASE) {
+				entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, executionContext);
+			} else {
+				RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
+				entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), updateStatistics, executionContext);
+			}
+
+			entityGraph.setExplain(explain);
+
+			Charset charset = Charset.defaultCharset();
+			if (executionContext.getUTF8()) {
+				charset = Charset.forName("UTF8");
+				appendCommentHeader("encoding " + charset.name());
+				appendCommentHeader("");
+			}
+			appendCommentHeader("generated by Jailer " + JailerVersion.VERSION + ", " + new Date() + " from " + getUsername());
+			Set<Table> totalProgress = new HashSet<Table>();
+			Set<Table> subjects = new HashSet<Table>();
+
+			if (whereClause != null) {
+				subjectCondition = whereClause;
+			} else {
+				subjectCondition = extractionModel.getCondition();
+			}
+
+			appendCommentHeader("");
+			String condition = (subjectCondition != null && !"1=1".equals(subjectCondition)) ? extractionModel.subject.getName() + " where " + subjectCondition
+					: "all rows from " + extractionModel.subject.getName();
+			appendCommentHeader("Extraction Model:  " + (condition.replaceAll("\\s+", " ")) + " (" + extractionModelURL + ")");
+			if (extractionModel.subjectLimitDefinition.limit != null) {
+				appendCommentHeader("                         limit " + extractionModel.subjectLimitDefinition.limit + (extractionModel.subjectLimitDefinition.orderBy != null? " order by " + extractionModel.subjectLimitDefinition.orderBy : ""));
+			}
+			for (AdditionalSubject as: extractionModel.additionalSubjects) {
+				condition = (as.getCondition() != null && as.getCondition().trim().length() > 0) ? as.getSubject().getName() + " where " + (as.getCondition().replaceAll("\\s+", " "))
+						: "all rows from " + as.getSubject().getName();
+				appendCommentHeader("                   Union " + condition);
+				if (as.getSubjectLimitDefinition().limit != null) {
+					appendCommentHeader("                         limit " + as.getSubjectLimitDefinition().limit + (as.getSubjectLimitDefinition().orderBy != null? " order by " + as.getSubjectLimitDefinition().orderBy : ""));
+				}
+			}
+			if (executionContext.getNoSorting()) {
+				appendCommentHeader("                   unsorted");
+			}
+			appendCommentHeader("Source DBMS:       " + session.dbms.getDisplayName());
+			appendCommentHeader("Target DBMS:       " + targetDBMSConfiguration(session).getDisplayName());
+			if (session.dbUrl != null) {
+				appendCommentHeader("Database URL:      " + session.dbUrl);
+			}
+			if (!"".equals(session.getSchema())) {
+				appendCommentHeader("Database User:     " + session.getSchema());
+			}
+			appendCommentHeader("");
+
+			long startTimestamp = System.currentTimeMillis();
+			Long afterCollectionTimestamp = null;
+
+			subjectCondition = ParameterHandler.assignParameterValues(subjectCondition, executionContext.getParameters());
+
+			if (!executionContext.getParameters().isEmpty()) {
+				String suffix = "Parameters:        ";
+				for (Map.Entry<String, String> e: executionContext.getParameters().entrySet()) {
+					appendCommentHeader(suffix + e.getKey() + " = " + e.getValue());
+					suffix = "                   ";
+				}
+				appendCommentHeader("");
+			}
+
+			EntityGraph graph = entityGraph;
+			setEntityGraph(graph);
+			setDataModel(extractionModel.dataModel);
+			EntityGraph exportedEntities = null;
+			long exportedCount = 0;
+
+			try {
 				runstats();
-			}
-		};
-		
-		EntityGraph entityGraph;
-		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
-			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
-			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), updateStatistics, executionContext);
-		} else if (executionContext.getScope() == WorkingTableScope.LOCAL_DATABASE) {
-			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, executionContext);
-		} else {
-			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
-			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), updateStatistics, executionContext);
-		}
+				entityGraph.checkExist(executionContext);
+				initRowLimit(executionContext.getLimit());
+				executionContext.getProgressListenerRegistry().fireNewStage("collecting rows", false, false);
+				Set<Table> completedTables = new HashSet<Table>();
+				Set<Table> progress = exportSubjects(extractionModel, completedTables);
+				entityGraph.setBirthdayOfSubject(entityGraph.getAge());
+				progress.addAll(export(extractionModel.subject, subjectCondition, progress, completedTables));
+				totalProgress.addAll(progress);
+				subjects.add(extractionModel.subject);
+				entityGraph.checkExist(executionContext);
 
-		entityGraph.setExplain(explain);
+				afterCollectionTimestamp = System.currentTimeMillis();
 
-		Charset charset = Charset.defaultCharset();
-		if (executionContext.getUTF8()) {
-			charset = Charset.forName("UTF8");
-			appendCommentHeader("encoding " + charset.name());
-			appendCommentHeader("");
-		}
-		appendCommentHeader("generated by Jailer " + JailerVersion.VERSION + ", " + new Date() + " from " + getUsername());
-		Set<Table> totalProgress = new HashSet<Table>();
-		Set<Table> subjects = new HashSet<Table>();
+				totalProgress = datamodel.normalize(totalProgress);
+				subjects = datamodel.normalize(subjects);
 
-		if (whereClause != null) {
-			subjectCondition = whereClause;
-		} else {
-			subjectCondition = extractionModel.getCondition();
-		}
-
-		appendCommentHeader("");
-		String condition = (subjectCondition != null && !"1=1".equals(subjectCondition)) ? extractionModel.subject.getName() + " where " + subjectCondition
-				: "all rows from " + extractionModel.subject.getName();
-		appendCommentHeader("Extraction Model:  " + (condition.replaceAll("\\s+", " ")) + " (" + extractionModelURL + ")");
-		if (extractionModel.subjectLimitDefinition.limit != null) {
-			appendCommentHeader("                         limit " + extractionModel.subjectLimitDefinition.limit + (extractionModel.subjectLimitDefinition.orderBy != null? " order by " + extractionModel.subjectLimitDefinition.orderBy : ""));
-		}
-		for (AdditionalSubject as: extractionModel.additionalSubjects) {
-			condition = (as.getCondition() != null && as.getCondition().trim().length() > 0) ? as.getSubject().getName() + " where " + (as.getCondition().replaceAll("\\s+", " "))
-					: "all rows from " + as.getSubject().getName();
-			appendCommentHeader("                   Union " + condition);
-			if (as.getSubjectLimitDefinition().limit != null) {
-				appendCommentHeader("                         limit " + as.getSubjectLimitDefinition().limit + (as.getSubjectLimitDefinition().orderBy != null? " order by " + as.getSubjectLimitDefinition().orderBy : ""));
-			}
-		}
-		if (executionContext.getNoSorting()) {
-			appendCommentHeader("                   unsorted");
-		}
-		appendCommentHeader("Source DBMS:       " + session.dbms.getDisplayName());
-		appendCommentHeader("Target DBMS:       " + targetDBMSConfiguration(session).getDisplayName());
-		if (session.dbUrl != null) {
-			appendCommentHeader("Database URL:      " + session.dbUrl);
-		}
-		if (!"".equals(session.getSchema())) {
-			appendCommentHeader("Database User:     " + session.getSchema());
-		}
-		appendCommentHeader("");
-
-		long startTimestamp = System.currentTimeMillis();
-		Long afterCollectionTimestamp = null; 
-
-		subjectCondition = ParameterHandler.assignParameterValues(subjectCondition, executionContext.getParameters());
-		
-		if (!executionContext.getParameters().isEmpty()) {
-			String suffix = "Parameters:        ";
-			for (Map.Entry<String, String> e: executionContext.getParameters().entrySet()) {
-				appendCommentHeader(suffix + e.getKey() + " = " + e.getValue());
-				suffix = "                   ";
-			}
-			appendCommentHeader("");
-		}
-		
-		EntityGraph graph = entityGraph;
-		setEntityGraph(graph);
-		setDataModel(extractionModel.dataModel);
-		EntityGraph exportedEntities = null;
-		long exportedCount = 0;
-		
-		try {
-			runstats();
-			entityGraph.checkExist(executionContext);
-			initRowLimit(executionContext.getLimit());
-			executionContext.getProgressListenerRegistry().fireNewStage("collecting rows", false, false);
-			Set<Table> completedTables = new HashSet<Table>();
-			Set<Table> progress = exportSubjects(extractionModel, completedTables);
-			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
-			progress.addAll(export(extractionModel.subject, subjectCondition, progress, completedTables));
-			totalProgress.addAll(progress);
-			subjects.add(extractionModel.subject);
-			entityGraph.checkExist(executionContext);
-			
-			afterCollectionTimestamp = System.currentTimeMillis();
-			
-			totalProgress = datamodel.normalize(totalProgress);
-			subjects = datamodel.normalize(subjects);
-	
-			/* TODO Differentiated filtering of restricted dependencies 
-			Map<Table, Set<Column>> foreignKeysWithNullFilter = new HashMap<Table, Set<Column>>();
-			for (Table table: totalProgress) {
-				for (Association association: table.associations) {
-					if (totalProgress.contains(association.source) && totalProgress.contains(association.destination)) {
-						if (association.getRestrictionCondition() != null) {
-							if (association.fkHasNullFilter() && association.hasNullableFK()) {
-								Set<Column> fks = foreignKeysWithNullFilter.get(table);
-								if (fks == null) {
-									fks = new HashSet<Column>();
-									foreignKeysWithNullFilter.put(table, fks);
+				/* TODO Differentiated filtering of restricted dependencies
+				Map<Table, Set<Column>> foreignKeysWithNullFilter = new HashMap<Table, Set<Column>>();
+				for (Table table: totalProgress) {
+					for (Association association: table.associations) {
+						if (totalProgress.contains(association.source) && totalProgress.contains(association.destination)) {
+							if (association.getRestrictionCondition() != null) {
+								if (association.fkHasNullFilter() && association.hasNullableFK()) {
+									Set<Column> fks = foreignKeysWithNullFilter.get(table);
+									if (fks == null) {
+										fks = new HashSet<Column>();
+										foreignKeysWithNullFilter.put(table, fks);
+									}
+									fks.addAll(association.createSourceToDestinationKeyMapping().keySet());
 								}
-								fks.addAll(association.createSourceToDestinationKeyMapping().keySet());
 							}
 						}
 					}
 				}
-			}
-			*/
-
-			if (deleteScriptFileName != null) {
-				exportedEntities = entityGraph.copy(EntityGraph.createUniqueGraphID(), session);
-			}
-
-			if (scriptFile != null) {
-				executionContext.getProgressListenerRegistry().firePrepareExport();
-				
-				setEntityGraph(entityGraph);
-				if (ScriptFormat.XML.equals(scriptFormat)) {
-					writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
-				} else {
-					writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session, "exporting rows", startTimestamp, afterCollectionTimestamp);
-				}
-			}
-			exportedCount = entityGraph.getExportedCount();
-			initRowLimit(null);
-			if (deleteScriptFileName != null) {
-				executionContext.getProgressListenerRegistry().fireNewStage("delete", false, false);
-				executionContext.getProgressListenerRegistry().fireNewStage("delete-reduction", false, false);
-				setEntityGraph(exportedEntities);
-				
-				/* TODO Differentiated filtering of restricted dependencies 
-				final EntityGraph reduction;
-				if (!foreignKeysWithNullFilter.isEmpty()) {
-					reduction = exportedEntities.copy(EntityGraph.createUniqueGraphID(), session);
-				} else {
-					reduction = null;
-				}
 				*/
-				
-				try {
-					List<Runnable> resetFilters = removeFilters(datamodel);
-					Table.clearSessionProperties(session);
-					deleteEntities(subjects, totalProgress, session);
 
-					/* TODO Differentiated filtering of restricted dependencies 
-					if (reduction != null) {
-						final EntityGraph finalExportedEntities = exportedEntities;
-						for (final Table table: totalProgress) {
-							List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
-							jobs.add(new Job() {
-								@Override
-								public void run() throws SQLException, CancellationException {
-									reduction.removeAll(finalExportedEntities, table);
-								}
-							});
-							jobManager.executeJobs(jobs);
+				if (deleteScriptFileName != null) {
+					exportedEntities = entityGraph.copy(EntityGraph.createUniqueGraphID(), session);
+				}
+
+				if (scriptFile != null) {
+					executionContext.getProgressListenerRegistry().firePrepareExport();
+
+					setEntityGraph(entityGraph);
+					if (ScriptFormat.XML.equals(scriptFormat)) {
+						writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
+					} else {
+						writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session, "exporting rows", startTimestamp, afterCollectionTimestamp);
+					}
+				}
+				exportedCount = entityGraph.getExportedCount();
+				initRowLimit(null);
+				if (deleteScriptFileName != null) {
+					executionContext.getProgressListenerRegistry().fireNewStage("delete", false, false);
+					executionContext.getProgressListenerRegistry().fireNewStage("delete-reduction", false, false);
+					setEntityGraph(exportedEntities);
+
+					/* TODO Differentiated filtering of restricted dependencies
+					final EntityGraph reduction;
+					if (!foreignKeysWithNullFilter.isEmpty()) {
+						reduction = exportedEntities.copy(EntityGraph.createUniqueGraphID(), session);
+					} else {
+						reduction = null;
+					}
+					*/
+
+					try {
+						List<Runnable> resetFilters = removeFilters(datamodel);
+						Table.clearSessionProperties(session);
+						deleteEntities(subjects, totalProgress, session);
+
+						/* TODO Differentiated filtering of restricted dependencies
+						if (reduction != null) {
+							final EntityGraph finalExportedEntities = exportedEntities;
+							for (final Table table: totalProgress) {
+								List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
+								jobs.add(new Job() {
+									@Override
+									public void run() throws SQLException, CancellationException {
+										reduction.removeAll(finalExportedEntities, table);
+									}
+								});
+								jobManager.executeJobs(jobs);
+							}
+						}
+						*/
+
+						datamodel.transpose();
+						writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session, "writing delete-script", null, null);
+						for (Runnable rf: resetFilters) {
+							rf.run();
+						}
+						Table.clearSessionProperties(session);
+						exportedEntities.delete();
+					} finally {
+						setEntityGraph(entityGraph);
+
+						/* TODO Differentiated filtering of restricted dependencies
+						if (reduction != null) {
+							reduction.delete();
+						}
+						*/
+					}
+					datamodel.transpose();
+				}
+
+				if (scriptFile != null && scriptFormat != ScriptFormat.XML && exportStatistic.getTotal() != exportedCount) {
+					String message =
+								"The number of rows collected (" + exportStatistic.getTotal() + ") differs from that of the exported ones (" + exportedCount + ").\n" +
+								"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique.\n" +
+								"It is recommended to check the integrity of the primary keys.\n" +
+								"To do this, use the menu item \"Check primary keys\" in the menu called \"DataModel\".";
+					if (executionContext.isAbortInCaseOfInconsistency()) {
+						throw new InconsistentSubsettingResultException(message);
+					} else {
+						System.err.println(message);
+					}
+				}
+
+				entityGraph.truncate(executionContext, true);
+				entityGraph.delete();
+				entityGraph.getSession().commitAll();
+				entityGraph.close();
+			} catch (CancellationException e) {
+				try {
+					_log.info("cleaning up after cancellation...");
+					CancellationHandler.reset(null);
+					entityGraph.getSession().rollbackAll();
+					entityGraph.truncate(executionContext, false);
+					entityGraph.delete();
+					if (exportedEntities != null) {
+						if (entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
+							exportedEntities.delete();
+						} else {
+							_log.info("skipping clean up of temporary tables");
 						}
 					}
-					*/
-					
-					datamodel.transpose();
-					writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session, "writing delete-script", null, null);
-					for (Runnable rf: resetFilters) {
-						rf.run();
+					_log.info("cleaned up");
+					entityGraph.close();
+					shutDown();
+					executionContext.getProgressListenerRegistry().fireNewStage("cancelled", true, true);
+				} catch (Throwable t) {
+					_log.warn(t.getMessage());
+				}
+				throw e;
+			} catch (Exception e) {
+				try {
+					_log.info("cleaning up...");
+					entityGraph.truncate(executionContext, false);
+					entityGraph.delete();
+					if (exportedEntities != null) {
+						if (entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
+							exportedEntities.delete();
+						} else {
+							_log.info("skipping clean up of temporary tables");
+						}
 					}
-					Table.clearSessionProperties(session);
-					exportedEntities.delete();
-				} finally {
-					setEntityGraph(entityGraph);
+					entityGraph.getSession().rollbackAll();
+					entityGraph.close();
+					shutDown();
+				} catch (Throwable t) {
+					_log.warn(t.getMessage());
+				}
+				throw e;
+			}
+			if (modelPoolSize > 0) {
+				synchronized (modelPool) {
+					List<ExtractionModel> models = modelPool.get(extractionModelURL.toString());
+					if (models == null) {
+						models = new LinkedList<ExtractionModel>();
+						modelPool.put(extractionModelURL.toString(), models);
+					}
+					if (models.size() < modelPoolSize) {
+						models.add(extractionModel);
+					}
+				}
+			}
+			shutDown();
 
-					/* TODO Differentiated filtering of restricted dependencies 
-					if (reduction != null) {
-						reduction.delete();
-					}
-					*/
-				}
-				datamodel.transpose();
+			return exportStatistic;
+		} finally {
+			if (readLock != null) {
+				readLock.unlock();
 			}
-
-			if (scriptFile != null && scriptFormat != ScriptFormat.XML && exportStatistic.getTotal() != exportedCount) {
-				String message =
-							"The number of rows collected (" + exportStatistic.getTotal() + ") differs from that of the exported ones (" + exportedCount + ").\n" +
-							"This may have been caused by an invalid primary key definition.\nPlease note that each primary key must be unique.\n" +
-							"It is recommended to check the integrity of the primary keys.\n" +
-							"To do this, use the menu item \"Check primary keys\" in the menu called \"DataModel\".";
-				if (executionContext.isAbortInCaseOfInconsistency()) {
-					throw new InconsistentSubsettingResultException(message);
-				} else {
-					System.err.println(message);
-				}
-			}
-
-			entityGraph.truncate(executionContext, true);
-			entityGraph.delete();
-			entityGraph.getSession().commitAll();
-			entityGraph.close();
-		} catch (CancellationException e) {
-			try {
-				_log.info("cleaning up after cancellation...");
-				CancellationHandler.reset(null);
-				entityGraph.getSession().rollbackAll();
-				entityGraph.truncate(executionContext, false);
-				entityGraph.delete();
-				if (exportedEntities != null) {
-					if (entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
-						exportedEntities.delete();
-					} else {
-						_log.info("skipping clean up of temporary tables");
-					}
-				}
-				_log.info("cleaned up");
-				entityGraph.close();
-				shutDown();
-				executionContext.getProgressListenerRegistry().fireNewStage("cancelled", true, true);
-			} catch (Throwable t) {
-				_log.warn(t.getMessage());
-			}
-			throw e;
-		} catch (Exception e) {
-			try {
-				_log.info("cleaning up...");
-				entityGraph.truncate(executionContext, false);
-				entityGraph.delete();
-				if (exportedEntities != null) {
-					if (entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
-						exportedEntities.delete();
-					} else {
-						_log.info("skipping clean up of temporary tables");
-					}
-				}
-				entityGraph.getSession().rollbackAll();
-				entityGraph.close();
-				shutDown();
-			} catch (Throwable t) {
-				_log.warn(t.getMessage());
-			}
-			throw e;
-		}
-		if (modelPoolSize > 0) {
-			synchronized (modelPool) {
-				List<ExtractionModel> models = modelPool.get(extractionModelURL.toString());
-				if (models == null) {
-					models = new LinkedList<ExtractionModel>();
-					modelPool.put(extractionModelURL.toString(), models);
-				}
-				if (models.size() < modelPoolSize) {
-					models.add(extractionModel);
-				}
+			if (writeLock != null) {
+				writeLock.unlock();
 			}
 		}
-		shutDown();
-		
-		return exportStatistic;
 	}
 
 	private AtomicLong maxAllowedNumRows = null;
 	private Long limit = null;
-	
+
 	private void initRowLimit(Long limit) {
 		this.limit = limit;
 		if (limit != null) {
@@ -1699,7 +1759,7 @@ public class SubsettingEngine {
 
 	/**
 	 * Gets user-name.
-	 * 
+	 *
 	 * @return the user-name
 	 */
 	private static String getUsername() {
@@ -1715,7 +1775,7 @@ public class SubsettingEngine {
 	 * Calculates D=(E-T)-C*(U-(E-T)) where E is the entity-graph of this
 	 * export-tool, see
 	 * http://intra.*.de/dokuwiki/doku.php?id=projekte:sql-export-tool-phase2.
-	 * 
+	 *
 	 * @param subjects
 	 *            set of tables containing subjects of extraction-tasks
 	 * @param allTables
@@ -1734,7 +1794,7 @@ public class SubsettingEngine {
 		appendCommentHeader("Tabu-tables: " + new PrintUtil().tableSetAsString(tabuTables, "--                 "));
 		_log.info("Tabu-tables: " + new PrintUtil().tableSetAsString(tabuTables, null));
 		entityGraph.setDeleteMode(true);
-		
+
 		final Map<Table, Long> removedEntities = Collections.synchronizedMap(new HashMap<Table, Long>());
 
 		int today = 1;
@@ -1744,7 +1804,7 @@ public class SubsettingEngine {
 		for (Table tabuTable: tabuTables) {
 			executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, tabuTable);
 		}
-				
+
 		// remove tabu entities
 		for (Table tabuTable : tabuTables) {
 			executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, tabuTable);
@@ -1771,7 +1831,7 @@ public class SubsettingEngine {
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			final Set<Table> tablesToCheckNextTime = new HashSet<Table>();
 			Map<Table, Long> entityCounts = new HashMap<Table, Long>();
-			
+
 			// final StringBuffer rcs = new StringBuffer();
 
 			for (final Table table : tablesToCheck) {
@@ -1804,9 +1864,9 @@ public class SubsettingEngine {
 								}
 								long rc = entityGraph.removeAssociatedDestinations(a.reversalAssociation, !isFirstStep, allTables);
 								checked.add(a);
-								
+
 //								rcs.append(a.source.getName() + " " + a.destination.getName() + " " + rc + "\n");
-								
+
 								if (!isFirstStep) {
 									executionContext.getProgressListenerRegistry().fireCollected(finalToday, a.reversalAssociation, rc);
 								} else if (rc > 0) {
@@ -1821,7 +1881,7 @@ public class SubsettingEngine {
 										for (Association a2 : table.associations) {
 											tablesToCheckNextTime.add(a2.destination);
 											checked.remove(a2.reversalAssociation);
-											
+
 //											rcs.append("- " + a2.reversalAssociation.source.getName() + " " + a2.reversalAssociation.destination.getName() + " " + rc + " " + "\n");
 										}
 									}
@@ -1843,7 +1903,7 @@ public class SubsettingEngine {
 					executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, e.getKey().reversalAssociation);
 					executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, e.getKey().reversalAssociation);
 					executionContext.getProgressListenerRegistry().fireCollected(today, e.getKey().reversalAssociation, e.getValue());
-									
+
 				}
 			}
 //			System.out.println(rcs);
@@ -1853,14 +1913,14 @@ public class SubsettingEngine {
 		}
 
 		_log.info("entities to delete:");
-		
+
 		appendCommentHeader("");
-		
+
 		for (String line: collectedRowsCounter.createStatistic(true, datamodel, null)) {
 			appendCommentHeader(line);
 			_log.info(line);
 		}
-		
+
 		appendCommentHeader("");
 	}
 

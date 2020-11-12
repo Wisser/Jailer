@@ -50,25 +50,25 @@ import net.sf.jailer.util.SqlUtil;
 
 /**
  * Creates the DDL for the working-tables.
- * 
+ *
  * @author Ralf Wisser
  */
 public class DDLCreator {
-	
+
 	/**
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param executionContext the command line arguments
 	 */
 	public DDLCreator(ExecutionContext executionContext) {
 		this.executionContext = executionContext;
 	}
-	
+
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
@@ -252,7 +252,7 @@ public class DDLCreator {
 					pk = new PrimaryKey(new ArrayList<Column>(pk.getColumns().subList(0, iSize)), false);
 				}
 			}
-			
+
 			listArguments.put("column-list", Collections.singletonList(", " + pk.columnList(null)));
 			listArguments.put("column-list-from", Collections.singletonList(", " + pk.columnList("FROM_")));
 			listArguments.put("column-list-to", Collections.singletonList(", " + pk.columnList("TO_")));
@@ -326,17 +326,17 @@ public class DDLCreator {
 
 	/**
 	 * Checks whether working-tables schema is up-to-date.
-	 * @param useRowId 
-	 * @param workingTableSchema 
-	 * 
+	 * @param useRowId
+	 * @param workingTableSchema
+	 *
 	 * @return <code>true</code> if working-tables schema is up-to-date
 	 */
-	public boolean isUptodate(DataSource dataSource, DBMS dbms, boolean useRowId, String workingTableSchema) {
+	public boolean isUptodate(DataSource dataSource, DBMS dbms, boolean useRowId, boolean useRowIdsOnlyForTablesWithoutPK, String workingTableSchema) {
 		try {
 			if (dataSource != null) {
 				final Session session = new Session(dataSource, dbms, executionContext.getIsolationLevel());
 				try {
-					return isUptodate(session, useRowId, workingTableSchema);
+					return isUptodate(session, useRowId, useRowIdsOnlyForTablesWithoutPK, workingTableSchema);
 				} finally {
 					session.shutDown();
 				}
@@ -345,15 +345,15 @@ public class DDLCreator {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Checks whether working-tables schema is up-to-date.
-	 * @param useRowId 
-	 * @param workingTableSchema 
-	 * 
+	 * @param useRowId
+	 * @param workingTableSchema
+	 *
 	 * @return <code>true</code> if working-tables schema is up-to-date
 	 */
-	public boolean isUptodate(final Session session, boolean useRowId, String workingTableSchema) {
+	public boolean isUptodate(final Session session, boolean useRowId, boolean useRowIdsOnlyForTablesWithoutPK, String workingTableSchema) {
 		try {
 			boolean wasSilent = session.getSilent();
 			try {
@@ -361,10 +361,10 @@ public class DDLCreator {
 				final boolean[] uptodate = new boolean[] { false };
 				final DataModel datamodel = new DataModel(executionContext);
 				final Map<String, String> typeReplacement = targetDBMS(session).getTypeReplacement();
-				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, targetDBMS(session), useRowId);
-				
+				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, targetDBMS(session), useRowId, useRowIdsOnlyForTablesWithoutPK);
+
 				final String schema = workingTableSchema == null ? "" : Quoting.getQuoting(session).requote(workingTableSchema) + ".";
-				
+
 				Session.ResultSetReader reader = new Session.ResultSetReader() {
 					@Override
 					public void readCurrentRow(ResultSet resultSet) throws SQLException {
@@ -420,7 +420,7 @@ public class DDLCreator {
 
 	/**
 	 * Checks whether working-tables schema is present.
-	 * 
+	 *
 	 * @return <code>true</code> if working-tables schema is present
 	 */
 	public boolean isPresent(Session session) {
@@ -454,7 +454,7 @@ public class DDLCreator {
 
 	/**
 	 * Checks for conflicts of existing tables and working-tables.
-	 * 
+	 *
 	 * @return name of table in conflict or <code>null</code>
 	 */
 	public String getTableInConflict(DataSource dataSource, DBMS dbms) {

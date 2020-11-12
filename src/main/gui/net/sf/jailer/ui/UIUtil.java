@@ -116,7 +116,7 @@ import net.sf.jsqlparser.parser.CCJSqlParser;
 
 /**
  * Some utility methods.
- * 
+ *
  * @author Ralf Wisser
  */
 public class UIUtil {
@@ -128,7 +128,7 @@ public class UIUtil {
 
     /**
      * Opens file chooser.
-     * 
+     *
      * @param selectedFile
      *            if not <code>null</code> this file will be selected initially
      * @param startDir
@@ -143,7 +143,7 @@ public class UIUtil {
 
     /**
      * Opens file chooser.
-     * 
+     *
      * @param selectedFile
      *            if not <code>null</code> this file will be selected initially
      * @param startDir
@@ -255,7 +255,7 @@ public class UIUtil {
 
     /**
      * Stores current directory of file chooser.
-     * 
+     *
      * @param key
      *            the key under which to store current directory
      * @param currentDir
@@ -287,7 +287,7 @@ public class UIUtil {
 
     /**
      * Restores current directory of file chooser.
-     * 
+     *
      * @param key
      *            the key of the current directory to restore
      * @return the current directory, or <code>null</code> if no directory has
@@ -315,7 +315,7 @@ public class UIUtil {
 
     /**
      * Calls the Jailer export engine via CLI.
-     * 
+     *
      * @param ownerOfConsole
      *            owner component of jailer console
      * @param cliArgs
@@ -355,15 +355,15 @@ public class UIUtil {
 	}
 
 	private static JFrame currentConsoleFrame = null;
-	
+
 	public interface ResultConsumer {
     	public void consume(boolean result, Throwable t);
     	public void cleanUp();
     }
-    
+
     /**
      * Calls the Jailer export engine via CLI.
-     * 
+     *
      * @param ownerOfConsole
      *            owner component of jailer console
      * @param cliArgs
@@ -746,10 +746,10 @@ public class UIUtil {
     public static Object EXCEPTION_CONTEXT_USER_ERROR = new Object();
     public static Object EXCEPTION_CONTEXT_MB_USER_ERROR = new Object();
     public static Object EXCEPTION_CONTEXT_USER_WARNING = new Object();
-    
+
     /**
      * Shows an exception.
-     * 
+     *
      * @param parent
      *            parent component of option pane
      * @param title
@@ -763,7 +763,7 @@ public class UIUtil {
 
     /**
      * Shows an exception.
-     * 
+     *
      * @param parent
      *            parent component of option pane
      * @param title
@@ -779,7 +779,7 @@ public class UIUtil {
 
     /**
      * Shows an exception.
-     * 
+     *
      * @param parent
      *            parent component of option pane
      * @param title
@@ -791,9 +791,9 @@ public class UIUtil {
      */
     public static void showException(Component parent, String title, Throwable t, Object context, JComponent additionalControl) {
     	Throwable original = t;
-    	
+
     	// TODO exception stack trace stripping ala AWTWatchdog#sendThreadDump
-    	
+
     	if (context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_MB_USER_ERROR) {
         	if (t instanceof IndexOutOfBoundsException
         			|| t instanceof NullPointerException
@@ -918,7 +918,7 @@ public class UIUtil {
 
     /**
      * Initializes peer of newly created window.
-     * 
+     *
      * Should not be neccassary, but there is a strange bug in AWT of jre 6 on
      * multi-core/processor systems. Sleeping a little after creating peer and
      * before making peer visible seems to help.
@@ -1101,8 +1101,8 @@ public class UIUtil {
 				if (!baseMultiResolutionImageClassExists || (icon.getIconWidth() <= w && icon.getIconHeight() <= h)) {
 					return new ImageIcon(scaled);
 				}
-				Image[] imageList = new Image[] { 
-						scaled, 
+				Image[] imageList = new Image[] {
+						scaled,
 						icon.getImage()
 						};
 				try {
@@ -1134,7 +1134,7 @@ public class UIUtil {
 
 	/**
 	 * Copies selected cells of a rows table into the clipboard.
-	 * 
+	 *
 	 * @param table the table
 	 */
 	public static void copyToClipboard(JTable table, boolean lineOnSingeCell) {
@@ -1218,7 +1218,7 @@ public class UIUtil {
 	}
 
 	private static boolean isPopupActive = false;
-	
+
 	public static synchronized boolean isPopupActive() {
 		return isPopupActive;
 	}
@@ -1226,7 +1226,7 @@ public class UIUtil {
 	private static synchronized void setPopupActive(boolean b) {
 		isPopupActive = b;
 	}
-	
+
     public static void showPopup(final Component invoker, final int x, final int y, final JPopupMenu popup) {
     	popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
     		@Override
@@ -1260,14 +1260,14 @@ public class UIUtil {
 				if (count <= 0) {
 					runnable.run();
 				} else {
-					SwingUtilities.invokeLater(this);			
+					SwingUtilities.invokeLater(this);
 				}
 			}
 		});
 	}
 
     private static Map<Component, Integer> waitLevel = new WeakHashMap<Component, Integer>();
-    
+
 	public static void setWaitCursor(Component component) {
 		if (component != null) {
 			Integer level = waitLevel.get(component);
@@ -1275,7 +1275,7 @@ public class UIUtil {
 				waitLevel.put(component, level + 1);
 			} else {
 				waitLevel.put(component, 1);
-				component.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));	
+				component.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			}
 		}
 	}
@@ -1330,15 +1330,15 @@ public class UIUtil {
 
 	/**
 	 * Calls the {@link PrimaryKeyValidator}.
-	 * @param i 
+	 * @param i
 	 */
 	@SuppressWarnings("serial")
 	public static void validatePrimaryKeys(final Window windowAncestor, final BasicDataSource basicDataSource, final Set<Table> tables) {
 		final Object cancellationContext = new Object();
-		
+
 		final String infoPrefix = "<html>"
 		+ "Checking the primary key definitions in the data model <br>for uniqueness...<br><br><br>".replace(" ", "&nbsp;");
-		final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(null, 
+		final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(null,
 				infoPrefix + "<br><br><br>") {
 				@Override
 				protected void onError(Throwable error) {
@@ -1352,7 +1352,7 @@ public class UIUtil {
 					CancellationHandler.cancel(cancellationContext);
 				}
 			};
-		ConcurrentTaskControl.openInModalDialog(windowAncestor, concurrentTaskControl, 
+		ConcurrentTaskControl.openInModalDialog(windowAncestor, concurrentTaskControl,
 			new ConcurrentTaskControl.Task() {
 				@Override
 				public void run() throws Throwable {
@@ -1428,7 +1428,7 @@ public class UIUtil {
 
 	/**
 	 * Initializes the "Native L&F" menu items.
-	 * 
+	 *
 	 * @param nativeLAFCheckBoxMenuItem the menu item
 	 */
 	public static void initPLAFMenuItem(final JCheckBoxMenuItem nativeLAFCheckBoxMenuItem, final Component parentComponent) {
@@ -1497,11 +1497,11 @@ public class UIUtil {
 	}
 
 	public static boolean isDDLUptodate(final DDLCreator ddlCreator, Window window, final BasicDataSource dataSource,
-			final DBMS dbms, final boolean useRowId, final String workingTableSchema) throws Exception {
+			final DBMS dbms, final boolean useRowId, final boolean useRowIdsOnlyForTablesWithoutPK, final String workingTableSchema) throws Exception {
 		return ConcurrentTaskControl.call(window, new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
-				return ddlCreator.isUptodate(dataSource, dbms, useRowId, workingTableSchema);
+				return ddlCreator.isUptodate(dataSource, dbms, useRowId, useRowIdsOnlyForTablesWithoutPK, workingTableSchema);
 			}
 		}, "validate working tables...");
 	}
@@ -1537,10 +1537,10 @@ public class UIUtil {
 
 	/**
 	 * Removes single line comments.
-	 * 
+	 *
 	 * @param statement
 	 *            the statement
-	 * 
+	 *
 	 * @return statement the statement without comments and literals
 	 */
 	private static String removeSingleLineComments(String statement) {
@@ -1587,7 +1587,7 @@ public class UIUtil {
 
 	private static Map<String, ImageIcon> images = new HashMap<String, ImageIcon>();
 	private static boolean errorSeen = false;
-	
+
 	public static ImageIcon readImage(String resource) {
 		ImageIcon result = images.get(resource);
 		if (result == null) {

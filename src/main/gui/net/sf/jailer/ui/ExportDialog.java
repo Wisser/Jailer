@@ -43,11 +43,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -84,17 +84,17 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * true iff ok-button was clicked.
 	 */
 	boolean isOk = false;
-	
+
 	/**
 	 * Xml/Sql switch.
 	 */
 	public final ScriptFormat scriptFormat;
-	
+
 	/**
 	 * Restricted data model.
 	 */
 	private final DataModel dataModel;
-	
+
 	/**
 	 * Previous subject condition.
 	 */
@@ -104,22 +104,22 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * Previous initial subject condition.
 	 */
 	private static String previousInitialSubjectCondition;
-	
+
 	/**
 	 * Display name for default schema.
 	 */
 	private static String DEFAULT_SCHEMA = "<default>";
-	
+
 	/**
 	 * Schema mapping fields.
 	 */
 	private Map<String, JTextField> schemaMappingFields = new HashMap<String, JTextField>();
-	
+
 	/**
 	 * Labels of schema mapping fields.
 	 */
 	private Map<String, JLabel> schemaMappingLabels = new HashMap<String, JLabel>();
-	
+
 	/**
 	 * Source-schema mapping fields.
 	 */
@@ -134,13 +134,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * The form field setting.
 	 */
 	private Settings theSettings;
-	
+
 	/**
 	 * The subject table.
 	 */
 	private final Table subject;
 	private final List<AdditionalSubject> additionalSubjects;
-	
+
 	private ParameterEditor parameterEditor;
 	private final List<String> initialArgs;
 	private final String user;
@@ -162,10 +162,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private static final Object NO_SCHEMA_INFO = new String("");
 	private static final String NO_SCHEMA_INFO_LABEL = "<html><i>no further schema information</i></html>";
 
-	/** Creates new form DbConnectionDialog 
-	 * @param showCmd 
-	 * @param jmFile 
-	 * @param tmpFileName 
+	/** Creates new form DbConnectionDialog
+	 * @param showCmd
+	 * @param jmFile
+	 * @param tmpFileName
 	 * @param args */
 	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, final Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, ExecutionContext executionContext) {
 		super(parent, true);
@@ -179,33 +179,33 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		this.initialArgs = new ArrayList<String>(initialArgs);
 		this.user = user;
 		this.password = password;
-		this.settingsContext = session.dbUrl; 
+		this.settingsContext = session.dbUrl;
 		this.settingsContextSecondaryKey = session.getSchema();
 		this.sourceDBMS = session.dbms;
 		this.dbConnectionDialog = dbConnectionDialog;
 		this.additionalSubjects = additionalSubjects;
-		
+
 		try {
 			UIUtil.setWaitCursor(parent);
 
 			initComponents();
 			jButton1.setIcon(runIcon);
-			
+
 			explain.setVisible(false);
-			
+
 			if (jScrollPane2.getHorizontalScrollBar() != null) {
 	        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
 	        }
 	        if (jScrollPane2.getVerticalScrollBar() != null) {
 	        	jScrollPane2.getVerticalScrollBar().setUnitIncrement(16);
 	        }
-			
+
 	        CancellationHandler.reset(null);
-	
+
 			if (!showCmd) {
 				commandLinePanel.setVisible(false);
 			}
-			
+
 			final ConcurrentTaskControl concurrentTaskControl = new ConcurrentTaskControl(
 					this, "Retrieving schema info...") {
 				@Override
@@ -231,7 +231,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			final List<String> schemaNames = Collections.synchronizedList(new ArrayList<String>());
 			final AtomicBoolean schemaInfoRead = new AtomicBoolean(false);
 
-			ConcurrentTaskControl.openInModalDialog(parent, concurrentTaskControl, 
+			ConcurrentTaskControl.openInModalDialog(parent, concurrentTaskControl,
 					new ConcurrentTaskControl.Task() {
 						@Override
 						public void run() throws Throwable {
@@ -266,7 +266,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				if (!schemaInfoRead.get()) {
 					allSchemas.add((String) NO_SCHEMA_INFO);
 				}
-			} 
+			}
 			initWorkingTableSchemaBox(session, allSchemas, defaultSchema);
 			initIFMTableSchemaBox(session, allSchemas, defaultSchema);
 
@@ -286,13 +286,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 						update();
 					}
 					private void update() {
-						updateCLIArea();				
+						updateCLIArea();
 					}
 				});
 			} catch (ClassCastException e) {
 				// ignore
 			}
-	
+
 			parameterEditor = new ParameterEditor(parent);
 			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 0;
@@ -302,16 +302,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			gridBagConstraints.weighty = 1.0;
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 			parameterPanel.add(parameterEditor.createPane(dataModel.getParameters(subjectCondition, additionalSubjects)), gridBagConstraints);
-			
+
 			ScriptFormat theScriptFormat = ScriptFormat.SQL;
 			try {
 				theScriptFormat = ScriptFormat.valueOf(dataModel.getExportModus());
 			} catch (Exception e) {
 			}
-			
+
 			scriptFormat = theScriptFormat;
 			toLabel.setText(scriptFormat.getDisplayName());
-			
+
 			setModal(true);
 			setLocation(100, 60);
 			Map<String, JComponent> fields = new HashMap<String, JComponent>();
@@ -329,7 +329,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			fields.put("scopeGlobal", scopeGlobal);
 			fields.put("scopeSession", scopeSession);
 			fields.put("orderByPK", orderByPKCheckbox);
-			fields.put("useRowIds", useRowIds);
+			fields.put("rowidPK", rowidPK);
+			fields.put("rowidBoth", rowidBoth);
+			fields.put("rowidRowid", rowidRowid);
 			fields.put("transactional", transactional);
 			fields.put("delete", delete);
 
@@ -351,7 +353,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			} catch (ClassCastException e) {
 				// ignore
 			}
-			
+
 			confirmInsert.setSelected(lastConfirmInsert);
 			if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
 				exportLabel.setText(" Receipt*");
@@ -361,10 +363,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			} else {
 				confirmInsert.setVisible(false);
 			}
-			
+
 			orderByPKCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
 			orderByPKCheckbox.setVisible(ScriptFormat.SQL.equals(scriptFormat));
-			
+
 			sortedCheckBox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat) || ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat) || ScriptFormat.LIQUIBASE_XML.equals(scriptFormat));
 			sortedCheckBox.setSelected(true);
 			upsertCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat));
@@ -377,7 +379,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				jLabel8.setVisible(false);
 				jPanel8.setVisible(false);
 			}
-			
+
 			if ((!ScriptFormat.SQL.equals(scriptFormat)) && (!ScriptFormat.INTRA_DATABASE.equals(scriptFormat)) && (!ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat)) && !ScriptFormat.LIQUIBASE_XML.equals(scriptFormat)) {
 				schemaMappingPanel.setVisible(false);
 				schemaMappingLabelPanel.setVisible(false);
@@ -398,17 +400,15 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			initIsolationLevel(session);
 			initScopeButtons(session);
 
-			useRowIds.setSelected(false);
 			if (session.dbms.getRowidName() == null) {
-				useRowIds.setSelected(true);
-				useRowIds.setVisible(false);
+				rowidPK.setSelected(true);
+				rowidRowid.setEnabled(false);
+				rowidBoth.setEnabled(false);
 			} else {
-				useRowIds.setText(useRowIds.getText().replaceFirst("(<i>).*(</i>)", "$1" + session.dbms.getRowidName() + "$2"));
-				useRowIds.setToolTipText("<html>If this option is selected, tables that do not have a primary key can also be exported.<br>" + 
-						"Please note that generating <i>upsert-</i>statements for these tables will still not be possible.");
+				rowidRowid.setText(rowidRowid.getText().replaceFirst("(<i>).*(</i>)", "$1" + session.dbms.getRowidName() + "$2"));
+				rowidBoth.setText(rowidBoth.getText().replaceFirst("(<i>).*(</i>)", "$1" + session.dbms.getRowidName() + "$2"));
 			}
-			// TODO allow using rowid for tables without pk only
-			
+
 			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
 
 			theSettings.restore(settingsContext, settingsContextSecondaryKey);
@@ -423,7 +423,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			if (scriptFormat == ScriptFormat.INTRA_DATABASE && insert.getText().trim().length() == 0) {
 				insert.setText("receipt.txt");
 			}
-			
+
 			if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
 				for (Map.Entry<String, JTextField> e: schemaMappingFields.entrySet()) {
 					if (e.getKey().equals(e.getValue().getText())) {
@@ -431,14 +431,14 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 					}
 				}
 			}
-			
+
 			if (threads.getText().length() == 0) {
 				threads.setText("4");
 			}
 			if (rowsPerThread.getText().length() == 0) {
 				rowsPerThread.setText("50");
 			}
-			
+
 			if (additionalSubjects.isEmpty()) {
 				additSubsLabel.setVisible(false);
 				additSubsLabelTitel.setVisible(false);
@@ -464,17 +464,17 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 					additSubsLabel.setText(sb.toString());
 				}
 			}
-			
+
 			subjectTable.setText(subject.getName());
 			if (subjectCondition.equals(previousInitialSubjectCondition)) {
 				where.setText((previousSubjectCondition));
 			} else {
 				where.setText((subjectCondition));
 			}
-			
+
 			browseInsertButton.setIcon(loadIcon);
 			browseDeleteButton.setIcon(loadIcon);
-			
+
 			DocumentListener dl = new DocumentListener() {
 				@Override
 				public void removeUpdate(DocumentEvent e) {
@@ -513,14 +513,17 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			scopeGlobal.addActionListener(al);
 			scopeSession.addActionListener(al);
 			scopeLocal.addActionListener(al);
+			rowidPK.addActionListener(al);
+			rowidBoth.addActionListener(al);
+			rowidRowid.addActionListener(al);
 			for (JTextField field: parameterEditor.textfieldsPerParameter.values()) {
 				field.getDocument().addDocumentListener(dl);
 			}
-		
+
 			Dimension preferredSize = where.getPreferredSize();
 			preferredSize.width = 10;
 			where.setPreferredSize(preferredSize);
-			
+
 			final ConditionEditor subjectConditionEditor = new ConditionEditor(null, null, dataModel, null);
 			subjectConditionEditor.setTitle("Subject condition");
 			openWhereEditor.setIcon(conditionEditorIcon);
@@ -540,7 +543,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 						openWhereEditor.setIcon(conditionEditorSelectedIcon);
 					}
 				}
-				
+
 				@Override
 				public void mouseEntered(java.awt.event.MouseEvent evt) {
 					openWhereEditor.setIcon(conditionEditorSelectedIcon);
@@ -550,9 +553,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 					openWhereEditor.setIcon(conditionEditorIcon);
 			   }
 			});
-	
+
 			initTargetDBMS(session);
-			
+
 			pack();
 			updateCLIArea();
 			setSize(Math.max(Math.min(getSize().width, 900), 700), getSize().height);
@@ -616,7 +619,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		isolationLevelComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				updateCLIArea();				
+				updateCLIArea();
 			}
 		});
 	}
@@ -640,7 +643,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			targetDBMSComboBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					updateCLIArea();				
+					updateCLIArea();
 				}
 			});
 			targetDBMSComboBox.setMaximumRowCount(20);
@@ -704,7 +707,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			// ignore
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private void initWorkingTableSchemaBox(Session session, List<String> allSchemas, String defaultSchema) {
 		List<String> schemas = new ArrayList<String>();
@@ -719,7 +722,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		workingTableSchemaComboBox.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				updateCLIArea();				
+				updateCLIArea();
 			}
 		});
 	}
@@ -774,7 +777,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		cliArea.setCaretPosition(0);
 		jScrollPane1.getViewport().setViewPosition(new Point(0,0));
 	}
-	
+
 	private Thread initScopeButtonThread;
 	private boolean sessionLocalIsAvailable = false;
 
@@ -794,14 +797,14 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	/**
 	 * Initializes the delete-schema mapping panel.
-	 * 
+	 *
 	 * @param dataModel the data model
 	 * @param fields to put newly created text fields into
 	 * @param defaults to put default values for newly created text fields into
 	 */
 	private void initDeleteSchemaMapping(DataModel dataModel, Map<String, JComponent> fields, Map<JTextField, String> defaults) {
 		Set<String> distinctSchemas = new HashSet<String>();
-		
+
 		Set<String> relevantSchemas = getRelevantSchemas(true);
 		for (Table table: dataModel.getTables()) {
 			String schema = table.getOriginalSchema(DEFAULT_SCHEMA);
@@ -809,16 +812,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				distinctSchemas.add(schema);
 			}
 		}
-		
+
 		List<String> sortedSchemaList = new ArrayList<String>(distinctSchemas);
 		Collections.sort(sortedSchemaList);
-		
+
 		boolean simplified = sortedSchemaList.size() == 1;
 		if (simplified) {
 			deleteSchemaMappingPanel.setVisible(false);
 			deleteSchemaMappingLabelPanel.setVisible(false);
 		}
-		
+
 		int y = 0;
 		for (String schema: sortedSchemaList) {
 			JLabel b = new JLabel("  instead of ");
@@ -838,7 +841,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
 			setComboboxRenderer(cb);
-			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel)); 
+			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel));
 			cb.setEditable(true);
 			cb.setSelectedItem(schema);
 			JTextField c;
@@ -887,7 +890,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			y++;
 		}
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void setComboboxRenderer(javax.swing.JComboBox iFMTableSchemaComboBox2) {
 		iFMTableSchemaComboBox2.setRenderer(new DefaultListCellRenderer() {
@@ -902,14 +905,14 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	/**
 	 * Initializes the schema mapping panel.
-	 * 
+	 *
 	 * @param dataModel the data model
 	 * @param fields to put newly created text fields into
 	 * @param defaults to put default values for newly created text fields into
 	 */
 	private void initSchemaMapping(DataModel dataModel, Map<String, JComponent> fields, Map<JTextField, String> defaults) {
 		Set<String> distinctSchemas = new HashSet<String>();
-		
+
 		Set<String> relevantSchemas = getRelevantSchemas(true);
 		for (Table table: dataModel.getTables()) {
 			String schema = table.getOriginalSchema(DEFAULT_SCHEMA);
@@ -917,16 +920,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				distinctSchemas.add(schema);
 			}
 		}
-		
+
 		List<String> sortedSchemaList = new ArrayList<String>(distinctSchemas);
 		Collections.sort(sortedSchemaList);
-		
+
 		boolean simplified = sortedSchemaList.size() == 1;
 		if (simplified) {
 			schemaMappingPanel.setVisible(false);
 			schemaMappingLabelPanel.setVisible(false);
 		}
-		
+
 		int y = 0;
 		for (String schema: sortedSchemaList) {
 			JLabel a = new JLabel("  instead of " + schema);
@@ -947,7 +950,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
 			setComboboxRenderer(cb);
-			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel)); 
+			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel));
 			cb.setEditable(true);
 			cb.setSelectedItem(schema);
 			JTextField c;
@@ -994,14 +997,14 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	/**
 	 * Initializes the source schema mapping panel.
-	 * 
+	 *
 	 * @param dataModel the data model
 	 * @param fields to put newly created text fields into
 	 * @param defaults to put default values for newly created text fields into
 	 */
 	private void initSourceSchemaMapping(DataModel dataModel, Map<String, JComponent> fields, Map<JTextField, String> defaults) {
 		Set<String> distinctSchemas = new HashSet<String>();
-		
+
 		Set<String> relevantSchemas = getRelevantSchemas(true);
 		for (Table table: dataModel.getTables()) {
 			String schema = table.getOriginalSchema(DEFAULT_SCHEMA);
@@ -1009,16 +1012,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				distinctSchemas.add(schema);
 			}
 		}
-		
+
 		List<String> sortedSchemaList = new ArrayList<String>(distinctSchemas);
 		Collections.sort(sortedSchemaList);
-		
+
 		boolean simplified = sortedSchemaList.size() == 1;
 		if (simplified) {
 			sourceSchemaMappingPanel.setVisible(false);
 			sourceSchemaMappingLabelPanel.setVisible(false);
 		}
-		
+
 		int y = 0;
 		for (String schema: sortedSchemaList) {
 			JLabel b = new JLabel("  instead of ");
@@ -1038,7 +1041,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			cb.setMaximumRowCount(20);
 			JComponent ccb = cb;
 			setComboboxRenderer(cb);
-			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel)); 
+			cb.setModel(new DefaultComboBoxModel(schemaComboboxModel));
 			cb.setEditable(true);
 			cb.setSelectedItem(schema);
 			JTextField c;
@@ -1087,7 +1090,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			y++;
 		}
 	}
-	
+
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
@@ -1098,6 +1101,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        buttonGroup2 = new javax.swing.ButtonGroup();
         jScrollPane2 = new javax.swing.JScrollPane();
         jPanel6 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
@@ -1124,7 +1128,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         where = new javax.swing.JTextField();
         exportLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         insert = new javax.swing.JTextField();
         delete = new javax.swing.JTextField();
@@ -1140,9 +1143,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jLabel12 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
-        scopeSession = new javax.swing.JRadioButton();
         scopeGlobal = new javax.swing.JRadioButton();
         scopeLocal = new javax.swing.JRadioButton();
+        scopeSession = new javax.swing.JRadioButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel26 = new javax.swing.JLabel();
         jLabel27 = new javax.swing.JLabel();
@@ -1181,7 +1184,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         unicode = new javax.swing.JCheckBox();
         confirmInsert = new javax.swing.JCheckBox();
         insertIncrementally = new javax.swing.JCheckBox();
-        useRowIds = new javax.swing.JCheckBox();
         browseInsertButton = new javax.swing.JButton();
         browseDeleteButton = new javax.swing.JButton();
         targetDBMSLabel1 = new javax.swing.JLabel();
@@ -1191,6 +1193,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jLabel13 = new javax.swing.JLabel();
         rowLimit = new javax.swing.JTextField();
         jLabel18 = new javax.swing.JLabel();
+        rowidLabel = new javax.swing.JLabel();
+        rowidPanel = new javax.swing.JPanel();
+        rowidPK = new javax.swing.JRadioButton();
+        rowidBoth = new javax.swing.JRadioButton();
+        rowidRowid = new javax.swing.JRadioButton();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1388,12 +1395,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel3, gridBagConstraints);
 
-        jLabel5.setText(" "); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 45;
-        jPanel1.add(jLabel5, gridBagConstraints);
-
         jLabel6.setText(" Parallel threads "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1512,19 +1513,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
         jPanel8.setLayout(new java.awt.GridBagLayout());
 
-        buttonGroup1.add(scopeSession);
-        scopeSession.setText("temporary tables    "); // NOI18N
-        scopeSession.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                scopeSessionActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 58;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel8.add(scopeSession, gridBagConstraints);
-
         buttonGroup1.add(scopeGlobal);
         scopeGlobal.setText("global tables"); // NOI18N
         scopeGlobal.addActionListener(new java.awt.event.ActionListener() {
@@ -1550,6 +1538,19 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 55;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel8.add(scopeLocal, gridBagConstraints);
+
+        buttonGroup1.add(scopeSession);
+        scopeSession.setText("temporary tables    "); // NOI18N
+        scopeSession.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                scopeSessionActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 58;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel8.add(scopeSession, gridBagConstraints);
 
         jLabel1.setForeground(new java.awt.Color(128, 128, 128));
         jLabel1.setText("  (best for single-threaded performance)");
@@ -1849,7 +1850,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 62;
+        gridBagConstraints.gridy = 64;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel5.add(transactional, gridBagConstraints);
@@ -1923,24 +1924,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel5.add(insertIncrementally, gridBagConstraints);
 
-        useRowIds.setSelected(true);
-        useRowIds.setText("<html>use <i>ROWID</i> pseudo column for row identification</html>"); // NOI18N
-        useRowIds.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        useRowIds.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                useRowIdsActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 60;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        jPanel5.add(useRowIds, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 37;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         jPanel1.add(jPanel5, gridBagConstraints);
 
         browseInsertButton.setText(" Browse..");
@@ -2012,7 +2001,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 55;
         gridBagConstraints.ipadx = 30;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         jPanel1.add(rowLimit, gridBagConstraints);
 
         jLabel18.setText("<html>&nbsp;Maximum&nbsp;number<br>&nbsp;of&nbsp;exported&nbsp;rows&nbsp;</html>"); // NOI18N
@@ -2021,8 +2010,74 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 55;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         jPanel1.add(jLabel18, gridBagConstraints);
+
+        rowidLabel.setText(" Row identification"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 52;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        jPanel1.add(rowidLabel, gridBagConstraints);
+
+        rowidPanel.setLayout(new java.awt.GridBagLayout());
+
+        buttonGroup2.add(rowidPK);
+        rowidPK.setSelected(true);
+        rowidPK.setText("primary key");
+        rowidPK.setToolTipText("Use primary key as row identification of a table's row");
+        rowidPK.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rowidPKActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 55;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        rowidPanel.add(rowidPK, gridBagConstraints);
+
+        buttonGroup2.add(rowidBoth);
+        rowidBoth.setText("<html>primary key if it exists, else <i>ROWID</i> </html>"); // NOI18N
+        rowidBoth.setToolTipText("<html>If this option is selected, tables that do not have a primary key can also be exported.<br>\nPlease note that generating <i>upsert-</i>statements for these tables will still not be possible.</html>");
+        rowidBoth.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rowidBothActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 56;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        rowidPanel.add(rowidBoth, gridBagConstraints);
+
+        buttonGroup2.add(rowidRowid);
+        rowidRowid.setText("<html><i>ROWID</i> pseudo column</html>"); // NOI18N
+        rowidRowid.setToolTipText("<html>If this option is selected, tables that do not have a primary key can also be exported.<br>\nPlease note that generating <i>upsert-</i>statements for these tables will still not be possible.</html>");
+        rowidRowid.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rowidRowidActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 58;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        rowidPanel.add(rowidRowid, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 52;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        jPanel1.add(rowidPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -2140,8 +2195,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		if (err) {
 			JOptionPane.showMessageDialog(this, "Unfilled mandatory fields", "Error", JOptionPane.ERROR_MESSAGE);
 		} else {
-			if (useRowIds.isVisible() && !useRowIds.isSelected()) {
-				if (!checkForPKs(useRowIds, () -> theSettings.save(settingsContext, settingsContextSecondaryKey))) {
+			if (rowidPK.isVisible() && rowidPK.isSelected()) {
+ 				if (!checkForPKs(rowidBoth, () -> theSettings.save(settingsContext, settingsContextSecondaryKey))) {
 					return;
 				}
 			}
@@ -2161,7 +2216,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 	}//GEN-LAST:event_jButton1ActionPerformed
 
-	protected abstract boolean checkForPKs(JCheckBox checkBox, Runnable saveSettings);
+	protected abstract boolean checkForPKs(JRadioButton radioButton, Runnable saveSettings);
 
 	private boolean createWorkingTables() {
 		List<String> ddlArgs = new ArrayList<String>();
@@ -2176,8 +2231,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				ddlArgs.add(delFile);
 			}
 		}
-		if (!isUseRowId()) {
-			ddlArgs.add("-no-rowid");
+		if (isUseRowId()) {
+			ddlArgs.add("-use-rowid");
+		}
+		if (isUseRowIdsOnlyForTablesWithoutPK()) {
+			ddlArgs.add("-use-rowid-if-needed");
 		}
 		if (getWorkingTableSchema() != null) {
 			ddlArgs.add("-working-table-schema");
@@ -2185,11 +2243,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 		ExecutionContext cDDLExecutionContext = new ExecutionContext(executionContext);
 		cDDLExecutionContext.setIndependentWorkingTables(isIndependentWorkingTablesSelected());
-		cDDLExecutionContext.setNoRowid(!isUseRowId());
-		
+		cDDLExecutionContext.setUseRowid(isUseRowId());
+		cDDLExecutionContext.setUseRowIdsOnlyForTablesWithoutPK(isUseRowIdsOnlyForTablesWithoutPK());
+
 		DDLCreator ddlCreator = new DDLCreator(cDDLExecutionContext);
 		BasicDataSource dataSource;
-		String hint = 
+		String hint =
 				"Possible solutions:\n" +
 				"  - choose working table scope \"local database\"\n" +
 				"  - choose another working table schema\n" +
@@ -2203,7 +2262,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			if (tableInConflict != null && getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
 				JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 			} else {
-				if (!getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || UIUtil.isDDLUptodate(ddlCreator, ExportDialog.this, dataSource, dataSource.dbms, isUseRowId(), getWorkingTableSchema())) {
+				if (!getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || UIUtil.isDDLUptodate(ddlCreator, ExportDialog.this, dataSource, dataSource.dbms, isUseRowId(), isUseRowIdsOnlyForTablesWithoutPK(), getWorkingTableSchema())) {
 					return true;
 				} else {
 					try {
@@ -2234,7 +2293,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 								} else if (0 == JOptionPane.showOptionDialog(this, message, "Insufficient privileges", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Use local database", "Cancel" }, null)) {
 									scopeLocal.setSelected(true);
 									return true;
-								}							
+								}
 							} else {
 								UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", sqlEx.sqlStatement, null));
 							}
@@ -2286,10 +2345,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 	}//GEN-LAST:event_threadsFocusLost
 
-	private void useRowIdsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useRowIdsActionPerformed
-		updateCLIArea();
-	}//GEN-LAST:event_useRowIdsActionPerformed
-
 	private void workingTableSchemaComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workingTableSchemaComboBoxActionPerformed
 	}//GEN-LAST:event_workingTableSchemaComboBoxActionPerformed
 
@@ -2328,7 +2383,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
     private void insertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertActionPerformed
     }//GEN-LAST:event_insertActionPerformed
-	
+
+    private void rowidRowidActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rowidRowidActionPerformed
+    }//GEN-LAST:event_rowidRowidActionPerformed
+
+    private void rowidBothActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rowidBothActionPerformed
+    }//GEN-LAST:event_rowidBothActionPerformed
+
+    private void rowidPKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rowidPKActionPerformed
+    }//GEN-LAST:event_rowidPKActionPerformed
+
 	public boolean isOk() {
 		return isOk;
 	}
@@ -2342,7 +2406,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 		return null;
 	}
-	
+
 	public boolean isIndependentWorkingTablesSelected() {
 		return independentWorkingTables.isSelected();
 	}
@@ -2350,10 +2414,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	public boolean insertScripFileNameFieldIsEmpty() {
 		return insert.getText().trim().length() == 0;
 	}
-	
+
 	/**
 	 * Fills field content into cli-args.
-	 * 
+	 *
 	 * @param args the argument-list to fill
 	 */
 	public void fillCLIArgs(List<String> args) {
@@ -2397,8 +2461,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		if (orderByPKCheckbox.isSelected()) {
 			args.add("-order-by-pk");
 		}
-		if (!useRowIds.isSelected() && useRowIds.isVisible()) {
-			args.add("-no-rowid");
+		if (sourceDBMS.getRowidName() != null) {
+			if (rowidRowid.isSelected()) {
+				args.add("-use-rowid");
+			}
+			if (rowidBoth.isSelected()) {
+				args.add("-use-rowid-if-needed");
+			}
 		}
 		if (scriptFormat == ScriptFormat.SQL) {
 			Object selectedItem = targetDBMSComboBox.getSelectedItem();
@@ -2434,7 +2503,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 		} catch (Exception e) {
 		}
-		
+
 		if (!where.getText().equals(subjectCondition)) {
 			args.add("-where");
 			args.add((where.getText()).replace('\n', ' ').replace('\r', ' '));
@@ -2451,7 +2520,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add("-xml-timestamp");
 			args.add(dataModel.getXmlSettings().timestampPattern);
 		}
-		
+
 		targetSchemaSet.clear();
 		StringBuilder schemaMapping = new StringBuilder();
 		for (String schema: schemaMappingFields.keySet()) {
@@ -2469,7 +2538,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add("-schemamapping");
 			args.add(schemaMapping.toString());
 		}
-		
+
 		StringBuilder parameter = new StringBuilder();
 		for (String p: parameterEditor.textfieldsPerParameter.keySet()) {
 			String v = parameterEditor.textfieldsPerParameter.get(p).getText().trim();
@@ -2482,7 +2551,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add("-parameters");
 			args.add(parameter.toString());
 		}
-		
+
 		StringBuilder sourceSchemaMapping = new StringBuilder();
 		for (String schema: sourceSchemaMappingFields.keySet()) {
 			String to = sourceSchemaMappingFields.get(schema).getText().trim();
@@ -2525,7 +2594,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add("-working-table-schema");
 			args.add(schema);
 		}
-		
+
 		if (iFMTableSchemaComboBox.isVisible()) {
 			try {
 				JTextField c = (JTextField) iFMTableSchemaComboBox.getEditor().getEditorComponent();
@@ -2549,7 +2618,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	private Set<String> getRelevantSchemas(boolean withDelete) {
 		Set<Table> closure = closureOfSubjects();
-		
+
 		if (withDelete) {
 			Set<Table> border = new HashSet<Table>();
 			for (Table table: closure) {
@@ -2576,9 +2645,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				subjects.add(as.getSubject());
 			}
 		}
-		
+
 		Set<Table> closure = new HashSet<Table>();
-		
+
 		for (Table subject: subjects) {
 			Set<Table> toCheck = new HashSet<Table>(subject.closure(closure));
 			closure.addAll(toCheck);
@@ -2595,9 +2664,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	public boolean isUseRowId() {
-		return useRowIds.isSelected();
+		return rowidRowid.isSelected();
 	}
-	
+
+	public boolean isUseRowIdsOnlyForTablesWithoutPK() {
+		return rowidBoth.isSelected();
+	}
+
 	public String getWorkingTableSchema() {
 		String schema = (String) workingTableSchemaComboBox.getEditor().getItem();
 		if (schema.length() > 0 && !schema.equals(DEFAULT_SCHEMA)) {
@@ -2622,13 +2695,14 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	public boolean hasDeleteScript() {
 		return delete.isVisible() && delete.getText().trim().length() > 0;
 	}
-	
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel additSubsLabel;
     private javax.swing.JLabel additSubsLabelTitel;
     private javax.swing.JButton browseDeleteButton;
     private javax.swing.JButton browseInsertButton;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.JButton cancelButton;
     private javax.swing.JTextArea cliArea;
     public javax.swing.JPanel commandLinePanel;
@@ -2681,7 +2755,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel42;
     private javax.swing.JLabel jLabel43;
     private javax.swing.JLabel jLabel44;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -2702,6 +2775,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel placeholder;
     private javax.swing.JLabel placeholder1;
     private javax.swing.JTextField rowLimit;
+    private javax.swing.JRadioButton rowidBoth;
+    private javax.swing.JLabel rowidLabel;
+    private javax.swing.JRadioButton rowidPK;
+    private javax.swing.JPanel rowidPanel;
+    private javax.swing.JRadioButton rowidRowid;
     private javax.swing.JTextField rowsPerThread;
     private javax.swing.JPanel schemaMappingLabelPanel;
     private javax.swing.JPanel schemaMappingPanel;
@@ -2720,11 +2798,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     public javax.swing.JCheckBox transactional;
     public javax.swing.JCheckBox unicode;
     private javax.swing.JCheckBox upsertCheckbox;
-    public javax.swing.JCheckBox useRowIds;
     private javax.swing.JTextField where;
     private javax.swing.JComboBox workingTableSchemaComboBox;
     // End of variables declaration//GEN-END:variables
-	
+
 	private Icon loadIcon;
 	private Icon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;

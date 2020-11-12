@@ -28,14 +28,14 @@ import org.kohsuke.args4j.CmdLineParser;
 
 /**
  * Parser for {@link CommandLine}.
- * 
+ *
  * @author Ralf Wisser
  */
 public class CommandLineParser {
-	
+
 	/**
 	 * Parses arguments and initializes the parser.
-	 * 
+	 *
 	 * @param args the arguments
 	 * @param silent if <code>true</code>, no error messages will be written
 	 */
@@ -44,7 +44,7 @@ public class CommandLineParser {
 		try {
 			args = preprocessFileLookup(args);
 			List<String> theArgs = new ArrayList<String>();
-			
+
 			final String ESC_PREFIX = "((!JAILER_MINUS_ESC!!)";
 
 			int i = 0;
@@ -123,10 +123,10 @@ public class CommandLineParser {
 		System.out.println("    Like export, but skips the export and creates a delete-script (see option '-d')");
 		System.out.println("    -where <subject condition>: optional, overrides condition in extraction-model");
 		System.out.println();
-		System.out.println("  jailer create-ddl [-datamodel VAL] [-target-dbms <DBMS>] [-working-table-schema VAL] [<extraction-model> -independent-working-tables] [-no-rowid]");
+		System.out.println("  jailer create-ddl [-datamodel VAL] [-target-dbms <DBMS>] [-working-table-schema VAL] [<extraction-model> -independent-working-tables] [-use-rowid] [-use-rowid-if-needed]");
 		System.out.println("    creates the DDL for the working-tables and prints it to stdout");
 		System.out.println();
-		System.out.println("  jailer create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password> [<extraction-model> -independent-working-tables] [-no-rowid]");
+		System.out.println("  jailer create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password> [<extraction-model> -independent-working-tables] [-use-rowid] [-use-rowid-if-needed]");
 		System.out.println("    creates the working-tables");
 		System.out.println();
 		System.out.println("  jailer build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password>");

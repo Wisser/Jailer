@@ -25,35 +25,35 @@ import net.sf.jailer.subsetting.ScriptFormat;
 
 /**
  * Holds command-line arguments.
- * 
+ *
  * @author Ralf Wisser
  */
 public class CommandLine {
 
 	@Option(name="-UTF8",usage="use UTF-8 encoding")
 	public boolean uTF8 = false;
-	
+
 	@Option(name="-format",usage="export file format: SQL, XML, DBUNIT_FLAT_XML, INTRA_DATABASE or LIQUIBASE_XML")
 	public String format = "SQL";
-	
+
 	@Option(name="-target-dbms", usage="target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE, SQLITE, HSQL or H2", metaVar="<DBMS>")
 	public String targetDBMS = null;
-	
+
 	@Option(name="-xml",usage="export entities into XML file (deprecated, use -format XML instead)")
 	public boolean _asXml = false;
-	
+
 	@Option(name="-xml-root",usage="root tag of XML export file",metaVar="tag-name")
 	public String xmlRootTag = "entities";
 
 	@Option(name="-xml-date",usage="pattern for dates in XML and LIQUIBASE_XML export file",metaVar="pattern")
 	public String xmlDatePattern = "yyyy-MM-dd";
-	
+
 	@Option(name="-xml-time",usage="pattern for times in XML and LIQUIBASE_XML export file",metaVar="pattern")
 	public String xmlTimePattern = "HH.mm.ss";
 
 	@Option(name="-xml-timestamp",usage="pattern for time-stamps in XML and LIQUIBASE_XML export file",metaVar="pattern")
 	public String xmlTimeStampPattern = "yyyy-MM-dd-HH.mm.ss";
-	
+
 	@Option(name="-e",usage="name of the export-script file (compressed if it ends with '.zip' or '.gz')", metaVar="export-script")
 	public String exportScriptFileName = null;
 
@@ -62,43 +62,43 @@ public class CommandLine {
 
 	@Option(name="-qualifyNames",usage="add schema prefix to table names after analysing the DB", metaVar="export-script")
 	public boolean qualifyNames = false;
-	
+
 	@Option(name="-analyse-alias",usage="look for aliases while analysing the DB")
 	public boolean analyseAlias = false;
-	
+
 	@Option(name="-analyse-synonym",usage="look for synonyms while analysing the DB")
 	public boolean analyseSynonym = false;
-	
+
 	@Option(name="-analyse-view",usage="look for views while analysing the DB")
 	public boolean analyseView = false;
-	
+
 	@Option(name="-d",usage="name of the delete-script file (compressed if it ends with '.zip' or '.gz')", metaVar="delete-script")
 	public String deleteScriptFileName = null;
 
 	@Option(name="-where",usage="subject condition", metaVar="SQL-expression")
 	public String where = null;
-	
+
 	@Option(name="-schemamapping",usage="schema mapping (Default schema is empty string)", metaVar="schema-in-model=schema-in-db[','x=y]*")
 	public String rawschemamapping = null;
-	
+
 	@Option(name="-source-schemamapping",usage="source schema mapping (Default schema is empty string)", metaVar="<from>=<to>[','<from>=<to>]*")
 	public String rawsourceschemamapping = null;
-	
+
 	@Option(name="-deletion-schemamapping",usage="deletion schema mapping (Default schema is empty string)", metaVar="<from>=<to>[','<from>=<to>]*")
 	public String rawdeletionschemamapping = null;
-	
+
 	@Option(name="-parameters",usage="parameters", metaVar="<parameter>=<value>[';'<parameter>=<value>]*")
 	public String parameters = null;
-	
+
 	@Option(name="-threads",usage="number of threads (default is 1)", metaVar="#threads")
 	public int numberOfThreads = 1;
-	
+
 	@Option(name="-entities",usage="maximum number of entities per insert-statement (in export-file, default is 10)", metaVar="#entities")
 	public int numberOfEntities = 10;
-	
+
 	@Option(name="-upsert-only",usage="generate 'upsert'-statements for all entities (in export-file)")
 	public boolean upsertOnly = false;
-	
+
 	@Option(name="-scope",usage="scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE")
 	public String scope = null;
 
@@ -128,19 +128,25 @@ public class CommandLine {
 
 	@Option(name="-independent-working-tables", usage="create working tables that are independent of the extraction model. (Potentially less efficient)")
 	public boolean independentWorkingTables = false;
-	
+
 	@Option(name="-transactional", usage="import rows in a single transaction")
 	public boolean transactional = false;
-	
+
 	@Option(name="-isolation-level", usage="isolation level (optional), 1=READ_UNCOMMITTED, 2=READ_COMMITTED, 4=REPEATABLE_READ, 8=SERIALIZABLE")
 	public Integer isolationLevel = null;
-	
-	@Option(name="-no-rowid", usage="use primary keys to determine row identity (instead of rowid-column)")
-	public boolean noRowid = false;
-	
+
+	@Option(name="-no-rowid", usage="(no longer used, see \"-use-rowid\")")
+	public boolean noRowidNoLongerUsed = false;
+
+	@Option(name="-use-rowid", usage="use rowid/ctid-column to identify rows (instead of primary keys, see \"-use-rowid-if-needed\")")
+	public boolean useRowid = false;
+
+	@Option(name="-use-rowid-if-needed", usage="use rowid/ctid-column only for tables without primary key (see \"-use-rowid\")")
+	public boolean useRowIdsOnlyForTablesWithoutPK = false;
+
 	@Option(name="-import-filter-mapping-table-schema", usage="schema in which the import-filter mapping tables will be created")
 	public String importFilterMappingTableSchema = "";
-	
+
 	@Option(name="-check-primary-keys", usage="(no longer used)")
 	boolean checkPrimaryKeysNoLongerUsed = false;
 
@@ -155,7 +161,7 @@ public class CommandLine {
 
 	@Option(name="-", usage="do not interpret the next word as an option, even if it begins with a '-'. E.g. if the username is: \"-abc\", use: \"- -abc\".")
 	public List<String> escapedWords = new ArrayList<String>();
-	
+
 	@Option(name="-file-lookup", usage="read the next parameter from the (1st line of the) file named VAL. \n(This is especially useful for not making passwords visible by querying the command line parameters)")
 	public List<String> parameterFile = new ArrayList<String>();
 
@@ -164,7 +170,7 @@ public class CommandLine {
 
 	/**
 	 * Gets the script format.
-	 * 
+	 *
 	 * @return the script format
 	 */
 	public ScriptFormat getScriptFormat() {
@@ -175,5 +181,5 @@ public class CommandLine {
 		}
 		return null;
 	}
-	
+
 }

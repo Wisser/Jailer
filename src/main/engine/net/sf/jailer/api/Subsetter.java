@@ -38,7 +38,7 @@ import net.sf.jailer.subsetting.SubsettingEngine;
 
 /**
  * Generates a subset of a relational database that respects foreign key constraints.
- * 
+ *
  * @author Ralf Wisser
  */
 public class Subsetter {
@@ -63,7 +63,7 @@ public class Subsetter {
 
 	/**
 	 * Creates a new Subsetter with all mandatory attributes.
-	 * 
+	 *
 	 * @param dataSource the data-source to connect with the source database
 	 * @param dbms the DBMS of the source database
 	 * @param dataModel URL of the current data model (the datamodel's base folder)
@@ -87,7 +87,7 @@ public class Subsetter {
 
 	/**
 	 * Creates a new Subsetter with all mandatory attributes.
-	 * 
+	 *
 	 * @param dataSource the data-source to connect with the source database
 	 * @param dbms the DBMS of the source database
 	 * @param dataModel the current data model (the datamodel's base folder)
@@ -112,14 +112,14 @@ public class Subsetter {
 		}
 		setScriptFormat(scriptFormat);
 	}
-	
+
 	/**
 	 * Generates the export-script.
-	 * @param whereClause if not <code>null</code>, overrides the extraction model's subject condition 
+	 * @param whereClause if not <code>null</code>, overrides the extraction model's subject condition
 	 * @param exportScriptFile the export-script file (compressed if it ends with '.zip' or '.gz')
-	 * 
+	 *
 	 * @return export statistic
-	 * 
+	 *
 	 * @throws InconsistentSubsettingResultException if {@link ExecutionContext#isAbortInCaseOfInconsistency()} and the number of exported rows differs from that of the collected ones
 	 */
 	public ExportStatistic execute(String whereClause, File exportScriptFile) throws SQLException, IOException {
@@ -128,13 +128,13 @@ public class Subsetter {
 
 	/**
 	 * Generates the export- and/or delete-script.
-	 * 
-	 * @param whereClause if not <code>null</code>, overrides the extraction model's subject condition 
+	 *
+	 * @param whereClause if not <code>null</code>, overrides the extraction model's subject condition
 	 * @param exportScriptFile the export-script file (compressed if it ends with '.zip' or '.gz'), optional
 	 * @param deleteScriptFile the delete-script file (compressed if it ends with '.zip' or '.gz'), optional
-	 * 
+	 *
 	 * @return export statistic
-	 * 
+	 *
 	 * @throws InconsistentSubsettingResultException if {@link ExecutionContext#isAbortInCaseOfInconsistency()} and the number of exported rows differs from that of the collected ones
 	 */
 	public ExportStatistic execute(String whereClause, File exportScriptFile, File deleteScriptFile) throws SQLException, IOException {
@@ -161,7 +161,7 @@ public class Subsetter {
 			}
 			return new SubsettingEngine(executionContext).export(
 					whereClause,
-					getExtractionModelURL(), 
+					getExtractionModelURL(),
 					exportScriptFile == null? null : exportScriptFile.getAbsolutePath(),
 					deleteScriptFile == null? null : deleteScriptFile.getAbsolutePath(),
 					getDataSource(), sourceDBMS, false, getScriptFormat(), getModelPoolSize());
@@ -172,7 +172,7 @@ public class Subsetter {
 
 	/**
 	 * Gets the data-source to connect with the database.
-	 * 
+	 *
 	 * @return the data-source to connect with the database
 	 */
 	public DataSource getDataSource() {
@@ -181,7 +181,7 @@ public class Subsetter {
 
 	/**
 	 * Sets the data-source to connect with the database.
-	 * 
+	 *
 	 * @param dataSource the data-source to connect with the database
 	 */
 	public void setDataSource(DataSource dataSource) {
@@ -190,7 +190,7 @@ public class Subsetter {
 
 	/**
 	 * Gets the DBMS of the database.
-	 * 
+	 *
 	 * @return the DBMS
 	 */
 	public DBMS getDbms() {
@@ -200,7 +200,7 @@ public class Subsetter {
 	/**
 	 * Sets the DBMS of the database. <br>
 	 * Note that it's not necessary to set the DBMS if {@link BasicDataSource} is used.
-	 * 
+	 *
 	 * @param dbms the DBMS
 	 */
 	public void setDbms(DBMS dbms) {
@@ -213,7 +213,7 @@ public class Subsetter {
 	public URL getDataModelURL() {
 		return executionContext.getDataModelURL();
 	}
-	
+
 	/**
 	 * Sets URL of the current data model (the datamodel's base folder)
 	 */
@@ -223,9 +223,9 @@ public class Subsetter {
 
 	/**
 	 * Sets the current data model as {@link File}
-	 * 
+	 *
 	 * @param datamodelBaseFolder represents the folder. Will be converted to an URL an set as datamodel URL
-	 * 
+	 *
 	 * @see #setDataModelURL(URL)
 	 */
 	public void setDataModelBaseFolder(File datamodelBaseFolder) {
@@ -238,7 +238,7 @@ public class Subsetter {
 
 	/**
 	 * Gets the URL of the extraction model.
-	 * 
+	 *
 	 * @return the URL of the extraction model
 	 */
 	public URL getExtractionModelURL() {
@@ -247,7 +247,7 @@ public class Subsetter {
 
 	/**
 	 * Sets the URL of the extraction model.
-	 * 
+	 *
 	 * @param extractionModelURL the URL of the extraction model
 	 */
 	public void setExtractionModelURL(URL extractionModelURL) {
@@ -256,16 +256,16 @@ public class Subsetter {
 
 	/**
 	 * Gets the script format.
-	 * 
+	 *
 	 * @return the script format
 	 */
 	public ScriptFormat getScriptFormat() {
 		return executionContext.getScriptFormat();
 	}
-	
+
 	/**
 	 * Sets the script format.
-	 * 
+	 *
 	 * @return the script format
 	 */
 	public void setScriptFormat(ScriptFormat scriptFormat) {
@@ -425,7 +425,7 @@ public class Subsetter {
 
 	/**
 	 * Gets IsolationLevel.
-	 * 
+	 *
 	 * @see Connection#setTransactionIsolation(int)
 	 */
 	public Integer getIsolationLevel() {
@@ -434,7 +434,7 @@ public class Subsetter {
 
 	/**
 	 * Sets IsolationLevel.
-	 * 
+	 *
 	 * @see Connection#setTransactionIsolation(int)
 	 */
 	public void setIsolationLevel(Integer isolationLevel) {
@@ -551,26 +551,63 @@ public class Subsetter {
 	}
 
 	/**
-	 * If <code>true</code>, Use primary keys to determine row identity (instead
-	 * of rowid-column)
-	 *
-	 * @return <code>true</code> if Use primary keys to determine row identity
-	 *         (instead of rowid-column)
+	 * @deprecated use {@link #getUseRowid()}
 	 */
 	public boolean getNoRowid() {
-		return executionContext.getNoRowid();
+		return !getUseRowid();
 	}
 
 	/**
-	 * If <code>true</code>, Use primary keys to determine row identity (instead
-	 * of rowid-column)
-	 *
-	 * @param noRowid
-	 *            <code>true</code> if Use primary keys to determine row
-	 *            identity (instead of rowid-column)
+	 * @deprecated use {@link #setUseRowid(boolean)}
 	 */
 	public void setNoRowid(boolean noRowid) {
-		executionContext.setNoRowid(noRowid);
+		setUseRowid(!noRowid);
+	}
+
+	/**
+	 * If <code>true</code>, use rowid/ctid-column to determine row identity (instead
+	 * of primary keys)
+	 *
+	 * @return if <code>true</code> use rowid/ctid-column to determine row identity
+	 *         (instead of primary keys)
+	 */
+	public boolean getUseRowid() {
+		return executionContext.getUseRowid();
+	}
+
+	/**
+	 * If <code>true</code>, use rowid/ctid-column to determine row identity (instead
+	 * of primary keys)
+	 *
+	 * @param useRowid
+	 *            if <code>true</code> use rowid/ctid-column to determine row
+	 *            identity (instead of primary keys)
+	 */
+	public void setUseRowid(boolean useRowid) {
+		executionContext.setUseRowid(useRowid);
+	}
+
+	/**
+	 * If <code>true</code>, use rowid/ctid-column only for tables without primary key.
+	 *
+	 * @return <code>true</code> if use rowid/ctid-column only for tables without primary key
+	 *
+	 * @see #getUseRowIdsOnlyForTablesWithoutPK()
+	 */
+	public boolean getUseRowIdsOnlyForTablesWithoutPK() {
+		return executionContext.getUseRowIdsOnlyForTablesWithoutPK();
+	}
+
+	/**
+	 * If <code>true</code>, use rowid/ctid-column only for tables without primary key.
+	 *
+	 * @param useRowIdsOnlyForTablesWithoutPK
+	 *            <code>true</code> if use rowid/ctid-column only for tables without primary key
+	 *
+	 * @see #setUseRowid(boolean)
+	 */
+	public void setUseRowIdsOnlyForTablesWithoutPK(boolean useRowIdsOnlyForTablesWithoutPK) {
+		executionContext.setUseRowIdsOnlyForTablesWithoutPK(useRowIdsOnlyForTablesWithoutPK);;
 	}
 
 	/**
@@ -595,7 +632,7 @@ public class Subsetter {
 
 	/**
 	 * Gets parameters.
-	 * 
+	 *
 	 * @return parameters
 	 */
 	public Map<String, String> getParameters() {
@@ -604,7 +641,7 @@ public class Subsetter {
 
 	/**
 	 * Sets a parameter.
-	 * 
+	 *
 	 * @param name parameter name
 	 * @param value value
 	 */
@@ -614,7 +651,7 @@ public class Subsetter {
 
 	/**
 	 * Gets schema map for destination database.
-	 * 
+	 *
 	 * @return schema map
 	 */
 	public Map<String, String> getSchemaMapping() {
@@ -623,7 +660,7 @@ public class Subsetter {
 
 	/**
 	 * Sets schema map for destination database.
-	 * 
+	 *
 	 * @param schemaMapping schema map
 	 */
 	public void setSchemaMapping(Map<String, String> schemaMapping) {
@@ -632,7 +669,7 @@ public class Subsetter {
 
 	/**
 	 * Sets schema map for source database.
-	 * 
+	 *
 	 * @param sourceSchemaMapping the sourceSchemaMapping to set
 	 */
 	public void setSourceSchemaMapping(Map<String, String> sourceSchemaMapping) {
@@ -641,7 +678,7 @@ public class Subsetter {
 
 	/**
 	 * Gets schema map for source database.
-	 * 
+	 *
 	 * @return the sourceSchemaMapping to set
 	 */
 	public Map<String, String> getSourceSchemaMapping() {
@@ -649,9 +686,7 @@ public class Subsetter {
 	}
 
 	/**
-	 * If <code>true</code>, the Subsetter throws an 
-	 * 
-	 * @return if <code>true</code>, abort the process if the result is inconsistent due to insufficient transaction isolation
+	 * @return if <code>true</code>, the Subsetter throws an exception if the result is inconsistent due to insufficient transaction isolation
 	 */
 	public boolean isAbortInCaseOfInconsistency() {
 		return executionContext.isAbortInCaseOfInconsistency();
@@ -681,7 +716,7 @@ public class Subsetter {
 	/**
 	 * Gets the {@link ExecutionContext}. <br>
 	 * Use this to set parameters that are not accessible via this facade.
-	 * 
+	 *
 	 * @return the {@link ExecutionContext}
 	 */
 	public ExecutionContext getExecutionContext() {
@@ -689,7 +724,7 @@ public class Subsetter {
 	}
 
 	private final ExecutionContext executionContext;
-	
+
 	private int modelPoolSize = 10;
 	private URL extractionModelURL;
 	private DataSource dataSource;
