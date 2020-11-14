@@ -1336,7 +1336,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 											extractionModelEditor.dataModel.checkForPrimaryKey(new HashSet<Table>(toCheck), false);
 										} catch (Exception e) {
 											if (e instanceof DataModel.NoPrimaryKeyException) {
-												int result = JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, new Object[] { "Edit Table", rowidButton.getText().replace("<html>", "<html>Use row identification: \"").replace("</html>", "\"</html>"), "Cancel" }, null);
+												int result = JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null,
+														rowidButton == null? 
+																new Object[] { "Edit Table", "Cancel" }
+																:
+																new Object[] { "Edit Table", rowidButton.getText().replace("<html>", "<html>Use row identification: \"").replace("</html>", "\"</html>"), "Cancel" },
+																null);
 												if (result == 0) {
 													if (saveSettings != null) {
 														saveSettings.run();
@@ -1348,7 +1353,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 														onDataModelUpdate.run();
 													}
 													UIUtil.invokeLater(() -> openExportDialog(checkRI, onDataModelUpdate, cleanup));
-												} else if (result == 1) {
+												} else if (result == 1 && rowidButton != null) {
 													rowidButton.setSelected(true);
 													return true;
 												}

@@ -164,7 +164,16 @@ public abstract class EntityGraph {
 	/**
 	 * Deletes the graph.
 	 */
-	public abstract void delete() throws SQLException;
+	public final void delete() throws SQLException {
+		delete(false);
+	}
+
+	/**
+	 * Deletes the graph.
+	 * 
+	 * @param forced force deletion. if <code>true</code>, don't allow optimization.
+	 */
+	public abstract void delete(boolean forced) throws SQLException;
 
 	/**
 	 * Adds entities to the graph.
@@ -247,14 +256,7 @@ public abstract class EntityGraph {
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
 	public abstract void readMarkedEntities(Table table, Session.ResultSetReader reader, String selectionSchema, String originalPKAliasPrefix, boolean orderByPK) throws SQLException;
-	
-	/**
-	 * Unites the graph with another one and deletes the other graph.
-	 * 
-	 * @param graph the graph to be united with this graph
-	 */
-	public abstract void uniteWith(EntityGraph graph) throws SQLException;
-	
+
 	/**
 	 * Reads all entities of a given table.
 	 * 
@@ -571,7 +573,7 @@ public abstract class EntityGraph {
 			} finally {
 				getSession().setSilent(wasSilent);
 			}
-			isTruncated  = true;
+			isTruncated = true;
 		}
 	}
 

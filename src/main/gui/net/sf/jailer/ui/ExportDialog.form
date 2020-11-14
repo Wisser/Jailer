@@ -900,7 +900,8 @@
                     </Component>
                     <Component class="javax.swing.JCheckBox" name="upsertCheckbox">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="upsert-statements (overwrite) for all rows" noResource="true"/>
+                        <Property name="text" type="java.lang.String" value="upsert/merge statements (overwrite) for all rows" noResource="true"/>
+                        <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;always generate upsert/merge statements: &lt;br&gt;update in target database existing rows, insert new rows&lt;/html&gt;"/>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -994,6 +995,7 @@
                     <Component class="javax.swing.JCheckBox" name="unicode">
                       <Properties>
                         <Property name="text" type="java.lang.String" value="UTF-8 encoding" noResource="true"/>
+                        <Property name="toolTipText" type="java.lang.String" value="generated UTF-8 encoded files"/>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                             <EmptyBorder bottom="0" left="0" right="0" top="0"/>

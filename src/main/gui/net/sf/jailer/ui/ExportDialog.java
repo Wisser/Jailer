@@ -1821,7 +1821,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel5.add(sortedCheckBox, gridBagConstraints);
 
-        upsertCheckbox.setText("upsert-statements (overwrite) for all rows"); // NOI18N
+        upsertCheckbox.setText("upsert/merge statements (overwrite) for all rows"); // NOI18N
+        upsertCheckbox.setToolTipText("<html>always generate upsert/merge statements: <br>update in target database existing rows, insert new rows</html>");
         upsertCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1882,6 +1883,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jPanel5.add(orderByPKCheckbox, gridBagConstraints);
 
         unicode.setText("UTF-8 encoding"); // NOI18N
+        unicode.setToolTipText("generated UTF-8 encoded files");
         unicode.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         unicode.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2176,6 +2178,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 		}
 
+		Color fg = jLabel7.getForeground();
+		exportLabel.setForeground(fg);
+		
 		boolean err = false;
 		if (insert.getText().trim().length() == 0 && (!delete.isVisible() || delete.getText().trim().length() == 0)) {
 			exportLabel.setForeground(Color.RED);
@@ -2183,12 +2188,14 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		}
 		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
 			for (Map.Entry<String, JTextField> e: schemaMappingFields.entrySet()) {
-				if (e.getValue().getText().trim().length() == 0) {
-					JLabel label = schemaMappingLabels.get(e.getKey());
-					if (label != null) {
+				JLabel label = schemaMappingLabels.get(e.getKey());
+				if (label != null) {
+					if (e.getValue().getText().trim().length() == 0) {
 						label.setForeground(Color.RED);
+						err = true;
+					} else {
+						label.setForeground(fg);
 					}
-					err = true;
 				}
 			}
 		}
@@ -2196,7 +2203,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			JOptionPane.showMessageDialog(this, "Unfilled mandatory fields", "Error", JOptionPane.ERROR_MESSAGE);
 		} else {
 			if (rowidPK.isVisible() && rowidPK.isSelected()) {
- 				if (!checkForPKs(rowidBoth, () -> theSettings.save(settingsContext, settingsContextSecondaryKey))) {
+ 				if (!checkForPKs(rowidBoth.isEnabled() && !upsertCheckbox.isSelected() && getDeleteFileName() == null? rowidBoth : null, () -> theSettings.save(settingsContext, settingsContextSecondaryKey))) {
+					return;
+				}
+			} else if (rowidPK.isVisible()) {
+				if (getDeleteFileName() != null) {
+					JOptionPane.showMessageDialog(this, "Need row identification \"primary key\" to generate a delete script.", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				if (upsertCheckbox.isSelected()) {
+					JOptionPane.showMessageDialog(this, "Need row identification \"primary key\" to generate upsert-statements.", "Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 			}

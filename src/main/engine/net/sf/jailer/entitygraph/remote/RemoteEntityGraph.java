@@ -235,7 +235,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * Deletes the graph.
 	 */
 	@Override
-	public void delete() throws SQLException {
+	public void delete(boolean force) throws SQLException {
 		if (!isTruncated) {
 			deleteRows(session, dmlTableReference(DEPENDENCY, session), "r_entitygraph=" + graphID + "");
 			deleteRows(session, dmlTableReference(ENTITY, session), "r_entitygraph=" + graphID + "");
@@ -752,31 +752,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		executionContext.getProgressListenerRegistry().fireExported(table, rc);
 		addExportedCount(rc);
 	}
-	
-	/**
-	 * Unites the graph with another one and deletes the other graph.
-	 * 
-	 * @param graph the graph to be united with this graph
-	 */
-	@Override
-	public void uniteWith(EntityGraph graph) throws SQLException {
-		StringBuffer e1EqualsE2 = new StringBuffer();
-		for (Column column: universalPrimaryKey.getColumns()) {
-			if (e1EqualsE2.length() > 0) {
-				e1EqualsE2.append(" and ");
-			}
-			e1EqualsE2.append("E1." + column.name + "=E2." + column.name);
-		}
-		session.executeUpdate("Update " + dmlTableReference(ENTITY, session) + " E1 " +
-				"set E1.r_entitygraph=" + graphID + " " +
-				"Where E1.r_entitygraph=" + graph.graphID + " " +
-				"and not exists(Select * from " + dmlTableReference(ENTITY, session) + " E2 Where " +
-				"E2.r_entitygraph=" + graphID + " and " +
-				e1EqualsE2 +
-				")");
-		graph.delete();
-	}
-	
+
 	/**
 	 * Reads all entities of a given table.
 	 * 

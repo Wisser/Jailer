@@ -145,7 +145,7 @@ public class SubsettingEngine {
 	/**
 	 * The execution context.
 	 */
-	private final ExecutionContext executionContext;
+	private ExecutionContext executionContext;
 
 	private final CollectedRowsCounter collectedRowsCounter;
 
@@ -831,7 +831,6 @@ public class SubsettingEngine {
 
 						appendSync(result);
 						updateNullableForeignKeys(result, egCopy, nullableForeignKeys, false);
-
 					} else {
 						updateNullableForeignKeys(result, egCopy, nullableForeignKeys, true);
 
@@ -843,7 +842,7 @@ public class SubsettingEngine {
 						rest = writeIndependentEntities(result, dependentTables, entityGraph);
 					}
 
-					egCopy.delete();
+					egCopy.delete(true);
 					appendSync(result);
 				}
 			}
@@ -1404,6 +1403,17 @@ public class SubsettingEngine {
 	 * @return statistic
 	 */
 	public ExportStatistic export(String whereClause, URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat, int modelPoolSize) throws SQLException, IOException, SAXException {
+		if (dbms != null && dbms.getSessionTemporaryTableManager() == null &&
+				(executionContext.getScope() == WorkingTableScope.SESSION_LOCAL
+				|| 
+				executionContext.getScope() == WorkingTableScope.TRANSACTION_LOCAL)) {
+			// fall back to GLOBAL
+			ExecutionContext newExecutionContext = new ExecutionContext(executionContext);
+			newExecutionContext.setScope(WorkingTableScope.GLOBAL);
+			newExecutionContext.setProgressListenerRegistry(executionContext.getProgressListenerRegistry());
+			executionContext = newExecutionContext;
+		}
+		
 		Lock readLock = null;
 		Lock writeLock = null;
 		try {

@@ -1,9 +1,10 @@
-10.2.3
+10.2.4
   - When working with PostgreSQL, you can use the "ctid" pseudo columns instead of primary keys
     for row identification. See https://github.com/Wisser/Jailer/issues/36
-  - Under rare circumstances SQL statements were generated that could not be processed by older MS SQL database systems.
+  - Under rare circumstances SQL statements were generated that could not be processed by Sybase database systems.
     This has been corrected.
-  - If the Subsetter is used via API, access to the working tables is synchronized
+  - The performance of the working table scope "local database" was improved. Especially with embedded usage (API).
+  - If the subsetter is used via API, access to the working tables is synchronized
     so that different extraction models can be used concurrently.
 
 10.2.2

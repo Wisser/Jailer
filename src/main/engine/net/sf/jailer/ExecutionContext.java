@@ -52,6 +52,7 @@ public class ExecutionContext {
 	public ExecutionContext(ExecutionContext other) {
 		this.schemaMapping = copy(other.schemaMapping);
 		this.sourceSchemaMapping = copy(other.sourceSchemaMapping);
+		this.deletionSchemaMapping = copy(other.deletionSchemaMapping);
 		this.scriptFormat = other.scriptFormat;
 		this.currentModelSubfolder = other.currentModelSubfolder;
 		this.datamodelURL = other.datamodelURL;
@@ -941,6 +942,15 @@ public class ExecutionContext {
 	 */
 	public ProgressListenerRegistry getProgressListenerRegistry() {
 		return progressListenerRegistry;
+	}
+
+	/**
+	 * Sets the {@link ProgressListenerRegistry}.
+	 *
+	 * @param progressListenerRegistry the {@link ProgressListenerRegistry}
+	 */
+	public void setProgressListenerRegistry(ProgressListenerRegistry progressListenerRegistry) {
+		this.progressListenerRegistry = progressListenerRegistry;
 	}
 
 	private LayoutStorage layoutStorage = new LayoutStorage();
