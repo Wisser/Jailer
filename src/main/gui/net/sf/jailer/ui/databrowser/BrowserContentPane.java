@@ -71,6 +71,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import javax.swing.AbstractAction;
@@ -1111,8 +1112,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									// highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? bold :
 									nonbold);
 							String text = ((JLabel) render).getText();
-							if (text.indexOf('\n') >= 0) {
-								((JLabel) render).setToolTipText(UIUtil.toHTML(text, 200));
+							if (text.indexOf('\n') >= 0 || text.length() > 400) {
+								String tip = tipCache.get(text);
+								if (tip == null) {
+									tip = UIUtil.toHTML(hardWrap(text), 200);
+									tipCache.put(text, tip);
+								}
+								((JLabel) render).setToolTipText(tip);
 							} else if (text.length() > 20) {
 								((JLabel) render).setToolTipText(text);
 							}
@@ -1127,6 +1133,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				return render;
 			}
+
+			Map<String, String> tipCache = new WeakHashMap<String, String>();
 		});
 		rowsTable.setRowSelectionAllowed(true);
 		rowsTable.setColumnSelectionAllowed(true);
@@ -1568,6 +1576,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (reload) {
 			reloadRows();
 		}
+	}
+
+	protected String hardWrap(String text) {
+		final int MAXLENTH = 198;
+		if (text != null && text.length() > MAXLENTH) {
+			StringBuilder sb = new StringBuilder();
+			int r = 0;
+			for (int i = 0; i < text.length(); ++i) {
+				char charAt = text.charAt(i);
+				sb.append(charAt);
+				if ('\n' == charAt) {
+					r = 0;
+				} else {
+					++r;
+				}
+				if (r > MAXLENTH) {
+					sb.append("\n");
+					r = 0;
+				}
+			}
+			text = sb.toString();
+		}
+		return text;
 	}
 
 	private void registerAccelerator(KeyStroke ks, AbstractAction a) {
@@ -3873,6 +3904,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							if (object == null || resultSet.wasNull()) {
 								value = null;
 							} else {
+								boolean isBlob = object instanceof Blob;
 								Object lobValue = toLobRender(object);
 								if (lobValue != null) {
 									object = cellContentConverter.getObject(resultSet, i);
@@ -3887,7 +3919,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 										}
 										@Override
 										public String toString() {
-											return val;
+											return isBlob? smallLob : val;
 										}
 									};
 								}

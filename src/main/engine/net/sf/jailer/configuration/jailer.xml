@@ -299,7 +299,7 @@ union all
         <toBlob>0x%s</toBlob>
         <toClob>'%s'</toClob>
         <toNClob>N'%s'</toNClob>
-        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <embeddedLobSizeLimit>7980</embeddedLobSizeLimit>
         <binaryPattern>0x%s</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
