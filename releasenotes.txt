@@ -1,3 +1,6 @@
+10.2.5
+  - Support of C/BLOBS in MS SQL
+
 10.2.4
   - When working with PostgreSQL, you can use the "ctid" pseudo columns instead of primary keys
     for row identification. See https://github.com/Wisser/Jailer/issues/36
