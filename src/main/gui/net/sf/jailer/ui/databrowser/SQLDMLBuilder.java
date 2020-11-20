@@ -31,14 +31,14 @@ import net.sf.jailer.util.SqlUtil;
 
 /**
  * Builder for Insert/Delete/Update statements.
- * 
+ *
  * @author Ralf Wisser
  */
 public class SQLDMLBuilder {
 
 	/**
 	 * Build Update statements.
-	 * 
+	 *
 	 * @param table the table
 	 * @param rows rows
 	 * @param session current DB session
@@ -46,16 +46,16 @@ public class SQLDMLBuilder {
 	 */
 	public static String buildUpdate(Table table, List<Row> rows, boolean withComments, Session session) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		for (Row row: unique(rows)) {
 			sb.append(buildUpdate(table, row, withComments, session)).append(";" + LF + LF);
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Build Update statements.
-	 * 
+	 *
 	 * @param table the table
 	 * @param row row to be updated
 	 * @param session current DB session
@@ -64,11 +64,11 @@ public class SQLDMLBuilder {
 	public static String buildUpdate(Table table, Row theRow, boolean withComments, Session session) {
 		return buildUpdate(table, theRow, withComments, -1, session);
 	}
-	
+
 
 	/**
 	 * Build Update statements for a given column.
-	 * 
+	 *
 	 * @param table the table
 	 * @param row row to be updated
 	 * @param columnToUpdate the column to update
@@ -109,11 +109,11 @@ public class SQLDMLBuilder {
 		sql += " " + LF + "Where " + SqlUtil.replaceAliases(row.rowId, null, null);
 		return sql;
 	}
-	
+
 	private static String comment(boolean withComments, Column column, boolean withName) {
 		if (withComments) {
 			String content;
-			
+
 			if (withName) {
 				if (column.type == null) {
 					content = column.name;
@@ -136,7 +136,7 @@ public class SQLDMLBuilder {
 
 	/**
 	 * Build Insert statements.
-	 * 
+	 *
 	 * @param table the table
 	 * @param rows rows
 	 * @param session current DB session
@@ -144,16 +144,16 @@ public class SQLDMLBuilder {
 	 */
 	public static String buildInsert(Table table, List<Row> rows, boolean withComments, Session session) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		for (Row row: unique(rows)) {
 			sb.append(buildInsert(table, row, withComments, session)).append(";" + LF + LF);
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Build Insert statements.
-	 * 
+	 *
 	 * @param table the table
 	 * @param row row to be updated
 	 * @param session current DB session
@@ -192,10 +192,10 @@ public class SQLDMLBuilder {
 		sql += ") " + LF + "Values (" + LF + "    " + values + ")";
 		return sql;
 	}
-	
+
 	/**
 	 * Build Delete statements.
-	 * 
+	 *
 	 * @param table the table
 	 * @param row row to be updated
 	 * @param session current DB session
@@ -208,7 +208,7 @@ public class SQLDMLBuilder {
 
 	/**
 	 * Build Delete statements.
-	 * 
+	 *
 	 * @param table the table
 	 * @param rows rows
 	 * @param session current DB session
@@ -216,16 +216,16 @@ public class SQLDMLBuilder {
 	 */
 	public static String buildDelete(Table table, List<Row> rows, boolean withComments, Session session) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		for (Row row: unique(rows)) {
 			sb.append(buildDelete(table, row, withComments, session)).append(";" + LF + "");
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Removes all duplicates out of a list of rows.
-	 * 
+	 *
 	 * @param rows list of rows
 	 * @return list of rows without duplicates
 	 */
@@ -243,7 +243,7 @@ public class SQLDMLBuilder {
 
 	/**
 	 * Gets SQL literal for a given object. Returns <code>null</code> if the object cannot be converted into a SQL literal (LOBs).
-	 * 
+	 *
 	 * @param value the value
 	 * @param cellContentConverter
 	 * @return SQL literal or <code>null</code>
@@ -255,9 +255,12 @@ public class SQLDMLBuilder {
 		if (value instanceof BinValue) {
 			return cellContentConverter.toSql(((BinValue) value).getContent());
 		}
+		if (value instanceof SQLValue) {
+			return ((SQLValue) value).getSQLExpression();
+		}
 		return cellContentConverter.toSql(value);
 	}
-	
+
 	private static final String LF = System.getProperty("line.separator", "\n");
 
 }

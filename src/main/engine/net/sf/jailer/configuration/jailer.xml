@@ -286,6 +286,9 @@ union all
                 <value>DATETIME</value>
             </entry>
         </typeReplacement>
+        <clobTypesRE>varchar\(max\)</clobTypesRE>
+        <nClobTypesRE>nvarchar\(max\)|xml\(.*\)</nClobTypesRE>
+        <blobTypesRE>varbinary\(max\)|image\(.*\)</blobTypesRE>
         <identityInserts>true</identityInserts>
         <timestampPattern>'convert(datetime, '''yyyy-MM-dd'T'HH:mm:ss.SSS''', 126)'</timestampPattern>
         <timestampWithNanoTypeName>datetime2</timestampWithNanoTypeName>
@@ -296,7 +299,7 @@ union all
         <toBlob>0x%s</toBlob>
         <toClob>'%s'</toClob>
         <toNClob>N'%s'</toNClob>
-        <embeddedLobSizeLimit>32000</embeddedLobSizeLimit>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>0x%s</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
@@ -1797,6 +1800,9 @@ union all
                 <value>DATETIME</value>
             </entry>
         </typeReplacement>
+        <clobTypesRE>varchar\(max\)</clobTypesRE>
+        <nClobTypesRE>nvarchar\(max\)|xml\(.*\)</nClobTypesRE>
+        <blobTypesRE>varbinary\(max\)|image\(.*\)</blobTypesRE>
         <identityInserts>true</identityInserts>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>0x%s</binaryPattern>

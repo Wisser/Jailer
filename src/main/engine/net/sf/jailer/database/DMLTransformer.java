@@ -53,9 +53,9 @@ import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 
 /**
- * A {@link ResultSetReader} that writes the read rows as DML-statements 
+ * A {@link ResultSetReader} that writes the read rows as DML-statements
  * into the export-script.
- * 
+ *
  * @author Ralf Wisser
  */
 public class DMLTransformer extends AbstractResultSetReader {
@@ -64,12 +64,12 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * The table to read from.
 	 */
 	private final Table table;
-	
+
 	/**
 	 * The file to write to.
 	 */
 	private final OutputStreamWriter scriptFileWriter;
-	
+
 	/**
 	 * Number of columns.
 	 */
@@ -85,7 +85,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 */
 	private List<String> lobColumns = null;
 	private boolean[] isLobColumn;
-	
+
 	/**
 	 * Literals for empty lob values.
 	 */
@@ -95,7 +95,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * Whether or not the table has columns of type CLOB or BLOB.
 	 */
 	private boolean tableHasLobs = false;
-	
+
 	/**
 	 * Lob columns indexes.
 	 */
@@ -110,17 +110,17 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * For building compact insert-statements.
 	 */
 	private final StatementBuilder insertStatementBuilder;
-	
+
 	/**
 	 * For building compact update-statements.
 	 */
 	private final StatementBuilder updateStatementBuilder;
-	
+
 	/**
 	 * Terminator of current {@link #updateStatementBuilder}
 	 */
 	private String updateStatementBuilderTerminator;
-	
+
 	/**
 	 * For building compact insert-parts of upsert-statements.
 	 */
@@ -135,7 +135,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * Maximum length of SQL values list (for generated inserts).
 	 */
 	private final int maxBodySize;
-	
+
 	/**
 	 * Counts the exported LOBs. (GUI support)
 	 */
@@ -145,12 +145,12 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * For quoting of column names.
 	 */
 	protected final Quoting quoting;
-	
+
 	/**
 	 * If table has identity column (MSSQL/Sybase)
 	 */
 	private boolean tableHasIdentityColumn;
-	
+
 	/**
 	 * Current session;
 	 */
@@ -170,35 +170,35 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
-	
+
 	/**
 	 * Transforms {@link Filter} into SQL-expressions.
 	 */
 	private final ImportFilterTransformer importFilterTransformer;
-	
+
 	private final Set<String> primaryKeyColumnNames;
 	private final Set<String> nullableColumnNames;
-	
+
 	/**
 	 * Factory.
 	 */
 	public static class Factory implements TransformerFactory {
-		
+
 		private final int maxBodySize;
 		private final boolean upsertOnly;
 		private final OutputStreamWriter scriptFileWriter;
 		private final Session session;
 		private final DBMS targetDBMSConfiguration;
 		private ImportFilterTransformer importFilterTransformer;
-		
+
 		/**
 		 * The execution context.
 		 */
 		private final ExecutionContext executionContext;
-		
+
 		/**
 		 * Constructor.
-		 * 
+		 *
 		 * @param scriptFileWriter the file to write to
 		 * @param maxBodySize maximum length of SQL values list (for generated inserts)
 		 * @param upsertOnly use 'upsert' statements for all entities
@@ -213,9 +213,9 @@ public class DMLTransformer extends AbstractResultSetReader {
 		}
 
 		/**
-		 * Creates transformer (as {@link ResultSetReader} which 
+		 * Creates transformer (as {@link ResultSetReader} which
 		 * transforms rows of a given table into an external representation.
-		 * 
+		 *
 		 * @param table the table
 		 * @return a transformer
 		 */
@@ -223,7 +223,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		public ResultSetReader create(Table table) throws SQLException {
 			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, session, targetDBMSConfiguration, importFilterTransformer, executionContext);
 		}
-		
+
 		/**
 		 * Sets the {@link ImportFilterTransformer}.
 		 */
@@ -234,18 +234,18 @@ public class DMLTransformer extends AbstractResultSetReader {
 	}
 
 	private final List<Column> selectionClause;
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param table the table to read from
 	 * @param scriptFileWriter the file to write to
 	 * @param maxBodySize maximum length of SQL values list (for generated inserts)
 	 * @param upsertOnly use 'upsert' statements for all entities
 	 * @param session the session
 	 * @param targetDBMSConfiguration configuration of the target DBMS
-	 * @param executionContext 
-	 * @param importFilterTransformer2 
+	 * @param executionContext
+	 * @param importFilterTransformer2
 	 */
 	protected DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;
@@ -290,9 +290,9 @@ public class DMLTransformer extends AbstractResultSetReader {
 	protected Quoting createQuoting(Session session) throws SQLException {
 		return Quoting.getQuoting(session);
 	}
-	
+
 	private Map<Integer, String> columnTypeFromDatamodel = new HashMap<Integer, String>();
-	
+
 	/**
 	 * Reads result-set and writes into export-script.
 	 */
@@ -310,8 +310,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 			for (int i = 1; i <= columnCount; ++i) {
 				// TODO get rid of #getColumnLabel(int). Pass selection-clause as list of columns (for all Transformers).
 				String mdColumnLabel = SqlUtil.columnLabel(quoting, session, targetDBMSConfiguration, table, getMetaData(resultSet).getColumnLabel(i));
-				int mdColumnType = getMetaData(resultSet).getColumnType(i);
-				
+				// int mdColumnType = getMetaData(resultSet).getColumnType(i);
+				int mdColumnType = SqlUtil.getColumnType(session.dbms, resultSet, getMetaData(resultSet), i, null);
 				if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.NCLOB || mdColumnType == Types.SQLXML) && !DBMS.SQLITE.equals(targetDBMSConfiguration)) {
 					tableHasLobs = true;
 					isLobColumn[i] = true;
@@ -364,7 +364,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					valueList.append(", ");
 				}
 				f = false;
-				String cVal = isSmallLob? (String) content : 
+				String cVal = isSmallLob? (String) content :
 					 convertToSql(cellContentConverter, resultSet, i, content, 0, null);
 				if (!isSmallLob && content != null && emptyLobValue[i] != null) {
 					cVal = emptyLobValue[i];
@@ -374,7 +374,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 			}
 			if (table.getUpsert() || upsertOnly) {
 				if (table.getNonVirtualPKColumns(session).isEmpty()) {
-					throw new DataModel.NoPrimaryKeyException(table, "has no " + 
+					throw new DataModel.NoPrimaryKeyException(table, "has no " +
 							(table.primaryKey != null && table.primaryKey.getColumns() != null && !table.primaryKey.getColumns().isEmpty()? "non-virtual " : "") +
 							"primary key. Upsert statement can not be generated.");
 				}
@@ -397,7 +397,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					String suffix = null;
 					if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration)) {
 						int mdColumnType = getMetaData(resultSet).getColumnType(i);
-						if (mdColumnType == Types.TIME || (content == null && ((currentDialect.getUpdateMode() == UPDATE_MODE.PG || !generateUpsertStatementsWithoutNulls)))) { 
+						if (mdColumnType == Types.TIME || (content == null && ((currentDialect.getUpdateMode() == UPDATE_MODE.PG || !generateUpsertStatementsWithoutNulls)))) {
 							// explicit cast needed
 							if (mdColumnType == Types.OTHER) {
 								String type = null;
@@ -443,14 +443,14 @@ public class DMLTransformer extends AbstractResultSetReader {
 						columnsWONull.append(columnLabel[i]);
 					}
 				}
-				
+
 				String insertHead = "Insert into " + qualifiedTableName(table) + "(" + columnsWONull + ") ";
 				f = true;
 				StringBuffer whereForTerminator = new StringBuffer("");
 				StringBuffer whereForTerminatorWONull = new StringBuffer("");
 				StringBuffer where = new StringBuffer("");
 				StringBuffer whereWOAlias = new StringBuffer("");
-				
+
 				// assemble 'where' for sub-select and update
 				for (Column pk: table.getNonVirtualPKColumns(session)) {
 					if (!f) {
@@ -486,13 +486,13 @@ public class DMLTransformer extends AbstractResultSetReader {
 				}
 
 				if (currentDialect.getUpsertMode() == UPSERT_MODE.MERGE && !tableHasLobs) {
-					// MERGE INTO JL_TMP T USING (SELECT 1 c1, 2 c2 from dual) incoming 
-					// ON (T.c1 = incoming.c1) 
-					// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2 
+					// MERGE INTO JL_TMP T USING (SELECT 1 c1, 2 c2 from dual) incoming
+					// ON (T.c1 = incoming.c1)
+					// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2
 					// WHEN NOT MATCHED THEN INSERT (T.c1, T.c2) VALUES (incoming.c1, incoming.c2)
 					insertHead = "MERGE INTO " + qualifiedTableName(table) + " T USING(";
 					StringBuffer terminator = new StringBuffer(") Q ON(" + whereForTerminator + ") ");
-					
+
 					StringBuffer sets = new StringBuffer();
 					StringBuffer tSchema = new StringBuffer();
 					StringBuffer iSchema = new StringBuffer();
@@ -525,7 +525,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 						sb = new StatementBuilder(maxBodySize);
 						upsertInsertStatementBuilder.put(insertHead, sb);
 					}
-				
+
 					String item = "Select " + valueList + " from dual";
 					if (!sb.isAppendable(insertHead)) {
 						writeToScriptFile(sb.build(), true);
@@ -539,13 +539,13 @@ public class DMLTransformer extends AbstractResultSetReader {
 					StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
 					terminator.append(whereForTerminatorWONull + ");" + PrintUtil.LINE_SEPARATOR);
-					
+
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
 						sb = new StatementBuilder(maxBodySize);
 						upsertInsertStatementBuilder.put(insertHead, sb);
 					}
-				
+
 					String item = (maxBodySize > 1? PrintUtil.LINE_SEPARATOR + " " : "") + "(" + valuesWONull + ")";
 					if (!sb.isAppendable(insertHead)) {
 						writeToScriptFile(sb.build(), true);
@@ -556,45 +556,45 @@ public class DMLTransformer extends AbstractResultSetReader {
 					StringBuffer terminator = new StringBuffer(") as Q " + PrintUtil.LINE_SEPARATOR + "Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
 					terminator.append(whereForTerminatorWONull + ");" + PrintUtil.LINE_SEPARATOR);
-					
+
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
 						sb = new StatementBuilder(maxBodySize);
 						upsertInsertStatementBuilder.put(insertHead, sb);
 					}
-				
+
 					String item;
 					item = valuesWONull.toString();
 					if (!sb.isAppendable(insertHead)) {
 						writeToScriptFile(sb.build(), true);
 					}
 					if (sb.isEmpty()) {
-						item = namedValuesWONull.toString();	
+						item = namedValuesWONull.toString();
 					}
 					sb.append(insertHead, item, " union all " + PrintUtil.LINE_SEPARATOR + " Select ", terminator.toString());
 				} else {
-					String item = "Select " + valuesWONull + " From " + 
-						(currentDialect.getUpsertMode() == UPSERT_MODE.FROM_DUAL || 
+					String item = "Select " + valuesWONull + " From " +
+						(currentDialect.getUpsertMode() == UPSERT_MODE.FROM_DUAL ||
 						 currentDialect.getUpsertMode() == UPSERT_MODE.MERGE? // oracle table with lobs
 								 "dual" : currentDialect.getUpsertMode() == UPSERT_MODE.FROM_SYSDUMMY1? "sysibm.sysdummy1" : SQLDialect.DUAL_TABLE);
 					StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + qualifiedTableName(table) + " T "
 							+ "Where ");
 					terminator.append(where + ");" + PrintUtil.LINE_SEPARATOR);
-					
+
 					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 					if (sb == null) {
 						sb = new StatementBuilder(1 /* insertStatementBuilder.getMaxBodySize() */);
 						upsertInsertStatementBuilder.put(insertHead, sb);
 					}
-				
+
 					if (!sb.isAppendable(insertHead)) {
 						writeToScriptFile(sb.build(), true);
 					}
 					sb.append(insertHead, item, ", ", terminator.toString());
 				}
-				
+
 				// TODO refactoring, method is too long
-				
+
 				if (currentDialect.getUpsertMode() != UPSERT_MODE.MERGE || tableHasLobs) {
 					if (currentDialect.getUpdateMode() == UPDATE_MODE.PG && DBMS.POSTGRESQL.equals(session.dbms)) {
 						StringBuilder item = new StringBuilder(" (");
@@ -629,8 +629,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 								writeToScriptFile(updateStatementBuilder.build(), true);
 							}
 							updateStatementBuilder.append(
-									headAsString, 
-									itemAsString, 
+									headAsString,
+									itemAsString,
 									", " + PrintUtil.LINE_SEPARATOR,
 									terminator + ")" + PrintUtil.LINE_SEPARATOR + "Where " + whereForTerminator + ";" + PrintUtil.LINE_SEPARATOR);
 						}
@@ -697,8 +697,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 							}
 							updateStatementBuilderTerminator = terminatorAsString;
 							updateStatementBuilder.append(
-									headAsString, 
-									itemAsString, 
+									headAsString,
+									itemAsString,
 									" union all " + PrintUtil.LINE_SEPARATOR,
 									terminatorAsString);
 						}
@@ -740,7 +740,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					}
 					String item;
 					if (insertStatementBuilder.isEmpty()) {
-						item = PrintUtil.LINE_SEPARATOR + " Select " + namedValues + " From DUAL";	
+						item = PrintUtil.LINE_SEPARATOR + " Select " + namedValues + " From DUAL";
 					} else {
 						item = PrintUtil.LINE_SEPARATOR + " Select " + valueList + " From DUAL";
 					}
@@ -761,7 +761,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					insertStatementBuilder.append(insertSchema, item, ", ", ";" + PrintUtil.LINE_SEPARATOR);
 				}
 			}
-			
+
 			exportLobs(table, resultSet, smallLobsPerIndex.keySet());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -770,7 +770,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 
 	/**
 	 * Converts cell content to SQL literals.
-	 * 
+	 *
 	 * @param cellContentConverter converter
 	 * @param resultSet points to current row
 	 * @param i current result set index
@@ -784,13 +784,13 @@ public class DMLTransformer extends AbstractResultSetReader {
 		}
 		Column column = selectionClause.get(i - 1);
 		Filter filter = column.getFilter();
-		
+
 		if (filter != null && importFilterTransformer != null) {
 			if (!filter.isApplyAtExport()) {
 				return importFilterTransformer.transform(column, cVal);
 			}
 		}
-		
+
 		if (content != null && filter != null && filter.getExpression().trim().startsWith(Filter.LITERAL_PREFIX)) {
 			return content.toString();
 		}
@@ -808,7 +808,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				return cVal + " /*" + filter.getReason() + "*/";
 			}
 		}
-		
+
 		return cVal;
 	}
 
@@ -816,7 +816,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 
 	/**
 	 * Gets qualified table name.
-	 * 
+	 *
 	 * @param t the table
 	 * @return qualified name of t
 	 */
@@ -834,7 +834,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 
 	/**
 	 * Checks if columns is part of primary key.
-	 * 
+	 *
 	 * @param column the column
 	 * @return <code>true</code> if column is part of primary key
 	 */
@@ -848,7 +848,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 
 	/**
 	 * Exports the (c|b)lob content.
-	 * 
+	 *
 	 * @param resultSet export current row
 	 */
 	private void exportLobs(Table table, ResultSet resultSet, Set<Integer> smallLobsIndexes) throws IOException, SQLException {
@@ -858,7 +858,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				if (smallLobsIndexes.contains(lobColumnIndexes.get(i))) {
 					continue;
 				}
-				Object lob = resultSet.getObject(lobColumnIndexes.get(i));
+				Object lob = cellContentConverter.getObject(resultSet, lobColumnIndexes.get(i));
 				Map<String, String> val = new HashMap<String, String>();
 				for (int j = 1; j <= columnCount; ++j) {
 					if (columnLabel[j] == null) {
@@ -984,7 +984,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	/**
 	 * Flushes the export-reader.
 	 */
@@ -1002,12 +1002,12 @@ public class DMLTransformer extends AbstractResultSetReader {
 			}
 		}
 	}
-	
+
 	/**
 	 * Table which is currently enabled for identity-inserts.
 	 */
 	private static Table identityInsertTable = null;
-	
+
 	/**
 	 * Writes into script.
 	 */
@@ -1030,5 +1030,5 @@ public class DMLTransformer extends AbstractResultSetReader {
 			}
 		}
 	}
-	
+
 }

@@ -42,7 +42,7 @@ import net.sf.jailer.database.Session;
 
 /**
  * Converts a cell-content to valid SQL-literal.
- * 
+ *
  * @author Ralf Wisser
  */
 public class CellContentConverter {
@@ -50,16 +50,17 @@ public class CellContentConverter {
 	private final ResultSetMetaData resultSetMetaData;
 	private final Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 	private final Map<Integer, String> typenameCache = new HashMap<Integer, String>();
+	private final Map<Integer, String> typenameWithLengthCache = new HashMap<Integer, String>();
 	private final Map<String, Integer> columnIndex = new HashMap<String, Integer>();
 	private final Map<Class<?>, Boolean> isPGObjectClass = new HashMap<Class<?>, Boolean>();
 	private final Session session;
 	private final DBMS configuration;
 	private final DBMS targetConfiguration;
 	private Method pgObjectGetType;
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param resultSetMetaData meta data of the result set to read from
 	 * @param session database session
 	 * @param targetDBMSConfiguration configuration of the target DBMS
@@ -72,10 +73,10 @@ public class CellContentConverter {
 	}
 
 	public static final int TIMESTAMP_WITH_NANO = -30201;
-	
+
 	/**
 	 * Converts a cell-content to valid SQL-literal.
-	 * 
+	 *
 	 * @param object the content
 	 * @return the SQL-literal
 	 */
@@ -179,21 +180,21 @@ public class CellContentConverter {
 		}
 		return content.toString();
 	}
-	
+
 	/**
 	 * Gets nano string suffix of a timestamp.
-	 * 
+	 *
 	 * @param timestamp the timestamp
-	 * @param nanoSep 
+	 * @param nanoSep
 	 */
 	private static String getNanoString(Timestamp timestamp, boolean full) {
 		String zeros = "000000000";
 		int nanos = timestamp.getNanos();
 		String nanosString = Integer.toString(nanos);
-		
+
 		// Add leading zeros
 		nanosString = zeros.substring(0, (9-nanosString.length())) + nanosString;
-		
+
 		// Truncate trailing zeros
 		char[] nanosChar = new char[nanosString.length()];
 		nanosString.getChars(0, nanosString.length(), nanosChar, 0);
@@ -201,9 +202,9 @@ public class CellContentConverter {
 		while (truncIndex > 0 && nanosChar[truncIndex] == '0') {
 			truncIndex--;
 		}
-	
+
 		nanosString = new String(nanosChar, 0, truncIndex + 1);
-		
+
 		if (!full) {
 			if (nanosString.length() > 4) {
 				return nanosString.substring(0, 4);
@@ -211,13 +212,13 @@ public class CellContentConverter {
 		}
 		return nanosString;
 	}
-	
+
 	private static final int TYPE_POBJECT = 10500;
 	private static Set<String> POSTGRES_EXTENSIONS = new HashSet<String>();
 	static {
 		POSTGRES_EXTENSIONS.addAll(Arrays.asList("hstore", "ghstore", "json", "jsonb", "_hstore", "_json", "_jsonb", "_ghstore"));
 	}
-	
+
 	private class SQLExpressionWrapper implements Comparable<SQLExpressionWrapper> {
 		private final Object value;
 		private final String type;
@@ -372,10 +373,10 @@ public class CellContentConverter {
 			super(time);
 		}
 	}
-	
+
 	/**
 	 * Gets object from result-set.
-	 * 
+	 *
 	 * @param resultSet result-set
 	 * @param i column index
 	 * @return object
@@ -383,10 +384,13 @@ public class CellContentConverter {
 	public Object getObject(ResultSet resultSet, int i) throws SQLException {
 		Integer type = typeCache.get(i);
 		String columnTypeName = typenameCache.get(i);
+		String columnTypeNameWithLength = typenameWithLengthCache.get(i);
 		if (type == null) {
 			try {
 				type = resultSetMetaData.getColumnType(i);
 				columnTypeName = resultSetMetaData.getColumnTypeName(i);
+				int columnDisplaySize = resultSetMetaData.getColumnDisplaySize(i);
+				columnTypeNameWithLength = resultSetMetaData.getColumnTypeName(i) + "(" + (columnDisplaySize == Integer.MAX_VALUE? "max" : Integer.toString(columnDisplaySize)) + ")";
 				if (configuration.getTimestampWithNanoTypeName() != null && configuration.getTimestampWithNanoTypeName().equalsIgnoreCase(columnTypeName)) {
 					type = TIMESTAMP_WITH_NANO;
 				}
@@ -428,6 +432,7 @@ public class CellContentConverter {
 			}
 			typeCache.put(i, type);
 			typenameCache.put(i, columnTypeName);
+			typenameWithLengthCache.put(i, columnTypeNameWithLength);
 		}
 		try {
 			if (type == Types.ROWID) {
@@ -457,16 +462,28 @@ public class CellContentConverter {
 		} catch (SQLException e) {
 			return resultSet.getString(i);
 		}
-		
-		Object object;
-		if (DBMS.POSTGRESQL.equals(configuration) && "money".equals(columnTypeName)) {
-			// workaround for https://github.com/pgjdbc/pgjdbc/issues/100
-			object = resultSet.getString(i);
-		} else {
-			object = resultSet.getObject(i);
+
+		Object object = null;
+		try {
+			if (configuration.isClobType(columnTypeNameWithLength)) {
+				object = resultSet.getClob(i);
+			} else if (configuration.isNClobType(columnTypeNameWithLength)) {
+				object = resultSet.getNClob(i);
+			} else if (configuration.isBlobType(columnTypeNameWithLength)) {
+				object = resultSet.getBlob(i);
+			}
+		} catch (Exception e) {
+			object = null;
 		}
 
-		// TODO mssql: if type is (VAR|LONGVAR)BINARY or (VAR|LONGVAR)(N)CHAR then use #get...Stream(), put data into a B|C|NCLOB implementation (? not sure if that's a good idea)
+		if (object == null) {
+			if (DBMS.POSTGRESQL.equals(configuration) && "money".equals(columnTypeName)) {
+				// workaround for https://github.com/pgjdbc/pgjdbc/issues/100
+				object = resultSet.getString(i);
+			} else {
+				object = resultSet.getObject(i);
+			}
+		}
 
 		if (type == TIMESTAMP_WITH_NANO && object instanceof Timestamp) {
 			long t = ((Timestamp) object).getTime();
@@ -499,7 +516,7 @@ public class CellContentConverter {
 				}
 			}
 		}
-		
+
 		if (!configuration.getSqlExpressionRule().isEmpty() && columnTypeName != null && object != null) {
 			int id = columnTypeName.lastIndexOf('.');
 			if (id >= 0) {
@@ -510,7 +527,7 @@ public class CellContentConverter {
 				return new SQLExpressionWrapper(object, columnTypeName, expr);
 			}
 		}
-		
+
 		return object;
 	}
 
@@ -527,7 +544,7 @@ public class CellContentConverter {
 
 	/**
 	 * Gets object from result-set.
-	 * 
+	 *
 	 * @param resultSet result-set
 	 * @param columnName column name
 	 * @param typeCache for caching types
@@ -553,15 +570,53 @@ public class CellContentConverter {
 
 	/**
 	 * Gets SQL expression for a C/BLOB for small LOBS.
-	 * 
+	 *
 	 * @param resultSet the result set
 	 * @param i index of LOB column
 	 * @return SQL expression for a C/BLOB for small LOBS
 	 */
-	public String getSmallLob(ResultSet resultSet, int i) throws SQLException, IOException {
+	public String getSmallLob(ResultSet resultSet, int i) {
 		try {
-			Object lob = resultSet.getObject(i);
-			
+			String columnTypeNameWithLength = typenameWithLengthCache.get(i);
+			if (columnTypeNameWithLength == null) {
+				try {
+					int columnDisplaySize = resultSetMetaData.getColumnDisplaySize(i);
+					columnTypeNameWithLength = resultSetMetaData.getColumnTypeName(i) + "(" + (columnDisplaySize == Integer.MAX_VALUE? "max" : Integer.toString(columnDisplaySize)) + ")";
+				} catch (Exception e) {
+					// ignore
+				}
+				typenameWithLengthCache.put(i, columnTypeNameWithLength);
+			}
+			Object object = null;
+			try {
+				if (configuration.isClobType(columnTypeNameWithLength)) {
+					object = resultSet.getClob(i);
+				} else if (configuration.isNClobType(columnTypeNameWithLength)) {
+					object = resultSet.getNClob(i);
+				} else if (configuration.isBlobType(columnTypeNameWithLength)) {
+					object = resultSet.getBlob(i);
+				}
+			} catch (Exception e) {
+				object = null;
+			}
+			Object lob = object != null? object : resultSet.getObject(i);
+			return getSmallLob(lob, null, i);
+		}
+		catch (SQLException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Gets SQL expression for a C/BLOB for small LOBS.
+	 *
+	 * @param resultSet the result set
+	 * @param i index of LOB column
+	 * @return SQL expression for a C/BLOB for small LOBS
+	 */
+	public String getSmallLob(Object lob, Integer maxSize, int i) {
+		try {
+			int embeddedLobSizeLimit = targetConfiguration.getEmbeddedLobSizeLimit();
 			if (lob instanceof Clob) {
 				Clob clob = (Clob) lob;
 				String toClob;
@@ -570,7 +625,7 @@ public class CellContentConverter {
 				} else {
 					toClob = targetConfiguration.getToClob();
 				}
-				if (toClob == null || clob.length() > targetConfiguration.getEmbeddedLobSizeLimit()) {
+				if (toClob == null || clob.length() > Math.min(embeddedLobSizeLimit, maxSize != null? maxSize : Integer.MAX_VALUE)) {
 					return null;
 				}
 				Reader in = clob.getCharacterStream();
@@ -578,6 +633,10 @@ public class CellContentConverter {
 				StringBuilder line = new StringBuilder();
 				while ((c = in.read()) != -1) {
 					line.append((char) c);
+					if (line.length() > embeddedLobSizeLimit) {
+						in.close();
+						return null;
+					}
 				}
 				in.close();
 				if (lob instanceof NClob) {
@@ -589,31 +648,41 @@ public class CellContentConverter {
 						return targetConfiguration.getEmptyCLOBValue();
 					}
 				}
+				if (maxSize != null && line.length() > maxSize) {
+					return null;
+				}
 				return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
 			}
 			if (lob instanceof Blob) {
 				Blob blob = (Blob) lob;
-				if (targetConfiguration.getToBlob() == null || 2 * blob.length() > targetConfiguration.getEmbeddedLobSizeLimit()) {
+				if (targetConfiguration.getToBlob() == null || 2 * blob.length() > Math.min(embeddedLobSizeLimit, maxSize != null? maxSize : Integer.MAX_VALUE)) {
 					return null;
 				}
-	
+
 				InputStream in = blob.getBinaryStream();
 				int b;
 				StringBuilder hex = new StringBuilder();
 				while ((b = in.read()) != -1) {
 					hex.append(hexChar[(b >> 4) & 15]);
 					hex.append(hexChar[b & 15]);
+					if (hex.length() > embeddedLobSizeLimit) {
+						in.close();
+						return null;
+					}
 				}
 				in.close();
 				if (hex.length() == 0 && targetConfiguration.getEmptyBLOBValue() != null) {
 					return targetConfiguration.getEmptyBLOBValue();
 				}
+				if (maxSize != null && hex.length() > maxSize) {
+					return null;
+				}
 				return targetConfiguration.getToBlob().replace("%s", targetConfiguration.convertToStringLiteral(hex.toString()));
 			}
-		} catch (SQLException e) {
+		} catch (SQLException | IOException e) {
 			return null;
 		}
-		
+
 		return null;
 	}
 
@@ -621,5 +690,5 @@ public class CellContentConverter {
 	 * All hex digits.
 	 */
 	public static final char[] hexChar = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
-	
+
 }

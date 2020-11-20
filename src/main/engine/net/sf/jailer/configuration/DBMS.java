@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -33,7 +34,7 @@ import net.sf.jailer.database.SqlScriptBasedStatisticRenovator;
 
 /**
  * Describes a specific DBMS.
- * 
+ *
  * @author Ralf Wisser
  */
 public class DBMS {
@@ -56,7 +57,7 @@ public class DBMS {
 
 	/**
 	 * Gets all DBMSes.
-	 * 
+	 *
 	 * @return array of all DBMSes
 	 */
 	public static DBMS[] values() {
@@ -68,7 +69,7 @@ public class DBMS {
 	 */
 	public DBMS() {
 	}
-	
+
 	/**
 	 * Copy constructor.
 	 */
@@ -135,7 +136,7 @@ public class DBMS {
 
 	/**
 	 * Gets DBMS specific configuration.
-	 * 
+	 *
 	 * @param dbmsId the DBMS id
 	 * @return the DBMS with given id, or the default DBMS if id is <code>null</code>
 	 */
@@ -146,7 +147,7 @@ public class DBMS {
 		if (perDBMS.containsKey(dbmsId)) {
 			return perDBMS.get(dbmsId);
 		}
-		List<DBMS> cs = Configuration.getInstance().getDBMS();  
+		List<DBMS> cs = Configuration.getInstance().getDBMS();
 		for (DBMS c: cs) {
 			if (dbmsId.equals(c.getId())) {
 				perDBMS.put(dbmsId, c);
@@ -155,7 +156,7 @@ public class DBMS {
 		}
 		throw new RuntimeException("Unknown DBMS: \"" + dbmsId + "\"");
 	}
-	
+
 	/**
 	 * Holds configurations.
 	 */
@@ -182,52 +183,52 @@ public class DBMS {
 		FIREBIRD = forDBMS("FIREBIRD");
 		DERBY = forDBMS("DERBY");
 	}
-	
+
 	private String id;
 	private String familyId;
 	private String displayName;
-	
+
 	/**
 	 * DB-URL pattern of DBMS for which this holds the configuration.
 	 */
 	private String urlPattern;
-	
+
 	/**
 	 * Test-query for the DBMS for which this holds the configuration.
 	 */
 	private String testQuery;
-	
+
 	/**
 	 * The {@link SqlScriptBasedStatisticRenovator}.
 	 */
 	private SqlScriptBasedStatisticRenovator statisticRenovator;
-	
+
 	/**
 	 * Replacement map for column types used for DDL generation.
 	 */
 	private Map<String, String> typeReplacement = new HashMap<String, String>();
-	
+
 	private Map<String, String> sqlExpressionRule = new HashMap<String, String>();
-	
+
 	/**
 	 * Replacement map for column types used for DDL generation. Only used if DBMS accept it.
 	 */
 	private Map<String, String> experimentalTypeReplacement = new HashMap<String, String>();
-	
+
 	/**
 	 * Replacement map for special characters in string literals.
 	 */
 	private Map<String, String> stringLiteralEscapeSequences;
-	
+
 	/**
 	 * Suffix of SQL-Select statement to limit number of rows.
 	 */
 	private String sqlLimitSuffix;
-	
+
 	private Integer varcharLengthLimit = null;
 
 	private String tableProperties = "";
-	
+
 	/**
 	 * DB-Query to get DDL of a table
 	 */
@@ -270,7 +271,7 @@ public class DBMS {
 	public void setDdlCall(String ddlCall) {
 		this.ddlCall = ddlCall;
 	}
-	
+
 	/**
 	 * Maps characters to escape sequences according to {@link #stringLiteralEscapeSequences}.
 	 */
@@ -278,17 +279,17 @@ public class DBMS {
 	{ charToEscapeSequence.put('\'', "''"); }
 	private char[] keysOfCharToEscapeSequence = new char[] { '\'' };
 	private String ncharPrefix = null;
-	
+
 	/**
 	 * Set of type names for which no data must be exported.
 	 */
 	private Set<String> exportBlocks = new HashSet<String>();
-	
+
 	/**
 	 * <code>true</code> if DBMS supports identity-type (MS-SQL)
 	 */
 	private boolean identityInserts = false;
-	
+
 	private String emptyCLOBValue = null;
 	private String emptyNCLOBValue = null;
 	private String emptyBLOBValue = null;
@@ -324,19 +325,80 @@ public class DBMS {
 	private String explainPrepare = null;
 	private String explainQuery = null;
 	private String explainCleanup = null;
-	
+
 	private String functionSourceQuery;
 	private String procedureSourceQuery;
 	private String packageSourceQuery;
 	private String packageNamesQuery;
 	private String defaultSchemaQuery;
-	
+
 	private Integer fetchSize = null;
 
 	private List<DatabaseObjectRenderingDescription> objectRenderers = new ArrayList<DatabaseObjectRenderingDescription>();
 	private boolean procedureDetailNeedsSpecificName = false;
 
 	private LimitTransactionSizeInfo limitTransactionSize = new LimitTransactionSizeInfo();
+
+	private String clobTypesRE;
+	private String nClobTypesRE;
+	private String blobTypesRE;
+	private Pattern clobTypesPattern;
+	private Pattern nClobTypesPattern;
+	private Pattern blobTypesPattern;
+
+	public boolean isClobType(String typeWithLength) {
+		if (clobTypesRE == null) {
+			return false;
+		}
+		if (clobTypesPattern == null) {
+			clobTypesPattern = Pattern.compile(clobTypesRE, Pattern.CASE_INSENSITIVE);
+		}
+		return clobTypesPattern.matcher(typeWithLength).matches();
+	}
+
+	public boolean isNClobType(String typeWithLength) {
+		if (nClobTypesRE == null) {
+			return false;
+		}
+		if (nClobTypesPattern == null) {
+			nClobTypesPattern = Pattern.compile(nClobTypesRE, Pattern.CASE_INSENSITIVE);
+		}
+		return nClobTypesPattern.matcher(typeWithLength).matches();
+	}
+
+	public boolean isBlobType(String typeWithLength) {
+		if (blobTypesRE == null) {
+			return false;
+		}
+		if (blobTypesPattern == null) {
+			blobTypesPattern = Pattern.compile(blobTypesRE, Pattern.CASE_INSENSITIVE);
+		}
+		return blobTypesPattern.matcher(typeWithLength).matches();
+	}
+
+	public String getClobTypesRE() {
+		return clobTypesRE;
+	}
+
+	public void setClobTypesRE(String clobTypesRE) {
+		this.clobTypesRE = clobTypesRE;
+	}
+
+	public String getnClobTypesRE() {
+		return nClobTypesRE;
+	}
+
+	public void setnClobTypesRE(String nClobTypesRE) {
+		this.nClobTypesRE = nClobTypesRE;
+	}
+
+	public String getBlobTypesRE() {
+		return blobTypesRE;
+	}
+
+	public void setBlobTypesRE(String blobTypesRE) {
+		this.blobTypesRE = blobTypesRE;
+	}
 
 	/**
 	 * @return the virtualColumnsQuery
@@ -424,7 +486,7 @@ public class DBMS {
 	}
 
 	private String rowidType = null;
-	
+
 	/**
 	 * @return the sqlDialect
 	 */
@@ -443,7 +505,7 @@ public class DBMS {
 	 * Manages session local temporary tables.
 	 */
 	private DefaultTemporaryTableManager sessionTemporaryTableManager = null;
-	
+
 	/**
 	 * Manages transaction local temporary tables.
 	 */
@@ -471,23 +533,23 @@ public class DBMS {
 	public Set<String> getExportBlocks() {
 		return exportBlocks;
 	}
-	
+
 	public void setExportBlocks(Set<String> exportBlocks) {
 		this.exportBlocks = exportBlocks;
 	}
-	
+
 	/**
 	 * Gets the {@link SqlScriptBasedStatisticRenovator}.
-	 * 
+	 *
 	 * @return the {@link SqlScriptBasedStatisticRenovator}
 	 */
 	public SqlScriptBasedStatisticRenovator getStatisticRenovator() {
 		return statisticRenovator;
 	}
-	
+
 	/**
 	 * Sets the {@link SqlScriptBasedStatisticRenovator}.
-	 * 
+	 *
 	 * @param statisticRenovator the {@link SqlScriptBasedStatisticRenovator}
 	 */
 	public void setStatisticRenovator(SqlScriptBasedStatisticRenovator statisticRenovator) {
@@ -505,7 +567,7 @@ public class DBMS {
 	public void setBinaryPattern(String binaryPattern) {
 		this.binaryPattern = binaryPattern;
 	}
-	
+
 	/**
 	 * Sets replacement map for column types used for DDL generation.
 	 */
@@ -578,7 +640,7 @@ public class DBMS {
 	public void setSessionTemporaryTableManager(DefaultTemporaryTableManager tableManager) {
 		sessionTemporaryTableManager = tableManager;
 	}
-	
+
 	/**
 	 * Sets manager for transaction local temporary tables.
 	 */
@@ -640,10 +702,10 @@ public class DBMS {
 	public Map<String, String> getStringLiteralEscapeSequences() {
 		return stringLiteralEscapeSequences;
 	}
-	
+
 	/**
 	 * Converts a string to a string literal according to the {@link #getStringLiteralEscapeSequences()}.
-	 * 
+	 *
 	 * @param string the string to convert
 	 * @return the string literal
 	 */
@@ -658,10 +720,10 @@ public class DBMS {
 		if (!esc) {
 			return string;
 		}
-		
+
 		StringBuilder qvalue = new StringBuilder();
 		int l = string.length();
-		
+
 		for (int i = 0; i < l; ++i) {
 			char c = string.charAt(i);
 			String es = charToEscapeSequence.get(c);
@@ -695,7 +757,7 @@ public class DBMS {
 	public String getSqlLimitSuffix() {
 		return sqlLimitSuffix;
 	}
-	
+
 	public Integer getVarcharLengthLimit() {
 		return varcharLengthLimit;
 	}
@@ -826,10 +888,10 @@ public class DBMS {
 	public void setTableProperties(String tableProperties) {
 		this.tableProperties = tableProperties;
 	}
-	
+
 	/**
 	 * Gets the JDBC properties.
-	 * 
+	 *
 	 * @return the jdbcProperties
 	 */
 	public Map<String, String> getJdbcProperties() {
@@ -838,7 +900,7 @@ public class DBMS {
 
 	/**
 	 * Sets the JDBC properties.
-	 * 
+	 *
 	 * @param jdbcProperties the jdbcProperties to set
 	 */
 	public void setJdbcProperties(Map<String, String> jdbcProperties) {
@@ -858,7 +920,7 @@ public class DBMS {
 	public void setIdentifierQuoteString(String identifierQuoteString) {
 		this.identifierQuoteString = identifierQuoteString;
 	}
-	
+
 	public String getTestQuery() {
 		return testQuery;
 	}
@@ -1188,7 +1250,7 @@ public class DBMS {
 
 	/**
 	 * Gets fetch size.
-	 * 
+	 *
 	 * @return fetch size
 	 */
 	public Integer getFetchSize() {
@@ -1197,7 +1259,7 @@ public class DBMS {
 
 	/**
 	 * Sets fetch size.
-	 * 
+	 *
 	 * @param fetchSize fetch size
 	 */
 	public void setFetchSize(Integer fetchSize) {
