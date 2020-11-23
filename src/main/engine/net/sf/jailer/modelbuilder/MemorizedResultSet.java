@@ -80,7 +80,7 @@ public class MemorizedResultSet implements ResultSet {
 	public void reset() {
 		index = -1;
 	}
-	
+
 	public int getSize() {
 		return rowList.size();
 	}
@@ -101,7 +101,7 @@ public class MemorizedResultSet implements ResultSet {
 		prepareHook(rmd);
 		CellContentConverter cellContentConverter = new CellContentConverter(rmd, session, session.dbms);
 		final int numCol = projection == null? rmd.getColumnCount() : projection.length;
-		
+
 		final String[] names = new String[numCol];
 		final int[] types = new int[numCol];
 		final String[] typeNames = new String[numCol];
@@ -115,7 +115,8 @@ public class MemorizedResultSet implements ResultSet {
 			readRowHook(resultSet);
 			Object[] row = new Object[numCol];
 			for (int i = 1; i <= numCol; ++i) {
-				row[i - 1] = convertCellContent(cellContentConverter.getObject(resultSet, projection == null? i : projection[i - 1]));
+				final int finalI = i;
+				row[i - 1] = convertCellContent(() -> cellContentConverter.getObject(resultSet, projection == null? finalI : projection[finalI - 1]));
 			}
 			rowList.add(row);
 			if (limit != null && rowList.size() > limit) {
@@ -134,8 +135,13 @@ public class MemorizedResultSet implements ResultSet {
 	protected void readRowHook(ResultSet resultSet) throws SQLException {
 	}
 
-	protected Object convertCellContent(Object object) {
-		return object;
+	@FunctionalInterface
+	public interface ContentSupplier {
+		Object get() throws SQLException;
+	}
+
+	protected Object convertCellContent(ContentSupplier objectSupplier) throws SQLException {
+		return objectSupplier.get();
 	}
 
 	public void removeNullRows(int columnIndex) {
@@ -148,7 +154,7 @@ public class MemorizedResultSet implements ResultSet {
 			}
 		}
 	}
-	
+
 	@Override
 	public Object getObject(int columnIndex) throws SQLException {
 		Object[] row = rowList.get(index);

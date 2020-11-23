@@ -286,8 +286,8 @@ union all
                 <value>DATETIME</value>
             </entry>
         </typeReplacement>
-        <clobTypesRE>varchar\(max\)</clobTypesRE>
-        <nClobTypesRE>nvarchar\(max\)|xml\(.*\)</nClobTypesRE>
+        <clobTypesRE>varchar\(max\)|text\(.*\)</clobTypesRE>
+        <nClobTypesRE>nvarchar\(max\)|xml\(.*\)|ntext\(.*\)</nClobTypesRE>
         <blobTypesRE>varbinary\(max\)|image\(.*\)</blobTypesRE>
         <identityInserts>true</identityInserts>
         <timestampPattern>'convert(datetime, '''yyyy-MM-dd'T'HH:mm:ss.SSS''', 126)'</timestampPattern>
@@ -1800,8 +1800,8 @@ union all
                 <value>DATETIME</value>
             </entry>
         </typeReplacement>
-        <clobTypesRE>varchar\(max\)</clobTypesRE>
-        <nClobTypesRE>nvarchar\(max\)|xml\(.*\)</nClobTypesRE>
+        <clobTypesRE>varchar\(max\)|text\(.*\)</clobTypesRE>
+        <nClobTypesRE>nvarchar\(max\)|xml\(.*\)|ntext\(.*\)</nClobTypesRE>
         <blobTypesRE>varbinary\(max\)|image\(.*\)</blobTypesRE>
         <identityInserts>true</identityInserts>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>

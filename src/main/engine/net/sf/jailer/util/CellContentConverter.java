@@ -600,7 +600,7 @@ public class CellContentConverter {
 				object = null;
 			}
 			Object lob = object != null? object : resultSet.getObject(i);
-			return getSmallLob(lob, null, i);
+			return getSmallLob(lob, targetConfiguration, null, null);
 		}
 		catch (SQLException e) {
 			return null;
@@ -614,7 +614,7 @@ public class CellContentConverter {
 	 * @param i index of LOB column
 	 * @return SQL expression for a C/BLOB for small LOBS
 	 */
-	public String getSmallLob(Object lob, Integer maxSize, int i) {
+	public static String getSmallLob(Object lob, DBMS targetConfiguration, Integer maxBlobLength, Integer maxClobLength) {
 		try {
 			int embeddedLobSizeLimit = targetConfiguration.getEmbeddedLobSizeLimit();
 			if (lob instanceof Clob) {
@@ -625,7 +625,7 @@ public class CellContentConverter {
 				} else {
 					toClob = targetConfiguration.getToClob();
 				}
-				if (toClob == null || clob.length() > Math.min(embeddedLobSizeLimit, maxSize != null? maxSize : Integer.MAX_VALUE)) {
+				if (toClob == null || clob.length() > Math.min(embeddedLobSizeLimit, maxClobLength != null? maxClobLength : Integer.MAX_VALUE)) {
 					return null;
 				}
 				Reader in = clob.getCharacterStream();
@@ -648,14 +648,14 @@ public class CellContentConverter {
 						return targetConfiguration.getEmptyCLOBValue();
 					}
 				}
-				if (maxSize != null && line.length() > maxSize) {
+				if (maxClobLength != null && line.length() > maxClobLength) {
 					return null;
 				}
 				return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
 			}
 			if (lob instanceof Blob) {
 				Blob blob = (Blob) lob;
-				if (targetConfiguration.getToBlob() == null || 2 * blob.length() > Math.min(embeddedLobSizeLimit, maxSize != null? maxSize : Integer.MAX_VALUE)) {
+				if (targetConfiguration.getToBlob() == null || 2 * blob.length() > Math.min(embeddedLobSizeLimit, maxBlobLength != null? maxBlobLength : Integer.MAX_VALUE)) {
 					return null;
 				}
 
@@ -674,7 +674,7 @@ public class CellContentConverter {
 				if (hex.length() == 0 && targetConfiguration.getEmptyBLOBValue() != null) {
 					return targetConfiguration.getEmptyBLOBValue();
 				}
-				if (maxSize != null && hex.length() > maxSize) {
+				if (maxBlobLength != null && hex.length() > maxBlobLength) {
 					return null;
 				}
 				return targetConfiguration.getToBlob().replace("%s", targetConfiguration.convertToStringLiteral(hex.toString()));
