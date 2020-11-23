@@ -629,7 +629,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	protected static final String UNKNOWN = "- unknown column -";
 
-	protected static final int MAXLOBLENGTH = 2000;
+	public static final int MAXBLOBLENGTH = 32;
+	public static final int MAXCLOBLENGTH = 4000 - 16;
 
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_SQLCONSOLE = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
@@ -1112,7 +1113,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									// highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? bold :
 									nonbold);
 							String text = ((JLabel) render).getText();
-							if (text.indexOf('\n') >= 0 || text.length() > 400) {
+							if (text.length() > 400 || text.indexOf('\n') >= 0) {
 								String tip = tipCache.get(text);
 								if (tip == null) {
 									tip = UIUtil.toHTML(hardWrap(text), 200);
@@ -1579,8 +1580,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	protected String hardWrap(String text) {
-		final int MAXLENTH = 198;
+		final int MAXLENTH = 400;
 		if (text != null && text.length() > MAXLENTH) {
+			if (text.length() > MAXLENTH * 5) {
+				text = text.substring(0, MAXLENTH * 4 - 26) + "..." + text.substring(text.length() - 26);
+			}
 			StringBuilder sb = new StringBuilder();
 			int r = 0;
 			for (int i = 0; i < text.length(); ++i) {
@@ -3909,7 +3913,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								if (lobValue != null) {
 									object = cellContentConverter.getObject(resultSet, i);
 								}
-								String smallLob = cellContentConverter.getSmallLob(object, MAXLOBLENGTH, i);
+								String smallLob = CellContentConverter.getSmallLob(object, session.dbms, MAXBLOBLENGTH, MAXCLOBLENGTH);
 								if (smallLob != null && lobValue != null) {
 									final String val = lobValue.toString();
 									lobValue = new SQLValue() {
@@ -6259,7 +6263,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		while(-1 != (b = br.read()))
 		{
 			sb.append((char)b);
-			if (sb.length() > MAXLOBLENGTH) {
+			if (sb.length() > MAXCLOBLENGTH) {
 				sb.append("... " + length);
 				break;
 			}
