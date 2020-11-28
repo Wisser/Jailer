@@ -36,11 +36,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -612,28 +614,39 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	            }
             }
         }
-        nb_same.add("<b>" + tableName + "</b>");
+        nb_same.add(tableName);
 //        int maxWidth = 8;
         String sep = "";
 //        if (nb_up.size() > maxWidth || nb_same.size() > maxWidth || nb_down.size() > maxWidth) {
 //        	sep = "<tr><td></td></tr>";
 //        }
+        int max = Math.max(nb_up.size(), Math.max(nb_same.size(), nb_down.size()));
         String tip = "<html>"
         	+ "<table cellspacing=0 cellpadding=0>"
-        	+ tipJoin(nb_up, theCellInfo.level - 1)
+        	+ tipJoin(nb_up, theCellInfo.level - 1, max, null)
         	+ sep
-        	+ tipJoin(nb_same, theCellInfo.level)
+        	+ tipJoin(nb_same, theCellInfo.level, max, tableName)
         	+ sep
-        	+ tipJoin(nb_down, theCellInfo.level + 1)
-        	+ "</table>";
+        	+ tipJoin(nb_down, theCellInfo.level + 1, max, null)
+        	+ "</table></html>";
         return tip;
     }
 
-    private String tipJoin(Set<String> tipList, int level) {
+    private String tipJoin(Set<String> tipSet, int level, int max, String tableName) {
+    	if (tipSet.isEmpty()) {
+    		return "";
+    	}
     	StringBuilder sb = new StringBuilder();
     	int w = 0;
     	int l = 0;
     	int i = 0;
+    	List<String> tipList = new ArrayList<String>(tipSet);
+    	while (tipList.size() <= max) {
+    		tipList.add("");
+    	}
+    	if (tableName != null && tipList.remove(tableName)) {
+    		tipList.add(0, tableName);
+    	}
     	for (String tip: tipList) {
     		if (++w > 8) {
     			w = 0;
@@ -643,7 +656,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
     			}
     			sb.append("</tr><tr><td></td>");
     		}
-    		sb.append("<td>&nbsp;" + tip + "&nbsp;</td>");
+    		if (tip.equals(tableName)) {
+    			sb.append("<td><b>&nbsp;" + tip + "&nbsp;</b></td>");
+    		} else {
+    			sb.append("<td>&nbsp;" + tip + "&nbsp;</td>");
+    		}
     		++i;
     	}
     	if (sb.length() == 0) {
@@ -1011,14 +1028,20 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		};
 		closureTable.setModel(tableModel);
 
+		int lastNonEmptyI = -1;
+		Deque<TableColumn> toDelete = new ArrayDeque<TableColumn>();
 		for (int i = 0; i < closureTable.getColumnCount(); i++) {
 			TableColumn column = closureTable.getColumnModel().getColumn(i);
 			int width = 1;
+			boolean isEmpty = true;
 
 			Component comp = closureTable.getDefaultRenderer(String.class).
 									getTableCellRendererComponent(
 											closureTable, column.getHeaderValue(),
 											false, false, 0, i);
+			if (column.getHeaderValue() != null && !"".equals(column.getHeaderValue())) {
+				isEmpty = false;
+			}
 			width = Math.max(width, comp.getPreferredSize().width);
 
 			for (int line = 0; line < dataArray.length; ++line) {
@@ -1027,9 +1050,27 @@ public abstract class ClosureView extends javax.swing.JDialog {
 										 closureTable, dataArray[line][i],
 									 false, false, line, i);
 				width = Math.max(width, comp.getPreferredSize().width);
+				if (dataArray[line][i] != null && !"".equals(dataArray[line][i])) {
+					isEmpty = false;
+				}
 			}
 
 			column.setPreferredWidth(width);
+			if (isEmpty) {
+				if (lastNonEmptyI >= 0) {
+					closureTable.getColumnModel().getColumn(lastNonEmptyI).setPreferredWidth(width + closureTable.getColumnModel().getColumn(lastNonEmptyI).getPreferredWidth());
+					toDelete.push(column);
+				}
+			} else {
+				lastNonEmptyI = i;
+			}
+		}
+		while (!toDelete.isEmpty()) {
+			closureTable.getColumnModel().removeColumn(toDelete.pop());
+		}
+		for (int i = 0; i < closureTable.getColumnCount() - 1; i++) {
+            TableColumn column = closureTable.getColumnModel().getColumn(i);
+            column.setMaxWidth(column.getPreferredWidth());
 		}
 		closureTable.setIntercellSpacing(new Dimension(0, 0));
 //    	disableAssocButton.setEnabled(false);
@@ -1501,7 +1542,6 @@ public abstract class ClosureView extends javax.swing.JDialog {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setResizeWeight(0.75);
-        jSplitPane1.setToolTipText("");
         jSplitPane1.setContinuousLayout(true);
         jSplitPane1.setOneTouchExpandable(true);
 
