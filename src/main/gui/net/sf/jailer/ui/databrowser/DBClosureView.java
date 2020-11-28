@@ -738,7 +738,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	  	int w = 0;
 	  	int l = 0;
 	  	int i = 0;
-	  	List<String> tipList = new ArrayList<String>(tipSet);
+	  	int size = tipSet.size();
+		List<String> tipList = new ArrayList<String>(tipSet);
 	  	while (tipList.size() <= max) {
 	  		tipList.add("");
 	  	}
@@ -749,7 +750,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	  		if (++w > 8) {
 	  			w = 0;
 	  			if (++l >= 1) {
-	  	    		sb.append("<td>&nbsp;<i>" + (tipList.size() - i) + " more...</i>&nbsp;</td>");
+	  				if (size > i) {
+	  					sb.append("<td>&nbsp;<i>" + (size - i) + " more...</i>&nbsp;</td>");
+	  				}
 	  	    		break;
 	  			}
 	  			sb.append("</tr><tr><td></td>");
@@ -759,7 +762,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	  		} else {
 	  			sb.append("<td>&nbsp;" + tip + "&nbsp;</td>");
 	  		}
-	  		++i;
+	  		if (tip.length() > 0) {
+	  			++i;
+	  		}
 	  	}
 	  	if (sb.length() == 0) {
 	  		return "";
