@@ -709,10 +709,18 @@ public class UIUtil {
         final StringBuffer arglist = new StringBuffer();
         int pwi = -1;
         for (int i = args.size() - 1; i >= 0; --i) {
-            if (args.get(i) != null && password != null && args.get(i).equals(password) && password.length() > 0) {
+            if (args.get(i) != null && password != null && args.get(i) == password && password.length() > 0) {
                 pwi = i;
                 break;
             }
+        }
+        if (pwi < 0) {
+	        for (int i = args.size() - 1; i >= 0; --i) {
+	            if (args.get(i) != null && password != null && args.get(i).equals(password) && password.length() > 0) {
+	                pwi = i;
+	                break;
+	            }
+	        }
         }
         char q =  System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows") ? '"' : '\'';
         for (int i = 0; i < args.size(); ++i) {

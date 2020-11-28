@@ -28,13 +28,13 @@ import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 
 /**
  * Restricted Dependencies List Dialog.
- * 
+ *
  * @author Ralf Wisser
  */
 public abstract class RestrictedDependenciesListDialog extends ClosureBorderDialog {
 
 	private static final long serialVersionUID = -7151994890007647782L;
-	
+
 	/** Creates new form ClosureBorderDialog */
 	public RestrictedDependenciesListDialog(java.awt.Frame parent) {
 		super(parent, false);
@@ -57,7 +57,9 @@ public abstract class RestrictedDependenciesListDialog extends ClosureBorderDial
 				for (Association association: table.associations) {
 					if (association.getRestrictionCondition() != null) {
 						if (association.isInsertDestinationBeforeSource()) {
-							restDeps.add(association);
+							if (!association.isRestrictedDependencyWithNulledFK()) {
+								restDeps.add(association);
+							}
 						}
 					}
 				}

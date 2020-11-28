@@ -33,23 +33,23 @@ import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 /**
  * Factory for {@link PrimaryKey}s. Builds the universal primary key as a
  * super-set of all created primary key.
- * 
+ *
  * @author Ralf Wisser
  */
 public class PrimaryKeyFactory {
 
 	// {@link ExecutionContext} (optional)
 	private final ExecutionContext executionContext;
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param executionContext {@link ExecutionContext} (optional)
 	 */
 	public PrimaryKeyFactory(ExecutionContext executionContext) {
 		this.executionContext = executionContext;
 	}
-	
+
 	/**
 	 * {@link #getUniversalPrimaryKey()} closes the factory, no further creation
 	 * of PKs is allowed then.
@@ -68,9 +68,9 @@ public class PrimaryKeyFactory {
 
 	/**
 	 * Constructs a new primary-key.
-	 * 
+	 *
 	 * @return a newly created primary-key
-	 * 
+	 *
 	 * @exception IllegalStateException
 	 *                if factory is closed
 	 */
@@ -84,9 +84,9 @@ public class PrimaryKeyFactory {
 				hasNullableColumn = true;
 			}
 		}
-		
+
 		PrimaryKey primaryKey = new PrimaryKey(columns, !hasNullableColumn);
-		
+
 		if (executionContext != null && executionContext.getUpkDomain() != null && tableName != null) {
 			if (!executionContext.getUpkDomain().contains(tableName)) {
 				return primaryKey;
@@ -195,7 +195,7 @@ public class PrimaryKeyFactory {
 
 	/**
 	 * Creates a unique name for a new universal primary key column.
-	 * 
+	 *
 	 * @return a unique name for a new universal primary key column
 	 */
 	private String createUniqueUPKName() {
@@ -205,7 +205,7 @@ public class PrimaryKeyFactory {
 	/**
 	 * Gets the primary-key to be used for the entity-table and closes the
 	 * factory.
-	 * 
+	 *
 	 * @param session
 	 *            for guessing null-values of columns
 	 * @return the universal primary key
@@ -225,16 +225,16 @@ public class PrimaryKeyFactory {
 			}
 		}
 		subjects.add(extractionModel.subject);
-		
-		Set<String> upkDomain = new HashSet<String>();
-		Set<Table> toIgnore = new HashSet<Table>();
+
+		Set<Table> closure = new HashSet<Table>();
 		for (Table subject: subjects) {
-			for (Table table: subject.closure(toIgnore)) {
-				upkDomain.add(table.getName());
-				toIgnore.add(table);
+			for (Table table: subject.closure(closure)) {
+				closure.add(table);
 			}
 		}
-
+		DataModel.addRestrictedDependencyWithNulledFK(closure);
+		Set<String> upkDomain = new HashSet<String>();
+		closure.forEach(table -> upkDomain.add(table.getName()));
 		executionContext.setUpkDomain(upkDomain);
 	}
 

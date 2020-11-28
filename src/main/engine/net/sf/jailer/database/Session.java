@@ -51,7 +51,7 @@ import net.sf.jailer.util.CellContentConverter;
 /**
  * Manages database sessions on a 'per thread' basis.
  * Executes SQL-Statements in the context of a session.
- * 
+ *
  * @author Ralf Wisser
  */
 public class Session {
@@ -60,43 +60,43 @@ public class Session {
 	 * Hold a connection for each thread.
 	 */
 	protected ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
-	
+
 	/**
 	 * Holds all connections.
 	 */
 	private final List<Connection> connections = Collections.synchronizedList(new ArrayList<Connection>());
-	
+
 	/**
 	 * The session in which temporary tables lives, if any.
 	 */
 	private Connection temporaryTableSession = null;
-		
+
 	/**
 	 * Shared scope of temporary tables.
 	 */
 	private WorkingTableScope temporaryTableScope;
-	
+
 	/**
 	 * Scope of temporary tables.
 	 */
 	public final WorkingTableScope scope;
-	
+
 	/**
-	 * No SQL-Exceptions will be logged in silent mode. 
+	 * No SQL-Exceptions will be logged in silent mode.
 	 */
 	private boolean silent = false;
-	
+
 	private final boolean transactional;
 	public final boolean local;
-	
+
 	/**
 	 * Reads a JDBC-result-set.
 	 */
 	public interface ResultSetReader {
-	
+
 		/**
 		 * Reads current row of a result-set.
-		 * 
+		 *
 		 * @param resultSet the result-set
 		 */
 		void readCurrentRow(ResultSet resultSet) throws SQLException;
@@ -106,26 +106,26 @@ public class Session {
 		 */
 		void close() throws SQLException;
 	}
-	
+
 	/**
 	 * Reads a JDBC-result-set.
 	 * Caches a {@link ResultSetMetaData}.
 	 */
 	public static abstract class AbstractResultSetReader implements ResultSetReader {
-	
+
 		private ResultSet owner;
 		private ResultSetMetaData metaData;
 
 		private ResultSet cccOwner;
 		private Session cccSession;
 		private CellContentConverter cellContentConverter;
-		
+
 		/**
 		 * Gets and cache meta data of a result set.
-		 * 
+		 *
 		 * @param resultSet
 		 * @return meta data of resultSet
-		 * @throws SQLException 
+		 * @throws SQLException
 		 */
 		protected ResultSetMetaData getMetaData(ResultSet resultSet) throws SQLException {
 			if (owner == resultSet) {
@@ -135,13 +135,13 @@ public class Session {
 			metaData = resultSet.getMetaData();
 			return metaData;
 		}
-		
+
 		/**
 		 * Gets and cache CellContentConverter for the result set.
-		 * 
+		 *
 		 * @param resultSet
 		 * @return meta data of resultSet
-		 * @throws SQLException 
+		 * @throws SQLException
 		 */
 		protected CellContentConverter getCellContentConverter(ResultSet resultSet, Session session, DBMS targetDBMSConfiguration) throws SQLException {
 			if (cccOwner == resultSet && cccSession == session) {
@@ -155,7 +155,7 @@ public class Session {
 
 		/**
 		 * Does nothing.
-		 * @throws SQLException 
+		 * @throws SQLException
 		 */
 		@Override
 		public void close() throws SQLException {
@@ -163,15 +163,15 @@ public class Session {
 
 		/**
 		 * Initializes the reader.
-		 * 
+		 *
 		 * @param resultSet the result set to read.
 		 * @throws SQLException
 		 */
 		public void init(ResultSet resultSet) throws SQLException {
 		}
-		
+
 	}
-	
+
 	/**
 	 * The logger.
 	 */
@@ -183,7 +183,7 @@ public class Session {
 	public interface ConnectionFactory {
 		Connection getConnection() throws SQLException;
 	}
-	
+
 	/**
 	 * Connection factory.
 	 */
@@ -203,20 +203,20 @@ public class Session {
 	 * The DBMS.
 	 */
 	public final DBMS dbms;
-	
+
 	/**
 	 * The DBMS.
 	 */
 	public final String driverClassName;
-	
+
 	/**
 	 * The dbUrl (<code>null</code> if unknown)
 	 */
 	public final String dbUrl;
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
 	 */
@@ -226,7 +226,7 @@ public class Session {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
 	 */
@@ -236,7 +236,7 @@ public class Session {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
 	 * @param local <code>true</code> for the local entity-graph database
@@ -368,12 +368,12 @@ public class Session {
 			temporaryTableSession = null;
 		}
 	}
-	
+
 	private Object silentLock = new Object();
-	
+
 	/**
 	 * No SQL-Exceptions will be logged in silent mode.
-	 * 
+	 *
 	 * @param silent <code>true</code> for silence
 	 */
 	public void setSilent(boolean silent) {
@@ -381,10 +381,10 @@ public class Session {
 			this.silent = silent;
 		}
 	}
-	
+
 	/**
 	 * No SQL-Exceptions will be logged in silent mode.
-	 * 
+	 *
 	 * @return silent <code>true</code> for silence
 	 */
 	public boolean getSilent() {
@@ -394,14 +394,14 @@ public class Session {
 	}
 
 	private static final ThreadLocal<Boolean> logStatements = new ThreadLocal<Boolean>();
-	
+
 	/**
 	 * Log statements?
 	 */
 	public void setLogStatements(boolean logStatements) {
 		Session.logStatements.set(logStatements);
 	}
-	
+
 	/**
 	 * Log statements?
 	 */
@@ -411,7 +411,7 @@ public class Session {
 
 	/**
 	 * Logs driver info
-	 * 
+	 *
 	 * @param connection connection to DB
 	 * @return the DBMS
 	 */
@@ -429,7 +429,7 @@ public class Session {
 
 	/**
 	 * Gets DB schema name.
-	 * 
+	 *
 	 * @return DB schema name (empty string if unknown)
 	 */
 	public String getSchema() {
@@ -438,7 +438,7 @@ public class Session {
 
 	/**
 	 * Executes a SQL-Query (SELECT).
-	 * 
+	 *
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
@@ -446,20 +446,20 @@ public class Session {
 	public long executeQuery(String sqlQuery, ResultSetReader reader, boolean withExplicitCommit) throws SQLException {
 		return executeQuery(sqlQuery, reader, null, null, 0, withExplicitCommit);
 	}
-	
+
 	/**
 	 * Executes a SQL-Query (SELECT).
-	 * 
+	 *
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
 	 */
 	public long executeQuery(String sqlQuery, ResultSetReader reader) throws SQLException {
 		return executeQuery(sqlQuery, reader, null, null, 0, false);
 	}
-	
+
 	/**
 	 * Executes a SQL-Query (SELECT).
-	 * 
+	 *
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
 	 * @param alternativeSQL query to be executed if sqlQuery fails
@@ -473,7 +473,7 @@ public class Session {
 
 	/**
 	 * Executes a SQL-Query (SELECT).
-	 * 
+	 *
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
 	 * @param alternativeSQL query to be executed if sqlQuery fails
@@ -486,7 +486,7 @@ public class Session {
 
 	/**
 	 * Executes a SQL-Query (SELECT) with timeout.
-	 * 
+	 *
 	 * @param theConnection connection to use
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
@@ -505,10 +505,10 @@ public class Session {
 			return executeQuery0(theConnection, sqlQuery, reader, alternativeSQL, context, limit, timeout, withExplicitCommit);
 		}
 	}
-	
+
 	/**
 	 * Executes a SQL-Query (SELECT) with timeout.
-	 * 
+	 *
 	 * @param theConnection connection to use
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
@@ -618,7 +618,7 @@ public class Session {
 
 	/**
 	 * Executes a SQL-Query (SELECT) with timeout.
-	 * 
+	 *
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
 	 * @param alternativeSQL query to be executed if sqlQuery fails
@@ -641,13 +641,17 @@ public class Session {
 			if (e instanceof SqlException) {
 				throw e;
 			}
+			final String woSuffix = " /*!*/";
+			if (sqlQuery != null && sqlQuery.endsWith(woSuffix)) {
+				sqlQuery = sqlQuery.substring(0, sqlQuery.length() - woSuffix.length());
+			}
 			throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlQuery + "\"", sqlQuery, e);
 		}
 	}
 
 	/**
 	 * Executes a SQL-Query (SELECT).
-	 * 
+	 *
 	 * @param sqlFile file containing a query in SQL
 	 * @param reader the reader for the result
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
@@ -679,9 +683,9 @@ public class Session {
 
 	/**
 	 * Executes a SQL-Update (INSERT, DELETE or UPDATE).
-	 * 
+	 *
 	 * @param sqlUpdate the update in SQL
-	 * 
+	 *
 	 * @return update-count
 	 */
 	public int executeUpdate(String sqlUpdate) throws SQLException {
@@ -778,13 +782,13 @@ public class Session {
 			throw e;
 		}
 	}
-	
+
 	/**
 	 * Executes a SQL-Update (INSERT, DELETE or UPDATE) with parameters.
-	 * 
+	 *
 	 * @param sqlUpdate the update in SQL
 	 * @param parameter the parameters
-	 * 
+	 *
 	 * @return update-count
 	 */
 	public int executeUpdate(String sqlUpdate, Object[] parameter) throws SQLException {
@@ -915,7 +919,7 @@ public class Session {
 
 	/**
 	 * Executes a SQL-Statement without returning any result.
-	 * 
+	 *
 	 * @param sql the SQL-Statement
 	 */
 	public long execute(String sql) throws SQLException {
@@ -924,7 +928,7 @@ public class Session {
 
 	/**
 	 * Executes a SQL-Statement without returning any result.
-	 * 
+	 *
 	 * @param sql the SQL-Statement
 	 */
 	public long execute(String sql, Object cancellationContext, boolean acceptQueries) throws SQLException {
@@ -1042,19 +1046,19 @@ public class Session {
 		String sqlState = e.getSQLState();
 		boolean deadlock = sqlState != null && sqlState.matches("40.01"); // "serialization failure", see https://en.wikipedia.org/wiki/SQLSTATE
 		boolean crf = DBMS.ORACLE.equals(dbms) && e.getErrorCode() == 8176; // ORA-08176: consistent read failure; rollback data not available
-		
+
 		boolean isRetrieable = deadlock || crf;
 		return isRetrieable;
 	}
-	
+
 	/**
 	 * Cached Database Meta Data.
 	 */
 	private Map<Connection, DatabaseMetaData> metaData = Collections.synchronizedMap(new IdentityHashMap<Connection, DatabaseMetaData>());
-	
+
 	/**
 	 * Gets DB meta data.
-	 * 
+	 *
 	 * @return DB meta data
 	 */
 	public DatabaseMetaData getMetaData() throws SQLException {
@@ -1169,7 +1173,7 @@ public class Session {
 		 }
 		connection = new ThreadLocal<Connection>();
 	}
-	
+
 	/**
 	 * Commits all connections.
 	 */
@@ -1189,25 +1193,25 @@ public class Session {
 			}
 		 }
 	}
-	
+
 	/**
 	 * Gets optional schema for database analysis.
-	 * 
+	 *
 	 * @return optional schema for database analysis
 	 */
 	public String getIntrospectionSchema() {
 		return introspectionSchema;
 	}
-	
+
 	/**
 	 * Sets optional schema for database analysis.
-	 * 
+	 *
 	 * @param introspectionSchema optional schema for database analysis
 	 */
 	public void setIntrospectionSchema(String introspectionSchema) {
 		this.introspectionSchema = introspectionSchema;
 	}
-	
+
 	/**
 	 * Closes the session in which temporary tables lives, if any.
 	 */
@@ -1229,14 +1233,14 @@ public class Session {
 	 * CLI connection arguments (UI support)
 	 */
 	private List<String> cliArguments;
-	
+
 	/**
 	 * Connection password (UI support)
 	 */
 	private String password;
-	
+
 	private final Object CLI_LOCK = new String("CLI_LOCK");
-	
+
 	/**
 	 * Gets connection password (UI support)
 	 */
@@ -1254,7 +1258,7 @@ public class Session {
 			this.password = password;
 		}
 	}
-	
+
 	/**
 	 * Sets CLI connection arguments (UI support)
 	 */
@@ -1263,7 +1267,7 @@ public class Session {
 			this.cliArguments = args;
 		}
 	}
-	
+
 	/**
 	 * Gets CLI connection arguments (UI support)
 	 */
@@ -1275,19 +1279,19 @@ public class Session {
 
 	/**
 	 * Gets the connection for the current thread.
-	 * 
+	 *
 	 * @return the connection for the current thread
 	 */
 	public Connection getConnection() throws SQLException {
 		return connectionFactory.getConnection();
 	}
-	
+
 	private InlineViewStyle inlineViewStyle;
 	private boolean noInlineViewStyleFound = false;
-	
+
 	/**
 	 * Returns a suitable {@link InlineViewStyle} for this session.
-	 * 
+	 *
 	 * @return a suitable {@link InlineViewStyle} for this session or <code>null</code>, if no style is found
 	 */
 	public synchronized InlineViewStyle getInlineViewStyle() {
@@ -1301,12 +1305,12 @@ public class Session {
 		}
 		return inlineViewStyle;
 	}
-	
+
 	private Map<String, Object> sessionProperty = Collections.synchronizedMap(new HashMap<String, Object>());
 
 	/**
 	 * Sets a session property.
-	 * 
+	 *
 	 * @param owner the class that owns the property
 	 * @param name name of the property
 	 * @param property value of the property
@@ -1317,7 +1321,7 @@ public class Session {
 
 	/**
 	 * Gets a session property.
-	 * 
+	 *
 	 * @param owner the class that owns the property
 	 * @param name name of the property
 	 * @return value of the property
@@ -1325,10 +1329,10 @@ public class Session {
 	public Object getSessionProperty(Class<?> owner, String name) {
 		return sessionProperty.get(owner.getName() + "." + name);
 	}
-	
+
 	/**
 	 * Removes all session properties.
-	 * 
+	 *
 	 * @param owner the class that owns the properties
 	 */
 	public void removeSessionProperties(Class<?> owner) {
@@ -1342,8 +1346,8 @@ public class Session {
 
 	/**
 	 * Checks SQL query.
-	 * 
-	 * @param sql 
+	 *
+	 * @param sql
 	 * @return <code>true</code> iff sql is executable without errors
 	 */
 	public boolean checkQuery(String sql) {

@@ -1282,6 +1282,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					case 0: break;
 					case 2:
 						extractionModelEditor.closureView.selectTabComponent(extractionModelEditor.restrDepsView);
+						extractionModelEditor.select(restrictedDependency);
 						return;
 					default: return;
 					}
@@ -1337,7 +1338,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 										} catch (Exception e) {
 											if (e instanceof DataModel.NoPrimaryKeyException) {
 												int result = JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null,
-														rowidButton == null? 
+														rowidButton == null?
 																new Object[] { "Edit Table", "Cancel" }
 																:
 																new Object[] { "Edit Table", rowidButton.getText().replace("<html>", "<html>Use row identification: \"").replace("</html>", "\"</html>"), "Cancel" },

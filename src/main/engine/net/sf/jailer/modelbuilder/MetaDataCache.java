@@ -36,7 +36,7 @@ import net.sf.jailer.modelbuilder.MemorizedResultSet.MemorizedResultSetMetaData;
 
 /**
  * Reads database meta data directly from meta data views.
- * 
+ *
  * @author Wisser
  */
 public class MetaDataCache {
@@ -55,10 +55,10 @@ public class MetaDataCache {
 	 * Meta data of cached row set.
 	 */
 	private MemorizedResultSetMetaData resultSetMetaData;
-	
+
 	/**
 	 * Reads primary keys.
-	 * 
+	 *
 	 * @param session
 	 *            the session
 	 * @param schema
@@ -86,7 +86,7 @@ public class MetaDataCache {
 
 	/**
 	 * Reads index infos.
-	 * 
+	 *
 	 * @param session
 	 *            the session
 	 * @param schema
@@ -114,7 +114,7 @@ public class MetaDataCache {
 
 	/**
 	 * Reads imported keys (FKs).
-	 * 
+	 *
 	 * @param session
 	 *            the session
 	 * @param schema
@@ -142,7 +142,7 @@ public class MetaDataCache {
 
 	/**
 	 * Reads column infos.
-	 * 
+	 *
 	 * @param session
 	 *            the session
 	 * @param schema
@@ -173,7 +173,7 @@ public class MetaDataCache {
 				types[i] = rsMetaData.getColumnType(i + 1);
 				typeNames[i] = ""; // not needed
 			}
-			
+
 			while (rs.next()) {
 				Object[] row = new Object[numCol];
 				for (int i = 1; i <= numCol; ++i) {
@@ -188,7 +188,7 @@ public class MetaDataCache {
 					}
 				}
 				String table = (String) row[2];
-				
+
 				List<Object[]> rowList = metaDataCache.cache.get(table);
 				if (rowList == null) {
 					rowList = new LinkedList<Object[]>();
@@ -196,7 +196,7 @@ public class MetaDataCache {
 				}
 				rowList.add(row);
 			}
-			metaDataCache.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types, typeNames); 
+			metaDataCache.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types, typeNames);
 			rs.close();
 
 			if (metaDataCache.cache.isEmpty()) {
@@ -205,6 +205,7 @@ public class MetaDataCache {
 			return metaDataCache;
 		} catch (SQLException e) {
 			_log.info(e.getMessage());
+			session.reconnect();
 			return new MetaDataCache();
 		}
 	}

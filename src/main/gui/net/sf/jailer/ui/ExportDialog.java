@@ -2180,7 +2180,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 		Color fg = jLabel7.getForeground();
 		exportLabel.setForeground(fg);
-		
+
 		boolean err = false;
 		if (insert.getText().trim().length() == 0 && (!delete.isVisible() || delete.getText().trim().length() == 0)) {
 			exportLabel.setForeground(Color.RED);
@@ -2550,7 +2550,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 			schemaMapping.append((schema.equals(DEFAULT_SCHEMA)? "" : schema) + "=" + to);
 		}
-		if (schemaMapping.length() > 0) {
+		if (!isIdentity(schemaMapping)) {
 			args.add("-schemamapping");
 			args.add(schemaMapping.toString());
 		}
@@ -2579,7 +2579,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			}
 			sourceSchemaMapping.append((schema.equals(DEFAULT_SCHEMA)? "" : schema) + "=" + to);
 		}
-		if (sourceSchemaMapping.length() > 0) {
+		if (!isIdentity(sourceSchemaMapping)) {
 			args.add("-source-schemamapping");
 			args.add(sourceSchemaMapping.toString());
 		}
@@ -2596,7 +2596,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				}
 				deleteSchemaMapping.append((schema.equals(DEFAULT_SCHEMA)? "" : schema) + "=" + to);
 			}
-			if (deleteSchemaMapping.length() > 0) {
+			if (!isIdentity(deleteSchemaMapping)) {
 				args.add("-deletion-schemamapping");
 				args.add(deleteSchemaMapping.toString());
 			}
@@ -2623,6 +2623,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				// ignore
 			}
 		}
+	}
+
+	private boolean isIdentity(StringBuilder map) {
+		if (map.length() == 0) {
+			return true;
+		}
+		if ("=".contentEquals(map)) {
+			return true;
+		}
+		return false;
 	}
 
 	private String toFileName(String f) {
@@ -2668,6 +2678,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			Set<Table> toCheck = new HashSet<Table>(subject.closure(closure));
 			closure.addAll(toCheck);
 		}
+		DataModel.addRestrictedDependencyWithNulledFK(closure);
 		return closure;
 	}
 

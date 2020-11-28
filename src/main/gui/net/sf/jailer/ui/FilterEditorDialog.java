@@ -82,7 +82,7 @@ import net.sf.jailer.util.Quoting;
 
 /**
  * Column filter editor.
- * 
+ *
  * @author Ralf Wisser
  */
 public class FilterEditorDialog extends javax.swing.JDialog {
@@ -93,17 +93,17 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	private final ExtractionModelFrame parent;
 
 	private boolean isInitialized = false;
-	
+
 	/**
 	 * Currently selected table (in closure-table).
 	 */
 	private Table selectedTable;
-	
+
 	/**
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
-	
+
 	/**
 	 * Make {@link #refresh(Table)} reentrant.
 	 */
@@ -151,7 +151,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		public boolean isPk;
 		public boolean isFk;
 	}
-	
+
 	@SuppressWarnings("serial")
 	private class ClauseList extends ListEditor<Clause> {
 
@@ -226,7 +226,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		protected Color getForegroundColor(Clause element, int column) {
 			return null;
 		}
-		
+
 		@Override
 		protected Dimension detailsViewMinSize() {
 			return new Dimension(400, 1);
@@ -239,7 +239,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		public TemplateList() {
 			super(new String[] { "Priority", "Name", "Apply At", "Expression"}, "Template", true, false, false);
 		}
-		
+
 		@Override
 		protected String getDisplayName(FilterTemplate element) {
 			return element.getName();
@@ -297,10 +297,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			templateDetailsNewValueField.setEnabled(!Filter.EXCLUDED_VALUE.equals(element.getExpression()));
 			templateDetailsTypeField.setText(element.getType() != null? element.getType() : "");
 			templateDetailsEnabledCheckBox.setSelected(element.isEnabled());
-			
+
 			ClauseList clauseList = new ClauseList();
 			clauseList.setModel(element.getClauses());
-			
+
 			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = 1;
@@ -309,9 +309,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			gridBagConstraints.fill = GridBagConstraints.BOTH;
 			templatesDetailsClausePanel.removeAll();
 			templatesDetailsClausePanel.add(clauseList, gridBagConstraints);
-			
+
 			templatesDetailsApplyAtComboBox.setSelectedIndex(element.isApplyAtExport()? 0 : 1);
-			
+
 			return templateDetailsPanel;
 		}
 
@@ -337,7 +337,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					}
 				}
 			}
-			
+
 			element.setName(name);
 			element.setExpression(expression);
 			element.setEnabled(templateDetailsEnabledCheckBox.isSelected());
@@ -358,12 +358,12 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		protected Color getForegroundColor(FilterTemplate element, int column) {
 			return element.isEnabled()? null : Color.LIGHT_GRAY;
 		}
-		
+
 		@Override
 		protected void onSelectionChange() {
 			refreshTemplatesDerivedList();
 		}
-		
+
 		@Override
 		protected void onModelUpdate() {
 			getDataModel().deriveFilters();
@@ -383,7 +383,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	@SuppressWarnings("serial")
 	private class DerivedFilterList extends ListEditor<FilterModel> {
 		private final Table rootTable;
-		
+
 		public DerivedFilterList(Table rootTable) {
 			super(new String[] { "Apply at", "Column", "Type", "Expression", "Derived from"}, "Filter", false, true, true);
 			this.rootTable = rootTable;
@@ -437,7 +437,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		@Override
 		protected Color getForegroundColor(FilterModel element, int column) {
-			return element.isPk? Color.red : 
+			return element.isPk? Color.red :
 				element.column.getFilter() != null && element.column.getFilter().isDerived()?
 						Color.blue : null;
 		}
@@ -468,9 +468,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			}
 		});
 	}
-	
+
 	private final ParameterSelector.ParametersGetter parametersGetter;
-	
+
 	/** Creates new form FilterEditor */
 	@SuppressWarnings("serial")
 	public FilterEditorDialog(ExtractionModelFrame parent, final ParameterSelector.ParametersGetter parametersGetter, ExecutionContext executionContext) {
@@ -480,13 +480,13 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		this.parent = parent;
 		this.conditionEditor = createConditionEditor();
 		initComponents();
-		
+
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
 		final JComboBox comboBox = clauseDetailsObjectTextField;
         jPanel14.add(StringSearchPanel.createSearchButton(null, comboBox, "Value", null, null, null, null, false, null, true, true), gridBagConstraints);
-		
+
 		ActionListener l = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -496,7 +496,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		};
 		l.actionPerformed(null);
 		templatesDetailsApplyAtComboBox.addActionListener(l);
-		
+
 		AutoCompletion.enable(tableBox);
 		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -505,7 +505,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         jPanel5.add(StringSearchPanel.createSearchButton(this, tableBox, "Find Table", null), gridBagConstraints);
-        
+
 		final ListCellRenderer tableBoxRenderer = tableBox.getRenderer();
 		tableBox.setRenderer(new ListCellRenderer() {
 			@Override
@@ -533,20 +533,20 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				return tableBoxRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			}
 		});
-		
+
 		templatesDetailsMulitlineLabel.setText(null);
 		templatesDetailsMulitlineLabel.setIcon(conditionEditorIcon);
 		templatesDetailsMulitlineLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-			
+
 			private boolean isActive() {
 				return !Filter.EXCLUDED_VALUE.equals(templateDetailsNewValueField.getText());
 			}
-			
+
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				mouseClicked(e);
 			}
-			
+
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				if (isActive()) {
@@ -561,14 +561,14 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					}
 				}
 			}
-			
+
 			@Override
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				if (isActive()) {
 					templatesDetailsMulitlineLabel.setIcon(conditionEditorSelectedIcon);
 				}
 			}
-			
+
 			@Override
 			public void mouseExited(java.awt.event.MouseEvent evt) {
 				if (isActive()) {
@@ -576,7 +576,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				}
 		   }
 		});
-		
+
 		helpComponents.put(Predicate.LIKE, clausePredHelpLike);
 		helpComponents.put(Predicate.NOT_LIKE, clausePredHelpLike);
 		helpComponents.put(Predicate.MATCHES, clausePredHelpRE);
@@ -585,7 +585,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 	/**
 	 * Gets current data model.
-	 * 
+	 *
 	 * @return current data model
 	 */
 	private DataModel getDataModel() {
@@ -599,7 +599,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 	/**
 	 * Opens the editor.
-	 * 
+	 *
 	 * @param table the initially selected table
 	 */
 	public void open(Table table) {
@@ -615,10 +615,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		}
 
 		this.conditionEditor = createConditionEditor();
-		
+
 		templateList = new TemplateList();
 		templateList.setModel(getDataModel().getFilterTemplates());
-		
+
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 1;
@@ -627,10 +627,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		templatesPane.removeAll();
 		templatesPane.add(templateList, gridBagConstraints);
-		
+
 		refresh(table);
 		jTabbedPane1.setSelectedIndex(0);
-		
+
 		Set<String> tableNames = new TreeSet<String>();
 		Set<String> columnNames = new TreeSet<String>();
 		Set<String> typeNames = new TreeSet<String>();
@@ -647,10 +647,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		setVisible(true);
 	}
-	
+
 	/**
 	 * Refreshes the dialog.
-	 * 
+	 *
 	 * @param tableToSelect the table to select initially or <code>null</code> to keep the current selection
 	 */
 	public void refresh(Table tableToSelect) {
@@ -659,7 +659,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		}
 		refreshing = true;
 		selectedTable = tableToSelect;
-		
+
 		Vector<String> tableNames = new Vector<String>();
 		for (Table table: getDataModel().getTables()) {
 			tableNames.add(getDataModel().getDisplayName(table));
@@ -675,7 +675,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		} else {
 			tableBox.setSelectedItem(0);
 		}
-		
+
 		refreshFilterPane();
 
 		refreshing = false;
@@ -687,35 +687,35 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	 * Bold font.
 	 */
 	private Font boldFont = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-	
+
 	/**
 	 * Non-bold font.
 	 */
 	private Font nonBoldFont = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-	
+
 	/**
 	 * Maps columns to the text-field with which to edit the filter expression.
 	 */
 	private Map<Column, JTextField> filterTextfieldsPerColumn = new IdentityHashMap<Column, JTextField>();
-	
+
 	/**
 	 * Maps columns to the text-field with which to edit the filter type.
 	 */
 	private Map<Column, JTextField> typeTextfieldsPerColumn = new IdentityHashMap<Column, JTextField>();
-	
+
 	/**
 	 * Maps columns to the text-field with which to edit the filter expression.
 	 */
 	private Map<Column, JComboBox2> filterApplyAtCBPerColumn = new IdentityHashMap<Column, JComboBox2>();
-		
+
 	/**
 	 * The editor for filter conditions.
 	 */
 	private FilterConditionEditor conditionEditor;
-	
+
 	private IdentityHashMap<Column, Integer> explicitlySetApplyAtPerColumn = new IdentityHashMap<Column, Integer>();
 	private IdentityHashMap<Column, Pair<String, Integer>> excludedPrevValue = new IdentityHashMap<Column, Pair<String, Integer>>();
-	
+
 	/**
 	 * Refreshes the filter pane.
 	 */
@@ -736,18 +736,28 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		filterApplyAtCBPerColumn.clear();
 
 		Insets is = new Insets(0, 0, 8, 0);
-		
+
 		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = y;
+		gridBagConstraints.gridwidth = 1;
 		gridBagConstraints.insets = is;
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.weightx = 0.0;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		JLabel label = new JLabel("Apply at");
+		JPanel ae = new JPanel();
+		ae.setLayout(new GridBagLayout());
+		filterPane.add(ae, gridBagConstraints);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		JLabel label = new JLabel("Apply at ");
 		label.setFont(boldFont);
-		filterPane.add(label, gridBagConstraints);
-		
+		ae.add(label, gridBagConstraints);
+
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 2;
 		gridBagConstraints.gridy = y;
@@ -756,13 +766,13 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.weightx = 0.0;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		label = new JLabel("Column");
+		label = new JLabel("Column ");
 		label.setFont(boldFont);
 		filterPane.add(label, gridBagConstraints);
 
 		JPanel p = new JPanel();
 		p.setLayout(new GridBagLayout());
-		
+
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 6;
 		gridBagConstraints.gridy = y;
@@ -779,24 +789,25 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		label = new JLabel("Expression");
+		label = new JLabel("Expression ");
 		label.setFont(boldFont);
 		p.add(label, gridBagConstraints);
 
 		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = y;
 		gridBagConstraints.insets = is;
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.weightx = 0.0;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-		label = new JLabel("   Excluded");
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		label = new JLabel("Exclude  ");
+		label.setToolTipText("Exclude a column from export.");
 		label.setFont(boldFont);
-		p.add(label, gridBagConstraints);
+		filterPane.add(label, gridBagConstraints);
 
 		++y;
-		
-		for (final Table table: tables) {	
+
+		for (final Table table: tables) {
 			for (final Column c: table.getColumns()) {
 				String toolTip = c.getFilter() != null && c.getFilter().isDerived()? c.getFilter().getFilterSource().getDescription() : null;
 				if (toolTip != null) {
@@ -808,7 +819,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				if (filter == null && selectedTable == null) {
 					continue;
 				}
-				
+
 				if (filter != null && c.getFilter().getAppliedTo() != null) {
 					List<String> aTo = c.getFilter().getAppliedTo();
 					StringBuilder sb = new StringBuilder("Also applied to " + aTo.size() + " columns: ");
@@ -826,7 +837,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					}
 					toolTip = sb.toString();
 				}
-				
+
 				final JComboBox2 applyAtCB = new JComboBox2();
 				filterApplyAtCBPerColumn.put(c, applyAtCB);
 				applyAtCB.setModel(new DefaultComboBoxModel<String>(new String[] { "Export", "Import" }));
@@ -848,15 +859,14 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					}
 				});
 				gridBagConstraints = new java.awt.GridBagConstraints();
-				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridx = 0;
 				gridBagConstraints.gridy = y;
 				gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 				gridBagConstraints.weightx = 0.0;
 				gridBagConstraints.insets = new Insets(0, 0, 0, 10);
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				filterPane.add(applyAtCB, gridBagConstraints);
-				
-				
+
 				label = new javax.swing.JLabel();
 				if (selectedTable != null) {
 					label.setText(" T.");
@@ -873,7 +883,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 						label.setToolTipText(toolTip);
 					}
 				}
-				
+
 				javax.swing.JPanel columnPanel = new JPanel();
 				columnPanel.setLayout(new java.awt.BorderLayout());
 
@@ -881,7 +891,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				final String columnName = (selectedTable == null? " " + table.getUnqualifiedName() + "." : "") + c.name;
 				label.setText(columnName);
 				label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
-				
+
 				boolean isPK = false;
 				for (Column pk: table.primaryKey.getColumns()) {
 					if (pk.equals(c)) {
@@ -889,7 +899,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 						break;
 					}
 				}
-				
+
 				if (isPK) {
 					label.setForeground(Color.RED);
 				}
@@ -910,20 +920,20 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				label.setText(" " + type + " ");
 				label.setForeground(Color.GRAY);
 				label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
-				
+
 				JTextField typeField = new JTextField();
 				typeField.getDocument().addDocumentListener(new DocumentListener() {
-					
+
 					@Override
 					public void removeUpdate(DocumentEvent e) {
 						refresh();
 					}
-					
+
 					@Override
 					public void insertUpdate(DocumentEvent e) {
 						refresh();
 					}
-					
+
 					@Override
 					public void changedUpdate(DocumentEvent arg0) {
 						refresh();
@@ -934,14 +944,14 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					}
 				});
 				typeField.addFocusListener(new FocusListener() {
-					
+
 					@Override
 					public void focusLost(FocusEvent e) {
 						if (applyButton.isEnabled()) {
 							apply();
 						}
 					}
-					
+
 					@Override
 					public void focusGained(FocusEvent e) {
 					}
@@ -953,11 +963,11 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				} else {
 					columnPanel.add(label, java.awt.BorderLayout.EAST);
 				}
-				
+
 				if (toolTip != null) {
 					label.setToolTipText(toolTip);
 				}
-				
+
 				gridBagConstraints = new java.awt.GridBagConstraints();
 				gridBagConstraints.gridx = 3;
 				gridBagConstraints.gridy = y;
@@ -965,7 +975,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				gridBagConstraints.weightx = 0.0;
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				filterPane.add(columnPanel, gridBagConstraints);
-				
+
 				label = new javax.swing.JLabel();
 				label.setText(" :=  ");
 				label.setFont(nonBoldFont);
@@ -979,24 +989,24 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				if (toolTip != null) {
 					label.setToolTipText(toolTip);
 				}
-				
+
 				final javax.swing.JTextField textField = new javax.swing.JTextField();
 				final String initialExpr = filter == null? (c.getFilter() == null? Filter.OLD_VALUE_PROP : (c.getFilter().getExpression())) : (filter);
 				final boolean hasFilter = c.getFilter() != null;
 				final boolean hasDerivedFilter = c.getFilter() != null && c.getFilter().isDerived();
 				final boolean finalIsPk = isPK;
 				textField.getDocument().addDocumentListener(new DocumentListener() {
-					
+
 					@Override
 					public void removeUpdate(DocumentEvent e) {
 						refresh();
 					}
-					
+
 					@Override
 					public void insertUpdate(DocumentEvent e) {
 						refresh();
 					}
-					
+
 					@Override
 					public void changedUpdate(DocumentEvent arg0) {
 						refresh();
@@ -1016,14 +1026,14 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					}
 				});
 				textField.addFocusListener(new FocusListener() {
-					
+
 					@Override
 					public void focusLost(FocusEvent e) {
 						if (applyButton.isEnabled()) {
 							apply();
 						}
 					}
-					
+
 					@Override
 					public void focusGained(FocusEvent e) {
 					}
@@ -1035,12 +1045,12 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				if (toolTip != null) {
 					textField.setToolTipText(toolTip);
 				}
-				
+
 				label = new javax.swing.JLabel();
 				label.setText(null);
-				
+
 				label.setIcon(conditionEditorIcon);
-				
+
 				gridBagConstraints = new java.awt.GridBagConstraints();
 				gridBagConstraints.gridx = 5;
 				gridBagConstraints.gridy = y;
@@ -1049,7 +1059,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				gridBagConstraints.insets = new Insets(1, 0, 0, 2);
 				filterPane.add(label, gridBagConstraints);
-				
+
 				JPanel p2 = new JPanel();
 				p2.setLayout(new GridBagLayout());
 				gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1060,7 +1070,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				gridBagConstraints.insets = new Insets(1, 0, 0, 0);
 				filterPane.add(p2, gridBagConstraints);
-				
+
 				gridBagConstraints = new java.awt.GridBagConstraints();
 				gridBagConstraints.gridx = 1;
 				gridBagConstraints.gridy = 1;
@@ -1071,16 +1081,16 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 				final JCheckBox excluded = new JCheckBox("");
 				gridBagConstraints = new java.awt.GridBagConstraints();
-				gridBagConstraints.gridx = 2;
-				gridBagConstraints.gridy = 1;
+				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridy = y;
 				gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 				gridBagConstraints.weightx = 0.0;
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-				p2.add(excluded, gridBagConstraints);
-				
+				filterPane.add(excluded, gridBagConstraints);
+
 				excluded.setSelected(initialExpr.equals(Filter.EXCLUDED_VALUE));
 				excluded.setToolTipText("Exclude this column from export.");
-				
+
 				excluded.addItemListener(new ItemListener() {
 					@Override
 					public void itemStateChanged(ItemEvent e) {
@@ -1109,19 +1119,19 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 						apply();
 					}
 				});
-				
+
 				final JLabel theLabel = label;
 				label.addMouseListener(new java.awt.event.MouseAdapter() {
 
 					private boolean isActive() {
 						return !Filter.EXCLUDED_VALUE.equals(textField.getText());
 					}
-					
+
 					@Override
 					public void mouseReleased(MouseEvent e) {
 						mouseClicked(e);
 					}
-					
+
 					@Override
 					public void mouseClicked(java.awt.event.MouseEvent evt) {
 						if (isActive()) {
@@ -1136,14 +1146,14 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 							}
 						}
 					}
-					
+
 					@Override
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
 						if (isActive()) {
 							theLabel.setIcon(conditionEditorSelectedIcon);
 						}
 					}
-					
+
 					@Override
 					public void mouseExited(java.awt.event.MouseEvent evt) {
 						if (isActive()) {
@@ -1159,7 +1169,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		label = new javax.swing.JLabel();
 		label.setText(y == 0? " no filter defined" : " ");
 		label.setFont(nonBoldFont);
-		
+
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = y++;
@@ -1168,11 +1178,11 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
 		filterPane.add(label, gridBagConstraints);
-		
+
 		label = new javax.swing.JLabel();
 		label.setText(" ");
 		label.setFont(nonBoldFont);
-		
+
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = y++;
@@ -1180,10 +1190,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
 		filterPane.add(label, gridBagConstraints);
-		
+
 		Table root = selectedTable;
 		DerivedFilterList derivedFilterList = createDerivedFilterList(root);
-		
+
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 1;
@@ -1192,9 +1202,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		Panel2.removeAll();
 		Panel2.add(derivedFilterList, gridBagConstraints);
-		
+
 		derivedFilterList = createDerivedFilterList((Table) null);
-		
+
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 1;
@@ -1205,7 +1215,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		allFiltersPanel.add(derivedFilterList, gridBagConstraints);
 
 		refreshTemplatesDerivedList();
-		
+
 		validate();
 		repaint();
 	}
@@ -1227,7 +1237,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		DerivedFilterList derivedFilterList = new DerivedFilterList(null);
 		List<FilterModel> derivedFilters = new ArrayList<FilterModel>();
 		if (template != null) {
-			for (final Table table: getDataModel().getSortedTables()) {	
+			for (final Table table: getDataModel().getSortedTables()) {
 				for (Column c: table.getColumns()) {
 					if (c.getFilter() != null) {
 						FilterSource filterSource = c.getFilter().getFilterSource();
@@ -1261,7 +1271,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	private DerivedFilterList createDerivedFilterList(Table root) {
 		DerivedFilterList derivedFilterList = new DerivedFilterList(root);
 		List<FilterModel> derivedFilters = new ArrayList<FilterModel>();
-		for (final Table table: getDataModel().getSortedTables()) {	
+		for (final Table table: getDataModel().getSortedTables()) {
 			for (Column c: table.getColumns()) {
 				if (c.getFilter() != null) {
 					if (root == null || c.getFilter().isDerived()) {
@@ -1325,7 +1335,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		parent.extractionModelEditor.markDirty();
 		parent.extractionModelEditor.resetUndoStack();
 	}
-	
+
 	/**
 	 * Whether there is unsaved data.
 	 */
@@ -1371,7 +1381,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		}
 		return false;
 	}
-	
+
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
@@ -2005,7 +2015,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		dialog.setLocation(
 				getLocation().x + getWidth() /2 - dialog.getWidth() /2,
 				getLocation().y + getHeight() /2 - dialog.getHeight() /2);
-		
+
 		JPanel helpPanel = new JPanel();
 		helpPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -2021,7 +2031,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	}//GEN-LAST:event_helpButtonActionPerformed
 
 	private String templatePreValue = "";
-	
+
     private void templateDetailsExcludedCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_templateDetailsExcludedCheckBoxItemStateChanged
     	if (templateDetailsExcludedCheckBox.isSelected()) {
     		templatePreValue = templateDetailsNewValueField.getText();
@@ -2038,7 +2048,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	JEditorPane helpEditorPane = new JEditorPane();
 	{
 		helpEditorPane.setContentType("text/html"); // NOI18N
-		
+
 		   InputStream is = getClass().getResourceAsStream("/net/sf/jailer/ui/resource/filters.html");
 		   if (is != null) {
 			   BufferedReader in = new BufferedReader(new InputStreamReader(is));
@@ -2049,7 +2059,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					sb.append((char) c);
 				}
 				is.close();
-				
+
 				Matcher m = Pattern.compile("(<img\\s+src\\s*=\\s*\")(.*)(\")").matcher(sb.toString());
 				sb.setLength(0);
 				while (m.find()) {
@@ -2057,7 +2067,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					sb.append(m.group(1)).append(getClass().getResource("/net/sf/jailer/ui/resource/" + m.group(2))).append(m.group(3));
 				}
 				m.appendTail(sb);
-				
+
 				helpEditorPane.setText(sb.toString());
 				helpEditorPane.setEditable(false);
 			} catch (Exception e) {
@@ -2101,7 +2111,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		clauseDetailsObjectTextField.setModel(cm);
 		clauseDetailsObjectTextField.setSelectedItem(old);
 	}
-	
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel Panel2;
     private javax.swing.JPanel Panel3;
@@ -2167,11 +2177,11 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private javax.swing.JPanel templatesPane;
     // End of variables declaration//GEN-END:variables
 	private TemplateList templateList;
-	
+
 
 	private Map<Predicate, JComponent> helpComponents = new HashMap<Predicate, JComponent>();
 	private Map<Subject, String[]> objectsModel = new HashMap<Subject, String[]>();
-	 
+
 	private Icon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;
 	{

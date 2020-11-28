@@ -17,7 +17,7 @@ package net.sf.jailer;
 
 /**
  * The Jailer Version.
- * 
+ *
  * @author Ralf Wisser
  */
 public class JailerVersion {
@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "10.2.4.2";
+	public static final String VERSION = "10.2.4.4";
 
 	/**
 	 * The Jailer working tables version.

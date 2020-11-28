@@ -17,8 +17,8 @@
 package net.sf.jailer.datamodel;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +31,7 @@ import net.sf.jailer.util.SqlUtil;
 
 /**
  * An association between database-tables.
- * 
+ *
  * @author Ralf Wisser
  */
 public class Association extends ModelElement {
@@ -105,7 +105,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param source
 	 *            the source table
 	 * @param destination
@@ -134,7 +134,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param source
 	 *            the source table
 	 * @param destination
@@ -175,7 +175,7 @@ public class Association extends ModelElement {
 	/**
 	 * Gets the restricted join-condition for joining source with destination
 	 * table.
-	 * 
+	 *
 	 * @return the restricted join-condition for joining source with destination
 	 *         table, <code>null</code> if association must be ignored
 	 */
@@ -194,7 +194,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Is this association ignored?
-	 * 
+	 *
 	 * @return <code>true</code> iff this association is ignored
 	 */
 	public boolean isIgnored() {
@@ -211,7 +211,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Gets the cardinality.
-	 * 
+	 *
 	 * @return the cardinality. <code>null</code> if cardinality is not known.
 	 */
 	public Cardinality getCardinality() {
@@ -261,7 +261,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Stringifies the join condition.
-	 * 
+	 *
 	 * @param restrictionSeparator
 	 *            separates join-condition from restriction condition in the
 	 *            result
@@ -286,7 +286,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Gets join-condition without any restrictions.
-	 * 
+	 *
 	 * @return join-condition as defined in data model
 	 */
 	public String getUnrestrictedJoinCondition() {
@@ -295,7 +295,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Gets restriction-condition.
-	 * 
+	 *
 	 * @return restriction-condition, <code>null</code> if association is not
 	 *         restricted
 	 */
@@ -340,7 +340,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Sets the name of the association.
-	 * 
+	 *
 	 * @param name
 	 *            the name of the association
 	 */
@@ -353,7 +353,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Gets the name of the association.
-	 * 
+	 *
 	 * @return the name of the association
 	 */
 	public String getName() {
@@ -363,7 +363,7 @@ public class Association extends ModelElement {
 	/**
 	 * Whether or not to insert source-rows before destination rows in order to
 	 * prevent foreign-key-constraint violation.
-	 * 
+	 *
 	 * @return the insertSourceBeforeDestination
 	 */
 	public boolean isInsertSourceBeforeDestination() {
@@ -376,7 +376,7 @@ public class Association extends ModelElement {
 	/**
 	 * Whether or not to insert destination-rows before source-rows in order to
 	 * prevent foreign-key-constraint violation.
-	 * 
+	 *
 	 * @return the insertDestinationBeforeSource
 	 */
 	public boolean isInsertDestinationBeforeSource() {
@@ -403,7 +403,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Appends condition to join-condition.
-	 * 
+	 *
 	 * @param condition
 	 *            the condition
 	 */
@@ -417,7 +417,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Gets the XML aggregation schema.
-	 * 
+	 *
 	 * @return the XML aggregation schema
 	 */
 	public AggregationSchema getAggregationSchema() {
@@ -426,7 +426,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Gets name of XML-tag used for aggregation.
-	 * 
+	 *
 	 * @return name of XML-tag used for aggregation
 	 */
 	public String getAggregationTagName() {
@@ -453,7 +453,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Sets the XML aggregation schema.
-	 * 
+	 *
 	 * @param aggregationSchema
 	 *            the XML aggregation schema
 	 */
@@ -466,7 +466,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Sets name of XML-tag used for aggregation.
-	 * 
+	 *
 	 * @param aggregationTagName
 	 *            name of XML-tag used for aggregation
 	 */
@@ -479,7 +479,7 @@ public class Association extends ModelElement {
 
 	/**
 	 * Gets unique ID.
-	 * 
+	 *
 	 * @return unique ID
 	 */
 	public int getId() {
@@ -499,7 +499,7 @@ public class Association extends ModelElement {
 	/**
 	 * Maps source-columns to destination-columns, if this represents an
 	 * equi-join. Otherwise it returns an empty map.
-	 * 
+	 *
 	 * @return map from source-columns to destination-columns, if this
 	 *         represents an equi-join
 	 */
@@ -510,16 +510,16 @@ public class Association extends ModelElement {
 	/**
 	 * Maps source-columns to destination-columns, if this represents an
 	 * equi-join. Otherwise it returns an empty map.
-	 * 
+	 *
 	 * @param assignments if not <code>null</code>, put column assignments into it
-	 * 
+	 *
 	 * @return map from source-columns to destination-columns, if this
 	 *         represents an equi-join
 	 */
 	public Map<Column, Column> createSourceToDestinationKeyMapping(Set<Pair<Column, Column>> assignments) {
 		String[] equations = getUnrestrictedJoinCondition().replaceAll("\\(|\\)", " ").trim()
 				.split("\\s*\\b(a|A)(n|N)(d|D)\\b\\s*");
-		Map<Column, Column> mapping = new HashMap<Column, Column>();
+		Map<Column, Column> mapping = new LinkedHashMap<Column, Column>();
 		Set<Column> destinationColumns = new HashSet<Column>();
 		boolean isValid = true;
 		for (String equation: equations) {
@@ -551,7 +551,7 @@ public class Association extends ModelElement {
 
 			sColumn = Quoting.normalizeIdentifier(sColumn);
 			dColumn = Quoting.normalizeIdentifier(dColumn);
-			
+
 			if (reversed) {
 				String h = sColumn;
 				sColumn = dColumn;
@@ -594,17 +594,17 @@ public class Association extends ModelElement {
 		}
 	}
 
-	private static final String NULL_FILTER_COMMENT_PREFIX = "disabled dependency: ";
+	public static final String NULL_FILTER_COMMENT_PREFIX = "foreign key to ";
 	private static final Pattern NULL_FILTER_PATTERN = Pattern.compile("(?i:\\s*(/\\*.*\\*/\\s*)?null(\\s*/\\*.*\\*/)?)\\s*");
-	
+
 	private boolean isNullFilter(Filter filter) {
-		return filter.getExpression() != null 
-				&& 
-				(NULL_FILTER_PATTERN.matcher(filter.getExpression()).matches()
+		return filter.getExpression() != null
+				&&
+				((filter.isApplyAtExport() && NULL_FILTER_PATTERN.matcher(filter.getExpression()).matches())
 				||
 				Filter.EXCLUDED_VALUE.equals(filter.getExpression()));
 	}
-	
+
 	public boolean hasNullableFK() {
 		if (!isInsertDestinationBeforeSource()) {
 			return false;
@@ -668,6 +668,16 @@ public class Association extends ModelElement {
 		getDataModel().deriveFilters();
 		getDataModel().version++;
 		return changed;
+	}
+
+	public boolean isRestrictedDependencyWithNulledFK() {
+		boolean restrictedDep = isInsertDestinationBeforeSource() && getRestrictionCondition() != null;
+		if (restrictedDep) {
+			if (fkHasNullFilter() && hasNullableFK() && !fkHasExcludeFilter()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

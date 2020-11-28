@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
@@ -57,7 +58,7 @@ import net.sf.jailer.util.SqlUtil;
 /**
  * Persistent graph of entities.
  * Persists the graph in a local database.
- * 
+ *
  * @author Ralf Wisser
  */
 public class LocalEntityGraph extends EntityGraph {
@@ -65,7 +66,7 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * For access to the remote database.
 	 */
-	private final Session remoteSession; 
+	private final Session remoteSession;
 
 	/**
 	 * For access to the local database.
@@ -79,21 +80,21 @@ public class LocalEntityGraph extends EntityGraph {
 
 	private InlineViewStyle localInlineViewStyle;
 
-	private InlineViewStyle remoteInlineViewStyle; 
-	
+	private InlineViewStyle remoteInlineViewStyle;
+
 	private abstract class RemoteInlineViewBuilder extends InlineViewBuilder {
 
 		public RemoteInlineViewBuilder(String name, String columnList) {
 			this(name, columnList, false);
 		}
-		
+
 		public RemoteInlineViewBuilder(String name, String columnList, boolean allUPK) {
 			super(remoteInlineViewStyle, name, remoteSession, columnList.split(", *"));
 			this.allUPK = allUPK;
 		}
-		
+
 		private final boolean allUPK;
-		
+
 		@Override
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
 			Object value = cellContentConverter.getObject(resultSet, i);
@@ -112,7 +113,7 @@ public class LocalEntityGraph extends EntityGraph {
 		protected CellContentConverter createCellContentConverter() {
 			return new CellContentConverter(resultSetMetaData, localSession, localSession.dbms);
 		}
-		
+
 		@Override
 		public void close() throws SQLException {
 			if (DBMS.POSTGRESQL.equals(remoteSession.dbms) && statementBuilder.size() == 1) {
@@ -121,7 +122,7 @@ public class LocalEntityGraph extends EntityGraph {
 				super.close();
 			}
 		}
-		
+
 	}
 
 	private abstract class LocalInlineViewBuilder extends InlineViewBuilder {
@@ -129,16 +130,16 @@ public class LocalEntityGraph extends EntityGraph {
 		public LocalInlineViewBuilder(String name, String columnList) {
 			this(name, columnList, false);
 		}
-		
+
 		public LocalInlineViewBuilder(String name, String columnList, boolean allUPK) {
 			super(localInlineViewStyle, name, localSession, columnList.split(", *"));
 			this.allUPK = allUPK;
 			this.localDBMSConfiguration = localSession.dbms;
 		}
-		
+
 		private final boolean allUPK;
 		private final DBMS localDBMSConfiguration;
-		
+
 		@Override
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
 			String value = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
@@ -161,7 +162,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	private Set<String> upkColumnNames = null;
 	private Set<String> nupkColumnNames = null;
-	
+
 	private synchronized boolean isUPKColumn(String columnName) {
 		if (upkColumnNames == null) {
 			upkColumnNames = new HashSet<String>();
@@ -186,7 +187,7 @@ public class LocalEntityGraph extends EntityGraph {
 	}
 
 	private static LocalDatabaseConfiguration localConfiguration = null;
-	
+
 	private static synchronized LocalDatabaseConfiguration getConfiguration() {
 		if (localConfiguration == null) {
 			localConfiguration = Configuration.getInstance().localEntityGraphConfiguration;
@@ -196,10 +197,10 @@ public class LocalEntityGraph extends EntityGraph {
 		}
 		return localConfiguration;
 	}
-	
+
 	private final RowIdSupport rowIdSupport;
 	private final Quoting quoting;
-	
+
 	/**
 	 * Copy constructor.
 	 */
@@ -224,7 +225,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param remoteSession
 	 */
 	private LocalEntityGraph(int graphID, Session remoteSession, ExecutionContext executionContext) throws IOException, SQLException {
@@ -258,8 +259,8 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Creates a local database and opens a localSession for it.
-	 * @param urlparameter 
-	 * 
+	 * @param urlparameter
+	 *
 	 * @return the localSession
 	 * @
 	 */
@@ -283,25 +284,25 @@ public class LocalEntityGraph extends EntityGraph {
 	 * The universal primary key.
 	 */
 	private final PrimaryKey universalPrimaryKey;
-	
+
 	/**
 	 * Birthday of subject rows.
 	 */
 	private int birthdayOfSubject = 0;
-	
+
 	/**
 	 * Sets birthday of subject rows.
-	 * 
+	 *
 	 * @param birthdayOfSubject birthday of subject rows
 	 */
 	@Override
 	public void setBirthdayOfSubject(int birthdayOfSubject) {
 		this.birthdayOfSubject = birthdayOfSubject;
 	}
-	
+
 	/**
 	 * Creates a new entity-graph.
-	 * 
+	 *
 	 * @param graphID the unique ID of the graph
 	 * @param remoteSession for executing SQL-Statements
 	 * @param universalPrimaryKey the universal primary key
@@ -321,24 +322,33 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Copies an entity-graph.
-	 * 
+	 *
 	 * @param newGraphID the unique ID of the new graph
-	 * @param localSession for executing SQL-Statements
 	 * @return the newly created entity-graph
 	 */
 	@Override
-	public EntityGraph copy(int newGraphID, Session globalSession) throws SQLException {
+	public EntityGraph copy(int newGraphID, Session _unused) throws SQLException {
 		LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, rowIdSupport, executionContext);
 		entityGraph.setBirthdayOfSubject(birthdayOfSubject);
 		localSession.executeUpdate(
 				"Insert into " + dmlTableReference(ENTITY, localSession) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
 					"Select " + newGraphID + ", " + universalPrimaryKey.columnList(null) + ", birthday, birthday, type From " + dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + "");
+		entityGraph.setTransformerFactory(getTransformerFactory());
+		return entityGraph;
+	}
+
+	/**
+	 * Creates a new entity-graph of same type and session.
+	 */
+	public EntityGraph createNewGraph() throws SQLException {
+		LocalEntityGraph entityGraph = new LocalEntityGraph(createUniqueGraphID(), dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, rowIdSupport, executionContext);
+		entityGraph.setBirthdayOfSubject(birthdayOfSubject);
 		return entityGraph;
 	}
 
 	/**
 	 * Gets the age of the graph.
-	 * 
+	 *
 	 * @return the age of the graph
 	 */
 	@Override
@@ -359,17 +369,17 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Sets the age of the graph.
-	 * 
+	 *
 	 * @param age the age of the graph
 	 */
 	@Override
 	public void setAge(int age) throws SQLException {
 		localSession.executeUpdate("Update " + dmlTableReference(ENTITY_GRAPH, localSession) + " Set age=" + age + " Where id=" + graphID + "");
 	}
-	
+
 	/**
 	 * Gets the number of entities in the graph.
-	 * 
+	 *
 	 * @return the number of entities in the graph
 	 */
 	@Override
@@ -392,21 +402,25 @@ public class LocalEntityGraph extends EntityGraph {
 	 * Deletes the graph.
 	 */
 	@Override
-	public void delete(boolean forced) throws SQLException {
+	public void delete(boolean forced) {
 		if (!isTruncated && forced) {
-			localSession.executeUpdate("Delete from " + dmlTableReference(DEPENDENCY, localSession) + " Where r_entitygraph=" + graphID + "");
-			localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + "");
-			localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY_GRAPH, localSession) + " Where id=" + graphID + "");
+			try {
+				localSession.executeUpdate("Delete from " + dmlTableReference(DEPENDENCY, localSession) + " Where r_entitygraph=" + graphID + "");
+				localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + "");
+				localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY_GRAPH, localSession) + " Where id=" + graphID + "");
+			} catch (SQLException e) {
+				// ignore
+			}
 		}
 	}
 
 	/**
 	 * Adds entities to the graph.
-	 * 
-	 * @param table the table 
+	 *
+	 * @param table the table
 	 * @param condition the condition in SQL that the entities must fulfill
 	 * @param today the birthday of the new entities
-	 * 
+	 *
 	 * @return row-count
 	 */
 	@Override
@@ -417,12 +431,12 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Adds limited number of entities to the graph.
-	 * 
-	 * @param table the table 
+	 *
+	 * @param table the table
 	 * @param condition the condition in SQL that the entities must fulfill
 	 * @param today the birthday of the new entities
 	 * @param limitDefinition limit
-	 * 
+	 *
 	 * @return row-count
 	 */
 	@Override
@@ -448,21 +462,21 @@ public class LocalEntityGraph extends EntityGraph {
 	}
 
 	/**
-	 * Resolves an association. Retrieves and adds all entities 
-	 * associated with an entity born yesterday in the graph 
+	 * Resolves an association. Retrieves and adds all entities
+	 * associated with an entity born yesterday in the graph
 	 * and adds the dependencies.
-	 * 
-	 * @param table the table 
+	 *
+	 * @param table the table
 	 * @param association the association to resolve
 	 * @param today the birthday of the new entities
-	 * 
+	 *
 	 * @return row-count or -1, if association is ignored
 	 */
 	@Override
 	public long resolveAssociation(final Table table, Association association, final int today) throws SQLException {
 		if (association.getJoinCondition() != null) {
 			final String jc = SqlUtil.resolvePseudoColumns(association.getJoinCondition(), today, birthdayOfSubject, association.reversed, inDeleteMode);
-			
+
 			final String destAlias;
 			final String sourceAlias;
 			if (association.reversed) {
@@ -483,22 +497,22 @@ public class LocalEntityGraph extends EntityGraph {
 				}
 			}
 			final Integer associationExplanationID = associationExplanationIDm;
-			
+
 			// ----
-			
+
 			final Table destination = association.destination;
 			final String condition = "E.r_entitygraph=" + graphID + " and E.birthday = " + (today - 1) + " and E.type=" + typeName(table) + "";
 			final Table source = association.source;
-			
+
 			String select;
-			
+
 			select =
 			  "Select " + upkColumnList(source, "E", null) +
 			  " From " + dmlTableReference(ENTITY, localSession) + " E" +
 			  " Where " + condition;
-			
+
 			final long[] rc = new long[1];
-			
+
 			localSession.executeQuery(select, new RemoteInlineViewBuilder("E", upkColumnList(source, null)) {
 				@Override
 				protected void process(String inlineView) throws SQLException {
@@ -506,7 +520,7 @@ public class LocalEntityGraph extends EntityGraph {
 							"Select distinct " + pkList(destination, destAlias) +
 							" From " + inlineView + " join " + quoting.requote(source.getName()) + " " + sourceAlias + " on " + pkEqualsEntityID(source, sourceAlias, "E", "", false) +
 							" join " + quoting.requote(destination.getName()) + " " + destAlias + " on (" + jc + ")";
-					
+
 					remoteSession.executeQuery(select, new LocalInlineViewBuilder(destAlias, upkColumnList(destination, null)) {
 						@Override
 						protected void process(String inlineView) throws SQLException {
@@ -531,21 +545,21 @@ public class LocalEntityGraph extends EntityGraph {
 									}
 								}
 							}
-							
+
 							String entityJoinCondition = sb.toString();
 							String select = "Select " + graphID + " as GRAPH_ID, " + upkColumnList(destination, destAlias, null) + ", " + today + " AS BIRTHDAY, " + typeName(destination) + " AS TYPE" +
 							(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + upkColumnList(source, "PRE_")) +
-							" From " + inlineView + 
+							" From " + inlineView +
 							" left join " + dmlTableReference(ENTITY, localSession) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(destination) + " and " +
-							entityJoinCondition + 
+							entityJoinCondition +
 							" Where Duplicate.type is null";
-							
+
 							String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(destination, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
 							rc[0] += localSession.executeUpdate(insert);
 							totalRowcount += rc[0];
 						}
 					}, withExplicitCommit());
-					
+
 				}
 			});
 			return rc[0];
@@ -554,16 +568,111 @@ public class LocalEntityGraph extends EntityGraph {
 	}
 
 	/**
+	 * Resolves an association. Retrieves and adds all entities
+	 * associated with an entity into a given entity-graph.
+	 * Restrictions are ignored.
+	 *
+	 * @param table the table
+	 * @param association the association to resolve
+	 *
+	 * @return row-count
+	 */
+	@Override
+	public long resolveAssociation(final Table table, Association association, EntityGraph otherGraph, EntityGraph universum, boolean forDelete) throws SQLException {
+		final String jc = association.getUnrestrictedJoinCondition();
+
+		final String destAlias;
+		final String sourceAlias;
+		if (association.reversed) {
+			destAlias = "A";
+			sourceAlias = "B";
+		} else {
+			destAlias = "B";
+			sourceAlias = "A";
+		}
+
+		// ----
+
+		final Table destination = association.destination;
+		final String condition = "E.r_entitygraph=" + graphID + " and E.birthday >= 0 and E.type=" + typeName(association.destination) + "";
+		final Table source = association.source;
+
+		String select;
+
+		select =
+			  "Select " + upkColumnList(source, "E", null) +
+			  " From " + dmlTableReference(ENTITY, localSession) + " E" +
+			  " Where " + condition;
+
+		final long[] rc = new long[1];
+
+		localSession.executeQuery(select, new RemoteInlineViewBuilder("E", upkColumnList(source, null)) {
+			@Override
+			protected void process(String inlineView) throws SQLException {
+				String select =
+							"Select distinct " + pkList(source, sourceAlias) +
+							" From " + inlineView + " join " + quoting.requote(source.getName()) + " " + sourceAlias + " on " + pkEqualsEntityID(association.destination, destAlias, "E", "", false) +
+							" join " + quoting.requote(destination.getName()) + " " + destAlias + " on (" + jc + ")";
+
+				remoteSession.executeQuery(select, new LocalInlineViewBuilder(sourceAlias, upkColumnList(source, null)) {
+						@Override
+						protected void process(String inlineView) throws SQLException {
+							Map<Column, Column> match = upkMatch(source);
+							Function<String, String> entityJoinCondition = dup -> {
+								StringBuilder sb = new StringBuilder();
+								for (Column column: universalPrimaryKey.getColumns()) {
+									if (sb.length() > 0) {
+										sb.append(" and ");
+									}
+									Column tableColumn = match.get(column);
+									if (tableColumn != null && tableColumn.isNullable) {
+										sb.append("(" + dup + "." + column.name);
+										sb.append("=" + sourceAlias + "." + column.name + " or ");
+										sb.append("(" + dup + "." + column.name + " is null and ");
+										sb.append(sourceAlias + "." + column.name + " is null))");
+									} else {
+										sb.append(dup + "." + column.name);
+										if (tableColumn != null) {
+											sb.append("=" + sourceAlias + "." + column.name);
+										} else {
+											sb.append(" is null");
+										}
+									}
+								}
+								return sb.toString();
+							};
+
+							String select = "Select " + otherGraph.graphID + " as GRAPH_ID, " + upkColumnList(source, sourceAlias, null) + ", " + 1 + " AS BIRTHDAY, " + typeName(source) + " AS TYPE" +
+							" From " + inlineView +
+							" left join " + dmlTableReference(ENTITY, localSession) + " Duplicate on Duplicate.r_entitygraph=" + otherGraph.graphID + " and Duplicate.type=" + typeName(source) + " and " +
+							entityJoinCondition.apply("Duplicate") +
+							" left join " + dmlTableReference(ENTITY, localSession) + " DUnivers on DUnivers.r_entitygraph=" + universum.graphID + " and DUnivers.type=" + typeName(source) + " and " +
+							entityJoinCondition.apply("DUnivers") +
+							" Where Duplicate.type is null and DUnivers.type " +
+							(forDelete? "is null" : "is not null");
+
+							String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(source, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
+							rc[0] += localSession.executeUpdate(insert);
+							totalRowcount += rc[0];
+						}
+					}, withExplicitCommit());
+
+				}
+		});
+		return rc[0];
+	}
+
+	/**
 	 * Adds entities to the graph.
-	 * 
-	 * @param table the table 
+	 *
+	 * @param table the table
 	 * @param condition the condition in SQL that the entities must fulfill with 'E' as alias for the entity-table
 	 * @param joinedTable optional table to join with
 	 * @param source optional, the source-table
 	 * @param joinCondition optional condition to join with <code>joinedTable</code>
 	 * @param joinWithEntity whether to join with entity-table too
 	 * @param today the birthday of the new entities
-	 * 
+	 *
 	 * @return row-count
 	 */
 	private long addEntities(final Table table, final String alias, String condition, final int today, SubjectLimitDefinition limitDefinition, final boolean joinWithEntity) throws SQLException {
@@ -580,7 +689,7 @@ public class LocalEntityGraph extends EntityGraph {
 			protected void process(String inlineView) throws SQLException {
 				String select = "Select " + graphID + " as GRAPH_ID, " + upkColumnList(table, alias, null) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
 				" From " + inlineView;
-				
+
 				if (joinWithEntity) {
 					Map<Column, Column> match = upkMatch(table);
 					StringBuffer sb = new StringBuffer();
@@ -603,27 +712,27 @@ public class LocalEntityGraph extends EntityGraph {
 							}
 						}
 					}
-					select += " left join " + dmlTableReference(ENTITY, localSession) + 
+					select += " left join " + dmlTableReference(ENTITY, localSession) +
 							" Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) +
 							" and (" + sb + ")" +
 							" Where Duplicate.type is null";
 				}
-				
+
 				String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type) " + select;
 
 				rc[0] += localSession.executeUpdate(insert);
 				totalRowcount += rc[0];
 			}
 		};
-		
+
 		remoteSession.executeQuery(select, reader, null, null, limitDefinition != null && limitDefinition.limit != null? limitDefinition.limit : 0, withExplicitCommit());
-		
+
 		return rc[0];
 	}
 
 	/**
 	 * Adds dependencies.
-	 * 
+	 *
 	 * @param from source of dependency
 	 * @param fromAlias alias for from-table
 	 * @param to destination of dependency
@@ -636,22 +745,22 @@ public class LocalEntityGraph extends EntityGraph {
 	public void addDependencies(final Table from, final String fromAlias, final Table to, final String toAlias, final String condition, final int aggregationId, final int dependencyId, boolean isAssociationReversed) throws SQLException {
 		checkPseudoColumns(from, condition);
 		String upkColumnList = upkColumnList(from, "E1", null);
-		String select = 
+		String select =
 				"Select " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E1 " +
-				" Where E1.r_entitygraph=" + graphID + 
+				" Where E1.r_entitygraph=" + graphID +
 				" and E1.type=" + typeName(from) + "";
 
 		localSession.executeQuery(select, new RemoteInlineViewBuilder("E1", upkColumnList(from, null, null)) {
 			@Override
 			protected void process(String inlineView) throws SQLException {
 				String upkColumnList = upkColumnList(from, "E1", null);
-				String select = 
+				String select =
 						"Select " + upkColumnList + ", " + pkList(to, toAlias, "R") +
 						" From " + inlineView + ", " +
 						 quoting.requote(from.getName()) + " " + fromAlias + ", " + quoting.requote(to.getName()) + " " + toAlias +
 						" Where (" + condition + ")" +
 						" and " + pkEqualsEntityID(from, fromAlias, "E1", "", false);
-				
+
 				remoteSession.executeQuery(select, new LocalInlineViewBuilder("E1E2", upkColumnList(from, null, "E1") + ", " + upkColumnList(to, null, "E2"), true) {
 					@Override
 					protected void process(String inlineView) throws SQLException {
@@ -682,14 +791,14 @@ public class LocalEntityGraph extends EntityGraph {
 								" Where E2.r_entitygraph=" + graphID + "" +
 								" and E2.type=" + typeName(to) + "" +
 								" and " + pkEqualsEntityID;
-						
+
 							totalRowcount += localSession.executeUpdate(insert);
 					}
 				}, withExplicitCommit());
 			}
 		});
 	}
-	
+
 	/**
 	 * Gets distinct association-ids of all edged.
 	 */
@@ -776,7 +885,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Reads all entities of a given table which are marked as independent or as roots.
-	 * 
+	 *
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
@@ -785,10 +894,10 @@ public class LocalEntityGraph extends EntityGraph {
 		Session.ResultSetReader reader = getTransformerFactory().create(table);
 		readMarkedEntities(table, reader, filteredSelectionClause(table), orderByPK);
 	}
-	
+
 	/**
 	 * Reads all entities of a given table which are marked as independent or as roots.
-	 * 
+	 *
 	 * @param reader for reading the result-set
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
@@ -799,21 +908,21 @@ public class LocalEntityGraph extends EntityGraph {
 		if (orderByPK) {
 			orderBy = " order by " + upkColumnList;
 		}
-		
-		String select = 
+
+		String select =
 				"Select " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E" +
 				" Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "" +
 				orderBy;
-		
+
 		localSession.executeQuery(select, new RemoteInlineViewBuilder("E", upkColumnList) {
-			
+
 			@Override
 			protected void process(String inlineView) throws SQLException {
 				String orderBy = "";
 				if (orderByPK) {
 					orderBy = " order by " + rowIdSupport.getPrimaryKey(table).columnList("T.", quoting);
 				}
-				
+
 				long rc = remoteSession.executeQuery(
 						"Select " + selectionSchema + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
 						pkEqualsEntityID(table, "T", "E", "", false) +
@@ -824,10 +933,10 @@ public class LocalEntityGraph extends EntityGraph {
 			}
 		});
 	}
-	
+
 	/**
 	 * Reads all entities of a given table which are marked as independent or as roots.
-	 * 
+	 *
 	 * @param reader for reading the result-set
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
@@ -838,27 +947,27 @@ public class LocalEntityGraph extends EntityGraph {
 			readMarkedEntities(table, reader, selectionSchema, orderByPK);
 			return;
 		}
-		
+
 		String orderBy = "";
 		String upkColumnList = upkColumnList(table, null, "");
 		if (orderByPK) {
 			orderBy = " order by " + upkColumnList;
 		}
-		
-		String select = 
+
+		String select =
 				"Select " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E" +
 				" Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "" +
 				orderBy;
-		
+
 		localSession.executeQuery(select, new RemoteInlineViewBuilder("E", upkColumnList) {
-			
+
 			@Override
 			protected void process(String inlineView) throws SQLException {
 				String orderBy = "";
 				if (orderByPK) {
 					orderBy = " order by " + rowIdSupport.getPrimaryKey(table).columnList("T.", quoting);
 				}
-				
+
 				StringBuffer sb = new StringBuffer();
 				StringBuffer selectOPK = new StringBuffer();
 				List<Column> pkColumns = rowIdSupport.getPrimaryKey(table).getColumns();
@@ -875,7 +984,7 @@ public class LocalEntityGraph extends EntityGraph {
 						"Select " + selectOPK + ", " + filteredSelectionClause(table) + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
 						pkEqualsEntityID(table, "T", "E", "", false) +
 						") T ";
-				
+
 				long rc = remoteSession.executeQuery(
 						sqlQuery + orderBy,
 						reader);
@@ -887,7 +996,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Reads all entities of a given table.
-	 * 
+	 *
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
@@ -899,22 +1008,22 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Reads all entities of a given table.
-	 * 
+	 *
 	 * @param table the table
 	 * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
 	private long readEntities(final Table table, final boolean orderByPK, final Session.ResultSetReader reader, final boolean fireProgressEvents) throws SQLException {
 		String upkColumnList = upkColumnList(table, "E", null);
-		String select = 
+		String select =
 				"Select " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E " +
 				" Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "";
 		if (orderByPK) {
 			select += " order by " + upkColumnList;
 		}
 		final long[] rc = new long[1];
-		
+
 		localSession.executeQuery(select, new RemoteInlineViewBuilder("E", upkColumnList(table, null, null)) {
-			
+
 			@Override
 			protected void process(String inlineView) throws SQLException {
 				String sqlQuery = "Select " + filteredSelectionClause(table) + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
@@ -939,7 +1048,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Reads some columns of all entities of a given table without using filters.
-	 * 
+	 *
 	 * @param table the table
 	 * @param columns the columns
 	 * @param reader to read
@@ -947,13 +1056,13 @@ public class LocalEntityGraph extends EntityGraph {
 	@Override
 	public long readUnfilteredEntityColumns(final Table table, final List<Column> columns, final Session.ResultSetReader reader) throws SQLException {
 		String upkColumnList = upkColumnList(table, "E", null);
-		String select = 
+		String select =
 				"Select distinct " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E " +
 				" Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "";
-		
+
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
-		
+
 		for (Column c: columns) {
 			if (!first) {
 				sb.append(", ");
@@ -962,12 +1071,12 @@ public class LocalEntityGraph extends EntityGraph {
 			sb.append(" as " + quoting.requote(c.name));
 			first = false;
 		}
-		
+
 		final String columnList = sb.toString();
 		final long[] rc = new long[1];
-		
+
 		localSession.executeQuery(select, new RemoteInlineViewBuilder("E", upkColumnList(table, null, null)) {
-			
+
 			@Override
 			protected void process(String inlineView) throws SQLException {
 				String sqlQuery = "Select distinct " + columnList + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
@@ -980,7 +1089,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Updates columns of a table.
-	 * 
+	 *
 	 * @param table the table
 	 * @param columns the columns;
 	 * @param inSourceSchema if <code>true</code>, use source-schema-mapping, else use schema-mapping
@@ -995,14 +1104,14 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Gets select clause for reading rows of given type
 	 * with respect of the column filters.
-	 * 
+	 *
 	 * @param table the table to read rows from
 	 * @return select clause
 	 */
 	private String filteredSelectionClause(Table table) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
-		
+
 		for (Column c: table.getSelectionClause()) {
 			if (!first) {
 				sb.append(", ");
@@ -1023,7 +1132,7 @@ public class LocalEntityGraph extends EntityGraph {
 			sb.append(" as " + quoting.requote(c.name));
 			first = false;
 		}
-		
+
 		return sb.toString();
 	}
 
@@ -1066,15 +1175,15 @@ public class LocalEntityGraph extends EntityGraph {
 		}
 		localSession.executeUpdate(
 				"Delete From " + dmlTableReference(DEPENDENCY, localSession) + " " +
-				"Where " + dmlTableReference(DEPENDENCY, localSession) + ".r_entitygraph=" + graphID + " and assoc=0 and from_type=" + typeName(table) + " and " + 
-					  "exists (Select * from " + dmlTableReference(ENTITY, localSession) + " E Where " + 
+				"Where " + dmlTableReference(DEPENDENCY, localSession) + ".r_entitygraph=" + graphID + " and assoc=0 and from_type=" + typeName(table) + " and " +
+					  "exists (Select * from " + dmlTableReference(ENTITY, localSession) + " E Where " +
 						  "E.r_entitygraph=" + graphID + " and " +
 						  fromEqualsPK + " and " + dmlTableReference(DEPENDENCY, localSession) + ".from_type=E.type and " +
 						  "E.birthday=0)");
 		localSession.executeUpdate(
 				"Delete From " + dmlTableReference(DEPENDENCY, localSession) + " " +
 				"Where " + dmlTableReference(DEPENDENCY, localSession) + ".r_entitygraph=" + graphID + " and assoc=0 and to_type=" + typeName(table) + " and " +
-					  "exists (Select * from " + dmlTableReference(ENTITY, localSession) + " E Where " + 
+					  "exists (Select * from " + dmlTableReference(ENTITY, localSession) + " E Where " +
 						  "E.r_entitygraph=" + graphID + " and " +
 						  toEqualsPK + " and " + dmlTableReference(DEPENDENCY, localSession) + ".to_type=E.type and " +
 						  "E.birthday=0)");
@@ -1083,7 +1192,7 @@ public class LocalEntityGraph extends EntityGraph {
 				"Where r_entitygraph=" + graphID + " and type=" + typeName(table) + " and " +
 					   "birthday=0");
 	}
-	
+
 	/**
 	 * Deletes all entities from a given table.
 	 */
@@ -1097,7 +1206,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Counts the entities of a given table in this graph.
-	 * 
+	 *
 	 * @param table the table
 	 * @return the number of entities from table in this graph
 	 */
@@ -1119,7 +1228,7 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Removes all entities from this graph which are associated with an entity
 	 * outside the graph.
-	 * 
+	 *
 	 * @param association the association
 	 * @param deletedEntitiesAreMarked if true, consider entity as deleted if its birthday is negative
 	 * @param allTables set of tables from which there are entities in E
@@ -1131,7 +1240,7 @@ public class LocalEntityGraph extends EntityGraph {
 		checkPseudoColumns(association.source, jc);
 		if (jc != null) {
 			jc = SqlUtil.resolvePseudoColumns(association.getJoinCondition(), 0, birthdayOfSubject, association.reversed, inDeleteMode);
-			
+
 			final String destAlias;
 			final String sourceAlias;
 			if (association.reversed) {
@@ -1148,29 +1257,29 @@ public class LocalEntityGraph extends EntityGraph {
 
 			final long[] rc = new long[1];
 
-			String selectEB = 
+			String selectEB =
 					"Select " + upkColumnList(association.destination, "EB", "") + " from " + dmlTableReference(ENTITY, localSession) + " EB " +
 					"Where " + (deletedEntitiesAreMarked? "EB.birthday>=0 and " : "") +
 					"EB.r_entitygraph=" + graphID + " and EB.type=" + typeName(association.destination) + " ";
-			
+
 			final String finalJc = jc;
-			
+
 			localSession.executeQuery(selectEB, new RemoteInlineViewBuilder("EB", upkColumnList(association.destination, ""), true) {
-				
+
 				@Override
 				protected void process(String inlineView) throws SQLException {
-				
+
 					String selectSource =
 							"Select distinct " + upkColumnList(association.destination, "EB", "") + (checkDest? sep + pkList(association.source, sourceAlias, "") : "") + " from " + inlineView + " " +
 									"join " + quoting.requote(association.destination.getName()) + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB", "", false) + " " +
 									"join " + quoting.requote(association.source.getName()) + " " + sourceAlias + " " + " on " + finalJc;
 
 					remoteSession.executeQuery(selectSource, new LocalInlineViewBuilder("EBA", upkColumnList(association.destination, null, "EB") + (checkDest? sep + upkColumnList(association.source, "A") : ""), true) {
-						
+
 						@Override
 						protected void process(String inlineView) throws SQLException {
 							String selectEB =
-								"Select distinct " + setId + ", " + typeName(association.destination) + ", " + upkColumnList(association.destination, "EBA", "EB") + 
+								"Select distinct " + setId + ", " + typeName(association.destination) + ", " + upkColumnList(association.destination, "EBA", "EB") +
 								" from " + inlineView;
 							if (checkDest) {
 								Map<Column, Column> match = upkMatch(association.source);
@@ -1192,17 +1301,17 @@ public class LocalEntityGraph extends EntityGraph {
 										}
 									}
 								}
-								
-								selectEB += (deletedEntitiesAreMarked? " join " : " left join ") + dmlTableReference(ENTITY, localSession) + " EA" + 
+
+								selectEB += (deletedEntitiesAreMarked? " join " : " left join ") + dmlTableReference(ENTITY, localSession) + " EA" +
 									" on EA.r_entitygraph=" + graphID + " and EA.type=" + typeName(association.source) + "" +
 									(eBAEqualsEA.length() > 0? " and " + eBAEqualsEA : "") +
 									" Where " + (deletedEntitiesAreMarked? "EA.birthday=-1" : "EA.type is null");
 							}
 
-							String remove = "Insert into " + dmlTableReference(ENTITY_SET_ELEMENT, localSession) + 
+							String remove = "Insert into " + dmlTableReference(ENTITY_SET_ELEMENT, localSession) +
 									"(set_id, type, " + upkColumnList(association.destination, null, "") + ") " +
 									selectEB;
-							
+
 							long rcl = localSession.executeUpdate(remove);
 							totalRowcount += rcl;
 							if (rcl > 0) {
@@ -1258,13 +1367,13 @@ public class LocalEntityGraph extends EntityGraph {
 			});
 			return rc[0];
 		}
-		
+
 		return 0;
 	}
-	
+
 	/**
-	 * Reads all entities which depends on given entity. 
-	 * 
+	 * Reads all entities which depends on given entity.
+	 *
 	 * @param table the table from which to read entities
 	 * @param association the dependency
 	 * @param resultSet current row is given entity
@@ -1293,8 +1402,8 @@ public class LocalEntityGraph extends EntityGraph {
 						}
 						selectOPK.append("T." + quoting.requote(pkColumns.get(i).name) + " AS " + originalPKAliasPrefix + i);
 					}
-					select = 
-						"Select " + selectionSchema + " from (" +  
+					select =
+						"Select " + selectionSchema + " from (" +
 						"Select " + selectOPK + ", " + filteredSelectionClause(table) + " from " + quoting.requote(table.getName()) + " T join " + inlineView + " on " +
 						 pkEqualsEntityID(table, "T", "D", "TO_", false) + ") T";
 				} else {
@@ -1307,10 +1416,10 @@ public class LocalEntityGraph extends EntityGraph {
 			}
 		});
 	}
-	
+
 	/**
-	 * Marks all entities which depends on given entity as traversed. 
-	 * 
+	 * Marks all entities which depends on given entity as traversed.
+	 *
 	 * @param table the table from which to read entities
 	 * @param association the dependency
 	 * @param resultSet current row is given entity
@@ -1332,10 +1441,10 @@ public class LocalEntityGraph extends EntityGraph {
 		}
 		localSession.executeUpdate(update);
 	}
-	
+
 	/**
-	 * Reads all non-traversed dependencies. 
-	 * 
+	 * Reads all non-traversed dependencies.
+	 *
 	 * @param table the source of dependencies to look for
 	 * @param reader reads the entities
 	 */
@@ -1347,10 +1456,10 @@ public class LocalEntityGraph extends EntityGraph {
 			 " and D.r_entitygraph=" + graphID;
 		localSession.executeQuery(select, reader);
 	}
-	
+
 	/**
 	 * Removes all reflexive dependencies of given table.
-	 * 
+	 *
 	 * @param table the table
 	 */
 	@Override
@@ -1383,7 +1492,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Gets a SQL comparison expression for comparing rows with given entity.
-	 * 
+	 *
 	 * @param table the table
 	 * @param resultSet
 	 * @return a SQL comparison expression for comparing rows of <code>table</code> with current row of resultSet
@@ -1420,7 +1529,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Gets a SQL comparison expression for comparing rows with entities.
-	 * 
+	 *
 	 * @param table the table
 	 * @return a SQL comparison expression for comparing rows of <code>table</code> with entities
 	 */
@@ -1458,7 +1567,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Gets PK-column list for a table.
-	 * 
+	 *
 	 * @param table the table
 	 * @param tableAlias the alias for table
 	 * @return PK-column list for table
@@ -1466,10 +1575,10 @@ public class LocalEntityGraph extends EntityGraph {
 	private String pkList(Table table, String tableAlias) {
 		return pkList(table, tableAlias, null);
 	}
-	
+
 	/**
 	 * Gets PK-column list for a table. (for Select clause)
-	 * 
+	 *
 	 * @param table the table
 	 * @param tableAlias the alias for table
 	 * @param columnAliasPrefix optional prefix for column names
@@ -1495,7 +1604,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Gets PK-column list for a table. (for Insert clause)
-	 * 
+	 *
 	 * @param table the table
 	 * @param columnAliasPrefix optional prefix for column names
 	 */
@@ -1505,7 +1614,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Gets PK-column list for a table. (for Insert clause)
-	 * 
+	 *
 	 * @param table the table
 	 * @param columnAliasPrefix optional prefix for column names
 	 */
@@ -1537,7 +1646,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Gets total row-count.
-	 * 
+	 *
 	 * @return total row-count
 	 */
 	@Override
@@ -1554,10 +1663,10 @@ public class LocalEntityGraph extends EntityGraph {
 	 * Next unique ID for association to be used for explanation.
 	 */
 	private int nextExplainID = 1;
-	
+
 	/**
 	 * Whether or not to store additional information in order to create a 'explain.log'.
-	 * 
+	 *
 	 * @param explain <code>true</code> iff predecessors of each entity must be stored
 	 */
 	@Override
@@ -1567,7 +1676,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Gets the universal primary key.
-	 * 
+	 *
 	 * @return the universal primary key
 	 */
 	@Override
@@ -1579,10 +1688,10 @@ public class LocalEntityGraph extends EntityGraph {
 	 * For creation of unique set-ids.
 	 */
 	private int nextSetId = 1;
-	
+
 	/**
 	 * Creates a unique set id.
-	 * 
+	 *
 	 * @return a unique set id
 	 */
 	private synchronized int getNextSetId() {

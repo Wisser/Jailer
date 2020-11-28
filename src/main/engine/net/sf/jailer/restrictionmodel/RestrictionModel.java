@@ -33,7 +33,7 @@ import net.sf.jailer.util.SqlUtil;
 
 /**
  * Restricts association-definitions in a {@link DataModel}.
- * 
+ *
  * @author Ralf Wisser
  */
 public class RestrictionModel {
@@ -47,7 +47,7 @@ public class RestrictionModel {
 	 * Restrictions (in SQL) for associations.
 	 */
 	private final Map<Association, String> restriction = new HashMap<Association, String>();
-	
+
 	/**
 	 * The name of the restriction-files read.
 	 */
@@ -57,7 +57,7 @@ public class RestrictionModel {
 	 * Whether the restriction-model is transposed.
 	 */
 	private boolean transposed = false;
-	
+
 	/**
 	 * The logger.
 	 */
@@ -65,7 +65,7 @@ public class RestrictionModel {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param dataModel the data-model
 	 */
 	public RestrictionModel(DataModel dataModel, ExecutionContext executionContext) {
@@ -88,7 +88,7 @@ public class RestrictionModel {
 	public boolean isTransposed() {
 		return transposed;
 	}
-	
+
 	/**
 	 * "ignore the association" - restriction.
 	 */
@@ -96,7 +96,7 @@ public class RestrictionModel {
 
 	/**
 	 * Gets the restriction (in SQL) for an association.
-	 * 
+	 *
 	 * @param association the association
 	 * @return the restriction.
 	 *         <code>null</code> if association is not restricted.
@@ -118,7 +118,7 @@ public class RestrictionModel {
 
 	/**
 	 * Adds restrictions defined in a restriction-file.
-	 * 
+	 *
 	 * @param parameters apply this parameter-value mapping to all restriction conditions
 	 */
 	public void addRestrictionDefinition(URL extractionModelURL, Map<String, String> parameters) throws Exception {
@@ -127,9 +127,9 @@ public class RestrictionModel {
 
 	/**
 	 * Adds restrictions defined in a restriction-file.
-	 * 
+	 *
 	 * @param parameters apply this parameter-value mapping to all restriction conditions
-	 * @param fileName 
+	 * @param fileName
 	 */
 	public void addRestrictionDefinition(CsvFile csvFile, String fileName, Map<String, String> parameters) throws Exception {
 		if (dataModel != null) {
@@ -233,10 +233,10 @@ public class RestrictionModel {
 
 	/**
 	 * Adds a restriction to a association.
-	 * 
+	 *
 	 * @param association the association
 	 * @param condition the restriction-condition
-	 * @param parameters apply this parameter-value mapping to all restriction conditions 
+	 * @param parameters apply this parameter-value mapping to all restriction conditions
 	 * @param location location in CSV-file
 	 */
 	public void addRestriction(Association association, String condition, String location, Map<String, String> parameters) {
@@ -245,16 +245,14 @@ public class RestrictionModel {
 
 	/**
 	 * Adds a restriction to a association.
-	 * 
+	 *
 	 * @param association the association
 	 * @param condition the restriction-condition
 	 * @param location location in CSV-file
-	 * @param parameters apply this parameter-value mapping to all restriction conditions 
+	 * @param parameters apply this parameter-value mapping to all restriction conditions
 	 * @param removePreviousRestriction if <code>true</code>, remove any restriction on the association before adding the new one
-	 * 
-	 * @return <code>true</code> iff null filter has been removed
 	 */
-	public boolean addRestriction(Association association, String condition, String location, boolean removePreviousRestriction, Map<String, String> parameters) {
+	public void addRestriction(Association association, String condition, String location, boolean removePreviousRestriction, Map<String, String> parameters) {
 		if (dataModel != null) {
 			dataModel.version++;
 		}
@@ -278,15 +276,6 @@ public class RestrictionModel {
 			}
 			restriction.put(association, condition);
 		}
-		
-		// TODO Differentiated filtering of restricted dependencies
-		// if (association.getRestrictionCondition() == null) {
-		if (!association.isIgnored()) {
-			if (association.hasNullableFK() && association.fkHasNullFilter()) {
-				return association.setOrResetFKNullFilter(false);
-			}
-		}
-		return false;
 	}
 
 	/**

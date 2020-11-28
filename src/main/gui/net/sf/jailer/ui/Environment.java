@@ -49,7 +49,7 @@ import net.sf.jailer.util.LogUtil;
 
 /**
  * Sets up environment.
- * 
+ *
  * @author Ralf Wisser
  */
 public class Environment {
@@ -92,7 +92,7 @@ public class Environment {
 				}
 			}
 		}
-		
+
 		initUI();
 		try {
 			File app;
@@ -133,7 +133,7 @@ public class Environment {
 				copyIfNotExists("demo-scott-subset-1.4.mv.db");
 				copyIfNotExists("example");
 				copyIfNotExists("render");
-				
+
 				if (isJPacked()) {
 					File lib = newFile("lib");
 					lib.mkdirs();
@@ -194,7 +194,7 @@ public class Environment {
 		        LogUtil.setWarn(null);
 			}
 		});
-		
+
 		return args;
 	}
 

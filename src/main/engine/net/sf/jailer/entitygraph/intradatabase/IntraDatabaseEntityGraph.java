@@ -47,23 +47,23 @@ import net.sf.jailer.util.SqlScriptExecutor;
 /**
  * Specialized {@link RemoteEntityGraph} for exporting data into a different
  * schema within the same database.
- * 
+ *
  * @author Ralf Wisser
  */
 public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
-	
+
 	private boolean upsertOnly;
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param graphID
 	 *            the unique ID of the graph
 	 * @param session
 	 *            for executing SQL-Statements
 	 * @param universalPrimaryKey
 	 *            the universal primary key
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	private IntraDatabaseEntityGraph(DataModel dataModel, int graphID,
 			Session session, PrimaryKey universalPrimaryKey, Runnable updateStatistics, ExecutionContext executionContext) throws SQLException {
@@ -72,7 +72,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		synchronized (this) {
 			upsertStrategy = null;
 			upsertStrategies = new ArrayList<UpsertStrategy>();
-			
+
 			if (DBMS.POSTGRESQL.equals(session.dbms)) {
 				upsertStrategies.add(new UpsertPGUS());
 			} else {
@@ -90,7 +90,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 	/**
 	 * Creates a new entity-graph.
-	 * 
+	 *
 	 * @param graphID
 	 *            the unique ID of the graph
 	 * @param session
@@ -109,7 +109,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 	/**
 	 * Copies an entity-graph.
-	 * 
+	 *
 	 * @param newGraphID
 	 *            the unique ID of the new graph
 	 * @param session
@@ -130,15 +130,26 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				+ ", birthday, birthday, type From "
 				+ SQLDialect.dmlTableReference(ENTITY, session, executionContext)
 				+ " Where r_entitygraph=" + graphID + "");
+		entityGraph.setTransformerFactory(getTransformerFactory());
+		return entityGraph;
+	}
+
+	/**
+	 * Creates a new entity-graph of same type and session.
+	 */
+	public EntityGraph createNewGraph() throws SQLException {
+		IntraDatabaseEntityGraph entityGraph = create(dataModel, createUniqueGraphID(),
+				session, universalPrimaryKey, null, executionContext);
+		entityGraph.setBirthdayOfSubject(birthdayOfSubject);
 		return entityGraph;
 	}
 
 	private final String COLUMN_PREFIX = "JALR_";
-	
+
 	/**
 	 * Reads all entities of a given table which are marked as independent or as
 	 * roots.
-	 * 
+	 *
 	 * @param table
 	 *            the table
 	 * @param orderByPK
@@ -155,10 +166,10 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				+ " Where (E.birthday=0 and E.r_entitygraph=" + graphID
 				+ " and E.type=" + typeName(table) + ")");
 	}
-	
+
 	/**
 	 * Reads all entities of a given table.
-	 * 
+	 *
 	 * @param table
 	 *            the table
 	 * @param orderByPK
@@ -168,11 +179,11 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	public void readEntities(Table table, boolean orderByPK)
 			throws SQLException {
 		long incSize = session.dbms.getLimitTransactionSize().getSize(executionContext);
-		if (incSize > 0) { 
-			String update = 
+		if (incSize > 0) {
+			String update =
 					"Update " + session.dbms.getLimitTransactionSize().afterSelectFragment(executionContext) + SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " " +
 					"Set birthday=0 " +
-					"Where (birthday>=0 and r_entitygraph=" + graphID + " " + 
+					"Where (birthday>=0 and r_entitygraph=" + graphID + " " +
 					"and type=" + typeName(table) + ") " + session.dbms.getLimitTransactionSize().additionalWhereConditionFragment(executionContext) +
 					session.dbms.getLimitTransactionSize().statementSuffixFragment(executionContext);
 			for (;;) {
@@ -183,7 +194,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				readMarkedEntities(table, orderByPK);
 				session.executeUpdate(
 						"Delete from " + SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " " +
-						"Where birthday=0 and r_entitygraph=" + graphID + " " + 
+						"Where birthday=0 and r_entitygraph=" + graphID + " " +
 						"and type=" + typeName(table) + "");
 				if (rc != incSize) {
 					break;
@@ -201,7 +212,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 	/**
 	 * Updates columns of a table.
-	 * 
+	 *
 	 * @param table the table
 	 * @param columns the columns;
 	 * @param inSourceSchema if <code>true</code>, use source-schema-mapping, else use schema-mapping
@@ -222,10 +233,10 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		}
 		tmp.delete();
 	}
-	
+
 	/**
 	 * Reads all entities of a given table.
-	 * 
+	 *
 	 * @param table
 	 *            the table
 	 * @param sql retrieves the entities
@@ -264,7 +275,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 	/**
 	 * Gets qualified table name.
-	 * 
+	 *
 	 * @param t
 	 *            the table
 	 * @return qualified name of t
@@ -284,7 +295,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 	/**
 	 * Checks if columns is part of primary key.
-	 * 
+	 *
 	 * @param column
 	 *            the column
 	 * @return <code>true</code> if column is part of primary key
@@ -300,7 +311,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 	/**
 	 * Inserts rows into a table. Falls back to {@link #upsertRows(Table, String, boolean)} on error.
-	 * 
+	 *
 	 * @param table the table
 	 * @param sqlSelect the rows to insert
 	 * @return row count
@@ -310,7 +321,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		String labelCSL = insertClause(table, null, null);
 		sb.append("Insert into " + qualifiedTableName(table) + "(" + labelCSL
 				+ ") " + sqlSelect);
-		
+
 		boolean silent = session.getSilent();
 		session.setSilent(true);
 		try {
@@ -331,7 +342,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 	/**
 	 * Upserts rows of a table. Tries all {@link UpsertStrategy}s until it find one that works.
-	 * 
+	 *
 	 * @param table the table
 	 * @param sqlSelect the rows to be upserted
 	 * @param retry if <code>true</code>, try all {@link UpsertStrategy}s
@@ -346,7 +357,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		if (upsertStrategies.size() == 1) {
 			return upsertStrategies.get(0).upsert(table, sqlSelect);
 		}
-		
+
 		UpsertStrategy us;
 		boolean done = false;
 		StringBuilder sqlErrorMessages = new StringBuilder();
@@ -388,7 +399,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				}
 			}
 		}
-		
+
 		if (!done) {
 			if (retry) {
 				boolean silent = session.getSilent();
@@ -422,14 +433,14 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				rc = us.upsert(table, sqlSelect);
 			}
 		}
-		
+
 		return rc;
 	}
 
 	/**
 	 * Gets insert clause for inserting rows of given type with respect of the
 	 * column filters.
-	 * 
+	 *
 	 * @param table
 	 *            the table to read rows from
 	 * @return insert clause
@@ -454,7 +465,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 	private long insertWhereNotExists(Table table, String sqlSelect) throws SQLException {
 		StatementBuilder upsertInsertStatementBuilder = new StatementBuilder(1);
-		
+
 		String insertHead = "Insert into " + qualifiedTableName(table)
 				+ "(" + insertClause(table, null, null) + ") ";
 		StringBuffer whereForTerminator = new StringBuffer("");
@@ -499,7 +510,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		public MergeUS(boolean withSemicolon) {
 			this.withSemicolon = withSemicolon;
 		}
-		
+
 		@Override
 		public long upsert(Table table, String sqlSelect)
 				throws SQLException {
@@ -580,14 +591,14 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					where.append("S." + quoting.requote(column.name) + "=" + applyImportFilter("T." + quoting.requote(column.name), column));
 				}
 			}
-			
+
 			if (sets.length() == 0) {
 				// nothing to do
 				return 0;
 			}
-			
+
 			String sql = "Update " + qualifiedTableName(table) + " S set " + sets + " from (" + sqlSelect + " and (" + where + ")) Q ";
-			
+
 			long rc = session.executeUpdate(sql);
 			return rc + insertWhereNotExists(table, sqlSelect);
 		}
@@ -622,7 +633,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			}
 
 			String sql = "Update (" + sqlSelect + ") Q join " + qualifiedTableName(table) + " S on " + where + " set " + sets;
-			
+
 			long rc = session.executeUpdate(sql);
 			return rc + insertWhereNotExists(table, sqlSelect);
 		}
@@ -635,7 +646,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		@Override
 		public long upsert(Table table, String sqlSelect)
 				throws SQLException {
-			
+
 			StringBuffer nonPKList = new StringBuffer();
 			StringBuffer nonPKListQ = new StringBuffer();
 			StringBuffer where = new StringBuffer();
@@ -661,17 +672,17 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					whereT.append(applyImportFilter("S." + quoting.requote(column.name), column) + "=T." + quoting.requote(column.name));
 				}
 			}
-			
+
 			if (nonPKList.length() == 0) {
 				// nothing to do
 				return 0;
 			}
-			
-			String sql = 
+
+			String sql =
 					"Update " + qualifiedTableName(table) + " S set (" + nonPKList + ")" +
 					" = (Select " + nonPKListQ + " From (" + sqlSelect + ") Q Where " + where + ") " +
 					"Where exists (" + sqlSelect + " and (" + whereT + "))";
-			
+
 			long rc = session.executeUpdate(sql);
 			return rc + insertWhereNotExists(table, sqlSelect);
 		}
@@ -682,7 +693,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 
 	/**
-	 * Insert the values of columns with non-derived-import-filters into the local database. 
+	 * Insert the values of columns with non-derived-import-filters into the local database.
 	 */
 	@Override
 	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter receiptWriter,
@@ -705,7 +716,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			tmp.delete();
 		}
 	}
-	
+
 	private String applyImportFilter(String oldValue, Column column) {
 		Filter filter = column.getFilter();
 		if (filter != null && importFilterManager != null) {
@@ -717,7 +728,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	}
 
 	/**
-	 * Creates the DROP-statements for the mapping tables. 
+	 * Creates the DROP-statements for the mapping tables.
 	 */
 	@Override
 	public void dropMappingTables(OutputStreamWriter result, DBMS targetDBMSConfiguration) throws IOException, SQLException {

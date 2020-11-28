@@ -164,6 +164,11 @@ public class SubsettingEngine {
 	 */
 	private StringBuffer commentHeader = new StringBuffer();
 
+	/***
+	 * Writes into result script.
+	 */
+	private OutputStreamWriter result;
+
 	/**
 	 * Export statistic.
 	 */
@@ -226,7 +231,7 @@ public class SubsettingEngine {
 	 *
 	 * @return set of tables from which entities are added
 	 */
-	private Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, Set<Table> completedTables) throws SQLException {
+	private Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, Set<Table> completedTables, boolean withRestDep) throws SQLException {
 		_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition.replace('\n', ' ').replace('\r', ' '));
 		int today = entityGraph.getAge();
 		entityGraph.setAge(today + 1);
@@ -257,6 +262,9 @@ public class SubsettingEngine {
 		}
 
 		appendCommentHeader("");
+
+		Map<Table, List<Association>> restDeps = withRestDep ? restrictedDependencies(totalProgress, false) : null;
+
 		boolean isFiltered = false;
 		for (Table t : new TreeSet<Table>(totalProgress)) {
 			for (Column c : t.getColumns()) {
@@ -269,7 +277,20 @@ public class SubsettingEngine {
 					if (c.getFilter().getExpression().trim().startsWith(Filter.LITERAL_PREFIX)) {
 						prefix = Filter.LITERAL_PREFIX + " ";
 					}
-					String suffix = c.getFilter().isApplyAtExport()? "" : " (applied at import phase)";
+					String suffix = "";
+					if (c.getFilter().isApplyAtExport()) {
+						if (restDeps != null && restDeps.get(t) != null) {
+							for (Association association: restDeps.get(t)) {
+								Set<Column> fks = association.createSourceToDestinationKeyMapping().keySet();
+								if (fks.contains(c)) {
+									suffix = " if referenced row in " + datamodel.getDisplayName(table) + " is not exported";
+									break;
+								}
+							}
+						}
+					} else {
+						suffix = " (applied at import phase)";
+					}
 					appendCommentHeader("    " + t.getUnqualifiedName() + "." + c.name + " := " + prefix + c.getFilterExpression() + suffix);
 				}
 			}
@@ -619,6 +640,10 @@ public class SubsettingEngine {
 		}
 	}
 
+	private interface WriteAction {
+		void run() throws SQLException;
+	}
+
 	/**
 	 * Writes entities into extract-SQL-script.
 	 *
@@ -630,7 +655,7 @@ public class SubsettingEngine {
 	 * @param afterCollectionTimestamp
 	 * @param startTimestamp
 	 */
-	private void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session, String stage, Long startTimestamp, Long afterCollectionTimestamp) throws IOException, SAXException, SQLException {
+	private void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session, String stage, Long startTimestamp, Long afterCollectionTimestamp, WriteAction preWriteAction, WriteAction postWriteAction) throws IOException, SAXException, SQLException {
 		_log.info("writing file '" + sqlScriptFile + "'...");
 
 		final File file = new File(sqlScriptFile);
@@ -650,7 +675,7 @@ public class SubsettingEngine {
 		}
 		TransformerHandler transformerHandler = null;
 		ImportFilterManager importFilterManager = null;
-		OutputStreamWriter result = null;
+		result = null;
 		Charset charset = Charset.defaultCharset();
 		if (executionContext.getUTF8()) {
 			charset = Charset.forName("UTF8");
@@ -720,6 +745,9 @@ public class SubsettingEngine {
 		entityGraph.fillAndWriteMappingTables(jobManager, result, executionContext.getNumberOfEntities(), targetSession, targetDBMSConfiguration(targetSession), session.dbms);
 
 		executionContext.getProgressListenerRegistry().fireNewStage(stage, false, false);
+		if (preWriteAction != null) {
+			preWriteAction.run();
+		}
 
 		long rest = 0;
 		Set<Table> dependentTables = null;
@@ -849,6 +877,10 @@ public class SubsettingEngine {
 			if (rest > 0) {
 				break;
 			}
+		}
+
+		if (postWriteAction != null) {
+			postWriteAction.run();
 		}
 
 		if (importFilterManager != null) {
@@ -1405,7 +1437,7 @@ public class SubsettingEngine {
 	public ExportStatistic export(String whereClause, URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat, int modelPoolSize) throws SQLException, IOException, SAXException {
 		if (dbms != null && dbms.getSessionTemporaryTableManager() == null &&
 				(executionContext.getScope() == WorkingTableScope.SESSION_LOCAL
-				|| 
+				||
 				executionContext.getScope() == WorkingTableScope.TRANSACTION_LOCAL)) {
 			// fall back to GLOBAL
 			ExecutionContext newExecutionContext = new ExecutionContext(executionContext);
@@ -1413,7 +1445,7 @@ public class SubsettingEngine {
 			newExecutionContext.setProgressListenerRegistry(executionContext.getProgressListenerRegistry());
 			executionContext = newExecutionContext;
 		}
-		
+
 		Lock readLock = null;
 		Lock writeLock = null;
 		try {
@@ -1571,7 +1603,8 @@ public class SubsettingEngine {
 				Set<Table> completedTables = new HashSet<Table>();
 				Set<Table> progress = exportSubjects(extractionModel, completedTables);
 				entityGraph.setBirthdayOfSubject(entityGraph.getAge());
-				progress.addAll(export(extractionModel.subject, subjectCondition, progress, completedTables));
+				progress.addAll(export(extractionModel.subject, subjectCondition, progress, completedTables,
+						ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat)));
 				totalProgress.addAll(progress);
 				subjects.add(extractionModel.subject);
 				entityGraph.checkExist(executionContext);
@@ -1581,26 +1614,6 @@ public class SubsettingEngine {
 				totalProgress = datamodel.normalize(totalProgress);
 				subjects = datamodel.normalize(subjects);
 
-				/* TODO Differentiated filtering of restricted dependencies
-				Map<Table, Set<Column>> foreignKeysWithNullFilter = new HashMap<Table, Set<Column>>();
-				for (Table table: totalProgress) {
-					for (Association association: table.associations) {
-						if (totalProgress.contains(association.source) && totalProgress.contains(association.destination)) {
-							if (association.getRestrictionCondition() != null) {
-								if (association.fkHasNullFilter() && association.hasNullableFK()) {
-									Set<Column> fks = foreignKeysWithNullFilter.get(table);
-									if (fks == null) {
-										fks = new HashSet<Column>();
-										foreignKeysWithNullFilter.put(table, fks);
-									}
-									fks.addAll(association.createSourceToDestinationKeyMapping().keySet());
-								}
-							}
-						}
-					}
-				}
-				*/
-
 				if (deleteScriptFileName != null) {
 					exportedEntities = entityGraph.copy(EntityGraph.createUniqueGraphID(), session);
 				}
@@ -1609,10 +1622,36 @@ public class SubsettingEngine {
 					executionContext.getProgressListenerRegistry().firePrepareExport();
 
 					setEntityGraph(entityGraph);
-					if (ScriptFormat.XML.equals(scriptFormat)) {
-						writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
-					} else {
-						writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session, "exporting rows", startTimestamp, afterCollectionTimestamp);
+					EntityGraph restrictedDependenciesEntityGraph;
+					Map<Table, List<Association>> restrictedDependenciesForExport;
+					EntityGraph toFinallyDelete = null;
+					try {
+						if (ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.INTRA_DATABASE.equals(scriptFormat)) {
+							restrictedDependenciesForExport = restrictedDependencies(totalProgress, false);
+							if (!restrictedDependenciesForExport.isEmpty()) {
+								restrictedDependenciesEntityGraph = toFinallyDelete = partCopy(restrictedDependenciesForExport, getEntityGraph());
+							} else {
+								restrictedDependenciesEntityGraph = null;
+							}
+						} else {
+							restrictedDependenciesForExport = new HashMap<Table, List<Association>>();
+							restrictedDependenciesEntityGraph = null;
+						}
+						if (ScriptFormat.XML.equals(scriptFormat)) {
+							writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
+						} else {
+							writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session, "exporting rows", startTimestamp, afterCollectionTimestamp, null, () -> {
+								if (restrictedDependenciesEntityGraph != null) {
+									for (Table table: restrictedDependenciesForExport.keySet()) {
+										setFKsToNull(table, false, restrictedDependenciesForExport, restrictedDependenciesEntityGraph, restrictedDependenciesEntityGraph);
+									}
+								}
+							});
+						}
+					} finally {
+						if (toFinallyDelete != null) {
+							toFinallyDelete.delete();
+						}
 					}
 				}
 				exportedCount = entityGraph.getExportedCount();
@@ -1622,38 +1661,22 @@ public class SubsettingEngine {
 					executionContext.getProgressListenerRegistry().fireNewStage("delete-reduction", false, false);
 					setEntityGraph(exportedEntities);
 
-					/* TODO Differentiated filtering of restricted dependencies
-					final EntityGraph reduction;
-					if (!foreignKeysWithNullFilter.isEmpty()) {
-						reduction = exportedEntities.copy(EntityGraph.createUniqueGraphID(), session);
-					} else {
-						reduction = null;
-					}
-					*/
+					Map<Table, List<Association>> restrictedDependenciesForDelete = restrictedDependencies(totalProgress, true);
 
 					try {
 						List<Runnable> resetFilters = removeFilters(datamodel);
 						Table.clearSessionProperties(session);
 						deleteEntities(subjects, totalProgress, session);
 
-						/* TODO Differentiated filtering of restricted dependencies
-						if (reduction != null) {
-							final EntityGraph finalExportedEntities = exportedEntities;
-							for (final Table table: totalProgress) {
-								List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
-								jobs.add(new Job() {
-									@Override
-									public void run() throws SQLException, CancellationException {
-										reduction.removeAll(finalExportedEntities, table);
-									}
-								});
-								jobManager.executeJobs(jobs);
-							}
-						}
-						*/
-
 						datamodel.transpose();
-						writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session, "writing delete-script", null, null);
+						writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session, "writing delete-script", null, null,
+								() -> {
+									if (restrictedDependenciesForDelete != null) {
+										for (Table table: restrictedDependenciesForDelete.keySet()) {
+											setFKsToNull(table, true, restrictedDependenciesForDelete, getEntityGraph(), getEntityGraph());
+										}
+									}
+								}, null);
 						for (Runnable rf: resetFilters) {
 							rf.run();
 						}
@@ -1661,12 +1684,6 @@ public class SubsettingEngine {
 						exportedEntities.delete();
 					} finally {
 						setEntityGraph(entityGraph);
-
-						/* TODO Differentiated filtering of restricted dependencies
-						if (reduction != null) {
-							reduction.delete();
-						}
-						*/
 					}
 					datamodel.transpose();
 				}
@@ -1684,6 +1701,7 @@ public class SubsettingEngine {
 					}
 				}
 
+				datamodel.deriveFilters();
 				entityGraph.truncate(executionContext, true);
 				entityGraph.delete();
 				entityGraph.getSession().commitAll();
@@ -1751,6 +1769,88 @@ public class SubsettingEngine {
 			}
 			if (writeLock != null) {
 				writeLock.unlock();
+			}
+		}
+	}
+
+	private EntityGraph partCopy(Map<Table, List<Association>> restrictedDependencies, EntityGraph eg) throws SQLException {
+		Set<Table> tables = new HashSet<Table>();
+		restrictedDependencies.forEach((t, al) -> al.forEach(a -> { tables.add(a.source); tables.add(a.destination); }));
+		return eg.copy(tables);
+	}
+
+	private Map<Table, List<Association>> restrictedDependencies(Set<Table> totalProgress, boolean forDelete) {
+		Map<Table, List<Association>> restrictedDependencies = new HashMap<Table, List<Association>>();
+		for (Table table: totalProgress) {
+			for (Association a: table.associations) {
+				Association association = a.reversalAssociation;
+				if (association.isRestrictedDependencyWithNulledFK()) {
+					if (forDelete || !association.fkHasExcludeFilter()) {
+						List<Association> associations = restrictedDependencies.get(forDelete? association.destination : association.source);
+						if (associations == null) {
+							associations = new ArrayList<Association>();
+							restrictedDependencies.put(forDelete? association.destination : association.source, associations);
+						}
+						associations.add(association);
+					}
+				}
+			}
+		}
+		return restrictedDependencies;
+	}
+
+	private synchronized void setFKsToNull(Table table, boolean forDelete, Map<Table, List<Association>> restrictedDependencies, EntityGraph theEntityGraph, EntityGraph restrictedDependenciesEntityGraph) throws SQLException {
+		List<Association> aList = restrictedDependencies.get(table);
+		if (aList != null) {
+			try {
+				int numSyncs = 0;
+				for (Association association: aList) {
+					Set<Column> fks = association.createSourceToDestinationKeyMapping().keySet();
+					List<Runnable> resetFilters = new ArrayList<Runnable>();
+					for (final Column column: fks) {
+						final Filter filter = column.getFilter();
+						resetFilters.add(new Runnable() {
+							@Override
+							public void run() {
+								column.setFilter(filter);
+							}
+						});
+						if (forDelete) {
+							String nullExpression = "null";
+							column.setFilter(new Filter(nullExpression, null, false, null, Association.NULL_FILTER_COMMENT_PREFIX + association.destination.getName()));
+						} else {
+							column.setFilter(null);
+						}
+					}
+					if (!forDelete) {
+						datamodel.deriveFilters();
+					}
+
+					EntityGraph eg = theEntityGraph.createNewGraph();
+					try {
+						if (restrictedDependenciesEntityGraph != null && theEntityGraph.resolveAssociation(association.source, association, eg, restrictedDependenciesEntityGraph, forDelete) > 0) {
+							if (numSyncs == 0) {
+								appendSync(result);
+							}
+							++numSyncs;
+							eg.updateEntities(association.source, fks, result, targetDBMSConfiguration(entityGraph.getTargetSession()), true, Association.NULL_FILTER_COMMENT_PREFIX + association.destination.getName());
+						}
+					} finally {
+						eg.delete(true);
+					}
+
+					for (Runnable runnable: resetFilters) {
+						runnable.run();
+					}
+					if (!forDelete) {
+						datamodel.deriveFilters();
+					}
+				}
+				if (numSyncs > 0) {
+					appendSync(result);
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
