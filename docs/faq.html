@@ -338,6 +338,24 @@
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
                             Q</td>
 
+                          <td style=
+                            "background-color: rgb(242, 242, 242); font-weight: bold;">
+                            How can I safely export rows without their parents?<br /></td>
+                          </tr>
+
+                          <tr>
+                            <td style="vertical-align: top;">A</td>
+
+                            <td>If a foreign key of a table is nullable, a "<i>null</i>" filter on it (resp. on all columns of a composite foreign key) causes only the foreign key columns of those rows to be filled with "<i>null</i>", whose parent row is not exported as well.<br>
+                            In the same way, only the foreign key columns of those rows are set to "<i>null</i>" when deleting, which are not deleted themselves but their parent.<br>
+                            See <a href="filters.html#nullfilter">filter documentation</a><br /><br /></td>
+                          </tr>
+
+<tr>
+                            <td style=
+                            "background-color: rgb(242, 242, 242); font-weight: bold;">
+                            Q</td>
+
                             <td style=
                             "background-color: rgb(242, 242, 242); font-weight: bold;">
                             The GUI is slow, what can I do?<br /></td>

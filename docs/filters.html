@@ -1,6 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  
+
   <title>Jailer - Filters</title>
   <meta http-equiv="Content-Type" content="text/html; charset=us-ascii" />
   <meta name="description" content="Data Export Tool" />
@@ -178,6 +178,16 @@
                       a condition on a column.<br />
                       <br />
                       <img src="filterimg/image007.png" />
+                      <br />
+                      <br /><br />
+
+                      <h3 id="nullfilter">"<i>null</i>" filter on foreign key columns</h3>
+                      If a foreign key of a table is nullable, a "<i>null</i>" filter on it (resp. on all columns of a composite foreign key) causes only the foreign key columns of those rows to be filled with "<i>null</i>", whose parent row is not exported as well.<br>
+                      In the same way, only the foreign key columns of those rows are set to "<i>null</i>" when deleting, which are not deleted themselves but their parent.
+                      <br /><br />
+                      The extraction model editor offers the corresponding checkbox "Set foreign key to null ...".
+                      <br /><br/>
+                      <img src="nullfilter.png" />
                     </td>
                   </tr>
                 </tbody>
