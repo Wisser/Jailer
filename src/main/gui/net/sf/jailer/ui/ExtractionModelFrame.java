@@ -1274,11 +1274,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		boolean isRunning = false;
 		try {
 			if (checkRI && extractionModelEditor.dataModel != null && !ScriptFormat.XML.equals(extractionModelEditor.scriptFormat)) {
-				Association restrictedDependency = findRestrictedDependency(extractionModelEditor.dataModel);
-				if (restrictedDependency != null) {
+				List<Association> restrictedDependencies = findRestrictedDependencies(extractionModelEditor.dataModel);
+				if (!restrictedDependencies.isEmpty()) {
+					Association restrictedDependency = restrictedDependencies.get(0);
+					String more = "";
+					if (restrictedDependencies.size() > 1) {
+						more = "(" + (restrictedDependencies.size() - 1) + " more)";
+					}
 					switch (JOptionPane.showOptionDialog(this,
 							"Dependency from '" + restrictedDependency.source.getName() + "' to '" + restrictedDependency.destination.getName() + "'\n" +
-							"is restricted.\nReferential integrity is not guaranteed!", "Restricted Dependency", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Ok", "Cancel", "Show dependency" }, "Cancel")) {
+							"is restricted. " + more + "\nReferential integrity is not guaranteed!", "Restricted Dependency", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Ok", "Cancel", "Show dependency" }, "Cancel")) {
 					case 0: break;
 					case 2:
 						extractionModelEditor.closureView.selectTabComponent(extractionModelEditor.restrDepsView);
@@ -1480,20 +1485,21 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
 	/**
-	 * Finds restricted dependency.
+	 * Finds restricted dependencies.
 	 */
-	private Association findRestrictedDependency(DataModel dataModel) {
+	private List<Association> findRestrictedDependencies(DataModel dataModel) {
 		Set<Table> closure = extractionModelEditor.getCurrentSubjectClosure();
+		List<Association> result = new ArrayList<Association>();
 		for (Association association: dataModel.namedAssociations.values()) {
 			if (association.isInsertDestinationBeforeSource() && association.isRestricted()) {
 				if (closure.contains(association.source)) {
 					if (!association.fkHasNullFilter()) {
-						return association;
+						result.add(association);
 					}
 				}
 			}
 		}
-		return null;
+		return result;
 	}
 
 	private void disconnectDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectDbActionPerformed
