@@ -1,4 +1,4 @@
-10.2.5
+10.2.6
   - If a foreign key is nullable, rows can now be exported with no parents without violating the integrity
     by setting the foreign key to null instead. In the same way parents can be deleted without their children.
   - Support of CLOB/BLOB in MS SQL
