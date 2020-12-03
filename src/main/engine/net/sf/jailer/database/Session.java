@@ -1056,6 +1056,12 @@ public class Session {
 	 */
 	private Map<Connection, DatabaseMetaData> metaData = Collections.synchronizedMap(new IdentityHashMap<Connection, DatabaseMetaData>());
 
+	private boolean checkMetaData = true;
+
+	public void disableMetaDataChecking() {
+		checkMetaData = false;
+	}
+
 	/**
 	 * Gets DB meta data.
 	 *
@@ -1064,7 +1070,7 @@ public class Session {
 	public DatabaseMetaData getMetaData() throws SQLException {
 		Connection con = connectionFactory.getConnection();
 		DatabaseMetaData mData = metaData.get(con);
-		if (mData != null) {
+		if (mData != null && checkMetaData) {
 			try {
 				// is meta data still valid?
 				mData.getIdentifierQuoteString();

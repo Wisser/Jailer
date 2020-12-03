@@ -49,17 +49,17 @@ public class MetaDataSource {
 	 * The database session.
 	 */
 	private final Session session;
-	
+
 	/**
 	 * For identifier quoting.
 	 */
 	private final Quoting quoting;
-	
+
 	/**
 	 * Name of the data source.
 	 */
 	final String dataSourceName;
-	
+
 	/**
 	 * Schemas.
 	 */
@@ -67,17 +67,17 @@ public class MetaDataSource {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param session the database session
 	 * @param dataModel the data model
-	 * @param dataSourceName name of the data source 
-	 * @param executionContext the execution context 
+	 * @param dataSourceName name of the data source
+	 * @param executionContext the execution context
 	 */
 	public MetaDataSource(Session session, DataModel dataModel, String dataSourceName, ExecutionContext executionContext) throws SQLException {
 		this.session = session;
 		this.dataSourceName = dataSourceName;
 		this.quoting = Quoting.getQuoting(session);
-		
+
 		initTableMapping(dataModel);
 	}
 
@@ -90,7 +90,7 @@ public class MetaDataSource {
 
 	/**
 	 * Gets unquoted qualified table name.
-	 * 
+	 *
 	 * @param t
 	 *            the table
 	 * @return unquoted qualified name of t
@@ -108,7 +108,7 @@ public class MetaDataSource {
 	public boolean isInitialized() {
 		return initialized.get();
 	}
-	
+
 	private synchronized void readSchemas() {
 		if (initialized.get()) {
 			return;
@@ -139,11 +139,11 @@ public class MetaDataSource {
 
 	ResultSet readTables(String schemaPattern) throws SQLException {
 		try {
-			return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW", "SYNONYM", "ALIAS" });
+			return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW", "SYNONYM", "ALIAS" });
 		} catch (Exception e) {
 			if (!session.isDown()) {
 				logger.info("error", e);
-				return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW" });
+				return JDBCMetaDataBasedModelElementFinder.getTables(session, Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW" });
 			} else {
 				throw e;
 			}
@@ -169,7 +169,7 @@ public class MetaDataSource {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Removes all chached data.
 	 */
@@ -187,7 +187,7 @@ public class MetaDataSource {
 
 	/**
 	 * Gets the session
-	 * 
+	 *
 	 * @return the session
 	 */
 	public Session getSession() {
@@ -196,7 +196,7 @@ public class MetaDataSource {
 
 	/**
 	 * Gets the quoting.
-	 * 
+	 *
 	 * @return the quoting
 	 */
 	public Quoting getQuoting() {
@@ -260,12 +260,12 @@ public class MetaDataSource {
     	}
     	return null;
     }
-    
+
     public MDTable toMDTable(Table table) {
     	if (tableToMDTable.containsKey(table)) {
     		return tableToMDTable.get(table);
     	}
-    	
+
     	MDSchema defaultSchema = getDefaultSchema();
     	MDTable mdTable = null;
     	if (defaultSchema != null) {
@@ -273,7 +273,7 @@ public class MetaDataSource {
     		String schemaNameUC = schemaName.toUpperCase(Locale.ENGLISH);
     		String tableName = Quoting.staticUnquote(table.getUnqualifiedName());
     		String tableNameUC = tableName.toUpperCase(Locale.ENGLISH);
-    		
+
     		MDSchema schemaExact = null;
     		MDSchema schemaIC = null;
     		for (MDSchema schema: getSchemas()) {
@@ -319,7 +319,7 @@ public class MetaDataSource {
 
     /**
      * Find schema by name.
-     * 
+     *
      * @param schemaName schema name
      * @return schema by name
      */

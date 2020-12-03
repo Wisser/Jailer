@@ -35,20 +35,20 @@ import net.sf.jailer.util.Quoting;
 
 /**
  * Validates all primary keys of a set of tables.
- * 
+ *
  * @author Ralf Wisser
  */
 public abstract class PrimaryKeyValidator {
 
 	private final Object cancellationContext;
-	
+
 	public PrimaryKeyValidator(Object cancellationContext) {
 		this.cancellationContext = cancellationContext;
 	}
 
 	/**
 	 * Validates all primary keys of a set of tables.
-	 * 
+	 *
 	 * @param session the session
 	 * @param tables the tables
 	 * @throws SQLException if a pk is invalid
@@ -72,7 +72,6 @@ public abstract class PrimaryKeyValidator {
 			try {
 				ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(
 						session,
-						session.getMetaData(),
 						Quoting.staticUnquote(table.getSchema(defaultSchema)),
 						Quoting.staticUnquote(table.getUnqualifiedName()),
 						true);
@@ -191,9 +190,9 @@ public abstract class PrimaryKeyValidator {
 	protected AtomicInteger numErrors = new AtomicInteger();
 	protected AtomicInteger numDone = new AtomicInteger();
 	protected AtomicInteger numTotal = new AtomicInteger();
-	
+
 	protected abstract void updateProgressBar();
-	
+
 	private void addError(String message, String sql) {
 		errorMessage.append("- " + message + "\n");
 		errorStatements.append("- " + sql + "\n");

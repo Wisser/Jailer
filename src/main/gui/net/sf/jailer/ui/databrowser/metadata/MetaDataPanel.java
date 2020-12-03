@@ -138,7 +138,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private final Frame parent;
     private final JToggleButton searchButton;
     private final ExecutionContext executionContext;
-    
+
     private final Object CATEGORY_VIEWS = new String("Views");
     private final Object CATEGORY_TABLES = new String("Tables");
     private final Object CATEGORY_SYNONYMS = new String("Synonyms");
@@ -214,7 +214,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			}
 			if (cats == null) {
 				cats = new TreeSet<String>();
-				ResultSet rs = getProcedures(session, session.getMetaData(), schema, "%");
+				ResultSet rs = getProcedures(session, schema, "%");
 				while (rs.next()) {
 					String cat = rs.getString(1);
 					if (cat != null) {
@@ -256,7 +256,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			if (query != null) {
 				return super.retrieveList(session, query, schema, parentName);
 			}
-			MemorizedResultSet procs = new MemorizedResultSet(getProcedures(session, session.getMetaData(), schema, "%"),
+			MemorizedResultSet procs = new MemorizedResultSet(getProcedures(session, schema, "%"),
 					null, session, schema, new int[] { 3, 4, 1, 8, 9 }, new String[] { "Name", "Remarks", "Category", "Type", "SpecificName" });
 			List<Object[]> catList = new ArrayList<Object[]>();
 			for (Object[] cat: procs.getRowList()) {
@@ -301,7 +301,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			constraintTypeNames.put("Unique", "Unique Constraints");
 			constraintTypeNames.put("Check", "Check Constraints");
 		}
-		
+
 		public MDConstraint(String name, MetaDataSource metaDataSource, final MDSchema schema, DataModel dataModel) {
 			super(name, metaDataSource, schema, dataModel, new DatabaseObjectRenderingDescription() {
 				{
@@ -321,10 +321,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			}
 			return mdSchema.getConstraints(null);
 		}
-		
+
 		/**
 		 * Gets a list of descriptions of the details.
-		 * 
+		 *
 		 * @return list of descriptions of the details
 		 */
 		@Override
@@ -369,12 +369,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 							listPerType.reset();
 							return listPerType;
 						}
-						
+
 						@Override
 						public List<MDDescriptionBasedGeneric> getDetails() {
 							return super.getDetails();
 						}
-						
+
 						@Override
 						protected MDDescriptionBasedGeneric createDetailDescription(final Object[] row, DatabaseObjectRenderingDescription detailDesc) {
 							final IconWithText label = (IconWithText) row[0];
@@ -435,14 +435,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
 	private Map<String, MemorizedResultSet> proceduresPerSchema = Collections.synchronizedMap(new HashMap<String, MemorizedResultSet>());
 
-	public ResultSet getProcedures(Session session, DatabaseMetaData metaData, String schema, String context) throws SQLException {
+	public ResultSet getProcedures(Session session, String schema, String context) throws SQLException {
 		synchronized (proceduresPerSchema) {
 			MemorizedResultSet rs = proceduresPerSchema.get(schema);
 			if (rs == null) {
 				if (schema != null) {
 	            	schema = Quoting.staticUnquote(schema);
 	            }
-				rs = new MemorizedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, metaData, Quoting.staticUnquote(schema), context), null, session, "");
+				rs = new MemorizedResultSet(JDBCMetaDataBasedModelElementFinder.getProcedures(session, Quoting.staticUnquote(schema), context), null, session, "");
 				proceduresPerSchema.put(schema, rs);
 			}
 			rs.reset();
@@ -451,18 +451,18 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	}
 
 	private abstract class ExpandingMutableTreeNode extends DefaultMutableTreeNode {
-        
+
         public ExpandingMutableTreeNode() {
             super("loading...");
         }
-        
+
         protected abstract void expandImmediatelly();
         protected abstract void expand();
     }
 
     /**
      * Creates new form MetaDataPanel
-     * 
+     *
      * @param metaDataSource the meta data source
      * @param dataModel the data mmodel
      */
@@ -474,10 +474,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         this.parent = parent;
         this.executionContext = executionContext;
         initComponents();
-        
+
         hideOutline();
         lastDividerLocation = -1;
-        
+
         final ListCellRenderer olRenderer = outlineList.getCellRenderer();
         outlineList.setCellRenderer(new ListCellRenderer() {
             @Override
@@ -499,7 +499,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 render.setBackground(isSelected? new Color(240, 240, 255) : index == indexOfInfoAtCaret? new Color(255, 255, 170) : Color.WHITE);
                 if (render instanceof JLabel) {
                 	((JLabel) render).setToolTipText(tooltip);
-                	
+
                 	if (withSeparator) {
                 		final Border border = ((JLabel) render).getBorder() == null? new EmptyBorder(0, 0, 0, 0) : ((JLabel) render).getBorder();
 						final Color bg = ((JLabel) render).getBackground();
@@ -537,12 +537,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 							}
                 		});
                 	}
-                	
+
                 }
                 return render;
             }
         });
-        
+
         outlineList.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -569,7 +569,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				}
 			}
 		});
-        
+
         outlineList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -584,7 +584,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 }
             }
         });
-        
+
         tablesComboBox = new JComboBox2<String>() {
             @Override
             public Dimension getMinimumSize() {
@@ -593,16 +593,16 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         };
         tablesComboBox.setMaximumRowCount(20);
         AutoCompletion.enable(tablesComboBox);
-        
+
         tablesComboBox.grabFocus();
-        
+
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1;
         add(tablesComboBox, gridBagConstraints);
-        
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -620,7 +620,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             }
         }, metaDataSource, dataModel);
         jPanel1.add(searchButton, gridBagConstraints);
-        
+
         tablesComboBox.setVisible(false);
         refreshButton1.setVisible(false);
         searchButton.setText("Select Table");
@@ -640,16 +640,16 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     }
                 }
             }
-            
+
             @Override
             public void keyReleased(KeyEvent e) {
             }
-            
+
             @Override
             public void keyPressed(KeyEvent e) {
             }
         });
-        
+
         metaDataTree.addMouseListener(new MouseListener() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -866,7 +866,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				return node;
 			}
         });
-        
+
         metaDataTree.addTreeWillExpandListener(new TreeWillExpandListener() {
             @Override
             public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
@@ -877,14 +877,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     ((ExpandingMutableTreeNode) treeNode.getChildAt(0)).expand();
                 }
             }
-            
+
             @Override
             public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
             }
         });
-        
-        final ImageIcon finalScaledWarnIcon = getScaledIcon(this, warnIcon, true); 
-        
+
+        final ImageIcon finalScaledWarnIcon = getScaledIcon(this, warnIcon, true);
+
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
             Map<MDTable, Boolean> dirtyTables = new HashMap<MDTable, Boolean>();
             @Override
@@ -995,7 +995,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	                			int w = Math.max(image.getIconWidth(), finalScaledWarnIcon.getIconWidth());
 	                			int h = Math.max(image.getIconHeight(), finalScaledWarnIcon.getIconHeight());
 	                			BufferedImage combined = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-	
+
 	                			// paint both images, preserving the alpha channels
 	                			Graphics g = combined.getGraphics();
 	                			g.drawImage(im, 0, 0, null);
@@ -1018,7 +1018,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         renderer.setClosedIcon(null);
         metaDataTree.setCellRenderer(renderer);
         metaDataTree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
-        
+
         metaDataTree.addTreeSelectionListener(new TreeSelectionListener() {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
@@ -1078,7 +1078,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 }
             }
         });
-        
+
         updateTreeModel(metaDataSource);
 
         Font font = outlineLabel.getFont();
@@ -1087,13 +1087,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             outlineLabel.setFont(bold);
         }
     }
-    
+
     private Map<String, MDTable> tablesComboboxMDTablePerName = new HashMap<String, MDTable>();
-    
+
     private void updateTablesCombobox(Set<MDSchema> selectedSchemas) {
         Set<String> tableSet = new HashSet<String>();
         Set<MDSchema> toLoad = new HashSet<MDSchema>();
-        
+
         for (Table table: dataModel.getTables()) {
         	MDSchema mdSchema = metaDataSource.getSchemaOfTable(table);
         	if (mdSchema != null && !mdSchema.isLoaded()) {
@@ -1139,7 +1139,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         });
         ComboBoxModel model = new DefaultComboBoxModel(new Vector(tables));
         tablesComboBox.setModel(model);
-        
+
         for (MDSchema schema: toLoad) {
         	schema.loadTables(true, null, null, null);
         }
@@ -1174,7 +1174,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		});
 		timer.setRepeats(false);
 		timer.start();
-		
+
     	JDBCMetaDataBasedModelElementFinder.resetCaches(metaDataSource.getSession());
         setOutline(new ArrayList<OutlineInfo>(), -1);
         proceduresPerSchema.clear();
@@ -1455,7 +1455,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 								        });
 						            }
 						        });
-								
+
 							}
 						}, queueId);
 				    }
@@ -1671,7 +1671,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private boolean inSelectOutlineTable = false;
 	private boolean isOutlineVisible = true;
 	private int lastDividerLocation;
-    
+
     private void showOutline() {
     	if (!isOutlineVisible) {
     		outlineScrollPane.setVisible(true);
@@ -1755,7 +1755,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         } else if (scopeDescriptor != null) {
             render = "<font " + face + "" + KEYWORD_ATTRIBUTES + ">" + KEYWORD_PREFIX + "" + scopeDescriptor + "" + KEYWORD_SUFFIX + "" + (info.rowCount > 1? "&nbsp;<i>(" + info.rowCount + "&nbsp;rows)</i>" : "") + "</font>";
         }
-        
+
         String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         if (info.isCTE && "".equals(info.alias)) {
         	render = "&nbsp;&nbsp;&nbsp;" + render;
@@ -1813,7 +1813,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         }
     }
 
-    
+
     public static class OutlineInfo {
 		public final MDTable mdTable;
         public final String alias;
@@ -1831,7 +1831,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         public boolean withSeparator;
 		public int rowCount;
 		public int origPosition;
-        
+
         public OutlineInfo(MDTable mdTable, String alias, int level, int position, String scopeDescriptor) {
             this.mdTable = mdTable;
             this.alias = alias;
@@ -1919,9 +1919,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     static ImageIcon databaseIcon;
     static ImageIcon schemaIcon;
     private static HashMap<ImageIcon, ImageIcon> combinedIcons = new HashMap<ImageIcon, ImageIcon>();
-    
+
     private final AtomicReference<JDialog> waitDialog = new AtomicReference<JDialog>(null);
-        
+
     static ImageIcon getScaledIcon(JComponent component, ImageIcon icon, boolean small) {
         if (icon != null) {
             ImageIcon scaledIcon = icon;
