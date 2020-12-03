@@ -35,11 +35,11 @@ import net.sf.jailer.util.Quoting;
  * @author Ralf Wisser
  */
 public enum MetaDataDetails {
-	
+
 	COLUMNS("Columns", 0) {
 		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getColumns(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", true, true, mdTable.isSynonym()? "SYNONYM" : null);
+			return JDBCMetaDataBasedModelElementFinder.getColumns(session, Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", true, true, mdTable.isSynonym()? "SYNONYM" : null);
 		}
 		@Override
 		public void adjustRowsTable(JTable rowsTable) {
@@ -56,7 +56,7 @@ public enum MetaDataDetails {
 	INDEXES("Indexes", 0) {
 		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), Quoting.staticUnquote( mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
+			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getIndexes(session, Quoting.staticUnquote( mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
 			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
 			mRs.removeNullRows(6);
 			rs.close();
@@ -64,7 +64,7 @@ public enum MetaDataDetails {
 				return MemorizedResultSetTransformer.transform(mRs,
 					new MemorizedResultSetTransformer.ColumnTransformation[] {
 							new MemorizedResultSetTransformer.ColumnTransformation(6, null),
-							new MemorizedResultSetTransformer.ColumnTransformation(9, 
+							new MemorizedResultSetTransformer.ColumnTransformation(9,
 									new MemorizedResultSetTransformer.ListAggregation()),
 							new MemorizedResultSetTransformer.ColumnTransformation(4, null),
 							new MemorizedResultSetTransformer.ColumnTransformation(10, null),
@@ -99,14 +99,14 @@ public enum MetaDataDetails {
 	PRIMARYKEY("Primary Key", 0) {
 		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			ResultSet rs =  JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
+			ResultSet rs =  JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
 			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
 			rs.close();
 			try {
 				return MemorizedResultSetTransformer.transform(mRs,
 					new MemorizedResultSetTransformer.ColumnTransformation[] {
 							new MemorizedResultSetTransformer.ColumnTransformation(6, null),
-							new MemorizedResultSetTransformer.ColumnTransformation(4, 
+							new MemorizedResultSetTransformer.ColumnTransformation(4,
 									new MemorizedResultSetTransformer.ListAggregation())
 				});
 			} catch (Throwable e) {
@@ -125,7 +125,7 @@ public enum MetaDataDetails {
 	EXPORTEDKEY("Exported Keys", 1) {
 		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getExportedKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
+			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getExportedKeys(session, Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
 			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
 			rs.close();
 
@@ -133,10 +133,10 @@ public enum MetaDataDetails {
 				return MemorizedResultSetTransformer.transform(mRs,
 					new MemorizedResultSetTransformer.ColumnTransformation[] {
 							new MemorizedResultSetTransformer.ColumnTransformation(3, null),
-							new MemorizedResultSetTransformer.ColumnTransformation(4, 
+							new MemorizedResultSetTransformer.ColumnTransformation(4,
 									new MemorizedResultSetTransformer.ListAggregation()),
 							new MemorizedResultSetTransformer.ColumnTransformation(7, null),
-							new MemorizedResultSetTransformer.ColumnTransformation(8, 
+							new MemorizedResultSetTransformer.ColumnTransformation(8,
 									new MemorizedResultSetTransformer.ListAggregation()),
 							new MemorizedResultSetTransformer.ColumnTransformation(12, null),
 							new MemorizedResultSetTransformer.ColumnTransformation(1, null),
@@ -155,7 +155,7 @@ public enum MetaDataDetails {
 	IMPORTEDKEY("Imported Keys", 1) {
 		@Override
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getImportedKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
+			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getImportedKeys(session, Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
 			MemorizedResultSet mRs = new MemorizedResultSet(rs, null, session, "");
 			rs.close();
 
@@ -163,10 +163,10 @@ public enum MetaDataDetails {
 				return MemorizedResultSetTransformer.transform(mRs,
 					new MemorizedResultSetTransformer.ColumnTransformation[] {
 							new MemorizedResultSetTransformer.ColumnTransformation(3, null),
-							new MemorizedResultSetTransformer.ColumnTransformation(4, 
+							new MemorizedResultSetTransformer.ColumnTransformation(4,
 									new MemorizedResultSetTransformer.ListAggregation()),
 							new MemorizedResultSetTransformer.ColumnTransformation(7, null),
-							new MemorizedResultSetTransformer.ColumnTransformation(8, 
+							new MemorizedResultSetTransformer.ColumnTransformation(8,
 									new MemorizedResultSetTransformer.ListAggregation()),
 							new MemorizedResultSetTransformer.ColumnTransformation(12, null),
 							new MemorizedResultSetTransformer.ColumnTransformation(1, null),
@@ -182,15 +182,15 @@ public enum MetaDataDetails {
 			}
 		}
 	};
-	
+
 	MetaDataDetails(String name, int queueIndex) {
 		this.name = name;
 		this.queueIndex = queueIndex;
 	}
-	
+
 	public final String name;
 	public final int queueIndex;
-	
+
 	public abstract ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException;
 	public void adjustRowsTable(JTable rowsTable) {
 	}

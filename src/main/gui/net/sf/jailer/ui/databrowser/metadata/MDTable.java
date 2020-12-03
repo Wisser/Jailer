@@ -183,7 +183,7 @@ public class MDTable extends MDObject {
             try {
                 MetaDataSource metaDataSource = getMetaDataSource();
                 synchronized (metaDataSource.getSession().getMetaData()) {
-                    ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%",
+                    ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%",
                     		cached, false, isSynonym? "SYNONYM" : null);
                     while (resultSet.next()) {
                         String colName = metaDataSource.getQuoting().quote(resultSet.getString(4));
@@ -221,7 +221,7 @@ public class MDTable extends MDObject {
                     }
                     resultSet.close();
 
-                    resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), false);
+                    resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(getSchema().getMetaDataSource().getSession(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), false);
                     Map<Integer, String> pk = new TreeMap<Integer, String>();
                     int nextKeySeq = 0;
                     while (resultSet.next()) {
@@ -422,7 +422,7 @@ public class MDTable extends MDObject {
     	Session session = getSchema().getMetaDataSource().getSession();
     	ResultSet rs = null;
     	try {
-			rs = JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()));
+			rs = JDBCMetaDataBasedModelElementFinder.getIndexes(session, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()));
 			while (rs.next()) {
 				String indexName = rs.getString(6);
 				String schemaName = rs.getString(5);

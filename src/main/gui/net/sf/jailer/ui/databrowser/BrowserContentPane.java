@@ -50,7 +50,6 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -3276,12 +3275,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private Set<String> findColumnsLowerCase(Table table, Session session) {
 		try {
 			Set<String> columns = new HashSet<String>();
-			DatabaseMetaData metaData = session.getMetaData();
 			Quoting quoting = Quoting.getQuoting(session);
 			String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
 			String schema = quoting.unquote(table.getOriginalSchema(defaultSchema));
 			String tableName = quoting.unquote(table.getUnqualifiedName());
-			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%", false, false, null);
+			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, schema, tableName, "%", false, false, null);
 			while (resultSet.next()) {
 				String colName = resultSet.getString(4).toLowerCase(Locale.ENGLISH);
 				columns.add(colName);
@@ -3295,7 +3293,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					schema = schema.toLowerCase(Locale.ENGLISH);
 					tableName = tableName.toLowerCase(Locale.ENGLISH);
 				}
-				resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%", false, false, null);
+				resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, schema, tableName, "%", false, false, null);
 				while (resultSet.next()) {
 					String colName = resultSet.getString(4).toLowerCase(Locale.ENGLISH);
 					columns.add(colName);
