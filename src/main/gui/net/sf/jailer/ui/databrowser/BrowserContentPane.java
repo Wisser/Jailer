@@ -3659,7 +3659,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				int i = 0;
 				for (Column column: rowIdSupport.getPrimaryKey(association.source, session).getColumns()) {
 					String name = quoting.requote(column.name);
-					sql += (!f ? ", " : "") + "B." + name + " AS B" + i;
+					sql += (!f ? ", " : "") + "B." + name + " as B" + i;
 					olapPrefix += (!f ? ", " : "") + "S.B" + i;
 					++numParentPKColumns;
 					++i;
@@ -3672,10 +3672,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			for (Column column : rowIdSupport.getColumns(table, session)) {
 				String name = quoting.requote(column.name);
 				if (existingColumnsLowerCase != null && !rowIdSupport.isRowIdColumn(column) && !existingColumnsLowerCase.contains(quoting.unquote(name).toLowerCase(Locale.ENGLISH))) {
-					sql += (!f ? ", " : "") + "'?' AS A" + i;
+					sql += (!f ? ", " : "") + "'?' as A" + i;
 					unknownColumnIndexes.add(colI);
 				} else {
-					sql += (!f ? ", " : "") + "A." + name + " AS A" + i;
+					sql += (!f ? ", " : "") + "A." + name + " as A" + i;
 				}
 				olapPrefix += (!f ? ", " : "") + "S.A" + i;
 				++i;
