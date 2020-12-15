@@ -3520,6 +3520,4 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 	private static final long serialVersionUID = -5640822484296649670L;
 
-	// TODO UI improvements, ? "to" in subject section
-
 }
