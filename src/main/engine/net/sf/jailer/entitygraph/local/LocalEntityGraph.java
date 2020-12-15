@@ -547,7 +547,7 @@ public class LocalEntityGraph extends EntityGraph {
 							}
 
 							String entityJoinCondition = sb.toString();
-							String select = "Select " + graphID + " as GRAPH_ID, " + upkColumnList(destination, destAlias, null) + ", " + today + " AS BIRTHDAY, " + typeName(destination) + " AS TYPE" +
+							String select = "Select " + graphID + " as graph_id, " + upkColumnList(destination, destAlias, null) + ", " + today + " as birthday, " + typeName(destination) + " as type" +
 							(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + upkColumnList(source, "PRE_")) +
 							" From " + inlineView +
 							" left join " + dmlTableReference(ENTITY, localSession) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(destination) + " and " +
@@ -642,7 +642,7 @@ public class LocalEntityGraph extends EntityGraph {
 								return sb.toString();
 							};
 
-							String select = "Select " + otherGraph.graphID + " as GRAPH_ID, " + upkColumnList(source, sourceAlias, null) + ", " + 1 + " AS BIRTHDAY, " + typeName(source) + " AS TYPE" +
+							String select = "Select " + otherGraph.graphID + " as graph_id, " + upkColumnList(source, sourceAlias, null) + ", " + 1 + " as birthday, " + typeName(source) + " as type" +
 							" From " + inlineView +
 							" left join " + dmlTableReference(ENTITY, localSession) + " Duplicate on Duplicate.r_entitygraph=" + otherGraph.graphID + " and Duplicate.type=" + typeName(source) + " and " +
 							entityJoinCondition.apply("Duplicate") +
@@ -687,7 +687,7 @@ public class LocalEntityGraph extends EntityGraph {
 		ResultSetReader reader = new LocalInlineViewBuilder(alias, upkColumnList(table, null)) {
 			@Override
 			protected void process(String inlineView) throws SQLException {
-				String select = "Select " + graphID + " as GRAPH_ID, " + upkColumnList(table, alias, null) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
+				String select = "Select " + graphID + " as graph_id, " + upkColumnList(table, alias, null) + ", " + today + " as birthday, " + typeName(table) + " as type" +
 				" From " + inlineView;
 
 				if (joinWithEntity) {

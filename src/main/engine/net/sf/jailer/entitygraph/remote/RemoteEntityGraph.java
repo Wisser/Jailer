@@ -528,7 +528,7 @@ public class RemoteEntityGraph extends EntityGraph {
 			String select;
 			LimitTransactionSizeInfo limitTransactionSize = session.dbms.getLimitTransactionSize();
 			select =
-					"Select " + (table != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + otherGraph.graphID + " as GRAPH_ID, " + pkList(source, sourceAlias) + ", " + 1 + " AS BIRTHDAY, " + typeName(source) + " AS TYPE" +
+					"Select " + (table != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + otherGraph.graphID + " as graph_id, " + pkList(source, sourceAlias) + ", " + 1 + " as birthday, " + typeName(source) + " as type" +
 							" From " + quoting.requote(table1.getName()) + " " + destAlias +
 							" left join " + dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + otherGraph.graphID + " and Duplicate.type=" + typeName(table1) + " and " +
 							pkEqualsEntityID(table1, destAlias, "Duplicate") +
@@ -583,7 +583,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		LimitTransactionSizeInfo limitTransactionSize = session.dbms.getLimitTransactionSize();
 		if (joinedTable == null && !joinWithEntity && !limitTransactionSize.isApplicable(executionContext)) {
 			select =
-					"Select " + graphID + " " + limitTransactionSize.afterSelectFragment(executionContext) + "as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
+					"Select " + graphID + " " + limitTransactionSize.afterSelectFragment(executionContext) + "as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
 					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
 					" From " + quoting.requote(table.getName()) + " " + alias +
 					" Where (" + condition + ") " + limitTransactionSize.additionalWhereConditionFragment(executionContext) +
@@ -595,7 +595,7 @@ public class RemoteEntityGraph extends EntityGraph {
 
 				// TODO is this still necessary?
 				select =
-					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
+					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
 					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
 					" From " + quoting.requote(table.getName()) + " " + alias
 						+
@@ -613,7 +613,7 @@ public class RemoteEntityGraph extends EntityGraph {
 
 			} else {
 				select =
-					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
+					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
 					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
 					" From " + quoting.requote(table.getName()) + " " + alias +
 					" left join " + dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) + " and " +
