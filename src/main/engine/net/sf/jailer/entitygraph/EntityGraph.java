@@ -20,7 +20,6 @@ import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -96,11 +95,6 @@ public abstract class EntityGraph {
 		this.graphID = graphID;
 		this.dataModel = dataModel;
 	}
-
-	/**
-	 * Unique IDs for each association to be used for explanation.
-	 */
-	public Map<Association, Integer> explainIdOfAssociation = new HashMap<Association, Integer>();
 
 	/**
 	 * Copies an entity-graph.
