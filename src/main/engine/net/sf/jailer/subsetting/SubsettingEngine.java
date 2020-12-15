@@ -1434,7 +1434,7 @@ public class SubsettingEngine {
 	 *
 	 * @return statistic
 	 */
-	public ExportStatistic export(String whereClause, URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat, int modelPoolSize) throws SQLException, IOException, SAXException {
+	public ExportStatistic export(String whereClause, URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, ScriptFormat scriptFormat, int modelPoolSize) throws SQLException, IOException, SAXException {
 		if (dbms != null && dbms.getSessionTemporaryTableManager() == null &&
 				(executionContext.getScope() == WorkingTableScope.SESSION_LOCAL
 				||
@@ -1528,8 +1528,6 @@ public class SubsettingEngine {
 				RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
 				entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), updateStatistics, executionContext);
 			}
-
-			entityGraph.setExplain(explain);
 
 			Charset charset = Charset.defaultCharset();
 			if (executionContext.getUTF8()) {

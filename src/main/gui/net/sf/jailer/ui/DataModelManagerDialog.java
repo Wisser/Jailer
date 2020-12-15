@@ -78,7 +78,7 @@ import net.sf.jailer.util.Pair;
 
 /**
  * Data Model Management dialog.
- * 
+ *
  * @author Ralf Wisser
  */
 public abstract class DataModelManagerDialog extends javax.swing.JFrame {
@@ -123,7 +123,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
     private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
 
-	/** 
+	/**
 	 * Creates new.
 	 */
 	public DataModelManagerDialog(String applicationName, boolean withLoadJMButton, String module) {
@@ -132,35 +132,35 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.module = module;
 		initComponents();
 		((CardLayout) cardPanel.getLayout()).show(cardPanel, "main");
-		
-		InfoBar infoBar = new InfoBar("Data Model Configuration", 
+
+		InfoBar infoBar = new InfoBar("Data Model Configuration",
 				"A data model is a set of interrelated tables. Acquire information about tables by analyzing\n" +
 				"database schemas, or use the data model editor to manually define tables and associations.\n \n",
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 
-		InfoBar infoBarJM = new InfoBar("Load Extraction Model", 
+		InfoBar infoBarJM = new InfoBar("Load Extraction Model",
 				"\n \n \n \n",
 				"Load a recently used model or choose a model file.");
 		UIUtil.replace(infoBarLabel2, infoBarJM);
 
-		infoBarConnection = new InfoBar("Database Connection", 
+		infoBarConnection = new InfoBar("Database Connection",
 				"Select a connection to the database.\n" +
 				"\n \n \n",
 				"Select a database to work with.");
 
-		infoBarRecUsedConnection = new InfoBar("Recently used Database Connection", 
+		infoBarRecUsedConnection = new InfoBar("Recently used Database Connection",
 				"Select a recently used connection to the database.\n" +
 				"\n \n \n",
 				"Select a database to work with.");
 
-		infoBarBookmark = new InfoBar("Bookmark", 
+		infoBarBookmark = new InfoBar("Bookmark",
 				"Select a bookmark to open.\n" +
 				"\n \n \n",
 				"Select a bookmark.");
 		UIUtil.replace(infoBarLabelBookmark, infoBarBookmark);
 
-		infoBarRecUsedBookmark = new InfoBar("Recently used Bookmark", 
+		infoBarRecUsedBookmark = new InfoBar("Recently used Bookmark",
 				"Select a recently used bookmark to open.\n" +
 				"\n \n \n",
 				"Select a bookmark.");
@@ -189,9 +189,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		infoBarRecUsedConnection.setIcon(imageIcon);
 		infoBarBookmark.setIcon(imageIcon);
 		infoBarRecUsedBookmark.setIcon(imageIcon);
-		
+
 		restore();
-		
+
 		loadModelList();
 		initTableModel();
 		initConnectionDialog(true);
@@ -259,9 +259,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				}
 			}
 		});
-		
+
 		initJMTable();
-		
+
 		updateLocationComboboxModel();
 		locationComboBox.setSelectedItem(executionContext.getDatamodelFolder());
 		final ListCellRenderer<String> renderer = locationComboBox.getRenderer();
@@ -287,7 +287,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				}
 			}
 		});
-		
+
 		if (currentModel != null) {
 			int i = modelList.indexOf(currentModel);
 			if (i >= 0) {
@@ -296,9 +296,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				currentModel = null;
 			}
 		}
-		
+
 		setTitle(applicationName);
-		
+
 		addWindowListener(new WindowListener() {
 			@Override
 			public void windowOpened(WindowEvent e) {
@@ -328,7 +328,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			public void windowActivated(WindowEvent e) {
 			}
 		});
-		
+
 		setLocation(70, 130);
 		pack();
 		setSize(Math.max(840, getWidth()), 490);
@@ -350,7 +350,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		} catch (Throwable t) {
 			// ignore
 		}
-		
+
 		if (jTabbedPane1.getSelectedComponent() == recentlyUsedBookmarkPanel) {
 			if (bookmarkTable.getModel().getRowCount() > 0) {
 				bookmarkTable.getSelectionModel().setSelectionInterval(0, 0);
@@ -448,11 +448,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		}
 	}
-	
+
 	private String bookmarkHash(BookmarkId bookmark) {
 		return bookmark.bookmark + "\t" + bookmark.datamodelFolder + "\t" + bookmark.connectionAlias;
 	}
-	
+
 	private JTable createBookmarkTable(final JButton okButton, boolean onlyRecentlyUsed) {
 		final List<BookmarksPanel.BookmarkId> bookmarksListModel = new ArrayList<BookmarksPanel.BookmarkId>();
 		Set<String> bookmarksHash = new HashSet<String>();
@@ -482,25 +482,25 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			Pair<String, Long> details = modelDetails.get(bookmark.datamodelFolder);
 			ConnectionInfo ci = ciOfBookmark.get(bookmark);
 			data[i] = onlyRecentlyUsed?
-					new Object[] { 
-						bookmark.bookmark, 
-						details.a, 
-						bookmark.connectionAlias, 
-						ci.user, 
+					new Object[] {
+						bookmark.bookmark,
+						details.a,
+						bookmark.connectionAlias,
+						ci.user,
 						ci.url,
 						UIUtil.toDateAsString(bookmark.date)
 					} :
-					new Object[] { 
-						bookmark.bookmark, 
-						details.a, 
-						bookmark.connectionAlias, 
-						ci.user, 
+					new Object[] {
+						bookmark.bookmark,
+						details.a,
+						bookmark.connectionAlias,
+						ci.user,
 						ci.url
 					};
 		}
-		
-		DefaultTableModel tableModel = new DefaultTableModel(data, 
-				onlyRecentlyUsed? 
+
+		DefaultTableModel tableModel = new DefaultTableModel(data,
+				onlyRecentlyUsed?
 						new String[] {"Bookmark", "Data Model", "Connection", "User", "URL", "Time"}
 							: new String[] { "Bookmark", "Data Model", "Connection", "User", "URL" }) {
 			@Override
@@ -509,9 +509,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 			private static final long serialVersionUID = 1535384744352159695L;
 		};
-		
+
 		final JTable jTable = new JTable();
-			
+
 		jTable.setModel(tableModel);
 
 		final TableCellRenderer defaultTableCellRenderer = jTable.getDefaultRenderer(String.class);
@@ -549,7 +549,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					okButton.setEnabled(jTable.getSelectedRow() >= 0);
 				}
 			});
-		
+
 		final ActionListener onOk = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -577,7 +577,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				}
 			}
 		});
-		
+
 		for (int i = 0; i < jTable.getColumnCount(); i++) {
 			TableColumn column = jTable.getColumnModel().getColumn(i);
 			int width = i == 0? 100 : 1;
@@ -585,7 +585,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			width = Math.max(width, comp.getPreferredSize().width);
 
 			for (int line = 0; line < data.length; ++line) {
-				comp = jTable.getDefaultRenderer(String.class).getTableCellRendererComponent(jTable, 
+				comp = jTable.getDefaultRenderer(String.class).getTableCellRendererComponent(jTable,
 						data[line][i],false, false, line, i);
 				width = Math.max(width, Math.min(250, comp.getPreferredSize().width));
 			}
@@ -624,7 +624,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		}
 		data = Arrays.copyOf(data, i);
-		
+
 		DefaultTableModel tableModel = new DefaultTableModel(data, new String[] { "Name", "Path", "Time" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
@@ -677,7 +677,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			width = Math.max(width, comp.getPreferredSize().width);
 
 			for (int line = 0; line < data.length; ++line) {
-				comp = jmFilesTable.getDefaultRenderer(String.class).getTableCellRendererComponent(jmFilesTable, 
+				comp = jmFilesTable.getDefaultRenderer(String.class).getTableCellRendererComponent(jmFilesTable,
 						data[line][i],false, false, line, i);
 				width = Math.max(width, Math.min(150, comp.getPreferredSize().width));
 			}
@@ -738,7 +738,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			recUsedConnectionDialogPanel.add(dialog.mainPanel);
 		}
 	}
-	
+
 	private void updateLocationComboboxModel() {
 		List<String> existingBaseFolders = new ArrayList<String>();
 		for (String bf: baseFolders) {
@@ -751,7 +751,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	private void loadModelList() {
 		DataModelManager.setCurrentModelSubfolder(null, executionContext);
-		
+
 		modelList = new ArrayList<String>();
 		modelDetails = new HashMap<String, Pair<String,Long>>();
 		for (String mf: DataModelManager.getModelFolderNames(executionContext)) {
@@ -791,10 +791,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private boolean inRefresh = false;
 
 	/**
-	 * Application name. Used to create the name of the demo database alias. 
+	 * Application name. Used to create the name of the demo database alias.
 	 */
 	private final String applicationName;
-	
+
 	/**
 	 * Refreshes the dialog after model changes.
 	 */
@@ -826,13 +826,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			for (int i = 0; i < dataModelsTable.getColumnCount(); i++) {
 				TableColumn column = dataModelsTable.getColumnModel().getColumn(i);
 				int width = 1;
-				
+
 				Component comp = dataModelsTable.getDefaultRenderer(String.class).
 										getTableCellRendererComponent(
 												dataModelsTable, column.getHeaderValue(),
 												false, false, 0, i);
 				width = Math.max(width, comp.getPreferredSize().width);
-	
+
 				for (int line = 0; line < data.length; ++line) {
 					comp = dataModelsTable.getDefaultRenderer(String.class).
 									 getTableCellRendererComponent(
@@ -840,7 +840,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 										 false, false, line, i);
 					width = Math.max(width, comp.getPreferredSize().width);
 				}
-				
+
 				column.setPreferredWidth(width);
 			}
 			refreshButtons();
@@ -858,12 +858,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		okButton.setEnabled(currentModel != null);
 		analyzeButton.setEnabled(currentModel != null);
 	}
-	
+
 	/**
 	 * File to store selection.
 	 */
 	private static String MODEL_SELECTION_FILE = ".selecteddatamodel";
-	
+
 	/**
 	 * Stores the selection.
 	 */
@@ -1534,9 +1534,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
 		DataModelManager.setCurrentModelSubfolder(null, executionContext);
-		
+
 		NewDataModelDialog newDataModelDialog = new NewDataModelDialog(this, modelList);
-		
+
 		String newName = newDataModelDialog.getNameEntered();
 		if (newName != null) {
 			try {
@@ -1578,20 +1578,20 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		if (!UIUtil.canRunJailer()) {
 			return;
 		}
-		
+
 		activateCurrentModel();
-		
+
 		try {
 			JDBCMetaDataBasedModelElementFinder.privilegedSessionProvider = new PrivilegedSessionProviderDialog.Provider(this);
 			DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this, applicationName,
-					new InfoBar("Connect with Database", 
+					new InfoBar("Connect with Database",
 							"Select a connection to the database to be analyzed, or create a new connection.\n" +
 							"New connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\".", null), executionContext);
 			if (dbConnectionDialog.connect("Analyze Database")) {
 				List<String> args = new ArrayList<String>();
 				args.add("build-model-wo-merge");
 				dbConnectionDialog.addDbArgs(args);
-				
+
 				DataModel dataModel = new DataModel(executionContext);
 				AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, dataModel, executionContext);
 				boolean[] isDefaultSchema = new boolean[1];
@@ -1606,7 +1606,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					}
 					analyseOptionsDialog.appendAnalyseCLIOptions(args);
 					ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-					if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
+					if (UIUtil.runJailer(this, args, false, true, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
 						ModelBuilder.assocFilter = null;
 						String modelname = dataModel.getName();
 						DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, dbConnectionDialog, executionContext);
@@ -1634,7 +1634,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
        		if (new File(folder, DataModel.TABLE_CSV_FILE).exists()) {
        			JOptionPane.showMessageDialog(DataModelManagerDialog.this,
 						"\"" + folder + "\"\n" +
-       					"is a data model folder.\n\n" + 
+       					"is a data model folder.\n\n" +
 						"A base folder contains data model folders.", "Invalid Base Folder", JOptionPane.ERROR_MESSAGE);
 	   			return;
        		}
@@ -1777,7 +1777,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 
 		activateCurrentModel();
-		
+
 		hasSelectedModel = true;
 		UIUtil.setWaitCursor(this);
 		try {
@@ -1901,7 +1901,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton restoreLastSessionButton2;
     private javax.swing.JButton restoreLastSessionButton3;
     // End of variables declaration//GEN-END:variables
-    
+
 	private static final long serialVersionUID = -3983034803834547687L;
-	
+
 }

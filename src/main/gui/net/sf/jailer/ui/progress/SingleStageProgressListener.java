@@ -45,7 +45,7 @@ import net.sf.jailer.util.CancellationException;
 
 /**
  * Keeps progress indicators up to date for a single {@link ProgressTable}.
- * 
+ *
  * @author Ralf Wisser
  */
 public abstract class SingleStageProgressListener implements ProgressListener {
@@ -69,10 +69,10 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	 * Today.
 	 */
 	private int today = -1, lastUpdated = -1;
-	
+
 	private boolean lastRowIsUptodate = false;
 	private boolean readjustColumnWidth = false;
-	
+
 	/**
 	 * To stop the thread.
 	 */
@@ -83,7 +83,6 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	 */
 	private AtomicLong exportedRows = new AtomicLong();
 	private long collectedRows = 0;
-	private long explainedRows = 0;
 	private String currentStep = "";
 	private boolean isErrorStage = false;
 	private boolean stopClock;
@@ -101,10 +100,10 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param progressTable
 	 *            table showing collected rows
-	 * @param targetSchemaSet 
+	 * @param targetSchemaSet
 	 */
 	public SingleStageProgressListener(final ProgressTable progressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet, boolean forExportStage, boolean checkPK) {
 		this.progressTable = progressTable;
@@ -167,7 +166,6 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 								progressTable.setTotalNumberOfCollectedRows(collectedRows);
 								progressPanel.collectedRowsLabel.setText(UIUtil.format(collectedRows));
 								progressPanel.exportedRowsLabel.setText(UIUtil.format(exportedRows.get()));
-								progressPanel.explainedRowsLabel.setText(UIUtil.format(explainedRows));
 								if (!progressPanel.inCancellingStep || isErrorStage) {
 									progressPanel.stepLabel.setText(currentStep);
 									if (isErrorStage) {
@@ -219,10 +217,10 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 
 	/**
 	 * Adds or updates a row of the progress table.
-	 * 
+	 *
 	 * @param day
 	 *            the day
-	 * @return 
+	 * @return
 	 */
 	private Runnable addOrUpdateRow(final int day) {
 		Map<Table, ProgressTable.CellInfo> row = new HashMap<Table, ProgressTable.CellInfo>();
@@ -293,7 +291,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 
 	/**
 	 * Rows have been collected.
-	 * 
+	 *
 	 * @param day
 	 *            the day
 	 * @param modelElement
@@ -335,7 +333,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 
 	/**
 	 * A collection-job has been enqueued.
-	 * 
+	 *
 	 * @param day
 	 *            the day
 	 * @param modelElement
@@ -354,7 +352,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 
 	/**
 	 * A collection-job has been enqueued.
-	 * 
+	 *
 	 * @param day the day
 	 * @param modelElement the association or table to be resolved
 	 */
@@ -381,7 +379,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 
 	/**
 	 * Rows have been exported.
-	 * 
+	 *
 	 * @param table
 	 *            the table from which the rows have been exported
 	 * @param rc
@@ -393,19 +391,8 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	}
 
 	/**
-	 * Rows have been explained.
-	 *
-	 * @param rc
-	 *            the number of rows
-	 */
-	@Override
-	public synchronized void explained(long rc) {
-		explainedRows += rc;
-	}
-
-	/**
 	 * New stage has begun.
-	 * 
+	 *
 	 * @param stage
 	 *            the stage
 	 */
@@ -446,7 +433,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 									validatePrimaryKeys();
 								}
 							});
-							
+
 							UIUtil.showException(progressTable, "Warning", new RuntimeException(message), UIUtil.EXCEPTION_CONTEXT_USER_WARNING, button);
 						}
 					}
@@ -456,7 +443,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 	}
 
 	protected abstract void validatePrimaryKeys();
-	
+
 	private boolean warned = false;
 
 	private boolean confirmInsert() {
@@ -473,16 +460,16 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 			sb.append(targetSchema);
 			linelength += targetSchema.length() + 3;
 		}
-		return JOptionPane.showConfirmDialog(SwingUtilities.getRoot(progressTable), 
+		return JOptionPane.showConfirmDialog(SwingUtilities.getRoot(progressTable),
 				"Insert " + collectedRows + " collected rows into the target schema?\n\n" +
 						"Target: " + sb,
 				"Export collected rows", JOptionPane.YES_NO_OPTION)
 				== JOptionPane.YES_OPTION;
 	}
-	
+
 	/**
 	 * Export is ready. This might be cancelled.
-	 * 
+	 *
 	 * @throws CancellationException
 	 */
 	@Override
@@ -518,7 +505,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
-		
+
 				synchronized (confirmed) {
 					if (!confirmed[0]) {
 						throw new CancellationException();

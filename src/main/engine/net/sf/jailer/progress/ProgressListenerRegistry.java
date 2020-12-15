@@ -24,7 +24,7 @@ import net.sf.jailer.util.CancellationException;
 
 /**
  * Registry for {@link ProgressListener}.
- * 
+ *
  * @author Ralf Wisser
  */
 public class ProgressListenerRegistry {
@@ -33,7 +33,7 @@ public class ProgressListenerRegistry {
 
 	/**
 	 * Adds a {@link ProgressListener}.
-	 * 
+	 *
 	 * @param theProgressListener
 	 *            to add
 	 */
@@ -74,12 +74,6 @@ public class ProgressListenerRegistry {
 	public synchronized void firePrepareExport() throws CancellationException {
 		for (ProgressListener listener : progressListeners) {
 			listener.prepareExport();
-		}
-	}
-
-	public synchronized void fireExplained(int rc) {
-		for (ProgressListener listener : progressListeners) {
-			listener.explained(rc);
 		}
 	}
 

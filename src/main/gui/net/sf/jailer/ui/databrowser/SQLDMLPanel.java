@@ -46,31 +46,31 @@ import net.sf.jailer.util.SqlScriptExecutor;
 
 /**
  * Editor for SQL/DML statements.
- * 
+ *
  * @author Ralf Wisser
  */
 public class SQLDMLPanel extends javax.swing.JPanel {
-	
+
 	private static final long serialVersionUID = 1747749941444843829L;
 
 	/**
 	 * The DB session.
 	 */
 	private final Session session;
-	
+
 	/**
 	 * To be done after execution of the script.
 	 */
 	private final Runnable afterExecution;
 	private final Runnable switchToConsole;
-	
+
 	private final ExecutionContext executionContext;
 	private final SQLConsole sqlConsole;
 	private final JDialog dialog;
-	
-	/** Creates new form SQLPanel 
-	 * @param sql 
-	 * @param metaDataSource 
+
+	/** Creates new form SQLPanel
+	 * @param sql
+	 * @param metaDataSource
 	 * @param dialog */
 	@SuppressWarnings("serial")
 	public SQLDMLPanel(String sql, SQLConsole sqlConsole, Session session, MetaDataSource metaDataSource, Runnable afterExecution, Runnable switchToConsole, JDialog dialog, ExecutionContext executionContext) {
@@ -81,7 +81,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		this.afterExecution = afterExecution;
 		this.dialog = dialog;
 		initComponents();
-		
+
 		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			@Override
 			protected void runBlock() {
@@ -94,10 +94,10 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			new SQLAutoCompletion(provider, sqlTextArea);
 		} catch (SQLException e) {
 		}
-		
+
 		RTextScrollPane jScrollPane1 = new RTextScrollPane();
 		jScrollPane1.setViewportView(sqlTextArea);
-		
+
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 1;
 		gridBagConstraints.gridy = 1;
@@ -105,13 +105,13 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 1.0;
 		jPanel1.add(jScrollPane1, gridBagConstraints);
-		
+
 		jScrollPane1.setLineNumbersEnabled(true);
 
 		statusLabel.setText("");
 		sqlTextArea.setText(sql);
 		sqlTextArea.select(0, 0);
-		
+
 		mlmTextField.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void changedUpdate(DocumentEvent e) {
@@ -126,7 +126,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 				appendMLM(mlmTextField.getText());
 			}
 		});
-		
+
 		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -136,7 +136,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	}
 
 	private String mlm = "";
-	
+
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
@@ -344,7 +344,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	}//GEN-LAST:event_clipboardSingleLineButtonActionPerformed
 
 	private String lastMultiLineSQL = "";
-	
+
 	private void singleLineCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_singleLineCheckBoxItemStateChanged
 		String mlm = this.mlm;
 		if (singleLineCheckBox.isSelected()) {
@@ -387,7 +387,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			sqlTextArea.select(0, 0);
 		}
 	}
-	
+
 	private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
 		if (!UIUtil.canRunJailer()) {
 			return;
@@ -414,7 +414,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			args.add(sqlFile);
 			args.addAll(session.getCliArguments());
 			args.add("-transactional");
-			if (UIUtil.runJailer(SwingUtilities.getWindowAncestor(this), args, false, true, false,
+			if (UIUtil.runJailer(SwingUtilities.getWindowAncestor(this), args, false, true,
 			true, null, session.getSchema(), session.getPassword(), null, null, true,
 			false, false, true, true, null, executionContext)) {
 				statusLabel.setText("Executed " + SqlScriptExecutor.getLastStatementCount().a + " statements. " +
@@ -422,7 +422,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 				statusLabel.setForeground(new Color(0, 100, 0));
 				afterExecution.run();
 				// JOptionPane.showMessageDialog(this, "Successfully executed " + SqlScriptExecutor.getLastStatementCount().a + " statements.\n" + SqlScriptExecutor.getLastStatementCount().b + " rows affected.", "SQL/DML", JOptionPane.INFORMATION_MESSAGE);
-		 
+
 			} else {
 				statusLabel.setText("Error, rolled back");
 				statusLabel.setForeground(new Color(115, 0, 0));

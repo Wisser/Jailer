@@ -385,13 +385,6 @@ public abstract class EntityGraph {
 	public abstract long getTotalRowcount();
 
 	/**
-	 * Whether or not to store additional information in order to create a 'explain.log'.
-	 *
-	 * @param explain <code>true</code> iff predecessors of each entity must be stored
-	 */
-	public abstract void setExplain(boolean explain);
-
-	/**
 	 * Gets the universal primary key.
 	 *
 	 * @return the universal primary key

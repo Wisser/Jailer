@@ -191,8 +191,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			initComponents();
 			jButton1.setIcon(runIcon);
 
-			explain.setVisible(false);
-
 			if (jScrollPane2.getHorizontalScrollBar() != null) {
 	        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
 	        }
@@ -506,7 +504,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			insertIncrementally.addActionListener(al);
 			independentWorkingTables.addActionListener(al);
 			transactional.addActionListener(al);
-			explain.addActionListener(al);
 			unicode.addActionListener(al);
 			sortedCheckBox.addActionListener(al);
 			orderByPKCheckbox.addActionListener(al);
@@ -754,7 +751,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	}
 
 	private void updateCLIArea() {
-		explain.setEnabled(!scopeLocal.isSelected());
 		for (JTextField cb: deleteSchemaMappingFields.values()) {
 			cb.setEnabled(delete.isVisible() && delete.getText().trim().length() > 0);
 		}
@@ -1177,7 +1173,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jPanel5 = new javax.swing.JPanel();
         sortedCheckBox = new javax.swing.JCheckBox();
         upsertCheckbox = new javax.swing.JCheckBox();
-        explain = new javax.swing.JCheckBox();
         transactional = new javax.swing.JCheckBox();
         independentWorkingTables = new javax.swing.JCheckBox();
         orderByPKCheckbox = new javax.swing.JCheckBox();
@@ -1832,15 +1827,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel5.add(upsertCheckbox, gridBagConstraints);
 
-        explain.setText("explain"); // NOI18N
-        explain.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 47;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        jPanel5.add(explain, gridBagConstraints);
-
         transactional.setText("transactional"); // NOI18N
         transactional.setToolTipText("<html>Perform export in a single transaction. <br>Caution: the use of more than 1 parallel thread can cause problems.</html>");
         transactional.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -2284,7 +2270,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 					try {
 						DDLCreator.uPKWasTooLong = false;
 						boolean result = UIUtil.runJailer(this, ddlArgs, false,
-							false, false, true,
+							false, true,
 							null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null,
 							null, false, false, true, false, true, null, executionContext);
 						if (DDLCreator.uPKWasTooLong) {
@@ -2461,9 +2447,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		if (isolationLevel != null && !String.valueOf(Connection.TRANSACTION_NONE).equals(isolationLevel)) {
 			args.add("-isolation-level");
 			args.add(isolationLevel.toString());
-		}
-		if (explain.isSelected()) {
-			args.add("-explain");
 		}
 		if (unicode.isSelected()) {
 			args.add("-UTF8");
@@ -2738,7 +2721,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JTextField delete;
     private javax.swing.JPanel deleteSchemaMappingLabelPanel;
     private javax.swing.JPanel deleteSchemaMappingPanel;
-    public javax.swing.JCheckBox explain;
     private javax.swing.JLabel exportLabel;
     private javax.swing.JPanel iFMTPanel;
     private javax.swing.JComboBox iFMTableSchemaComboBox;

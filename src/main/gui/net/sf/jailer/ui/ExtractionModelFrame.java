@@ -1111,7 +1111,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							public void cleanUp() {
 							}
 						};
-						UIUtil.runJailer(this, args, false, true, false,
+						UIUtil.runJailer(this, args, false, true,
 						false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false,
 						true, false, false, false, consumer, executionContext);
 					}
@@ -1222,7 +1222,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							}
 							analyseOptionsDialog.appendAnalyseCLIOptions(args);
 							ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-							if (UIUtil.runJailer(ExtractionModelFrame.this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
+							if (UIUtil.runJailer(ExtractionModelFrame.this, args, false, true, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
 								ModelBuilder.assocFilter = null;
 								String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
 								DataModelEditor dataModelEditor = new DataModelEditor(ExtractionModelFrame.this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, dbConnectionDialog, executionContext);
@@ -1417,7 +1417,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
 									JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 								} else {
-									if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || UIUtil.isDDLUptodate(ddlCreator, ExtractionModelFrame.this, dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.isUseRowIdsOnlyForTablesWithoutPK(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true,
+									if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || UIUtil.isDDLUptodate(ddlCreator, ExtractionModelFrame.this, dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.isUseRowIdsOnlyForTablesWithoutPK(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, true,
 										"Automatic creation of working-tables failed!\n" +
 										"Please execute the Jailer-DDL manually (jailer_ddl.sql),\n" +
 										"try another \"Working table schema\"," +
@@ -1425,7 +1425,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 										"Continue Data Export?", dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, true, false, true, executionContext)) {
 										ProgressTable progressTable = new ProgressTable();
 										ProgressTable progressTableForDelete = new ProgressTable();
-										final ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript(), exportDialog.explain.isSelected());
+										final ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript());
 										boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
 										final ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet(), exportDialog.scriptFormat != ScriptFormat.XML && !exportDialog.insertScripFileNameFieldIsEmpty()) {
 											@Override
@@ -1452,7 +1452,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 											}
 											public void cleanUp() {
 											}										};
-										UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(),
+										UIUtil.runJailer(this, args, true, true,
 											false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), progressListener, progressPanel, true,
 											true, false, false, false, consumer, executionContext);
 										isRunning = true;
@@ -1532,7 +1532,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			File file = saveRestrictions();
 			args.add(file.getAbsolutePath());
 			if (UIUtil.canRunJailer()) {
-				UIUtil.runJailer(this, args, false, true, false, true, null, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, executionContext);
+				UIUtil.runJailer(this, args, false, true, true, null, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, executionContext);
 				BrowserLauncher.openURL(Environment.newFile(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table))).toURI(), this);
 			}
 		} catch (Exception e) {
@@ -1552,7 +1552,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				args.add(to.getName());
 				File file = saveRestrictions();
 				args.add(file.getAbsolutePath());
-				UIUtil.runJailer(this, args, false, false, false, false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext);
+				UIUtil.runJailer(this, args, false, false, false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext);
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
 			}

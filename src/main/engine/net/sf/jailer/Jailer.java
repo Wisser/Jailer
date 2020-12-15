@@ -59,19 +59,19 @@ import net.sf.jailer.util.SqlScriptExecutor;
  * Jailer is a tool for database subsetting and relational data browsing. <br>
  * <ul>
  * <li>
- * The Subsetter exports consistent, referentially intact row-sets from relational databases, 
- * generates topologically sorted SQL-DML, DbUnit datasets 
+ * The Subsetter exports consistent, referentially intact row-sets from relational databases,
+ * generates topologically sorted SQL-DML, DbUnit datasets
  * and hierarchically structured XML.
  * </li>
  * <li>
- * The Data Browser allows bidirectional navigation through the database 
+ * The Data Browser allows bidirectional navigation through the database
  * by following foreign-key-based or user-defined relationships.
  * </li>
  * </ul>
- * 
+ *
  * <a href="http://jailer.sourceforge.net/">http://jailer.sourceforge.net</a> <br>
  * <a href="https://github.com/Wisser/Jailer">https://github.com/Wisser/Jailer</a> <br><br>
- * 
+ *
  * @author Ralf Wisser
  */
 public class Jailer {
@@ -93,7 +93,7 @@ public class Jailer {
 
 	/**
 	 * Main-method for CLI.
-	 * 
+	 *
 	 * @param args arguments
 	 */
 	public static void main(String[] args) {
@@ -123,7 +123,7 @@ public class Jailer {
 		} catch (Exception e) {
 		}
 
-		if (new File(".singleuser").exists() // legacy 
+		if (new File(".singleuser").exists() // legacy
 				|| new File(".multiuser").exists()) {
 			File home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
@@ -157,7 +157,7 @@ public class Jailer {
 
 	/**
 	 * Main-method for GUI.
-	 * 
+	 *
 	 * @param args
 	 *            arguments
 	 * @param warnings
@@ -179,14 +179,14 @@ public class Jailer {
 			if (progressListener != null) {
 				executionContext.getProgressListenerRegistry().addProgressListener(progressListener);
 			}
-			
+
 			String command = commandLine.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
 				if (!"print-closure".equalsIgnoreCase(command)) {
 					getLogger().info("Jailer " + JailerVersion.VERSION);
 				}
 			}
-			
+
 			URL[] jdbcJarURLs = ClasspathUtil.toURLArray(commandLine.jdbcjar, commandLine.jdbcjar2, commandLine.jdbcjar3, commandLine.jdbcjar4);
 
 			if ("render-datamodel".equalsIgnoreCase(command)) {
@@ -220,7 +220,7 @@ public class Jailer {
 					CommandLineParser.printUsage(args);
 				} else {
 					pw = commandLine.arguments.get(5);
-					
+
 					if (commandLine.exportScriptFileName == null) {
 						System.out.println("missing '-e' option");
 						CommandLineParser.printUsage(args);
@@ -234,7 +234,7 @@ public class Jailer {
 								commandLine.arguments.get(4), commandLine.arguments.get(5), 0, jdbcJarURLs);
 						URL modelURL = new File(commandLine.arguments.get(1)).toURI().toURL();
 						new SubsettingEngine(executionContext).export(commandLine.where, modelURL, commandLine.exportScriptFileName, commandLine.deleteScriptFileName,
-								dataSource, dataSource.dbms, false, executionContext.getScriptFormat(), 0);
+								dataSource, dataSource.dbms, executionContext.getScriptFormat(), 0);
 					}
 				}
 			} else if ("delete".equalsIgnoreCase(command)) {
@@ -256,7 +256,7 @@ public class Jailer {
 						}
 						URL modelURL = new File(commandLine.arguments.get(1)).toURI().toURL();
 						new SubsettingEngine(executionContext).export(commandLine.where, modelURL, /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName,
-								dataSource, dataSource.dbms, false, /*scriptFormat*/ null, 0);
+								dataSource, dataSource.dbms, /*scriptFormat*/ null, 0);
 					}
 				}
 			} else if ("print-closure".equalsIgnoreCase(command)) {
@@ -343,7 +343,7 @@ public class Jailer {
 			}
 		}
 		subjects.add(extractionModel.subject);
-		
+
 		Set<String> closure = new TreeSet<String>();
 		Set<Table> toIgnore = new HashSet<Table>();
 		for (Table subject: subjects) {
@@ -352,7 +352,7 @@ public class Jailer {
 				toIgnore.add(table);
 			}
 		}
-		
+
 		int row = 0;
 		for (String tableName: closure) {
 			if (separator == null) {
@@ -381,7 +381,7 @@ public class Jailer {
 
 	/**
 	 * Render the data model.
-	 * 
+	 *
 	 * @param schema schema to analyze
 	 */
 	private static void renderDataModel(List<String> arguments, String schema, ExecutionContext executionContext) throws Exception {

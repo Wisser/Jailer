@@ -335,11 +335,11 @@ public class UIUtil {
      * @return <code>true</code> iff call succeeded
      */
     public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, boolean showLogfileButton,
-            final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow,
+            final boolean printCommandLine, final boolean closeOutputWindow,
             String continueOnErrorQuestion, String user, String password, final ProgressListener progressListener,
             final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
             boolean returnFalseOnError, ExecutionContext executionContext) {
-        return runJailer(ownerOfConsole, cliArgs, showLogfileButton, printCommandLine, showExplainLogButton,
+        return runJailer(ownerOfConsole, cliArgs, showLogfileButton, printCommandLine,
                 closeOutputWindow, continueOnErrorQuestion, user, password, progressListener, progressPanel, showExeptions,
                 fullSize, false, returnFalseOnError, false, null, executionContext);
     }
@@ -383,7 +383,7 @@ public class UIUtil {
      * @return <code>true</code> iff call succeeded
      */
     public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, boolean showLogfileButton,
-            final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow,
+            final boolean printCommandLine, final boolean closeOutputWindow,
             final String continueOnErrorQuestion, String user, String password, final ProgressListener progressListener,
             final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
             final boolean closeOutputWindowOnError, final boolean returnFalseOnError, boolean throwException, final ResultConsumer resultConsumer, ExecutionContext executionContext) {
@@ -427,8 +427,7 @@ public class UIUtil {
         for (String arg : argslist) {
         	argsarray[i++] = arg;
         }
-        final JailerConsole outputView = new JailerConsole(ownerOfConsole, dialog, showLogfileButton,
-                showExplainLogButton, progressPanel, fullSize);
+        final JailerConsole outputView = new JailerConsole(ownerOfConsole, dialog, showLogfileButton, progressPanel, fullSize);
         final PrintStream originalOut = System.out;
         final boolean[] ready = new boolean[] { true };
         System.setOut(new PrintStream(new OutputStream() {

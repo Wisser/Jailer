@@ -486,17 +486,6 @@ public class LocalEntityGraph extends EntityGraph {
 				destAlias = "B";
 				sourceAlias = "A";
 			}
-			Integer associationExplanationIDm = 0;
-			if (explain) {
-				synchronized (explainIdOfAssociation) {
-					associationExplanationIDm = explainIdOfAssociation.get(association);
-					if (associationExplanationIDm == null) {
-						associationExplanationIDm = (nextExplainID++);
-						explainIdOfAssociation.put(association, associationExplanationIDm);
-					}
-				}
-			}
-			final Integer associationExplanationID = associationExplanationIDm;
 
 			// ----
 
@@ -548,13 +537,12 @@ public class LocalEntityGraph extends EntityGraph {
 
 							String entityJoinCondition = sb.toString();
 							String select = "Select " + graphID + " as graph_id, " + upkColumnList(destination, destAlias, null) + ", " + today + " as birthday, " + typeName(destination) + " as type" +
-							(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + upkColumnList(source, "PRE_")) +
 							" From " + inlineView +
 							" left join " + dmlTableReference(ENTITY, localSession) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(destination) + " and " +
 							entityJoinCondition +
 							" Where Duplicate.type is null";
 
-							String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(destination, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
+							String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(destination, null) + ", birthday, type) " + select;
 							rc[0] += localSession.executeUpdate(insert);
 							totalRowcount += rc[0];
 						}
@@ -651,7 +639,7 @@ public class LocalEntityGraph extends EntityGraph {
 							" Where Duplicate.type is null and DUnivers.type " +
 							(forDelete? "is null" : "is not null");
 
-							String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(source, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
+							String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(source, null) + ", birthday, type) " + select;
 							rc[0] += localSession.executeUpdate(insert);
 							totalRowcount += rc[0];
 						}
@@ -1652,26 +1640,6 @@ public class LocalEntityGraph extends EntityGraph {
 	@Override
 	public long getTotalRowcount() {
 		return totalRowcount;
-	}
-
-	/**
-	 * Whether or not to store additional information in order to create a 'explain.log'
-	 */
-	private boolean explain = false;
-
-	/**
-	 * Next unique ID for association to be used for explanation.
-	 */
-	private int nextExplainID = 1;
-
-	/**
-	 * Whether or not to store additional information in order to create a 'explain.log'.
-	 *
-	 * @param explain <code>true</code> iff predecessors of each entity must be stored
-	 */
-	@Override
-	public void setExplain(boolean explain) {
-		this.explain = false; // explain feature is not yet implemented for local entity graph
 	}
 
 	/**

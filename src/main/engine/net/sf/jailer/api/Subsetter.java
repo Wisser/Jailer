@@ -164,7 +164,7 @@ public class Subsetter {
 					getExtractionModelURL(),
 					exportScriptFile == null? null : exportScriptFile.getAbsolutePath(),
 					deleteScriptFile == null? null : deleteScriptFile.getAbsolutePath(),
-					getDataSource(), sourceDBMS, false, getScriptFormat(), getModelPoolSize());
+					getDataSource(), sourceDBMS, getScriptFormat(), getModelPoolSize());
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		}

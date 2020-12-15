@@ -34,7 +34,7 @@ import net.sf.jailer.util.CancellationException;
 
 /**
  * Count the number of collected (and deleted) rows.
- * 
+ *
  * @author Ralf Wisser
  */
 public class CollectedRowsCounter implements ProgressListener {
@@ -42,7 +42,7 @@ public class CollectedRowsCounter implements ProgressListener {
 	private boolean inDeleteStage = false;
 	private Map<Table, Long> collectedRowsCount = new HashMap<Table, Long>();
 	private Map<Table, Long> deletedRowsCount = new HashMap<Table, Long>();
-	
+
 	public Map<Table, Long> getCollectedRowsCount() {
 		return collectedRowsCount;
 	}
@@ -53,7 +53,7 @@ public class CollectedRowsCounter implements ProgressListener {
 
 	/**
 	 * Creates the statistic.
-	 * 
+	 *
 	 * @return the statistic
 	 */
 	public List<String> createStatistic(boolean forDelete, final DataModel datamodel, ExportStatistic exportStatistic) {
@@ -71,7 +71,7 @@ public class CollectedRowsCounter implements ProgressListener {
 				return datamodel.getDisplayName(o1).compareTo(datamodel.getDisplayName(o2));
 			}
 		});
-		
+
 		long sum = 0;
 		for (Table stable: tabs) {
 			if (rowsCount.containsKey(stable)) {
@@ -130,7 +130,7 @@ public class CollectedRowsCounter implements ProgressListener {
 			inDeleteStage = true;
 		}
 	}
-	
+
 	private Table getDestination(ModelElement key) {
 		if (key instanceof Association) {
 			return ((Association) key).destination;
@@ -152,10 +152,6 @@ public class CollectedRowsCounter implements ProgressListener {
 
 	@Override
 	public void prepareExport() throws CancellationException {
-	}
-
-	@Override
-	public void explained(long rc) {
 	}
 
 }

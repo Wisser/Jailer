@@ -37,7 +37,7 @@ import net.sf.jailer.util.CancellationHandler;
 
 /**
  * Jailer console window.
- * 
+ *
  * @author Ralf Wisser
  */
 public class JailerConsole {
@@ -45,16 +45,16 @@ public class JailerConsole {
 	private final ProgressPanel progressPanel;
 	public final Window dialog;
 	private final boolean fullSize;
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param owner the enclosing component
 	 * @param showLogfileButton <code>true</code> for offering a button to open the log-file
 	 * @param showExplainLogButton <code>true</code> for offering a button to open the explain-log-file
 	 * @param progressPanel progress panel, optional
 	 */
-	public JailerConsole(Window owner, Window dialog, boolean showLogfileButton, boolean showExplainLogButton, ProgressPanel progressPanel, boolean fullSize) {
+	public JailerConsole(Window owner, Window dialog, boolean showLogfileButton, ProgressPanel progressPanel, boolean fullSize) {
 		this.dialog = dialog;
 		this.progressPanel = progressPanel;
 		this.fullSize = fullSize;
@@ -69,15 +69,11 @@ public class JailerConsole {
 		} else {
 			((JFrame) dialog).setDefaultCloseOperation(0);
 		}
-		getLoadExplainLog().setEnabled(false);
 		getLoadSqlLog().setEnabled(false);
 		getLoadExportLog().setVisible(false);
 		if (!showLogfileButton) {
 			// getLoadExportLog().setVisible(false);
 			getLoadSqlLog().setVisible(false);
-		}
-		if (!showExplainLogButton) {
-			getLoadExplainLog().setVisible(false);
 		}
 		UIUtil.initPeer();
 	}
@@ -101,7 +97,7 @@ public class JailerConsole {
 			gridBagConstraints.gridwidth = 6;
 			gridBagConstraints.insets = new Insets(0, 0, 0, 0);
 			jPanel.add(contentPane, gridBagConstraints);
-		} 
+		}
 		if (fullSize) {
 			dialog.setSize(new Dimension(1110, 740));
 			   dialog.setLocation(10, 50);
@@ -117,7 +113,7 @@ public class JailerConsole {
 			((JFrame) dialog).setTitle("Jailer Console - in progress");
 		}
 		getJTextPane().setFont(new Font("Monospaced", Font.PLAIN, 12));
-		
+
 		getLoadExportLog().addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -133,16 +129,6 @@ public class JailerConsole {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					new FileView(dialog, "sql.log");
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
-			}
-		});
-		getLoadExplainLog().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					new FileView(dialog, "explain.log");
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -185,9 +171,9 @@ public class JailerConsole {
 	}
 
 	/**
-	 * This method initializes jTextPane    
-	 *  
-	 * @return javax.swing.JTextPane    
+	 * This method initializes jTextPane
+	 *
+	 * @return javax.swing.JTextPane
 	 */
 	private JTextArea getJTextPane() {
 		if (jTextArea == null) {
@@ -199,7 +185,7 @@ public class JailerConsole {
 
 	/**
 	 * Appends text to console window.
-	 * 
+	 *
 	 * @param output the text
 	 */
 	public void appendText(String output) {
@@ -219,12 +205,11 @@ public class JailerConsole {
 
 	/**
 	 * Sets status of console to "finished".
-	 * 
+	 *
 	 * @param ok indicates errors
 	 */
 	public void finish(boolean ok) {
 		getLoadSqlLog().setEnabled(true);
-		getLoadExplainLog().setEnabled(true);
 		getCancelButton().setText("Close");
 		getCancelButton().setEnabled(true);
 		String title = "Jailer Console - " + (ok? "finished" : "failed!");
@@ -235,11 +220,11 @@ public class JailerConsole {
 		}
 		hasFinished = true;
 	}
-	
+
 	/**
-	 * This method initializes jPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
+	 * This method initializes jPanel
+	 *
+	 * @return javax.swing.JPanel
 	 */
 	private JPanel getJPanel() {
 		if (jPanel == null) {
@@ -249,11 +234,6 @@ public class JailerConsole {
 			gridBagConstraints29.gridy = 1;
 			gridBagConstraints29.weightx = 0.0;
 			gridBagConstraints29.insets = new Insets(0, 4, 2, 2);
-			GridBagConstraints gridBagConstraints28 = new GridBagConstraints();
-			gridBagConstraints28.anchor = GridBagConstraints.WEST;
-			gridBagConstraints28.gridx = 4;
-			gridBagConstraints28.gridy = 1;
-			gridBagConstraints28.insets = new Insets(0, 4, 2, 0);
 			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
 			gridBagConstraints2.gridx = 3;
 			gridBagConstraints2.gridy = 1;
@@ -275,16 +255,15 @@ public class JailerConsole {
 			jPanel.add(getJScrollPane(), gridBagConstraints);
 			jPanel.add(getLoadExportLog(), gridBagConstraints1);
 			jPanel.add(getLoadSqlLog(), gridBagConstraints2);
-			jPanel.add(getLoadExplainLog(), gridBagConstraints28);
 			jPanel.add(getCancelButton(), gridBagConstraints29);
 		}
 		return jPanel;
 	}
 
 	/**
-	 * This method initializes jScrollPane	
-	 * 	
-	 * @return javax.swing.JScrollPane	
+	 * This method initializes jScrollPane
+	 *
+	 * @return javax.swing.JScrollPane
 	 */
 	private JScrollPane getJScrollPane() {
 		if (jScrollPane == null) {
@@ -295,9 +274,9 @@ public class JailerConsole {
 	}
 
 	/**
-	 * This method initializes loadExportLog	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes loadExportLog
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getLoadExportLog() {
 		if (loadExportLog == null) {
@@ -308,9 +287,9 @@ public class JailerConsole {
 	}
 
 	/**
-	 * This method initializes loadSqlLog	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes loadSqlLog
+	 *
+	 * @return javax.swing.JButton
 	 */
 	private JButton getLoadSqlLog() {
 		if (loadSqlLog == null) {
@@ -321,22 +300,9 @@ public class JailerConsole {
 	}
 
 	/**
-	 * This method initializes loadExplainLog	
-	 * 	
-	 * @return javax.swing.JButton	
-	 */
-	private JButton getLoadExplainLog() {
-		if (loadExplainLog == null) {
-			loadExplainLog = new JButton();
-			loadExplainLog.setText("Open Explain.log");
-		}
-		return loadExplainLog;
-	}
-	
-	/**
-	 * This method initializes loadExplainLog	
-	 * 	
-	 * @return javax.swing.JButton	
+	 * This method initializes loadExplainLog
+	 *
+	 * @return javax.swing.JButton
 	 */
 	JButton getCancelButton() {
 		if (cancelButton == null) {
@@ -345,13 +311,12 @@ public class JailerConsole {
 		}
 		return cancelButton;
 	}
-	
+
 	private JTextArea jTextArea = null;
 	private JPanel jPanel = null;
 	private JScrollPane jScrollPane = null;
 	private JButton loadExportLog = null;
 	private JButton loadSqlLog = null;
-	private JButton loadExplainLog = null;
 	private JButton cancelButton = null;
 	public boolean hasCancelled = false;
 	boolean hasFinished = false;

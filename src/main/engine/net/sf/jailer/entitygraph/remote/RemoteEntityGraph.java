@@ -268,7 +268,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 */
 	@Override
 	public long addEntities(Table table, String condition, int today) throws SQLException {
-		return addEntities(table, "T", condition, null, null, null, null, false, today, 0, true);
+		return addEntities(table, "T", condition, null, null, null, null, false, today, true);
 	}
 
 	/**
@@ -475,17 +475,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				destAlias = "B";
 				sourceAlias = "A";
 			}
-			Integer associationExplanationID = 0;
-			if (explain) {
-				synchronized (explainIdOfAssociation) {
-					associationExplanationID = explainIdOfAssociation.get(association);
-					if (associationExplanationID == null) {
-						associationExplanationID = (nextExplainID++);
-						explainIdOfAssociation.put(association, associationExplanationID);
-					}
-				}
-			}
-			return addEntities(association.destination, destAlias, "E.r_entitygraph=" + graphID + " and E.birthday = " + (today - 1) + " and E.type=" + typeName(table) + " and " + pkEqualsEntityID(table, sourceAlias, "E"), table, sourceAlias, association.source, jc, true, today, associationExplanationID, association.reversed);
+			return addEntities(association.destination, destAlias, "E.r_entitygraph=" + graphID + " and E.birthday = " + (today - 1) + " and E.type=" + typeName(table) + " and " + pkEqualsEntityID(table, sourceAlias, "E"), table, sourceAlias, association.source, jc, true, today, association.reversed);
 		}
 		return -1;
 	}
@@ -512,16 +502,6 @@ public class RemoteEntityGraph extends EntityGraph {
 				destAlias = "B";
 				sourceAlias = "A";
 			}
-			Integer associationExplanationID = 0;
-			if (explain) {
-				synchronized (explainIdOfAssociation) {
-					associationExplanationID = explainIdOfAssociation.get(association);
-					if (associationExplanationID == null) {
-						associationExplanationID = (nextExplainID++);
-						explainIdOfAssociation.put(association, associationExplanationID);
-					}
-				}
-			}
 			Table table1 = association.destination;
 			String condition = "E.r_entitygraph=" + graphID + " and E.birthday >= 0 and E.type=" + typeName(association.destination) + " and " + pkEqualsEntityID(association.destination, destAlias, "E");
 			Table source = association.source;
@@ -542,7 +522,7 @@ public class RemoteEntityGraph extends EntityGraph {
 							limitTransactionSize.statementSuffixFragment(executionContext);
 
 			long incrementSize = limitTransactionSize.getSize(executionContext);
-			String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(source, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
+			String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(source, null) + ", birthday, type) " + select;
 			if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan on ");
 			long rc = 0;
 			for (;;) {
@@ -575,7 +555,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 *
 	 * @return row-count
 	 */
-	private long addEntities(Table table, String alias, String condition, Table joinedTable, String joinedTableAlias, Table source, String joinCondition, boolean joinWithEntity, int today, int associationExplanationID, boolean isInverseAssociation) throws SQLException {
+	private long addEntities(Table table, String alias, String condition, Table joinedTable, String joinedTableAlias, Table source, String joinCondition, boolean joinWithEntity, int today, boolean isInverseAssociation) throws SQLException {
 		if (joinCondition != null) {
 			joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, isInverseAssociation? null : "E", isInverseAssociation? "E" : null, today, birthdayOfSubject, inDeleteMode);
 		}
@@ -584,7 +564,6 @@ public class RemoteEntityGraph extends EntityGraph {
 		if (joinedTable == null && !joinWithEntity && !limitTransactionSize.isApplicable(executionContext)) {
 			select =
 					"Select " + graphID + " " + limitTransactionSize.afterSelectFragment(executionContext) + "as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
-					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
 					" From " + quoting.requote(table.getName()) + " " + alias +
 					" Where (" + condition + ") " + limitTransactionSize.additionalWhereConditionFragment(executionContext) +
 					limitTransactionSize.statementSuffixFragment(executionContext);
@@ -596,7 +575,6 @@ public class RemoteEntityGraph extends EntityGraph {
 				// TODO is this still necessary?
 				select =
 					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
-					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
 					" From " + quoting.requote(table.getName()) + " " + alias
 						+
 					(joinedTable != null? ", " + quoting.requote(joinedTable.getName()) + " " + joinedTableAlias + " ": "") +
@@ -614,7 +592,6 @@ public class RemoteEntityGraph extends EntityGraph {
 			} else {
 				select =
 					"Select " + (joinedTable != null? "distinct " : "") + limitTransactionSize.afterSelectFragment(executionContext) + graphID + " as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
-					(source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
 					" From " + quoting.requote(table.getName()) + " " + alias +
 					" left join " + dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) + " and " +
 					pkEqualsEntityID(table, alias, "Duplicate") +
@@ -626,23 +603,8 @@ public class RemoteEntityGraph extends EntityGraph {
 			}
 		}
 
-		if (source != null && explain) {
-			String max = "";
-			Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(source));
-			for (Column column: universalPrimaryKey.getColumns()) {
-				if (match.get(column) != null) {
-					if (max.length() > 0) {
-						max += ", ";
-					}
-					max += "max(PRE_" + column.name + ")";
-				}
-			}
-			select = "Select GRAPH_ID, " + upkColumnList(table, null) + ", BIRTHDAY, TYPE, ASSOCIATION, max(SOURCE_TYPE), " + max + " From (" + select + ") Q " +
-					 "Group by GRAPH_ID, " + upkColumnList(table, null) + ", BIRTHDAY, TYPE, ASSOCIATION";
-		}
-
 		long incrementSize = limitTransactionSize.getSize(executionContext);
-		String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
+		String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type) " + select;
 		if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan on ");
 		long rc = 0;
 		for (;;) {
@@ -1428,26 +1390,6 @@ public class RemoteEntityGraph extends EntityGraph {
 	@Override
 	public long getTotalRowcount() {
 		return totalRowcount;
-	}
-
-	/**
-	 * Whether or not to store additional information in order to create a 'explain.log'
-	 */
-	private boolean explain = false;
-
-	/**
-	 * Next unique ID for association to be used for explanation.
-	 */
-	private int nextExplainID = 1;
-
-	/**
-	 * Whether or not to store additional information in order to create a 'explain.log'.
-	 *
-	 * @param explain <code>true</code> iff predecessors of each entity must be stored
-	 */
-	@Override
-	public void setExplain(boolean explain) {
-		this.explain = explain;
 	}
 
 	/**
