@@ -785,7 +785,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				selectOPK.append(", ");
 			}
 			sb.append(originalPKAliasPrefix + i);
-			selectOPK.append("T." + quoting.requote(pkColumns.get(i).name) + " AS " + originalPKAliasPrefix + i);
+			selectOPK.append("T." + quoting.requote(pkColumns.get(i).name) + " as " + originalPKAliasPrefix + i);
 		}
 		orderBy = "order by " + sb;
 		String sqlQuery = "Select " + selectionSchema + " From (" +
@@ -1146,7 +1146,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				if (i > 0) {
 					selectOPK.append(", ");
 				}
-				selectOPK.append("T." + quoting.requote(pkColumns.get(i).name) + " AS " + originalPKAliasPrefix + i);
+				selectOPK.append("T." + quoting.requote(pkColumns.get(i).name) + " as " + originalPKAliasPrefix + i);
 			}
 			select =
 				"Select " + selectionSchema + " from (" +
@@ -1347,7 +1347,7 @@ public class RemoteEntityGraph extends EntityGraph {
 					sb.append(", ");
 				}
 				sb.append(tableAlias + "." + quoting.requote(tableColumn.name));
-				sb.append(" AS " + (columnAliasPrefix == null? "" : columnAliasPrefix) + column.name);
+				sb.append(" as " + (columnAliasPrefix == null? "" : columnAliasPrefix) + column.name);
 		   }
 		}
 		return sb.toString();
