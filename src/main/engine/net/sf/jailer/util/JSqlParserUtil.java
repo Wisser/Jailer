@@ -17,6 +17,7 @@ package net.sf.jailer.util;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.parser.StringProvider;
 import net.sf.jsqlparser.statement.Statement;
 
@@ -37,12 +38,12 @@ public final class JSqlParserUtil {
 	 */
     public static Statement parse(String sql) throws JSQLParserException {
     	String simplifiedSql = SqlUtil.removeNonMeaningfulFragments(sql);
-        CCJSqlParser parser = new CCJSqlParser(new StringProvider(simplifiedSql)).withSquareBracketQuotation(false);;
+        CCJSqlParser parser = createSQLParser(simplifiedSql).withSquareBracketQuotation(false);
 		try {
 		    return parser.Statement();
 		} catch (Exception e) {
 			if (simplifiedSql.contains("[")) {
-				parser = new CCJSqlParser(new StringProvider(simplifiedSql)).withSquareBracketQuotation(true);
+				parser = createSQLParser(simplifiedSql).withSquareBracketQuotation(true);
 				try {
 				    return parser.Statement();
 				} catch (Exception e2) {
@@ -51,5 +52,31 @@ public final class JSqlParserUtil {
 			}
 		    throw new JSQLParserException(e);
 		}
+    }
+
+    /**
+     * Workaround for https://github.com/JSQLParser/JSqlParser/issues/1013
+     * <br>
+     * Creates a parser that throws an exception with a simplified error message in case of an error.
+     * This avoids calling the CCJSqlParser#jj_rescan_token() method, which is extremely inperformant
+     * in some cases.
+     * <br>
+     * In the error message the "Was expecting: ..." part is therefore missing.
+     *
+     * @param sqlStatement the statement
+	 * @return parsed statement
+	 *
+	 * @see https://github.com/JSQLParser/JSqlParser/issues/1013
+     */
+    private static CCJSqlParser createSQLParser(String sqlStatement) {
+    	return new CCJSqlParser(new StringProvider(sqlStatement)) {
+    		@Override
+    		public ParseException generateParseException() {
+    			int[][] exptokseq = new int[1][];
+    			exptokseq[0] = new int[] { 0 }; // EOF
+				ParseException parseException = new ParseException(token, exptokseq, tokenImage, null);
+				return new ParseException(parseException.getMessage().replaceFirst("(?s)Was expecting(:|(one of:)).*", "").trim());
+    		}
+    	};
     }
 }
