@@ -22,17 +22,17 @@ import net.sf.jsqlparser.statement.Statement;
 
 /**
  * SQL parsing.
- * 
+ *
  * @see https://github.com/JSQLParser/JSqlParser
  */
 public final class JSqlParserUtil {
 
 	/**
 	 * Parses a SQL statement.
-	 * 
+	 *
 	 * @param sql the statement
 	 * @return parsed statement
-	 * 
+	 *
 	 * @throws JSQLParserException if JSQLParser is not able to parse the statement
 	 */
     public static Statement parse(String sql) throws JSQLParserException {
@@ -40,16 +40,16 @@ public final class JSqlParserUtil {
         CCJSqlParser parser = new CCJSqlParser(new StringProvider(simplifiedSql)).withSquareBracketQuotation(false);;
 		try {
 		    return parser.Statement();
-		} catch (Exception ex) {
+		} catch (Exception e) {
 			if (simplifiedSql.contains("[")) {
 				parser = new CCJSqlParser(new StringProvider(simplifiedSql)).withSquareBracketQuotation(true);
 				try {
 				    return parser.Statement();
-				} catch (Exception ex2) {
+				} catch (Exception e2) {
 				    // ignore
 				}
 			}
-		    throw new JSQLParserException(ex);
+		    throw new JSQLParserException(e);
 		}
     }
 }

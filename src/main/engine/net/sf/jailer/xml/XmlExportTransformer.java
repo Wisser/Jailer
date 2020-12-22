@@ -48,7 +48,7 @@ import net.sf.jailer.util.Quoting;
 
 /**
  * A {@link ResultSetReader} that writes the read rows into an XML file.
- * 
+ *
  * @author Ralf Wisser
  */
 public class XmlExportTransformer extends AbstractResultSetReader {
@@ -82,12 +82,12 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 * Set of all tables for which entities exist in entityGraph.
 	 */
 	private final Set<Table> totalProgress;
-	
+
 	/**
 	 * Set of all cyclic aggregated tables.
 	 */
 	private final Set<Table> cyclicAggregatedTables;
-	
+
 	/**
 	 * The logger.
 	 */
@@ -102,7 +102,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 * Current session;
 	 */
 	private final Session session;
-	
+
 	/**
 	 * Association cache.
 	 */
@@ -114,10 +114,10 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	private final RowIdSupport rowIdSupport;
 
 	private final Quoting quoting;
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param out to write the xml into
 	 * @param commentHeader comment at top of document
 	 * @param entityGraph the entity graph
@@ -125,7 +125,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 * @param rootTag root tag name
 	 * @param datePattern pattern for dates
 	 * @param timestampPattern pattern for time-stamps
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	public XmlExportTransformer(OutputStream out, String commentHeader,
 			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables,
@@ -157,7 +157,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 
 	/**
 	 * Writes entity as XML hierarchy.
-	 * 
+	 *
 	 * @param table entity's table
 	 * @param association association to parent, <code>null</code> for top-level entities
 	 * @param resultSet current row contains entity to write out
@@ -184,9 +184,9 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		}
 
 		ancestors.add(primaryKey);
-		
+
 		TableMapping tableMapping = getTableMapping(table);
-		
+
 		Map<String, Association> associationMap = associationCache.get(table);
 		if (associationMap == null) {
 			associationMap = new HashMap<String, Association>();
@@ -196,7 +196,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 			associationCache.put(table, associationMap);
 		}
 		final Map<String, Association> finalAssociationMap = associationMap;
-		
+
 		XmlUtil.visitDocumentNodes(tableMapping.template, xmlRowWriter.new XmlWritingNodeVisitor(resultSet, getMetaData(resultSet), table, association, session) {
 			@Override
 			public void visitAssociationElement(String associationName) {
@@ -234,7 +234,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 						}
 					}
 				}
-				
+
 			}
 		});
 		ancestors.remove(ancestors.size() - 1);
@@ -242,7 +242,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 
 	/**
 	 * Gets type cache for given table.
-	 * 
+	 *
 	 * @param table the table
 	 * @return type cache for table
 	 */
@@ -275,17 +275,17 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	@Override
 	public void close() {
 	}
-	
+
 	/**
 	 * Holds XML mapping information.
 	 */
 	public class TableMapping {
-		
+
 		/**
 		 * The template.
 		 */
 		public Document template;
-		
+
 		/**
 		 * SQL selection schema.
 		 */
@@ -296,7 +296,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		 */
 		public String originalPKAliasPrefix;
 	}
-	
+
 	/**
 	 * Mappings per table.
 	 */
@@ -304,7 +304,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 
 	/**
 	 * Gets the xml mapping for a table.
-	 *  
+	 *
 	 * @param table the table
 	 * @return xml mapping for table
 	 */
@@ -314,7 +314,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		}
 		TableMapping tableMapping = new TableMapping();
 		tableMappings.put(table, tableMapping);
-		
+
 		boolean isFiltered = false;
 		for (Column c: table.getColumns()) {
 			String filterExpression = null;
@@ -326,7 +326,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 				break;
 			}
 		}
-		
+
 		if (isFiltered) {
 			for (int i = 0; ; ++i) {
 				tableMapping.originalPKAliasPrefix = "O" + i;
@@ -342,7 +342,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 				}
 			}
 		}
-		
+
 		try {
 			tableMapping.template = table.getXmlTemplateAsDocument(quoting);
 		} catch (Exception e) {
@@ -356,7 +356,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 				throw new RuntimeException(e1);
 			}
 		}
-		
+
 		final StringBuilder sb = new StringBuilder();
 		int i = 0;
 		for (Column pk: rowIdSupport.getPrimaryKey(table).getColumns()) {
@@ -364,10 +364,10 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 				sb.append(", ");
 			}
 			if (tableMapping.originalPKAliasPrefix != null) {
-				sb.append("T." + tableMapping.originalPKAliasPrefix + i + " AS PK" + i);
+				sb.append("T." + tableMapping.originalPKAliasPrefix + i + " as PK" + i);
 				++i;
 			} else {
-				sb.append("T." + quoting.requote(pk.name) + " AS PK" + i++);
+				sb.append("T." + quoting.requote(pk.name) + " as PK" + i++);
 			}
 		}
 		XmlUtil.visitDocumentNodes(tableMapping.template, new NodeVisitor() {
@@ -378,7 +378,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 					if (sb.length() > 0) {
 						sb.append(", ");
 					}
-					sb.append(text.substring(XmlUtil.SQL_PREFIX.length()) + " AS C" + nr++);
+					sb.append(text.substring(XmlUtil.SQL_PREFIX.length()) + " as C" + nr++);
 				}
 			}
 			@Override
@@ -403,8 +403,8 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 			}
 		});
 		tableMapping.selectionSchema = sb.toString();
-		
+
 		return tableMapping;
 	}
-	
+
 }
