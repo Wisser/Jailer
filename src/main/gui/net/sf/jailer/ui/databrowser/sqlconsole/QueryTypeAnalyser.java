@@ -161,7 +161,7 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * Parses a SQL query and tries to find out the type.
- * 
+ *
  * @author Ralf Wisser
  */
 public class QueryTypeAnalyser {
@@ -177,14 +177,14 @@ public class QueryTypeAnalyser {
 
 	/**
 	 * Parses a SQL query and tries to find out the type.
-	 * 
+	 *
 	 * @param sqlSelect the query
 	 * @return the type or <code>null</code>
 	 */
 	public static List<Table> getType(String sqlSelect, final MetaDataSource metaDataSource) {
 		net.sf.jsqlparser.statement.Statement st;
 		try {
-			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlSelect));
+			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlSelect), 2);
 			Map<Pair<String, String>, Collection<Pair<String, String>>> equivs = new HashMap<Pair<String,String>, Collection<Pair<String,String>>>();
 			final LinkedHashMap<String, MDTable> fromClause = analyseFromClause(st, equivs, metaDataSource);
 			final List<Pair<String, String>> selectClause = new ArrayList<Pair<String, String>>();
@@ -197,23 +197,23 @@ public class QueryTypeAnalyser {
 						public void visit(WithItem withItem) {
 							throw new QueryTooComplexException();
 						}
-						
+
 						@Override
 						public void visit(SetOperationList setOpList) {
 							throw new QueryTooComplexException();
 						}
-						
+
 						@Override
 						public void visit(PlainSelect plainSelect) {
 							for (SelectItem si: plainSelect.getSelectItems()) {
 								final boolean stop[] = new boolean[] { false };
-								
+
 								si.accept(new SelectItemVisitor() {
 									@Override
 									public void visit(SelectExpressionItem selectExpressionItem) {
 										final boolean noSubexpression[] = new boolean[] { true };
 										final Column column[] = new Column[1];
-										
+
 										selectExpressionItem.getExpression().accept(createExpressionVisitor(noSubexpression, column));
 
 										if (column[0] != null) {
@@ -241,7 +241,7 @@ public class QueryTypeAnalyser {
 											selectClause.add(null);
 										}
 									}
-									
+
 									@Override
 									public void visit(AllTableColumns allTableColumns) {
 										String tableName = allTableColumns.getTable().getName();
@@ -290,7 +290,7 @@ public class QueryTypeAnalyser {
 
 						@Override
 						public void visit(ValuesStatement aThis) {
-							
+
 						}
 					});
 				}
@@ -324,7 +324,7 @@ public class QueryTypeAnalyser {
 
 	private static LinkedHashMap<String, MDTable> analyseFromClause(Statement st, final Map<Pair<String, String>, Collection<Pair<String, String>>> equivs, final MetaDataSource metaDataSource) {
 		final LinkedHashMap<String, MDTable> result = new LinkedHashMap<String, MDTable>();
-		
+
 		st.accept(new DefaultStatementVisitor() {
 			private int unknownTableCounter = 0;
 			@Override
@@ -334,11 +334,11 @@ public class QueryTypeAnalyser {
 					@Override
 					public void visit(WithItem withItem) {
 					}
-					
+
 					@Override
 					public void visit(SetOperationList setOpList) {
 					}
-					
+
 					@Override
 					public void visit(PlainSelect plainSelect) {
 						final ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer(result);
@@ -351,17 +351,17 @@ public class QueryTypeAnalyser {
 								public void visit(TableFunction tableFunction) {
 									unknownTable();
 								}
-								
+
 								@Override
 								public void visit(ValuesList valuesList) {
 									unknownTable();
 								}
-								
+
 								@Override
 								public void visit(LateralSubSelect lateralSubSelect) {
 									unknownTable();
 								}
-								
+
 								@Override
 								public void visit(SubJoin subjoin) {
 									subjoin.getLeft().accept(this);
@@ -377,12 +377,12 @@ public class QueryTypeAnalyser {
 										}
 									}
 								}
-								
+
 								@Override
 								public void visit(SubSelect subSelect) {
 									unknownTable();
 								}
-								
+
 								@Override
 								public void visit(net.sf.jsqlparser.schema.Table tableName) {
 									String schema = tableName.getSchemaName();
@@ -443,7 +443,7 @@ public class QueryTypeAnalyser {
 
 					@Override
 					public void visit(ValuesStatement aThis) {
-						
+
 					}
 				});
 			}
@@ -551,297 +551,297 @@ public class QueryTypeAnalyser {
 			public void visit(Column tableColumn) {
 				column[0] = tableColumn;
 			}
-			
+
 			@Override
 			public void visit(NotExpression aThis) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(DateTimeLiteralExpression literal) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(TimeKeyExpression timeKeyExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(OracleHint hint) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(RowConstructor rowConstructor) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(MySQLGroupConcat groupConcat) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(KeepExpression aexpr) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(NumericBind bind) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(UserVariable var) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(RegExpMySQLOperator regExpMySQLOperator) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(JsonOperator jsonExpr) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(JsonExpression jsonExpr) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(RegExpMatchOperator rexpr) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(OracleHierarchicalExpression oexpr) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(IntervalExpression iexpr) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(ExtractExpression eexpr) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(AnalyticExpression aexpr) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(Modulo modulo) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(CastExpression cast) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(BitwiseXor bitwiseXor) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(BitwiseOr bitwiseOr) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(BitwiseAnd bitwiseAnd) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(Matches matches) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(Concat concat) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(AnyComparisonExpression anyComparisonExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(AllComparisonExpression allComparisonExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(ExistsExpression existsExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(WhenClause whenClause) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(CaseExpression caseExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(SubSelect subSelect) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(NotEqualsTo notEqualsTo) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(MinorThanEquals minorThanEquals) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(MinorThan minorThan) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(LikeExpression likeExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(IsNullExpression isNullExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(InExpression inExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(GreaterThanEquals greaterThanEquals) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(GreaterThan greaterThan) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(EqualsTo equalsTo) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(Between between) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(OrExpression orExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(AndExpression andExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(Subtraction subtraction) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(Multiplication multiplication) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(Division division) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(Addition addition) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(StringValue stringValue) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(Parenthesis parenthesis) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(TimestampValue timestampValue) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(TimeValue timeValue) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(DateValue dateValue) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(HexValue hexValue) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(LongValue longValue) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(DoubleValue doubleValue) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(JdbcNamedParameter jdbcNamedParameter) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(JdbcParameter jdbcParameter) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(SignedExpression signedExpression) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(Function function) {
 				noSubexpression[0] = false;
 			}
-			
+
 			@Override
 			public void visit(NullValue nullValue) {
 				noSubexpression[0] = false;
@@ -864,37 +864,37 @@ public class QueryTypeAnalyser {
 
 			@Override
 			public void visit(IntegerDivision division) {
-				
+
 			}
 
 			@Override
 			public void visit(FullTextSearch fullTextSearch) {
-				
+
 			}
 
 			@Override
 			public void visit(IsBooleanExpression isBooleanExpression) {
-				
+
 			}
 
 			@Override
 			public void visit(NextValExpression aThis) {
-				
+
 			}
 
 			@Override
 			public void visit(CollateExpression aThis) {
-				
+
 			}
 
 			@Override
 			public void visit(SimilarToExpression aThis) {
-				
+
 			}
 
 			@Override
 			public void visit(ArrayExpression aThis) {
-				
+
 			}
 		};
 	}
@@ -1002,64 +1002,64 @@ public class QueryTypeAnalyser {
 
 		@Override
 		public void visit(Comment comment) {
-			
+
 		}
 
 		@Override
 		public void visit(CreateSchema aThis) {
-			
+
 		}
 
 		@Override
 		public void visit(ShowColumnsStatement set) {
-			
+
 		}
 
 		@Override
 		public void visit(ValuesStatement values) {
-			
+
 		}
 
 		@Override
 		public void visit(DescribeStatement describe) {
-			
+
 		}
 
 		@Override
 		public void visit(ExplainStatement aThis) {
-			
+
 		}
 
 		@Override
 		public void visit(ShowStatement aThis) {
-			
+
 		}
 
 		@Override
 		public void visit(DeclareStatement aThis) {
-		
+
 		}
 
 		@Override
 		public void visit(Grant grant) {
-			
+
 		}
 
 		@Override
 		public void visit(CreateSequence createSequence) {
-			
+
 		}
 
 		@Override
 		public void visit(AlterSequence alterSequence) {
-			
+
 		}
 
 		@Override
 		public void visit(CreateFunctionalStatement createFunctionalStatement) {
-			
+
 		}
-		
+
 	}
-	
+
 }

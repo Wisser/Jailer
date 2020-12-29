@@ -15,6 +15,16 @@
  */
 package net.sf.jailer.util;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
+
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.ParseException;
@@ -32,20 +42,21 @@ public final class JSqlParserUtil {
 	 * Parses a SQL statement.
 	 *
 	 * @param sql the statement
+	 * @param timeoutSec timeout in seconds
 	 * @return parsed statement
 	 *
 	 * @throws JSQLParserException if JSQLParser is not able to parse the statement
 	 */
-    public static Statement parse(String sql) throws JSQLParserException {
+    public static Statement parse(String sql, int timeoutSec) throws JSQLParserException {
     	String simplifiedSql = SqlUtil.removeNonMeaningfulFragments(sql);
-        CCJSqlParser parser = createSQLParser(simplifiedSql).withSquareBracketQuotation(false);
+        CCJSqlParser parser = new CCJSqlParser(new StringProvider(simplifiedSql)).withSquareBracketQuotation(false);;
 		try {
-		    return parser.Statement();
+		    return parse(parser, simplifiedSql, timeoutSec);
 		} catch (Exception e) {
 			if (simplifiedSql.contains("[")) {
-				parser = createSQLParser(simplifiedSql).withSquareBracketQuotation(true);
+				parser = new CCJSqlParser(new StringProvider(simplifiedSql)).withSquareBracketQuotation(true);
 				try {
-				    return parser.Statement();
+				    return parse(parser, simplifiedSql, timeoutSec);
 				} catch (Exception e2) {
 				    // ignore
 				}
@@ -54,29 +65,118 @@ public final class JSqlParserUtil {
 		}
     }
 
+    private static final int MAX_ENTRIES = 10000;
+    @SuppressWarnings("serial")
+	private static Map<String, String> timedOut = new LinkedHashMap<String, String>(MAX_ENTRIES+1, .75F, true) {
+        // This method is called just after a new entry has been added
+        public boolean removeEldestEntry(Map.Entry<String, String> eldest) {
+            return size() > MAX_ENTRIES;
+        }
+    };
+    private static Method stop;
+    static {
+    	try {
+			stop = Thread.class.getMethod("stop");
+		} catch (NoSuchMethodException | SecurityException e) {
+			stop = null;
+		}
+    }
+    private static LinkedBlockingQueue<CCJSqlParser> statementQueue;
+    private static Thread parseThread;
+    private static AtomicReference<Object> result;
+    private static int n = 1;
+    private static CCJSqlParser nullParser = new CCJSqlParser(new StringProvider(""));
+    private static Supplier<Long> currentTime = System::currentTimeMillis;
+    static {
+    	try {
+	    	ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+	    	if (threadMXBean != null && threadMXBean.isThreadCpuTimeSupported()) {
+	    		if (threadMXBean.isThreadCpuTimeEnabled()) {
+	    			currentTime = () -> {
+	    				long cpuTime = threadMXBean.getThreadCpuTime(parseThread.getId());
+	    				if (cpuTime < 0) {
+	    					return System.currentTimeMillis();
+	    				}
+	    				return cpuTime / 1_000_000;
+	    			};
+	    		}
+	    	}
+    	} catch (Throwable t) {
+    		// ignore
+    	}
+    }
+
     /**
      * Workaround for https://github.com/JSQLParser/JSqlParser/issues/1013
-     * <br>
-     * Creates a parser that throws an exception with a simplified error message in case of an error.
-     * This avoids calling the CCJSqlParser#jj_rescan_token() method, which is extremely inperformant
-     * in some cases.
-     * <br>
-     * In the error message the "Was expecting: ..." part is therefore missing.
      *
-     * @param sqlStatement the statement
-	 * @return parsed statement
-	 *
 	 * @see https://github.com/JSQLParser/JSqlParser/issues/1013
      */
-    private static CCJSqlParser createSQLParser(String sqlStatement) {
-    	return new CCJSqlParser(new StringProvider(sqlStatement)) {
-    		@Override
-    		public ParseException generateParseException() {
-    			int[][] exptokseq = new int[1][];
-    			exptokseq[0] = new int[] { 0 }; // EOF
-				ParseException parseException = new ParseException(token, exptokseq, tokenImage, null);
-				return new ParseException(parseException.getMessage().replaceFirst("(?s)Was expecting(:|(one of:)).*", "").trim());
-    		}
-    	};
-    }
+    private static synchronized Statement parse(CCJSqlParser parser, String sql, int timeoutSec) throws ParseException {
+		if (stop == null) {
+			return parser.Statement();
+		}
+		if (timedOut.containsKey(sql)) {
+			timedOut.put(sql, sql);
+			ParseException timeoutException = new ParseException("Timeout (" + timeoutSec + "): " + sql);
+			throw timeoutException;
+		}
+		if (parseThread == null) {
+			LinkedBlockingQueue<CCJSqlParser> queue = statementQueue = new LinkedBlockingQueue<CCJSqlParser>();
+			AtomicReference<Object> res = result = new AtomicReference<Object>();
+			parseThread = new Thread(() -> {
+				for (;;) {
+					try {
+						CCJSqlParser p = queue.take();
+						if (p == nullParser) {
+							break;
+						}
+						res.set(p.Statement());
+					} catch (Throwable t) {
+						res.set(t);
+					}
+				}
+			}, "SQLParser-" + (n++));
+			parseThread.setDaemon(true);
+			parseThread.start();
+		}
+		statementQueue.add(parser);
+		long time = currentTime.get();
+		Object r = null;
+		for (;;) {
+			r = result.get();
+			if (r != null) {
+				break;
+			}
+			long dt = currentTime.get() - time;
+			if (dt > timeoutSec * 1000) {
+				break;
+			}
+			try {
+				Thread.sleep(512);
+			} catch (InterruptedException e) {
+				// ignore
+			}
+		}
+		if (r instanceof ParseException) {
+			throw (ParseException) r;
+		} else if (r instanceof Throwable) {
+			throw new RuntimeException((Throwable) r);
+		} else if (r instanceof Statement) {
+			return (Statement) r;
+		} else {
+			statementQueue.add(nullParser);
+			try {
+				stop.invoke(parseThread);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				// ignore
+			}
+			statementQueue = null;
+			parseThread = null;
+			result = null;
+			ParseException timeoutException = new ParseException("Timeout (" + timeoutSec + " sec): " + sql);
+			LogUtil.warn(timeoutException);
+			timedOut.put(sql, sql);
+			throw timeoutException;
+		}
+	}
 }

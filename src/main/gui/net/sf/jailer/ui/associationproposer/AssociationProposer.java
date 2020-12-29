@@ -104,7 +104,7 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 /**
  * Analyzes SQL statements and proposes association definitions. <br>
  * This allows to reverse-engineer the data model based on existing SQL queries. <br><br>
- * 
+ *
  * It uses this recursive procedure:
  * <ul>
  * <li>Open new scope.</li>
@@ -114,7 +114,7 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
  * <li>Assemble association-proposals based on transitive closure of the equations.</li>
  * <li>Close the scope.</li>
  * </ul>
- * 
+ *
  * @author Ralf Wisser
  */
 public class AssociationProposer {
@@ -123,10 +123,10 @@ public class AssociationProposer {
 	private final Map<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Table> columnToTable = new IdentityHashMap<net.sf.jailer.datamodel.Column, net.sf.jailer.datamodel.Table>();
 	private final Set<Equation> equations = new HashSet<Equation>();
 	private final Set<Association> fromDataModel = new HashSet<Association>();
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param dataModel the data model
 	 */
 	public AssociationProposer(DataModel dataModel) {
@@ -143,7 +143,7 @@ public class AssociationProposer {
 
 	/**
 	 * Analyzes a given statement.
-	 * 
+	 *
 	 * @param sqlStatement the statement
 	 * @param startLineNumber the line number at which the statement begins in the script
 	 * @return an error message if statement is invalid, else <code>null</code>
@@ -152,7 +152,7 @@ public class AssociationProposer {
 		sqlStatement = SqlUtil.removeNonMeaningfulFragments(sqlStatement);
 		net.sf.jsqlparser.statement.Statement st;
 		try {
-			st = JSqlParserUtil.parse(sqlStatement);
+			st = JSqlParserUtil.parse(sqlStatement, 5);
 		} catch (JSQLParserException e) {
 			String prefix = "Line " + startLineNumber + ": ";
 			if (e.getCause() instanceof ParseException) {
@@ -188,7 +188,7 @@ public class AssociationProposer {
 	private class APStatementVisitor extends ExpressionVisitorAdapter implements StatementVisitor, SelectItemVisitor, SelectVisitor {
 
 		private Stack<Scope> scopes = new Stack<Scope>();
-		
+
 		@Override
 		public void visit(Commit commit) {
 		}
@@ -312,7 +312,7 @@ public class AssociationProposer {
 		@Override
 		public void visit(PlainSelect plainSelect) {
 			scopes.push(new Scope());
-			
+
 			FromItemVisitor fromItemVisitor = new FromItemVisitor() {
 				@Override
 				public void visit(TableFunction tableFunction) {
@@ -346,14 +346,14 @@ public class AssociationProposer {
 						}
 					}
 				}
-				
+
 				@Override
 				public void visit(SubSelect subSelect) {
 					if (subSelect.getSelectBody() != null) {
 						subSelect.getSelectBody().accept(APStatementVisitor.this);
 					}
 				}
-				
+
 				@Override
 				public void visit(Table tableName) {
 					String alias;
@@ -393,7 +393,7 @@ public class AssociationProposer {
 			if (plainSelect.getWhere() != null) {
 				scopes.peek().expressions.add(plainSelect.getWhere());
 			}
-			
+
 			for (Expression expr: scopes.peek().expressions) {
 				expr.accept(this);
 			}
@@ -454,35 +454,35 @@ public class AssociationProposer {
 		private void analyseTopScope() {
 			for (Expression expr: scopes.peek().expressions) {
 				expr.accept(new ExpressionVisitorAdapter() {
-					
+
 					@Override
 					public void visit(NotExpression aThis) {
 					}
-					
+
 					@Override
 					public void visit(AllComparisonExpression allComparisonExpression) {
 					}
-					
+
 					@Override
 					public void visit(ExistsExpression existsExpression) {
 					}
-					
+
 					@Override
 					public void visit(WhenClause whenClause) {
 					}
-					
+
 					@Override
 					public void visit(CaseExpression caseExpression) {
 					}
-					
+
 					@Override
 					public void visit(SubSelect subSelect) {
 					}
-					
+
 					@Override
 					public void visit(Column tableColumn) {
 					}
-					
+
 					@Override
 					public void visit(EqualsTo equalsTo) {
 						Expression leftExpression = equalsTo.getLeftExpression();
@@ -531,7 +531,7 @@ public class AssociationProposer {
 										equations.add(e1);
 										equations.add(e2);
 									}
-								}								
+								}
 							}
 						}
 					}
@@ -594,22 +594,22 @@ public class AssociationProposer {
 
 		@Override
 		public void visit(Comment comment) {
-			
+
 		}
 
 		@Override
 		public void visit(CreateSchema aThis) {
-			
+
 		}
 
 		@Override
 		public void visit(ShowColumnsStatement set) {
-			
+
 		}
 
 		@Override
 		public void visit(ValuesStatement values) {
-			
+
 		}
 
 		@Override
@@ -619,37 +619,37 @@ public class AssociationProposer {
 
 		@Override
 		public void visit(ExplainStatement aThis) {
-			
+
 		}
 
 		@Override
 		public void visit(ShowStatement aThis) {
-			
+
 		}
 
 		@Override
 		public void visit(DeclareStatement aThis) {
-			
+
 		}
 
 		@Override
 		public void visit(Grant grant) {
-			
+
 		}
 
 		@Override
 		public void visit(CreateSequence createSequence) {
-			
+
 		}
 
 		@Override
 		public void visit(AlterSequence alterSequence) {
-			
+
 		}
 
 		@Override
 		public void visit(CreateFunctionalStatement createFunctionalStatement) {
-			
+
 		}
 	}
 
@@ -663,7 +663,7 @@ public class AssociationProposer {
 		public final net.sf.jailer.datamodel.Column b;
 		public final boolean isTransitive;
 		public Equation reversal;
-		
+
 		public Equation(String aliasA, net.sf.jailer.datamodel.Column a, String aliasB, net.sf.jailer.datamodel.Column b, boolean isTransive) {
 			this.aliasA = aliasA;
 			this.aliasB = aliasB;
@@ -671,7 +671,7 @@ public class AssociationProposer {
 			this.b = b;
 			this.isTransitive = isTransive;
 		}
-		
+
 		public String toString() {
 			return a + " = " + b;
 		}
@@ -771,7 +771,7 @@ public class AssociationProposer {
 					}
 				}
 			}
-			
+
 			for (Pair<String, String> aliasesPair: aliasesPairs) {
 				StringBuilder condition = new StringBuilder();
 				StringBuilder conditionNonTransitive = new StringBuilder();
@@ -824,10 +824,10 @@ public class AssociationProposer {
 	private final List<Association> knownAssociations = new ArrayList<Association>();
 	private final Map<Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table>, List<Association>> assocPerSourceDest
 		= new HashMap<Pair<net.sf.jailer.datamodel.Table, net.sf.jailer.datamodel.Table>, List<Association>>();
-	
+
 	/**
 	 * Adds an association to the proposals list.
-	 * 
+	 *
 	 * @param name name of association
 	 * @param pair (source, destination) table pair
 	 * @param association the association
@@ -859,17 +859,17 @@ public class AssociationProposer {
 			}
 		}
 		assocList.add(association);
-		
+
 		if (check) {
 			newAssociations.add(association);
 		}
-		
+
 		return true;
 	}
 
 	/**
 	 * Picks up new associations.
-	 * 
+	 *
 	 * @return new associations
 	 */
 	public synchronized List<Association> pickUpNewAssociations() {
@@ -880,7 +880,7 @@ public class AssociationProposer {
 
 	/**
 	 * Picks up already known associations (Associations that are in data model)
-	 * 
+	 *
 	 * @return already known associations
 	 */
 	public synchronized List<Association> pickUpKnownAssociations() {
