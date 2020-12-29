@@ -624,7 +624,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			final boolean[] isValid = new boolean[] { true };
 			final boolean[] selectExists = new boolean[] { false };
 			final UnderlyingTableInfo underlyingTableInfo = new UnderlyingTableInfo();
-			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(viewText));
+			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(viewText), 5);
 			st.accept(new StatementVisitor() {
 				@Override
 				public void visit(Upsert arg0) {
