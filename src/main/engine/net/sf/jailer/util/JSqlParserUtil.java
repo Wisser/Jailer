@@ -139,12 +139,14 @@ public final class JSqlParserUtil {
 			parseThread.setDaemon(true);
 			parseThread.start();
 		}
+		result.set(null);
 		statementQueue.add(parser);
 		long time = currentTime.get();
 		Object r = null;
-		for (;;) {
+		for (int i = 0; ; ++i) {
 			r = result.get();
 			if (r != null) {
+				result.set(null);
 				break;
 			}
 			long dt = currentTime.get() - time;
@@ -152,7 +154,7 @@ public final class JSqlParserUtil {
 				break;
 			}
 			try {
-				Thread.sleep(512);
+				Thread.sleep(i < 10? 1 : 10);
 			} catch (InterruptedException e) {
 				// ignore
 			}
