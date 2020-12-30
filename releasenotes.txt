@@ -1,3 +1,6 @@
+10.2.7
+  - Workaround for "Parser hangs in some queries #1013"
+
 10.2.6
   - If a foreign key is nullable, rows can now be exported with no parents without violating the integrity
     by setting the foreign key to null instead. In the same way parents can be deleted without their children.
