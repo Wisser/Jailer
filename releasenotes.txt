@@ -1,5 +1,6 @@
 10.2.7
   - Workaround for "Parser hangs in some queries #1013"
+  - Internal refactoring measures
 
 10.2.6
   - If a foreign key is nullable, rows can now be exported with no parents without violating the integrity
