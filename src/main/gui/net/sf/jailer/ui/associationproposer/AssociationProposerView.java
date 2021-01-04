@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2020 Ralf Wisser.
+ * Copyright 2007 - 2021 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,14 +93,16 @@ public class AssociationProposerView extends javax.swing.JPanel {
 	final AssociationProposer associationProposer;
 	private DataModelBasedSQLCompletionProvider provider;
 	private final ExecutionContext executionContext;
-
+	private final int timeoutSec;
+	
     /**
      * Creates new form ConstraintChecker
      * @param scriptFile file to load, if not <code>null</code>
      */
-    public AssociationProposerView(JFrame owner, DataModel dataModel, final File scriptFile, ExecutionContext executionContext) {
+    public AssociationProposerView(JFrame owner, DataModel dataModel, final File scriptFile, final int timeoutSec, ExecutionContext executionContext) {
         this.dataModel = dataModel;
         this.associationProposer = new AssociationProposer(dataModel);
+        this.timeoutSec = timeoutSec;
     	this.executionContext = executionContext;
     	
     	initComponents();
@@ -380,7 +382,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
 						            		.replaceAll("((?:\\n(?: |\\t|\\r)*?)) ?\\\\([ \\t\\r]*)(?=\\n)", "$1");
 									stmt = sqlPlusSupport.replaceVariables(stmt, null);
 							        if (!sqlPlusSupport.executeSQLPLusStatement(stmt)) {
-										addResult(bytesRead * 1000L / fileSize, null, null, associationProposer.analyze(stmt, lineNr));
+										addResult(bytesRead * 1000L / fileSize, null, null, associationProposer.analyze(stmt, lineNr, timeoutSec));
 									}
 								}
 								currentStatement.setLength(0);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2020 Ralf Wisser.
+ * Copyright 2007 - 2021 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1951,7 +1951,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_reloadActionPerformed
 
     private void analyzeSQLMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyzeSQLMenuItemActionPerformed
-    	AssociationProposerView assocProposerView = new AssociationProposerView(this, extractionModelEditor.dataModel, null, executionContext);
+    	AssociationProposerView assocProposerView = new AssociationProposerView(this, extractionModelEditor.dataModel, null, 4, executionContext);
     	if (assocProposerView.isAccepted()) {
     		openDataModelEditor(null, true);
     	}

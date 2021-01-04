@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2020 Ralf Wisser.
+ * Copyright 2007 - 2021 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2316,7 +2316,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 			out.write(currentStatement);
 			out.close();
-			AssociationProposerView associationProposer = new AssociationProposerView(getOwner(), datamodel.get(), tempFile, executionContext);
+			AssociationProposerView associationProposer = new AssociationProposerView(getOwner(), datamodel.get(), tempFile, 6, executionContext);
 			if (associationProposer.isAccepted()) {
 				openDataModelEditor(true);
 			}

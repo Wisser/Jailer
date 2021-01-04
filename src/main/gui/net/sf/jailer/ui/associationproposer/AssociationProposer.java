@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2020 Ralf Wisser.
+ * Copyright 2007 - 2021 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,11 +148,11 @@ public class AssociationProposer {
 	 * @param startLineNumber the line number at which the statement begins in the script
 	 * @return an error message if statement is invalid, else <code>null</code>
 	 */
-	public synchronized String analyze(String sqlStatement, int startLineNumber) {
+	public synchronized String analyze(String sqlStatement, int startLineNumber, int timeoutSec) {
 		sqlStatement = SqlUtil.removeNonMeaningfulFragments(sqlStatement);
 		net.sf.jsqlparser.statement.Statement st;
 		try {
-			st = JSqlParserUtil.parse(sqlStatement, 5);
+			st = JSqlParserUtil.parse(sqlStatement, timeoutSec);
 		} catch (JSQLParserException e) {
 			String prefix = "Line " + startLineNumber + ": ";
 			if (e.getCause() instanceof ParseException) {

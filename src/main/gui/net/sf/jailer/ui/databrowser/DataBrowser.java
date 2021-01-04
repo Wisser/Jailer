@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2020 Ralf Wisser.
+ * Copyright 2007 - 2021 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -4054,7 +4054,7 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     private void analyseSQLMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyseSQLMenuItem1ActionPerformed
-    	AssociationProposerView assocProposerView = new AssociationProposerView(this, datamodel.get(), null, executionContext);
+    	AssociationProposerView assocProposerView = new AssociationProposerView(this, datamodel.get(), null, 3, executionContext);
     	if (assocProposerView.isAccepted()) {
     		openDataModelEditor(true);
     	}

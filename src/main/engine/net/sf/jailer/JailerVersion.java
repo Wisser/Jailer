@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2020 Ralf Wisser.
+ * Copyright 2007 - 2021 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "10.2.6.2";
+	public static final String VERSION = "10.2.7";
 
 	/**
 	 * The Jailer working tables version.
