@@ -39,10 +39,10 @@ public class CommandLineParser {
 	 * @param args the arguments
 	 * @param silent if <code>true</code>, no error messages will be written
 	 */
-	public static CommandLine parse(String[] args, boolean silent) throws Exception {
+	public static CommandLine parse(String[] cliArgs, boolean silent) throws Exception {
 		CommandLine commandLine = new CommandLine();
 		try {
-			args = preprocessFileLookup(args);
+			String[] args = preprocessFileLookup(cliArgs);
 			List<String> theArgs = new ArrayList<String>();
 
 			final String ESC_PREFIX = "((!JAILER_MINUS_ESC!!)";
@@ -78,7 +78,7 @@ public class CommandLineParser {
 			return commandLine;
 		} catch (CmdLineException e) {
 			System.out.println(e.getMessage());
-			printUsage(args);
+			printUsage(cliArgs);
 			throw e;
 		}
 	}
@@ -92,6 +92,9 @@ public class CommandLineParser {
 				in.close();
 				if (line == null) {
 					throw new RuntimeException("File \"" + cArgs[i + 1] + "\" is empty");
+				}
+				if (i > 0 && !"-".equals(cArgs[i - 1])) {
+					result.add("-");
 				}
 				result.add(line);
 				++i;
@@ -157,7 +160,7 @@ public class CommandLineParser {
 			while (i < args.length) {
 				String arg = args[i];
 				if (arg.equals(password)) {
-					arg = "?";
+					arg = "<password> (not shown)";
 				}
 				if (i > 0) {
 					out.print(", ");
