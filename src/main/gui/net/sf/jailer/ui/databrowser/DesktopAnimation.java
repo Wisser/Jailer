@@ -39,6 +39,8 @@ public class DesktopAnimation {
 	private final double DURATION = 750;
 	private final double FAST_LINEAR_DURATION = DURATION / 4;
 	private final Desktop desktop;
+	
+	private static final boolean PRINT_FPS = false;
 
 	/**
 	 * Animation.
@@ -151,6 +153,10 @@ public class DesktopAnimation {
 		}
 	}
 
+	private long startTime = 0;
+	private long count = 0;
+	private boolean lastResult;
+    
 	/**
 	 * Performs an animation step for each animation. 
 	 */
@@ -183,6 +189,15 @@ public class DesktopAnimation {
 			}
 		}
 		desktop.checkDesktopSize();
+		if (PRINT_FPS) {
+			++count;
+			if (lastResult != result) {
+				System.out.println(result + ": " + (1000.0 * count / (double) (System.currentTimeMillis() - startTime)) + " FPS ");
+				startTime = System.currentTimeMillis();
+				lastResult = result;
+				count = 0;
+			}
+		}
 		return result;
 	}
 

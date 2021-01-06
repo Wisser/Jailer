@@ -25,6 +25,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -48,6 +49,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -537,7 +539,125 @@ public abstract class Desktop extends JDesktopPane {
 		}
 
 		final RowBrowser tableBrowser = new RowBrowser();
-		final JInternalFrame jInternalFrame = new JInternalFrame(table == null ? "SQL" : title);
+		final JInternalFrame jInternalFrame = new JInternalFrame(table == null ? "SQL" : title) {
+			private BufferedImage m_offscreen;
+			private Dimension bufferSize = null;
+		    private AffineTransform originalTransform;
+		    private int currentIFrameBufferGeneration;
+		    
+		    /**
+		     * Creates a new buffered image to use as an offscreen buffer.
+		     */
+		    protected BufferedImage getNewOffscreenBuffer(int width, int height) {
+		    	if (originalTransform != null) {
+					width = (int) (width * originalTransform.getScaleX());
+					height = (int) (height * originalTransform.getScaleY());
+		    	}
+		        BufferedImage img = null;
+		        if ( !GraphicsEnvironment.isHeadless() ) {
+		            try {
+		                img = (BufferedImage)createImage(width, height);
+		            } catch ( Exception e ) {
+		                img = null;
+		            }
+		        }
+		        if ( img == null ) {
+		            return new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		        }
+		        return img;
+		    }
+
+			@Override
+			public void paint(Graphics g) {
+				boolean useBuffer = desktopAnimation != null && desktopAnimation.isActive();
+				boolean updateBuffer = false;
+				
+				if (currentIFrameBufferGeneration != iFrameBufferGeneration) {
+					currentIFrameBufferGeneration = iFrameBufferGeneration;
+					m_offscreen = null;
+				}
+				
+				Graphics2D g2D = (Graphics2D)g;
+				AffineTransform at = g2D.getTransform();
+		    	
+		        boolean newBuffer = false;
+		    	if (at != null) {
+		    		AffineTransform scaleInstance = AffineTransform.getScaleInstance(at.getScaleX(), at.getScaleY());
+		    		if (originalTransform != null && !originalTransform.equals(scaleInstance)) {
+		    			originalTransform = null;
+		    			newBuffer = true;
+		    		}
+			        if (at.getScaleX() > 1.0 || at.getScaleY() > 1.0) {
+			        	if (at.getShearX() == 0.0 && at.getShearY() == 0.0) {
+//			        		if (at.getTranslateX() == 0.0 && at.getTranslateY() == 0.0) {
+								originalTransform = scaleInstance;
+//			        		}
+			            }
+			        }
+		    	}
+		    	if (bufferSize == null) {
+		    		m_offscreen = null;
+		    	} else if (Math.abs(bufferSize.getWidth() - getSize().width) > 2 || Math.abs(bufferSize.getHeight() - getSize().height) > 2) {
+		    		m_offscreen = null;
+		    	}
+	    		if (m_offscreen == null || newBuffer) {
+	    			if (useBuffer) {
+	    				updateBuffer = true;
+	    			}
+	    		}
+
+		    	if (!updateBuffer) {
+					if (useBuffer) {
+						Graphics2D buf_g2D = (Graphics2D) m_offscreen.getGraphics();
+				        
+				        if (originalTransform != null) {
+				        	g2D.scale(1.0 / at.getScaleX(), 1.0 / at.getScaleY());
+				        }
+				        if (g2D.getTransform().getScaleX() != 1.0 || g2D.getTransform().getScaleY() != 1.0) {
+							g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+					                RenderingHints.VALUE_ANTIALIAS_ON);
+							g2D.setRenderingHint(RenderingHints.KEY_RENDERING,
+					                RenderingHints.VALUE_RENDER_QUALITY);
+				        }
+				        
+				        // paint the visualization
+				        if (originalTransform != null) {
+				        	buf_g2D.setTransform(originalTransform);
+				        }
+				        g.drawImage(m_offscreen, 0, 0, null);
+				        buf_g2D.dispose();
+					} else {
+						m_offscreen = null;
+						super.paint(g);
+					}
+					return;
+				}
+		    	
+		        if (m_offscreen == null || newBuffer) {
+		            m_offscreen = getNewOffscreenBuffer(getWidth(), getHeight());
+		            bufferSize = getSize();
+		        }
+		        Graphics2D buf_g2D = (Graphics2D) m_offscreen.getGraphics();
+		        
+		        if (originalTransform != null) {
+		        	g2D.scale(1.0 / at.getScaleX(), 1.0 / at.getScaleY());
+		        }
+		        if (g2D.getTransform().getScaleX() != 1.0 || g2D.getTransform().getScaleY() != 1.0) {
+					g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+			                RenderingHints.VALUE_ANTIALIAS_ON);
+					g2D.setRenderingHint(RenderingHints.KEY_RENDERING,
+			                RenderingHints.VALUE_RENDER_QUALITY);
+		        }
+		        
+		        // paint the visualization
+		        if (originalTransform != null) {
+		        	buf_g2D.setTransform(originalTransform);
+		        }
+		        super.paint(buf_g2D);
+		        g.drawImage(m_offscreen, 0, 0, null);
+		        buf_g2D.dispose();
+		    }
+		};
 
 		jInternalFrame.setClosable(true);
 		jInternalFrame.setIconifiable(true);
@@ -744,6 +864,7 @@ public abstract class Desktop extends JDesktopPane {
 			protected void afterReload() {
 				synchronized (Desktop.this) {
 					addedRowPairs = null;
+					invalidateIFramesBuffers();
 				}
 			}
 			@Override
@@ -753,6 +874,7 @@ public abstract class Desktop extends JDesktopPane {
 			
 			@Override
 			protected void findClosure(Row row) {
+				invalidateIFramesBuffers();
 				Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
 				synchronized (Desktop.this) {
 					FindClosureContext findClosureContext = new FindClosureContext();
@@ -784,6 +906,7 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void findTempClosure(Row row) {
+				invalidateIFramesBuffers();
 				Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
 				Set<Pair<BrowserContentPane, Row>> closure = new HashSet<Pair<BrowserContentPane, Row>>();
 				FindClosureContext findClosureContext = new FindClosureContext();
@@ -3816,6 +3939,12 @@ public abstract class Desktop extends JDesktopPane {
 		}
 
 	}
+	
+	private int iFrameBufferGeneration;
+	
+	private void invalidateIFramesBuffers() {
+		++iFrameBufferGeneration;
+	}
 
 	/**
 	 * Maximum number of concurrent DB connections.
@@ -3846,7 +3975,5 @@ public abstract class Desktop extends JDesktopPane {
 			t.start();
 		}
 	}
-
-	// TODO render incomplete neighborhood if limit of child-browser is exceeded
 
 }
