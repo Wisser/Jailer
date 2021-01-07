@@ -1267,6 +1267,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				boolean pending = false;
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
+					if (isUpdatingTableModel) {
+						selectRows();
+						return;
+					}
 					if (!pending) {
 						pending = true;
 						UIUtil.invokeLater(() -> {

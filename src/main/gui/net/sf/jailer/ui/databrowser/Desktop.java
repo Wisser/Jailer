@@ -580,6 +580,10 @@ public abstract class Desktop extends JDesktopPane {
 		    	
 		        boolean newBuffer = false;
 		    	if (at != null) {
+		    		if (at.getShearX() != 0.0 || at.getShearY() != 0.0 || at.getScaleX() <= 0.0 || at.getScaleY() <= 0.0) {
+		    			super.paint(g);
+		    			return;
+		    		}
 		    		AffineTransform scaleInstance = AffineTransform.getScaleInstance(at.getScaleX(), at.getScaleY());
 		    		if (originalTransform != null && !originalTransform.equals(scaleInstance)) {
 		    			originalTransform = null;
@@ -587,9 +591,7 @@ public abstract class Desktop extends JDesktopPane {
 		    		}
 			        if (at.getScaleX() > 1.0 || at.getScaleY() > 1.0) {
 			        	if (at.getShearX() == 0.0 && at.getShearY() == 0.0) {
-//			        		if (at.getTranslateX() == 0.0 && at.getTranslateY() == 0.0) {
-								originalTransform = scaleInstance;
-//			        		}
+			        		originalTransform = scaleInstance;
 			            }
 			        }
 		    	}
