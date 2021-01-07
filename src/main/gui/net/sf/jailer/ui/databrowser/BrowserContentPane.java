@@ -1300,15 +1300,30 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						selectedRows.add(si);
 					}
 					if (prevSelectedRows == null || !prevSelectedRows.equals(selectedRows)) {
-						prevSelectedRows = selectedRows;
-						resetCurrentRowSelection();
-						for (int si: selectedRows) {
-							setCurrentRowSelection(si, true);
+						Component parent = SwingUtilities.getWindowAncestor(BrowserContentPane.this);
+						if (parent == null) {
+							parent = BrowserContentPane.this;
 						}
-						setCurrentRowSelection(-1, true);
-						startTimer();
+						boolean withWaitCursor = selectedRows.size() > 500;
+						if (withWaitCursor) {
+							UIUtil.setWaitCursor(parent);
+						}
+						try {
+							prevSelectedRows = selectedRows;
+							resetCurrentRowSelection();
+							for (int si: selectedRows) {
+								setCurrentRowSelection(si, true, true);
+							}
+							setCurrentRowSelection(-1, true);
+							startTimer();
+						} finally {
+							if (withWaitCursor) {
+								UIUtil.resetWaitCursor(parent);
+							}
+						}
 					}
 				}
+				
 				private void startTimer() {
 			    	final Timer newTimer = new Timer(100, null);
 			    	timer = newTimer;
@@ -2952,8 +2967,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 				resetCurrentRowSelection();
-				for (int si: selectedRows ) {
-					setCurrentRowSelection(si, true);
+				for (int si: selectedRows) {
+					setCurrentRowSelection(si, true, true);
 				}
 				setCurrentRowSelection(-1, true);
 			} else {
@@ -2987,6 +3002,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	protected void setCurrentRowSelection(int i, boolean append) {
+		setCurrentRowSelection(i, append, false);
+	}
+	
+	protected void setCurrentRowSelection(int i, boolean append, boolean withoutAdjustment) {
 		currentRowSelection = i;
 		if (i >= 0) {
 			int mi = rowsTable.getRowSorter().convertRowIndexToModel(i);
@@ -3008,12 +3027,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, pos.y, 1, pos.height));
 			}
 		}
-		rowsClosure.currentClosureRowIDs.clear();
-		for (Pair<BrowserContentPane, Row> r: rowsClosure.currentClosure) {
-			rowsClosure.currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.nonEmptyRowId));
+		if (!withoutAdjustment) {
+			rowsClosure.currentClosureRowIDs.clear();
+			for (Pair<BrowserContentPane, Row> r: rowsClosure.currentClosure) {
+				rowsClosure.currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.nonEmptyRowId));
+			}
+			rowsTable.repaint();
+			adjustClosure(this, null);
 		}
-		rowsTable.repaint();
-		adjustClosure(this, null);
 	}
 
 	private void resetCurrentRowSelection() {
