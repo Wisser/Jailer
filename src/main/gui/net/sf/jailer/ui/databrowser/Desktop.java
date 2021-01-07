@@ -247,7 +247,7 @@ public abstract class Desktop extends JDesktopPane {
 					final AtomicBoolean inProgress = new AtomicBoolean(false);
 					Map<Long, Long> durations = new LinkedHashMap<Long, Long>();
 					long lastDuration = 0;
-					final long AVG_INTERVALL_SIZE = 1000;
+					final long AVG_INTERVALL_SIZE = 4000;
 					while (true) {
 						synchronized (Desktop.this) {
 							if (!running) {
@@ -256,34 +256,32 @@ public abstract class Desktop extends JDesktopPane {
 						}
 						try {
 							inProgress.set(false);
-							long now = System.currentTimeMillis();
-							long d = lastDuration + paintDuration;
-							if (d <= 0) {
-								d = 1;
-							}
-							Iterator<Entry<Long, Long>> i = durations.entrySet().iterator();
-							while (i.hasNext()) {
-								if (i.next().getKey() < now - AVG_INTERVALL_SIZE) {
-									i.remove();
-								} else {
-									break;
+							if (!desktopAnimation.isActive()) {
+								long now = System.currentTimeMillis();
+								long d = lastDuration + paintDuration;
+								if (d <= 0) {
+									d = 1;
 								}
-							}
-							durations.put(now, d);
-							long dSum = 0;
-							for (Entry<Long, Long> e: durations.entrySet()) {
-								dSum += e.getValue();
-							}
-							long avgD = dSum / durations.size();
-							if (UIUtil.isPopupActive() && !desktopAnimation.isActive()) {
-								avgD *= 2;
-							} else {
-								avgD *= 1.05;
-							}
+								Iterator<Entry<Long, Long>> i = durations.entrySet().iterator();
+								while (i.hasNext()) {
+									if (i.next().getKey() < now - AVG_INTERVALL_SIZE) {
+										i.remove();
+									} else {
+										break;
+									}
+								}
+								durations.put(now, d);
+								long dSum = 0;
+								for (Entry<Long, Long> e: durations.entrySet()) {
+									dSum += e.getValue();
+								}
+								long avgD = dSum / durations.size();
+								if (UIUtil.isPopupActive()) {
+									avgD *= 2;
+								}
 
-							logFPS(durations, now, avgD);
-
-							Thread.sleep(Math.min(desktopAnimation.isActive()? 10 : Math.max(STEP_DELAY, avgD), 500));
+								Thread.sleep(Math.min(Math.max(STEP_DELAY, avgD), 500));
+							}
 							if (!inProgress.get()) {
 								inProgress.set(true);
 								duration.set(0);
@@ -3813,13 +3811,6 @@ public abstract class Desktop extends JDesktopPane {
 	public static void resetLastArrangeLayoutOnNewTableBrowser() {
 		lastInternalFrame = null;
 		lastBrowserContentPane = null;
-	}
-
-	private void logFPS(Map<Long, Long> durations, long now, long avgD) {
-//		long k = durations.keySet().iterator().next();
-//		if (k != now && desktopAnimation.isActive()) {
-//			System.out.println(avgD + " FPS " + 1000.0 * (((double) durations.size() / (now - k))));
-//		}
 	}
 
 	private final int RESCALE_DURATION = 500;
