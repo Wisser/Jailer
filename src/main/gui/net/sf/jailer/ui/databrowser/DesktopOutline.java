@@ -174,8 +174,8 @@ public class DesktopOutline extends JPanel {
 	
 	private void centeredDragging(MouseEvent e) {
 		if (visibleRectInOutline != null) {
-			double wb = Math.min(visibleRectInOutline.width / 2 - 2, Desktop.BROWSERTABLE_DEFAULT_WIDTH * desktop.layoutMode.factor * scale / 2);
-			double wh = Math.min(visibleRectInOutline.height / 2 - 2, Desktop.BROWSERTABLE_DEFAULT_HEIGHT * desktop.layoutMode.factor * scale / 2);
+			double wb = Math.min(visibleRectInOutline.width / 2 - 2, Desktop.BROWSERTABLE_DEFAULT_WIDTH * desktop.layoutMode.factor * scale / 3);
+			double wh = Math.min(visibleRectInOutline.height / 2 - 2, Desktop.BROWSERTABLE_DEFAULT_HEIGHT * desktop.layoutMode.factor * scale / 3);
 			Rectangle r = new Rectangle(visibleRectInOutline.x + (int) wb, visibleRectInOutline.y + (int) wh, visibleRectInOutline.width - (int) (2 * wb), visibleRectInOutline.height - (int) (2 * wh));
 			if (draggingStart == null && !r.contains(e.getPoint())) {
 				startDragging(e);
@@ -376,7 +376,7 @@ public class DesktopOutline extends JPanel {
 	}
 
 	public void setDragViewPosition(JScrollPane scrollPane, Desktop desktop, MouseEvent e) {
-		int minDist = 40;
+		int minDist = 64;
 		Point p = new Point(
 				(int) Math.max(0, Math.min(desktop.getWidth() - desktop.getVisibleRect().width, draggingViewPosition.x + (e.getPoint().x - draggingStart.x) / scale)), 
 				(int) Math.max(0, Math.min(desktop.getHeight() - desktop.getVisibleRect().height, draggingViewPosition.y + (e.getPoint().y - draggingStart.y) / scale)));
