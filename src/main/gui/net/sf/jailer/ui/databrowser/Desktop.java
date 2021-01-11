@@ -152,8 +152,13 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * Default width of a row-browser frame.
 	 */
+	private final int BROWSERTABLE_DEFAULT_MIN_X = 0;
+	private final int BROWSERTABLE_DEFAULT_MIN_Y = 6;
+
+	public static final int BROWSERTABLE_DEFAULT_HEIGHT = 460;
 	public static final int BROWSERTABLE_DEFAULT_WIDTH = 476;
-	private final int BROWSERTABLE_DEFAULT_MIN_X = 0, BROWSERTABLE_DEFAULT_MIN_Y = 6, BROWSERTABLE_DEFAULT_HEIGHT = 460, BROWSERTABLE_DEFAULT_DISTANCE = 110;
+	
+	final int BROWSERTABLE_DEFAULT_DISTANCE = 110;
 
 	/**
 	 * <code>true</code> while the desktop is visible.
@@ -291,12 +296,15 @@ public abstract class Desktop extends JDesktopPane {
 										long startTime = System.currentTimeMillis();
 										try {
 											checkAnchorRetension();
-											if (isDesktopVisible() && isAnimationEnabled()) {
-												suppressRepaintDesktop = true;
-												desktopAnimation.animate();
-												boolean cl = calculateLinks();
-												if (cl) {
-													repaint();
+											if (isDesktopVisible()) {
+												if (isAnimationEnabled()) {
+													repaintOutline();
+													suppressRepaintDesktop = true;
+													desktopAnimation.animate();
+													boolean cl = calculateLinks();
+													if (cl) {
+														repaint();
+													}
 												}
 											}
 										} finally {
@@ -1475,7 +1483,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private Color getAssociationColor1(Association association) {
+	protected Color getAssociationColor1(Association association) {
 		Color color = new java.awt.Color(0, 120, 255);
 		if (association.isIgnored()) {
 			color = new java.awt.Color(153, 153, 153);
@@ -3002,7 +3010,9 @@ public abstract class Desktop extends JDesktopPane {
 	public abstract void onNewDataModel();
 	public abstract void onLayoutChanged(boolean isLayouted, boolean scrollToCenter);
 	public abstract void updateBookmarksMenu();
-	
+	protected abstract void repaintOutline();
+	protected abstract void openGlobalPopup(MouseEvent e);
+
 	public void openSchemaMappingDialog(boolean silent) {
 		try {
 			Map<String, String> mapping = schemaMapping;

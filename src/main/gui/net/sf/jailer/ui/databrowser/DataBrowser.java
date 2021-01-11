@@ -240,7 +240,7 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         initComponents();
         initMenu();
-
+        
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, downloadMenuItem, "B");
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
 		if (datamodel != null) {
@@ -284,14 +284,14 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		tablesComboBox.grabFocus();
 
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1;
         navigationPanel.add(tablesComboBox, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
@@ -437,7 +437,7 @@ public class DataBrowser extends javax.swing.JFrame {
         hiddenPanel.setVisible(false);
         borderBrowserPanel.add(borderBrowser, java.awt.BorderLayout.CENTER);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
@@ -452,7 +452,7 @@ public class DataBrowser extends javax.swing.JFrame {
 //            private static final long serialVersionUID = -947582621664272477L;
 //        }, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
@@ -663,6 +663,16 @@ public class DataBrowser extends javax.swing.JFrame {
 					metaDataDetailsPanel.showMetaDataDetails(passTable? metaDataSource.toMDTable(table): null, table, row, true, datamodel);
 				}
 			}
+			
+			@Override
+			protected void repaintOutline() {
+				DataBrowser.this.repaintOutline();
+			}
+
+			@Override
+			protected void openGlobalPopup(MouseEvent e) {
+				DataBrowser.this.openGlobalPopup(e);
+			}
         };
 
 		desktop.addMouseMotionListener(new MouseMotionListener() {
@@ -693,6 +703,15 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void mouseDragged(MouseEvent e) {
 			}
 		});
+
+		desktopOutline = new DesktopOutline(outLinePanel, jScrollPane1, desktop);
+        java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.weightx = 1;
+        constraints.weighty = 1;
+        constraints.fill = GridBagConstraints.BOTH;
+		outLinePanel.add(desktopOutline, constraints);
 
         new BookmarksPanel(this, bookmarkMenu, desktop, executionContext).updateBookmarksMenu();
 
@@ -784,71 +803,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getButton() != MouseEvent.BUTTON3) {
-                    return;
-                }
-                JPopupMenu popup = new JPopupMenu();
-                JMenuItem i = new JMenuItem("Arrange Layout");
-                popup.add(i);
-                i.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        layoutMenuItemActionPerformed(e);
-                    }
-                });
-                ButtonGroup group = new ButtonGroup();
-                popup.add(new JSeparator());
-                i = new JRadioButtonMenuItem("Thumbnail Layout");
-                i.setSelected(desktop.layoutMode == LayoutMode.THUMBNAIL);
-                group.add(i);
-                popup.add(i);
-                i.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        thumbnailLayoutRadioButtonMenuItemActionPerformed(e);
-                    }
-                });
-                i = new JRadioButtonMenuItem("Tiny Layout");
-                i.setSelected(desktop.layoutMode == LayoutMode.TINY);
-                group.add(i);
-                popup.add(i);
-                i.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        tinyLayoutRadioButtonMenuItemActionPerformed(e);
-                    }
-                });
-                i = new JRadioButtonMenuItem("Small Layout");
-                i.setSelected(desktop.layoutMode == LayoutMode.SMALL);
-                group.add(i);
-                popup.add(i);
-                i.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        smallLayoutRadioButtonMenuItemActionPerformed(e);
-                    }
-                });
-                i = new JRadioButtonMenuItem("Medium Layout");
-                i.setSelected(desktop.layoutMode == LayoutMode.MEDIUM);
-                group.add(i);
-                popup.add(i);
-                i.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        mediumLayoutRadioButtonMenuItemActionPerformed(e);
-                    }
-                });
-                i = new JRadioButtonMenuItem("Large Layout");
-                i.setSelected(desktop.layoutMode == LayoutMode.LARGE);
-                group.add(i);
-                popup.add(i);
-                i.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        largeLayoutRadioButtonMenuItemActionPerformed(e);
-                    }
-                });
-                UIUtil.showPopup(desktop, e.getX(), e.getY(), popup);
+                openGlobalPopup(e);
             }
         };
 
@@ -1159,6 +1114,7 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationPanel = new javax.swing.JPanel();
         navigationTreeScrollPane = new javax.swing.JScrollPane();
         navigationTree = new javax.swing.JTree();
+        outLinePanel = new javax.swing.JPanel();
         openTableButton = new javax.swing.JButton();
         tablesCardPanel = new javax.swing.JPanel();
         tablesPanel = new javax.swing.JPanel();
@@ -1492,6 +1448,15 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         navigationPanel.add(navigationTreeScrollPane, gridBagConstraints);
+
+        outLinePanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        navigationPanel.add(outLinePanel, gridBagConstraints);
 
         openTableButton.setText("Open");
         openTableButton.setToolTipText("Open table browser for the selected table");
@@ -2857,6 +2822,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem newBrowserjMenuItem;
     private javax.swing.JMenuItem newWindowMenuItem;
     private javax.swing.JButton openTableButton;
+    private javax.swing.JPanel outLinePanel;
     private javax.swing.JMenuItem reconnectMenuItem;
     private javax.swing.JButton refreshButton;
     private javax.swing.JMenuItem restoreSessionItem;
@@ -4232,6 +4198,87 @@ public class DataBrowser extends javax.swing.JFrame {
 		return desktop.getSqlConsole(switchToConsole);
 	}
 
+	private Dimension outlineMinimumSize = null;
+
+	private void repaintOutline() {
+		if (desktopOutline != null) {
+			Dimension minimumSize = desktopOutline.getMinimumSize();
+			if (outlineMinimumSize == null || !outlineMinimumSize.equals(minimumSize)) {
+				outlineMinimumSize = minimumSize;
+				outLinePanel.revalidate();
+			}
+			outLinePanel.repaint();
+		}
+	}
+
+	public void openGlobalPopup(MouseEvent e) {
+		if (e.getButton() != MouseEvent.BUTTON3) {
+            return;
+        }
+        JPopupMenu popup = new JPopupMenu();
+        JMenuItem i = new JMenuItem("Arrange Layout");
+        popup.add(i);
+        i.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                layoutMenuItemActionPerformed(e);
+            }
+        });
+        ButtonGroup group = new ButtonGroup();
+        popup.add(new JSeparator());
+        i = new JRadioButtonMenuItem("Thumbnail Layout");
+        i.setSelected(desktop.layoutMode == LayoutMode.THUMBNAIL);
+        group.add(i);
+        popup.add(i);
+        i.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                thumbnailLayoutRadioButtonMenuItemActionPerformed(e);
+            }
+        });
+        i = new JRadioButtonMenuItem("Tiny Layout");
+        i.setSelected(desktop.layoutMode == LayoutMode.TINY);
+        group.add(i);
+        popup.add(i);
+        i.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tinyLayoutRadioButtonMenuItemActionPerformed(e);
+            }
+        });
+        i = new JRadioButtonMenuItem("Small Layout");
+        i.setSelected(desktop.layoutMode == LayoutMode.SMALL);
+        group.add(i);
+        popup.add(i);
+        i.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                smallLayoutRadioButtonMenuItemActionPerformed(e);
+            }
+        });
+        i = new JRadioButtonMenuItem("Medium Layout");
+        i.setSelected(desktop.layoutMode == LayoutMode.MEDIUM);
+        group.add(i);
+        popup.add(i);
+        i.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mediumLayoutRadioButtonMenuItemActionPerformed(e);
+            }
+        });
+        i = new JRadioButtonMenuItem("Large Layout");
+        i.setSelected(desktop.layoutMode == LayoutMode.LARGE);
+        group.add(i);
+        popup.add(i);
+        i.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                largeLayoutRadioButtonMenuItemActionPerformed(e);
+            }
+        });
+        UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
+	}
+	
 	private static final String LAST_SESSION_FILE = ".lastsession";
 
 	private void storeLastSession() {
@@ -4258,6 +4305,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
 	private DesktopAnchorManager anchorManager;
+	private DesktopOutline desktopOutline;
 
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;
