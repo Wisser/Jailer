@@ -296,7 +296,7 @@ public abstract class Desktop extends JDesktopPane {
 												desktopAnimation.animate();
 												boolean cl = calculateLinks();
 												if (cl) {
-													repaintScrollPane();
+													repaint();
 												}
 											}
 										} finally {
@@ -1633,16 +1633,8 @@ public abstract class Desktop extends JDesktopPane {
 	private void repaintDesktop() {
 		if (!suppressRepaintDesktop) {
 			calculateLinks();
-			repaintScrollPane();
+			repaint();
 		}
-	}
-
-	private void repaintScrollPane() {
-		JScrollPane scrollPane = getScrollPane();
-		scrollPane.setSize(scrollPane.getWidth() + 1, scrollPane.getHeight() + 1);
-		scrollPane.setSize(scrollPane.getWidth() - 1, scrollPane.getHeight() - 1);
-		scrollPane.invalidate();
-		scrollPane.validate();
 	}
 
 	/**
