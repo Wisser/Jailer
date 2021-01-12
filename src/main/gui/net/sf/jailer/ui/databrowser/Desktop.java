@@ -674,8 +674,8 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
 				long currentTime = System.currentTimeMillis();
-				startRescaleMode(currentTime, evt);
-				onMouseWheelMoved(evt, currentTime);
+				startRescaleMode(currentTime, evt.getX(), evt.getY(), evt.getComponent());
+				onMouseWheelMoved(evt.getX(), evt.getY(), evt.getWheelRotation(), evt.getComponent(), currentTime);
 				onMouseWheelMoved(evt, parentFrame.getDesktopScrollPane(), currentTime);
 			}
 		});
@@ -1256,7 +1256,7 @@ public abstract class Desktop extends JDesktopPane {
 			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
 				long currentTime = System.currentTimeMillis();
 				checkRescaleMode(evt, currentTime);
-				onMouseWheelMoved(evt, currentTime);
+				onMouseWheelMoved(evt.getX(), evt.getY(), evt.getWheelRotation(), evt.getComponent(), currentTime);
 				if (evt.getSource() instanceof JScrollPane) {
 					onMouseWheelMoved(evt, (JScrollPane) evt.getSource(), currentTime);
 				}
@@ -2889,13 +2889,13 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	void onMouseWheelMoved(java.awt.event.MouseWheelEvent e, long currentTime) {
+	void onMouseWheelMoved(int x, int y, int wheelRotation, Component component, long currentTime) {
 		if (inRescaleMode(currentTime)) {
 			int d = 0;
-			if (e.getWheelRotation() < 0) {
+			if (wheelRotation < 0) {
 				d = 1;
 			}
-			if (e.getWheelRotation() > 0) {
+			if (wheelRotation > 0) {
 				d = -1;
 			}
 			if (d != 0) {
@@ -2906,7 +2906,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 				d += layoutMode.ordinal();
 				if (d >= 0 && d < LayoutMode.values().length) {
-					Point fixed = SwingUtilities.convertPoint(e.getComponent(), e.getPoint().x, e.getPoint().y, Desktop.this);
+					Point fixed = SwingUtilities.convertPoint(component, new Point(x, y), Desktop.this);
 					rescaleLayout(LayoutMode.values()[d], fixed);
 					rescaleFactorHasChanged = true;
 				}
@@ -3822,10 +3822,10 @@ public abstract class Desktop extends JDesktopPane {
 	private Point rescaleStartPosition;
 	private boolean rescaleFactorHasChanged = false;
 
-	public void startRescaleMode(long currentTime, MouseWheelEvent evt) {
+	public void startRescaleMode(long currentTime, int x, int y, Component component) {
 		rescaleModeEnd = currentTime + RESCALE_DURATION;
-		rescaleStartPosition = new Point(evt.getX(),  evt.getY());
-		SwingUtilities.convertPointToScreen(rescaleStartPosition, evt.getComponent());
+		rescaleStartPosition = new Point(x, y);
+		SwingUtilities.convertPointToScreen(rescaleStartPosition, component);
 	}
 	
 	public void checkRescaleMode(MouseWheelEvent evt, long currentTime) {

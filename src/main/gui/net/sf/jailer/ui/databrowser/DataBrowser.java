@@ -2400,8 +2400,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private void jScrollPane1MouseWheelMoved(java.awt.event.MouseWheelEvent evt) {// GEN-FIRST:event_jScrollPane1MouseWheelMoved
 		long currentTime = System.currentTimeMillis();
-		desktop.startRescaleMode(currentTime, evt);
-		desktop.onMouseWheelMoved(evt, currentTime);
+		desktop.startRescaleMode(currentTime, evt.getX(), evt.getY(), evt.getComponent());
+		desktop.onMouseWheelMoved(evt.getX(), evt.getY(), evt.getWheelRotation(), evt.getComponent(), currentTime);
         desktop.onMouseWheelMoved(evt, jScrollPane1, currentTime);
     }// GEN-LAST:event_jScrollPane1MouseWheelMoved
 
@@ -2556,8 +2556,14 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         dbConnectionDialog.autoConnect();
         if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
-    		dataBrowser.setConnection(dbConnectionDialog);
-            if (dataBrowser.session != null) {
+        	try {
+                dataBrowser.setConnection(dbConnectionDialog);
+        	} catch (Throwable t) {
+            	UIUtil.showException(null, "Error", t);
+            	dataBrowser.dispose();
+                return dataBrowser;
+            }
+    		if (dataBrowser.session != null) {
 	            dataBrowser.askForDataModel();
 	            dataBrowser.desktop.openSchemaMappingDialog(true);
 	            dataBrowser.updateStatusBar();

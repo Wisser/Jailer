@@ -30,6 +30,8 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyVetoException;
 import java.util.List;
@@ -157,6 +159,19 @@ public class DesktopOutline extends JPanel {
 				    }
 				    UIUtil.fit(popup);
 				    UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
+				}
+			}
+		});
+		
+		addMouseWheelListener(new MouseWheelListener() {
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				if (scale >= 0.0) {
+					long currentTime = System.currentTimeMillis();
+					int x = (int) (((e.getX() - offX) / scale) + 0.5);
+					int y = (int) (((e.getY() - offY) / scale) + 0.5);
+					desktop.startRescaleMode(currentTime, x, y, desktop);
+					desktop.onMouseWheelMoved(x, y, e.getWheelRotation(), desktop, currentTime);
 				}
 			}
 		});
