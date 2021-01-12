@@ -575,9 +575,8 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			public void paint(Graphics g) {
-				boolean useBuffer = desktopAnimation != null && desktopAnimation.isActive();
+				boolean useBuffer = (desktopAnimation != null && desktopAnimation.isActive()) || desktopOutlineDraggingInProgress();
 				boolean updateBuffer = false;
-				
 				if (currentIFrameBufferGeneration != iFrameBufferGeneration) {
 					currentIFrameBufferGeneration = iFrameBufferGeneration;
 					m_offscreen = null;
@@ -3011,6 +3010,7 @@ public abstract class Desktop extends JDesktopPane {
 	public abstract void onLayoutChanged(boolean isLayouted, boolean scrollToCenter);
 	public abstract void updateBookmarksMenu();
 	protected abstract void repaintOutline();
+	protected abstract boolean desktopOutlineDraggingInProgress();
 	protected abstract void openGlobalPopup(MouseEvent e);
 
 	public void openSchemaMappingDialog(boolean silent) {

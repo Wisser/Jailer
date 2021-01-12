@@ -673,6 +673,11 @@ public class DataBrowser extends javax.swing.JFrame {
 			protected void openGlobalPopup(MouseEvent e) {
 				DataBrowser.this.openGlobalPopup(e);
 			}
+
+			@Override
+			protected boolean desktopOutlineDraggingInProgress() {
+				return desktopOutline != null && desktopOutline.draggingInProgress();
+			}
         };
 
 		desktop.addMouseMotionListener(new MouseMotionListener() {
@@ -704,7 +709,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		});
 
-		desktopOutline = new DesktopOutline(outLinePanel, jScrollPane1, desktop);
+		desktopOutline = new DesktopOutline(outLinePanel, controlPanel, jScrollPane1, desktop);
         java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
@@ -1108,7 +1113,7 @@ public class DataBrowser extends javax.swing.JFrame {
         closurePanel = new javax.swing.JPanel();
         consoleDummyPanel = new javax.swing.JPanel();
         addSQLConsoleTab = new javax.swing.JPanel();
-        jPanel4 = new javax.swing.JPanel();
+        controlPanel = new javax.swing.JPanel();
         jSplitPane4 = new javax.swing.JSplitPane();
         tableTreesTabbedPane = new javax.swing.JTabbedPane();
         navigationPanel = new javax.swing.JPanel();
@@ -1424,7 +1429,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jSplitPane1.setRightComponent(jPanel5);
 
-        jPanel4.setLayout(new java.awt.GridBagLayout());
+        controlPanel.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane4.setResizeWeight(1.0);
@@ -1667,9 +1672,9 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel4.add(jSplitPane4, gridBagConstraints);
+        controlPanel.add(jSplitPane4, gridBagConstraints);
 
-        jSplitPane1.setLeftComponent(jPanel4);
+        jSplitPane1.setLeftComponent(controlPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2725,6 +2730,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem consistencyCheckMenuItem;
     private javax.swing.JMenuItem consistencyCheckMenuItem1;
     private javax.swing.JPanel consoleDummyPanel;
+    public javax.swing.JPanel controlPanel;
     private javax.swing.JMenuItem createCLIItem;
     private javax.swing.JMenuItem createExtractionModelMenuItem;
     private javax.swing.JMenuItem dataImport;
@@ -2775,7 +2781,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;

@@ -51,14 +51,16 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 public class DesktopOutline extends JPanel {
 	
 	private final JPanel outLinePanel;
+	private final JPanel controlPanel;
 	private final Desktop desktop;
 	private final JScrollPane scrollPane;
 	private Point draggingStart = null;
 	private Point draggingViewPosition = null;
 	public Rectangle visibleRectInOutline = null;
 	
-	public DesktopOutline(JPanel outLinePanel, JScrollPane scrollPane, Desktop desktop) {
+	public DesktopOutline(JPanel outLinePanel, JPanel controlPanel, JScrollPane scrollPane, Desktop desktop) {
 		this.outLinePanel = outLinePanel;
+		this.controlPanel = controlPanel;
 		this.scrollPane = scrollPane;
 		this.desktop = desktop;
 		setOpaque(false);
@@ -163,7 +165,7 @@ public class DesktopOutline extends JPanel {
 	private void startDragging(MouseEvent e) {
 		draggingStart = e.getPoint();
 		draggingViewPosition = scrollPane.getViewport().getViewPosition();
-		setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 	}
 
 	private void stopDragging() {
@@ -266,7 +268,7 @@ public class DesktopOutline extends JPanel {
 					}
 					g2d.setColor(Color.black);
 					Rectangle clip = g2d.getClipBounds();
-					g2d.setClip(sx, sy, sw, sh);
+					g2d.clipRect(sx, sy, sw, sh);
 					String title = " " + browser.internalFrame.getTitle();
 					Rectangle2D stringBounds = fontMetrics.getStringBounds(title, g2d);
 					g2d.drawString(title, (int)(offX + scale * rectangle.x + Math.max(0, (sw - stringBounds.getWidth()) / 2)), (int)(offY + scale * rectangle.y + stringBounds.getHeight() * 1.2));
@@ -321,11 +323,16 @@ public class DesktopOutline extends JPanel {
 
 	@Override
 	public Dimension getMinimumSize() {
+		int maxHeight = (int) ((Math.max(0.0, Math.min(1.5, (controlPanel.getHeight() - 750) / 500.0)) + 1) * 220.0);
 		if (desktop.getWidth() == 0 || desktop.getHeight() == 0) {
-			return new Dimension(1, 220);
+			return new Dimension(1, maxHeight);
 		}
 		double r = 6;
-		return new Dimension(1, (int) (Math.min(220, (((double) outLinePanel.getWidth() - r * 2.0) / (double) desktop.getWidth() * (double) desktop.getHeight())) + r * 2.0));
+		return new Dimension(1, (int) (Math.min(maxHeight, (((double) outLinePanel.getWidth() - r * 2.0) / (double) desktop.getWidth() * (double) desktop.getHeight())) + r * 2.0));
+	}
+	
+	public boolean draggingInProgress() {
+		return draggingStart != null;
 	}
 
 	private Rectangle subBorder(Rectangle rect) {
@@ -375,7 +382,7 @@ public class DesktopOutline extends JPanel {
 		return browser;
 	}
 
-	public void setDragViewPosition(JScrollPane scrollPane, Desktop desktop, MouseEvent e) {
+	private void setDragViewPosition(JScrollPane scrollPane, Desktop desktop, MouseEvent e) {
 		int minDist = 64;
 		Point p = new Point(
 				(int) Math.max(0, Math.min(desktop.getWidth() - desktop.getVisibleRect().width, draggingViewPosition.x + (e.getPoint().x - draggingStart.x) / scale)), 
@@ -386,5 +393,5 @@ public class DesktopOutline extends JPanel {
 						snap(desktop.getHeight() - desktop.getVisibleRect().height, snap(0, p.y, minDist), minDist))
 				);
 	}
-
+	
 }
