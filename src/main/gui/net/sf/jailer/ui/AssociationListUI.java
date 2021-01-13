@@ -929,7 +929,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	}//GEN-LAST:event_unhideButtonActionPerformed
 
 	private void doItButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doItButtonActionPerformed
-		if (selection.size() < 50 || JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Resolve " + selection.size() + " associations?", "Resolve", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+		if (selection.size() < 12 || JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Do you really want to resolve " + selection.size() + " associations?", "Resolve many associations", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
 			applyAction(new ArrayList<AssociationListUI.AssociationModel>(selection));
 		}
 	}//GEN-LAST:event_doItButtonActionPerformed

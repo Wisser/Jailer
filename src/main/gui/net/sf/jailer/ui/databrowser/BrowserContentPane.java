@@ -2320,7 +2320,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		m.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				closeWithChildren(parentComponent);
+				if (closeWithChildren(parentComponent)) {
+					onLayoutChanged();
+				}
 			}
 		});
 		popup.add(new JSeparator());
@@ -5901,6 +5903,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void deselectChildrenIfNeededWithoutReload();
 	protected abstract int getReloadLimit();
 	protected void changeColumnOrder(Table table) {
+	}
+	protected void onLayoutChanged() {
 	}
 	protected void rebase() {
 	}

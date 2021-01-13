@@ -27,6 +27,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -36,6 +37,7 @@ import java.awt.geom.Rectangle2D;
 import java.beans.PropertyVetoException;
 import java.util.List;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -52,7 +54,7 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 @SuppressWarnings("serial")
 public class DesktopOutline extends JPanel {
 	
-	private final JPanel outLinePanel;
+	private final JComponent sameWidthFriend;
 	private final JPanel controlPanel;
 	private final Desktop desktop;
 	private final JScrollPane scrollPane;
@@ -60,8 +62,8 @@ public class DesktopOutline extends JPanel {
 	private Point draggingViewPosition = null;
 	public Rectangle visibleRectInOutline = null;
 	
-	public DesktopOutline(JPanel outLinePanel, JPanel controlPanel, JScrollPane scrollPane, Desktop desktop) {
-		this.outLinePanel = outLinePanel;
+	public DesktopOutline(JComponent sameWidthFriend, JPanel controlPanel, JScrollPane scrollPane, Desktop desktop) {
+		this.sameWidthFriend = sameWidthFriend;
 		this.controlPanel = controlPanel;
 		this.scrollPane = scrollPane;
 		this.desktop = desktop;
@@ -150,7 +152,7 @@ public class DesktopOutline extends JPanel {
 				}
 				JPopupMenu popup = browser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
 				if (popup != null) {
-				    JPopupMenu popup2 = browser.browserContentPane.createSqlPopupMenu(-1, 0, 0, true, desktop);
+				    JPopupMenu popup2 = browser.browserContentPane.createSqlPopupMenu(-1, 0, 0, true, DesktopOutline.this);
 				    if (popup2.getComponentCount() > 0 && popup.getComponentCount() > 0) {
 				         popup.add(new JSeparator());
 				    }
@@ -219,7 +221,7 @@ public class DesktopOutline extends JPanel {
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 			double r = 6;
-			scale = Math.min(((double) outLinePanel.getWidth() - r * 2.0) / (double) desktop.getWidth(), ((double) (outLinePanel.getHeight() - r * 2.0) / (double) desktop.getHeight()));
+			scale = Math.min(((double) sameWidthFriend.getWidth() - r * 2.0) / (double) desktop.getWidth(), ((double) (getHeight() - r * 2.0) / (double) desktop.getHeight()));
 			offX = r;
 			offY = r - 1; // Math.max(0, (outLinePanel.getHeight() - outlineSize.getHeight()) / 2);
 			BasicStroke stroke = new BasicStroke();
@@ -233,7 +235,7 @@ public class DesktopOutline extends JPanel {
 			g2d.setColor(backgroundColor);
 			int gx = (int) (offX + scale * x + 0.5);
 			int gy = (int)(offY + scale * y + 0.5);
-			int gw = snap((int) (outLinePanel.getWidth() - (offX + scale * x + 0.5) - 1), (int)(scale * width + 0.5), 32);
+			int gw = snap((int) (sameWidthFriend.getWidth() - (offX + scale * x + 0.5) - 1), (int)(scale * width + 0.5), 32);
 			int gh = (int)(scale * height + 0.5);
 			GradientPaint paint = new GradientPaint(
 					0, 0, backgroundColor,
@@ -244,7 +246,7 @@ public class DesktopOutline extends JPanel {
 			g2d.setStroke(stroke);
 			g2d.drawRoundRect(gx, gy, gw, gh, 2, 2);
 			
-			g2d.setStroke(new BasicStroke(2));
+			g2d.setStroke(new BasicStroke(1));
 			for (RowBrowser browser: getBrowsers()) {
 				if (!browser.isHidden()) {
 					RowBrowser parentBrowser = browser.parent;
@@ -282,15 +284,48 @@ public class DesktopOutline extends JPanel {
 						g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
 					}
 					g2d.setColor(Color.black);
-					Rectangle clip = g2d.getClipBounds();
+					Shape clip = g2d.getClip();
 					g2d.clipRect(sx, sy, sw, sh);
-					String title = " " + browser.internalFrame.getTitle();
+					String title = browser.internalFrame.getTitle();
 					Rectangle2D stringBounds = fontMetrics.getStringBounds(title, g2d);
 					double hf = 1.2;
-					if (stringBounds.getHeight() < hf * sh) {
+					if (stringBounds.getHeight() * hf * hf >= sh) {
 						hf = 1.0;
 					}
-					g2d.drawString(title, (int)(offX + scale * rectangle.x + Math.max(0, (sw - stringBounds.getWidth()) / 2)), (int)(offY + scale * rectangle.y + stringBounds.getHeight() * hf));
+					if (stringBounds.getHeight() / 2 < sh - 1) {
+						int linesAvailable = (int) (sh / Math.max(1, stringBounds.getHeight()) + 0.5);
+						int linesNeeded = 1;
+						final int sb = 4;
+						int maxWidth = sw - 2 * sb;
+						if (linesAvailable > 1 && stringBounds.getWidth() > maxWidth) {
+							String l = title;
+							for (int i = 0; ; ++i) {
+								int lWidth = (int) stringBounds.getWidth();
+								int guess = Math.min(l.length(), (int) (l.length() * maxWidth / lWidth));
+								String l1 = null;
+							    while (guess > 0) {
+							    	l1 = l.substring(0, guess);
+							    	stringBounds = fontMetrics.getStringBounds(l1, g2d);
+							    	if (stringBounds.getWidth() <= maxWidth) {
+							    		break;
+							    	}
+							    	--guess;
+							    }
+							    if (l1 == null) {
+							    	break;
+							    }
+								g2d.drawString(l1, sx + sb, (int)(sy + stringBounds.getHeight() * hf + i * stringBounds.getHeight()));
+							    l = l.substring(guess);
+							    ++linesNeeded;
+							    if (linesNeeded > linesAvailable) {
+							    	break;
+							    }
+							}
+						}
+						if (linesNeeded <= 1) {
+							g2d.drawString(title, (int)(sx + Math.max(0, (sw - stringBounds.getWidth()) / 2)), (int)(sy + stringBounds.getHeight() * hf));
+						}
+					}
 					g2d.setClip(clip);
 				}
 				if (!browser.isHidden() && browser.internalFrame.isSelected()) {
@@ -347,7 +382,7 @@ public class DesktopOutline extends JPanel {
 			return new Dimension(1, maxHeight);
 		}
 		double r = 6;
-		return new Dimension(1, (int) (Math.min(maxHeight, (((double) outLinePanel.getWidth() - r * 2.0) / (double) desktop.getWidth() * (double) desktop.getHeight())) + r * 2.0));
+		return new Dimension(1, Math.max(1, (int) (Math.min(maxHeight, (((double) sameWidthFriend.getWidth() - r * 2.0) / (double) desktop.getWidth() * (double) desktop.getHeight())) + r * 2.0)));
 	}
 	
 	public boolean draggingInProgress() {
@@ -355,10 +390,7 @@ public class DesktopOutline extends JPanel {
 	}
 
 	private Rectangle subBorder(Rectangle rect) {
-		return subBorder(rect, 32);
-	}
-	
-	private Rectangle subBorder(Rectangle rect, int border) {
+		int border = (int) (4 / scale);
 		return new Rectangle(rect.x + border, rect.y + border, rect.width - 2 * border, rect.height - 2 * border);
 	}
 
@@ -412,5 +444,5 @@ public class DesktopOutline extends JPanel {
 						snap(desktop.getHeight() - desktop.getVisibleRect().height, snap(0, p.y, minDist), minDist))
 				);
 	}
-	
+
 }

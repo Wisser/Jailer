@@ -1206,7 +1206,7 @@ public abstract class Desktop extends JDesktopPane {
 					UIUtil.invokeLater(2, new Runnable() {
 						@Override
 						public void run() {
-							onLayoutChanged(false, true);
+							Desktop.this.onLayoutChanged(false, true);
 						}
 					});
 					UISettings.s7 += 1000;
@@ -1249,6 +1249,11 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected boolean shouldShowLoadErrors() {
 				return isDesktopVisible();
+			}
+
+			@Override
+			protected void onLayoutChanged() {
+				Desktop.this.onLayoutChanged(false, false);
 			}
 
 		};
@@ -2472,7 +2477,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private Dimension currentDesktopnSize;
-	private Dimension postAnimationDesktopnSize;
+	private Dimension postAnimationDesktopSize;
 
 	/**
 	 * Sets all component size properties ( maximum, minimum, preferred) to the
@@ -2614,17 +2619,27 @@ public abstract class Desktop extends JDesktopPane {
 					d.setSize(d.getWidth() - scrollInsets.left - scrollInsets.right, d.getHeight() - scrollInsets.top - scrollInsets.bottom);
 				}
 
+				minimumDesktopSize = new Dimension(Math.max(paX, x), Math.max(paY, y));
+				if (minimumDesktopSize.getWidth() == 0 || minimumDesktopSize.getHeight() == 0) {
+					minimumDesktopSize = null;
+				}
 				if (x <= d.getWidth() || isMaximized)
 					x = ((int) d.getWidth()) - 20;
 				if (y <= d.getHeight() || isMaximized)
 					y = ((int) d.getHeight()) - 20;
-				postAnimationDesktopnSize = new Dimension(Math.max(paX, x), Math.max(paY, y));
+				postAnimationDesktopSize = new Dimension(Math.max(paX, x), Math.max(paY, y));
 				if (desktop.setAllSize(x, y) && !desktopAnimation.isActive()) {
 					scrollPane.invalidate();
 					scrollPane.validate();
 				}
 			}
 		}
+	}
+
+	private Dimension minimumDesktopSize;
+	
+	public Dimension getMinimumDesktopSize() {
+		return minimumDesktopSize != null? minimumDesktopSize : getSize();
 	}
 
 	public synchronized void stop() {
@@ -3745,7 +3760,7 @@ public abstract class Desktop extends JDesktopPane {
 			y = 0;
 		}
 		Rectangle r = new Rectangle(x, y, Math.max(1, w), Math.max(1, h));
-		Rectangle vr = new Rectangle(postAnimationDesktopnSize != null? postAnimationDesktopnSize : currentDesktopnSize == null? getScrollPane().getViewport().getPreferredSize() : currentDesktopnSize);
+		Rectangle vr = new Rectangle(postAnimationDesktopSize != null? postAnimationDesktopSize : currentDesktopnSize == null? getScrollPane().getViewport().getPreferredSize() : currentDesktopnSize);
 		desktopAnimation.scrollRectToVisible(r.intersection(vr), false);
 	}
 

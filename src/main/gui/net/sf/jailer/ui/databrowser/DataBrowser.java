@@ -709,7 +709,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		});
 
-		desktopOutline = new DesktopOutline(outLinePanel, controlPanel, jScrollPane1, desktop);
+		desktopOutline = new DesktopOutline(navigationTreeScrollPane, controlPanel, jScrollPane1, desktop);
         java.awt.GridBagConstraints constraints = new java.awt.GridBagConstraints();
         constraints.gridx = 0;
         constraints.gridy = 0;
