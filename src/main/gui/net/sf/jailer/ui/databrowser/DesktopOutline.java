@@ -286,7 +286,11 @@ public class DesktopOutline extends JPanel {
 					g2d.clipRect(sx, sy, sw, sh);
 					String title = " " + browser.internalFrame.getTitle();
 					Rectangle2D stringBounds = fontMetrics.getStringBounds(title, g2d);
-					g2d.drawString(title, (int)(offX + scale * rectangle.x + Math.max(0, (sw - stringBounds.getWidth()) / 2)), (int)(offY + scale * rectangle.y + stringBounds.getHeight() * 1.2));
+					double hf = 1.2;
+					if (stringBounds.getHeight() < hf * sh) {
+						hf = 1.0;
+					}
+					g2d.drawString(title, (int)(offX + scale * rectangle.x + Math.max(0, (sw - stringBounds.getWidth()) / 2)), (int)(offY + scale * rectangle.y + stringBounds.getHeight() * hf));
 					g2d.setClip(clip);
 				}
 				if (!browser.isHidden() && browser.internalFrame.isSelected()) {

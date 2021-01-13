@@ -1738,25 +1738,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					final int MAX_COUNT = 12; // TODO create a dialog to let the user select the items to perform if there are more than that
 					Component parent = SwingUtilities.getWindowAncestor(BrowserContentPane.this);
 					if (parent == null) {
 						parent = BrowserContentPane.this;
 					}
-					UIUtil.setWaitCursor(parent);
-					try {
-						Desktop.noArrangeLayoutOnNewTableBrowser = true;
-						Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = todoList.size() > 1;
-						Desktop.resetLastArrangeLayoutOnNewTableBrowser();
-						for (int i = 0; i < todoList.size(); ++i) {
-							if (i == todoList.size() - 1) {
-								Desktop.noArrangeLayoutOnNewTableBrowser = false;
+					if (todoList.size() <= MAX_COUNT || JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(parent, "Do you really want to open " + todoList.size() + " table browser?", "Opening a lot of table browsers", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+						UIUtil.setWaitCursor(parent);
+						try {
+							Desktop.noArrangeLayoutOnNewTableBrowser = true;
+							Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = todoList.size() > 1;
+							Desktop.resetLastArrangeLayoutOnNewTableBrowser();
+							for (int i = 0; i < todoList.size(); ++i) {
+								if (i == todoList.size() - 1) {
+									Desktop.noArrangeLayoutOnNewTableBrowser = false;
+								}
+								todoList.get(i).actionPerformed(e);
 							}
-							todoList.get(i).actionPerformed(e);
+						} finally {
+							Desktop.noArrangeLayoutOnNewTableBrowser = false;
+							Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = false;
+							UIUtil.resetWaitCursor(parent);
 						}
-					} finally {
-						Desktop.noArrangeLayoutOnNewTableBrowser = false;
-						Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = false;
-						UIUtil.resetWaitCursor(parent);
 					}
 				}
 			});

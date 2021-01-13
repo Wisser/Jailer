@@ -296,9 +296,9 @@ public abstract class Desktop extends JDesktopPane {
 										long startTime = System.currentTimeMillis();
 										try {
 											checkAnchorRetension();
-											if (isDesktopVisible()) {
-												if (isAnimationEnabled()) {
-													repaintOutline();
+											if (isAnimationEnabled()) {
+												repaintOutline();
+												if (isDesktopVisible()) {
 													suppressRepaintDesktop = true;
 													desktopAnimation.animate();
 													boolean cl = calculateLinks();
@@ -577,11 +577,12 @@ public abstract class Desktop extends JDesktopPane {
 			public void paint(Graphics g) {
 				boolean useBuffer = (desktopAnimation != null && desktopAnimation.isActive()) || desktopOutlineDraggingInProgress();
 				boolean updateBuffer = false;
-				if (currentIFrameBufferGeneration != iFrameBufferGeneration) {
+				if (currentIFrameBufferGeneration != iFrameBufferGeneration || !useBuffer) {
 					currentIFrameBufferGeneration = iFrameBufferGeneration;
 					m_offscreen = null;
+					bufferSize = null;
 				}
-				
+
 				Graphics2D g2D = (Graphics2D)g;
 				AffineTransform at = g2D.getTransform();
 		    	
@@ -606,6 +607,8 @@ public abstract class Desktop extends JDesktopPane {
 		    		m_offscreen = null;
 		    	} else if (Math.abs(bufferSize.getWidth() - getSize().width) > 2 || Math.abs(bufferSize.getHeight() - getSize().height) > 2) {
 		    		m_offscreen = null;
+		    		super.paint(g);
+		    		return;
 		    	}
 	    		if (m_offscreen == null || newBuffer) {
 	    			if (useBuffer) {
@@ -2483,6 +2486,7 @@ public abstract class Desktop extends JDesktopPane {
 		setMinimumSize(d);
 		setMaximumSize(d);
 		setPreferredSize(d);
+		revalidate();
 		return true;
 	}
 

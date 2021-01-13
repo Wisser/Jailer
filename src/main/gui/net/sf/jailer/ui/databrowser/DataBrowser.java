@@ -825,12 +825,12 @@ public class DataBrowser extends javax.swing.JFrame {
         int c = 0;
         for (Frame frame: Frame.getFrames()) {
             if (frame instanceof DataBrowser && frame.isVisible()) {
-                c = (c + 1) % 10;
+                c = (c + 1) % 6;
             }
         }
 
-        setLocation(40 + c * 32, 40 + c * 32);
-        setSize(980, 640);
+        setLocation(40 + c * 32, 32 + c * 32);
+        setSize(980, 800);
 
         UIUtil.fit(this);
 
@@ -3179,6 +3179,7 @@ public class DataBrowser extends javax.swing.JFrame {
                     // ignore
                 }
             }
+            arrangeLayout(true);
         } finally {
         	UIUtil.resetWaitCursor(this);
             disableBorderBrowserUpdates = false;

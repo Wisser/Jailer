@@ -72,6 +72,11 @@ public class TreeLayoutOptimizer<T> {
 
 		public double getMinPosition() {
 			double minPos = position;
+			if (getUserObject() == null) {
+				if (!children.isEmpty()) {
+					minPos = children.get(0).position;
+				}
+			}
 			for (Node<T> child: children) {
 				minPos = Math.min(minPos, child.getMinPosition());
 			}
@@ -294,7 +299,6 @@ public class TreeLayoutOptimizer<T> {
 		modifications.addAll(modificationPairs);
 		
 		double currentMaxPosition = layoutTree(root, numNodes);
-//		int steps = 0;
 		while (System.currentTimeMillis() - startTime < maxTime) {
 			Modification bestModification = null;
 			double bestMaxPosition = 0;
@@ -308,7 +312,6 @@ public class TreeLayoutOptimizer<T> {
 					}
 				}
 				modification.undoIt();
-//				++steps;
 			}
 			if (bestModification != null) {
 				bestModification.doIt();
@@ -317,8 +320,6 @@ public class TreeLayoutOptimizer<T> {
 				break;
 			}
 		}
-		
-//		System.out.println(System.currentTimeMillis() - startTime + " " + steps + " " + modifications.size());
 	}
 	
 }
