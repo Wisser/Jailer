@@ -1,5 +1,7 @@
-10.2.8
-  - Improved animation performance.
+10.3
+  - The data browser has been revised and improved.
+    In particular, an overview panel for the desktop was developed,
+    which simplifies orientation in complex data views.
 
 10.2.7
   - Workaround for "Parser hangs in some queries #1013"
