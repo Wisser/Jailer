@@ -289,11 +289,14 @@ public class DesktopOutline extends JPanel {
 					String title = browser.internalFrame.getTitle();
 					Rectangle2D stringBounds = fontMetrics.getStringBounds(title, g2d);
 					double hf = 1.2;
-					if (stringBounds.getHeight() * hf * hf >= sh) {
+					if ((stringBounds.getHeight() * hf * hf + 0.5) >= sh - 2) {
 						hf = 1.0;
 					}
 					if (stringBounds.getHeight() / 2 < sh - 1) {
 						int linesAvailable = (int) (sh / Math.max(1, stringBounds.getHeight()) + 0.5);
+						if (linesAvailable == 2) {
+							linesAvailable = (int) (sh / Math.max(1, stringBounds.getHeight()));
+						}
 						int linesNeeded = 1;
 						final int sb = 4;
 						int maxWidth = sw - 2 * sb;
@@ -314,7 +317,7 @@ public class DesktopOutline extends JPanel {
 							    if (l1 == null) {
 							    	break;
 							    }
-								g2d.drawString(l1, sx + sb, (int)(sy + stringBounds.getHeight() * hf + i * stringBounds.getHeight()));
+								g2d.drawString(l1, sx + sb, (int)(sy + stringBounds.getHeight() * (hf - 1) + 3 - stringBounds.getY() + i * stringBounds.getHeight()));
 							    l = l.substring(guess);
 							    ++linesNeeded;
 							    if (linesNeeded > linesAvailable) {
@@ -323,7 +326,7 @@ public class DesktopOutline extends JPanel {
 							}
 						}
 						if (linesNeeded <= 1) {
-							g2d.drawString(title, (int)(sx + Math.max(0, (sw - stringBounds.getWidth()) / 2)), (int)(sy + stringBounds.getHeight() * hf));
+							g2d.drawString(title, (int)(sx + Math.max(0, (sw - stringBounds.getWidth()) / 2)), (int)(sy + stringBounds.getHeight() * (hf - 1) + 3 - stringBounds.getY()));
 						}
 					}
 					g2d.setClip(clip);
