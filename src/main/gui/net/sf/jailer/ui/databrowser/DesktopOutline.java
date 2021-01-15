@@ -248,11 +248,11 @@ public class DesktopOutline extends JPanel {
 			int sw = (int)(scale * (double) (rectangle.width + 6) + 0.5);
 			int sh = (int)(scale * (double) rectangle.height + 0.5);
 			visibleRectInOutline = new Rectangle(sx, sy, sw, sh);
-			Color inDesktopColor = new Color(255, 245, 244);
+			Color inDesktopColor = new Color(245, 255, 245);
 			g2d.setColor(inDesktopColor);
 			paint = new GradientPaint(
 						0, 0, inDesktopColor,
-						gw, gh, inDesktopColor.brighter());
+						gw, gh, new Color(255, 255, 230));
 			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
 			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
@@ -453,13 +453,15 @@ public class DesktopOutline extends JPanel {
 
 	private void setDragViewPosition(JScrollPane scrollPane, Desktop desktop, MouseEvent e) {
 		int minDist = 64;
+		int minDistW = Math.max(0, Math.min(minDist, (desktop.getWidth() - desktop.getVisibleRect().width) / 2 - 1));
+		int minDistH = Math.max(0, Math.min(minDist, (desktop.getHeight() - desktop.getVisibleRect().height) / 2 - 1));
 		Point p = new Point(
 				(int) Math.max(0, Math.min(desktop.getWidth() - desktop.getVisibleRect().width, draggingViewPosition.x + (e.getPoint().x - draggingStart.x) / scale)), 
 				(int) Math.max(0, Math.min(desktop.getHeight() - desktop.getVisibleRect().height, draggingViewPosition.y + (e.getPoint().y - draggingStart.y) / scale)));
 		scrollPane.getViewport().setViewPosition(
 				new Point(
-						snap(desktop.getWidth() - desktop.getVisibleRect().width, snap(0, p.x, minDist), minDist),
-						snap(desktop.getHeight() - desktop.getVisibleRect().height, snap(0, p.y, minDist), minDist))
+						snap(desktop.getWidth() - desktop.getVisibleRect().width, snap(0, p.x, minDistW), minDistW),
+						snap(desktop.getHeight() - desktop.getVisibleRect().height, snap(0, p.y, minDistH), minDistH))
 				);
 	}
 
