@@ -231,7 +231,7 @@ public class DesktopOutline extends JPanel {
 			double width = desktop.getWidth() + 2 * border;
 			double height = desktop.getHeight() + 2 * border;
 			Color borderColor = Color.GRAY;
-			Color backgroundColor = new Color(236, 236, 255);
+			Color backgroundColor = new Color(220, 230, 255);
 			g2d.setColor(backgroundColor);
 			int gx = (int) (offX + scale * x + 0.5);
 			int gy = (int)(offY + scale * y + 0.5);
@@ -242,8 +242,22 @@ public class DesktopOutline extends JPanel {
 					gw, gh, backgroundColor.brighter());
 			g2d.setPaint(paint);
 			g2d.fillRoundRect(gx, gy, gw, gh, 2, 2);
-			g2d.setColor(borderColor);
+			Rectangle rectangle = desktop.getVisibleRect();
+			int sx = (int)(offX + scale * (double) rectangle.x + 0.5);
+			int sy = (int)(offY + scale * (double) rectangle.y + 0.5);
+			int sw = (int)(scale * (double) (rectangle.width + 6) + 0.5);
+			int sh = (int)(scale * (double) rectangle.height + 0.5);
+			visibleRectInOutline = new Rectangle(sx, sy, sw, sh);
+			Color inDesktopColor = new Color(236, 236, 255);
+			g2d.setColor(inDesktopColor);
+			paint = new GradientPaint(
+						0, 0, inDesktopColor,
+						gw, gh, new Color(255, 255, 206));
+			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
+			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
+			Color borderColor1 = new Color(0, 0, 200);
+			g2d.setColor(borderColor);
 			g2d.drawRoundRect(gx, gy, gw, gh, 2, 2);
 			
 			g2d.setStroke(new BasicStroke(1));
@@ -269,12 +283,12 @@ public class DesktopOutline extends JPanel {
 			}
 			for (RowBrowser browser: getBrowsers()) {
 				if (!browser.isHidden()) {
-					Rectangle rectangle = subBorder(browser.internalFrame.getBounds());
+					rectangle = subBorder(browser.internalFrame.getBounds());
 					Color backgroundColor1 = new Color(160, 200, 255);
-					int sx = (int)(offX + scale * (double) rectangle.x + 0.5);
-					int sy = (int)(offY + scale * (double) rectangle.y + 0.5);
-					int sw = (int)(scale * (double) rectangle.width + 0.5);
-					int sh = (int)(scale * (double) rectangle.height + 0.5);
+					sx = (int)(offX + scale * (double) rectangle.x + 0.5);
+					sy = (int)(offY + scale * (double) rectangle.y + 0.5);
+					sw = (int)(scale * (double) rectangle.width + 0.5);
+					sh = (int)(scale * (double) rectangle.height + 0.5);
 					if (backgroundColor1 != null) {
 						g2d.setColor(backgroundColor1);
 						paint = new GradientPaint(
@@ -332,16 +346,16 @@ public class DesktopOutline extends JPanel {
 					g2d.setClip(clip);
 				}
 				if (!browser.isHidden() && browser.internalFrame.isSelected()) {
-					Rectangle rectangle = subBorder(browser.internalFrame.getBounds());
+					rectangle = subBorder(browser.internalFrame.getBounds());
 					paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, new Color(0, 100, 255), null, new BasicStroke(2));
 				}
 			}
-			Rectangle rectangle = desktop.getVisibleRect();
-			Color borderColor1 = new Color(0, 0, 200);
-			int sx = (int)(offX + scale * (double) rectangle.x + 0.5);
-			int sy = (int)(offY + scale * (double) rectangle.y + 0.5);
-			int sw = (int)(scale * (double) (rectangle.width + 6) + 0.5);
-			int sh = (int)(scale * (double) rectangle.height + 0.5);
+			rectangle = desktop.getVisibleRect();
+			borderColor1 = new Color(0, 0, 200);
+			sx = (int)(offX + scale * (double) rectangle.x + 0.5);
+			sy = (int)(offY + scale * (double) rectangle.y + 0.5);
+			sw = (int)(scale * (double) (rectangle.width + 6) + 0.5);
+			sh = (int)(scale * (double) rectangle.height + 0.5);
 			visibleRectInOutline = new Rectangle(sx, sy, sw, sh);
 			if (borderColor1 != null) {
 				g2d.setColor(borderColor1);
@@ -380,10 +394,11 @@ public class DesktopOutline extends JPanel {
 
 	@Override
 	public Dimension getMinimumSize() {
-		int maxHeight = (int) ((Math.max(0.0, Math.min(1.5, (controlPanel.getHeight() - 750) / 500.0)) + 1) * 220.0);
+		int maxHeight = (int) ((Math.max(1.0, Math.min(1.5, (controlPanel.getHeight() - 750) / 500.0)) + 1) * 220.0);
 		if (desktop.getWidth() == 0 || desktop.getHeight() == 0) {
 			return new Dimension(1, maxHeight);
 		}
+		maxHeight = (int) Math.max(1.0, Math.min(maxHeight, sameWidthFriend.getHeight() - 124));
 		double r = 6;
 		return new Dimension(1, Math.max(1, (int) (Math.min(maxHeight, (((double) sameWidthFriend.getWidth() - r * 2.0) / (double) desktop.getWidth() * (double) desktop.getHeight())) + r * 2.0)));
 	}
