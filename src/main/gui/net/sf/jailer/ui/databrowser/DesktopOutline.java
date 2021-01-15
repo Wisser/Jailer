@@ -231,7 +231,7 @@ public class DesktopOutline extends JPanel {
 			double width = desktop.getWidth() + 2 * border;
 			double height = desktop.getHeight() + 2 * border;
 			Color borderColor = Color.GRAY;
-			Color backgroundColor = new Color(220, 230, 255);
+			Color backgroundColor = new Color(236, 236, 255);
 			g2d.setColor(backgroundColor);
 			int gx = (int) (offX + scale * x + 0.5);
 			int gy = (int)(offY + scale * y + 0.5);
@@ -248,11 +248,11 @@ public class DesktopOutline extends JPanel {
 			int sw = (int)(scale * (double) (rectangle.width + 6) + 0.5);
 			int sh = (int)(scale * (double) rectangle.height + 0.5);
 			visibleRectInOutline = new Rectangle(sx, sy, sw, sh);
-			Color inDesktopColor = new Color(236, 236, 255);
+			Color inDesktopColor = new Color(255, 245, 244);
 			g2d.setColor(inDesktopColor);
 			paint = new GradientPaint(
 						0, 0, inDesktopColor,
-						gw, gh, new Color(255, 255, 206));
+						gw, gh, inDesktopColor.brighter());
 			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
 			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
