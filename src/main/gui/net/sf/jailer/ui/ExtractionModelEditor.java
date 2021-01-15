@@ -1830,7 +1830,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		for (Table table: dataModel.getTables()) {
 			tableNames.add(dataModel.getDisplayName(table));
 		}
-		Collections.sort(tableNames);
+		Collections.sort(tableNames, String::compareToIgnoreCase);
 		DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
 		return model;
 	}
@@ -1845,7 +1845,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		for (Table table: dataModel.getTables()) {
 			tableNames.add(dataModel.getDisplayName(table));
 		}
-		Collections.sort(tableNames);
+		Collections.sort(tableNames, String::compareToIgnoreCase);
 //        if (subject != null) {
 //	    	tableNames.add(0, dataModel.getDisplayName(subject));
 //	        tableNames.add(1, "---");
@@ -2366,7 +2366,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				int cat1 = cat(a1);
 				int cat2 = cat(a2);
 				if (cat1 == cat2) {
-					return dataModel.getDisplayName(a1.destination).compareTo(dataModel.getDisplayName(a2.destination));
+					return dataModel.getDisplayName(a1.destination).compareToIgnoreCase(dataModel.getDisplayName(a2.destination));
 				}
 				return cat1 - cat2;
 			}
@@ -2716,7 +2716,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			Association first = null;
 			for (Association a: table.associations) {
-				if (first == null || dataModel.getDisplayName(first.destination).compareTo(dataModel.getDisplayName(a.destination)) < 0) {
+				if (first == null || dataModel.getDisplayName(first.destination).compareToIgnoreCase(dataModel.getDisplayName(a.destination)) < 0) {
 					first = a;
 				}
 			}

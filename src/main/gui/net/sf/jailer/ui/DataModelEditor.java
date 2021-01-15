@@ -584,11 +584,12 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * @param lines the list to sort
 	 */
 	private void sortLineList(List<CsvFile.Line> list, final boolean sortTables) {
+		Set<CsvFile.Line> linesFromModelFinderAsSet = new HashSet<CsvFile.Line>(linesFromModelFinder);
 		Collections.sort(list, new Comparator<CsvFile.Line> () {
 			@Override
 			public int compare(CsvFile.Line o1, CsvFile.Line o2) {
-				int c1 = linesFromModelFinder.contains(o1)? 0 : 1;
-				int c2 = linesFromModelFinder.contains(o2)? 0 : 1;
+				int c1 = linesFromModelFinderAsSet.contains(o1)? 0 : 1;
+				int c2 = linesFromModelFinderAsSet.contains(o2)? 0 : 1;
 				if (c1 != c2) {
 					return c1 - c2;
 				}
@@ -599,7 +600,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 					if (pk1.length() > 0 && pk2.length() == 0) return 1;
 				}
 				for (int i = 0; i < 3; ++i) {
-					int r = o1.cells.get(i).compareTo(o2.cells.get(i));
+					int r = o1.cells.get(i).compareToIgnoreCase(o2.cells.get(i));
 					if (r != 0) {
 						return r;
 					}
