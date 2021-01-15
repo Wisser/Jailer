@@ -231,7 +231,7 @@ public class DesktopOutline extends JPanel {
 			double width = desktop.getWidth() + 2 * border;
 			double height = desktop.getHeight() + 2 * border;
 			Color borderColor = Color.GRAY;
-			Color backgroundColor = new Color(236, 236, 255);
+			Color backgroundColor = new Color(232, 232, 255);
 			g2d.setColor(backgroundColor);
 			int gx = (int) (offX + scale * x + 0.5);
 			int gy = (int)(offY + scale * y + 0.5);
@@ -245,14 +245,14 @@ public class DesktopOutline extends JPanel {
 			Rectangle rectangle = desktop.getVisibleRect();
 			int sx = (int)(offX + scale * (double) rectangle.x + 0.5);
 			int sy = (int)(offY + scale * (double) rectangle.y + 0.5);
-			int sw = (int)(scale * (double) (rectangle.width + 6) + 0.5);
+			int sw = (int)(scale * (double) (rectangle.width) + 0.5);
 			int sh = (int)(scale * (double) rectangle.height + 0.5);
 			visibleRectInOutline = new Rectangle(sx, sy, sw, sh);
-			Color inDesktopColor = new Color(245, 255, 245);
+			Color inDesktopColor = new Color(242, 242, 255);
 			g2d.setColor(inDesktopColor);
 			paint = new GradientPaint(
 						0, 0, inDesktopColor,
-						gw, gh, new Color(255, 255, 230));
+						gw, gh, new Color(255, 255, 255));
 			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
 			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
@@ -351,17 +351,14 @@ public class DesktopOutline extends JPanel {
 				}
 			}
 			rectangle = desktop.getVisibleRect();
-			borderColor1 = new Color(0, 0, 200);
 			sx = (int)(offX + scale * (double) rectangle.x + 0.5);
 			sy = (int)(offY + scale * (double) rectangle.y + 0.5);
-			sw = (int)(scale * (double) (rectangle.width + 6) + 0.5);
+			sw = (int)(scale * (double) (rectangle.width) + 0.5);
 			sh = (int)(scale * (double) rectangle.height + 0.5);
 			visibleRectInOutline = new Rectangle(sx, sy, sw, sh);
-			if (borderColor1 != null) {
-				g2d.setColor(borderColor1);
-				g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) (System.currentTimeMillis() / 50.0 % 16)));
-				g2d.drawRoundRect(sx, sy, sw, sh, 8, 8);
-			}
+			g2d.setColor(new Color(0, 0, 200));
+			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) (System.currentTimeMillis() / 50.0 % 16)));
+			g2d.drawRoundRect(sx, sy, sw, sh, 8, 8);
 		}
 	}
 
