@@ -3990,4 +3990,6 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	// TODO display names for associations? (using unique fk-column list?)
+	
 }
