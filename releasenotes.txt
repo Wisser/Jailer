@@ -1,4 +1,4 @@
-10.3
+10.3.1
   - The data browser has been revised and improved.
     In particular, an overview panel for the desktop was developed,
     which simplifies orientation in complex data views.
