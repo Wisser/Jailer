@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -187,7 +188,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	};
 
-    /**
+	private Map<MDSchema, MDSchema> triedToLoad = new WeakHashMap<MDSchema, MDSchema>();
+
+	/**
      * Creates new form SQLConsole
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -284,22 +287,25 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             return null;
                         }
                     }
-                    String schemaName = matcher.group(2);
-                    if (schemaName != null) {
+                    String tableName = matcher.group(2);
+                    if (tableName != null) {
 	                    if (schema.isLoaded()) {
-	                    	return schema.find(schemaName);
+	                    	return schema.find(tableName);
 	                    } else {
-	                    	schema.loadTables(true, null, null, null);
-	                    	for (int i = 0; i < 10; ++i) {
-	                    		if (schema.isLoaded()) {
-	                    			return schema.find(schemaName);
-	                    		}
-	                    		try {
-	                    			Thread.sleep(100);
-	                    		} catch (InterruptedException e) {
-	                    			// ignore
-	                    		}
-	             			}
+	                    	if (!triedToLoad.containsKey(schema)) {
+	            				triedToLoad.put(schema, schema);
+	            				schema.loadTables(true, null, null, null);
+	            				for (int i = 0; i < 10; ++i) {
+	            					if (schema.isLoaded()) {
+	            						return schema.find(tableName);
+		                    		}
+		                    		try {
+		                    			Thread.sleep(100);
+		                    		} catch (InterruptedException e) {
+		                    			// ignore
+		                    		}
+		             			}
+	                    	}
 	                    }
                     }
                 }
