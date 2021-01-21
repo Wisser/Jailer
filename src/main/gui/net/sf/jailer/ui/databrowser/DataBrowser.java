@@ -2515,7 +2515,7 @@ public class DataBrowser extends javax.swing.JFrame {
             			try {
             				for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 	                            if ("Nimbus".equals(info.getName())) {
-	    							UIManager.put("nimbusBase", new Color(61, 112, 167)); // orig. color: 51, 98, 140
+	                            	UIManager.put("nimbusBase", new Color(66, 118, 187)); // orig. color: 51, 98, 140
 	                				UIManager.setLookAndFeel(info.getClassName());
 	                                Environment.nimbus = true;
 	                                break;
