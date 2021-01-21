@@ -78,8 +78,6 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 		return table.getName();
 	}
 
-	private Set<String> triedToLoad = new HashSet<String>();
-	
 	@Override
 	protected List<MDTable> getTables(MDSchema schema) {
 		if (!schema.isLoaded()) {
@@ -87,21 +85,18 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 			if (name == null) {
 				name = "";
 			}
-			if (!triedToLoad.contains(name)) {
-				triedToLoad.add(name);
-				schema.loadTables(true, null, null, null);
-				for (int i = 0; i < 10; ++i) {
-					if (schema.isLoaded()) {
-						return schema.getTables();
-					}
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						// ignore
-					}
+			schema.loadTables(true, null, null, null);
+			for (int i = 0; i < 10; ++i) {
+				if (schema.isLoaded()) {
+					return schema.getTables();
+				}
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// ignore
 				}
 			}
-    		return Collections.emptyList();
+			return Collections.emptyList();
     	}
 		return schema.getTables();
 	}

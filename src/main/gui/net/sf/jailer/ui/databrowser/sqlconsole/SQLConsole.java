@@ -212,7 +212,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	{
         		setBracketMatchingEnabled(true);
         	}
-			@Override
+        	
+        	@Override
 			protected boolean canExplain() {
 				return SQLConsole.this.canExplain();
 			}
@@ -283,7 +284,24 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             return null;
                         }
                     }
-                    return schema.find(matcher.group(2));
+                    String schemaName = matcher.group(2);
+                    if (schemaName != null) {
+	                    if (schema.isLoaded()) {
+	                    	return schema.find(schemaName);
+	                    } else {
+	                    	schema.loadTables(true, null, null, null);
+	                    	for (int i = 0; i < 10; ++i) {
+	                    		if (schema.isLoaded()) {
+	                    			return schema.find(schemaName);
+	                    		}
+	                    		try {
+	                    			Thread.sleep(100);
+	                    		} catch (InterruptedException e) {
+	                    			// ignore
+	                    		}
+	             			}
+	                    }
+                    }
                 }
                 return null;
             }
