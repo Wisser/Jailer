@@ -18,9 +18,9 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.swing.JComponent;
 
@@ -78,22 +78,23 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 		return table.getName();
 	}
 
+	private Map<MDSchema, MDSchema> triedToLoad = new WeakHashMap<MDSchema, MDSchema>();
+	
 	@Override
 	protected List<MDTable> getTables(MDSchema schema) {
 		if (!schema.isLoaded()) {
-			String name = schema.getName();
-			if (name == null) {
-				name = "";
-			}
-			schema.loadTables(true, null, null, null);
-			for (int i = 0; i < 10; ++i) {
-				if (schema.isLoaded()) {
-					return schema.getTables();
-				}
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					// ignore
+			if (!triedToLoad.containsKey(schema)) {
+				triedToLoad.put(schema, schema);
+				schema.loadTables(true, null, null, null);
+				for (int i = 0; i < 10; ++i) {
+					if (schema.isLoaded()) {
+						return schema.getTables();
+					}
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// ignore
+					}
 				}
 			}
 			return Collections.emptyList();

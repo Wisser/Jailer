@@ -90,8 +90,9 @@ public class BasicFormatterImpl {
 	static final String indentString = "     ";
 	static final String initial = "\n     ";
 	
-	public String format(String source) {
+	public String format(String sql) {
 		try {
+			String source = sql;
 			if (source.contains("\f")) {
 				String marker;
 				String markerRE;
@@ -108,7 +109,7 @@ public class BasicFormatterImpl {
 			}
 			return SqlFormatter.format(source, FormatConfig.builder().indent(indentString).build()).trim();
 		} catch (Exception e) {
-			return format0(source)
+			return format0(sql)
 				.replaceAll("(?is)\\)\\s+or\\s+\\(", ") or (")
 				.replaceAll("(?is)\\b(insert)\\n\\s*(into)\\b", "$1 $2")
 				.replaceAll("(?is)\\b(delete)\\n\\s*(from)\\b", "$1 $2")
