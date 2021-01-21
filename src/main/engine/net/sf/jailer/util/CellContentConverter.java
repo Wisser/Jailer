@@ -110,11 +110,8 @@ public class CellContentConverter {
 			return "'" + content + "'";
 		}
 		if (content instanceof NCharWrapper) {
-			String prefix = targetConfiguration.getNcharPrefix();
-			if (prefix == null) {
-				prefix = "";
-			}
-			return prefix + "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'";
+			String ncharPrefix = targetConfiguration.getNcharPrefix();
+			return (ncharPrefix != null? ncharPrefix : "") + "'" + targetConfiguration.convertToStringLiteral(content.toString(), ncharPrefix) + "'";
 		}
 		if (content instanceof String) {
 			return "'" + targetConfiguration.convertToStringLiteral((String) content) + "'";
@@ -651,7 +648,11 @@ public class CellContentConverter {
 				if (maxClobLength != null && line.length() > maxClobLength) {
 					return null;
 				}
-				return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
+				if (lob instanceof NClob) {
+					return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString(), targetConfiguration.getNcharPrefix()));
+				} else {
+					return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
+				}
 			}
 			if (lob instanceof Blob) {
 				Blob blob = (Blob) lob;

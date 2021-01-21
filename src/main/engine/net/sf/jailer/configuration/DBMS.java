@@ -710,6 +710,17 @@ public class DBMS {
 	 * @return the string literal
 	 */
 	public String convertToStringLiteral(String string) {
+		return convertToStringLiteral(string, null);
+	}
+	
+	/**
+	 * Converts a string to a string literal according to the {@link #getStringLiteralEscapeSequences()}.
+	 *
+	 * @param string the string to convert
+	 * @param prefix literal prefix (optional)
+	 * @return the string literal
+	 */
+	public String convertToStringLiteral(String string, String prefix) {
 		boolean esc = false;
 		for (char c: keysOfCharToEscapeSequence) {
 			if (string.indexOf(c) >= 0) {
@@ -718,6 +729,9 @@ public class DBMS {
 			}
 		}
 		if (!esc) {
+			if (prefix != null) {
+				return prefix + string;
+			}
 			return string;
 		}
 
@@ -728,6 +742,9 @@ public class DBMS {
 			char c = string.charAt(i);
 			String es = charToEscapeSequence.get(c);
 			if (es != null) {
+				if (prefix != null && es.startsWith("'") && es.endsWith("'") && es.length() > 2) {
+					es = es.substring(0, es.length() - 1) + prefix + "'";
+				}
 				qvalue.append(es);
 			} else {
 				qvalue.append(c);
