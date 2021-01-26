@@ -2527,6 +2527,10 @@ public class DataBrowser extends javax.swing.JFrame {
 	                        if (Integer.valueOf(10).equals(dSize)) {
 	                        	UIManager.put("SplitPane.dividerSize", Integer.valueOf(14));
 	                        }
+
+		                    if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
+		                    	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
+		                    }
 	                    } catch (Exception x) {
 	                    	UIUtil.showException(null, "Error", x);
 	                    }
