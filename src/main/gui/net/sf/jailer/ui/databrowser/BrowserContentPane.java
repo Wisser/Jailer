@@ -5526,7 +5526,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         menuPanel.add(jLabel1, gridBagConstraints);
 
-        jLabel4.setText(" On ");
+        jLabel4.setText(" on ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 6;
@@ -5732,14 +5732,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JButton removeConditionButton;
     public javax.swing.JLabel rowsCount;
     public javax.swing.JTable rowsTable;
-    private javax.swing.JPanel rowsTableContainerPanel;
+    protected javax.swing.JPanel rowsTableContainerPanel;
     protected javax.swing.JScrollPane rowsTableScrollPane;
     private javax.swing.JPanel rrPanel;
     javax.swing.JCheckBox selectDistinctCheckBox;
     protected javax.swing.JPanel singleRowViewContainterPanel;
     private javax.swing.JPanel singleRowViewScrollContentPanel;
     javax.swing.JScrollPane singleRowViewScrollPane;
-    private javax.swing.JPanel singleRowViewScrollPaneContainer;
+    protected javax.swing.JPanel singleRowViewScrollPaneContainer;
     public javax.swing.JCheckBox sortColumnsCheckBox;
     private javax.swing.JLabel sortColumnsLabel;
     public javax.swing.JPanel sortColumnsPanel;

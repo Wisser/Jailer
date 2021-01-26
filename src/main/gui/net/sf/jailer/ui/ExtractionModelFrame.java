@@ -2176,10 +2176,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	                    if (new Integer(10).equals(dSize)) {
 	                    	UIManager.put("SplitPane.dividerSize", new Integer(14));
 	                    }
-
-	                    if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
-	                    	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
-	                    }
 	                } catch (Exception x) {
 					}
 				}

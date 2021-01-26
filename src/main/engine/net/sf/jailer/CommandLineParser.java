@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -109,8 +110,12 @@ public class CommandLineParser {
 	 * Prints out usage.
 	 */
 	public static void printUsage(String[] args) {
+		String cmd = "sh jailer.sh";
+		if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
+			cmd = "jailer.bat";
+		}
 		System.out.println("usage:");
-		System.out.println("  jailer export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+		System.out.println("  " + cmd + " export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
 		System.out.println("    extracts data (see option '-e') and optionally creates a delete-script (see option '-d')");
 		System.out.println("    -where subject condition. Optional, overrides condition in extraction-model");
 		System.out.println("    -format [SQL, XML, DBUNIT_FLAT_XML or LIQUIBASE_XML]");
@@ -119,27 +124,27 @@ public class CommandLineParser {
 		System.out.println("    -xml-time pattern for times in XML and LIQUIBASE_XML export file");
 		System.out.println("    -xml-timestamp pattern for time-stamps in XML and LIQUIBASE_XML export file");
 		System.out.println();
-		System.out.println("  jailer import <sql-script> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+		System.out.println("  " + cmd + " import <sql-script> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
 		System.out.println("    imports data (with CLOB/BLOB/XML support)");
 		System.out.println();
-		System.out.println("  jailer delete [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+		System.out.println("  " + cmd + " delete [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
 		System.out.println("    Like export, but skips the export and creates a delete-script (see option '-d')");
 		System.out.println("    -where <subject condition>: optional, overrides condition in extraction-model");
 		System.out.println();
-		System.out.println("  jailer create-ddl [-datamodel VAL] [-target-dbms <DBMS>] [-working-table-schema VAL] [<extraction-model> -independent-working-tables] [-use-rowid] [-use-rowid-if-needed]");
+		System.out.println("  " + cmd + " create-ddl [-datamodel VAL] [-target-dbms <DBMS>] [-working-table-schema VAL] [<extraction-model> -independent-working-tables] [-use-rowid] [-use-rowid-if-needed]");
 		System.out.println("    creates the DDL for the working-tables and prints it to stdout");
 		System.out.println();
-		System.out.println("  jailer create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password> [<extraction-model> -independent-working-tables] [-use-rowid] [-use-rowid-if-needed]");
+		System.out.println("  " + cmd + " create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password> [<extraction-model> -independent-working-tables] [-use-rowid] [-use-rowid-if-needed]");
 		System.out.println("    creates the working-tables");
 		System.out.println();
-		System.out.println("  jailer build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+		System.out.println("  " + cmd + " build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password>");
 		System.out.println("    determines table and relationship information through database analysis");
 		System.out.println("    -schema <schema>: limits analysis to the schema <schema>");
 		System.out.println();
-		System.out.println("  jailer render-datamodel [-datamodel VAL] [<extraction-model>] ");
+		System.out.println("  " + cmd + " render-datamodel [-datamodel VAL] [<extraction-model>] ");
 		System.out.println("    generates a HTML render of the (restricted) data model into directory 'render'");
 		System.out.println();
-		System.out.println("  jailer print-closure <extraction-model> [<separator>] [-datamodel VAL]");
+		System.out.println("  " + cmd + " print-closure <extraction-model> [<separator>] [-datamodel VAL]");
 		System.out.println("    prints a list of all tables that are directly or transitively associated with a subject table,");
 		System.out.println("    taking into account the restrictions on the associations (the so-called \"Closure\")");
 		System.out.println("    <separator>: optional separator between table names in the output");

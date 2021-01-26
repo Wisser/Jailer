@@ -153,7 +153,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Default width of a row-browser frame.
 	 */
 	private final int BROWSERTABLE_DEFAULT_MIN_X = 0;
-	private final int BROWSERTABLE_DEFAULT_MIN_Y = 6;
+	private final int BROWSERTABLE_DEFAULT_MIN_Y = 0;
 
 	public static final int BROWSERTABLE_DEFAULT_HEIGHT = 460;
 	public static final int BROWSERTABLE_DEFAULT_WIDTH = 476;
@@ -1951,7 +1951,6 @@ public abstract class Desktop extends JDesktopPane {
 		super.paint(graphics);
 		if (graphics instanceof Graphics2D) {
 			final Graphics2D g2d = (Graphics2D) graphics;
-			renderActiveIFrameMarker(g2d);
 			if (renderLinks) {
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
@@ -2247,43 +2246,6 @@ public abstract class Desktop extends JDesktopPane {
 		} else {
 			return Math.max(255 - (int) ((255 - col) / f), 0);
 		}
-	}
-
-	private void renderActiveIFrameMarker(Graphics2D g2d) {
-		for (RowBrowser tableBrowser : tableBrowsers) {
-			if (tableBrowser.internalFrame.isSelected() && !isIconOrHidden(tableBrowser.internalFrame)) {
-				int z = 20;
-				double alpha = (animationStep % z) / (double) z * 2 * Math.PI;
-				double f = Math.sin(alpha) / 2.0 + 0.5;
-				Color color = markerColor(f, z);
-				g2d.setColor(color);
-				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-				BasicStroke stroke = new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
-				g2d.setStroke(stroke);
-				final int W = 3;
-				int x1 = tableBrowser.internalFrame.getX() + W ;
-				int y1 = tableBrowser.internalFrame.getY() - 3;
-				int x2 = tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth() - 2 * W;
-				int y2 = y1;
-				g2d.drawLine(x1, y1, x2, y2);
-				f = Math.sin(alpha + Math.PI / 2) / 2.0 + 0.5;
-				color = markerColor(f, z);
-				g2d.setColor(color);
-				stroke = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
-				g2d.setStroke(stroke);
-				g2d.drawLine(x1 - 2, y1 + 2, x2 + 2, y2 + 2);
-			}
-		}
-	}
-
-	private Color markerColor(double f, int z) {
-		Color c1 = new Color(240, 130, 80);
-		Color c2 = new Color(225, 240, 100);
-		int r = (int) (c1.getRed() + f * (c2.getRed() - c1.getRed()));
-		int g = (int) (c1.getGreen() + f * (c2.getGreen() - c1.getGreen()));
-		int b = (int) (c1.getBlue() + f * (c2.getBlue() - c1.getBlue()));
-		Color color = new Color(r, g, b, 240);
-		return color;
 	}
 
 	private double animationStep = 0;
