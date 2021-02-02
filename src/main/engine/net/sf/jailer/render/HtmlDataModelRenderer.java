@@ -58,6 +58,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * Maximum depth of expansion on table render.
 	 */
 	private int maxDepth;
+
+	private String overviewHtml = null;
 	
 	/**
 	 * The logger.
@@ -118,7 +120,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 				}
 				String components = "";
 				String domainSuffix = "";
-				String title = "Table " + table.getName();
+				String title = "Table " + escapeHtmlEntities(table.getName());
 				writeFile(new File(outputFolder, toFileName(table)), new PrintUtil().applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
 				CancellationHandler.checkForCancellation(null);
 			}
@@ -131,7 +133,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			
 			String domains = "";
 
-			writeFile(new File(outputFolder, "index.html"), new PrintUtil().applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), generateHTMLTable("Tables", null, tablesColumn), restrictions, domains }));
+			writeFile(new File(outputFolder, "index.html"), new PrintUtil().applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), generateHTMLTable("Tables", null, tablesColumn), restrictions, domains, overviewHtml == null? "" : (overviewHtml + " <br> <br>"), escapeHtmlEntities(dataModel.getName()) }));
+			writeFile(new File(outputFolder, "styles.css"), new PrintUtil().applyTemplate("template" + File.separatorChar + "styles.css", new Object[] { } ));
 		} catch (CancellationException e) {
 			throw e;
 		} catch (Exception e) {
@@ -182,7 +185,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 				if (!firstTime) {
 					ts.append(", ");
 				}
-				ts.append(dt.equals(table)? dt.getName() : linkTo(dt));
+				ts.append(dt.equals(table)? escapeHtmlEntities(dt.getName()) : linkTo(dt));
 				firstTime = false;
 			}
 			if (!cl.isEmpty()) {
@@ -333,7 +336,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 		aliasA = linkTo(association.source, aliasA);
 		aliasB = linkTo(association.destination, aliasB);
 		jc = SqlUtil.replaceAliases(jc, aliasA, aliasB);
-		return new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(indent), "&nbsp;&nbsp;" + (association.destination.equals(current)? association.destination.getName() : linkTo(association.destination)), "&nbsp;&nbsp;" + (association.getCardinality() != null? association.getCardinality() : ""), "&nbsp;on&nbsp;", jc, "", highlighted? "class=\"highlightedrow\"" : "" });
+		return new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(indent), "&nbsp;&nbsp;" + (association.destination.equals(current)? escapeHtmlEntities(association.destination.getName()) : linkTo(association.destination)), "&nbsp;&nbsp;" + (association.getCardinality() != null? association.getCardinality() : ""), "&nbsp;on&nbsp;", jc, "", highlighted? "class=\"highlightedrow\"" : "" });
 	}
 	
 	/**
@@ -350,13 +353,13 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			++count;
 			String COLUMN_NAME = column.name;
 			boolean nullable = true;
-			String type = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + column.toSQL(null).substring(column.name.length()).trim().replaceAll(" ", "&nbsp;");
+			String type = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + escapeHtmlEntities(column.toSQL(null).substring(column.name.length()).trim()).replaceAll(" ", "&nbsp;");
 			String constraint = (!nullable ? "&nbsp;&nbsp;&nbsp;&nbsp;<small>NOT&nbsp;NULL</small>" : "");
 			boolean isPK = false;
 			for (Column c: table.primaryKey.getColumns()) {
 				isPK = isPK || c.name.equalsIgnoreCase(COLUMN_NAME);
 			}
-			result.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(1), "&nbsp;&nbsp;" + COLUMN_NAME, type, "", constraint, isPK? COLOR_KEYWORDS : "", count % 2 == 0? "class=\"highlightedrow\"" : "" }));
+			result.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(1), "&nbsp;&nbsp;" + escapeHtmlEntities(COLUMN_NAME), type, "", constraint, isPK? COLOR_KEYWORDS : "", count % 2 == 0? "class=\"highlightedrow\"" : "" }));
 		}
 		
 		return count == 0? null : (new PrintUtil().applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Columns", "", result.toString() }));
@@ -406,7 +409,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @return HTML-hyper link to the render of table
 	 */
 	private String linkTo(Table table, String name) {
-		return "<a href=\"" + toFileName(table) + "\">" + name + "</a>";
+		return "<a href=\"" + toFileName(table) + "\">" + escapeHtmlEntities(name) + "</a>";
 	}
 
 	/**
@@ -447,5 +450,17 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 		out.close();
 		_log.info("file '" + file + "' written");
 	}
+
+	public void setOverviewHtml(String overviewHtml) {
+		this.overviewHtml  = overviewHtml;
+	}
+
+    public static String escapeHtmlEntities(String input){
+        String result=input.replaceAll("&", "&amp;");
+        result=result.replaceAll("\"", "&quot;");
+        result=result.replaceAll("<", "&lt;");
+        result=result.replaceAll(">", "&gt;");
+        return result;
+    }
 
 }

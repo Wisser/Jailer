@@ -64,18 +64,20 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private final RowIdSupport rowIdSupport;
 	private final boolean showSpinner;
 	private final Session session;
+	private final String[] alternativeColumnLabels;
 
 	/** Creates new form DetailsView 
 	 * @param rowSorter 
 	 * @param showSelectButton 
 	 * @param deselect 
 	*/
-	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, boolean showSelectButton, RowIdSupport rowIdSupport, boolean deselect, Session session) {
+	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, boolean showSelectButton, RowIdSupport rowIdSupport, boolean deselect, String[] alternativeColumnLabels, Session session) {
 		this.table = table;
 		this.rows = rows;
 		this.rowSorter = rowSorter;
 		this.rowIdSupport = rowIdSupport;
 		this.showSpinner = showSpinner;
+		this.alternativeColumnLabels = alternativeColumnLabels;
 		this.session = session;
 		initComponents();
 		if (deselect) {
@@ -156,6 +158,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		this.rows = null;
 		this.rowSorter = null;
 		this.rowIdSupport = null;
+		this.alternativeColumnLabels = null;
 	}
 
 	private static final Font font = new JLabel().getFont();
@@ -213,14 +216,32 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			Collections.sort(columnIndex, new Comparator<Integer>() {
 				@Override
 				public int compare(Integer o1, Integer o2) {
-					return Quoting.staticUnquote(columns.get(o1).name).compareTo(Quoting.staticUnquote(columns.get(o2).name));
+					String o1Name = columns.get(o1).name;
+					if (o1Name == null && alternativeColumnLabels != null && alternativeColumnLabels.length > o1) {
+						o1Name = alternativeColumnLabels[o1];
+					}
+					String o2Name = columns.get(o2).name;
+					if (o2Name == null && alternativeColumnLabels != null && alternativeColumnLabels.length > o2) {
+						o2Name = alternativeColumnLabels[o2];
+					}
+					if (o1Name == null || o2Name == null) {
+						if (o1Name == null && o2Name == null) {
+							return 0;
+						}
+						if (o1Name == null) {
+							return 1;
+						} else {
+							return -1;
+						}
+					}
+					return Quoting.staticUnquote(o1Name).compareTo(Quoting.staticUnquote(o2Name));
 				}
 			});
 		}
 		while (i < columns.size()) {
 			Column c = columns.get(columnIndex.get(i));
 			JLabel l = new JLabel();
-			l.setText(" " + c.name + "    ");
+			l.setText(" " + (c.name != null? c.name + "    " : (alternativeColumnLabels != null && alternativeColumnLabels.length > columnIndex.get(i)? alternativeColumnLabels[columnIndex.get(i)] : "")));
 			l.setFont(nonbold);
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;

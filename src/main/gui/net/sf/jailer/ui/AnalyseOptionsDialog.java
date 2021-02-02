@@ -285,7 +285,6 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         jPanel5 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         removeCurrentTablesCheckBox = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
         keepManTablesCheckBox = new javax.swing.JCheckBox();
         removeCurrentAssociationsCheckBox = new javax.swing.JCheckBox();
         keepManAssociationsCheckBox = new javax.swing.JCheckBox();
@@ -300,7 +299,6 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         jPanel3 = new javax.swing.JPanel();
         analyseAlias = new javax.swing.JCheckBox();
         analyseSynonyms = new javax.swing.JCheckBox();
-        jLabel2 = new javax.swing.JLabel();
         analyseViews = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -311,10 +309,10 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED), "Preparation"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Eviction rules  "));
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        removeCurrentTablesCheckBox.setText("Remove current tables (0)");
+        removeCurrentTablesCheckBox.setText("Remove tables from data model (0) if they do not exist in the schema");
         removeCurrentTablesCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeCurrentTablesCheckBoxActionPerformed(evt);
@@ -326,17 +324,11 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
         jPanel2.add(removeCurrentTablesCheckBox, gridBagConstraints);
 
-        jLabel1.setText("   ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        jPanel2.add(jLabel1, gridBagConstraints);
-
         keepManTablesCheckBox.setSelected(true);
-        keepManTablesCheckBox.setText("Keep manually entered tables (0)");
+        keepManTablesCheckBox.setText("But keep manually entered tables (0)");
         keepManTablesCheckBox.setEnabled(false);
         keepManTablesCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -352,7 +344,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 24, 0, 8);
         jPanel2.add(keepManTablesCheckBox, gridBagConstraints);
 
-        removeCurrentAssociationsCheckBox.setText("Remove current associations (0)");
+        removeCurrentAssociationsCheckBox.setText("Remove associations from data model (0) if they do not exist in the schema");
         removeCurrentAssociationsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeCurrentAssociationsCheckBoxActionPerformed(evt);
@@ -368,7 +360,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         jPanel2.add(removeCurrentAssociationsCheckBox, gridBagConstraints);
 
         keepManAssociationsCheckBox.setSelected(true);
-        keepManAssociationsCheckBox.setText("Keep manually entered associations (0)");
+        keepManAssociationsCheckBox.setText("But keep manually entered associations (0)");
         keepManAssociationsCheckBox.setEnabled(false);
         keepManAssociationsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -468,7 +460,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel5.add(schemaComboBox, gridBagConstraints);
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED), "Analyse tables and ..."));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Analyse tables and ...  "));
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
         analyseAlias.setText("Aliases");
@@ -483,7 +475,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
         jPanel3.add(analyseAlias, gridBagConstraints);
 
         analyseSynonyms.setText("Synonyms");
@@ -500,12 +492,6 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
         jPanel3.add(analyseSynonyms, gridBagConstraints);
-
-        jLabel2.setText("   ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        jPanel3.add(jLabel2, gridBagConstraints);
 
         analyseViews.setText("Views");
         analyseViews.addActionListener(new java.awt.event.ActionListener() {
@@ -587,8 +573,6 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox analyseSynonyms;
     private javax.swing.JCheckBox analyseViews;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;

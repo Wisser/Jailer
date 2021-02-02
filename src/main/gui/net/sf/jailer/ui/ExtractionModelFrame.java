@@ -31,6 +31,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +46,9 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -352,6 +356,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         save = new javax.swing.JMenuItem();
         saveAs = new javax.swing.JMenuItem();
         exportDisplay = new javax.swing.JMenuItem();
+        exportDisplay1 = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
         connectDb = new javax.swing.JCheckBoxMenuItem();
         disconnectDb = new javax.swing.JMenuItem();
@@ -395,6 +400,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         queryBuilder = new javax.swing.JMenuItem();
         cycleView = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
+        renderHtml1 = new javax.swing.JMenuItem();
         consistencyCheckMenuItem = new javax.swing.JMenuItem();
         createCLIItem = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
@@ -552,13 +558,21 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         fileMenu.add(saveAs);
 
-        exportDisplay.setText("Export graph as image");
+        exportDisplay.setText("Export graph as image...");
         exportDisplay.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportDisplayActionPerformed(evt);
             }
         });
         fileMenu.add(exportDisplay);
+
+        exportDisplay1.setText("Export graph as image map");
+        exportDisplay1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportDisplay1ActionPerformed(evt);
+            }
+        });
+        fileMenu.add(exportDisplay1);
         fileMenu.add(jSeparator2);
 
         connectDb.setText("Connect with database");
@@ -837,6 +851,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu3.add(renderHtml);
+
+        renderHtml1.setText("HTML Renderer (graphical)");
+        renderHtml1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renderHtml1ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(renderHtml1);
 
         consistencyCheckMenuItem.setText("Referential Consistency Check");
         consistencyCheckMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1900,7 +1922,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void exportDisplayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDisplayActionPerformed
 		try {
-			extractionModelEditor.graphView.exportDisplayToImage();
+			extractionModelEditor.graphView.exportDisplayToImage(null, null);
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -2036,6 +2058,28 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void consistencyCheckMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consistencyCheckMenuItem1ActionPerformed
     	consistencyCheckMenuItemActionPerformed(evt);
     }//GEN-LAST:event_consistencyCheckMenuItem1ActionPerformed
+
+    private void exportDisplay1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDisplay1ActionPerformed
+    	HtmlDataModelRenderer renderer = Configuration.getInstance().getRenderer();
+		try {
+    		File overviewImg = new File(renderer.getOutputFolder(), "datamodeloverview.png");
+    		File overviewHtml = Configuration.getInstance().createTempFile();
+			
+			extractionModelEditor.graphView.exportDisplayToImage(overviewImg, overviewHtml);
+			
+			renderer.setOverviewHtml(Files.readAllLines(overviewHtml.toPath()).stream().collect(Collectors.joining(UIUtil.LINE_SEPARATOR)));
+			openHTMLRender(null);
+			overviewHtml.delete();
+		} catch (Throwable e) {
+			UIUtil.showException(this, "Error", e);
+		} finally {
+			renderer.setOverviewHtml(null);
+		}
+    }//GEN-LAST:event_exportDisplay1ActionPerformed
+
+    private void renderHtml1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderHtml1ActionPerformed
+    	exportDisplay1ActionPerformed(evt);
+    }//GEN-LAST:event_renderHtml1ActionPerformed
 
     private void executeAndReload(Callable<Boolean> callable) {
         File tmpFile = null;
@@ -2396,6 +2440,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem expandAll;
     private javax.swing.JMenuItem expandAllVisible;
     private javax.swing.JMenuItem exportDisplay;
+    private javax.swing.JMenuItem exportDisplay1;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem helpContent;
     private javax.swing.JMenuItem helpForum;
@@ -2438,6 +2483,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     public javax.swing.JMenuItem reload;
     private javax.swing.JMenuItem removeAllRestrictions;
     private javax.swing.JMenuItem renderHtml;
+    private javax.swing.JMenuItem renderHtml1;
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;
     private javax.swing.JCheckBoxMenuItem showIgnored;

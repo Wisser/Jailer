@@ -4573,7 +4573,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		} else {
 			final boolean deselect = !getAndConditionText().equals("")
 				&& rows.size() == 1;
-			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, session) {
+			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, alternativeColumnLabels, session) {
 				@Override
 				protected void onRowChanged(int row) {
 				}
@@ -5937,7 +5937,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final boolean deselect = !currentSelectedRowCondition.equals("")
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
-		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, session) {
+		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, session) {
 			@Override
 			protected void onRowChanged(int row) {
 				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(row, false);
@@ -6022,7 +6022,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final boolean deselect = !currentSelectedRowCondition.equals("")
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
-		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, session) {
+		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, session) {
 			@Override
 			protected void onRowChanged(int row) {
 				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(row, false);

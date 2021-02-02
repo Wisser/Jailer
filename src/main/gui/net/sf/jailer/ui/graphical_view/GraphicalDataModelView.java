@@ -27,6 +27,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -2131,7 +2132,7 @@ public class GraphicalDataModelView extends JPanel {
 	private static DisplayExporter displayExporter = new DisplayExporter();
 	public boolean inImageExport = false;
 
-	public void exportDisplayToImage() throws Exception {
+	public void exportDisplayToImage(File overviewImg, File overviewHtml) throws Exception {
 		Association oldAssociation = selectedAssociation;
 		Map<String, Integer> oldTablesOnPath = tablesOnPath;
 		try {
@@ -2140,7 +2141,7 @@ public class GraphicalDataModelView extends JPanel {
 				tablesOnPath = new HashMap<String, Integer>();
 				inImageExport = true;
 			}
-			displayExporter.export(display);
+			displayExporter.export(display, overviewImg, overviewHtml, model);
 		} finally {
 			synchronized (this) {
 				inImageExport = false;

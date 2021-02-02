@@ -10,18 +10,26 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 
+import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.UIUtil;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.util.GraphicsLib;
 import prefuse.util.io.IOLib;
 import prefuse.util.io.SimpleFileFilter;
+import prefuse.visual.tuple.TableVisualItem;
 
 /**
  * This class exports a prefuse.Display to a graphics file. The scalefactor will be 1.
@@ -72,44 +80,49 @@ public class DisplayExporter {
 
 	/**
 	 * This method lets the user select the target file and exports the <code>Display</code>
+	 * @param model 
 	 * 
 	 * @paran display the <code>Display</code> to export
 	 *
 	 */
-	public void export(Display display) throws Exception {
+	public void export(Display display, File img, File mapHtmlFile, DataModel model) throws Exception {
 
 		// Initialize if needed
-		if (chooser == null) {
+		if (chooser == null && img == null) {
 			init();
 		}
 
 		// open image save dialog
-		File f         = null;
-		int  returnVal = chooser.showSaveDialog(display);
+		File f         = img;
+		String format;
+		if (f == null) {
+			int  returnVal = chooser.showSaveDialog(display);
+	
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				f = chooser.getSelectedFile();
+			} else {
+				return;
+			}
+			format = ((SimpleFileFilter) chooser.getFileFilter()).getExtension();
+			String ext    = IOLib.getExtension(f);
 
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			f = chooser.getSelectedFile();
+			if (!format.equals(ext)) {
+				f = new File(f.toString() + "." + format);
+			}
 		} else {
-			return;
+			format = IOLib.getExtension(f);
 		}
-
-		String format = ((SimpleFileFilter) chooser.getFileFilter()).getExtension();
-		String ext    = IOLib.getExtension(f);
-
-		if (!format.equals(ext)) {
-			f = new File(f.toString() + "." + format);
-		}
-
+		
 		// Now save the image
 		OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
 
-		exportImage(display, out, format);
+		exportImage(display, out, format, img, mapHtmlFile, model);
 		out.flush();
 		out.close();
 	}
 
 	
-	private boolean exportImage(Display display, OutputStream output, String format) throws Exception {
+	private boolean exportImage(Display display, OutputStream output, String format, File imgFile, File mapHtmlFile, DataModel model) throws Exception {
 
 		String m_group = Visualization.ALL_ITEMS;
 
@@ -164,6 +177,57 @@ public class DisplayExporter {
 			// Save the image and return
 			ImageIO.write(img, format, output);
 
+			if (mapHtmlFile != null) {
+				PrintWriter out = new PrintWriter(mapHtmlFile);
+//				out.println("<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">");
+//				out.println("<html>");
+//				out.println("<head>");
+//				out.println(" <meta content=\"text/html; charset=ISO-8859-1\"");
+//				out.println(" http-equiv=\"content-type\">");
+//				out.println(" <title>JailerModel</title>");
+//				out.println(" <link href=\"styles.css\" rel=\"stylesheet\" type=\"text/css\">");
+//				out.println("</head>");
+//				out.println("<body>");
+//				out.println("<h1 style=\"font-style: italic;\"><small>JailerModel<small><small> " + SimpleDateFormat.getInstance().format(new Date()) + "</small></small></small></h1>");
+				out.println("<img src=\"" + imgFile.getName() + "\" usemap=\"#TableMap\" />");
+				out.println("<map name=\"TableMap\">");
+				
+				@SuppressWarnings("rawtypes")
+				Iterator ii = display.getVisualization().items();
+				while (ii.hasNext()) {
+					Object o = ii.next();
+					
+					if (o instanceof TableVisualItem) {
+						TableVisualItem vi = (TableVisualItem) o;
+						String tableName = null;
+						Table table = null;
+						if (vi.canGetString("label")) {
+							tableName = vi.getString("label");
+							table = model.getTable(tableName);
+							if (table != null) {
+								tableName = model.getDisplayName(table);
+							}
+													}
+						if (table != null && tableName != null && vi.isVisible() && !ZoomBoxControl.BOX_ITEM_LABEL.equals(tableName)) {
+							Rectangle2D viBounds = vi.getBounds();
+							
+							int x = (int) ((viBounds.getX() - bounds.getX()) * scale);
+							int y = (int) ((viBounds.getY() - bounds.getY()) * scale);
+							int w = (int) (viBounds.getWidth() * scale);
+							int h = (int) (viBounds.getHeight() * scale);
+							
+							out.println("  <area shape=\"rect\" coords=\"" + x + "," + y + "," + (x + w) + "," + (y + h) + "\"");
+							out.println("    href=\"" + HtmlDataModelRenderer.toFileName(table) + "\""); 
+							out.println("    title=\"" + HtmlDataModelRenderer.escapeHtmlEntities(tableName) + "\" />");
+						}
+					}
+				}
+				out.println("</map>");
+//				out.println("</body>");
+//				out.println("</html>");
+				out.close();
+			}
+			
 			return true;
 		} finally {
 			UIUtil.resetWaitCursor(display);

@@ -128,8 +128,16 @@ public abstract class PrimaryKeyValidator {
 		CancellationHandler.checkForCancellation(cancellationContext);
 	}
 
-	private void throwIfErrorFound() throws SqlException {
+	private synchronized void throwIfErrorFound() throws SqlException {
+		errorMessage.append(errorMessageLowPrio);
+		errorStatements.append(errorStatementsLowPrio);
+		errorMessageLowPrio.setLength(0);
+		errorStatementsLowPrio.setLength(0);
 		if (errorMessage.length() > 0) {
+			if (numErrors.get() == 1) {
+				errorMessage = new StringBuilder(errorMessage.toString().replaceFirst("1\\. ", ""));
+				errorStatements = new StringBuilder(errorStatements.toString().replaceFirst("1\\. ", ""));
+			}
 			SqlException e = new SqlException("Invalid Primary Key", errorMessage.toString(), errorStatements.toString(), null);
 			e.setFormatted(true);
 			throw e;
@@ -150,11 +158,11 @@ public abstract class PrimaryKeyValidator {
 			session.executeQuery(sql, new Session.AbstractResultSetReader() {
 				@Override
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
-					addError("Primary key of table \"" + table.getName() + "\" is not unique.", sql.toString());
+					addError(null, "Primary key of table \"" + table.getName() + "\" is not unique.", sql.toString());
 				}
 			}, null, cancellationContext, 1, true);
 		} catch (SqlException e) {
-			addError("Table \"" + table.getName() + "\": " + e.message, sql.toString());
+			addError(table, "Table \"" + table.getName() + "\": " + e.message, sql.toString());
 		}
 	}
 
@@ -175,28 +183,41 @@ public abstract class PrimaryKeyValidator {
 				session.executeQuery(sql, new Session.AbstractResultSetReader() {
 					@Override
 					public void readCurrentRow(ResultSet resultSet) throws SQLException {
-						addError("Primary key of table \"" + table.getName() + "\" contains null.", sql.toString());
+						addError(null, "Primary key of table \"" + table.getName() + "\" contains null.", sql.toString());
 					}
 				}, null, cancellationContext, 1, true);
 			} catch (SqlException e) {
-				addError("Table \"" + table.getName() + "\": " + e.message, sql.toString());
+				addError(table, "Table \"" + table.getName() + "\": " + e.message, sql.toString());
 			}
 		}
 	}
 
 	private StringBuilder errorMessage = new StringBuilder();
 	private StringBuilder errorStatements = new StringBuilder();
+	private StringBuilder errorMessageLowPrio = new StringBuilder();
+	private StringBuilder errorStatementsLowPrio = new StringBuilder();
 
+	private Set<Table> errTables = new HashSet<Table>();
+	
 	protected AtomicInteger numErrors = new AtomicInteger();
 	protected AtomicInteger numDone = new AtomicInteger();
 	protected AtomicInteger numTotal = new AtomicInteger();
 
 	protected abstract void updateProgressBar();
 
-	private void addError(String message, String sql) {
-		errorMessage.append("- " + message + "\n");
-		errorStatements.append("- " + sql + "\n");
-		numErrors.getAndIncrement();
+	private synchronized void addError(Table table, String message, String sql) {
+		if (table != null) {
+			if (!errTables.add(table)) {
+				return;
+			}
+			int numError = 1 + numErrors.getAndIncrement();
+			errorMessageLowPrio.append(numError + ". " + message + "\n");
+			errorStatementsLowPrio.append(numError + ". " + sql + "\n");
+		} else {
+			int numError = 1 + numErrors.getAndIncrement();
+			errorMessage.append(numError + ". " + message + "\n");
+			errorStatements.append(numError + ". " + sql + "\n");
+		}
 		updateProgressBar();
 	}
 
