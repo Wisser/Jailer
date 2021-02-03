@@ -3,7 +3,7 @@
   - Sorting columns in the result of a query in SQL Console did not work
     if a column did not have an explicit name. This bug was fixed.
   - The error message of the primary key checker tool is now more readable.
-  - fr at sf TBD
+  - Feature request 67 "Export as imagemap", https://sourceforge.net/p/jailer/feature-requests/67/
 
 10.3.2
   - The SQL formatting algorithm has been improved.
