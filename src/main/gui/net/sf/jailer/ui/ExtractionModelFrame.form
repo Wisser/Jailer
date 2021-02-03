@@ -422,7 +422,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="renderHtml1">
               <Properties>
-                <Property name="text" type="java.lang.String" value="HTML Renderer (graphical)"/>
+                <Property name="text" type="java.lang.String" value="HTML Renderer (with graphic)"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="renderHtml1ActionPerformed"/>

@@ -107,6 +107,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -115,6 +116,7 @@ import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.About;
 import net.sf.jailer.ui.AnalyseOptionsDialog;
 import net.sf.jailer.ui.AssociationListUI;
@@ -1196,6 +1198,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jSeparator8 = new javax.swing.JPopupMenu.Separator();
         createExtractionModelMenuItem = new javax.swing.JMenuItem();
         consistencyCheckMenuItem = new javax.swing.JMenuItem();
+        renderHtml = new javax.swing.JMenuItem();
         createCLIItem = new javax.swing.JMenuItem();
         menuWindow = new javax.swing.JMenu();
         layoutMenuItem = new javax.swing.JMenuItem();
@@ -1975,6 +1978,14 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu2.add(consistencyCheckMenuItem);
+
+        renderHtml.setText("HTML Renderer");
+        renderHtml.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renderHtmlActionPerformed(evt);
+            }
+        });
+        jMenu2.add(renderHtml);
 
         createCLIItem.setText("Show Command Line");
         createCLIItem.addActionListener(new java.awt.event.ActionListener() {
@@ -2836,6 +2847,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel outLinePanel;
     private javax.swing.JMenuItem reconnectMenuItem;
     private javax.swing.JButton refreshButton;
+    private javax.swing.JMenuItem renderHtml;
     private javax.swing.JMenuItem restoreSessionItem;
     private javax.swing.JMenu rowLimitMenu;
     private javax.swing.JMenuItem saveScriptAsMenuItem;
@@ -4121,6 +4133,21 @@ public class DataBrowser extends javax.swing.JFrame {
     private void consistencyCheckMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consistencyCheckMenuItem1ActionPerformed
     	consistencyCheckMenuItemActionPerformed(evt);
     }//GEN-LAST:event_consistencyCheckMenuItem1ActionPerformed
+
+    private void renderHtmlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderHtmlActionPerformed
+    	try {
+			List<String> args = new ArrayList<String>();
+			args.add("render-datamodel");
+			if (UIUtil.canRunJailer()) {
+				UIUtil.runJailer(this, args, false, true, true, null, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, executionContext);
+				HtmlDataModelRenderer renderer = Configuration.getInstance().getRenderer();
+				String of = renderer.outputFolderOf(datamodel.get());
+				BrowserLauncher.openURL(Environment.newFile(of + "/index.html").toURI(), this);
+			}
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e);
+		}
+    }//GEN-LAST:event_renderHtmlActionPerformed
 
     private String bookmarkName(String bookmarkFileName) {
 		if (bookmarkFileName.endsWith(BookmarksPanel.BOOKMARKFILE_EXTENSION)) {

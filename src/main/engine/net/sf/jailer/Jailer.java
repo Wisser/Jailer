@@ -46,6 +46,7 @@ import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.render.DataModelRenderer;
+import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.subsetting.SubsettingEngine;
 import net.sf.jailer.util.CancellationException;
@@ -130,6 +131,13 @@ public class Jailer {
 			LogUtil.reloadLog4jConfig(home);
 			Configuration configuration = Configuration.getInstance();
 			configuration.setTempFileFolder(new File(home, "tmp").getPath());
+			try {
+				HtmlDataModelRenderer renderer = configuration.getRenderer();
+				if (renderer != null) {
+					renderer.setOutputFolder(new File(home, renderer.getOutputFolder()).getAbsolutePath());
+				}
+			} catch (Exception e) {
+			}
 		}
 		getLogger();
 		try {

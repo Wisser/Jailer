@@ -66,6 +66,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 */
 	private static final Logger _log = Logger.getLogger(HtmlDataModelRenderer.class);
 
+	public static final String CONTENT_FOLDER_NAME = "tables";
+
 	/**
 	 * @return the outputDir
 	 */
@@ -101,14 +103,19 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 */
 	@Override
 	public void render(DataModel dataModel, List<String> restrictionFiles) {
+		String oldOutputFolder = outputFolder;
 		try {
 			new File(outputFolder).mkdirs();
+			outputFolder = outputFolderOf(dataModel);
+			new File(outputFolder).mkdir();
+			String outputFolderContent = new File(outputFolder, CONTENT_FOLDER_NAME).getPath();
+			new File(outputFolderContent).mkdir();
 			List<Table> tableList = new ArrayList<Table>(dataModel.getTables());
 			Collections.sort(tableList);
 			List<String> tablesColumn = new ArrayList<String>();
 			
 			for (Table table: tableList) {
-				tablesColumn.add(linkTo(table));
+				tablesColumn.add(linkTo(table, table.getName(), CONTENT_FOLDER_NAME + "/"));
 				StringBuffer legend = new StringBuffer();
 				String closure = renderClosure(table, legend);
 				closure = new PrintUtil().applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure", "", closure });
@@ -121,7 +128,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 				String components = "";
 				String domainSuffix = "";
 				String title = "Table " + escapeHtmlEntities(table.getName());
-				writeFile(new File(outputFolder, toFileName(table)), new PrintUtil().applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
+				writeFile(new File(outputFolderContent, toFileName(table)), new PrintUtil().applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix, escapeHtmlEntities(dataModel.getName()) }));
 				CancellationHandler.checkForCancellation(null);
 			}
 			
@@ -134,12 +141,18 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			String domains = "";
 
 			writeFile(new File(outputFolder, "index.html"), new PrintUtil().applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), generateHTMLTable("Tables", null, tablesColumn), restrictions, domains, overviewHtml == null? "" : (overviewHtml + " <br> <br>"), escapeHtmlEntities(dataModel.getName()) }));
-			writeFile(new File(outputFolder, "styles.css"), new PrintUtil().applyTemplate("template" + File.separatorChar + "styles.css", new Object[] { } ));
+			writeFile(new File(outputFolderContent, "styles.css"), new PrintUtil().applyTemplate("template" + File.separatorChar + "styles.css", new Object[] { } ));
 		} catch (CancellationException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			outputFolder = oldOutputFolder;
 		}
+	}
+
+	public String outputFolderOf(DataModel dataModel) {
+		return new File(outputFolder, toFileName(dataModel.getName())).getPath();
 	}
 
 	/**
@@ -333,8 +346,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			aliasA = association.source.getName();
 			aliasB = association.destination.getName();
 		}
-		aliasA = linkTo(association.source, aliasA);
-		aliasB = linkTo(association.destination, aliasB);
+		aliasA = linkTo(association.source, aliasA, "");
+		aliasB = linkTo(association.destination, aliasB, "");
 		jc = SqlUtil.replaceAliases(jc, aliasA, aliasB);
 		return new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(indent), "&nbsp;&nbsp;" + (association.destination.equals(current)? escapeHtmlEntities(association.destination.getName()) : linkTo(association.destination)), "&nbsp;&nbsp;" + (association.getCardinality() != null? association.getCardinality() : ""), "&nbsp;on&nbsp;", jc, "", highlighted? "class=\"highlightedrow\"" : "" });
 	}
@@ -379,7 +392,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	/**
 	 * Returns Space-string of given length.
 	 * 
-	 * @param indent the lenght
+	 * @param indent the length
 	 */
 	private String indentSpaces(int indent) {
 		StringBuffer result = new StringBuffer();
@@ -398,7 +411,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @return HTML-hyper link to the render of table
 	 */
 	private String linkTo(Table table) {
-		return linkTo(table, table.getName());
+		return linkTo(table, table.getName(), "");
 	}
 
 	/**
@@ -408,8 +421,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @param name the name of the link
 	 * @return HTML-hyper link to the render of table
 	 */
-	private String linkTo(Table table, String name) {
-		return "<a href=\"" + toFileName(table) + "\">" + escapeHtmlEntities(name) + "</a>";
+	private String linkTo(Table table, String name, String parent) {
+		return "<a href=\"" + parent + toFileName(table) + "\">" + escapeHtmlEntities(name) + "</a>";
 	}
 
 	/**
@@ -418,9 +431,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @param table the table
 	 * @return name of the file containing the HTML render of table
 	 */
-	public static String toFileName(Table table) {
+	public static String toFileName(String tableName) {
 		StringBuilder sb = new StringBuilder();
-		String tableName = table.getName();
 		String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.";
 		
 		for (int i = 0; i < tableName.length(); ++i) {
@@ -430,7 +442,17 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			}
 		}
 		
-		return sb.toString() + ".html";
+		return sb.toString();
+	}
+	
+	/**
+	 * Gets name of the file containing the HTML render of a given table.
+	 * 
+	 * @param table the table
+	 * @return name of the file containing the HTML render of table
+	 */
+	public static String toFileName(Table table) {
+		return toFileName(table.getName()) + ".html";
 	}
 	
 	/**

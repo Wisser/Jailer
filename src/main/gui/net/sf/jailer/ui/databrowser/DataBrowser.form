@@ -304,6 +304,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="consistencyCheckMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="renderHtml">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="HTML Renderer"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="renderHtmlActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="createCLIItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Show Command Line"/>

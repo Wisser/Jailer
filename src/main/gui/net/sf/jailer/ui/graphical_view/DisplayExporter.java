@@ -11,8 +11,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
@@ -114,6 +112,7 @@ public class DisplayExporter {
 		}
 		
 		// Now save the image
+		f.getParentFile().mkdirs();
 		OutputStream out = new BufferedOutputStream(new FileOutputStream(f));
 
 		exportImage(display, out, format, img, mapHtmlFile, model);
@@ -121,7 +120,6 @@ public class DisplayExporter {
 		out.close();
 	}
 
-	
 	private boolean exportImage(Display display, OutputStream output, String format, File imgFile, File mapHtmlFile, DataModel model) throws Exception {
 
 		String m_group = Visualization.ALL_ITEMS;
@@ -189,7 +187,7 @@ public class DisplayExporter {
 //				out.println("</head>");
 //				out.println("<body>");
 //				out.println("<h1 style=\"font-style: italic;\"><small>JailerModel<small><small> " + SimpleDateFormat.getInstance().format(new Date()) + "</small></small></small></h1>");
-				out.println("<img src=\"" + imgFile.getName() + "\" usemap=\"#TableMap\" />");
+				out.println("<img src=\"" + imgFile.getParentFile().getName() + "/" + imgFile.getName() + "\" usemap=\"#TableMap\" />");
 				out.println("<map name=\"TableMap\">");
 				
 				@SuppressWarnings("rawtypes")
@@ -217,7 +215,7 @@ public class DisplayExporter {
 							int h = (int) (viBounds.getHeight() * scale);
 							
 							out.println("  <area shape=\"rect\" coords=\"" + x + "," + y + "," + (x + w) + "," + (y + h) + "\"");
-							out.println("    href=\"" + HtmlDataModelRenderer.toFileName(table) + "\""); 
+							out.println("    href=\"" + HtmlDataModelRenderer.CONTENT_FOLDER_NAME + "/" + HtmlDataModelRenderer.toFileName(table) + "\""); 
 							out.println("    title=\"" + HtmlDataModelRenderer.escapeHtmlEntities(tableName) + "\" />");
 						}
 					}

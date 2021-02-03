@@ -852,7 +852,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu3.add(renderHtml);
 
-        renderHtml1.setText("HTML Renderer (graphical)");
+        renderHtml1.setText("HTML Renderer (with graphic)");
         renderHtml1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renderHtml1ActionPerformed(evt);
@@ -1555,7 +1555,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			args.add(file.getAbsolutePath());
 			if (UIUtil.canRunJailer()) {
 				UIUtil.runJailer(this, args, false, true, true, null, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, executionContext);
-				BrowserLauncher.openURL(Environment.newFile(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table))).toURI(), this);
+				HtmlDataModelRenderer renderer = Configuration.getInstance().getRenderer();
+				String of = renderer.outputFolderOf(extractionModelEditor.dataModel);
+				BrowserLauncher.openURL(Environment.newFile(table == null? (of + "/index.html") : (of + "/" + HtmlDataModelRenderer.CONTENT_FOLDER_NAME + "/" + HtmlDataModelRenderer.toFileName(table))).toURI(), this);
 			}
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
@@ -2062,7 +2064,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void exportDisplay1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDisplay1ActionPerformed
     	HtmlDataModelRenderer renderer = Configuration.getInstance().getRenderer();
 		try {
-    		File overviewImg = new File(renderer.getOutputFolder(), "datamodeloverview.png");
+    		File overviewImg = new File(new File(renderer.outputFolderOf(extractionModelEditor.dataModel), HtmlDataModelRenderer.CONTENT_FOLDER_NAME), "graph.png");
     		File overviewHtml = Configuration.getInstance().createTempFile();
 			
 			extractionModelEditor.graphView.exportDisplayToImage(overviewImg, overviewHtml);
