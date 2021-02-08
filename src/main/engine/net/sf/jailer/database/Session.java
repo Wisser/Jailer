@@ -47,6 +47,7 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.LogUtil;
 
 /**
  * Manages database sessions on a 'per thread' basis.
@@ -254,8 +255,31 @@ public class Session {
 		connectionFactory = new ConnectionFactory() {
 			private Connection defaultConnection = null;
 			private Random random = new Random();
+			private ThreadLocal<Long> lastTS = new ThreadLocal<Long>();
 			@Override
 			public synchronized Connection getConnection() throws SQLException {
+				Long ts = lastTS.get();
+				lastTS.set(System.currentTimeMillis());
+				Connection con = getConnection0();
+				if (ts != null && con != null && con == connection.get() && con.getAutoCommit() && !Session.this.transactional && (scope == null || scope != WorkingTableScope.TRANSACTION_LOCAL)) {
+					long idleTime = System.currentTimeMillis() - ts;
+					if (idleTime >= 5 * 60 * 1000L) {
+						boolean valid;
+						try {
+							valid = con.isValid(4);
+						} catch (Throwable t) {
+							valid = true;
+						}
+						if (!valid) {
+							LogUtil.warn(new RuntimeException("invalid connection, reconnecting (" + idleTime + ")"));
+							reconnect();
+							return getConnection0();
+						}
+					}
+				}
+				return con;
+			}
+			private Connection getConnection0() throws SQLException {
 				Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;
 
 				if (con == null && Boolean.TRUE.equals(sharesConnection.get())) {

@@ -84,6 +84,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         jPanel4.add(concurrentTaskControl, "cctc");
         ((CardLayout) jPanel4.getLayout()).show(jPanel4, "cctc");
         
+        schemaComboBox.setMaximumRowCount(20);
 		AutoCompletion.enable(schemaComboBox);
 		
 		List<Line> tables = new CsvFile(new File(DataModel.getTablesFile(executionContext))).getLines();
@@ -288,12 +289,10 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         keepManTablesCheckBox = new javax.swing.JCheckBox();
         removeCurrentAssociationsCheckBox = new javax.swing.JCheckBox();
         keepManAssociationsCheckBox = new javax.swing.JCheckBox();
-        jPanel6 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         jPanel1 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
         schemaLabel = new javax.swing.JLabel();
         schemaComboBox = new JComboBox2();
         jPanel3 = new javax.swing.JPanel();
@@ -385,33 +384,6 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
         jPanel5.add(jPanel2, gridBagConstraints);
 
-        jPanel6.setLayout(new java.awt.GridBagLayout());
-
-        jLabel3.setText("<html><i>If&nbsp;you&nbsp;want&nbsp;to&nbsp;analyze&nbsp;multiple&nbsp;schemes, <br>do&nbsp;it&nbsp;one&nbsp;after&nbsp;the&nbsp;other.</i></html>");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel6.add(jLabel3, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel6.add(jSeparator1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel5.add(jPanel6, gridBagConstraints);
-
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         okButton.setText(" Ok ");
@@ -421,9 +393,9 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(okButton, gridBagConstraints);
@@ -435,29 +407,44 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         jPanel1.add(cancelButton, gridBagConstraints);
+
+        jLabel3.setText("<html><i>If&nbsp;you&nbsp;want&nbsp;to&nbsp;analyze&nbsp;multiple&nbsp;schemes, <br>do&nbsp;it&nbsp;one&nbsp;after&nbsp;the&nbsp;other.</i></html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
+        jPanel1.add(jLabel3, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         jPanel5.add(jPanel1, gridBagConstraints);
 
-        schemaLabel.setText(" Analyze schema ");
+        schemaLabel.setText("  Analyze schema  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         jPanel5.add(schemaLabel, gridBagConstraints);
 
         schemaComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         jPanel5.add(schemaComboBox, gridBagConstraints);
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Analyse tables and ...  "));
@@ -513,7 +500,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel5.add(jPanel3, gridBagConstraints);
 
         jPanel4.add(jPanel5, "main");
@@ -579,8 +566,6 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox keepManAssociationsCheckBox;
     private javax.swing.JCheckBox keepManTablesCheckBox;
     private javax.swing.JButton okButton;
