@@ -1,3 +1,6 @@
+10.3.4
+  - Detection and renewal of invalid database connections.
+
 10.3.3
   - The wording of the dialog for analyzing a scheme has been made more understandable.
   - Sorting columns in the result of a query in SQL Console did not work
