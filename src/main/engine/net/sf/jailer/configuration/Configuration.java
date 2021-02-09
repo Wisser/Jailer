@@ -153,6 +153,10 @@ public class Configuration {
 
 	private int columnsPerIFMTable = 8;
 
+	/**
+	 * Time in seconds waiting for an idle database connection to be tested if it is still valid.
+	 */
+	private int databaseConnectionInteractiveTimeout = 240;
 
 	private String additionalSQLKeywords;
 
@@ -180,6 +184,20 @@ public class Configuration {
 		return doMinimizeUPK;
 	}
 	
+	/**
+	 * Gets time in seconds waiting for an idle database connection to be tested if it is still valid.
+	 */
+	public int getDatabaseConnectionInteractiveTimeout() {
+		return databaseConnectionInteractiveTimeout;
+	}
+
+	/**
+	 * Sets time in seconds waiting for an idle database connection to be tested if it is still valid.
+	 */
+	public void setDatabaseConnectionInteractiveTimeout(int databaseConnectionInteractiveTimeout) {
+		this.databaseConnectionInteractiveTimeout = databaseConnectionInteractiveTimeout;
+	}
+
 	/**
 	 * The configuration.
 	 */

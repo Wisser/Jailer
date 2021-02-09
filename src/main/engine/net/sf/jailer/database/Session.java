@@ -43,6 +43,7 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
@@ -86,6 +87,11 @@ public class Session {
 	 * No SQL-Exceptions will be logged in silent mode.
 	 */
 	private boolean silent = false;
+	
+	/**
+	 * Last known activity time per connection.
+	 */
+	private Map<Connection, Long> lastConnectionActiviyTimeStamp = Collections.synchronizedMap(new HashMap<Connection, Long>());
 
 	private final boolean transactional;
 	public final boolean local;
@@ -255,15 +261,16 @@ public class Session {
 		connectionFactory = new ConnectionFactory() {
 			private Connection defaultConnection = null;
 			private Random random = new Random();
-			private ThreadLocal<Long> lastTS = new ThreadLocal<Long>();
 			@Override
 			public synchronized Connection getConnection() throws SQLException {
-				Long ts = lastTS.get();
-				lastTS.set(System.currentTimeMillis());
 				Connection con = getConnection0();
-				if (ts != null && con != null && con == connection.get() && con.getAutoCommit() && !Session.this.transactional && (scope == null || scope != WorkingTableScope.TRANSACTION_LOCAL)) {
+				Long ts = lastConnectionActiviyTimeStamp.get(con);
+				releaseConnection(con);
+				if (ts != null && con != null && con == connection.get() && con.getAutoCommit() && !Session.this.transactional) {
 					long idleTime = System.currentTimeMillis() - ts;
-					if (idleTime >= 5 * 60 * 1000L) {
+					long databaseConnectionInteractiveTimeout = Configuration.getInstance().getDatabaseConnectionInteractiveTimeout() * 1000L;
+
+					if (idleTime >= databaseConnectionInteractiveTimeout) {
 						boolean valid;
 						try {
 							valid = con.isValid(4);
@@ -343,6 +350,16 @@ public class Session {
 		};
 		// fail fast
 		init();
+	}
+
+	/**
+	 * Releases a connection get from {@link #getConnection()}.
+	 * Indicated that the connection is no longer in use for the time being.
+	 * 
+	 * @param con the connection
+	 */
+	public void releaseConnection(Connection con) {
+		lastConnectionActiviyTimeStamp.put(con, System.currentTimeMillis());
 	}
 
 	protected void init() throws SQLException {
@@ -656,7 +673,10 @@ public class Session {
 			_log.info(sqlQuery);
 		}
 		try {
-			return executeQuery(connectionFactory.getConnection(), sqlQuery, reader, alternativeSQL, context, limit, timeout, withExplicitCommit);
+			Connection con = connectionFactory.getConnection();
+			long result = executeQuery(con, sqlQuery, reader, alternativeSQL, context, limit, timeout, withExplicitCommit);
+			releaseConnection(con);
+			return result;
 		} catch (SQLException e) {
 			CancellationHandler.checkForCancellation(context);
 			if (!silent) {
@@ -727,7 +747,8 @@ public class Session {
 				long startTime = System.currentTimeMillis();
 				Statement statement = null;
 				try {
-					statement = connectionFactory.getConnection().createStatement();
+					Connection con = connectionFactory.getConnection();
+					statement = con.createStatement();
 					begin(statement, null);
 					if (serializeAccess) {
 						boolean acquired;
@@ -764,6 +785,7 @@ public class Session {
 					}
 
 					end(statement, null);
+					releaseConnection(con);
 					ok = true;
 					if (getLogStatements()) {
 						_log.info("" + rowCount + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");
@@ -825,7 +847,8 @@ public class Session {
 			int rowCount = 0;
 			long startTime = System.currentTimeMillis();
 			try {
-				statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+				Connection con = connectionFactory.getConnection();
+				statement = con.prepareStatement(sqlUpdate);
 				begin(statement, null);
 				int i = 1;
 				for (Object p: parameter) {
@@ -833,6 +856,7 @@ public class Session {
 				}
 				rowCount = statement.executeUpdate();
 				end(statement, null);
+				releaseConnection(con);
 				if (getLogStatements()) {
 					_log.info("" + rowCount + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");
 				}
@@ -970,7 +994,8 @@ public class Session {
 				long startTime = System.currentTimeMillis();
 				Statement statement = null;
 				try {
-					statement = connectionFactory.getConnection().createStatement();
+					Connection con = connectionFactory.getConnection();
+					statement = con.createStatement();
 					begin(statement, null);
 					if (serializeAccess) {
 						boolean acquired;
@@ -1023,6 +1048,7 @@ public class Session {
 					}
 
 					end(statement, null);
+					releaseConnection(con);
 					ok = true;
 					if (getLogStatements()) {
 						_log.info("" + rowCount + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");

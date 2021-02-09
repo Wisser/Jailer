@@ -60,6 +60,9 @@
 	</urlRewriteRule>
 	-->
 
+	<!-- time in seconds waiting for an idle database connection to be tested if it is still valid -->
+	<databaseConnectionInteractiveTimeout>240</databaseConnectionInteractiveTimeout>
+
 	<!--
 		Also include 'null's in the generated upsert statements.
 		Useful if a column contains 'null', but its default value is non-null.

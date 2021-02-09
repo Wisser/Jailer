@@ -121,7 +121,7 @@ public class PrimaryKey {
 	}
 
 	public static boolean  isAssignable(Column uPKColumn, Column entityColumn) {
-		if (!uPKColumn.type.equals(entityColumn.type)) {
+		if (!uPKColumn.type.equalsIgnoreCase(entityColumn.type)) {
 			return false;
 		}
 		if (uPKColumn.length == 0 && entityColumn.length != 0) {
