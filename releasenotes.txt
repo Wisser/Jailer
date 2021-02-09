@@ -1,5 +1,6 @@
 10.3.4
   - Detection and renewal of invalid database connections.
+  - With nullable (virtual) primary key columns, errors could occur in the generated SQL statements. This has been fixed.
 
 10.3.3
   - The wording of the dialog for analyzing a scheme has been made more understandable.
