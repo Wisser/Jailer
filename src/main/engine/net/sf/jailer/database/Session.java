@@ -275,6 +275,7 @@ public class Session {
 						try {
 							valid = con.isValid(4);
 						} catch (Throwable t) {
+							LogUtil.warn(t);
 							valid = true;
 						}
 						if (!valid) {
