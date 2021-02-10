@@ -142,16 +142,22 @@
                       </ul><br />
                       <span style="font-weight: bold;">News</span><br />
                       <br />
-
-                      <table class="bodyTable">
+ 
+                       <table class="bodyTable">
                         <tbody>
+                          <tr class="a">
+                            <td valign="top" nowrap="" style="background-color: rgb(238, 238, 238);">
+                            <small class="date">2021-02-04</small></td>
+
+                            <td valign="top" style="background-color: rgb(238, 238, 238);">Cycles in parent-child relationships will be detected and broken. Thus, such data can be exported by deferring the insertion of nullable foreign keys.</td>
+                          </tr>
                           <tr class="b">
                             <td valign="top" nowrap style="background-color: rgb(221, 221, 238);">
                             <small class="date">2020-01-01</small></td>
 
                             <td valign="top" style="background-color: rgb(221, 221, 238);">The Jailer engine is published in <a href="https://mvnrepository.com/artifact/io.github.wisser/jailer-engine">Maven repository</a>.</td>
                           </tr>
-                          <tr class="a">
+                           <tr class="a">
                             <td valign="top" nowrap style="background-color: rgb(238, 238, 238);">
                             <small class="date">2019-02-01</small></td>
 
@@ -192,68 +198,38 @@
                             <small class="date">2017-03-30</small></td>
 
                             <td valign="top" style="background-color: rgb(238, 238, 238);">Improved
-                            <a href="filters.html">filter management</a>. Support for
-                            import-filters and literal-filters.</td>
-                          </tr>
-
-                          <tr class="b">
-                            <td valign="top" nowrap style="background-color: rgb(221, 221, 238);">
-                            <small class="date">2017-01-27</small></td>
-
-                            <td valign="top" style="background-color: rgb(221, 221, 238);">Referential
-                            cycles can now be exported by deferring the insert of
-                            nullable foreign keys.</td>
-                          </tr>
-
-                          <tr class="a">
-                            <td valign="top" nowrap style="background-color: rgb(238, 238, 238);">
-                            <small class="date">2016-21-10</small></td>
-
-                            <td valign="top" style="background-color: rgb(238, 238, 238);">Filter
+                            <a href="filters.html">filter management</a>. Filter
                             Templates allows you to define rules for assigning filters to
-                            columns.<br />
+                            columns.<br>
                             Filters on primary key columns will automatically be
                             propagated to the corresponding foreign key columns.</td>
                           </tr>
 
-                          <tr class="b">
-                            <td valign="top" nowrap style="background-color: rgb(221, 221, 238);">
-                            <small class="date">2015-12-04</small></td>
+                          
 
-                            <td valign="top" style="background-color: rgb(221, 221, 238);">Support for
-                            oracle's ROWID pseudo-column.</td>
-                          </tr>
+                          
 
-                          <tr class="a">
-                            <td valign="top" nowrap style="background-color: rgb(238, 238, 238);">
-                            <small class="date">2016-09-08</small></td>
+                          
 
-                            <td valign="top" style="background-color: rgb(238, 238, 238);">New "Export
-                            To" mode allows to export rows directly into a different
-                            schema in the same database.</td>
-                          </tr>
+                          
 
                           <tr class="b">
                             <td valign="top" nowrap style="background-color: rgb(221, 221, 238);">
                             <small class="date">2015-12-04</small></td>
 
-                            <td valign="top" style="background-color: rgb(221, 221, 238);">Support for
-                            oracle's ROWID pseudo-column.</td>
+                            <td valign="top" style="background-color: rgb(221, 221, 238);">Data can now also be exported directly to a schema of the same database. This ensures optimal performance.</td>
                           </tr>
 
                           <tr class="a">
                             <td valign="top" nowrap style="background-color: rgb(238, 238, 238);">
                             <small class="date">2015-10-23</small></td>
 
-                            <td valign="top" style="background-color: rgb(238, 238, 238);">Release 5.0
-                            introduces the ability to collect rows in a separate embedded
-                            database. This allows it to export data from read-only
-                            databases.</td>
+                            <td valign="top" style="background-color: rgb(238, 238, 238);">Rows can alternatively be collected in a separate embedded database. This allows exporting data from read-only databases.</td>
                           </tr>
 
                           <tr class="b">
                             <td valign="top" nowrap style="background-color: rgb(221, 221, 238);">
-                            <small class="date">2011-07-20</small></td>
+                            <small class="date">2014-07-20</small></td>
 
                             <td valign="top" style="background-color: rgb(221, 221, 238);">Implemented
                             the "<a href="subset-by-example.html">Subset by Example"</a>
@@ -263,7 +239,7 @@
 
                           <tr class="a">
                             <td valign="top" nowrap style="background-color: rgb(238, 238, 238);">
-                            <small class="date">2010-04-15</small></td>
+                            <small class="date">2014-04-15</small></td>
 
                             <td valign="top" style="background-color: rgb(238, 238, 238);">A <a href=
                             "data-browsing.html">Data Browser</a> has been introduced.
@@ -271,36 +247,11 @@
                             foreign-key-based or user-defined relationships.</td>
                           </tr>
 
-                          <tr class="b">
-                            <td style=
-                            "vertical-align: top; background-color: rgb(221, 221, 238);">
-                            <small class="date">2008-12-23</small></td>
+                          
 
-                            <td style=
-                            "vertical-align: top; background-color: rgb(221, 221, 238);">
-                            Jailer now supports the <a href=
-                            "http://www.dbunit.org">DbUnit</a> flat XML dataset file
-                            format, thus allowing the users of the famous JUnit extension
-                            <a href="http://www.dbunit.org">DbUnit</a> to use the
-                            extracted data for unit testing.</td>
-                          </tr>
+                          
 
-                          <tr class="a">
-                            <td valign="top" nowrap style="background-color: rgb(238, 238, 238);">
-                            <small class="date">2007-12-05</small></td>
-
-                            <td valign="top" style="background-color: rgb(238, 238, 238);">Version 2.0
-                            comes with new graphical user interface.</td>
-                          </tr>
-
-                          <tr class="b">
-                            <td valign="top" nowrap style="background-color: rgb(221, 221, 238);">
-                            <small class="date">2007-06-05</small></td>
-
-                            <td valign="top" style="background-color: rgb(221, 221, 238);"><a href=
-                            "exporting-data.htm">Tutorial</a> for Jailer now
-                            available.<br /></td>
-                          </tr>
+                          
                         </tbody>
                       </table><br />
                       <br />
