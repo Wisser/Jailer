@@ -19,6 +19,9 @@ import java.awt.CardLayout;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.swing.DefaultComboBoxModel;
 
@@ -69,17 +72,28 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 	};
 
 	private final Object LOCK = new Object();
-
+	private String majorSchema;
+	
 	/**
 	 * true if user clicks OK button.
 	 */
 	private boolean ok;
-
+	
 	/** Creates new form AnalyseOptionsDialog 
 	 */
 	public AnalyseOptionsDialog(java.awt.Frame parent, DataModel dataModel, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
 		initComponents();
+
+		majorSchema = null;
+		if (dataModel != null) {
+			Map<String, Long> counts = dataModel.getTables().stream().collect(Collectors.groupingBy(table -> table.getSchema(""), Collectors.counting()));
+			Optional<Long> max = counts.values().stream().max(Long::compareTo);
+			max.ifPresent(m -> counts.entrySet().stream().filter(e -> e.getValue().equals(m)).findAny().ifPresent(e -> { majorSchema = e.getKey(); }));
+			if (majorSchema != null && majorSchema.equals("")) {
+				majorSchema = null;
+			}
+		}
 
         jPanel4.add(concurrentTaskControl, "cctc");
         ((CardLayout) jPanel4.getLayout()).show(jPanel4, "cctc");
@@ -218,6 +232,8 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 								schemaComboBox.setModel(model);
 								if (initiallySelectedSchema != null) {
 									schemaComboBox.setSelectedItem(initiallySelectedSchema);
+								} else if (majorSchema != null) {
+									schemaComboBox.setSelectedItem(majorSchema);
 								} else if (defaultSchema != null) {
 									schemaComboBox.setSelectedItem(defaultSchema);
 								}
