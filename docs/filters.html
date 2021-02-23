@@ -166,7 +166,7 @@
                       null and that a foreign key value is mapped to the same value as
                       the primary key even if the filter expression is not a
                       deterministic function.<br />
-                      <br />
+                      (More precisely, if the filter expressions and the types of any two filters on two different columns are exactly the same, then both filters will map same values to exactly the same target values.)<br><br />
                       This filter uses a sequence to generate new EMPNOs during the
                       import phase:<br />
                       <br />

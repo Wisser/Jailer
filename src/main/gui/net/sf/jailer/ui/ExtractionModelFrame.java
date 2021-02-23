@@ -2219,8 +2219,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	                    ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
 	                    ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
 	                    Object dSize = UIManager.get("SplitPane.dividerSize");
-	                    if (new Integer(10).equals(dSize)) {
-	                    	UIManager.put("SplitPane.dividerSize", new Integer(14));
+	                    if (Integer.valueOf(10).equals(dSize)) {
+	                    	UIManager.put("SplitPane.dividerSize", Integer.valueOf(14));
 	                    }
 
 	                    if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {

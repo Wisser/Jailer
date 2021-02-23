@@ -402,7 +402,7 @@ public class BasicFormatterImpl {
 			out();
 			indent++;
 			newline();
-			parenCounts.addLast( new Integer( parensSinceSelect ) );
+			parenCounts.addLast( parensSinceSelect );
 			afterByOrFromOrSelects.addLast( Boolean.valueOf( afterByOrSetOrFromOrSelect ) );
 			parensSinceSelect = 0;
 			afterByOrSetOrFromOrSelect = true;

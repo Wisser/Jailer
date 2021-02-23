@@ -67,9 +67,9 @@ public class UpdateInfoManager {
 					UISettings.store("stat0", null);
 					Object uimCnt = UISettings.restore("UIM-Cnt");
 					if (uimCnt instanceof Long) {
-						uimCnt = new Long(((Long) uimCnt) + 1);
+						uimCnt = Long.valueOf(((Long) uimCnt) + 1);
 					} else {
-						uimCnt = new Long(isNew? 1 : 10000);
+						uimCnt = Long.valueOf(isNew? 1 : 10000);
 					}
 					UISettings.store("UIM-Cnt", uimCnt);
 					startShutdownHook();
