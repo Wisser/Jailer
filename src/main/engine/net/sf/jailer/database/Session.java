@@ -266,11 +266,20 @@ public class Session {
 				Connection con = getConnection0();
 				Long ts = lastConnectionActiviyTimeStamp.get(con);
 				releaseConnection(con);
-				if (ts != null && con != null && con == connection.get() && con.getAutoCommit() && !Session.this.transactional) {
+				boolean isInvalid = false;
+				boolean currentAutoCommit = true;
+				try {
+					if (con != null) {
+						currentAutoCommit = con.getAutoCommit();
+					}
+				} catch (Throwable t) {
+					isInvalid = true;
+				}
+				if (ts != null && con != null && con == connection.get() && currentAutoCommit && !Session.this.transactional) {
 					long idleTime = System.currentTimeMillis() - ts;
 					long databaseConnectionInteractiveTimeout = Configuration.getInstance().getDatabaseConnectionInteractiveTimeout() * 1000L;
 
-					if (idleTime >= databaseConnectionInteractiveTimeout) {
+					if (isInvalid || idleTime >= databaseConnectionInteractiveTimeout) {
 						boolean valid;
 						try {
 							valid = con.isValid(4);
@@ -361,6 +370,16 @@ public class Session {
 	 */
 	public void releaseConnection(Connection con) {
 		lastConnectionActiviyTimeStamp.put(con, System.currentTimeMillis());
+	}
+
+	/**
+	 * Marks a connection as potentially invalid.
+	 * Forces to re-validate the connection in {@link #getConnection()}.
+	 * 
+	 * @param con the connection
+	 */
+	public void markConnectionAsPotentiallyInvalid(Connection con) {
+		lastConnectionActiviyTimeStamp.put(con, System.currentTimeMillis() - 1000L * 60 * 24 * 31);
 	}
 
 	protected void init() throws SQLException {
@@ -673,12 +692,16 @@ public class Session {
 		if (getLogStatements()) {
 			_log.info(sqlQuery);
 		}
+		Connection con = null;
 		try {
-			Connection con = connectionFactory.getConnection();
+			con = connectionFactory.getConnection();
 			long result = executeQuery(con, sqlQuery, reader, alternativeSQL, context, limit, timeout, withExplicitCommit);
 			releaseConnection(con);
 			return result;
 		} catch (SQLException e) {
+			if (con != null) {
+				markConnectionAsPotentiallyInvalid(con);
+			}
 			CancellationHandler.checkForCancellation(context);
 			if (!silent) {
 				_log.error("Error executing query", e);
@@ -747,8 +770,9 @@ public class Session {
 			while (!ok) {
 				long startTime = System.currentTimeMillis();
 				Statement statement = null;
+				Connection con = null;
 				try {
-					Connection con = connectionFactory.getConnection();
+					con = connectionFactory.getConnection();
 					statement = con.createStatement();
 					begin(statement, null);
 					if (serializeAccess) {
@@ -792,6 +816,9 @@ public class Session {
 						_log.info("" + rowCount + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");
 					}
 				} catch (SQLException e) {
+					if (con != null) {
+						markConnectionAsPotentiallyInvalid(con);
+					}
 					checkKilled();
 					CancellationHandler.checkForCancellation(null);
 					end(statement, null);
@@ -843,12 +870,13 @@ public class Session {
 			_log.info(sqlUpdate);
 		}
 		PreparedStatement statement = null;
+		Connection con = null;
 		try {
 			CancellationHandler.checkForCancellation(null);
 			int rowCount = 0;
 			long startTime = System.currentTimeMillis();
 			try {
-				Connection con = connectionFactory.getConnection();
+				con = connectionFactory.getConnection();
 				statement = con.prepareStatement(sqlUpdate);
 				begin(statement, null);
 				int i = 1;
@@ -868,6 +896,9 @@ public class Session {
 			}
 			return rowCount;
 		} catch (SQLException e) {
+			if (con != null) {
+				markConnectionAsPotentiallyInvalid(con);
+			}
 			checkKilled();
 			CancellationHandler.checkForCancellation(null);
 			if (!silent) {
@@ -886,14 +917,19 @@ public class Session {
 			_log.info(sqlUpdate);
 		}
 		PreparedStatement statement = null;
+		Connection con = null;
 		try {
-			statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+			con = connectionFactory.getConnection();
+			statement = con.prepareStatement(sqlUpdate);
 			begin(statement, null);
 			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8");
 			statement.setCharacterStream(1, inputStreamReader, (int) length);
 			statement.execute();
 			inputStreamReader.close();
 		} catch (SQLException e) {
+			if (con != null) {
+				markConnectionAsPotentiallyInvalid(con);
+			}
 			checkKilled();
 			CancellationHandler.checkForCancellation(null);
 			throw e;
@@ -915,14 +951,19 @@ public class Session {
 		String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
 		_log.info(sqlUpdate);
 		PreparedStatement statement = null;
+		Connection con = null;
 		try {
-			statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+			con = connectionFactory.getConnection();
+			statement = con.prepareStatement(sqlUpdate);
 			begin(statement, null);
 			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8");
 			statement.setCharacterStream(1, inputStreamReader, (int) length);
 			statement.execute();
 			inputStreamReader.close();
 		} catch (SQLException e) {
+			if (con != null) {
+				markConnectionAsPotentiallyInvalid(con);
+			}
 			checkKilled();
 			CancellationHandler.checkForCancellation(null);
 			throw e;
@@ -944,14 +985,19 @@ public class Session {
 		String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
 		_log.info(sqlUpdate);
 		PreparedStatement statement = null;
+		Connection con = null;
 		try {
-			statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+			con = connectionFactory.getConnection();
+			statement = con.prepareStatement(sqlUpdate);
 			begin(statement, null);
 			FileInputStream fileInputStream = new FileInputStream(lobFile);
 			statement.setBinaryStream(1, fileInputStream, (int) lobFile.length());
 			statement.execute();
 			fileInputStream.close();
 		} catch (SQLException e) {
+			if (con != null) {
+				markConnectionAsPotentiallyInvalid(con);
+			}
 			checkKilled();
 			CancellationHandler.checkForCancellation(null);
 			throw e;
@@ -994,8 +1040,9 @@ public class Session {
 			while (!ok) {
 				long startTime = System.currentTimeMillis();
 				Statement statement = null;
+				Connection con = null;
 				try {
-					Connection con = connectionFactory.getConnection();
+					con = connectionFactory.getConnection();
 					statement = con.createStatement();
 					begin(statement, null);
 					if (serializeAccess) {
@@ -1055,6 +1102,9 @@ public class Session {
 						_log.info("" + rowCount + " row(s) in " + (System.currentTimeMillis() - startTime) + " ms");
 					}
 				} catch (SQLException e) {
+					if (con != null) {
+						markConnectionAsPotentiallyInvalid(con);
+					}
 					checkKilled();
 					CancellationHandler.checkForCancellation(null);
 					end(statement, null);

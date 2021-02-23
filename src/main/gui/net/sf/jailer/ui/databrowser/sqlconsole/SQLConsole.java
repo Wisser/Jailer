@@ -744,8 +744,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         String stmtId = null;
         TreeMap<Integer, Integer> positionOffsets = new TreeMap<Integer, Integer>();
         Connection resetAutoCommitConnection = null;
-		try {
-	        Connection connection = session.getConnection();
+        Connection connection = null;
+        try {
+	        connection = session.getConnection();
 	        if (!explain && session.dbms.equals(DBMS.POSTGRESQL)) {
 	            if (connection.getAutoCommit()) {
 	            	connection.setAutoCommit(false);
@@ -1148,7 +1149,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             	appendHistory(sql);
             }
         } catch (Throwable error) {
-            try {
+        	if (connection != null) {
+        		session.markConnectionAsPotentiallyInvalid(connection);
+        	}
+        	try {
                 CancellationHandler.checkForCancellation(SQLConsole.this);
             } catch (CancellationException e) {
                 error = e;
@@ -2265,8 +2269,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     + "    dbms_sql.close_cursor( l_theCursor );" + "end;";
 
             CallableStatement cStmt = null;
+            Connection connection = null;
             try {
-                Connection connection = session.getConnection();
+                connection = session.getConnection();
                 cStmt = connection.prepareCall(statement);
                 cStmt.registerOutParameter(2, Types.INTEGER);
                 cStmt.setString(1, sqlStatement);
@@ -2275,7 +2280,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
                 return cStmt.getInt(2);
             } catch (Exception e) {
-                logger.info("error", e);
+            	if (connection != null) {
+            		session.markConnectionAsPotentiallyInvalid(connection);
+            	}
+            	logger.info("error", e);
             } finally {
                 if (cStmt != null) {
                     try {

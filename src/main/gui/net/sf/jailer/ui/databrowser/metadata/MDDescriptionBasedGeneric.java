@@ -263,8 +263,9 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	 */
 	protected MemorizedResultSet retrieveList(Session session, String query, String schema, String parentName) throws SQLException {
 		Statement cStmt = null;
-        try {
-            Connection connection = session.getConnection();
+		Connection connection = null;
+		try {
+            connection = session.getConnection();
             cStmt = connection.createStatement();
             if (schema != null) {
             	schema = Quoting.staticUnquote(schema);
@@ -277,6 +278,9 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
             rs.close();
             return result;
         } catch (Exception e) {
+        	if (connection != null) {
+        		session.markConnectionAsPotentiallyInvalid(connection);
+        	}
         	logger.info("error", e);
             return null;
         } finally {
