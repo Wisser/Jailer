@@ -20,8 +20,10 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -101,6 +103,32 @@ public class BrowserContentCellEditor {
 			@Override
 			boolean isEditable(int columnType, Object content) {
 				return content == null || (content instanceof CellContentConverter.NCharWrapper && !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0));
+			}
+		},
+		BOOLEAN {
+			List<String> trueValues = Arrays.asList("true", "yes", "1", "t", "y");
+			List<String> falseValues = Arrays.asList("false", "no", "0", "f", "n");
+			
+			@Override
+			String cellContentToText(int columnType, Object content) {
+				return String.valueOf((Boolean) content);
+			}
+
+			@Override
+			Object textToContent(int columnType, String text, Object oldContent) {
+				String lcText = text.toLowerCase();
+				if (trueValues.contains(lcText)) {
+					return true;
+				}
+				if (falseValues.contains(lcText)) {
+					return false;
+				}
+				return INVALID;
+			}
+
+			@Override
+			boolean isEditable(int columnType, Object content) {
+				return content == null || (content instanceof Boolean);
 			}
 		},
 		DATE {
@@ -233,6 +261,8 @@ public class BrowserContentCellEditor {
 		converterPerType.put(Types.TIMESTAMP, Converter.DATE);
 
 		converterPerType.put(CellContentConverter.TIMESTAMP_WITH_NANO, Converter.TIMESTAMP_WITH_NANO);
+
+		converterPerType.put(Types.BOOLEAN, Converter.BOOLEAN);
 	}
 	
 	/**
