@@ -1,3 +1,6 @@
+10.3.5
+  - The inplace editor in the data browser now also supports fields of the "boolean" data type.
+
 10.3.4
   - Detection and renewal of invalid database connections.
   - With nullable (virtual) primary key columns, errors could occur in the generated SQL statements. This has been fixed.
