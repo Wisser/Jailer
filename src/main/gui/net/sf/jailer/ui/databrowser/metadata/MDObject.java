@@ -66,7 +66,7 @@ public class MDObject {
 	
 	@Override
 	public String toString() {
-		return name;
+		return getUnquotedName();
 	}
 	
 }

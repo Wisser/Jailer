@@ -187,7 +187,7 @@ public class MDSchema extends MDObject {
 					Collections.sort(tables, new Comparator<MDTable>() {
 						@Override
 						public int compare(MDTable o1, MDTable o2) {
-							return o1.getName().compareToIgnoreCase(o2.getName());
+							return o1.getUnquotedName().compareToIgnoreCase(o2.getUnquotedName());
 						}
 					});
 				} catch (SQLException e) {
