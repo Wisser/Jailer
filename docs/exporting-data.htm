@@ -78,6 +78,8 @@
             </div>
 
             <ul>
+              <li><a href="preparation.htm" target="_self" class="mlink">Preparation</a></li><br>
+              
               <li>Basic</li>
 
                 <ul>
@@ -131,119 +133,13 @@
 
                       <h4>Objective</h4>Exporting all the data related to the employee
                       named 'Scott' into a SQL-script.<br />
-                      <br />
+                      <br /><h4>Step 1. Setup the database<br /></h4>
 
-                      <h4>Step 1. Setup the database<br /></h4>
+                      See "<a href="preparation.htm" target="_self" class="mlink">Preparation</a>" or use the demo data model <i>"Demo Scott (7 Tables)"</i><br><br />
 
-                      <p>Create a new database schema and execute <a href=
-                      "scott-tiger.sql.html"><img style=
-                      "border: 0px solid ; width: 13px; height: 13px;" src=
-                      "exporting-data-Dateien/arrow.gif" hspace="4" /><big><span style=
-                      "font-family: monospace;"><font size=
-                      "4">script/scott-tiger.sql</font></span></big></a>. Make sure that
-                      the script runs successfully.<br />
-                      <br /></p>
+                      
 
-                      <table style="width: 100%; text-align: left;" border="0"
-                      cellpadding="0" cellspacing="0">
-                        <tbody>
-                          <tr>
-                            <td style=
-                            "vertical-align: top; background-color: rgb(230, 255, 230);">
-                            <span style="font-family: monospace;">$ db2 connect to
-                            wisser</span> <span style="font-family: monospace;">user
-                            wisser</span> <span style="font-family: monospace;">using
-                            <span style=
-                            "font-style: italic;">&lt;password&gt;</span></span><br />
-                            <span style="font-family: monospace;">$ db2 -tvf
-                            script/scott-tiger.sql<br /></span></td>
-                          </tr>
-                        </tbody>
-                      </table><br />
-
-                      <h4>Step 2. Building the data model<br /></h4>Start the Tool
-                      (<span style="font-family: monospace;">Jailer.exe</span> or
-                      <span style="font-family: monospace;">jailerGUI.bat</span> on
-                      windows platform)<br />
-
-                      <table style="width: 100%; text-align: left;" border="0"
-                      cellpadding="0" cellspacing="0">
-                        <tbody>
-                          <tr>
-                            <td style=
-                            "vertical-align: top; background-color: rgb(230, 255, 230);">
-                            <span style="font-family: monospace;">$ sh
-                            jailerGUI.sh</span><br /></td>
-                          </tr>
-                        </tbody>
-                      </table>
-
-                      <p>and create a new data model. Press <span style=
-                      "font-style: italic;">New</span> and enter "Tutorial" as the name
-                      for the new model.</p>
-
-                      <p><img style="width: 697px; height: 280px;" alt="" src=
-                      "screenshot4.1.gif" /><br /></p>
-
-                      <p><br />
-                      A data model holds information about the tables in the database and
-                      all associations between them.<br />
-                      Most of the information can be retrieved automatically by analyzing
-                      the database schema.<br />
-                      <br />
-                      Click on <span style="font-style: italic;">Analyze
-                      Database</span>.<br />
-                      You will be asked for the database connection
-                      information.<br /></p>
-
-                      <p><img style="width: 655px; height: 328px;" alt="" src=
-                      "screenshot4.2.gif" /></p>
-
-                      <p>Create a new connection.<br /></p>
-
-                      <p><img style="width: 409px; height: 316px;" alt="" src=
-                      "dbs1.gif" /><br />
-                      <br /></p>
-
-                      <p>Select the DBMS you are using from the displayed list, and fill
-                      out the following form:<br /></p><img style=
-                      "width: 570px; height: 369px;" alt="" src=
-                      "screenshot4.3.gif" /><br />
-
-                      <p><br />
-                      Finally click on <span style=
-                      "font-style: italic;">Connect</span><span style=
-                      "font-style: italic;">.</span> Jailer finds seven tables and five
-                      associations:<br />
-                      <br />
-                      <img src="exporting-data-Dateien/screen3.png" /><br />
-                      <br />
-                      <br />
-                      Two associations are still missing:<br /></p>
-
-                      <ul>
-                        <li>an employee is classified into a salary grade depending on
-                        his salary</li>
-
-                        <li>employees may receive bonuses</li>
-                      </ul>
-
-                      <p><br />
-                      Add the definitions manually (<big><span style=
-                      "font-family: monospace;"><span style=
-                      "font-family: mon;"><span style=
-                      "font-style: italic;">Add</span>-</span></span></big>Button under
-                      <big><span style="font-family: monospace;"><font size=
-                      "4">Associations</font></span></big>):<br />
-                      <br />
-                      <img src="exporting-data-Dateien/screen4.png" /><br />
-                      <br />
-                      <img src="exporting-data-Dateien/screen42.png" /><br />
-                      <br />
-                      The data model is&nbsp;now complete.<br />
-                      <br /></p>
-
-                      <h4>Step 3. Export employee Scott (unrestricted)<br /></h4>Now lets
+                      <h4>Step 2. Export employee Scott (unrestricted)<br /></h4>Now lets
                       try to export the employee named Scott. To do that we need an
                       <span style="font-style: italic;">extraction-model</span>.<br />
                       Select <big><span style="font-family: monospace;"><font size=
@@ -302,7 +198,7 @@
                       As you can see, all employees assigned to the same department as SCOTT are exported. Likewise all employees who belong to the same salary-grade.
                       <br><br><br />
 
-                      <h4>Step 4. Export employee Scott (restricted)<br /></h4>Exporting
+                      <h4>Step 3. Export employee Scott (restricted)<br /></h4>Exporting
                       an employee requires to export his boss and department too.
                       Otherwise the set of exported entities would not be consistent (due
                       to the dependencies based on foreign key constraints). No

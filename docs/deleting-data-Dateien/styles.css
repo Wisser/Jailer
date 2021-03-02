@@ -63,6 +63,34 @@ A.llink:hover
 	FONT-WEIGHT:bold;
 	FONT-SIZE:15px;
 }
+A.mlink:link
+{
+	COLOR:#003399;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:normal;
+}
+A.mlink:visited
+{
+	COLOR:#003399;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:normal;
+}
+A.mlink:hover
+{
+	TEXT-DECORATION:underline;
+}
+.mlinkA
+{
+	COLOR:#003399;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:bold;
+}
+.mlinkA
+{
+	COLOR:#000044;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:bold;
+}
 .content
 {
 	padding-top:3px;
