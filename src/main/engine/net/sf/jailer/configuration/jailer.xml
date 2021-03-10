@@ -189,14 +189,6 @@ union all
 		  and i.TABLE_NAME not like 'BIN$%%'
 		  and i.TABLE_NAME = c.TABLE_NAME
 		  and i.INDEX_NAME = c.INDEX_NAME
-		  and i.INDEX_NAME not in
-		  	(Select CONSTRAINT_NAME
-		  	from user_constraints
-		  	where CONSTRAINT_TYPE = 'P'
-			and STATUS = 'ENABLED'
-			and TABLE_NAME not like 'BIN$%%'
-			and OWNER = '%1$s'
-		  	)
 		union
 		Select con.CONSTRAINT_NAME CNAME, con.TABLE_NAME TNAME, cc.COLUMN_NAME COLNAME, cc.POSITION POS
 		from USER_CONSTRAINTS con, USER_CONS_COLUMNS cc
@@ -333,50 +325,96 @@ WHERE SCHEMA_NAME(tbl.schema_id)='%s'
         <explainQuery>%1$s</explainQuery>
         <explainCleanup>SET SHOWPLAN_ALL OFF</explainCleanup>
         <constraintsQuery>
-Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
-(
-	Select KCU.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'PK' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 1 TYPEPOS
-    From
-        INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
-    join
-        INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
-            ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG
-            AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA
-            AND KCU.TABLE_NAME = C.TABLE_NAME
-            AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME
-    where
-        C.CONSTRAINT_TYPE = 'PRIMARY KEY'
-        AND KCU.TABLE_SCHEMA = '%1$s'
-union all
-	Select C.CONSTRAINT_NAME CNAME, KCU.TABLE_NAME TNAME, KCU.COLUMN_NAME COLNAME, 'Unique' CTYPE, null DETAIL, KCU.ORDINAL_POSITION POS, 2 TYPEPOS
-    From
-        INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
-    join
-        INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
-            ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG
-            AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA
-            AND KCU.TABLE_NAME = C.TABLE_NAME
-            AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME
-    where
-        C.CONSTRAINT_TYPE = 'UNIQUE'
-        AND KCU.TABLE_SCHEMA = '%1$s'
-	union all
-	Select C.CONSTRAINT_NAME CNAME, C.TABLE_NAME TNAME, CU.COLUMN_NAME COLNAME, 'Check' CTYPE, CHECK_CLAUSE DETAIL, 1 POS, 3 TYPEPOS
-	From
-		INFORMATION_SCHEMA.CHECK_CONSTRAINTS CC
-	join
-		INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE CU
-	    on CU.CONSTRAINT_CATALOG = CC.CONSTRAINT_CATALOG
-	    and CU.CONSTRAINT_SCHEMA = CC.CONSTRAINT_SCHEMA
-	    and CU.CONSTRAINT_NAME = CC.CONSTRAINT_NAME
-	join
-		INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
-	    on C.CONSTRAINT_CATALOG = CC.CONSTRAINT_CATALOG
-	    and C.CONSTRAINT_SCHEMA = CC.CONSTRAINT_SCHEMA
-	    and C.CONSTRAINT_NAME = CC.CONSTRAINT_NAME
-		and C.CONSTRAINT_TYPE = 'CHECK'
-		and C.TABLE_SCHEMA = '%1$s'
-) pk order by TYPEPOS, CNAME, TNAME, POS, COLNAME
+Select
+     CNAME,
+     TNAME,
+     COLNAME,
+     CTYPE,
+     DETAIL
+From
+     (
+          Select
+               KCU.CONSTRAINT_NAME CNAME,
+               KCU.TABLE_NAME TNAME,
+               KCU.COLUMN_NAME COLNAME,
+               'PK' CTYPE,
+               null DETAIL,
+               KCU.ORDINAL_POSITION POS,
+               1 TYPEPOS
+          From
+               INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
+               join INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG
+               AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA
+               AND KCU.TABLE_NAME = C.TABLE_NAME
+               AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME
+          where
+               C.CONSTRAINT_TYPE = 'PRIMARY KEY'
+               AND KCU.TABLE_SCHEMA = '%1$s'
+          union all
+          Select
+               C.CONSTRAINT_NAME CNAME,
+               KCU.TABLE_NAME TNAME,
+               KCU.COLUMN_NAME COLNAME,
+               'Unique' CTYPE,
+               null DETAIL,
+               KCU.ORDINAL_POSITION POS,
+               2 TYPEPOS
+          From
+               INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
+               join INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG
+               AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA
+               AND KCU.TABLE_NAME = C.TABLE_NAME
+               AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME
+          where
+               C.CONSTRAINT_TYPE = 'UNIQUE'
+               AND KCU.TABLE_SCHEMA = '%1$s'
+          union all
+          SELECT
+               i.name CNAME,
+               OBJECT_NAME(i.[object_id]) TNAME,
+               c.Name COLNAME,
+               'Unique' CTYPE,
+               null DETAIL,
+               ic.key_ordinal POS,
+               2 TYPEPOS
+          FROM
+               sys.indexes AS i
+               INNER JOIN sys.index_columns AS ic ON i.[object_id] = ic.[object_id]
+               AND i.index_id = ic.index_id
+               INNER JOIN sys.columns c ON ic.column_id = c.column_id
+               AND ic.[object_id] = c.[object_id]
+               AND i.is_primary_key != 1
+               AND i.is_unique = 1
+               AND i.is_unique_constraint = 0
+               AND i.is_disabled = 0
+               AND i.is_hypothetical = 0
+               AND OBJECT_SCHEMA_NAME(i.[object_id]) = '%1$s'
+          union all
+          Select
+               C.CONSTRAINT_NAME CNAME,
+               C.TABLE_NAME TNAME,
+               CU.COLUMN_NAME COLNAME,
+               'Check' CTYPE,
+               CHECK_CLAUSE DETAIL,
+               1 POS,
+               3 TYPEPOS
+          From
+               INFORMATION_SCHEMA.CHECK_CONSTRAINTS CC
+               join INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE CU on CU.CONSTRAINT_CATALOG = CC.CONSTRAINT_CATALOG
+               and CU.CONSTRAINT_SCHEMA = CC.CONSTRAINT_SCHEMA
+               and CU.CONSTRAINT_NAME = CC.CONSTRAINT_NAME
+               join INFORMATION_SCHEMA.TABLE_CONSTRAINTS C on C.CONSTRAINT_CATALOG = CC.CONSTRAINT_CATALOG
+               and C.CONSTRAINT_SCHEMA = CC.CONSTRAINT_SCHEMA
+               and C.CONSTRAINT_NAME = CC.CONSTRAINT_NAME
+               and C.CONSTRAINT_TYPE = 'CHECK'
+               and C.TABLE_SCHEMA = '%1$s'
+     ) pk
+order by
+     TYPEPOS,
+     CNAME,
+     TNAME,
+     POS,
+     COLNAME
 		</constraintsQuery>
     </dbms>
 

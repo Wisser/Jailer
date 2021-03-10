@@ -67,13 +67,14 @@ public class TabContentPanel extends javax.swing.JPanel {
 	 */
 	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
 	
-    /**
+	/**
      * Creates new form TabContentPanel
      * @param caretDotMark 
      */
-    public TabContentPanel(JLabel rowsCount, JComponent metaDataDetails, String type, boolean explain, javax.swing.JPanel shimPanel, Pair<Integer, Integer> caretDotMark) {
+    public TabContentPanel(JLabel rowsCount, JComponent metaDataDetails, String type, boolean explain, javax.swing.JPanel shimPanel, Pair<Integer, Integer> caretDotMark, List<Integer> rowColumnTypes) {
     	this.shimPanel = shimPanel == null? new javax.swing.JPanel(new GridBagLayout()) : shimPanel;
     	this.caretDotMark = caretDotMark;
+        this.rowColumnTypes = rowColumnTypes;
         initComponents();
         loadingPanel.setVisible(false);
         
@@ -305,12 +306,17 @@ public class TabContentPanel extends javax.swing.JPanel {
 				int mx = cm.getColumn(x).getModelIndex();
 				Object value;
 				if (y < 0) {
-					value = rDm.getColumnName(mx);
+					value = rDm.getColumnName(mx).replaceFirst("<br>(.*)$", "$1").replaceAll("<[^>]*>", "");
 				} else {
 					value = rDm.getValueAt(sorter.convertRowIndexToModel(y), mx);
 				}
 				if (value instanceof TableModelItem) {
-					value = ((TableModelItem) value).value;
+					Object v = ((TableModelItem) value).value;
+					if (sep != null || (v == UIUtil.NULL || v == null)) {
+						value = v;
+					} else {
+						value = value.toString().trim();
+					}
 				}
 				String cellContent = value == UIUtil.NULL || value == null? "" : value.toString();
 				if (sep != null) {
@@ -329,15 +335,41 @@ public class TabContentPanel extends javax.swing.JPanel {
 				continue;
 			}
 			for (int x = 0; x < cell[y].length; ++x) {
-				sb.append(cell[y][x]);
 				if (sep != null) {
+					sb.append(cell[y][x]);
 					if (x < cell[y].length - 1)
 					sb.append(sep);
 				} else {
-					if (x < cell[y].length - 1) {
-						for (int i = 3 + maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
-							sb.append(" ");
+					boolean leftAlign = false;
+					synchronized (rowColumnTypes) {
+						if (rowColumnTypes.size() > x) {
+							switch (rowColumnTypes.get(x)) {
+							case Types.BIGINT:
+							case Types.DECIMAL:
+							case Types.DOUBLE:
+							case Types.FLOAT:
+							case Types.INTEGER:
+							case Types.NUMERIC:
+							case Types.REAL:
+							case Types.SMALLINT:
+								leftAlign = true;
+							}
 						}
+					}
+					if (x < cell[y].length - 1) {
+						sb.append(" ");
+						if (leftAlign) {
+							for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
+								sb.append(" ");
+							}
+							sb.append(cell[y][x]);
+						} else {
+							sb.append(cell[y][x]);
+							for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
+								sb.append(" ");
+							}
+						}
+						sb.append(" ");
 					}
 				}
 			}
@@ -659,6 +691,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_cancelLoadButtonActionPerformed
 
     final Pair<Integer, Integer> caretDotMark;
+    private final List<Integer> rowColumnTypes;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JButton cancelLoadButton;

@@ -97,7 +97,7 @@ public class ColumnsTable extends JTable {
 			public Object getValueAt(int rowIndex, int columnIndex) {
 				int column = cm.getColumn(rowIndex).getModelIndex();
 				if (columnIndex == 0) {
-					return rowsTable.getModel().getColumnName(column);
+					return rowsTable.getModel().getColumnName(column).replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$1$3&nbsp;&nbsp;$2$4");
 				}
 				int row = rowsTable.getRowSorter().convertRowIndexToModel(columnIndex - 1);
 				return rowsTable.getModel().getValueAt(row, column);

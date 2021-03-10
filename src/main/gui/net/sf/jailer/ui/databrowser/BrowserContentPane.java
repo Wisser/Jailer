@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
@@ -55,6 +56,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Types;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,6 +74,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -265,6 +268,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			boolean reconnectAndRetry = false;
 
 			rowCountCache.clear();
+			rowColumnTypes.clear();
 			try {
 				reloadRows(inputResultSet, andCond, rows, this, l + 1, selectDistinct);
 				CancellationHandler.checkForCancellation(this);
@@ -547,6 +551,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public List<Row> rows = new ArrayList<Row>();
 
 	/**
+	 * Column types of rows.
+	 */
+	public List<Integer> rowColumnTypes = new ArrayList<Integer>();
+
+	/**
 	 * For in-place editing.
 	 */
 	private BrowserContentCellEditor browserContentCellEditor = new BrowserContentCellEditor(new int[0], new String[0], null);
@@ -578,6 +587,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Indexes of foreign key columns.
 	 */
 	private Set<Integer> fkColumns = new HashSet<Integer>();
+
+	/**
+	 * Indexes of primary key columns (SQL console).
+	 */
+	private Set<Integer> pkColumnsConsole = new HashSet<Integer>();
+
+	/**
+	 * Indexes of foreign key columns (SQL console).
+	 */
+	private Set<Integer> fkColumnsConsole = new HashSet<Integer>();
 
 	/**
 	 * Edit mode?
@@ -1028,8 +1047,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(rowsTable, value, isSelected, false, row, column);
 				final RowSorter<?> rowSorter = rowsTable.getRowSorter();
-				if (rowSorter.getViewRowCount() == 0 && table == rowsTable) {
-					return render;
+				if (table == rowsTable) {
+					if (rowSorter.getViewRowCount() == 0) {
+						return render;
+					}
 				}
 
 				boolean renderRowAsPK = false;
@@ -1082,12 +1103,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						((JLabel) render).setBackground(currentRowSelection == row? BG4.brighter() : (row % 2 == 0? BG4 : BG4_2));
 					}
 					((JLabel) render).setForeground(
-							renderRowAsPK || pkColumns.contains(convertedColumnIndex) ? FG1 :
-								fkColumns.contains(convertedColumnIndex) ? FG2 :
+							renderRowAsPK || pkColumns.contains(convertedColumnIndex) || pkColumnsConsole.contains(convertedColumnIndex) ? FG1 :
+								fkColumns.contains(convertedColumnIndex) || fkColumnsConsole.contains(convertedColumnIndex) ? FG2 :
 										Color.BLACK);
 					boolean isNull = false;
 					if (((JLabel) render).getText() == UIUtil.NULL || ((JLabel) render).getText() == UNKNOWN) {
 						((JLabel) render).setForeground(Color.gray);
+						((JLabel) render).setText(" null  ");
 						((JLabel) render).setFont(italic);
 						isNull = true;
 					}
@@ -1123,13 +1145,33 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								((JLabel) render).setToolTipText(text);
 							}
 						}
+						boolean isNumber = false;
+						if (table == rowsTable) {
+							synchronized (rowColumnTypes) {
+								int ci = columnModel.getColumn(column).getModelIndex();
+								if (rowColumnTypes.size() > ci) {
+									switch (rowColumnTypes.get(ci)) {
+									case Types.BIGINT:
+									case Types.DECIMAL:
+									case Types.DOUBLE:
+									case Types.FLOAT:
+									case Types.INTEGER:
+									case Types.NUMERIC:
+									case Types.REAL:
+									case Types.SMALLINT:
+										isNumber = true;
+									}
+								}
+							}
+						}
+						if (isNumber) {
+							((JLabel) render).setHorizontalAlignment(JLabel.RIGHT);
+						} else {
+							((JLabel) render).setHorizontalAlignment(JLabel.LEFT);
+						}
 					} catch (Exception e) {
 						// ignore
 					}
-				}
-				// indent 1. column
-				if (render instanceof JLabel) {
-					((JLabel) render).setText(" " + ((JLabel) render).getText());
 				}
 				return render;
 			}
@@ -3851,6 +3893,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							columnTypeNames[ci - 1 - finalNumParentPKColumns] = metaData.getColumnTypeName(ci);
 						}
 					}
+					synchronized (rowColumnTypes) {
+						rowColumnTypes.clear();
+						for (int ci = 0; ci < columnCount; ++ci) {
+							rowColumnTypes.add(columnTypes[ci]);
+						}
+					}
 					browserContentCellEditor = new BrowserContentCellEditor(columnTypes, columnTypeNames, session);
 				}
 
@@ -4077,12 +4125,33 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		@Override
 		public String toString() {
 			if (valueAsString == null) {
-				if (value instanceof Double) {
-					valueAsString = SqlUtil.toString((Double) value);
-				} else if (value instanceof BigDecimal) {
-					valueAsString = SqlUtil.toString((BigDecimal) value);
+				if (value == null || value == UIUtil.NULL) {
+					valueAsString = UIUtil.NULL;
 				} else {
-					valueAsString = String.valueOf(value);
+					String suffix = "  ";
+					if (value instanceof Double) {
+	//					valueAsString = SqlUtil.toString((Double) value);
+						valueAsString = UIUtil.format((Double) value);
+					} else if (value instanceof Float) {
+						valueAsString = UIUtil.format((double) (Float) value);
+					} else if (value instanceof Long) {
+						valueAsString = UIUtil.format((long) (Long) value);
+					} else if (value instanceof Integer) {
+						valueAsString = UIUtil.format((long) (Integer) value);
+					} else if (value instanceof Short) {
+						valueAsString = UIUtil.format((long) (Short) value);
+					} else if (value instanceof BigDecimal || value instanceof BigInteger) {
+						try {
+							valueAsString = NumberFormat.getInstance().format(value);
+						} catch (Exception e) {
+							valueAsString = String.valueOf(value);
+							suffix = "";
+						}
+					} else {
+						valueAsString = String.valueOf(value);
+						suffix = "";
+					}
+					valueAsString = " " + valueAsString + suffix;
 				}
 			}
 			return valueAsString;
@@ -4145,11 +4214,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (pkColumnNames.contains(columnNames[i])) {
 				pkColumns.add(i);
 			}
-			if (columnNames[i] == null) {
-				if (alternativeColumnLabels != null && i < alternativeColumnLabels.length) {
-					columnNames[i] = alternativeColumnLabels[i];
-				}
-			}
 		}
 
 		fkColumns.clear();
@@ -4167,12 +4231,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				pkColumnNames.add(pk.name);
 			}
 		}
+		Set<String> fkColumnNamesNormalized = fkColumnNames.stream().map(Quoting::normalizeIdentifier).collect(Collectors.toSet());
 		for (int i = 0; i < columnNames.length; ++i) {
-			if (fkColumnNames.contains(columnNames[i])) {
+			if (fkColumnNamesNormalized.contains(Quoting.normalizeIdentifier(columnNames[i]))) {
 				fkColumns.add(i);
 			}
 		}
 
+		for (int i = 0; i < columnNames.length; ++i) {
+			if (alternativeColumnLabels != null && i < alternativeColumnLabels.length) {
+				if (alternativeColumnLabels[i] != null) {
+					columnNames[i] = alternativeColumnLabels[i];
+				}
+			}
+		}
+		
 		DefaultTableModel dtm;
 		findColumnsLabel.setEnabled(true);
 		singleRowDetailsView = null;
@@ -6140,6 +6213,55 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	public void setResultSetType(List<Table> resultSetType) {
 		this.resultSetType = resultSetType;
+		pkColumnsConsole.clear();
+		fkColumnsConsole.clear();
+		if (resultSetType != null) {
+			for (Table table: resultSetType) {
+				List<Column> columns = rowIdSupport.getColumns(table, session);
+				String[] columnNames = new String[columns.size()];
+				final Set<String> pkColumnNames = new HashSet<String>();
+				if (rowIdSupport.getPrimaryKey(table, session) != null) {
+					for (Column pk : rowIdSupport.getPrimaryKey(table, session).getColumns()) {
+						pkColumnNames.add(pk.name);
+					}
+				}
+				for (int i = 0; i < columnNames.length; ++i) {
+					columnNames[i] = columns.get(i).name;
+					if (columnNames[i] == null || "".equals(columnNames[i])) {
+						columnNames[i] = " ";
+					}
+					if (pkColumnNames.contains(columnNames[i])) {
+						pkColumnsConsole.add(i);
+					}
+					if (alternativeColumnLabels != null && i < alternativeColumnLabels.length) {
+						if (alternativeColumnLabels[i] != null) {
+							columnNames[i] = alternativeColumnLabels[i];
+						}
+					}
+				}
+	
+				final Set<String> fkColumnNames = new HashSet<String>();
+				for (Association a: table.associations) {
+					if (a.isInsertDestinationBeforeSource()) {
+						Map<Column, Column> m = a.createSourceToDestinationKeyMapping();
+						for (Column fkColumn: m.keySet()) {
+							fkColumnNames.add(fkColumn.name);
+						}
+					}
+				}
+				if (rowIdSupport.getPrimaryKey(table, session) != null) {
+					for (Column pk : rowIdSupport.getPrimaryKey(table, session).getColumns()) {
+						pkColumnNames.add(pk.name);
+					}
+				}
+				Set<String> fkColumnNamesNormalized = fkColumnNames.stream().map(Quoting::normalizeIdentifier).collect(Collectors.toSet());
+				for (int i = 0; i < columnNames.length; ++i) {
+					if (fkColumnNamesNormalized.contains(Quoting.normalizeIdentifier(columnNames[i]))) {
+						fkColumnsConsole.add(i);
+					}
+				}
+			}
+		}
 	}
 
 	/**

@@ -369,7 +369,7 @@ public class MDSchema extends MDObject {
 						if (type.equals("Check") && detail.matches("\"?" + col + "\"? IS NOT NULL")) {
 							continue;
 						}
-						if (predRow != null && constr.equals(predRow[0]) && tab.equals(predRow[1]) && (col != null && predRow[2] != null) && type.equals(predRow[3])) {
+						if (predRow != null && constr.equals(String.valueOf(predRow[0])) && tab.equals(String.valueOf(predRow[1])) && (col != null && String.valueOf(predRow[2]) != null) && type.equals(String.valueOf(predRow[3]))) {
 							rows.get(rows.size() - 1)[3] += ", " + col;
 						} else {
 							rows.add(new Object[] { getConstraintTypeIcon(type), constr, tab, col, detail });

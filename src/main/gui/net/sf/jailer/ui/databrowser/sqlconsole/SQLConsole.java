@@ -137,6 +137,10 @@ import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Pair;
 
+
+// TODO column search: table name?
+
+
 /**
  * SQL Console.
  *
@@ -819,10 +823,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             if (hasResultSet) {
                 resultSet = sqlPlusResultSet != null? sqlPlusResultSet : statement.getResultSet();
                 ResultSetMetaData metaData = resultSet.getMetaData();
-                final String columnLabels[] = new String[metaData.getColumnCount()];
-                for (int i = 0; i < metaData.getColumnCount(); ++i) {
-                	columnLabels[i] = metaData.getColumnLabel(i + 1);
-                }
                 ResultSet theMetaDataResultSet = null;
                 String resultSetType = null;
                 try {
@@ -834,8 +834,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final ResultSet metaDataResultSet = theMetaDataResultSet;
                 final String finalResultSetType = resultSetType;
 				final Integer limit = (Integer) limitComboBox.getSelectedItem();
-                List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
+				List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, true, metaDataSource);
+				List<Table> nfResultTypesWOCheck = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, false, metaDataSource);
                 Table resultType = null;
+                if (nfResultTypesWOCheck != null && !nfResultTypesWOCheck.isEmpty()) {
+                	int columnCount = metaData.getColumnCount();
+                	for (Table table: nfResultTypesWOCheck) {
+                        while (table.getColumns().size() < columnCount) {
+                            table.getColumns().add(new net.sf.jailer.datamodel.Column(null, "", 0, -1));
+                        }
+                    }
+                }
+
                 if (nfResultTypes != null && !nfResultTypes.isEmpty()) {
                 	int columnCount = metaData.getColumnCount();
                 	List<Column> columnsT0 = nfResultTypes.get(0).getColumns();
@@ -865,6 +875,41 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 		// stale meta data
                 		resultType = null;
                 		nfResultTypes = null;
+                	}
+                }
+                Map<Integer, Table> tabPerIndex = new HashMap<Integer, Table>();
+                if (nfResultTypesWOCheck != null && nfResultTypesWOCheck.size() > 1 && datamodel.get() != null) {
+                	for (Table table: nfResultTypesWOCheck) {
+                		if (table != null) {
+	                		List<Column> columns = table.getColumns();
+							if (columns != null) {
+								for (int i = 0; i < columns.size(); ++i) {
+									if (columns.get(i) != null && columns.get(i).name != null) {
+										tabPerIndex.put(i, table);
+									}
+								}
+	                		}
+                		}
+                	}
+                }
+                final String columnLabels[] = new String[metaData.getColumnCount()];
+                for (int i = 0; i < metaData.getColumnCount(); ++i) {
+                	String columnLabel = metaData.getColumnLabel(i + 1);
+					if (tabPerIndex.isEmpty()) {
+                		columnLabels[i] = columnLabel;
+                	} else {
+                		String titel = tabPerIndex.get(i) == null? "" : datamodel.get().getDisplayName(tabPerIndex.get(i));
+                		if (titel.length() == 0) {
+                			titel = "&nbsp;";
+                		} else {
+                			titel = UIUtil.toHTMLFragment(titel, 64).replaceFirst("<br>$", "");
+                		}
+                		if (columnLabel.length() == 0) {
+                			columnLabel = "&nbsp;";
+                		} else {
+                			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
+                		}
+                		columnLabels[i] = "<html><font color=\"#7070FF\">" + titel + "</font><br>" + columnLabel + "</html>";
                 	}
                 }
                 final List<Table> resultTypes = nfResultTypes;
@@ -957,7 +1002,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         				finalResultSetType,
                         				explain,
                         				origTabContentPanel == null? null : origTabContentPanel.shimPanel,
-                        				caretDotMark);
+                        				caretDotMark,
+                        				rb.rowColumnTypes);
                         tabContentPanel.contentPanel.add(rTabContainer);
 
                         rb.setCurrentRowsTable(new Reference<JTable>() {

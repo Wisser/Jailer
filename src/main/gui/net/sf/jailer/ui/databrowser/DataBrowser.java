@@ -170,7 +170,7 @@ import net.sf.jailer.util.Quoting;
  */
 @SuppressWarnings("serial")
 public class DataBrowser extends javax.swing.JFrame {
-
+	
     /**
      * The desktop.
      */
@@ -923,10 +923,12 @@ public class DataBrowser extends javax.swing.JFrame {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 	        		try {
-	        			Component sc = workbenchTabbedPane.getSelectedComponent();
-	        			if (sc instanceof SQLConsole) {
-	        				SQLConsole sqlConsole = (SQLConsole) sc;
-	        				sqlConsole.setRowLimit(limit);
+	        			for (int i = 0; i < workbenchTabbedPane.getComponentCount(); ++i) {
+		        			Component sc = workbenchTabbedPane.getComponent(i);
+		        			if (sc instanceof SQLConsole) {
+		        				SQLConsole sqlConsole = (SQLConsole) sc;
+		        				sqlConsole.setRowLimit(limit);
+		        			}
 	        			}
 						desktop.reloadRoots();
 					} catch (Exception e) {
@@ -4369,4 +4371,7 @@ public class DataBrowser extends javax.swing.JFrame {
         addSqlConsoleIcon = UIUtil.readImage("/add.png");
         navigationIcon = UIUtil.readImage("/navigation.png");
     }
+
+	
+	// TODO tree-background nimbus
 }

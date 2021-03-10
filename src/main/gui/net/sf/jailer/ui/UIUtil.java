@@ -1053,7 +1053,7 @@ public class UIUtil {
     }
 
     public static String toHTMLFragment(String plainText, int maxLineLength) {
-    	        plainText = plainText.trim();
+    	plainText = plainText.trim();
         if (maxLineLength > 0) {
             StringBuilder sb = new StringBuilder();
             int MAXLINES = 50;
@@ -1451,6 +1451,10 @@ public class UIUtil {
 	}
 
 	public static String format(long number) {
+		return NumberFormat.getInstance().format(number);
+	}
+
+	public static String format(double number) {
 		return NumberFormat.getInstance().format(number);
 	}
 

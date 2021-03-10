@@ -181,7 +181,7 @@ public class QueryTypeAnalyser {
 	 * @param sqlSelect the query
 	 * @return the type or <code>null</code>
 	 */
-	public static List<Table> getType(String sqlSelect, final MetaDataSource metaDataSource) {
+	public static List<Table> getType(String sqlSelect, boolean checkPKs, final MetaDataSource metaDataSource) {
 		net.sf.jsqlparser.statement.Statement st;
 		try {
 			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlSelect), 2);
@@ -309,7 +309,7 @@ public class QueryTypeAnalyser {
 						}
 					}
 					Table origTable = metaDataSource.toTable(theTable);
-					Table table = createTable(theTable, origTable, tableAlias, columnNames, selectClause, equivs, metaDataSource);
+					Table table = createTable(theTable, origTable, checkPKs, tableAlias, columnNames, selectClause, equivs, metaDataSource);
 					if (table != null) {
 						result.add(table);
 					}
@@ -452,26 +452,28 @@ public class QueryTypeAnalyser {
 		return result;
 	}
 
-	private static Table createTable(MDTable theTable, Table origTable, String tableAlias, List<String> columnNames, List<Pair<String, String>> selectClause, Map<Pair<String, String>, Collection<Pair<String, String>>> equivs, MetaDataSource metaDataSource) throws SQLException {
-		for (String pk: theTable.getPrimaryKeyColumns()) {
-			if (!columnNames.contains(pk)) {
-				boolean ok = false;
-				Collection<Pair<String, String>> eq = equivs.get(new Pair<String, String>(tableAlias, pk));
-				if (eq != null) {
-					int i = 0;
-					for (Pair<String, String> e: selectClause) {
-						if (columnNames.get(i) == null) {
-							if (eq.contains(e)) {
-								columnNames.set(i, e.b);
-								ok = true;
-								break;
+	private static Table createTable(MDTable theTable, Table origTable, boolean checkPKs, String tableAlias, List<String> columnNames, List<Pair<String, String>> selectClause, Map<Pair<String, String>, Collection<Pair<String, String>>> equivs, MetaDataSource metaDataSource) throws SQLException {
+		if (checkPKs) {
+			for (String pk: theTable.getPrimaryKeyColumns()) {
+				if (!columnNames.contains(pk)) {
+					boolean ok = false;
+					Collection<Pair<String, String>> eq = equivs.get(new Pair<String, String>(tableAlias, pk));
+					if (eq != null) {
+						int i = 0;
+						for (Pair<String, String> e: selectClause) {
+							if (columnNames.get(i) == null) {
+								if (eq.contains(e)) {
+									columnNames.set(i, e.b);
+									ok = true;
+									break;
+								}
 							}
+							++i;
 						}
-						++i;
 					}
-				}
-				if (!ok) {
-					return null;
+					if (!ok) {
+						return null;
+					}
 				}
 			}
 		}
@@ -486,6 +488,7 @@ public class QueryTypeAnalyser {
 		Table table;
 		if (toTable != null) {
 			table = new Table(toTable.getName(), primaryKey, false, false);
+			table.associations.addAll(toTable.associations);
 		} else {
 			table = new Table((schemaName == null? "" : schemaName + ".") + tableName, primaryKey, false, false);
 		}

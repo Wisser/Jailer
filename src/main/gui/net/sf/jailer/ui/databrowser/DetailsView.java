@@ -19,9 +19,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -263,13 +267,54 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			gridBagConstraints.gridx = 1;
 			gridBagConstraints.gridy = i;
 			Object v = rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(row) : row).values[columnIndex.get(i)];
-			if (v instanceof BigDecimal) {
-				v = SqlUtil.toString((BigDecimal) v);
-			} else if (v instanceof Double) {
-				v = SqlUtil.toString((Double) v);
+//			if (v instanceof BigDecimal) {
+//				v = SqlUtil.toString((BigDecimal) v);
+//			} else if (v instanceof Double) {
+//				v = SqlUtil.toString((Double) v);
+//			}
+
+			Object vOrig = v;
+			if (v instanceof Double) {
+				v = UIUtil.format((Double) v);
+			} else if (v instanceof Float) {
+				v = UIUtil.format((double) (Float) v);
+			} else if (v instanceof Long) {
+				v = UIUtil.format((long) (Long) v);
+			} else if (v instanceof Integer) {
+				v = UIUtil.format((long) (Integer) v);
+			} else if (v instanceof Short) {
+				v = UIUtil.format((long) (Short) v);
+			} else if (v instanceof BigDecimal || v instanceof BigInteger) {
+				try {
+					v = NumberFormat.getInstance().format(v);
+				} catch (Exception e) {
+					// ignore
+				}
 			}
+			
+			Object finalV = v;
 			if (selectableFields) {
 				JTextArea f = new JTextArea();
+				f.addFocusListener(new FocusListener() {
+					@Override
+					public void focusLost(FocusEvent e) {
+						if (finalV instanceof UIUtil.IconWithText) {
+							f.setText(((UIUtil.IconWithText) finalV).text);
+						} else {
+							f.setText(finalV == null? "" : finalV.toString());
+						}
+					}
+					
+					@Override
+					public void focusGained(FocusEvent e) {
+						if (vOrig instanceof UIUtil.IconWithText) {
+							f.setText(((UIUtil.IconWithText) vOrig).text);
+						} else {
+							f.setText(vOrig == null? "" : vOrig.toString());
+						}
+						f.selectAll();
+					}
+				});
 				if (v instanceof UIUtil.IconWithText) {
 					f.setText(((UIUtil.IconWithText) v).text);
 				} else {

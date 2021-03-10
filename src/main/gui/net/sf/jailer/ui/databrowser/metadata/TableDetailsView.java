@@ -25,6 +25,9 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -170,7 +173,25 @@ public class TableDetailsView extends javax.swing.JPanel {
 				Map<Column, Object> columnValue = new IdentityHashMap<Column, Object>();
 				for (int i = 0; i < columns.size(); ++i) {
 					if (row != null && row.values.length > i) {
-						columnValue.put(columns.get(i), row.values[i]);
+						Object v = row.values[i];
+						if (v instanceof Double) {
+							v = UIUtil.format((Double) v);
+						} else if (v instanceof Float) {
+							v = UIUtil.format((double) (Float) v);
+						} else if (v instanceof Long) {
+							v = UIUtil.format((long) (Long) v);
+						} else if (v instanceof Integer) {
+							v = UIUtil.format((long) (Integer) v);
+						} else if (v instanceof Short) {
+							v = UIUtil.format((long) (Short) v);
+						} else if (v instanceof BigDecimal || v instanceof BigInteger) {
+							try {
+								v = NumberFormat.getInstance().format(v);
+							} catch (Exception e) {
+								// ignore
+							}
+						}
+						columnValue.put(columns.get(i), v);
 					}
 				}
 				if (sortColumnsCheckBox.isSelected()) {
