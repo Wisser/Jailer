@@ -19,12 +19,14 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -52,7 +55,6 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.Quoting;
-import net.sf.jailer.util.SqlUtil;
 
 /**
  * Row Details View.
@@ -245,7 +247,42 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		while (i < columns.size()) {
 			Column c = columns.get(columnIndex.get(i));
 			JLabel l = new JLabel();
-			l.setText(" " + (c.name != null? c.name + "    " : (alternativeColumnLabels != null && alternativeColumnLabels.length > columnIndex.get(i)? alternativeColumnLabels[columnIndex.get(i)] : "")));
+			JComponent lCont = l;
+			if (alternativeColumnLabels != null && alternativeColumnLabels.length > columnIndex.get(i)) {
+				String altName = alternativeColumnLabels[columnIndex.get(i)];
+				String text = altName.replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$1$3$4\t$1$2$4");
+				if (!text.equals(altName)) {
+					int pos = text.indexOf('\t');
+					if (i >= 0) {
+						JLabel tab = new JLabel(text.substring(pos + 1));
+						JLabel sep = new JLabel(" ");
+						l.setText(text.substring(0, pos));
+						JPanel panel = new JPanel(new GridBagLayout());
+						gridBagConstraints = new java.awt.GridBagConstraints();
+				        gridBagConstraints.gridx = 2;
+				        gridBagConstraints.gridy = 1;
+				        gridBagConstraints.weightx = 1;
+				        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+				        gridBagConstraints.anchor = GridBagConstraints.EAST;
+				        panel.add(sep, gridBagConstraints);
+				        gridBagConstraints = new java.awt.GridBagConstraints();
+				        gridBagConstraints.gridx = 3;
+				        gridBagConstraints.gridy = 1;
+				        gridBagConstraints.anchor = GridBagConstraints.EAST;
+				        panel.add(tab, gridBagConstraints);
+				        gridBagConstraints = new java.awt.GridBagConstraints();
+				        gridBagConstraints.gridx = 1;
+				        gridBagConstraints.gridy = 1;
+				        gridBagConstraints.anchor = GridBagConstraints.WEST;
+				        panel.add(l, gridBagConstraints);
+				        lCont = panel;
+					} else {
+						l.setText(altName.replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$1$3&nbsp;&nbsp;$2$4"));
+					}
+				}
+				} else {
+				l.setText((c.name != null? c.name : ""));
+			}
 			l.setFont(nonbold);
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -255,9 +292,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = i;
 			if (!selectableFields) {
+				l.setText(" " + l.getText() + "    ");
 				l.setVerticalAlignment(SwingConstants.TOP);
+			} else {
+				gridBagConstraints.insets = new Insets(0, 4, 0, 8);
 			}
-			content.add(l, gridBagConstraints);
+			content.add(lCont, gridBagConstraints);
 
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -284,6 +324,16 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				v = UIUtil.format((long) (Integer) v);
 			} else if (v instanceof Short) {
 				v = UIUtil.format((long) (Short) v);
+			} else if (v instanceof BigDecimal && ((BigDecimal) v).scale() >= 0) {
+				try {
+					NumberFormat instance = new DecimalFormat("");
+					instance.setMinimumFractionDigits(((BigDecimal) v).scale());
+					instance.setMaximumFractionDigits(((BigDecimal) v).scale());
+					instance.setMinimumIntegerDigits(1);
+					v = instance.format(v);
+				} catch (Exception e) {
+					// ignore
+				}
 			} else if (v instanceof BigDecimal || v instanceof BigInteger) {
 				try {
 					v = NumberFormat.getInstance().format(v);

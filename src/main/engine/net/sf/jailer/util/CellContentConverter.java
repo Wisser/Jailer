@@ -360,7 +360,7 @@ public class CellContentConverter {
 		}
 		@Override
 		public int compareTo(NCharWrapper o) {
-			return toString().compareTo(o.toString());
+			return toString().compareToIgnoreCase(o.toString());
 		}
 	}
 

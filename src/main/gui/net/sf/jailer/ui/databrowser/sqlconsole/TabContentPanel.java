@@ -306,7 +306,10 @@ public class TabContentPanel extends javax.swing.JPanel {
 				int mx = cm.getColumn(x).getModelIndex();
 				Object value;
 				if (y < 0) {
-					value = rDm.getColumnName(mx).replaceFirst("<br>(.*)$", "$1").replaceAll("<[^>]*>", "");
+					value = rDm.getColumnName(mx);
+					if (value != null && value.toString().startsWith("<html>")) {
+						value = UIUtil.fromHTMLFragment(value.toString().replaceFirst("^<html>.*<br>(.*)</html>$", "$1").replaceAll("<[^>]*>", ""));
+					}
 				} else {
 					value = rDm.getValueAt(sorter.convertRowIndexToModel(y), mx);
 				}
@@ -340,7 +343,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 					if (x < cell[y].length - 1)
 					sb.append(sep);
 				} else {
-					boolean leftAlign = false;
+					boolean rightAlign = false;
 					synchronized (rowColumnTypes) {
 						if (rowColumnTypes.size() > x) {
 							switch (rowColumnTypes.get(x)) {
@@ -352,13 +355,13 @@ public class TabContentPanel extends javax.swing.JPanel {
 							case Types.NUMERIC:
 							case Types.REAL:
 							case Types.SMALLINT:
-								leftAlign = true;
+								rightAlign = true;
 							}
 						}
 					}
 					if (x < cell[y].length - 1) {
 						sb.append(" ");
-						if (leftAlign) {
+						if (rightAlign) {
 							for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
 								sb.append(" ");
 							}
@@ -370,13 +373,21 @@ public class TabContentPanel extends javax.swing.JPanel {
 							}
 						}
 						sb.append(" ");
+					} else {
+						sb.append(" ");
+						if (rightAlign) {
+							for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
+								sb.append(" ");
+							}
+						}
+						sb.append(cell[y][x]);
 					}
 				}
 			}
 			sb.append(UIUtil.LINE_SEPARATOR);
 			if (y == 0 && sep == null && incHeader) {
 				for (int x = 0; x < cell[y].length; ++x) {
-					for (int i = (x > 0? 3 : 0) + maxLength[x]; i > 0; --i) {
+					for (int i = 2 + maxLength[x]; i > 0; --i) {
 						sb.append("-");
 					}
 				}
@@ -551,7 +562,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         columnsPanel.add(columnsScrollPane, java.awt.BorderLayout.CENTER);
 
         columnsSortedStateLabel.setForeground(java.awt.Color.blue);
-        columnsSortedStateLabel.setText("jLabel2");
+        columnsSortedStateLabel.setText(" ");
         columnsPanel.add(columnsSortedStateLabel, java.awt.BorderLayout.NORTH);
 
         tabbedPane.addTab("Columns", columnsPanel);

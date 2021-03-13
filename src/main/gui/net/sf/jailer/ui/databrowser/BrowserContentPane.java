@@ -56,6 +56,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Types;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -743,7 +744,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							if (findColumnsPanel.isShowing()) {
 								Point point = new Point();
 								SwingUtilities.convertPointToScreen(point, findColumnsPanel);
-								findColumns((int) point.getX(), (int) point.getY(), currentRowsTableReference == null? rowsTable : currentRowsTableReference.get());
+								findColumns((int) point.getX(), (int) point.getY(), currentRowsTableReference == null? rowsTable : currentRowsTableReference.get(), currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 							}
 						}
 					});
@@ -2216,7 +2217,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				findColumns(x, y, contextJTable);
+				findColumns(x, y, contextJTable, sortColumnsCheckBox.isSelected());
 			}
 		});
 		return menuItem;
@@ -4140,6 +4141,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						valueAsString = UIUtil.format((long) (Integer) value);
 					} else if (value instanceof Short) {
 						valueAsString = UIUtil.format((long) (Short) value);
+					} else if (value instanceof BigDecimal && ((BigDecimal) value).scale() >= 0) {
+						try {
+							NumberFormat instance = new DecimalFormat("");
+							instance.setMinimumFractionDigits(((BigDecimal) value).scale());
+							instance.setMaximumFractionDigits(((BigDecimal) value).scale());
+							instance.setMinimumIntegerDigits(1);
+							valueAsString = instance.format(value);
+						} catch (Exception e) {
+							valueAsString = String.valueOf(value);
+							suffix = "";
+						}
 					} else if (value instanceof BigDecimal || value instanceof BigInteger) {
 						try {
 							valueAsString = NumberFormat.getInstance().format(value);
@@ -4263,6 +4275,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			for (int i = 0; i < uqColumnNames.length; ++i) {
 				if (columnNames[i] != null) {
 					uqColumnNames[i] = Quoting.staticUnquote(columnNames[i]);
+					if (uqColumnNames[i].isEmpty()) {
+						uqColumnNames[i] = " ";
+					}
 				}
 			}
 			dtm = new DefaultTableModel(uqColumnNames, 0) {
@@ -4589,6 +4604,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								return -1;
 							}
 							if (o1.getClass().equals(o2.getClass())) {
+								if (o1 instanceof String) {
+									return ((String) o1).compareToIgnoreCase((String) o2);
+								}
 								if (o1 instanceof Comparable<?>) {
 									return ((Comparable<Object>) o1).compareTo(o2);
 								}
@@ -4726,9 +4744,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		if (sortColumnsCheckBox.isSelected()) {
 			TableColumnModel cm = rowsTable.getColumnModel();
+			Map<Object, String> cName = new HashMap<Object, String>();
+			for (int a = 0; a < rowsTable.getColumnCount(); ++a) {
+				cName.put(cm.getColumn(a).getHeaderValue(), columnNameFromColumnModel(cm, a).toString());
+			}
 			for (int a = 0; a < rowsTable.getColumnCount(); ++a) {
 				for (int b = a + 1; b < rowsTable.getColumnCount(); ++b) {
-					if (cm.getColumn(a).getHeaderValue().toString().compareToIgnoreCase(cm.getColumn(b).getHeaderValue().toString()) > 0) {
+					if (cName.get(cm.getColumn(a).getHeaderValue()).compareToIgnoreCase(cName.get(cm.getColumn(b).getHeaderValue())) > 0) {
 						cm.moveColumn(b, a);
 					}
 				}
@@ -6118,14 +6140,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		d.pack();
 		d.setLocation(x, y);
-		d.setSize(400, d.getHeight() + 20);
+		d.setSize(500, d.getHeight() + 20);
 		int h = d.getHeight();
 		UIUtil.fit(d);
 		if (d.getHeight() < h) {
 			y = Math.max(y - Math.min(h - d.getHeight(), Math.max(400 - d.getHeight(), 0)), 20);
 			d.pack();
 			d.setLocation(x, y);
-			d.setSize(400, d.getHeight() + 20);
+			d.setSize(500, d.getHeight() + 20);
 			UIUtil.fit(d);
 		}
 		Window p = SwingUtilities.getWindowAncestor(this);
@@ -6578,13 +6600,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public void setCurrentRowsTable(Reference<JTable> reference) {
 		currentRowsTableReference = reference;
 	}
+	
+	private Reference<Boolean> currentRowsSortedReference = null;
 
-	private void findColumns(final int x, final int y, final JTable contextJTable) {
+	public void setCurrentRowsSorted(Reference<Boolean> reference) {
+		currentRowsSortedReference = reference;
+	}
+
+	private void findColumns(final int x, final int y, final JTable contextJTable, boolean columnsSorted) {
 		TableColumnModel columnModel = rowsTable.getColumnModel();
 		List<String> columNames = new ArrayList<String>();
 		Map<String, Integer> columNamesCount = new HashMap<String, Integer>();
 		for (int i = 0; i < columnModel.getColumnCount(); ++i) {
-			Object nameObj = columnModel.getColumn(i).getHeaderValue();
+			Object nameObj = columnNameFromColumnModel(columnModel, i);
 			if (nameObj != null) {
 				String name = nameObj.toString();
 				if (columNamesCount.containsKey(name)) {
@@ -6614,11 +6642,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					TableColumnModel columnModel = rowsTable.getColumnModel();
 					foundColumn.clear();
 					boolean scrolled = false;
-					for (int i = 0; i < columnModel.getColumnCount(); ++i) {
-						Object name = columnModel.getColumn(i).getHeaderValue();
+					boolean scrollAll = columnsSorted;
+					for (int i = scrollAll? columnModel.getColumnCount() - 1 : 0; i >= 0 && i < columnModel.getColumnCount(); i += scrollAll? -1 : 1) {
+						Object name = columnNameFromColumnModel(columnModel, i);
 						if (name != null && name.equals(selected)) {
 							int mi = i;
-							if (!scrolled) {
+							if (!scrolled || scrollAll) {
 								if (contextJTable != null && contextJTable != rowsTable) {
 									Rectangle visibleRect = contextJTable.getVisibleRect();
 									Rectangle cellRect = contextJTable.getCellRect(mi, 0, true);
@@ -6626,7 +6655,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 											new Rectangle(
 													visibleRect.x + visibleRect.width / 2,
 													cellRect.y - 16,
-													1, cellRect.width + 16));
+													1, cellRect.height + 2 * 16));
 									contextJTable.repaint();
 								} else {
 									Rectangle visibleRect = rowsTable.getVisibleRect();
@@ -6669,6 +6698,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		searchPanel.setStringCount(columNamesCount);
 		searchPanel.find(owner, "Find Column", x, y, true);
+	}
+
+	private Object columnNameFromColumnModel(TableColumnModel columnModel, int i) {
+		Object value = columnModel.getColumn(i).getHeaderValue();
+		if (value != null && value.toString().startsWith("<html>")) {
+			value = UIUtil.fromHTMLFragment(value.toString().replaceFirst("^<html>.*<br>(.*)</html>$", "$1").replaceAll("<[^>]*>", ""));
+		}
+		return value;
 	}
 
 	/**

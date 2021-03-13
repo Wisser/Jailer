@@ -1081,6 +1081,15 @@ public class UIUtil {
                 .replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
     }
 
+    public static String fromHTMLFragment(String htmlText) {
+    	return htmlText
+                .replace("&amp;", "&")
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("<br>", "\n")
+                .replace("&nbsp;", " ");
+    }
+
     public static ImageIcon scaleIcon(JComponent component, ImageIcon icon) {
     	return scaleIcon(component, icon, 1);
     }

@@ -27,6 +27,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -184,6 +185,16 @@ public class TableDetailsView extends javax.swing.JPanel {
 							v = UIUtil.format((long) (Integer) v);
 						} else if (v instanceof Short) {
 							v = UIUtil.format((long) (Short) v);
+						} else if (v instanceof BigDecimal && ((BigDecimal) v).scale() >= 0) {
+							try {
+								NumberFormat instance = new DecimalFormat("");
+								instance.setMinimumFractionDigits(((BigDecimal) v).scale());
+								instance.setMaximumFractionDigits(((BigDecimal) v).scale());
+								instance.setMinimumIntegerDigits(1);
+								v = instance.format(v);
+							} catch (Exception e) {
+								// ignore
+							}
 						} else if (v instanceof BigDecimal || v instanceof BigInteger) {
 							try {
 								v = NumberFormat.getInstance().format(v);

@@ -18,6 +18,8 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -26,6 +28,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -34,6 +38,7 @@ import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -63,6 +68,7 @@ public class ColumnsTable extends JTable {
 	private final int MAX_ROWS = 498;
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	final BrowserContentPane rb;
+	private Map<Integer, String> tableName = new HashMap<Integer, String>();
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ColumnsTable(final BrowserContentPane rb) {
@@ -97,7 +103,13 @@ public class ColumnsTable extends JTable {
 			public Object getValueAt(int rowIndex, int columnIndex) {
 				int column = cm.getColumn(rowIndex).getModelIndex();
 				if (columnIndex == 0) {
-					return rowsTable.getModel().getColumnName(column).replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$1$3&nbsp;&nbsp;$2$4");
+					String ntPair = rowsTable.getModel().getColumnName(column).replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$3\t$2");
+					int i = ntPair.indexOf('\t');
+					if (i >= 0) {
+						tableName.put(rowIndex, ntPair.substring(i + 1));
+						return UIUtil.fromHTMLFragment(ntPair.substring(0, i));
+					}
+					return ntPair;
 				}
 				int row = rowsTable.getRowSorter().convertRowIndexToModel(columnIndex - 1);
 				return rowsTable.getModel().getValueAt(row, column);
@@ -209,6 +221,33 @@ public class ColumnsTable extends JTable {
 						((JLabel) render).setBackground(BGCOLUMNS);
 					} else if (column - 1 == currentColumn) {
 						((JLabel) render).setBackground(BGSELECTED);
+					}
+					if (column == 0) {
+						String text = ((JLabel) render).getText();
+						String tabName = tableName.get(row);
+						if (tabName != null) {
+							JLabel tab = new JLabel("<html>" + tabName + "&nbsp;&nbsp;</html>");
+							tab.setFont(render.getFont());
+							tab.setBackground(render.getBackground());
+							tab.setOpaque(render.isOpaque());
+							((JLabel) render).setText(" " + text);
+							JPanel panel = new JPanel(new GridBagLayout());
+							panel.setToolTipText(text);
+							GridBagConstraints gridBagConstraints;
+							gridBagConstraints = new java.awt.GridBagConstraints();
+					        gridBagConstraints.gridx = 3;
+					        gridBagConstraints.gridy = 1;
+					        gridBagConstraints.anchor = GridBagConstraints.EAST;
+					        panel.add(tab, gridBagConstraints);
+					        gridBagConstraints = new java.awt.GridBagConstraints();
+					        gridBagConstraints.gridx = 1;
+					        gridBagConstraints.gridy = 1;
+					        gridBagConstraints.anchor = GridBagConstraints.WEST;
+					        gridBagConstraints.weightx = 1;
+					        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+					        panel.add(render, gridBagConstraints);
+					        return panel;
+						}
 					}
 				}
 				return render;

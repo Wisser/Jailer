@@ -138,9 +138,6 @@ import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Pair;
 
 
-// TODO column search: table name?
-
-
 /**
  * SQL Console.
  *
@@ -912,6 +909,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 		columnLabels[i] = "<html><font color=\"#7070FF\">" + titel + "</font><br>" + columnLabel + "</html>";
                 	}
                 }
+                // TODO if columnLabels[i].isBlank() or "?column?" (PG), replace it with JSQLParsers column expression (deparsed), if possible. Test non-parseable statements.
                 final List<Table> resultTypes = nfResultTypes;
                 final MemorizedResultSet metaDataDetails = new MemorizedResultSet(resultSet, limit, session, SQLConsole.this) {
             		@Override
@@ -1009,6 +1007,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.setCurrentRowsTable(new Reference<JTable>() {
                         	public JTable get() {
                         		return tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel? columnsTable : rb.rowsTable;
+                        	}
+                        });
+                        rb.setCurrentRowsSorted(new Reference<Boolean>() {
+                        	public Boolean get() {
+                        		return rb.sortColumnsCheckBox.isSelected();
                         	}
                         });
 
@@ -1130,8 +1133,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						if (!skeys.isEmpty()) {
 							for (int i = 0; i < rb.rowsTable.getColumnCount(); ++i) {
 								if (rb.rowsTable.getColumnModel().getColumn(i).getModelIndex() == skeys.get(0).getColumn()) {
+									String columnName = rb.rowsTable.getColumnName(i);
+									if (columnName != null) {
+										String tabName = columnName.replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$3");
+										if (tabName != null) {
+											columnName = UIUtil.fromHTMLFragment(tabName);
+										}
+										if (columnName.isBlank()) {
+											columnName = "#" + (i + 1);
+										}
+									}
 									tableSortAndFilterState = tableSortAndFilterState + (tableSortAndFilterState.isEmpty()? "Sorted" : " and sorted")
-											+ " by \"" + rb.rowsTable.getColumnName(i) + "\"";
+											+ " by \"" + columnName + "\"";
 									break;
 								}
 							}
@@ -2574,4 +2587,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
+    // TODO allow filter iff row limit is not exceeded (offer tooltip "not available because.." else)
+    
 }
