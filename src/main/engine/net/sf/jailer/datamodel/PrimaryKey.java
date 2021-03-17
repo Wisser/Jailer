@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Quoting;
 
 /**
