@@ -311,6 +311,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					setItemDescription(itemDescr);
 				}
 			});
+			this.databaseObjectRenderingDescription.setCheap(false);
 			this.mdSchema = schema;
 		}
 
@@ -969,7 +970,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                  			estRowCountFormatted = estRowCount.toString();
                  		}
                  		if (fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
-                 			((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#7777ff\">~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\"></font>");
+                 			((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#bbbbff\">~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\"></font>");
                  		} else {
                  			((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#aaaaff\">~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\"></font>");
                  		}

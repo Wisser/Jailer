@@ -187,11 +187,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 							v = UIUtil.format((long) (Short) v);
 						} else if (v instanceof BigDecimal && ((BigDecimal) v).scale() >= 0) {
 							try {
-								NumberFormat instance = new DecimalFormat("");
-								instance.setMinimumFractionDigits(((BigDecimal) v).scale());
-								instance.setMaximumFractionDigits(((BigDecimal) v).scale());
-								instance.setMinimumIntegerDigits(1);
-								v = instance.format(v);
+								v = UIUtil.format((BigDecimal) v);
 							} catch (Exception e) {
 								// ignore
 							}

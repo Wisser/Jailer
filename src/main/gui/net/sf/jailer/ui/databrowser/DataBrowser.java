@@ -919,18 +919,19 @@ public class DataBrowser extends javax.swing.JFrame {
         	JRadioButtonMenuItem item = new JRadioButtonMenuItem(limit.toString());
         	group.add(item);
         	rowLimitMenu.add(item);
+        	itemPerLimit.put(limit, item);
         	item.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 	        		try {
-	        			for (int i = 0; i < workbenchTabbedPane.getComponentCount(); ++i) {
-		        			Component sc = workbenchTabbedPane.getComponent(i);
-		        			if (sc instanceof SQLConsole) {
-		        				SQLConsole sqlConsole = (SQLConsole) sc;
-		        				sqlConsole.setRowLimit(limit);
-		        			}
-	        			}
-						desktop.reloadRoots();
+	        			Component sc = workbenchTabbedPane.getSelectedComponent();
+		        		if (sc instanceof SQLConsole) {
+		        			SQLConsole sqlConsole = (SQLConsole) sc;
+		        			sqlConsole.setRowLimit(limit);
+		        		} else {
+		        			rowLimitStore = limit;
+		        			desktop.reloadRoots();
+		        		}
 					} catch (Exception e) {
 						UIUtil.showException(DataBrowser.this, "Error", e);
 					}
@@ -946,6 +947,9 @@ public class DataBrowser extends javax.swing.JFrame {
         }
 	}
 
+	private Integer rowLimitStore = ROW_LIMIT_DEFAULT;
+	private Map<Integer, JRadioButtonMenuItem> itemPerLimit = new HashMap<Integer, JRadioButtonMenuItem>();
+	
 	@SuppressWarnings("unchecked")
 	public void updateNavigationCombobox() {
 		List<String> tables = new ArrayList<String>();
@@ -2233,12 +2237,18 @@ public class DataBrowser extends javax.swing.JFrame {
 		        	}
 				}
 	    		tableTreesTabbedPane.setSelectedComponent(navigationPanel);
+	    		if (itemPerLimit.get(rowLimitStore) != null) {
+	    			itemPerLimit.get(rowLimitStore).setSelected(true);
+	    		}
 	        } else {
 	        	SQLConsole sqlConsole = getCurrentSQLConsole();
 	        	if (sqlConsole != null) {
 	        		tableTreesTabbedPane.setSelectedComponent(tablesCardPanel);
 	        		sqlConsole.grabFocus();
 	        		sqlConsole.update();
+	        		if (itemPerLimit.get(sqlConsole.getRowLimit()) != null) {
+		    			itemPerLimit.get(sqlConsole.getRowLimit()).setSelected(true);
+		    		}
 	        	}
 	        }
 			updateLoadSaveScriptMenuItemsState();
@@ -4372,6 +4382,6 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationIcon = UIUtil.readImage("/navigation.png");
     }
 
-	
+	// TODO hires jailer.png (esp. for jpackage)
 	// TODO tree-background nimbus (Java 16)
 }

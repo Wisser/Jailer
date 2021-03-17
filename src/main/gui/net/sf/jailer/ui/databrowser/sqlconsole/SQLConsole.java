@@ -831,8 +831,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final ResultSet metaDataResultSet = theMetaDataResultSet;
                 final String finalResultSetType = resultSetType;
 				final Integer limit = (Integer) limitComboBox.getSelectedItem();
-				List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, true, metaDataSource);
-				List<Table> nfResultTypesWOCheck = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, false, metaDataSource);
+				Map<Integer, String> sqlColumnExpression = new HashMap<Integer, String>();;
+				List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, true, sqlColumnExpression, metaDataSource);
+				List<Table> nfResultTypesWOCheck = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, false, sqlColumnExpression, metaDataSource);
                 Table resultType = null;
                 if (nfResultTypesWOCheck != null && !nfResultTypesWOCheck.isEmpty()) {
                 	int columnCount = metaData.getColumnCount();
@@ -892,6 +893,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final String columnLabels[] = new String[metaData.getColumnCount()];
                 for (int i = 0; i < metaData.getColumnCount(); ++i) {
                 	String columnLabel = metaData.getColumnLabel(i + 1);
+					if (columnLabel == null || columnLabel.matches("\\s*|\\?column\\?")) {
+						if (sqlColumnExpression.containsKey(i)) {
+							columnLabel = sqlColumnExpression.get(i);
+						}
+					}
 					if (tabPerIndex.isEmpty()) {
                 		columnLabels[i] = columnLabel;
                 	} else {
@@ -909,7 +915,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 		columnLabels[i] = "<html><font color=\"#7070FF\">" + titel + "</font><br>" + columnLabel + "</html>";
                 	}
                 }
-                // TODO if columnLabels[i].isBlank() or "?column?" (PG), replace it with JSQLParsers column expression (deparsed), if possible. Test non-parseable statements.
                 final List<Table> resultTypes = nfResultTypes;
                 final MemorizedResultSet metaDataDetails = new MemorizedResultSet(resultSet, limit, session, SQLConsole.this) {
             		@Override
@@ -1139,7 +1144,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										if (tabName != null) {
 											columnName = UIUtil.fromHTMLFragment(tabName);
 										}
-										if (columnName.isBlank()) {
+										if (columnName.trim().isEmpty()) {
 											columnName = "#" + (i + 1);
 										}
 									}
@@ -2433,6 +2438,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	/**
+	 * Gets the row limit.
+	 *
+	 * @param limit the row limit
+	 */
+	public Integer getRowLimit() {
+		Object item = limitComboBox.getSelectedItem();
+		return item instanceof Integer? (Integer) item : null;
+	}
+
+	/**
 	 * Sets the row limit.
 	 *
 	 * @param limit the row limit
@@ -2587,6 +2602,4 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.
 
-    // TODO allow filter iff row limit is not exceeded (offer tooltip "not available because.." else)
-    
 }

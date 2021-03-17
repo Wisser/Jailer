@@ -106,7 +106,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
     }
 
 	private void updateTableModel(Component owner, DataModel dataModel) {
-		columnOrderModel = new DefaultTableModel(new String[] { "Column", "Frequency", "Type", "Left/Top", "Right/Bottom" }, 0) {
+		columnOrderModel = new DefaultTableModel(new String[] { "Column", "Frequency", "Type", "Top (Left)", "Bottom (Right)" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return column == 3 || column == 4;

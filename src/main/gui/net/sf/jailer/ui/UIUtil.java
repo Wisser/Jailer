@@ -49,9 +49,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -1465,6 +1467,20 @@ public class UIUtil {
 
 	public static String format(double number) {
 		return NumberFormat.getInstance().format(number);
+	}
+
+	public static String format(BigDecimal number) {
+		NumberFormat instance = new DecimalFormat("");
+		int scale = number.scale();
+		int maxScale = 40;
+		instance.setMinimumFractionDigits(scale);
+		instance.setMaximumFractionDigits(scale);
+		instance.setMinimumIntegerDigits(1);
+		String result = instance.format(number);
+		if (scale > maxScale && !result.replaceAll("\\d", "").trim().isEmpty()) {
+			result = result.replaceFirst("0{1," + (scale - maxScale) + "}$", "");
+		}
+		return result;
 	}
 
 	public static String correctFileSeparator(String fileName) {

@@ -253,18 +253,6 @@ public abstract class Desktop extends JDesktopPane {
 					Map<Long, Long> durations = new LinkedHashMap<Long, Long>();
 					long lastDuration = 0;
 					final long AVG_INTERVALL_SIZE = 4000;
-//					boolean isRemoteDesktopSession = false;
-//					try {
-//						String osName = System.getProperty("os.name");
-//						if (osName != null && osName.toLowerCase().contains("windows")) {
-//							String sessionName = System.getenv("sessionname");
-//							if (sessionName != null) {
-//								isRemoteDesktopSession = sessionName.startsWith("RDP");
-//							}
-//						}
-//					} catch (Throwable t) {
-//						// ignore
-//					}
 					while (true) {
 						synchronized (Desktop.this) {
 							if (!running) {
@@ -302,9 +290,6 @@ public abstract class Desktop extends JDesktopPane {
 							if (!inProgress.get()) {
 								inProgress.set(true);
 								duration.set(0);
-//								if (isRemoteDesktopSession) {
-//									Thread.sleep((40)); // TODO
-//								}
 								SwingUtilities.invokeAndWait(new Runnable() {
 									@Override
 									public void run() {

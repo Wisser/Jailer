@@ -20,6 +20,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -30,6 +32,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.geom.AffineTransform;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -133,34 +136,34 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		initComponents();
 		((CardLayout) cardPanel.getLayout()).show(cardPanel, "main");
 
-		InfoBar infoBar = new InfoBar("Data Model Configuration",
+		InfoBar infoBar = new DMMDInfoBar("Data Model Configuration",
 				"A data model is a set of interrelated tables. Acquire information about tables by analyzing\n" +
 				"database schemas, or use the data model editor to manually define tables and associations.\n \n",
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 
-		InfoBar infoBarJM = new InfoBar("Load Extraction Model",
+		InfoBar infoBarJM = new DMMDInfoBar("Load Extraction Model",
 				"\n \n \n \n",
 				"Load a recently used model or choose a model file.");
 		UIUtil.replace(infoBarLabel2, infoBarJM);
 
-		infoBarConnection = new InfoBar("Database Connection",
+		infoBarConnection = new DMMDInfoBar("Database Connection",
 				"Select a connection to the database.\n" +
 				"\n \n \n",
 				"Select a database to work with.");
 
-		infoBarRecUsedConnection = new InfoBar("Recently used Database Connection",
+		infoBarRecUsedConnection = new DMMDInfoBar("Recently used Database Connection",
 				"Select a recently used connection to the database.\n" +
 				"\n \n \n",
 				"Select a database to work with.");
 
-		infoBarBookmark = new InfoBar("Bookmark",
+		infoBarBookmark = new DMMDInfoBar("Bookmark",
 				"Select a bookmark to open.\n" +
 				"\n \n \n",
 				"Select a bookmark.");
 		UIUtil.replace(infoBarLabelBookmark, infoBarBookmark);
 
-		infoBarRecUsedBookmark = new InfoBar("Recently used Bookmark",
+		infoBarRecUsedBookmark = new DMMDInfoBar("Recently used Bookmark",
 				"Select a recently used bookmark to open.\n" +
 				"\n \n \n",
 				"Select a bookmark.");
@@ -1584,7 +1587,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		try {
 			JDBCMetaDataBasedModelElementFinder.privilegedSessionProvider = new PrivilegedSessionProviderDialog.Provider(this);
 			DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this, applicationName,
-					new InfoBar("Connect with Database",
+					new DMMDInfoBar("Connect with Database",
 							"Select a connection to the database to be analyzed, or create a new connection.\n" +
 							"New connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\".", null), executionContext);
 			if (dbConnectionDialog.connect("Analyze Database")) {
@@ -1849,7 +1852,43 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 	}
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private static class DMMDInfoBar extends InfoBar {
+    	
+		public DMMDInfoBar(String titel, String message, String footer) {
+			super(titel, message, footer);
+		}
+    	
+	    @Override
+		public void paint(Graphics g) {
+	    	if (g instanceof Graphics2D) {
+	    		AffineTransform t = ((Graphics2D) g).getTransform();
+	    		if (t != null) {
+	    			int s = Math.min(Math.abs((int) (t.getScaleX() * t.getScaleY() * 100)), 999);
+	    			if (t.getScaleX() < 0) {
+	    				s += 2000;
+	    			}
+	    			if (t.getScaleY() < 0) {
+	    				s += 4000;
+	    			}
+	    			try {
+						String osName = System.getProperty("os.name");
+						if (osName != null && osName.toLowerCase().contains("windows")) {
+							String sessionName = System.getenv("sessionname");
+							if (sessionName != null && sessionName.startsWith("RDP")) {
+								s += 1000;
+							}
+						}
+					} catch (Throwable t2) {
+						// ignore
+					}
+	    			UISettings.s11 = s;
+	    		}
+	    	}
+			super.paint(g);
+		}
+    }
+    
+	// Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton analyzeButton;
     private javax.swing.JButton bmCancelButton;
     private javax.swing.JButton bmOkButton;

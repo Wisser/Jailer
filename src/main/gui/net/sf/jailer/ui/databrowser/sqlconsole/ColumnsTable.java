@@ -29,6 +29,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Vector;
 
@@ -69,6 +70,7 @@ public class ColumnsTable extends JTable {
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	final BrowserContentPane rb;
 	private Map<Integer, String> tableName = new HashMap<Integer, String>();
+	private boolean useTableName = true;
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ColumnsTable(final BrowserContentPane rb) {
@@ -134,6 +136,19 @@ public class ColumnsTable extends JTable {
 		setShowGrid(false);
 		setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		setModel(cDm);
+		
+		for (int row = 0; row < cDm.getRowCount(); ++row) {
+			cDm.getValueAt(row, 0);
+		}
+		int cnt[] = new int[1];
+		new HashSet<String>(tableName.values()).forEach(s -> {
+			if (!s.matches("^(<[^>]+>)*((&nbsp;)*)(<[^>]+>)*$")) {
+				++cnt[0];
+			}
+		});
+		if (cnt[0] <= 1) {
+			useTableName = false;
+		}
 		
 		for (int i = 0; i < getColumnCount(); i++) {
 			TableCellEditor defaultEditor = rowsTable.getDefaultEditor(getColumnClass(i));
@@ -217,37 +232,37 @@ public class ColumnsTable extends JTable {
 				int currentColumn = rb.getCurrentRowSelection();
 				if (render instanceof JLabel) {
 					if (column == 0) {
-						((JLabel) render).setFont(italic);
 						((JLabel) render).setBackground(BGCOLUMNS);
 					} else if (column - 1 == currentColumn) {
 						((JLabel) render).setBackground(BGSELECTED);
 					}
 					if (column == 0) {
 						String text = ((JLabel) render).getText();
-						String tabName = tableName.get(row);
+						String tabName = useTableName? tableName.get(row) : null;
 						if (tabName != null) {
-							JLabel tab = new JLabel("<html>" + tabName + "&nbsp;&nbsp;</html>");
-							tab.setFont(render.getFont());
+							JLabel tab = new JLabel("<html>&nbsp;" + tabName + "&nbsp;</html>");
 							tab.setBackground(render.getBackground());
 							tab.setOpaque(render.isOpaque());
-							((JLabel) render).setText(" " + text);
 							JPanel panel = new JPanel(new GridBagLayout());
 							panel.setToolTipText(text);
 							GridBagConstraints gridBagConstraints;
 							gridBagConstraints = new java.awt.GridBagConstraints();
+					        gridBagConstraints.gridx = 1;
+					        gridBagConstraints.gridy = 1;
+					        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+					        gridBagConstraints.weightx = 1;
+					        gridBagConstraints.anchor = GridBagConstraints.WEST;
+					        panel.add(tab, gridBagConstraints);
+					        gridBagConstraints = new java.awt.GridBagConstraints();
 					        gridBagConstraints.gridx = 3;
 					        gridBagConstraints.gridy = 1;
 					        gridBagConstraints.anchor = GridBagConstraints.EAST;
-					        panel.add(tab, gridBagConstraints);
-					        gridBagConstraints = new java.awt.GridBagConstraints();
-					        gridBagConstraints.gridx = 1;
-					        gridBagConstraints.gridy = 1;
-					        gridBagConstraints.anchor = GridBagConstraints.WEST;
-					        gridBagConstraints.weightx = 1;
 					        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 					        panel.add(render, gridBagConstraints);
-					        return panel;
+					        ((JLabel) render).setText(text + "  ");
+							return panel;
 						}
+						((JLabel) render).setText(" " + text);
 					}
 				}
 				return render;

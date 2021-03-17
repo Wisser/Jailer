@@ -26,12 +26,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -244,6 +245,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				}
 			});
 		}
+		List<Runnable> removeTableNames = new ArrayList<Runnable>();
+		List<JLabel> tableNames = new ArrayList<JLabel>();
 		while (i < columns.size()) {
 			Column c = columns.get(columnIndex.get(i));
 			JLabel l = new JLabel();
@@ -251,13 +254,29 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			if (alternativeColumnLabels != null && alternativeColumnLabels.length > columnIndex.get(i)) {
 				String altName = alternativeColumnLabels[columnIndex.get(i)];
 				String text = altName.replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$1$3$4\t$1$2$4");
+				l.setText(shortText(text));
+				l.setToolTipText(text);
 				if (!text.equals(altName)) {
 					int pos = text.indexOf('\t');
 					if (i >= 0) {
+						JPanel panel = new JPanel(new GridBagLayout());
 						JLabel tab = new JLabel(text.substring(pos + 1));
 						JLabel sep = new JLabel(" ");
-						l.setText(text.substring(0, pos));
-						JPanel panel = new JPanel(new GridBagLayout());
+						tableNames.add(tab);
+						removeTableNames.add(() -> {
+							tab.setVisible(false);
+							sep.setVisible(false);
+							GridBagConstraints gbc = new java.awt.GridBagConstraints();
+							gbc.gridx = 4;
+							gbc.gridy = 1;
+							gbc.weightx = 1;
+							gbc.fill = GridBagConstraints.HORIZONTAL;
+							gbc.anchor = GridBagConstraints.EAST;
+					        panel.add(new JLabel(""), gbc);
+					    });
+						String cName = text.substring(0, pos);
+						l.setText(shortText(cName));
+						l.setToolTipText(cName);
 						gridBagConstraints = new java.awt.GridBagConstraints();
 				        gridBagConstraints.gridx = 2;
 				        gridBagConstraints.gridy = 1;
@@ -269,18 +288,18 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				        gridBagConstraints.gridx = 3;
 				        gridBagConstraints.gridy = 1;
 				        gridBagConstraints.anchor = GridBagConstraints.EAST;
-				        panel.add(tab, gridBagConstraints);
+				        panel.add(l, gridBagConstraints);
 				        gridBagConstraints = new java.awt.GridBagConstraints();
 				        gridBagConstraints.gridx = 1;
 				        gridBagConstraints.gridy = 1;
 				        gridBagConstraints.anchor = GridBagConstraints.WEST;
-				        panel.add(l, gridBagConstraints);
+				        panel.add(tab, gridBagConstraints);
 				        lCont = panel;
 					} else {
 						l.setText(altName.replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$1$3&nbsp;&nbsp;$2$4"));
 					}
 				}
-				} else {
+			} else {
 				l.setText((c.name != null? c.name : ""));
 			}
 			l.setFont(nonbold);
@@ -326,11 +345,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				v = UIUtil.format((long) (Short) v);
 			} else if (v instanceof BigDecimal && ((BigDecimal) v).scale() >= 0) {
 				try {
-					NumberFormat instance = new DecimalFormat("");
-					instance.setMinimumFractionDigits(((BigDecimal) v).scale());
-					instance.setMaximumFractionDigits(((BigDecimal) v).scale());
-					instance.setMinimumIntegerDigits(1);
-					v = instance.format(v);
+					v = UIUtil.format((BigDecimal) v);
 				} catch (Exception e) {
 					// ignore
 				}
@@ -362,7 +377,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						} else {
 							f.setText(vOrig == null? "" : vOrig.toString());
 						}
-						f.selectAll();
+						if (vOrig != null) {
+							f.selectAll();
+						}
 					}
 				});
 				if (v instanceof UIUtil.IconWithText) {
@@ -370,7 +387,10 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				} else {
 					f.setText(v == null? "" : v.toString());
 				}
-				f.setEnabled(v != null);
+//				f.setEnabled(v != null);
+				if (v == null) {
+					f.setBackground(new Color(238, 238, 238));
+				}
 				f.setEditable(false);
 				content.add(f, gridBagConstraints);
 			} else {
@@ -402,6 +422,19 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			}
 			++i;
 		}
+		
+		Set<String> un = new HashSet<String>();
+		tableNames.forEach(s -> {
+			if (!s.getText().matches("^((\\s*)|(<[^>]+>)*((&nbsp;)*)(<[^>]+>))*$")) {
+				un.add(s.getText());
+			}
+		});
+		if (un.size() <= 1) {
+			removeTableNames.forEach(s -> {
+				s.run();
+			});
+		}
+		
 		if (selectableFields) {
 			JLabel l = new JLabel();
 			l.setText(" ");
@@ -439,6 +472,10 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			isPacked = true;
 		}
 		onRowChanged(row);
+	}
+
+	private String shortText(String text) {
+		return text.replaceFirst("^(.{32}).+$", "$1...");
 	}
 
 	protected abstract void onRowChanged(int row);
@@ -528,15 +565,19 @@ public abstract class DetailsView extends javax.swing.JPanel {
         add(selectButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    private boolean programChangedSortCheckBox = false;
+    
     private void sortCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortCheckBoxActionPerformed
-    	sortColumns = !sortColumns;
-    	setCurrentRow(currentRow, showSpinner);
-    	UIUtil.invokeLater(4, new Runnable() {
-			@Override
-			public void run() {
-				resetScrollPane();
-			}
-		});
+    	if (!programChangedSortCheckBox) {
+    		sortColumns = !sortColumns;
+	    	setCurrentRow(currentRow, showSpinner);
+	    	UIUtil.invokeLater(4, new Runnable() {
+				@Override
+				public void run() {
+					resetScrollPane();
+				}
+			});
+    	}
     }//GEN-LAST:event_sortCheckBoxActionPerformed
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
@@ -577,6 +618,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	public void setSortColumns(boolean selected) {
 		sortColumns = selected;
     	setCurrentRow(currentRow, showSpinner);
+    	try {
+    		programChangedSortCheckBox = true;
+    		sortCheckBox.setSelected(selected);
+    	} finally {
+    		programChangedSortCheckBox = false;
+    	}
 	}
 
 	private void resetScrollPane() {

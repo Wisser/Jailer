@@ -181,7 +181,7 @@ public class QueryTypeAnalyser {
 	 * @param sqlSelect the query
 	 * @return the type or <code>null</code>
 	 */
-	public static List<Table> getType(String sqlSelect, boolean checkPKs, final MetaDataSource metaDataSource) {
+	public static List<Table> getType(String sqlSelect, boolean checkPKs, Map<Integer, String> columnExpression, final MetaDataSource metaDataSource) {
 		net.sf.jsqlparser.statement.Statement st;
 		try {
 			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlSelect), 2);
@@ -235,11 +235,21 @@ public class QueryTypeAnalyser {
 												}
 												selectClause.add(col);
 											} else {
+												if (columnExpression != null) {
+													columnExpression.put(selectClause.size(), asSQL(selectExpressionItem));
+												}
 												selectClause.add(new Pair<String, String>(null, alias));
 											}
 										} else {
+											if (columnExpression != null) {
+												columnExpression.put(selectClause.size(), asSQL(selectExpressionItem));
+											}
 											selectClause.add(null);
 										}
+									}
+
+									private String asSQL(SelectExpressionItem selectExpressionItem) {
+										return selectExpressionItem.toString().replaceAll("\\s+", " ").replaceFirst("^(.{64}).+$", "$1...");
 									}
 
 									@Override

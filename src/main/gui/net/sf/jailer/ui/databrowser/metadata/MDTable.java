@@ -390,14 +390,14 @@ public class MDTable extends MDObject {
 	    				}
 	    			}
 	            }
-	            if (ddl == null) {
-	                try {
-	                	readColumns(true); // load primary key
-	                	ddl = createDDL();
-		            } catch (Exception e) {
-		            	ddl = "-- DDL not available";
-	                	logger.info("error", e);
-		            }
+	            try {
+	            	readColumns(true); // load primary key
+	            	if (ddl == null) {
+	            		ddl = createDDL();
+	            	}
+	            } catch (Exception e) {
+	            	ddl = "-- DDL not available";
+	            	logger.info("error", e);
 	            }
 	            if (ddl != null) {
 	            	ddl = ddl.trim();

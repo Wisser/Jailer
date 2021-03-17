@@ -655,15 +655,15 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
             Map<String, Integer> countMap, String indent, boolean isCaretAtEOL) {
         Map<String, Integer> count = new HashMap<String, Integer>(countMap);
         Set<String> allColumnNames = new HashSet<String>();
-        for (int i = 0; i < tables.size(); ++i) {
+        for (int i = tables.size() - 1; i >= 0; --i) {
             TABLE table = tables.get(i);
             for (String column: getAndWaitForColumns(table)) {
                 allColumnNames.add(Quoting.normalizeIdentifier(column));
             }
         }
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < tables.size(); ++i) {
-            TABLE table = tables.get(i);
+        for (int i = tables.size() - 1; i >= 0; --i) {
+        	TABLE table = tables.get(i);
             for (String column: getAndWaitForColumns(table)) {
                 for (;;) {
                     String suffix = "";

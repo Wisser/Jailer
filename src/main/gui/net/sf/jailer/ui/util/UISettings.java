@@ -139,13 +139,13 @@ public class UISettings {
 		return properties.get(name);
 	}
 
-	public static int s1, s2, s3, s4, s5, s6, s7, s8, s9;
+	public static int s1, s2, s3, s4, s5, s6, s7, s8, s9, s11;
 	public static String s10;
 	
 	public synchronized static void storeStats() {
 		int i = 1;
 		StringBuilder sb = new StringBuilder();
-		for (int s: new int[] { s1, s2, s3, s4, s5, s6, s7, s8, s9 }) {
+		for (int s: new int[] { s1, s2, s3, s4, s5, s6, s7, s8, s9, 0, s11 }) {
 			if (s != 0) {
 				sb.append("&s" + i + "=" + s);
 			}

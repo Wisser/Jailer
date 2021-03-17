@@ -56,7 +56,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Types;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1034,8 +1033,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 				isSelected = currentRowSelection == row || currentRowSelection == -2;
 
+				int bgRow = row;
 				if (table != rowsTable) {
 					isSelected = false;
+					++bgRow;
 					if (table.getSelectedRows().length <= 1 && table.getSelectedColumns().length <= 1) {
 						for (int sr: table.getSelectedRows()) {
 							if (sr == column) {
@@ -1082,26 +1083,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							row < rowSorter.getViewRowCount() &&
 							rowSorter.convertRowIndexToModel(row) < rows.size() &&
 							BrowserContentPane.this.rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).nonEmptyRowId))) {
-							((JLabel) render).setBackground((row % 2) == 0? BG3 : BG3_2);
+							((JLabel) render).setBackground((bgRow % 2) == 0? BG3 : BG3_2);
 							if (BrowserContentPane.this.rowsClosure.currentClosureRootID != null
 									&& !BrowserContentPane.this.rowsClosure.currentClosureRootID.isEmpty()
 									&& BrowserContentPane.this.rowsClosure.currentClosureRootPane == BrowserContentPane.this) {
 								String rid = rows.get(rowSorter.convertRowIndexToModel(row)).nonEmptyRowId;
 								if (!rid.isEmpty() && BrowserContentPane.this.rowsClosure.currentClosureRootID.contains(rid)) {
-									((JLabel) render).setBackground(currentRowSelection >= 0? BG4_LIGHT : (row % 2 == 0? BG4 : BG4_2));
+									((JLabel) render).setBackground(currentRowSelection >= 0? BG4_LIGHT : (bgRow % 2 == 0? BG4 : BG4_2));
 								}
 							}
 						} else {
 							Table type = getResultSetTypeForColumn(convertedColumnIndex);
 							if (isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
 									&& isPKComplete(type, r) && !rowIdSupport.getPrimaryKey(type, BrowserContentPane.this.session).getColumns().isEmpty()) {
-								((JLabel) render).setBackground((row % 2 == 0) ? BG1_EM : BG2_EM);
+								((JLabel) render).setBackground((bgRow % 2 == 0) ? BG1_EM : BG2_EM);
 							} else {
-								((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
+								((JLabel) render).setBackground((bgRow % 2 == 0) ? BG1 : BG2);
 							}
 						}
 					} else {
-						((JLabel) render).setBackground(currentRowSelection == row? BG4.brighter() : (row % 2 == 0? BG4 : BG4_2));
+						((JLabel) render).setBackground(currentRowSelection == row? BG4.brighter() : (bgRow % 2 == 0? BG4 : BG4_2));
 					}
 					((JLabel) render).setForeground(
 							renderRowAsPK || pkColumns.contains(convertedColumnIndex) || pkColumnsConsole.contains(convertedColumnIndex) ? FG1 :
@@ -1868,7 +1869,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		tableFilter.setSelected(isTableFilterEnabled);
 		if (isLimitExceeded) {
-			tableFilter.setForeground(Color.red);
+			tableFilter.setForeground(new Color(220, 20, 20));
+			tableFilter.setIcon(getScaledWarnIcon());
 			tableFilter.setToolTipText("Row limit exceeded. Filtering may be incomplete.");
 		}
 		tableFilter.addActionListener(new ActionListener() {
@@ -2377,7 +2379,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		tableFilter.setAccelerator(KS_FILTER);
 		tableFilter.setSelected(isTableFilterEnabled);
 		if (isLimitExceeded) {
-			tableFilter.setForeground(Color.red);
+			tableFilter.setForeground(new Color(220, 20, 20));
+			tableFilter.setIcon(getScaledWarnIcon());
 			tableFilter.setToolTipText("Row limit exceeded. Filtering may be incomplete.");
 		}
 		tableFilter.addActionListener(new ActionListener() {
@@ -4143,11 +4146,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						valueAsString = UIUtil.format((long) (Short) value);
 					} else if (value instanceof BigDecimal && ((BigDecimal) value).scale() >= 0) {
 						try {
-							NumberFormat instance = new DecimalFormat("");
-							instance.setMinimumFractionDigits(((BigDecimal) value).scale());
-							instance.setMaximumFractionDigits(((BigDecimal) value).scale());
-							instance.setMinimumIntegerDigits(1);
-							valueAsString = instance.format(value);
+							valueAsString = UIUtil.format((BigDecimal) value);
 						} catch (Exception e) {
 							valueAsString = String.valueOf(value);
 							suffix = "";
@@ -4675,7 +4674,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				protected void onSelectRow(Row row) {
 				}
 			};
-			singleRowDetailsView.setSortColumns(sortColumnsCheckBox.isSelected());
+			singleRowDetailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 	        dtm = new DefaultTableModel(new String[] { singleRowDetailsViewTitel }, 0) {
 				@Override
 				public boolean isCellEditable(int row, int column) {
@@ -6032,7 +6031,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final boolean deselect = !currentSelectedRowCondition.equals("")
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
-		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, session) {
+		DetailsView detailsView;
+		d.getContentPane().add(detailsView = new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, session) {
 			@Override
 			protected void onRowChanged(int row) {
 				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(row, false);
@@ -6053,6 +6053,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		});
+		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 		d.pack();
 		d.setLocation(x, y);
 		d.setSize(400, d.getHeight() + 20);
@@ -6117,7 +6118,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final boolean deselect = !currentSelectedRowCondition.equals("")
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
-		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, session) {
+		DetailsView detailsView;
+		d.getContentPane().add(detailsView = new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, session) {
 			@Override
 			protected void onRowChanged(int row) {
 				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(row, false);
@@ -6138,6 +6140,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		});
+		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 		d.pack();
 		d.setLocation(x, y);
 		d.setSize(500, d.getHeight() + 20);
@@ -6771,4 +6774,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		public void mouseReleased(MouseEvent e) {
 		}
 	}
+	
+    private ImageIcon getScaledWarnIcon() {
+        if (scaledWarnIcon == null && warnIcon != null) {
+            int heigth = getFontMetrics(new JLabel("M").getFont()).getHeight();
+            double s = heigth / (double) warnIcon.getIconHeight();
+            try {
+            	scaledWarnIcon = UIUtil.scaleIcon(warnIcon, s);
+            } catch (Exception e) {
+            	return null;
+            }
+        }
+        return scaledWarnIcon;
+    }
+
+    private static ImageIcon warnIcon;
+    private static ImageIcon scaledWarnIcon;
+    static {
+        // load images
+    	warnIcon = UIUtil.readImage("/wanr.png");
+	}
+
 }
