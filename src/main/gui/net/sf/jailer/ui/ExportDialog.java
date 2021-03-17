@@ -552,7 +552,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			});
 
 			initTargetDBMS(session);
-
+			workingTableSchemaComboBox.setEnabled(!scopeLocal.isSelected());
+			
 			pack();
 			updateCLIArea();
 			setSize(Math.max(Math.min(getSize().width, 900), 700), getSize().height);
