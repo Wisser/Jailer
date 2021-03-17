@@ -2590,7 +2590,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		args.add(getTemporaryTableScope().toString());
 
 		String schema = (String) workingTableSchemaComboBox.getEditor().getItem();
-		if (schema != null && schema.length() > 0 && !schema.equals(DEFAULT_SCHEMA)) {
+		if (schema != null && schema.length() > 0 && !schema.equals(DEFAULT_SCHEMA) && !scopeLocal.isSelected()) {
 			args.add("-working-table-schema");
 			args.add(schema);
 		}
