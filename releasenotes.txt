@@ -5,7 +5,8 @@
       as well as the origin table of each column.
     - Number data is now formatted and right-aligned.
     - Faster metadata acquisition with Oracle DBMS.
-  - Fix for "(Minor) Dropdown menu disabling inconsistency #40" https://github.com/Wisser/Jailer/issues/40
+  - Fixed "(Minor) Dropdown menu disabling inconsistency #40" https://github.com/Wisser/Jailer/issues/40
+  - Fixed "Parameters not working when using complex filters #41" https://github.com/Wisser/Jailer/issues/41
   - Minor fixes and improvements.
 
 10.3.5
