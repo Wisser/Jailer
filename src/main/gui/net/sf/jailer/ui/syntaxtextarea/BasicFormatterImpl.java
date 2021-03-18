@@ -24,11 +24,16 @@
  */
 package net.sf.jailer.ui.syntaxtextarea;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.github.vertical_blank.sqlformatter.SqlFormatter;
 import com.github.vertical_blank.sqlformatter.core.FormatConfig;
@@ -91,6 +96,39 @@ public class BasicFormatterImpl {
 	static final String initial = "\n     ";
 	
 	public String format(String sql) {
+		String marker;
+		for (int i = 0; ; ++i) {
+			marker = "prop" + i + "porp";
+			if (!sql.contains(marker)) {
+				break;
+			}
+		}
+		
+		Pattern pattern = Pattern.compile("\\$\\{([^\\}]+)\\}", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(sql);
+		int i = 0;
+		Map<Integer, String> prop = new HashMap<Integer, String>();
+		boolean result = matcher.find();
+		StringBuffer sb = new StringBuffer();
+		if (result) {
+			do {
+				++i;
+				prop.put(i, matcher.group(1));
+				matcher.appendReplacement(sb, marker + i + "z");
+				result = matcher.find();
+			} while (result);
+		}
+		matcher.appendTail(sb);
+		sql = sb.toString().replace("&", marker + "r");
+		sql = format1(sql);
+		
+		for (Entry<Integer, String> e: prop.entrySet()) {
+			sql = sql.replace(marker + e.getKey() + "z", "${" + e.getValue() + "}");
+		}
+		return sql.replace(marker + "r", "&");
+	}
+
+	private String format1(String sql) {
 		try {
 			String source = sql;
 			if (source.contains("\f")) {
