@@ -139,8 +139,9 @@ public class UISettings {
 		return properties.get(name);
 	}
 
-	public static int s1, s2, s3, s4, s5, s6, s7, s8, s9, s11;
+	public static int s1, s2, s3, s4, s5, s6, s7, s8, s9;
 	public static String s10;
+	public static int s11 = 1;
 	
 	public synchronized static void storeStats() {
 		int i = 1;

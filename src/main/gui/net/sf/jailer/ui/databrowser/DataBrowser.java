@@ -4382,6 +4382,7 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationIcon = UIUtil.readImage("/navigation.png");
     }
 
+	// TODO $props in "where", with values-query, dialog with combo-box, persisted in the *.dbl files
 	// TODO hires jailer.png (esp. for jpackage)
 	// TODO tree-background nimbus (Java 16)
 }

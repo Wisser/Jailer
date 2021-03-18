@@ -30,6 +30,7 @@ import org.fife.rsta.ui.EscapableDialog;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.util.UISettings;
 
 /**
  * Finds path between two tables.
@@ -100,9 +101,11 @@ public class PathFinder {
 		});
 		
 		dialog.setVisible(true);
+		UISettings.s11 += 10000;
 		if (path == null) {
 			return null;
 		}
+		UISettings.s11 += 1000000;
 		Result result = new Result();
 		result.path = path;
 		result.expand = expand;

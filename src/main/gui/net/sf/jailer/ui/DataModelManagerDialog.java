@@ -1881,7 +1881,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					} catch (Throwable t2) {
 						// ignore
 					}
-	    			UISettings.s11 = s;
+	    			UISettings.s11 = s == 100? 0 : s;
 	    		}
 	    	}
 			super.paint(g);
