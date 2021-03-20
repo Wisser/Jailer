@@ -599,8 +599,8 @@ public class LocalEntityGraph extends EntityGraph {
 			protected void process(String inlineView) throws SQLException {
 				String select =
 							"Select distinct " + pkList(source, sourceAlias) +
-							" From " + inlineView + " join " + quoting.requote(source.getName()) + " " + sourceAlias + " on " + pkEqualsEntityID(association.destination, destAlias, "E", "", false) +
-							" join " + quoting.requote(destination.getName()) + " " + destAlias + " on (" + jc + ")";
+							" From " + inlineView + ", " + quoting.requote(source.getName()) + " " + sourceAlias + ", " +
+							quoting.requote(destination.getName()) + " " + destAlias + " Where (" + pkEqualsEntityID(association.destination, destAlias, "E", "", false) + ") and (" + jc + ")";
 
 				remoteSession.executeQuery(select, new LocalInlineViewBuilder(sourceAlias, upkColumnList(source, null)) {
 						@Override
