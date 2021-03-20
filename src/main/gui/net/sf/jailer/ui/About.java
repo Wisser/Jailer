@@ -40,9 +40,6 @@ public class About extends javax.swing.JDialog {
 				"Database Subsetting and Relational Data Browsing", 
 				"");
 		ImageIcon imageIcon = UIUtil.readImage("/jailer.png");
-		if (imageIcon == null) {
-			imageIcon = UIUtil.readImage("jailer.gif");
-		}
 		infoBar.setIcon(imageIcon);
 		UIUtil.replace(nameLabel, infoBar);
 		

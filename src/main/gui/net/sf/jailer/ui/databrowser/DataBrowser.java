@@ -543,12 +543,9 @@ public class DataBrowser extends javax.swing.JFrame {
         }
 
         try {
-            setIconImage((jailerIcon = UIUtil.readImage("/jailerlight.png")).getImage());
+            setIconImage((jailerIcon = UIUtil.readImage("/jailer.png")).getImage());
         } catch (Throwable t) {
-            try {
-                setIconImage((jailerIcon = UIUtil.readImage("/jailer.gif")).getImage());
-            } catch (Throwable t2) {
-            }
+           // ignore
         }
 
         jailerIcon.setImage(UIUtil.scaleIcon(jailerIcon, 16, 16).getImage());
@@ -3011,7 +3008,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
             final JToggleButton toggleButton = new JToggleButton();
             toggleButton.setText(rb.internalFrame.getTitle());
-            toggleButton.setIcon(UIUtil.readImage("/jailerlight.png"));
+            toggleButton.setIcon(UIUtil.readImage("/jailer.png"));
             toggleButton.setSelected(false);
 
             toggleButton.addActionListener(new ActionListener() {

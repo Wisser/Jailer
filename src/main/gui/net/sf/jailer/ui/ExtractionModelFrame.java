@@ -2272,12 +2272,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		boolean isHorizonal = false;
 		ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal, connectionDialog, executionContext);
 		try {
-			extractionModelFrame.setIconImage(UIUtil.readImage("/jailerlight.png").getImage());
+			extractionModelFrame.setIconImage(UIUtil.readImage("/jailer.png").getImage());
 		} catch (Throwable t) {
-			try {
-				extractionModelFrame.setIconImage(UIUtil.readImage("/jailer.gif").getImage());
-			} catch (Throwable t2) {
-			}
+			// ignore
 		}
 
 		int c = 0;

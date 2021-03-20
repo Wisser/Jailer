@@ -405,7 +405,7 @@ public class UIUtil {
 				}
 			});
     		try {
-    			dialog.setIconImage(UIUtil.readImage("/jailerlight.png").getImage());
+    			dialog.setIconImage(UIUtil.readImage("/jailer.png").getImage());
     		} catch (Throwable t) {
     			// ignore
     		}
