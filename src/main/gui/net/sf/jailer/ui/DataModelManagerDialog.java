@@ -38,6 +38,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -181,10 +183,18 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			setIconImage(imageIcon.getImage());
 		} catch (Throwable t) {
 		}
-
-		ImageIcon imageIcon = UIUtil.readImage("/jailer.png");
+		String name = "/net/sf/jailer/ui/resource" + "/jailer.png";
+		ImageIcon result;
+		try {
+			result = new ImageIcon(ImageIO.read(UIUtil.class.getResource(name)));
+		} catch (Throwable t1) {
+			UIUtil.invokeLater(8, () -> UIUtil.showException(null, "Error", new IOException("unable to load image " + name + ": " + t1.getMessage(), t1), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR));
+			result = null;
+		}
+		
+		ImageIcon imageIcon = result;
 		if (imageIcon != null) {
-			imageIcon = UIUtil.scaleIcon(imageIcon, 0.3);
+			imageIcon = UIUtil.scaleIcon(imageIcon, 1.0 / 3.0);
 		}
 		infoBar.setIcon(imageIcon);
 		infoBarJM.setIcon(imageIcon);

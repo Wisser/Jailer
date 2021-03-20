@@ -514,6 +514,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	private static String CONNECTIONS_FILE = ".connections";
 
+	// TODO use xml or json..., java serialization it's hard to automate connection definition
+	
 	/**
 	 * Stores the connections into the CONNECTIONS_FILE.
 	 */
