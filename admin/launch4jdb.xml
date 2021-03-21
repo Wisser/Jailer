@@ -13,7 +13,7 @@
   <stayAlive>true</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>C:\Users\RalfW\git\Jailer2\src\main\gui\net\sf\jailer\ui\resource\jailer.ico</icon>
+  <icon>C:\Users\ralfw\git\Jailer\src\main\gui\net\sf\jailer\ui\resource\jailer.ico</icon>
   <classPath>
     <mainClass>net.sf.jailer.ui.databrowser.DataBrowser</mainClass>
     <cp>lib/activation-1.0.2.jar</cp>
