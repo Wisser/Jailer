@@ -1115,6 +1115,7 @@ public class UIUtil {
 	public static synchronized ImageIcon scaleIcon(ImageIcon icon, int w, int h) {
 		if (icon != null) {
 			try {
+				icon = new ImageIcon(icon.getImage().getScaledInstance(icon.getIconWidth() * 2, icon.getIconHeight() * 2, Image.SCALE_SMOOTH));
 				Image scaled = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
 				if (!baseMultiResolutionImageClassExists || (icon.getIconWidth() <= w && icon.getIconHeight() <= h)) {
 					return new ImageIcon(scaled);
@@ -1640,6 +1641,7 @@ public class UIUtil {
 			String name = "/net/sf/jailer/ui/resource" + resource;
 			try {
 				result = new ImageIcon(ImageIO.read(UIUtil.class.getResource(name)));
+				result = scaleIcon(result, result.getIconWidth(), result.getIconHeight());
 			} catch (Throwable t) {
 				if (!errorSeen) {
 					errorSeen = true;
