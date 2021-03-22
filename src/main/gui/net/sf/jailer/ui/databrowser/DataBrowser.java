@@ -3008,7 +3008,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
             final JToggleButton toggleButton = new JToggleButton();
             toggleButton.setText(rb.internalFrame.getTitle());
-            toggleButton.setIcon(UIUtil.readImage("/jailer.png"));
+            toggleButton.setIcon(UIUtil.jailerLogo16);
             toggleButton.setSelected(false);
 
             toggleButton.addActionListener(new ActionListener() {
@@ -4380,6 +4380,5 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
 	// TODO $props in "where", with values-query, dialog with combo-box, persisted in the *.dbl files
-	// TODO hires jailer.png (esp. for jpackage)
 	// TODO tree-background nimbus (Java 16)
 }

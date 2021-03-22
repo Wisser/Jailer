@@ -119,7 +119,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
         getContentPane().add(jLabel1, gridBagConstraints);
 
         jLabel2.setText("Forum");
@@ -127,7 +127,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
         getContentPane().add(jLabel2, gridBagConstraints);
 
         jLabel3.setText("Support  ");
@@ -135,7 +135,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
         getContentPane().add(jLabel3, gridBagConstraints);
 
         nameLabel.setText("Database Subsetting and Relational Data Browsing Tool");
@@ -200,7 +200,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
         getContentPane().add(jLabel4, gridBagConstraints);
 
         jTextField4.setEditable(false);
@@ -224,7 +224,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 13;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
         getContentPane().add(jLabel5, gridBagConstraints);
 
         jLabel6.setText("System  ");
@@ -232,7 +232,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 14;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
         getContentPane().add(jLabel6, gridBagConstraints);
 
         jTextField6.setEditable(false);
@@ -253,7 +253,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
         getContentPane().add(jLabel7, gridBagConstraints);
 
         jTextField7.setEditable(false);
@@ -269,7 +269,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 16;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
         getContentPane().add(jLabel8, gridBagConstraints);
 
         jTextField8.setEditable(false);

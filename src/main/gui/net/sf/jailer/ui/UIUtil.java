@@ -1119,10 +1119,20 @@ public class UIUtil {
 				if (!baseMultiResolutionImageClassExists || (icon.getIconWidth() <= w && icon.getIconHeight() <= h)) {
 					return new ImageIcon(scaled);
 				}
-				Image[] imageList = new Image[] {
-						scaled,
-						icon.getImage()
-						};
+				
+				List<Image> imageListArr = new ArrayList<Image>();
+				for (int p = 125; p <= 200; p += 25) {
+					int wp = (w * p + 50) / 100;
+					int hp = (h * p + 50) / 100;
+					if (icon.getIconWidth() <= wp && icon.getIconHeight() <= hp) {
+						break;
+					}
+					Image scaledP = icon.getImage().getScaledInstance(wp, hp, Image.SCALE_SMOOTH);
+					imageListArr.add(scaledP);	
+				}
+				imageListArr.add(0, scaled);
+				imageListArr.add(icon.getImage());
+				Image[] imageList = imageListArr.toArray(new Image[0]);
 				try {
 					if (baseMultiResolutionImageClassConstructor == null) {
 						baseMultiResolutionImageClassConstructor = Class.forName("java.awt.image.BaseMultiResolutionImage").getConstructor(imageList.getClass());
@@ -1139,19 +1149,6 @@ public class UIUtil {
 		}
 		return null;
 	}
-
-    public static ImageIcon jailerLogo;
-    
-    static {
-		String name = "/net/sf/jailer/ui/resource" + "/jailer.png";
-		try {
-			jailerLogo = new ImageIcon(ImageIO.read(UIUtil.class.getResource(name)));
-			jailerLogo = UIUtil.scaleIcon(jailerLogo, 1.0 / 3.0);
-		} catch (Throwable t1) {
-			UIUtil.invokeLater(8, () -> UIUtil.showException(null, "Error", new IOException("unable to load image " + name + ": " + t1.getMessage(), t1), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR));
-			jailerLogo = null;
-		}
-    }
 
 	private static Constructor<?> baseMultiResolutionImageClassConstructor = null;
 	private static boolean baseMultiResolutionImageClassExists = true;
@@ -1654,5 +1651,21 @@ public class UIUtil {
 		}
 		return result;
 	}
+
+	public static ImageIcon jailerLogo;
+	public static ImageIcon jailerLogo16;
+    
+    static {
+		String name = "/net/sf/jailer/ui/resource" + "/jailer.png";
+		try {
+			jailerLogo = new ImageIcon(ImageIO.read(UIUtil.class.getResource(name)));
+			jailerLogo16 = new ImageIcon(ImageIO.read(UIUtil.class.getResource(name)));
+			jailerLogo = UIUtil.scaleIcon(jailerLogo, 1.0 / 3.0);
+			jailerLogo16 = UIUtil.scaleIcon(jailerLogo16, 16, 16);
+		} catch (Throwable t1) {
+			UIUtil.invokeLater(8, () -> UIUtil.showException(null, "Error", new IOException("unable to load image " + name + ": " + t1.getMessage(), t1), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR));
+			jailerLogo = null;
+		}
+    }
 
 }
