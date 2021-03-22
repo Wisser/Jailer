@@ -128,8 +128,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
     private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
 
-    private static ImageIcon jailerLogo;
-
 	/**
 	 * Creates new.
 	 */
@@ -185,20 +183,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			setIconImage(imageIcon.getImage());
 		} catch (Throwable t) {
 		}
-		String name = "/net/sf/jailer/ui/resource" + "/jailer.png";
-		try {
-			if (jailerLogo == null) {
-				jailerLogo = new ImageIcon(ImageIO.read(UIUtil.class.getResource(name)));
-			}
-		} catch (Throwable t1) {
-			UIUtil.invokeLater(8, () -> UIUtil.showException(null, "Error", new IOException("unable to load image " + name + ": " + t1.getMessage(), t1), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR));
-			jailerLogo = null;
-		}
 		
-		ImageIcon imageIcon = jailerLogo;
-		if (imageIcon != null) {
-			imageIcon = UIUtil.scaleIcon(imageIcon, 1.0 / 3.0);
-		}
+		ImageIcon imageIcon = UIUtil.jailerLogo;
 		infoBar.setIcon(imageIcon);
 		infoBarJM.setIcon(imageIcon);
 		infoBarConnection.setIcon(imageIcon);

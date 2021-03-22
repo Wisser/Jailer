@@ -39,8 +39,7 @@ public class About extends javax.swing.JDialog {
 				"Jailer Database Tools",
 				"Database Subsetting and Relational Data Browsing", 
 				"");
-		ImageIcon imageIcon = UIUtil.readImage("/jailer.png");
-		infoBar.setIcon(imageIcon);
+		infoBar.setIcon(UIUtil.jailerLogo);
 		UIUtil.replace(nameLabel, infoBar);
 		
 		jTextField4.setText(JailerVersion.VERSION);
@@ -145,7 +144,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
         getContentPane().add(nameLabel, gridBagConstraints);
 
         forumTextField.setEditable(false);

@@ -1140,6 +1140,19 @@ public class UIUtil {
 		return null;
 	}
 
+    public static ImageIcon jailerLogo;
+    
+    static {
+		String name = "/net/sf/jailer/ui/resource" + "/jailer.png";
+		try {
+			jailerLogo = new ImageIcon(ImageIO.read(UIUtil.class.getResource(name)));
+			jailerLogo = UIUtil.scaleIcon(jailerLogo, 1.0 / 3.0);
+		} catch (Throwable t1) {
+			UIUtil.invokeLater(8, () -> UIUtil.showException(null, "Error", new IOException("unable to load image " + name + ": " + t1.getMessage(), t1), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR));
+			jailerLogo = null;
+		}
+    }
+
 	private static Constructor<?> baseMultiResolutionImageClassConstructor = null;
 	private static boolean baseMultiResolutionImageClassExists = true;
 
