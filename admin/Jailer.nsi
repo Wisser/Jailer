@@ -27,7 +27,7 @@ Page instfiles
 UninstPage uninstConfirm
 UninstPage instfiles
 
-Icon "..\src\main\gui\net\sf\jailer\ui\resource\Jailer.ico"
+Icon "..\src\main\gui\net\sf\jailer\ui\resource\jailer.ico"
 
 ;--------------------------------
 
