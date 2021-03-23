@@ -22,10 +22,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -293,8 +295,21 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
         }
 	}
 
+	private static Map<String, ImageIcon> icons = Collections.synchronizedMap(new HashMap<String, ImageIcon>());
+	
 	public ImageIcon getIcon() {
-		return databaseObjectRenderingDescription.getIcon();
+		if (databaseObjectRenderingDescription.getIconURL() != null) {
+			ImageIcon icon = icons.get(databaseObjectRenderingDescription.getIconURL());
+			if (icon == null) {
+				try {
+		            icon = UIUtil.readImage(databaseObjectRenderingDescription.getIconURL().replaceFirst(".*(/[^/]*)$", "$1"));
+		        } catch (Exception e) {
+		        }
+			}
+			icons.put(databaseObjectRenderingDescription.getIconURL(), icon);
+			return icon;
+		}
+		return null;
 	}
 
 	public boolean isCheap() {
