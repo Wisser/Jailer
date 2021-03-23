@@ -22,6 +22,8 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
+import net.sf.jailer.ui.UIUtil;
+
 /**
  * Describes how generic database objects are rendered (Functions, Procedures etc).
  * 
@@ -160,7 +162,7 @@ public class DatabaseObjectRenderingDescription {
 			ImageIcon icon = icons.get(getIconURL());
 			if (icon == null) {
 				try {
-		            icon = new ImageIcon(ImageIO.read(DatabaseObjectRenderingDescription.class.getResource(getIconURL())));
+		            icon = UIUtil.readImage(getIconURL().replaceFirst(".*(/[^/]*)$", "$1"));
 		        } catch (Exception e) {
 		        }
 			}

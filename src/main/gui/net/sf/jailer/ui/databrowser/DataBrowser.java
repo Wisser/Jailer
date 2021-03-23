@@ -4374,7 +4374,7 @@ public class DataBrowser extends javax.swing.JFrame {
         greenIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/greendot.gif"));
         closeIcon = UIUtil.readImage("/Close-16-1.png");
         sqlConsoleIcon = UIUtil.readImage("/runall.png");
-        desktopIcon = UIUtil.readImage("/tables.png");
+        desktopIcon = UIUtil.readImage("/navigation.png");
         addSqlConsoleIcon = UIUtil.readImage("/add.png");
         navigationIcon = UIUtil.readImage("/navigation.png");
     }

@@ -995,14 +995,15 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	                			// create the new image, canvas size is the max. of both image sizes
 	                			int w = Math.max(image.getIconWidth(), finalScaledWarnIcon.getIconWidth());
 	                			int h = Math.max(image.getIconHeight(), finalScaledWarnIcon.getIconHeight());
-	                			BufferedImage combined = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+	                			BufferedImage combined = new BufferedImage(w * 2, h * 2, BufferedImage.TYPE_INT_ARGB);
 
 	                			// paint both images, preserving the alpha channels
-	                			Graphics g = combined.getGraphics();
+	                			Graphics2D g = (Graphics2D) combined.getGraphics();
+	                			g.scale(2, 2);
 	                			g.drawImage(im, 0, 0, null);
 	                			g.translate(image.getIconWidth() / 4, image.getIconHeight() / 4);
 	                			g.drawImage(finalScaledWarnIcon.getImage(), 0, 0, null);
-	                			combinedIcon = new ImageIcon(combined);
+	                			combinedIcon = UIUtil.scaleIcon(new ImageIcon(combined), 0.5);
 	                			combinedIcons.put(image, combinedIcon);
                 			}
 							((JLabel) comp).setIcon(combinedIcon);

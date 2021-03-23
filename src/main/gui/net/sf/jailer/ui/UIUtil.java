@@ -1640,8 +1640,15 @@ public class UIUtil {
 		if (result == null) {
 			String name = "/net/sf/jailer/ui/resource" + resource;
 			try {
-				result = new ImageIcon(ImageIO.read(UIUtil.class.getResource(name)));
-				result = scaleIcon(result, result.getIconWidth(), result.getIconHeight());
+				URL resource32 = UIUtil.class.getResource(name.replaceFirst("(\\.\\w+)$", "_32$1"));
+				if (resource32 != null) {
+					result = new ImageIcon(ImageIO.read(resource32));
+					result = scaleIcon(result, result.getIconWidth() / 2, result.getIconHeight() / 2);
+				} else {
+					URL resource16 = UIUtil.class.getResource(name);
+					result = new ImageIcon(ImageIO.read(resource16));
+					result = scaleIcon(result, result.getIconWidth(), result.getIconHeight());
+				}
 			} catch (Throwable t) {
 				if (!errorSeen) {
 					errorSeen = true;
