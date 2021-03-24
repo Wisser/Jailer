@@ -2598,6 +2598,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         explainIcon = UIUtil.readImage("/explain.png");
     }
 
+    // TODO improve databrowsing web-page
+    
     // TODO automatically generated SQL statements from Desktop like:
     // "Select distinct ... from ... left join ..." with a non-comparable column in select clause (for example BLOB) fails. Make the problem go away.
     // idea: give SQLConsole an "ErrorHandler" who will be consulted if query fails and will ask user to skip "distinct" and try again.

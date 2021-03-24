@@ -182,7 +182,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		
 		detailsLabel.setIcon(conditionEditorIcon);
 		detailsLabel.setText(null);
-		detailsLabel.setToolTipText("open editor");
+		detailsLabel.setToolTipText("open SQL editor");
 		final ParameterSelector.ParametersGetter parametersGetter = new ParameterSelector.ParametersGetter() {
 			@Override
 			public Set<String> getParameters() {

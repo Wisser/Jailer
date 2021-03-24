@@ -536,6 +536,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		templatesDetailsMulitlineLabel.setText(null);
 		templatesDetailsMulitlineLabel.setIcon(conditionEditorIcon);
+		templatesDetailsMulitlineLabel.setToolTipText("open SQL editor");
 		templatesDetailsMulitlineLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 
 			private boolean isActive() {
@@ -1050,7 +1051,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				label.setText(null);
 
 				label.setIcon(conditionEditorIcon);
-
+				label.setToolTipText("open SQL editor");
+				
 				gridBagConstraints = new java.awt.GridBagConstraints();
 				gridBagConstraints.gridx = 5;
 				gridBagConstraints.gridy = y;

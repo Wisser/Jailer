@@ -1238,7 +1238,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(focusPanel);
-        focusPanel.setBounds(0, 0, 324, 31);
+        focusPanel.setBounds(0, 0, 291, 29);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -1354,7 +1354,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel8.add(jLabel7, java.awt.BorderLayout.WEST);
 
         openSubjectConditionEditor.setText("jLabel10");
-        openSubjectConditionEditor.setToolTipText("open editor");
+        openSubjectConditionEditor.setToolTipText("open SQL editor");
         jPanel8.add(openSubjectConditionEditor, java.awt.BorderLayout.EAST);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

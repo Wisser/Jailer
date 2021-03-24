@@ -238,8 +238,8 @@ public class DesktopOutline extends JPanel {
 			int gw = snap((int) (sameWidthFriend.getWidth() - (offX + scale * x + 0.5) - 1), (int)(scale * width + 0.5), 32);
 			int gh = (int)(scale * height + 0.5);
 			GradientPaint paint = new GradientPaint(
-					0, 0, backgroundColor,
-					gw, gh, backgroundColor.brighter());
+					0, 0, backgroundColor.brighter(),
+					gw, gh, backgroundColor);
 			g2d.setPaint(paint);
 			g2d.fillRoundRect(gx, gy, gw, gh, 2, 2);
 			Rectangle rectangle = desktop.getVisibleRect();
@@ -251,8 +251,8 @@ public class DesktopOutline extends JPanel {
 			Color inDesktopColor = new Color(242, 242, 255);
 			g2d.setColor(inDesktopColor);
 			paint = new GradientPaint(
-						0, 0, inDesktopColor,
-						gw, gh, new Color(255, 255, 255));
+						0, 0, new Color(255, 255, 255),
+						gw, gh, inDesktopColor);
 			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
 			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
@@ -291,8 +291,8 @@ public class DesktopOutline extends JPanel {
 					if (backgroundColor1 != null) {
 						g2d.setColor(backgroundColor1);
 						paint = new GradientPaint(
-								sx, sy, backgroundColor1,
-								sx + sw, sy + sh, backgroundColor1.brighter());
+								sx, sy, backgroundColor1.brighter(),
+								sx + sw, sy + sh, backgroundColor1);
 						g2d.setPaint(paint);
 						g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
 					}
@@ -416,8 +416,8 @@ public class DesktopOutline extends JPanel {
 		if (backgroundColor != null) {
 			g.setColor(backgroundColor);
 			GradientPaint paint = new GradientPaint(
-					sx, sy, backgroundColor,
-					sx + sw, sy + sh, backgroundColor.brighter());
+					sx, sy, backgroundColor.brighter(),
+					sx + sw, sy + sh, backgroundColor);
 			g.setPaint(paint);
 			g.fillRoundRect(sx, sy, sw, sh, 8, 8);
 		}

@@ -684,6 +684,7 @@
             <Component class="javax.swing.JToggleButton" name="openEditorButton">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Where"/>
+                <Property name="toolTipText" type="java.lang.String" value="open SQL editor"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

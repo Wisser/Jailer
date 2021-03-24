@@ -5526,6 +5526,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel7.add(loadButton, gridBagConstraints);
 
         openEditorButton.setText("Where");
+        openEditorButton.setToolTipText("open SQL editor");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
