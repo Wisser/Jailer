@@ -1030,9 +1030,13 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				String statement = matcher.group(1);
 				int from = -1;
 				int to = -1;
+				boolean trimL = false;
+				boolean trimR = false;
 				if (startOffset != null) {
 					from = startOffset;
 					to = from + (fPos.b.b - fPos.b.a);
+					from = Math.min(statement.length() - 1, Math.max(0, from));
+					to = Math.min(statement.length(), Math.max(0, to));
 					char charAtFrom = statement.charAt(from);
 					if (isWordCharacter(charAtFrom)) {
 						while (from > 0 && Character.isAlphabetic(statement.charAt(from - 1))) {
@@ -1054,15 +1058,25 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 							--to;
 						}
 					}
-					statement = statement.substring(0, from) + "\f" + statement.substring(from, to) + "\f" + statement.substring(to);
+					String fragment = statement.substring(from, to);
+					trimL = !fragment.matches("^\\s.*");
+					trimR = !fragment.matches(".*\\s$");
+					statement = statement.substring(0, from) + "\f" + fragment + "\f" + statement.substring(to);
 				}
 				String formatted = new BasicFormatterImpl().format(statement);
 				if (startOffset != null) {
 					int fi = formatted.indexOf('\f');
 					int li = formatted.lastIndexOf('\f');
 					if (fi >= 0 && li >= 0) {
-						formatted = statement.substring(0, from) + formatted.substring(fi + 1, li) + statement.substring(to + 2);
-						formatted = formatted.replaceAll("\\s*\\n", "\n");
+						String fragment = formatted.substring(fi + 1, li);
+						if (trimL) {
+							fragment = fragment.replaceFirst("^\\s+", "");
+						}
+						if (trimR) {
+							fragment = fragment.replaceFirst("\\s+$", "");
+						}
+						formatted = statement.substring(0, from) + fragment + statement.substring(to + 2);
+						formatted = formatted.replaceAll("\\s*\\n", "\n").replaceAll("\\n$", "");
 					}
 					startOffset = null;
 				}
