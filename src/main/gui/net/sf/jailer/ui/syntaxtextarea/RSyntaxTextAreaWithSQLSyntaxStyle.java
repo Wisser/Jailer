@@ -1033,20 +1033,22 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				if (startOffset != null) {
 					from = startOffset;
 					to = from + (fPos.b.b - fPos.b.a);
-					if (Character.isAlphabetic(statement.charAt(from))) {
+					char charAtFrom = statement.charAt(from);
+					if (isWordCharacter(charAtFrom)) {
 						while (from > 0 && Character.isAlphabetic(statement.charAt(from - 1))) {
 							--from;
 						}
-					} else if (isSpaceOrTab(statement.charAt(from))) {
+					} else if (isSpaceOrTab(charAtFrom)) {
 						while (from < statement.length() && isSpaceOrTab(statement.charAt(from + 1))) {
 							++from;
 						}
 					} 
-					if (Character.isAlphabetic(statement.charAt(to - 1))) {
+					char charAtToMinus1 = statement.charAt(to - 1);
+					if (isWordCharacter(charAtToMinus1)) {
 						while (to < statement.length() && Character.isAlphabetic(statement.charAt(to))) {
 							++to;
 						}
-					} else if (isSpaceOrTab(statement.charAt(to - 1))) {
+					} else if (isSpaceOrTab(charAtToMinus1)) {
 						--to;
 						while (to > 0 && isSpaceOrTab(statement.charAt(to))) {
 							--to;
@@ -1076,6 +1078,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			String tail = matcher.matches() ? matcher.group(1) : "";
 			replaceCurrentStatement(sb.toString() + tail, true);
 		}
+	}
+
+	private boolean isWordCharacter(char c) {
+		return Character.isJavaIdentifierPart(c);
 	}
 
 	private boolean isSpaceOrTab(char c) {
