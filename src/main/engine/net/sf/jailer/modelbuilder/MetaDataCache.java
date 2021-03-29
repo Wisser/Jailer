@@ -204,9 +204,11 @@ public class MetaDataCache {
 			}
 			return metaDataCache;
 		} catch (SQLException e) {
-			_log.info(e.getMessage());
-			LogUtil.warn(e);
-			session.reconnect();
+			if (!session.isDown()) {
+				_log.info(e.getMessage());
+				LogUtil.warn(e);
+				session.reconnect();
+			}
 			return new MetaDataCache();
 		}
 	}

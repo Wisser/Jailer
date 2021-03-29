@@ -275,7 +275,7 @@ public class Session {
 				} catch (Throwable t) {
 					isInvalid = true;
 				}
-				if (ts != null && con != null && con == connection.get() && currentAutoCommit && !Session.this.transactional) {
+				if (ts != null && con != null && con == connection.get() && currentAutoCommit && !Session.this.transactional && !isDown()) {
 					long idleTime = System.currentTimeMillis() - ts;
 					long databaseConnectionInteractiveTimeout = Configuration.getInstance().getDatabaseConnectionInteractiveTimeout() * 1000L;
 

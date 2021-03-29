@@ -2070,6 +2070,6 @@ public class SubsettingEngine {
 	// TODO API berücksichtigen
 	// TODO export mit optimierung in stats (* 128? 256?) ((`s6`) % 1000) max 180, anderes sx?
 	
-	// TODO masterpiece: defer working table creation too, maybe they are don't needed
+	// TODO defer working table creation too, maybe they are don't needed
 
 }
