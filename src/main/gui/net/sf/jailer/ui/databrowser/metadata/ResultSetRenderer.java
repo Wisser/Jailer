@@ -142,6 +142,7 @@ public class ResultSetRenderer extends javax.swing.JPanel {
             super(dataModel, table, condition, session, parentRows, association, parentFrame, 
             		rowsClosure, selectDistinct, reload, executionContext);
             singleRowDetailsViewTitel = "Details";
+            useClassicSingleRowDetailsView = true;
             this.limit = limit;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
             statusPanel.setVisible(false);

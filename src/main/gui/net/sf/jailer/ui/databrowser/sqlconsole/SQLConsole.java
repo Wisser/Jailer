@@ -1161,7 +1161,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									vp = tabContentPanel.columnsScrollPane.getViewport().getViewPosition();
 								}
 							}
-							columnsTable = new ColumnsTable(rb);
+							columnsTable = new ColumnsTable(rb, false);
 							tabContentPanel.columnsScrollPane.setViewportView(columnsTable);
 							new FixedColumnTable(1, tabContentPanel.columnsScrollPane);
 							if (vp != null) {

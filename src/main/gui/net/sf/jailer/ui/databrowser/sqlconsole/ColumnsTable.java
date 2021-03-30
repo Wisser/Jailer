@@ -56,6 +56,7 @@ import javax.swing.table.TableModel;
 
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
+import net.sf.jailer.ui.databrowser.DetailsView;
 import net.sf.jailer.ui.databrowser.Row;
 
 /**
@@ -71,10 +72,13 @@ public class ColumnsTable extends JTable {
 	final BrowserContentPane rb;
 	private Map<Integer, String> tableName = new HashMap<Integer, String>();
 	private boolean useTableName = true;
+	private final boolean inDesktop;
+	private boolean inClosure;
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public ColumnsTable(final BrowserContentPane rb) {
+	public ColumnsTable(final BrowserContentPane rb, boolean inDesktop) {
 		this.rb = rb;
+		this.inDesktop = inDesktop;
 		final JTable rowsTable = rb.rowsTable;
 
 		final RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
@@ -128,10 +132,18 @@ public class ColumnsTable extends JTable {
 			}
 		};
 
-		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		setRowSelectionAllowed(true);
-		setColumnSelectionAllowed(true);
-		setCellSelectionEnabled(true);
+		if (!inDesktop) {
+			setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+			setRowSelectionAllowed(true);
+			setColumnSelectionAllowed(true);
+			setCellSelectionEnabled(true);
+		} else {
+			setFocusable(false);
+			setRowSelectionAllowed(false);
+			setColumnSelectionAllowed(false);
+			rowsTable.setEnabled(false);
+			rowsTable.setAutoscrolls(false);			
+		}
 		// getTableHeader().setReorderingAllowed(false);
 		setShowGrid(false);
 		setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -179,25 +191,27 @@ public class ColumnsTable extends JTable {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				int ri = rowAtPoint(e.getPoint());
-				if (ri >= 0) {
-					Rectangle r = getCellRect(ri, 0, false);
-					int x = Math.max(e.getPoint().x, (int) r.getMinX());
-					int y = (int) r.getMaxY() - 2;
-					if (e.getButton() != MouseEvent.BUTTON1) {
-						JPopupMenu popup;
-						popup = createPopupMenu(e);
-						if (popup != null) {
-							popup.show(ColumnsTable.this, x, y);
-						}
-					} else if (e.getClickCount() > 1) {
-						int i = -1;
-						ri = columnAtPoint(e.getPoint()) - 1;
-						if (ri >= 0 && !rb.rows.isEmpty() && rb.rowsTable.getRowSorter().getViewRowCount() > 0) {
-							i = rb.rowsTable.getRowSorter().convertRowIndexToModel(ri);
-							Point p = new Point(e.getX(), e.getY());
-							SwingUtilities.convertPointToScreen(p, ColumnsTable.this);
-							rb.openDetailsView(i, (int) p.getX(), (int) p.getY());
+				if (!inDesktop) {
+					int ri = rowAtPoint(e.getPoint());
+					if (ri >= 0) {
+						Rectangle r = getCellRect(ri, 0, false);
+						int x = Math.max(e.getPoint().x, (int) r.getMinX());
+						int y = (int) r.getMaxY() - 2;
+						if (e.getButton() != MouseEvent.BUTTON1) {
+							JPopupMenu popup;
+							popup = createPopupMenu(e);
+							if (popup != null) {
+								popup.show(ColumnsTable.this, x, y);
+							}
+						} else if (e.getClickCount() > 1) {
+							int i = -1;
+							ri = columnAtPoint(e.getPoint()) - 1;
+							if (ri >= 0 && !rb.rows.isEmpty() && rb.rowsTable.getRowSorter().getViewRowCount() > 0) {
+								i = rb.rowsTable.getRowSorter().convertRowIndexToModel(ri);
+								Point p = new Point(e.getX(), e.getY());
+								SwingUtilities.convertPointToScreen(p, ColumnsTable.this);
+								rb.openDetailsView(i, (int) p.getX(), (int) p.getY());
+							}
 						}
 					}
 				}
@@ -233,6 +247,12 @@ public class ColumnsTable extends JTable {
 				if (render instanceof JLabel) {
 					if (column == 0) {
 						((JLabel) render).setBackground(BGCOLUMNS);
+					} else if (ColumnsTable.this.inDesktop) {
+						if (ColumnsTable.this.inClosure && !inTempClosure()) {
+							((JLabel) render).setBackground(row % 2 == 0? DetailsView.BG3 : DetailsView.BG3_2);
+						} else {
+							((JLabel) render).setBackground(row % 2 == 0? DetailsView.BG1 : DetailsView.BG2);
+						}
 					} else if (column - 1 == currentColumn) {
 						((JLabel) render).setBackground(BGSELECTED);
 					}
@@ -263,9 +283,31 @@ public class ColumnsTable extends JTable {
 							return panel;
 						}
 						((JLabel) render).setText(" " + text);
+					} else {
+						if (inTempClosure()) {
+							((JLabel) render).setBackground(blend(((JLabel) render).getBackground()));
+						}
+					}
+					if ("found".equals(render.getName())) {
+						Color background = render.getBackground();
+						render.setBackground(
+								new Color(
+										Math.max((int)(background.getRed()), 0),
+										Math.max((int)(background.getGreen() * 0.90), 0),
+										Math.max((int)(background.getBlue() * 0.91), 0),
+										background.getAlpha()));
 					}
 				}
 				return render;
+			}
+			private Color blend(Color color1) {
+				int alpha = 14;
+				Color color2 = new Color(255, 0, 0);
+				float factor = alpha / 255f;
+				int red = (int) (color1.getRed() * (1 - factor) + color2.getRed() * factor);
+				int green = (int) (color1.getGreen() * (1 - factor) + color2.getGreen() * factor);
+				int blue = (int) (color1.getBlue() * (1 - factor) + color2.getBlue() * factor);
+				return new Color(red, green, blue);
 			}
 		});
 		adjustTableColumnsWidth();
@@ -307,7 +349,7 @@ public class ColumnsTable extends JTable {
 					}
 				}
 			}
-		}, false);
+		}, false, true);
 	}
 
 	private void adjustTableColumnsWidth() {
@@ -349,7 +391,11 @@ public class ColumnsTable extends JTable {
 					width = maxValueWidth;
 				}
 			}
-			column.setPreferredWidth(Math.min(maxWidth, width));
+			int prefWidth = Math.min(maxWidth, width);
+			if (i == 0) {
+				prefWidth = Math.min(prefWidth, 260);
+			}
+			column.setPreferredWidth(prefWidth);
 		}
 	}
 
@@ -370,6 +416,19 @@ public class ColumnsTable extends JTable {
 				}
 			});
 		}
+	}
+
+	public void updateInClosureState(boolean inClosure) {
+		this.inClosure = inClosure;
+		repaint();
+	}
+	
+	protected boolean inTempClosure() {
+		return false;
+	}
+	
+	@Override
+	public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
 	}
 
 }

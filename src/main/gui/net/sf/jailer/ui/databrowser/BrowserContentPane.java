@@ -36,6 +36,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -101,6 +102,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.RowSorter;
@@ -166,6 +168,7 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Desktop.RowToRowLink;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
@@ -620,8 +623,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private List<Row> parentRows;
-	private DetailsView singleRowDetailsView;
+	private JComponent singleRowDetailsView;
 	private MouseListener rowTableListener;
+	private TempClosureListener tempClosureListener = new TempClosureListener();
+	protected MouseAdapter additionalMouseAdapter;
 	private int initialRowHeight;
 	private boolean useInheritedBlockNumbers;
 	boolean ignoreSortKey = false;
@@ -1010,8 +1015,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2_EM = new Color(230, 255, 236);
 			final Color BG3 = new Color(192, 236, 255);
 			final Color BG3_2 = new Color(184, 226, 255);
-			final Color BG4 = new Color(32, 210, 255, 200);
-			final Color BG4_2 = new Color(30, 196, 255, 200);
+			final Color BG4 = new Color(32, 210, 255, 180);
+			final Color BG4_2 = new Color(30, 196, 255, 180);
 			final Color BG4_LIGHT = new Color(30, 200, 255, 60);
 			final Color FG1 = new Color(155, 0, 0);
 			final Color FG2 = new Color(0, 0, 255);
@@ -1031,8 +1036,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 
-				isSelected = currentRowSelection == row || currentRowSelection == -2;
-
+				TableColumnModel columnModel = rowsTable.getColumnModel();
+				
+				boolean found = !foundColumn.isEmpty() && column < columnModel.getColumnCount() && foundColumn.contains(columnModel.getColumn(column).getModelIndex());
+				isSelected = !found && (currentRowSelection == row || currentRowSelection == -2);
 				int bgRow = row;
 				if (table != rowsTable) {
 					isSelected = false;
@@ -1057,6 +1064,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 				boolean renderRowAsPK = false;
 				if (render instanceof JLabel) {
+					render.setName("");
 					Row r = null;
 					int rowIndex = row;
 					((JLabel) render).setIcon(null);
@@ -1078,6 +1086,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 					if (!isSelected && (table == rowsTable || !cellSelected)) {
 						if (BrowserContentPane.this.getQueryBuilderDialog() != null && // SQL Console
+							!found &&
 							BrowserContentPane.this.rowsClosure.currentClosureRowIDs != null &&
 							row < rows.size() &&
 							row < rowSorter.getViewRowCount() &&
@@ -1115,15 +1124,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						((JLabel) render).setFont(italic);
 						isNull = true;
 					}
-					TableColumnModel columnModel = rowsTable.getColumnModel();
-					if (!foundColumn.isEmpty() && column < columnModel.getColumnCount() && foundColumn.contains(columnModel.getColumn(column).getModelIndex())) {
+					if (found) {
 						Color background = render.getBackground();
 						render.setBackground(
 								new Color(
 										Math.max((int)(background.getRed()), 0),
 										Math.max((int)(background.getGreen() * 0.90), 0),
 										Math.max((int)(background.getBlue() * 0.91), 0),
-						 background.getAlpha()));
+										background.getAlpha()));
+						render.setName("found");
 					}
 					try {
 						((JLabel) render).setToolTipText(null);
@@ -1206,16 +1215,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				if (ri >= 0 && !rows.isEmpty() && rowsTable.getRowSorter().getViewRowCount() > 0) {
 					int i = 0;
+					boolean noRow = false;
 					if (source == rowsTable) {
 						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
-					} else if (source == rowsTableScrollPane || source == singleRowViewContainterPanel) {
-						if (rows.size() != 1 || getQueryBuilderDialog() == null /* SQL Console */) {
-							return;
-						}
+					} else if (source == rowsTableScrollPane || source == singleRowViewContainterPanel || source == singleRowDetailsView) {
 						ri = 0;
 						i = 0;
+						if (rows.size() != 1 || getQueryBuilderDialog() == null /* SQL Console */) {
+							noRow = true;
+							ri = -1;
+							i = -1;
+						}
 					}
-					Row row = rows.get(i);
+					Row row = noRow? null : rows.get(i);
 
 					if (getQueryBuilderDialog() == null // SQL Console
 							|| ((e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 1) && (lastMenu == null || !lastMenu.isVisible()))) {
@@ -1232,14 +1244,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 						Point p = SwingUtilities.convertPoint(source, x, y, null);
 						if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() > 1) {
-							openDetailsView(i, p.x + getOwner().getX(), p.y + getOwner().getY());
+							if (row != null) {
+								openDetailsView(i, p.x + getOwner().getX(), p.y + getOwner().getY());
+							}
 						} else if (e.getButton() != MouseEvent.BUTTON1) {
 							JPopupMenu popup;
-							popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1);
+							popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1, true);
 							if (popup != null) {
-								if (!row.nonEmptyRowId.isEmpty()) {
+								if (row != null && !row.nonEmptyRowId.isEmpty()) {
 									for (Row r: rows) {
-										if (r.nonEmptyRowId.equals(row.nonEmptyRowId) && BrowserContentPane.this.rowsClosure.currentClosureRootID.contains(r.nonEmptyRowId)) {
+										if (r.nonEmptyRowId.equals(row.nonEmptyRowId) && BrowserContentPane.this.rowsClosure.currentClosureRootID.contains(r.nonEmptyRowId) && getQueryBuilderDialog() != null) {
 											currentRowSelection = -1;
 											onRedraw();
 											break;
@@ -1262,7 +1276,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						} else {
 							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(ri, false);
 						}
-					} else if (e.getComponent() == singleRowViewScrollContentPanel || e.getSource() == singleRowViewContainterPanel) {
+					} else if (e.getComponent() == singleRowViewScrollContentPanel || e.getSource() == singleRowViewContainterPanel
+							|| e.getComponent() == singleRowDetailsView || e.getSource() == singleRowDetailsView) {
 						if (getQueryBuilderDialog() != null) { // !SQL Console
 							for (RowBrowser tb: getTableBrowser()) {
 								try {
@@ -1296,7 +1311,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		singleRowViewScrollPane.addMouseListener(rowTableListener);
 		singleRowViewContainterPanel.addMouseListener(rowTableListener);
 
-		TempClosureListener tempClosureListener = new TempClosureListener();
 		rowsTable.addMouseListener(tempClosureListener);
 		rowsTable.addMouseMotionListener(tempClosureListener);
 		rowsTableScrollPane.addMouseListener(tempClosureListener);
@@ -1456,7 +1470,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		relatedRowsLabel.setIcon(UIUtil.scaleIcon(this, relatedRowsIcon));
 		relatedRowsLabel.setFont(relatedRowsLabel.getFont().deriveFont(relatedRowsLabel.getFont().getSize() * 1.1f));
-		if (createPopupMenu(null, -1, 0, 0, false).getComponentCount() == 0) {
+		if (createPopupMenu(null, -1, 0, 0, false, false).getComponentCount() == 0) {
 			relatedRowsLabel.setEnabled(false);
 		} else {
 			relatedRowsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1469,7 +1483,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
-							popup = createPopupMenu(null, -1, 0, 0, false);
+							popup = createPopupMenu(null, -1, 0, 0, false, false);
 							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-2, false);
 							popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 								@Override
@@ -1838,12 +1852,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Creates popup menu for navigation.
 	 * @param navigateFromAllRows
+	 * @param withSingleRow 
 	 * @param copyTCB
 	 * @param runnable
 	 * @param runnable
 	 */
-	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows) {
-		return createPopupMenu(row, rowIndex, x, y, navigateFromAllRows, null, null);
+	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, boolean withSingleRow) {
+		return createPopupMenu(row, rowIndex, x, y, navigateFromAllRows, null, null, withSingleRow);
 	}
 
 	/**
@@ -1851,8 +1866,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param navigateFromAllRows
 	 * @param runnable
 	 */
-	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint) {
-		return createPopupMenu(rowsTable, row, rowIndex, x, y, navigateFromAllRows, altCopyTCB, repaint, true);
+	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, boolean withSingleRow) {
+		return createPopupMenu(rowsTable, row, rowIndex, x, y, navigateFromAllRows, altCopyTCB, repaint, true, withSingleRow);
 	}
 
 	/**
@@ -1860,7 +1875,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param navigateFromAllRows
 	 * @param runnable
 	 */
-	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke) {
+	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		if (withKeyStroke) {
 			tableFilter.setAccelerator(KS_FILTER);
@@ -2018,11 +2033,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			allNonEmpty.setInitialText();
 		}
 
-		if (row != null) {
+		if (withSingleRow) {
 			JMenuItem det = new JMenuItem("Details");
 			if (withKeyStroke) {
 				det.setAccelerator(KS_DETAILS);
 			}
+			det.setEnabled(row != null);
 			popup.insert(det, 0);
 			popup.insert(new JSeparator(), 1);
 			det.addActionListener(new ActionListener() {
@@ -2043,7 +2059,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				qb.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						openQueryBuilder(false, SqlUtil.replaceAliases(row.rowId, "A", "A"));
+						openQueryBuilder(false, row == null? null : SqlUtil.replaceAliases(row.rowId, "A", "A"));
 					}
 				});
 
@@ -2053,25 +2069,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				sqlConsole.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						openQueryBuilder(true, SqlUtil.replaceAliases(row.rowId, "A", "A"));
+						openQueryBuilder(true, row == null? null : SqlUtil.replaceAliases(row.rowId, "A", "A"));
 					}
 				});
 
 				final List<Row> toSelect = new ArrayList<Row>();
-				if (!row.nonEmptyRowId.isEmpty()) {
+				if (row != null && !row.nonEmptyRowId.isEmpty()) {
 					for (Row r: rows) {
 						if (!r.nonEmptyRowId.isEmpty() && rowsClosure.currentClosureRootID.contains(r.nonEmptyRowId)) {
 							toSelect.add(r);
 						}
 					}
 				}
-				if (!toSelect.contains(row)) {
+				if (row != null && !toSelect.contains(row)) {
 					toSelect.clear();
 					toSelect.add(row);
 				}
-				if (!currentSelectedRowCondition.equals("") &&
+				if (!currentSelectedRowCondition.equals("") && rows != null &&
 						(rows.size() == 1 || toSelect.size() == rows.size())) {
 					JMenuItem sr = new JMenuItem(rows.size() == 1? "Deselect Row" : ("Deselect Rows (" + rows.size() + ")"));
+					sr.setEnabled(row != null);
 					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
 						@Override
@@ -2081,7 +2098,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					});
 				} else {
 					JMenuItem sr = new JMenuItem(toSelect.size() <= 1? "Select Row" : ("Select Rows (" + toSelect.size() + ")"));
-					sr.setEnabled(rows.size() > 1 && !row.rowId.isEmpty());
+					sr.setEnabled(row != null && rows.size() > 1 && !row.rowId.isEmpty());
 					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
 						@Override
@@ -2092,7 +2109,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 
 				JMenu sql = new JMenu("Create SQL");
-				final String rowName = !(table instanceof SqlStatementTable)? dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")" : "";
+				final String rowName = row != null? (!(table instanceof SqlStatementTable)? dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")" : "") : "";
 				JMenuItem update = new JMenuItem("Update");
 				sql.add(update);
 				update.addActionListener(new ActionListener() {
@@ -2122,21 +2139,30 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				insert.setEnabled(resultSetType == null);
 				update.setEnabled(resultSetType == null);
 				delete.setEnabled(resultSetType == null);
-				if (getQueryBuilderDialog() == null) {
-					popup.removeAll();
-					popup.add(det);
-					popup.addSeparator();
-					JMenu script = new JMenu("Create SQL");
-					popup.add(script);
+				if (getQueryBuilderDialog() == null || row == null) {
+					JMenu script;
+					if (getQueryBuilderDialog() == null) {
+						popup.removeAll();
+						popup.add(det);
+						popup.addSeparator();
+						script = new JMenu("Create SQL");
+						popup.add(script);
+					} else {
+						script = sql;
+						sql.removeAll();
+						popup.add(sql);
+					}
 					if (table.getName() == null) {
 						script.setEnabled(false);
 					} else {
 						final String tableName = dataModel.getDisplayName(table);
-						script.add(update);
-						script.add(insert);
-						script.add(insertNewRow);
-						script.add(delete);
-						script.addSeparator();
+						if (row != null) {
+							script.add(update);
+							script.add(insert);
+							script.add(insertNewRow);
+							script.add(delete);
+							script.addSeparator();
+						}
 						JMenuItem updates = new JMenuItem("Updates (all rows)");
 						script.add(updates);
 						updates.addActionListener(new ActionListener() {
@@ -2215,7 +2241,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private JMenuItem createFindColumnMenuItem(final int x, final int y, final JTable contextJTable) {
 		final JMenuItem menuItem = new JMenuItem("Find Column...");
-		menuItem.setEnabled(singleRowDetailsView == null);
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -4096,6 +4121,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Show single row in special view?
 	 */
 	protected boolean noSingleRowDetailsView = false;
+	protected boolean useClassicSingleRowDetailsView = false;
 	protected String singleRowDetailsViewTitel = "Single Row Details";
 
 	/**
@@ -4264,7 +4290,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTableContainerPanel.setVisible(true);
 		boolean noFilter = true;
 		int rn = 0;
-		if (rows.size() != 1 || isEditMode || noSingleRowDetailsView) {
+		if (true /* rows.size() != 1 || isEditMode || noSingleRowDetailsView */) {
 			noFilter = false;
 			Map<String, Integer> columnNameMap = new HashMap<String, Integer>();
 			for (int i = 0; i < columns.size(); ++i) {
@@ -4660,83 +4686,111 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			} catch (Exception e) {
 				// ignore
 			}
-		} else {
-			final boolean deselect = !getAndConditionText().equals("")
-				&& rows.size() == 1;
-			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, alternativeColumnLabels, session) {
-				@Override
-				protected void onRowChanged(int row) {
-				}
-				@Override
-				protected void onClose() {
-				}
-				@Override
-				protected void onSelectRow(Row row) {
-				}
-			};
-			singleRowDetailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
-	        dtm = new DefaultTableModel(new String[] { singleRowDetailsViewTitel }, 0) {
-				@Override
-				public boolean isCellEditable(int row, int column) {
-					return false;
-				}
-			};
-			findColumnsLabel.setEnabled(false);
+		}
+		if (rows.size() == 1 && !noSingleRowDetailsView) {
+			if (useClassicSingleRowDetailsView) {
+				final boolean deselect = !getAndConditionText().equals("")
+						&& rows.size() == 1;
+					singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, alternativeColumnLabels, session) {
+						@Override
+						protected void onRowChanged(int row) {
+						}
+						@Override
+						protected void onClose() {
+						}
+						@Override
+						protected void onSelectRow(Row row) {
+						}
+					};
+					((DetailsView) singleRowDetailsView).setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
+			        dtm = new DefaultTableModel(new String[] { singleRowDetailsViewTitel }, 0) {
+						@Override
+						public boolean isCellEditable(int row, int column) {
+							return false;
+						}
+					};
+					findColumnsLabel.setEnabled(false);
 
-			for (Row row : rows) {
-				dtm.addRow(new Object[] { row });
-				if (++rn >= limit) {
-					break;
+					for (Row row : rows) {
+						dtm.addRow(new Object[] { row });
+						if (++rn >= limit) {
+							break;
+						}
+					}
+					rowsTable.setModel(dtm);
+
+					JPanel detailsPanel = new JPanel(new java.awt.BorderLayout(0, 0)) {
+						@Override
+						public void paint(Graphics graphics) {
+							super.paint(graphics);
+							if (!(graphics instanceof Graphics2D)) {
+								return;
+							}
+							if (rows.size() == 1 && BrowserContentPane.this.rowsClosure.tempClosure.size() > 1 && BrowserContentPane.this.rowsClosure.tempClosure.contains(rows.get(0))) {
+								Rectangle visRect = singleRowViewContainterPanel.getVisibleRect();
+
+								Graphics2D g2d = (Graphics2D) graphics;
+								g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+								g2d.setStroke(new BasicStroke(1));
+
+								int width = (int) (visRect.width * 1.4);
+
+								g2d.setColor(new Color(255, 0, 0, 20));
+								int[] x = new int[2];
+								int[] y = new int[2];
+								x[0] = (int) visRect.getMinX();
+								y[0] = (int) visRect.getMinY();
+								x[1] = (int) visRect.getMinX() + width;
+								y[1] = (int) visRect.getMaxY();
+								GradientPaint paint = new GradientPaint(
+										x[0], y[0], new Color(255, 0, 0, 20),
+										x[0] + width, y[1], new Color(255, 0, 0, 0));
+								g2d.setPaint(paint);
+								g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
+								g2d.setPaint(null);
+							}
+						}
+					};
+					detailsPanel.add(((DetailsView) singleRowDetailsView).getDetailsPanel(), java.awt.BorderLayout.CENTER);
+					GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+			        gridBagConstraints.gridx = 1;
+			        gridBagConstraints.gridy = 1;
+			        gridBagConstraints.weightx = 1;
+			        gridBagConstraints.weighty = 0;
+			        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+			        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+			        singleRowViewContainterPanel.removeAll();
+					singleRowViewContainterPanel.add(detailsPanel, gridBagConstraints);
+
+					singleRowViewScrollPaneContainer.setVisible(true);
+					rowsTableContainerPanel.setVisible(false);
+					deselectButton.setVisible(deselect);
+			} else {
+				final boolean deselect = !getAndConditionText().equals("")
+					&& rows.size() == 1;
+				singleRowDetailsView = new ColumnsTable(this, true) {
+					@Override
+					protected boolean inTempClosure() {
+						return rows.size() == 1 && BrowserContentPane.this.rowsClosure.tempClosure.size() > 1 && BrowserContentPane.this.rowsClosure.tempClosure.contains(rows.get(0));
+					}
+				};
+				if (additionalMouseAdapter != null) {
+					singleRowDetailsView.addMouseListener(additionalMouseAdapter);
+					singleRowDetailsView.addMouseMotionListener(additionalMouseAdapter);
 				}
+				singleRowDetailsView.addMouseListener(rowTableListener);
+				singleRowDetailsView.addMouseListener(tempClosureListener);
+				singleRowDetailsView.addMouseMotionListener(tempClosureListener);
+				singleRowViewScrollPane.setViewportView(singleRowDetailsView);
+				JViewport columnHeader = singleRowViewScrollPane.getColumnHeader();
+				if (columnHeader != null) {
+					columnHeader.setVisible(false);
+				}
+				
+				singleRowViewScrollPaneContainer.setVisible(true);
+				rowsTableContainerPanel.setVisible(false);
+				deselectButton.setVisible(deselect);
 			}
-			rowsTable.setModel(dtm);
-
-			JPanel detailsPanel = new JPanel(new java.awt.BorderLayout(0, 0)) {
-				@Override
-				public void paint(Graphics graphics) {
-					super.paint(graphics);
-					if (!(graphics instanceof Graphics2D)) {
-						return;
-					}
-					if (rows.size() == 1 && BrowserContentPane.this.rowsClosure.tempClosure.size() > 1 && BrowserContentPane.this.rowsClosure.tempClosure.contains(rows.get(0))) {
-						Rectangle visRect = singleRowViewContainterPanel.getVisibleRect();
-
-						Graphics2D g2d = (Graphics2D) graphics;
-						g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-						g2d.setStroke(new BasicStroke(1));
-
-						int width = (int) (visRect.width * 1.4);
-
-						g2d.setColor(new Color(255, 0, 0, 20));
-						int[] x = new int[2];
-						int[] y = new int[2];
-						x[0] = (int) visRect.getMinX();
-						y[0] = (int) visRect.getMinY();
-						x[1] = (int) visRect.getMinX() + width;
-						y[1] = (int) visRect.getMaxY();
-						GradientPaint paint = new GradientPaint(
-								x[0], y[0], new Color(255, 0, 0, 20),
-								x[0] + width, y[1], new Color(255, 0, 0, 0));
-						g2d.setPaint(paint);
-						g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
-						g2d.setPaint(null);
-					}
-				}
-			};
-			detailsPanel.add(singleRowDetailsView.getDetailsPanel(), java.awt.BorderLayout.CENTER);
-			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 1;
-	        gridBagConstraints.gridy = 1;
-	        gridBagConstraints.weightx = 1;
-	        gridBagConstraints.weighty = 0;
-	        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-	        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-	        singleRowViewContainterPanel.removeAll();
-			singleRowViewContainterPanel.add(detailsPanel, gridBagConstraints);
-
-			singleRowViewScrollPaneContainer.setVisible(true);
-			rowsTableContainerPanel.setVisible(false);
-			deselectButton.setVisible(deselect);
 		}
 
 		adjustRowTableColumnsWidth();
@@ -6056,10 +6110,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 		d.pack();
-		d.setLocation(x, y);
+		d.setLocation(x - 16, y);
 		d.setSize(400, d.getHeight() + 20);
 		UIUtil.fit(d);
-		Window p = SwingUtilities.getWindowAncestor(this);
+		Window p = SwingUtilities.getWindowAncestor(rowsTable);
 		if (p != null) {
 			int maxX = p.getX() + p.getWidth() - d.getWidth();
 			d.setLocation(Math.max(0, Math.min(maxX, d.getX())), d.getY());
@@ -6143,7 +6197,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 		d.pack();
-		d.setLocation(x, y);
+		d.setLocation(x - 16, y);
 		d.setSize(500, d.getHeight() + 20);
 		int h = d.getHeight();
 		UIUtil.fit(d);
@@ -6154,7 +6208,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			d.setSize(500, d.getHeight() + 20);
 			UIUtil.fit(d);
 		}
-		Window p = SwingUtilities.getWindowAncestor(this);
+		Window p = SwingUtilities.getWindowAncestor(rowsTable);
 		if (p != null) {
 			int maxX = p.getX() + p.getWidth() - d.getWidth();
 			d.setLocation(Math.max(0, Math.min(maxX, d.getX())), d.getY());
@@ -6174,7 +6228,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public void updateSingleRowDetailsView() {
 		if (singleRowDetailsView != null) {
 			if (rowsClosure != null && rowsClosure.currentClosureRowIDs != null) {
-				singleRowDetailsView.updateInClosureState(rows.size() == 1 && rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(this, rows.get(0).nonEmptyRowId)));
+				if (singleRowDetailsView instanceof ColumnsTable) {
+					((ColumnsTable) singleRowDetailsView).updateInClosureState(rows.size() == 1 && rowsClosure.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(this, rows.get(0).nonEmptyRowId)));
+				}
 			}
 		}
 	}
@@ -6219,6 +6275,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	public void setEditMode(boolean isEditMode) {
 		this.isEditMode = isEditMode;
+		if (isEditMode) {
+			jPanel2.setBorder(BorderFactory.createLineBorder(new Color(255, 0, 0), 1, true));
+		} else {
+			jPanel2.setBorder(null);
+		}
 	}
 
 	private String statementForReloading;
@@ -6647,20 +6708,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					foundColumn.clear();
 					boolean scrolled = false;
 					boolean scrollAll = columnsSorted;
+					JTable cTable = contextJTable;
+					if (singleRowDetailsView instanceof JTable) {
+						cTable = (JTable) singleRowDetailsView;
+					}
 					for (int i = scrollAll? columnModel.getColumnCount() - 1 : 0; i >= 0 && i < columnModel.getColumnCount(); i += scrollAll? -1 : 1) {
 						Object name = columnNameFromColumnModel(columnModel, i);
 						if (name != null && name.equals(selected)) {
 							int mi = i;
 							if (!scrolled || scrollAll) {
-								if (contextJTable != null && contextJTable != rowsTable) {
-									Rectangle visibleRect = contextJTable.getVisibleRect();
-									Rectangle cellRect = contextJTable.getCellRect(mi, 0, true);
-									contextJTable.scrollRectToVisible(
+								if (cTable != null && cTable != rowsTable) {
+									Rectangle visibleRect = cTable.getVisibleRect();
+									Rectangle cellRect = cTable.getCellRect(mi, 0, true);
+									cTable.scrollRectToVisible(
 											new Rectangle(
 													visibleRect.x + visibleRect.width / 2,
 													cellRect.y - 16,
 													1, cellRect.height + 2 * 16));
-									contextJTable.repaint();
+									cTable.repaint();
 								} else {
 									Rectangle visibleRect = rowsTable.getVisibleRect();
 									Rectangle cellRect = rowsTable.getCellRect(0, mi, true);
@@ -6675,6 +6740,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							foundColumn.add(columnModel.getColumn(i).getModelIndex());
 						}
 					}
+					if (cTable != null) {
+						cTable.repaint();
+						Window w = SwingUtilities.getWindowAncestor(cTable);
+						if (w != null) {
+							w.repaint();
+						}
+					}
+					rowsTable.repaint();
 				}
 			}
 		}) {
@@ -6719,6 +6792,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Row currentRow = null;
 
 		private Row rowAt(Point point) {
+			if (rows.size() == 1 && singleRowDetailsView instanceof ColumnsTable) {
+				return rows.get(0);
+			}
 			int ri = rowsTable.rowAtPoint(point);
 			if (ri >= 0 && !rows.isEmpty() && rowsTable.getRowSorter().getViewRowCount() > 0) {
 				int i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
@@ -6746,7 +6822,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Row row = null;
 			if (e.getSource() == rowsTable) {
 				row = rowAt(e.getPoint());
-			} else if (e.getSource() == singleRowViewContainterPanel && rows.size() == 1) {
+			} else if ((e.getSource() == singleRowViewContainterPanel || e.getSource() == singleRowDetailsView) && rows.size() == 1) {
 				row = rows.get(0);
 			}
 			updateClosure(row);

@@ -576,5 +576,5 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     protected abstract void analyseSchema(String schemaName, boolean withViews, boolean withSynonyms);
-
+   
 }

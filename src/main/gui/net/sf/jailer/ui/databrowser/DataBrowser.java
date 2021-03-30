@@ -2383,7 +2383,7 @@ public class DataBrowser extends javax.swing.JFrame {
             if (evt.getClickCount() == 1) {
                 if (rowBrowser != null) {
                     navigationTree.setSelectionRow(row);
-                    JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
+                    JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false, false);
                     if (popup != null) {
                         JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(-1, 0, 0, true, navigationTreeScrollPane);
                         if (popup2.getComponentCount() > 0 && popup.getComponentCount() > 0) {
@@ -3565,6 +3565,9 @@ public class DataBrowser extends javax.swing.JFrame {
 												if (metaDataPanel != null) {
 													metaDataPanel.refresh();
 												}
+												UIUtil.invokeLater(8, () -> {
+													updateNavigationTree();
+												});
 											}
 										});
 									}

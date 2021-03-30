@@ -756,7 +756,7 @@ public abstract class Desktop extends JDesktopPane {
 		final BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null ? null : parent.browserContentPane.rows,
 				association, parentFrame, rowsClosure, selectDistinct, reload, executionContext) {
 			{
-				MouseListener ml = new MouseAdapter() {
+				MouseAdapter ml = new MouseAdapter() {
 					@Override
 					public void mouseMoved(MouseEvent e) {
 						updateRowView(e);
@@ -769,6 +769,7 @@ public abstract class Desktop extends JDesktopPane {
 						}
 					}
 				};
+				additionalMouseAdapter = ml;
 				singleRowViewScrollPane.addMouseListener(ml);
 				singleRowViewScrollPane.addMouseMotionListener((MouseMotionListener) ml);
 				singleRowViewContainterPanel.addMouseListener(ml);
@@ -1445,7 +1446,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getButton() != MouseEvent.BUTTON1 && !(browserContentPane.table instanceof SqlStatementTable)) {
-					JPopupMenu popup = browserContentPane.createPopupMenu(null, -1, 0, 0, false);
+					JPopupMenu popup = browserContentPane.createPopupMenu(null, -1, 0, 0, false, false);
 					JPopupMenu popup2 = browserContentPane.createSqlPopupMenu(-1, 0, 0, true, jInternalFrame);
 					popup.add(new JSeparator());
 					for (Component c : popup2.getComponents()) {

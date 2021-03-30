@@ -360,6 +360,7 @@ public class MDSchema extends MDObject {
 					rs.close();
 					List<Object[]> rows = new ArrayList<Object[]>();
 					Object[] predRow = null;
+					Map<String, String> constrType = new HashMap<String, String>();
 					for (Object[] row: result.getRowList()) {
 						String constr = String.valueOf(row[0]);
 						String tab = String.valueOf(row[1]);
@@ -369,6 +370,11 @@ public class MDSchema extends MDObject {
 						if (type.equals("Check") && detail.matches("\"?" + col + "\"? IS NOT NULL")) {
 							continue;
 						}
+						String pCType = constrType.get(constr);
+						if (pCType != null && !pCType.equals(type)) {
+							continue;
+						}
+						constrType.put(constr, type);
 						if (predRow != null && constr.equals(String.valueOf(predRow[0])) && tab.equals(String.valueOf(predRow[1])) && (col != null && String.valueOf(predRow[2]) != null) && type.equals(String.valueOf(predRow[3]))) {
 							rows.get(rows.size() - 1)[3] += ", " + col;
 						} else {
