@@ -758,6 +758,10 @@ public abstract class Desktop extends JDesktopPane {
 			{
 				MouseAdapter ml = new MouseAdapter() {
 					@Override
+					public void mouseEntered(MouseEvent e) {
+						updateRowView(e);
+					}
+					@Override
 					public void mouseMoved(MouseEvent e) {
 						updateRowView(e);
 					}
@@ -783,12 +787,16 @@ public abstract class Desktop extends JDesktopPane {
 				JComponent source = (JComponent) e.getSource();
 				if (source == rowsTable) {
 					ri = rowsTable.rowAtPoint(e.getPoint());
+				} else if (source == inplaceEditorTextField && inplaceEditorcurrentRow >= 0 && inplaceEditorcurrentRow < rows.size()) {
+					ri = rowsTable.getRowSorter().convertRowIndexToView(inplaceEditorcurrentRow);
 				} else {
 					ri = 0;
 				}
 				if (ri >= 0 && !rows.isEmpty() && rowsTable.getRowSorter().getViewRowCount() > 0) {
 					int i = 0;
 					if (source == rowsTable) {
+						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
+					} else if (source == inplaceEditorTextField) {
 						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
 					} else if (source == rowsTableScrollPane || source == singleRowViewContainterPanel) {
 						if (rows.size() != 1 || getQueryBuilderDialog() == null /* SQL Console */) {

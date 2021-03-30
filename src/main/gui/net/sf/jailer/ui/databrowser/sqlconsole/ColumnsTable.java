@@ -28,6 +28,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -201,7 +203,16 @@ public class ColumnsTable extends JTable {
 							JPopupMenu popup;
 							popup = createPopupMenu(e);
 							if (popup != null) {
-								popup.show(ColumnsTable.this, x, y);
+								popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+						    		@Override
+									public void propertyChange(PropertyChangeEvent evt) {
+						    			if (Boolean.FALSE.equals(evt.getNewValue())) {
+						    				rb.setCurrentRowSelection(-1);
+						    				repaint();
+						    			}
+						    		}
+								});
+						    	popup.show(ColumnsTable.this, x, y);
 							}
 						} else if (e.getClickCount() > 1) {
 							int i = -1;
@@ -324,6 +335,8 @@ public class ColumnsTable extends JTable {
 		if (ri >= 0 && !rb.rows.isEmpty() && rb.rowsTable.getRowSorter().getViewRowCount() > 0) {
 			i = rb.rowsTable.getRowSorter().convertRowIndexToModel(ri);
 			row = rb.rows.get(i);
+			rb.setCurrentRowSelection(ri);
+			repaint();
 		} else {
 			return null;
 		}
@@ -341,7 +354,6 @@ public class ColumnsTable extends JTable {
 		return rb.createPopupMenu(this, row, i, (int) p.getX(), (int) p.getY(), false, copyTCB, new Runnable() {
 			@Override
 			public void run() {
-				repaint();
 				for (int i = 0; i < getColumnCount(); i++) {
 					TableCellEditor defaultEditor = getDefaultEditor(getColumnClass(i));
 					if (defaultEditor != null) {

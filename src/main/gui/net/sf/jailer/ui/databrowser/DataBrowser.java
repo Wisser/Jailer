@@ -310,15 +310,6 @@ public class DataBrowser extends javax.swing.JFrame {
 		openTableButton.setVisible(false);
 		searchButton.setText("Open Table");
 
-        detailsAndBorderBrowserTabbedPane.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
-				updateBorderBrowser();
-				updateDataModelView(null);
-				showDataModelMenuItem.setSelected(detailsAndBorderBrowserTabbedPane.getSelectedComponent() == dataModelPanel);
-			}
-		});
-
         metaDataDetailsPanel = createMetaDataDetailsPanel(executionContext);
         metaDataViewPanel.add(metaDataDetailsPanel);
 
@@ -548,8 +539,10 @@ public class DataBrowser extends javax.swing.JFrame {
            // ignore
         }
 
-        jailerIcon.setImage(UIUtil.scaleIcon(jailerIcon, 16, 16).getImage());
-
+        if (jailerIcon != null) {
+        	jailerIcon.setImage(UIUtil.scaleIcon(jailerIcon, 16, 16).getImage());
+        }
+        
         if (dbConnectionDialog != null) {
             createSession(dbConnectionDialog);
             if (session == null) {
@@ -962,12 +955,23 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
 	private MetaDataDetailsPanel createMetaDataDetailsPanel(final ExecutionContext executionContext) {
-		return new MetaDataDetailsPanel(this.datamodel, session, this, executionContext) {
+		MetaDataDetailsPanel panel = new MetaDataDetailsPanel(this.datamodel, session, this, executionContext) {
 			@Override
 			protected void analyseSchema(String schemaName, boolean withViews, boolean withSynonyms) {
 				updateDataModel(schemaName, withViews, withSynonyms);
 			}
         };
+        panel.tabbedPane.addTab("Closure Border", borderBrowserTabPane);
+        panel.tabbedPane.addTab("Data Model", dataModelPanel);
+        panel.tabbedPane.addChangeListener(new ChangeListener() {
+ 			@Override
+ 			public void stateChanged(ChangeEvent e) {
+ 				updateBorderBrowser();
+ 				updateDataModelView(null);
+ 				showDataModelMenuItem.setSelected(metaDataDetailsPanel.tabbedPane.getSelectedComponent() == dataModelPanel);
+ 			}
+ 		});
+        return panel;
 	}
 
     private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
@@ -1089,6 +1093,11 @@ public class DataBrowser extends javax.swing.JFrame {
         dummy = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        borderBrowserTabPane = new javax.swing.JPanel();
+        borderBrowserPanel = new javax.swing.JPanel();
+        titleLabel = new javax.swing.JLabel();
+        dataModelPanel = new javax.swing.JPanel();
+        jLabel26 = new javax.swing.JLabel();
         jLayeredPane2 = new javax.swing.JLayeredPane();
         jPanel1 = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
@@ -1132,7 +1141,6 @@ public class DataBrowser extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         jTree1 = new javax.swing.JTree();
         refreshButton = new javax.swing.JButton();
-        detailsAndBorderBrowserTabbedPane = new javax.swing.JTabbedPane();
         jPanel7 = new javax.swing.JPanel();
         metaDataViewPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -1152,11 +1160,6 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel20 = new javax.swing.JLabel();
         jLabel21 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
-        borderBrowserTabPane = new javax.swing.JPanel();
-        borderBrowserPanel = new javax.swing.JPanel();
-        titleLabel = new javax.swing.JLabel();
-        dataModelPanel = new javax.swing.JPanel();
-        jLabel26 = new javax.swing.JLabel();
         updateInfoPanel = new javax.swing.JPanel();
         updateInfoLabel = new javax.swing.JLabel();
         downloadButton = new javax.swing.JButton();
@@ -1241,6 +1244,30 @@ public class DataBrowser extends javax.swing.JFrame {
         jScrollPane3.setViewportView(jTable1);
 
         dummy.add(jScrollPane3);
+
+        borderBrowserTabPane.setLayout(new java.awt.GridBagLayout());
+
+        borderBrowserPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        borderBrowserTabPane.add(borderBrowserPanel, gridBagConstraints);
+
+        titleLabel.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        borderBrowserTabPane.add(titleLabel, gridBagConstraints);
+
+        dataModelPanel.setLayout(new java.awt.BorderLayout());
+
+        jLabel26.setText("  Loading...");
+        dataModelPanel.add(jLabel26, java.awt.BorderLayout.CENTER);
 
         jLayeredPane2.setLayout(new java.awt.GridBagLayout());
 
@@ -1413,7 +1440,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 24, 42);
+        layeredPaneContent.setBounds(0, 0, 24, 36);
 
         desktopSplitPane.setLeftComponent(jLayeredPane1);
 
@@ -1639,38 +1666,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridy = 22;
         jPanel7.add(jLabel22, gridBagConstraints);
 
-        detailsAndBorderBrowserTabbedPane.addTab("Details", jPanel7);
-
-        borderBrowserTabPane.setLayout(new java.awt.GridBagLayout());
-
-        borderBrowserPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        borderBrowserTabPane.add(borderBrowserPanel, gridBagConstraints);
-
-        titleLabel.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        borderBrowserTabPane.add(titleLabel, gridBagConstraints);
-
-        detailsAndBorderBrowserTabbedPane.addTab("Closure Border", borderBrowserTabPane);
-
-        dataModelPanel.setLayout(new java.awt.BorderLayout());
-
-        jLabel26.setText("  Loading...");
-        dataModelPanel.add(jLabel26, java.awt.BorderLayout.CENTER);
-
-        detailsAndBorderBrowserTabbedPane.addTab("Data Model", dataModelPanel);
-
-        jSplitPane4.setRightComponent(detailsAndBorderBrowserTabbedPane);
-        detailsAndBorderBrowserTabbedPane.getAccessibleContext().setAccessibleName("Closure Border");
+        jSplitPane4.setRightComponent(jPanel7);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2253,7 +2249,7 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_workbenchTabbedPaneStateChanged
 
     private void showDataModelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showDataModelMenuItemActionPerformed
-    	detailsAndBorderBrowserTabbedPane.setSelectedComponent(dataModelPanel);
+    	metaDataDetailsPanel.tabbedPane.setSelectedComponent(dataModelPanel);
     }//GEN-LAST:event_showDataModelMenuItemActionPerformed
 
     private void consistencyCheckMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consistencyCheckMenuItemActionPerformed
@@ -2764,7 +2760,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel dataModelPanel;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JSplitPane desktopSplitPane;
-    private javax.swing.JTabbedPane detailsAndBorderBrowserTabbedPane;
     private javax.swing.JButton downloadButton;
     private javax.swing.JMenuItem downloadMenuItem;
     private javax.swing.JPanel dummy;
@@ -3078,7 +3073,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private boolean disableBorderBrowserUpdates = false;
 
     private void updateBorderBrowser() {
-        if (disableBorderBrowserUpdates || detailsAndBorderBrowserTabbedPane.getSelectedComponent() != borderBrowserTabPane) {
+        if (disableBorderBrowserUpdates || metaDataDetailsPanel.tabbedPane.getSelectedComponent() != borderBrowserTabPane) {
             return;
         }
         try {
@@ -3130,7 +3125,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (table != null) {
 			lastFocusTable = table;
 		}
-		if (detailsAndBorderBrowserTabbedPane.getSelectedComponent() != dataModelPanel) {
+		if (metaDataDetailsPanel.tabbedPane.getSelectedComponent() != dataModelPanel) {
 			return;
 		}
 		UIUtil.invokeLater(new Runnable() {
@@ -3564,6 +3559,11 @@ public class DataBrowser extends javax.swing.JFrame {
 												}
 												if (metaDataPanel != null) {
 													metaDataPanel.refresh();
+												}
+												try {
+													Thread.sleep(200);
+												} catch (InterruptedException e) {
+													// ignore
 												}
 												UIUtil.invokeLater(8, () -> {
 													updateNavigationTree();

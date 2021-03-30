@@ -618,6 +618,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private int currentRowSelection = -1;
 
+	public void setCurrentRowSelection(int currentRowSelection) {
+		this.currentRowSelection = currentRowSelection;
+	}
+	
 	public int getCurrentRowSelection() {
 		return currentRowSelection;
 	}
@@ -1910,21 +1914,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			copyTCB = altCopyTCB;
 		} else {
 			copyTCB = null;
-//			if (getQueryBuilderDialog() != null) { // !SQL Console
-//				copyTCB = null;
-//			} else {
-//				copyTCB = new JMenuItem("Copy to Clipboard");
-//				if (withKeyStroke) {
-//					copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
-//				}
-//				copyTCB.setEnabled(rowsTable.getSelectedColumnCount() > 0);
-//				copyTCB.addActionListener(new ActionListener() {
-//					@Override
-//					public void actionPerformed(ActionEvent e) {
-//						UIUtil.copyToClipboard(rowsTable, true);
-//					}
-//				});
-//			}
 		}
 
 		if (table instanceof SqlStatementTable && resultSetType == null) {
@@ -4439,9 +4428,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			//set the editor as default on every column
-			JTextField textField = new JTextField();
-		    textField.setBorder(new LineBorder(Color.black));
-			DefaultCellEditor anEditor = new DefaultCellEditor(textField) {
+			inplaceEditorTextField.setBorder(new LineBorder(Color.black));
+		    DefaultCellEditor anEditor = new DefaultCellEditor(inplaceEditorTextField) {
 				@Override
 				public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 					if (table != rowsTable) {
@@ -4453,8 +4441,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						row = column - 1;
 						column = h;
 					}
+					inplaceEditorcurrentRow = -1;
 					if (row < rows.size()) {
 						Row r = rows.get(rowsTable.getRowSorter().convertRowIndexToModel(row));
+						inplaceEditorcurrentRow = rowsTable.getRowSorter().convertRowIndexToModel(row);
 						int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 						if (r != null) {
 							value = browserContentCellEditor.cellContentToText(row, convertedColumnIndex, r.values[convertedColumnIndex]);
@@ -4782,7 +4772,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				singleRowDetailsView.addMouseListener(tempClosureListener);
 				singleRowDetailsView.addMouseMotionListener(tempClosureListener);
 				singleRowViewScrollPane.setViewportView(singleRowDetailsView);
-				JViewport columnHeader = singleRowViewScrollPane.getColumnHeader();
+			    JViewport columnHeader = singleRowViewScrollPane.getColumnHeader();
 				if (columnHeader != null) {
 					columnHeader.setVisible(false);
 				}
@@ -4793,7 +4783,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 
-		adjustRowTableColumnsWidth();
+		if (additionalMouseAdapter != null) {
+			inplaceEditorTextField.addMouseListener(additionalMouseAdapter);
+		    inplaceEditorTextField.addMouseMotionListener(additionalMouseAdapter);
+		}
+		inplaceEditorTextField.addMouseListener(tempClosureListener);
+	    inplaceEditorTextField.addMouseMotionListener(tempClosureListener);
+	    
+	    adjustRowTableColumnsWidth();
 
 		if (sortColumnsCheckBox.isSelected()) {
 			TableColumnModel cm = rowsTable.getColumnModel();
@@ -6784,7 +6781,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		return value;
 	}
-
+	
+	protected JTextField inplaceEditorTextField = new JTextField();
+    protected int inplaceEditorcurrentRow = -1;
+    
 	/**
 	 * Calculates temporary closure when mouse cursor is on new row.
 	 */
@@ -6822,14 +6822,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Row row = null;
 			if (e.getSource() == rowsTable) {
 				row = rowAt(e.getPoint());
-			} else if ((e.getSource() == singleRowViewContainterPanel || e.getSource() == singleRowDetailsView) && rows.size() == 1) {
+			} else if ((e.getSource() == singleRowViewContainterPanel || e.getSource() == singleRowDetailsView || e.getSource() == inplaceEditorTextField) && rows.size() == 1) {
 				row = rows.get(0);
+			} else if (e.getComponent() == inplaceEditorTextField) {
+				if (inplaceEditorcurrentRow >= 0 && inplaceEditorcurrentRow < rows.size()) {
+					row = rows.get(inplaceEditorcurrentRow);
+				}
 			}
 			updateClosure(row);
 		}
 
 		@Override
 		public void mouseEntered(MouseEvent e) {
+			mouseMoved(e);
 		}
 
 		@Override

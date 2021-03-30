@@ -120,7 +120,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
         		}
         	}
         }
-        ((CardLayout) getLayout()).show(this, "table");
+        ((CardLayout) getLayout()).show(this, "other");
     }
     
     static {
@@ -559,7 +559,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
         tabbedPane.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
 
         tableDetailsPanel.setLayout(new java.awt.BorderLayout());
-        tabbedPane.addTab("Table", tableDetailsPanel);
+        tabbedPane.addTab("Details", tableDetailsPanel);
 
         jPanel1.add(tabbedPane);
 
@@ -571,7 +571,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel otherPanel;
-    private javax.swing.JTabbedPane tabbedPane;
+    public javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JPanel tableDetailsPanel;
     // End of variables declaration//GEN-END:variables
 
