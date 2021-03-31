@@ -589,8 +589,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		});
 		final TableCellRenderer defaultTableCellRenderer = restrictionsTable.getDefaultRenderer(String.class);
-		final Color BG1 = new Color(255, 255, 255);
-		final Color BG2 = new Color(242, 255, 242);
+		final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+		final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 		restrictionsTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -2655,6 +2655,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 		revArrow.setOpaque(false);
 
+		if (Environment.nimbus && ((JLabel) component).getText() != null) {
+			((JLabel) component).setText(UIUtil.toHTML(((JLabel) component).getText(), 100));
+		}
+		
 		panel.add(revArrow, new java.awt.GridBagConstraints());
 
 		gridBagConstraints = new java.awt.GridBagConstraints();

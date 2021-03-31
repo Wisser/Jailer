@@ -180,8 +180,8 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 		
 		final TableCellRenderer defaultTableCellRenderer = columnOrderTable.getDefaultRenderer(String.class);
 		TableCellRenderer renderer = new TableCellRenderer() {
-			final Color BG1 = new Color(255, 255, 255);
-			final Color BG2 = new Color(242, 255, 242);
+			final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+			final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

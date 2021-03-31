@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
@@ -95,6 +96,7 @@ import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.PrimaryKeyValidator;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
@@ -1070,7 +1072,9 @@ public class UIUtil {
                 	sb.append("...");
                 	break;
                 }
-                sb.append("\n");
+                if (lineNr > 1) {
+                	sb.append("\n");
+                }
             }
             plainText = sb.toString();
         }
@@ -1158,6 +1162,16 @@ public class UIUtil {
      * Represents "null"-value in rows tables.
      */
 	public static final String NULL = "null";
+	
+	/**
+	 * Background color of even table rows.
+	 */
+	public static final Color TABLE_BACKGROUND_COLOR_1 = new Color(255, 255, 255);
+
+	/**
+	 * Background color of odd table rows.
+	 */
+	public static final Color TABLE_BACKGROUND_COLOR_2 = new Color(246, 255, 246);
 
 	public static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 

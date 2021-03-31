@@ -65,8 +65,8 @@ public class ProgressTable extends JTable {
 	 * Background colors.
 	 */
 	private final List<Color> bgColors = new ArrayList<Color>();
-	private final Color BG1 = new Color(255, 255, 255);
-	private final Color BG2 = new Color(240, 255, 255);
+	private final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+	private final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 	private final Color SELECTED_FG = new Color(180, 160, 0);
 	private final Color INPROGRESS_FG = new Color(255, 40, 0);
 

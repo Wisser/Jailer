@@ -214,8 +214,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 								.getTableCellRendererComponent(table, value,
 										false, false /* hasFocus */, row, column);
 						if (render instanceof JLabel) {
-							final Color BG1 = new Color(255, 255, 255);
-							final Color BG2 = new Color(242, 255, 242);
+							final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+							final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 							if (!isSelected) {
 								((JLabel) render)
 									.setBackground((row % 2 == 0) ? BG1
@@ -528,8 +528,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							.getTableCellRendererComponent(table, value,
 									false, false /* hasFocus */, row, column);
 					if (render instanceof JLabel) {
-						final Color BG1 = new Color(255, 255, 255);
-						final Color BG2 = new Color(242, 255, 242);
+						final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+						final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 						if (!isSelected) {
 							((JLabel) render)
 								.setBackground((row % 2 == 0) ? BG1
@@ -649,8 +649,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 								.getTableCellRendererComponent(table, value,
 										false, false /* hasFocus */, row, column);
 						if (render instanceof JLabel) {
-							final Color BG1 = new Color(255, 255, 255);
-							final Color BG2 = new Color(242, 255, 242);
+							final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+							final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 							if (!isSelected) {
 								((JLabel) render)
 									.setBackground((row % 2 == 0) ? BG1

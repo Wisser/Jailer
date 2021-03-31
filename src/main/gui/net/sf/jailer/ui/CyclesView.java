@@ -473,8 +473,8 @@ public class CyclesView extends javax.swing.JDialog {
 		List<Object[]> data = new ArrayList<Object[]>();
 
 		int distance = 0;
-		final Color BG1 = new Color(255, 255, 255);
-		final Color BG2 = new Color(242, 255, 242);
+		final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+		final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 		bgColor.clear();
 		
 		for (List<Table> cycle: cycles) {

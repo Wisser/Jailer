@@ -942,8 +942,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         final int OMEGA = Integer.MAX_VALUE / 2;
         boolean isolated = false;
 
-        final Color BG1 = new Color(255, 255, 255);
-        final Color BG2 = new Color(242, 255, 242);
+        final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+        final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
         final Color BG3 = new Color(255, 255, 240);
         final Color BG4 = new Color(220, 220, 220);
         final Color BG5 = new Color(255, 240, 240);

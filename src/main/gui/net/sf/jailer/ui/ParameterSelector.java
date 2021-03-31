@@ -63,8 +63,8 @@ public class ParameterSelector extends javax.swing.JPanel {
 								.getTableCellRendererComponent(table, value,
 										isSelected, hasFocus, row, column);
 						if (render instanceof JLabel && !isSelected) {
-							final Color BG1 = new Color(255, 255, 255);
-							final Color BG2 = new Color(242, 255, 242);
+							final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+							final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 							((JLabel) render)
 									.setBackground((row % 2 == 0) ? BG1
 											: BG2);

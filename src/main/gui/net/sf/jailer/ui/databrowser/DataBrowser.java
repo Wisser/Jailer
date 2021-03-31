@@ -486,6 +486,9 @@ public class DataBrowser extends javax.swing.JFrame {
 						}
 					}
 					((JLabel) render).setIcon(icon);
+					if (Environment.nimbus && ((JLabel) render).getText() != null) {
+						((JLabel) render).setText(UIUtil.toHTML(((JLabel) render).getText(), 100));
+					}
 				}
 				return render;
 			}
@@ -4383,5 +4386,4 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
 	// TODO $props in "where", with values-query, dialog with combo-box, persisted in the *.dbl files
-	// TODO tree-background nimbus (Java 16)
 }

@@ -69,8 +69,8 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
 
 		DefaultTableCellRenderer associationsListItemRenderer = new DefaultTableCellRenderer() {
 			final Color BG_SELCOLOR = new Color(0.45f, 0.85f, 1.0f);
-			final Color BG1 = new Color(255, 255, 255);
-			final Color BG2 = new Color(240, 255, 255);
+			final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+			final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,

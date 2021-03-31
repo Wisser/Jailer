@@ -898,6 +898,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 Boolean isDirty = false;
                 ImageIcon image = null;
         		Long estRowCount = null;
+        		boolean hugeSchema = false;
                 if (value instanceof DefaultMutableTreeNode) {
                     Object uo = ((DefaultMutableTreeNode) value).getUserObject();
                     if (uo instanceof JLabel) {
@@ -942,6 +943,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         if (!isView) {
                         	estRowCount = ((MDTable) uo).getEstimatedRowCount();
                         }
+                        hugeSchema = ((MDTable) uo).getSchema().isLoaded() && ((MDTable) uo).getSchema().getTables().size() > 10000;
                         if (isView) {
                         	image = viewIcon;
                         } else if (isSynonym) {
@@ -960,8 +962,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             		Color fg = ((JLabel) comp).getForeground();
             		String estRowCountFormatted;
             		if (estRowCount == null) {
-            			((JLabel) comp).setText(text + "                                ");
-                 	} else {
+            			if (hugeSchema) {
+            				((JLabel) comp).setText(text + "                                ");
+            			} else {
+            				((JLabel) comp).setText("<html>" + UIUtil.toHTMLFragment(text, 100) + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</html>");
+            			}
+            		} else {
                  		if (estRowCount >= 1000000) {
                  			estRowCountFormatted = String.format("%,1.1f M", (double) estRowCount / 1000000.0);
                  		} else if (estRowCount >= 1000) {
@@ -970,9 +976,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                  			estRowCountFormatted = estRowCount.toString();
                  		}
                  		if (fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
-                 			((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#bbbbff\">~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\"></font>");
+                 			((JLabel) comp).setText("<html>" + UIUtil.toHTMLFragment(text, 100) + "&nbsp;&nbsp;<font color=\"#bbbbff\">~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\"></font>");
                  		} else {
-                 			((JLabel) comp).setText("<html>" + text + "&nbsp;&nbsp;<font color=\"#aaaaff\">~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\"></font>");
+                 			((JLabel) comp).setText("<html>" + UIUtil.toHTMLFragment(text, 100) + "&nbsp;&nbsp;<font color=\"#aaaaff\">~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\"></font>");
                  		}
                  	}
             	}

@@ -177,67 +177,79 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     			}
     		}
     		tableDetailsPanel.add(view);
-    	} else if (mdTable != null && !ModelBuilder.isJailerTable(mdTable.getUnquotedName())) {
-    		JButton analyseButton = new JButton("Analyse schema \"" + mdTable.getSchema().getUnquotedName() + "\"");
-    		analyseButton.setIcon(MetaDataPanel.getScaledIcon(this, MetaDataPanel.warnIcon, false));
-    		analyseButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					analyseSchema(mdTable.getSchema().getName(), mdTable.isView(), mdTable.isSynonym());
-				}
-			});
-    		JPanel panel = new JPanel(new GridBagLayout());
-    		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 1;
-	        gridBagConstraints.gridy = 1;
-	        gridBagConstraints.gridwidth = 1;
-	        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-    		panel.add(new JLabel("  Table \"" + mdTable.getUnquotedName() + "\""), gridBagConstraints);
-    		gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 1;
-	        gridBagConstraints.gridy = 2;
-	        gridBagConstraints.gridwidth = 1;
-	        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-    		panel.add(new JLabel("  is not part of the data model."), gridBagConstraints);
-    		gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 1;
-	        gridBagConstraints.gridy = 4;
-	        gridBagConstraints.gridwidth = 1;
-	        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-	        gridBagConstraints.weightx = 1;
-	        gridBagConstraints.weighty = 1;
-	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-    		if (mdTable.isLoaded()) {
-    			List<Column> pkColumns = new ArrayList<Column>();
-				List<Column> columns = new ArrayList<Column>();
-	    		for (Column c: mdTable.getColumnTypes()) {
-	    			columns.add(c);
-	    			try {
-						for (String pk: mdTable.getPrimaryKeyColumns()) {
-							if (pk.equals(c.name)) {
-								pkColumns.add(c);
-								break;
-							}
-						}
-					} catch (SQLException e1) {
-						// ignore
+    	} else if (mdTable != null) {
+    		if (!ModelBuilder.isJailerTable(mdTable.getUnquotedName())) {
+	    		JButton analyseButton = new JButton("Analyse schema \"" + mdTable.getSchema().getUnquotedName() + "\"");
+	    		analyseButton.setIcon(MetaDataPanel.getScaledIcon(this, MetaDataPanel.warnIcon, false));
+	    		analyseButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						analyseSchema(mdTable.getSchema().getName(), mdTable.isView(), mdTable.isSynonym());
 					}
+				});
+	    		JPanel panel = new JPanel(new GridBagLayout());
+	    		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 1;
+		        gridBagConstraints.gridy = 1;
+		        gridBagConstraints.gridwidth = 1;
+		        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+	    		panel.add(new JLabel("  Table \"" + mdTable.getUnquotedName() + "\""), gridBagConstraints);
+	    		gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 1;
+		        gridBagConstraints.gridy = 2;
+		        gridBagConstraints.gridwidth = 1;
+		        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+	    		panel.add(new JLabel("  is not part of the data model."), gridBagConstraints);
+	    		gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 1;
+		        gridBagConstraints.gridy = 4;
+		        gridBagConstraints.gridwidth = 1;
+		        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		        gridBagConstraints.weightx = 1;
+		        gridBagConstraints.weighty = 1;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+	    		if (mdTable.isLoaded()) {
+	    			List<Column> pkColumns = new ArrayList<Column>();
+					List<Column> columns = new ArrayList<Column>();
+		    		for (Column c: mdTable.getColumnTypes()) {
+		    			columns.add(c);
+		    			try {
+							for (String pk: mdTable.getPrimaryKeyColumns()) {
+								if (pk.equals(c.name)) {
+									pkColumns.add(c);
+									break;
+								}
+							}
+						} catch (SQLException e1) {
+							// ignore
+						}
+		    		}
+		    		PrimaryKey pks = new PrimaryKey(pkColumns, false);
+					Table tTable = new Table(mdTable.getName(), pks, false, false);
+		    		tTable.setColumns(columns);
+					panel.add(new TableDetailsView(tTable, mdTable, this, null, dataModel, null), gridBagConstraints);
 	    		}
-	    		PrimaryKey pks = new PrimaryKey(pkColumns, false);
-				Table tTable = new Table(mdTable.getName(), pks, false, false);
-	    		tTable.setColumns(columns);
-				panel.add(new TableDetailsView(tTable, mdTable, this, null, dataModel, null), gridBagConstraints);
+	    		gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 1;
+		        gridBagConstraints.gridy = 3;
+		        gridBagConstraints.gridwidth = 1;
+		        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+	    		panel.add(analyseButton, gridBagConstraints);
+	    		tableDetailsPanel.add(panel);
+    		} else {
+    			JPanel panel = new JPanel(new GridBagLayout());
+	    		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 1;
+		        gridBagConstraints.gridy = 1;
+		        gridBagConstraints.gridwidth = 1;
+		        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+	    		panel.add(new JLabel("Jailer subsetting tool working table"), gridBagConstraints);
+	    		tableDetailsPanel.add(panel);
     		}
-    		gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 1;
-	        gridBagConstraints.gridy = 3;
-	        gridBagConstraints.gridwidth = 1;
-	        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-    		panel.add(analyseButton, gridBagConstraints);
-    		tableDetailsPanel.add(panel);
     	}
 		tabbedPane.repaint();
 		if (onlyTable) {
