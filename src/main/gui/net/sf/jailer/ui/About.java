@@ -17,8 +17,6 @@ package net.sf.jailer.ui;
 
 import java.io.File;
 
-import javax.swing.ImageIcon;
-
 import net.sf.jailer.JailerVersion;
 
 /**
