@@ -3,6 +3,7 @@
     - Single-row views are now directly editable. It is also possible to search for columns within them.
     - The metadata view has been simplified and made clearer.
     - rowid/tid pseudo columns are used to identify a row when the table has no primary key.
+    - An error in the row count query has been corrected.
 
 10.4.1
   - SQL Console and desktop improvements
