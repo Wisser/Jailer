@@ -244,8 +244,6 @@ public class ColumnsTable extends JTable {
 		setDefaultRenderer(Object.class, new TableCellRenderer() {
 			final Color BGCOLUMNS = new Color(255, 255, 220);
 			final Color BGSELECTED  = new Color(255, 230, 220);
-			final Font font = new JLabel().getFont();
-			final Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
@@ -258,13 +256,13 @@ public class ColumnsTable extends JTable {
 				if (render instanceof JLabel) {
 					if (column == 0) {
 						((JLabel) render).setBackground(BGCOLUMNS);
-					} else if (ColumnsTable.this.inDesktop) {
+					} else if (ColumnsTable.this.inDesktop && !"final".equals(render.getName())) {
 						if (ColumnsTable.this.inClosure && !inTempClosure()) {
 							((JLabel) render).setBackground(row % 2 == 0? DetailsView.BG3 : DetailsView.BG3_2);
 						} else {
 							((JLabel) render).setBackground(row % 2 == 0? DetailsView.BG1 : DetailsView.BG2);
 						}
-					} else if (column - 1 == currentColumn) {
+					} else if (column - 1 == currentColumn && !"final".equals(render.getName())) {
 						((JLabel) render).setBackground(BGSELECTED);
 					}
 					if (column == 0) {

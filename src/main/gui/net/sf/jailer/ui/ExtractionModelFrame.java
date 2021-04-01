@@ -1289,7 +1289,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		if (!UIUtil.canRunJailer()) {
 			return;
 		}
-
+		
 		final String tmpFileName;
 		boolean isRunning = false;
 		try {
@@ -1323,6 +1323,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				tmpF = createTempFileName();
 				if (!extractionModelEditor.save(tmpF)) {
 					tmpF = null;
+				} else {
+					Table stable = extractionModelEditor.dataModel.getTableByDisplayName((String) extractionModelEditor.subjectTable.getSelectedItem());
+					if (stable == null) {
+						throw new IllegalStateException("No \"Export from\" table specified. (" + extractionModelEditor.dataModel.getTables().size() + " tables total)");
+					}
 				}
 //			}
 			tmpFileName = tmpF;
@@ -1400,7 +1405,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								final List<String> ddlArgs = new ArrayList<String>();
 								ddlArgs.add("create-ddl");
 								dbConnectionDialog.addDbArgs(ddlArgs);
-								ddlArgs.add(jmFile);
+								ddlArgs.add(tmpFileName != null? tmpFileName : jmFile);
 								++UISettings.s6;
 								if (exportDialog.isIndependentWorkingTablesSelected()) {
 									ddlArgs.add("-independent-working-tables");

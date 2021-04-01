@@ -52,6 +52,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -111,6 +112,7 @@ import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -1015,8 +1017,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 			final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
-			final Color BG1_EM = new Color(255, 255, 236);
-			final Color BG2_EM = new Color(230, 255, 236);
+			final Color BG1_EM = new Color(255, 242, 240);
+			final Color BG2_EM = new Color(255, 236, 236);
 			final Color BG3 = new Color(192, 236, 255);
 			final Color BG3_2 = new Color(184, 226, 255);
 			final Color BG4 = new Color(32, 210, 255, 180);
@@ -1088,6 +1090,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					((JLabel) render).setBorder(cellSelected? BorderFactory.createEtchedBorder() : null);
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
+					Table type = getResultSetTypeForColumn(convertedColumnIndex);
 					if (!isSelected && (table == rowsTable || !cellSelected)) {
 						if (BrowserContentPane.this.getQueryBuilderDialog() != null && // SQL Console
 							!found &&
@@ -1106,16 +1109,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							}
 						} else {
-							Table type = getResultSetTypeForColumn(convertedColumnIndex);
 							if (isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
 									&& isPKComplete(type, r) && !rowIdSupport.getPrimaryKey(type, BrowserContentPane.this.session).getColumns().isEmpty()) {
 								((JLabel) render).setBackground((bgRow % 2 == 0) ? BG1_EM : BG2_EM);
+								render.setName("final");
 							} else {
 								((JLabel) render).setBackground((bgRow % 2 == 0) ? BG1 : BG2);
 							}
 						}
 					} else {
 						((JLabel) render).setBackground(currentRowSelection == row? BG4.brighter() : (bgRow % 2 == 0? BG4 : BG4_2));
+					}
+					if (table != rowsTable && isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
+								&& isPKComplete(type, r) && !rowIdSupport.getPrimaryKey(type, BrowserContentPane.this.session).getColumns().isEmpty()) {
+						((JLabel) render).setBackground((column % 2 == 0) ? BG1_EM : BG2_EM);
+						render.setName("final");
 					}
 					((JLabel) render).setForeground(
 							renderRowAsPK || pkColumns.contains(convertedColumnIndex) || pkColumnsConsole.contains(convertedColumnIndex) ? FG1 :
@@ -2345,8 +2353,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			});
 		}
-//		popup.add(new JSeparator());
-		JMenuItem snw = new JMenuItem("Show in New Window");
+
+		JMenuItem snw = new JMenuItem("Show in new Window");
 		popup.add(snw);
 		snw.addActionListener(new ActionListener() {
 			@Override
@@ -2354,17 +2362,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				showInNewWindow();
 			}
 		});
-
-//		JMenuItem al = new JMenuItem("Append Layout...");
-//		popup.add(al);
-//		al.addActionListener(new ActionListener() {
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				appendLayout();
-//			}
-//		});
-//
-//		popup.addSeparator();
 
 		JMenuItem m = new JMenuItem("Hide (Minimize)");
 		popup.add(m);
@@ -3233,7 +3230,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 						Pair<RowCount, Long> cachedCount = rowCountCache.get(key);
 						RowCount rowCount;
-
 						if (cachedCount != null && cachedCount.b > System.currentTimeMillis()) {
 							rowCount = cachedCount.a;
 						} else {
@@ -4340,11 +4336,37 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 											}
 										};
 										cancelLoadButton.addActionListener(listener);
+										Connection con = null;
+										Boolean oldAutoCommit = null;
 										try {
-											session.execute(updateStatement, context, false);
+											con = session.getConnection();
+											oldAutoCommit = con.getAutoCommit();
+											con.setAutoCommit(false);
+											long rc = session.execute(updateStatement, context, false);
+											if (rc == 0) {
+												throw new SqlException("No row found. Transaction rolled back. (UpdateCount is 0)", updateStatement, null);
+											} else if (rc > 1) {
+												throw new SqlException("More than one row found. Transaction rolled back. (UpdateCount is " + rc + ")", updateStatement, null);
+											}
+											con.commit();
 										} catch (Exception e) {
+											if (con != null) {
+												session.markConnectionAsPotentiallyInvalid(con);
+												try {
+													con.rollback();
+												} catch (SQLException e1) {
+													// ignore
+												}
+											}
 											exception = e;
 										} finally {
+											if (con != null && oldAutoCommit != null) {
+												try {
+													con.setAutoCommit(oldAutoCommit);
+												} catch (SQLException e1) {
+													// ignore
+												}
+											}
 											CancellationHandler.reset(context);
 											cancelLoadButton.removeActionListener(listener);
 										}
@@ -4952,7 +4974,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		} else if (!limitExceeded && theParentWithExceededLimit != null) {
 			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.internalFrame.getTitle() + " exceeded row limit");
 		} else {
-			rowsCount.setToolTipText(null);
+			rowsCount.setToolTipText(rowsCount.getText().trim());
 		}
 	}
 
@@ -6270,12 +6292,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return isEditMode;
 	}
 
+	private Border initialBorder = null;
+	private boolean initialBorderSet = false;
+	
 	public void setEditMode(boolean isEditMode) {
 		this.isEditMode = isEditMode;
+		if (!initialBorderSet) {
+			initialBorder = jPanel2.getBorder();
+			initialBorderSet = true;
+		}
 		if (isEditMode) {
 			jPanel2.setBorder(BorderFactory.createLineBorder(new Color(255, 0, 0), 1, true));
 		} else {
-			jPanel2.setBorder(null);
+			jPanel2.setBorder(initialBorder);
 		}
 	}
 

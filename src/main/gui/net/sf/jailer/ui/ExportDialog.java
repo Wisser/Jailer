@@ -2225,7 +2225,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		List<String> ddlArgs = new ArrayList<String>();
 		ddlArgs.add("create-ddl");
 		dbConnectionDialog.addDbArgs(ddlArgs);
-		ddlArgs.add(jmFile);
+		ddlArgs.add(tmpFileName != null? tmpFileName : jmFile);
 		if (isIndependentWorkingTablesSelected()) {
 			ddlArgs.add("-independent-working-tables");
 			String delFile = getDeleteFileName();

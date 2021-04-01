@@ -237,6 +237,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 resolveSelection(selection);
             }
         };
+        executionContext.setUseRowIdsOnlyForTablesWithoutPK(true);
         if (embedded) {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
