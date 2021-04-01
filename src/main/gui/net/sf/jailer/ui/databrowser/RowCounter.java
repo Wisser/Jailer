@@ -241,8 +241,8 @@ public class RowCounter {
 		}
 
 		{
-			String olapPrefix = "Select 1";
-			String olapSuffix = ") S Where S." + ROWNUMBERALIAS + " <= " + limit;
+			String olapPrefix = "Select 1, row_number() over(order by -1) as " + ROWNUMBERALIAS;
+			String olapSuffix = ") S";
 			boolean limitSuffixInSelectClause = sqlLimitSuffix != null &&
 					(sqlLimitSuffix.toLowerCase(Locale.ENGLISH).startsWith("top ") || sqlLimitSuffix.toLowerCase(Locale.ENGLISH).startsWith("first "));
 			if (sqlLimitSuffix != null && limitSuffixInSelectClause) {
@@ -250,23 +250,22 @@ public class RowCounter {
 			}
 
 			if (association != null) {
+				olapPrefix += " From (Select distinct ";
+				olapSuffix += ") S2 Where S2." + ROWNUMBERALIAS + " <= \" + limit";
 				boolean f = true;
 				for (Column pkColumn: rowIdSupport.getPrimaryKey(association.destination).getColumns()) {
 					if (!f) {
 						sql += ", ";
+						olapPrefix += ", ";
 					}
 					sql += "A." + pkColumn.name;
+					olapPrefix += "S." + pkColumn.name;
 					f = false;
 				}
 			} else {
 				sql += "1";
 			}
 
-			if (useOLAPLimitation) {
-				sql += ", row_number() over(";
-				sql += "order by -1";
-				sql += ") as " + ROWNUMBERALIAS + "";
-			}
 			sql += " From ";
 			if (association != null) {
 				sql += qualifiedTableName(association.destination, quoting) + " A join ";
