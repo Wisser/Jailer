@@ -42,7 +42,7 @@ public class RowCounter {
 	private final Session session;
 	private final List<Row> theRows;
 	private final RowIdSupport rowIdSupport;
-	private final int TIMEOUT = 6;
+	private final int TIMEOUT = 8;
 
 	public static class RowCount {
 		public final long count;

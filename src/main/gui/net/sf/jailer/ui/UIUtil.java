@@ -1170,7 +1170,7 @@ public class UIUtil {
 	/**
 	 * Background color of odd table rows.
 	 */
-	public static final Color TABLE_BACKGROUND_COLOR_2 = new Color(246, 255, 246);
+	public static final Color TABLE_BACKGROUND_COLOR_2 = new Color(242, 255, 242);
 
 	public static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 
