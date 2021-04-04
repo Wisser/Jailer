@@ -1480,7 +1480,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			});
 		}
-		relatedRowsLabel.setIcon(UIUtil.scaleIcon(this, relatedRowsIcon));
+		relatedRowsLabel.setIcon(blueIcon);
 		relatedRowsLabel.setFont(relatedRowsLabel.getFont().deriveFont(relatedRowsLabel.getFont().getSize() * 1.1f));
 		if (createPopupMenu(null, -1, 0, 0, false, false).getComponentCount() == 0) {
 			relatedRowsLabel.setEnabled(false);
@@ -4855,7 +4855,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			--nndr;
 		}
 		selectDistinctCheckBox.setVisible(nndr > 0);
-		selectDistinctCheckBox.setText("select distinct (-" + nndr + ")");
+		selectDistinctCheckBox.setText("distinct (-" + nndr + ")");
 		if (getParentBrowser() != null) {
 			BrowserContentPane pBrowser = getParentBrowser().browserContentPane;
 			if (pBrowser.selectDistinctCheckBox.isVisible() && !pBrowser.selectDistinctCheckBox.isSelected()) {
@@ -4975,6 +4975,92 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.internalFrame.getTitle() + " exceeded row limit");
 		} else {
 			rowsCount.setToolTipText(rowsCount.getText().trim());
+		}
+		
+		if (limitExceeded) {
+			rowsCount.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+			rowsCount.setIcon(dropDownIcon);
+			rowsCount.addMouseListener(new java.awt.event.MouseAdapter() {
+				private JPopupMenu popup;
+				private boolean in = false;
+
+				@Override
+				public void mousePressed(MouseEvent e) {
+					loadButton.grabFocus();
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							popup = new JPopupMenu();
+							JCheckBoxMenuItem natural = new JCheckBoxMenuItem("Natural column order ");
+							natural.setSelected(!sortColumnsCheckBox.isSelected());
+							natural.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									sortColumnsCheckBox.setSelected(false);
+									sortColumnsCheckBoxActionPerformed(null);
+									sortColumnsLabel.setText("Natural column order");
+								}
+							});
+							popup.add(natural);
+							JCheckBoxMenuItem sorted = new JCheckBoxMenuItem("Alphabetical column order ");
+							sorted.setSelected(sortColumnsCheckBox.isSelected());
+							sorted.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									sortColumnsCheckBox.setSelected(true);
+									sortColumnsCheckBoxActionPerformed(null);
+									sortColumnsLabel.setText("A-Z column order");
+								}
+							});
+							popup.add(sorted);
+							popup.addSeparator();
+							JMenuItem changeOrder = new JMenuItem("Change natural column order ");
+							changeOrder.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									sortColumnsCheckBox.setSelected(false);
+									sortColumnsCheckBoxActionPerformed(null);
+									sortColumnsLabel.setText("Natural column order");
+									UIUtil.invokeLater(new Runnable() {
+										@Override
+										public void run() {
+											changeColumnOrder(table);
+										}
+									});
+								}
+							});
+							popup.add(changeOrder);
+							popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+								@Override
+								public void propertyChange(PropertyChangeEvent evt) {
+									if (Boolean.FALSE.equals(evt.getNewValue())) {
+										popup = null;
+										updateBorder();
+									}
+								}
+							});
+							UIUtil.showPopup(rowsCount, 0, rowsCount.getHeight(), popup);
+						}
+					});
+				}
+
+				@Override
+				public void mouseEntered(java.awt.event.MouseEvent evt) {
+					in = true;
+					updateBorder();
+				}
+
+				@Override
+				public void mouseExited(java.awt.event.MouseEvent evt) {
+					in = false;
+					updateBorder();
+				}
+
+				private void updateBorder() {
+					rowsCount.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
+							: javax.swing.border.BevelBorder.RAISED));
+				}
+			});
 		}
 	}
 
@@ -6900,10 +6986,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     }
 
     private static ImageIcon warnIcon;
+    private static ImageIcon blueIcon;
     private static ImageIcon scaledWarnIcon;
     static {
         // load images
     	warnIcon = UIUtil.readImage("/wanr.png");
-	}
+    	blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
+    }
 
 }

@@ -58,6 +58,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -870,8 +871,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		});
 
-		leftButton.setIcon(leftIcon);
-		leftButton.setPressedIcon(leftIconP);
+		leftButton.setIcon(UIUtil.scaleIcon(leftIcon, (48 * 48) / 64, (48 * 48) / 64));
+		leftButton.setPressedIcon(UIUtil.scaleIcon(leftIconP, (48 * 48) / 64, (48 * 48) / 64));
 
 		leftButton.addActionListener(new ActionListener() {
 			@Override
@@ -3509,8 +3510,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private Icon dropDownIcon;
 	private Icon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;
-	private Icon leftIcon;
-	private Icon leftIconP;
+	private ImageIcon leftIcon;
+	private ImageIcon leftIconP;
 	private Icon runIcon;
 	{
 		// load images
