@@ -61,6 +61,7 @@ import java.sql.Types;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -3308,7 +3309,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rows.clear();
 			updateMode("loading", cause);
 			setPendingState(false, false);
-			int limit = getReloadLimit();
+			int limit = getOwnReloadLimit();
 			LoadJob reloadJob;
 			loadedRowsAreRestricted = false;
 			if (statementForReloading != null) {
@@ -4977,93 +4978,90 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rowsCount.setToolTipText(rowsCount.getText().trim());
 		}
 		
-		if (limitExceeded) {
+		moreLimits = Arrays.stream(DataBrowser.ROW_LIMITS).filter(l -> l > limit).collect(Collectors.toList());
+		
+		allowNewLimit = limitExceeded && !moreLimits.isEmpty();
+		if (allowNewLimit) {
 			rowsCount.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 			rowsCount.setIcon(dropDownIcon);
-			rowsCount.addMouseListener(new java.awt.event.MouseAdapter() {
-				private JPopupMenu popup;
-				private boolean in = false;
-
-				@Override
-				public void mousePressed(MouseEvent e) {
-					loadButton.grabFocus();
-					UIUtil.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							popup = new JPopupMenu();
-							JCheckBoxMenuItem natural = new JCheckBoxMenuItem("Natural column order ");
-							natural.setSelected(!sortColumnsCheckBox.isSelected());
-							natural.addActionListener(new ActionListener() {
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									sortColumnsCheckBox.setSelected(false);
-									sortColumnsCheckBoxActionPerformed(null);
-									sortColumnsLabel.setText("Natural column order");
-								}
-							});
-							popup.add(natural);
-							JCheckBoxMenuItem sorted = new JCheckBoxMenuItem("Alphabetical column order ");
-							sorted.setSelected(sortColumnsCheckBox.isSelected());
-							sorted.addActionListener(new ActionListener() {
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									sortColumnsCheckBox.setSelected(true);
-									sortColumnsCheckBoxActionPerformed(null);
-									sortColumnsLabel.setText("A-Z column order");
-								}
-							});
-							popup.add(sorted);
-							popup.addSeparator();
-							JMenuItem changeOrder = new JMenuItem("Change natural column order ");
-							changeOrder.addActionListener(new ActionListener() {
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									sortColumnsCheckBox.setSelected(false);
-									sortColumnsCheckBoxActionPerformed(null);
-									sortColumnsLabel.setText("Natural column order");
-									UIUtil.invokeLater(new Runnable() {
+			if (!rowsCountHasListener) {
+				rowsCountHasListener = true;
+				rowsCount.addMouseListener(new java.awt.event.MouseAdapter() {
+					private JPopupMenu popup;
+					private boolean in = false;
+	
+					@Override
+					public void mousePressed(MouseEvent e) {
+						if (!allowNewLimit) {
+							return;
+						}
+						loadButton.grabFocus();
+						UIUtil.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								popup = new JPopupMenu();
+								JMenuItem title = new JMenuItem("increase limit");
+								title.setEnabled(false);
+								popup.add(title);
+								popup.addSeparator();
+								for (Integer l: moreLimits) {
+									JMenuItem item = new JMenuItem(l.toString());
+									item.addActionListener(new ActionListener() {
 										@Override
-										public void run() {
-											changeColumnOrder(table);
+										public void actionPerformed(ActionEvent e) {
+											setOwnReloadLimit(l);
 										}
 									});
+									popup.add(item);
 								}
-							});
-							popup.add(changeOrder);
-							popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
-								@Override
-								public void propertyChange(PropertyChangeEvent evt) {
-									if (Boolean.FALSE.equals(evt.getNewValue())) {
-										popup = null;
-										updateBorder();
+								popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+									@Override
+									public void propertyChange(PropertyChangeEvent evt) {
+										if (Boolean.FALSE.equals(evt.getNewValue())) {
+											popup = null;
+											updateBorder();
+										}
 									}
-								}
-							});
-							UIUtil.showPopup(rowsCount, 0, rowsCount.getHeight(), popup);
+								});
+								UIUtil.showPopup(rowsCount, 0, rowsCount.getHeight(), popup);
+							}
+						});
+					}
+	
+					@Override
+					public void mouseEntered(java.awt.event.MouseEvent evt) {
+						if (!allowNewLimit) {
+							return;
 						}
-					});
-				}
-
-				@Override
-				public void mouseEntered(java.awt.event.MouseEvent evt) {
-					in = true;
-					updateBorder();
-				}
-
-				@Override
-				public void mouseExited(java.awt.event.MouseEvent evt) {
-					in = false;
-					updateBorder();
-				}
-
-				private void updateBorder() {
-					rowsCount.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
-							: javax.swing.border.BevelBorder.RAISED));
-				}
-			});
+						in = true;
+						updateBorder();
+					}
+	
+					@Override
+					public void mouseExited(java.awt.event.MouseEvent evt) {
+						if (!allowNewLimit) {
+							return;
+						}
+						in = false;
+						updateBorder();
+					}
+	
+					private void updateBorder() {
+						rowsCount.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
+								: javax.swing.border.BevelBorder.RAISED));
+					}
+				});
+			}
+		} else {
+			rowsCount.setBorder(null);
+			rowsCount.setIcon(null);
 		}
 	}
 
+	private boolean rowsCountHasListener = false;
+	private boolean allowNewLimit = false;
+	private List<Integer> moreLimits = new ArrayList<Integer>();
+	
 	private int getDefaultSortColumn() {
 		if (table == null || table instanceof SqlStatementTable || getQueryBuilderDialog() == null /* SQL Console */) {
 			return -1;
@@ -6156,6 +6154,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract MetaDataSource getMetaDataSource();
 	protected abstract void deselectChildrenIfNeededWithoutReload();
 	protected abstract int getReloadLimit();
+	protected abstract void setReloadLimit(int limit);
+	
+	protected Integer ownLimit = null;
+	
+	public int getOwnReloadLimit() {
+		if (ownLimit != null && ownLimit > getReloadLimit()) {
+			return ownLimit;
+		}
+		return getReloadLimit();
+	}
+	
+	protected void setOwnReloadLimit(int limit) {
+		ownLimit = limit;
+		reloadRows();
+	}
+	
 	protected void changeColumnOrder(Table table) {
 	}
 	protected void onLayoutChanged() {

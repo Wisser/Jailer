@@ -1174,6 +1174,11 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
+			protected void setReloadLimit(int limit) {
+				Desktop.this.setRowLimit(limit);
+			}
+
+			@Override
 			protected void changeColumnOrder(Table table) {
 				Desktop.this.changeColumnOrder(table);
 			}
@@ -1251,6 +1256,7 @@ public abstract class Desktop extends JDesktopPane {
 						child.browserContentPane.copy(tb, child.association, null, null, false);
 					}
 				}
+				tb.browserContentPane.ownLimit = ownLimit;
 				return tb;
 			}
 
@@ -1369,6 +1375,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	protected abstract int getRowLimit();
+	protected abstract void setRowLimit(int limit);
 
 	/**
 	 * Demaximizes all internal frames.

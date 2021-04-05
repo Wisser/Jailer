@@ -154,6 +154,9 @@ public class ResultSetRenderer extends javax.swing.JPanel {
         	}
         	return limit;
         }
+		@Override
+		protected void setReloadLimit(int limit) {
+		}
         @Override
         protected void unhide() {
         }

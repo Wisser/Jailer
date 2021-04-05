@@ -1114,8 +1114,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
                         if (origTabContentPanel == null) {
 	                        jTabbedPane1.add(rTabContainer);
-	                        jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, title));
-
+	                        JPanel tp;
+							jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), tp = getTitlePanel(jTabbedPane1, rTabContainer, title));
+							rowBrowserPerRTabContainer.put(rTabContainer, rb);
+							rowBrowserPerRTabContainer.put(tp, rb);
+	                        
 	                        if (jTabbedPane1.getTabCount() > MAX_TAB_COUNT) {
 	                            jTabbedPane1.remove(0);
 	                        }
@@ -1895,6 +1898,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	return (Integer) limitComboBox.getSelectedItem();
         }
         @Override
+        protected void setReloadLimit(int limit) {
+        	SQLConsole.this.setReloadLimit(limit);
+        }
+		@Override
+		protected void setOwnReloadLimit(int limit) {
+			setReloadLimit(limit);
+		}
+        @Override
         protected void unhide() {
         }
         @Override
@@ -2454,12 +2465,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 */
 	public void setRowLimit(Integer limit) {
 		limitComboBox.setSelectedItem(limit);
+		Component selectedComponent = jTabbedPane1.getSelectedComponent();
+		BrowserContentPane contentPane = rowBrowserPerRTabContainer.get(selectedComponent);
+		if (contentPane != null) {
+			contentPane.reloadRows();
+		}
 	}
 
 	private int initialContentSize;
 	private int initialContentHash;
 	private boolean dirty;
-
+	private Map<JComponent, BrowserContentPane> rowBrowserPerRTabContainer = new WeakHashMap<JComponent, BrowserContentPane>();
+	
 	/**
 	 * Loads content from file.
 	 *
@@ -2582,6 +2599,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	protected abstract void onContentStateChange(File file, boolean dirty);
+    protected abstract void setReloadLimit(int limit);
 
 	static private ImageIcon runIcon;
     static private ImageIcon runAllIcon;

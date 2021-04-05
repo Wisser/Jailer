@@ -621,6 +621,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 			@Override
+			protected void setRowLimit(int limit) {
+				itemPerLimit.get(limit).setSelected(true);
+				itemPerLimit.get(limit).doClick();
+			}
+
+			@Override
 			protected boolean isDesktopVisible() {
 				return workbenchTabbedPane.getSelectedComponent() == desktopSplitPane;
 			}
@@ -3875,6 +3881,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		@Override
 		protected void openDataModelEditor(boolean merge) {
 			DataBrowser.this.openDataModelEditor(merge);
+		}
+
+		@Override
+		protected void setReloadLimit(int limit) {
+			desktop.setRowLimit(limit);
 		}
 	}
 

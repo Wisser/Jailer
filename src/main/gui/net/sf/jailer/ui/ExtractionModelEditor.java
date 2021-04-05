@@ -1924,9 +1924,18 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			m.addActionListener(new ActionListener () {
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					if (restrictionEditor.restricted.isEnabled() && !restrictionEditor.restricted.isSelected()) {
+						restrictionEditor.restricted.setSelected(true);
+						restrictionEditor.restricted.doClick();
+					}
 					if (restrictionEditor.restriction.isEnabled()) {
 						if (restrictionEditor.restriction.isEditable()) {
-							restrictionEditor.restriction.replaceSelection(c);
+							if (!restrictionEditor.restriction.hasFocus()) {
+								restrictionEditor.restriction.setSelectionEnd(restrictionEditor.restriction.getDocument().getLength());
+								restrictionEditor.restriction.setSelectionStart(restrictionEditor.restriction.getDocument().getLength());
+							}
+							restrictionEditor.restriction.replaceSelection(c + " ");
+							restrictionEditor.restriction.grabFocus();
 						}
 					}
 				}

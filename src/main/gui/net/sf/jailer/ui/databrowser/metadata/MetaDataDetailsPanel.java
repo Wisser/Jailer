@@ -288,6 +288,10 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		    		}
 
 		    		@Override
+					protected void setReloadLimit(int limit) {
+					}
+
+		    		@Override
 					protected void unhide() {
 					}
 					@Override
