@@ -26,6 +26,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
@@ -165,6 +167,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 10;
 		gridBagConstraints.gridy = 10;
+		gridBagConstraints.gridheight = 10;
 		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 1.0;
@@ -251,8 +254,8 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 
         jPanel1 = new javax.swing.JPanel();
         paramsPanel = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
         addOnPanel = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         scalarSQIconToggleButton = new javax.swing.JToggleButton();
@@ -271,21 +274,20 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         paramsPanel.setLayout(new javax.swing.BoxLayout(paramsPanel, javax.swing.BoxLayout.LINE_AXIS));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 20;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(paramsPanel, gridBagConstraints);
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
-
-        addOnPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        addOnPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridx = 20;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel2.add(addOnPanel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel1.add(addOnPanel, gridBagConstraints);
 
+        jPanel2.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 5;
@@ -451,7 +453,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	 * @return new condition or <code>null</code>, if user canceled the editor
 	 */
 	public void edit(JComponent locator, String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
-		if (Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
+		if (condition.length() > 60 || Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
 			condition = new BasicFormatterImpl().format(condition);
 		}
 
@@ -480,7 +482,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		ok = false;
 		escaped = false;
 		editorPane.setText(condition);
-		editorPane.setCaretPosition(0);
+//		editorPane.setCaretPosition(0);
 		editorPane.discardAllEdits();
 
 		if (parameterSelector != null) {
@@ -575,7 +577,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    protected javax.swing.JPanel addOnPanel;
+    public javax.swing.JPanel addOnPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel gripPanel;
     private javax.swing.JLabel jLabel2;
@@ -599,44 +601,59 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	private SQLAutoCompletion sqlAutoCompletion;
 
 	public void observe(final JTextField textfield, final Runnable open) {
-		InputMap im = textfield.getInputMap();
+		textfield.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				UIUtil.invokeLater(1, () -> openOnTextfield(textfield, open, false));
+			}
+		});
+
 		@SuppressWarnings("serial")
 		Action a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String origText = textfield.getText();
-				String caretMarker;
-				for (int suffix = 0; ; suffix++) {
-					caretMarker = "CARET" + suffix;
-					if (!origText.contains(caretMarker)) {
-						break;
-					}
-				}
-				try {
-					textfield.getDocument().insertString(textfield.getCaretPosition(), caretMarker, null);
-				} catch (BadLocationException e1) {
-					e1.printStackTrace();
-				}
-				open.run();
-				textfield.setText(origText);
-				String text = editorPane.getText();
-				int i = text.indexOf(caretMarker);
-				if (i >= 0) {
-					editorPane.setText(text.substring(0, i) + text.substring(i + caretMarker.length()));
-					editorPane.setCaretPosition(i);
-				}
-				UIUtil.invokeLater(1, new Runnable() {
-					@Override
-					public void run() {
-						sqlAutoCompletion.doCompletion();
-					}
-				});
+				openOnTextfield(textfield, open, true);
 			}
+
 		};
+		
 		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
+		InputMap im = textfield.getInputMap();
 		im.put(ks, a);
 		ActionMap am = textfield.getActionMap();
 		am.put(a, a);
+	}
+
+	private void openOnTextfield(final JTextField textfield, final Runnable open, boolean doCompletion) {
+		String origText = textfield.getText();
+		String caretMarker;
+		for (int suffix = 0; ; suffix++) {
+			caretMarker = "CARET" + suffix;
+			if (!origText.contains(caretMarker)) {
+				break;
+			}
+		}
+		try {
+			textfield.getDocument().insertString(textfield.getCaretPosition(), caretMarker, null);
+		} catch (BadLocationException e1) {
+			e1.printStackTrace();
+		}
+		open.run();
+		textfield.setText(origText);
+		String text = editorPane.getText();
+		int i = text.indexOf(caretMarker);
+		if (i >= 0) {
+			editorPane.setText(text.substring(0, i) + text.substring(i + caretMarker.length()));
+			editorPane.setCaretPosition(i);
+		}
+		if (doCompletion) {
+			UIUtil.invokeLater(1, new Runnable() {
+				@Override
+				public void run() {
+					sqlAutoCompletion.doCompletion();
+				}
+			});
+		}
 	}
 
 	protected abstract void consume(String cond);

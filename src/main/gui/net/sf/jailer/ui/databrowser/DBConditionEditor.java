@@ -20,28 +20,23 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
@@ -52,7 +47,6 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
@@ -154,46 +148,6 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		super.escapePressed();
 	}
 
-	/**
-	 * Opens a drop-down box which allows the user to select columns for restriction definitions.
-	 */
-	private void openColumnDropDownBox(JLabel label, String alias, Table table) {
-		JPopupMenu popup = new JScrollPopupMenu();
-		List<String> columns = new ArrayList<String>();
-		
-		for (Column c: table.getColumns()) {
-			columns.add(alias + "." + c.name);
-		}
-		if (addPseudoColumns) {
-			columns.add("");
-			columns.add(alias + ".$IS_SUBJECT");
-			columns.add(alias + ".$DISTANCE");
-			columns.add("$IN_DELETE_MODE");
-			columns.add("NOT $IN_DELETE_MODE");
-		}
-		
-		for (final String c: columns) {
-			if (c.equals("")) {
-				popup.add(new JSeparator());
-				continue;
-			}
-			JMenuItem m = new JMenuItem(c);
-			m.addActionListener(new ActionListener () {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					if (editorPane.isEnabled()) {
-						if (editorPane.isEditable()) {
-							editorPane.replaceSelection(c);
-						}
-					}
-				}
-			});
-			popup.add(m);
-		}
-		UIUtil.fit(popup);
-		popup.show(label, 0, label.getHeight());
-	}
-	
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
@@ -375,7 +329,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	 * @return new condition or <code>null</code>, if user canceled the editor
 	 */
 	public void edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
-		if (Pattern.compile("(\\bselect\\b)|(^\\s*\\()", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
+		if (condition.length() > 60 || Pattern.compile("(\\bselect\\b)|(^\\s*\\()", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
 			condition = new BasicFormatterImpl().format(condition);
 		}
 		this.table1 = table1;
@@ -451,7 +405,16 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	public final RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
 	private SQLAutoCompletion sqlAutoCompletion;
 
-	public static void initialObserve(final JTextField textfield, final Runnable open) {
+	public static void initialObserve(final JTextField textfield, Runnable open, Runnable openAndDoCompletion) {
+		textfield.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getX() < textfield.getWidth() - 10) {
+					UIUtil.invokeLater(1, open);
+				}
+			}
+		});
+		
 		InputMap im = textfield.getInputMap();
 		@SuppressWarnings("serial")
 		Action a = new AbstractAction() {
@@ -460,7 +423,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 			public void actionPerformed(ActionEvent e) {
 				if (!done) {
 					done = true;
-					open.run();
+					openAndDoCompletion.run();
 				}
 			}
 		};
@@ -476,7 +439,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		Action a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				doCompletion(textfield, open);
+				doCompletion(textfield, open, true);
 			}
 		};
 		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK);
@@ -485,7 +448,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		am.put(a, a);
 	}
 	
-	public void doCompletion(final JTextField textfield, final Runnable open) {
+	public void doCompletion(final JTextField textfield, final Runnable open, boolean withCompletion) {
 		String origText = textfield.getText();
 		String caretMarker;
 		for (int suffix = 0; ; suffix++) {
@@ -507,12 +470,14 @@ public abstract class DBConditionEditor extends EscapableDialog {
 			editorPane.setText(text.substring(0, i) + text.substring(i + caretMarker.length()));
 			editorPane.setCaretPosition(i);
 		}
-		UIUtil.invokeLater(1, new Runnable() {
-			@Override
-			public void run() {
-				sqlAutoCompletion.doCompletion();
-			}
-		});
+		if (withCompletion) {
+			UIUtil.invokeLater(1, new Runnable() {
+				@Override
+				public void run() {
+					sqlAutoCompletion.doCompletion();
+				}
+			});
+		}
 	}
 
 	protected abstract void consume(String cond);

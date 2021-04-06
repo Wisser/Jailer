@@ -18,6 +18,12 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JLabel" name="openSubjectConditionEditor">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="jLabel10"/>
+        <Property name="toolTipText" type="java.lang.String" value="open SQL editor"/>
+      </Properties>
+    </Component>
   </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -446,7 +452,7 @@
                         <Component class="javax.swing.JTextField" name="condition">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="jTextField1"/>
-                            <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;SQL expression. Keep empty if you want to export all rows.&#xa;&lt;hr&gt;&#xa;&lt;i&gt;Ctrl+Space&lt;/i&gt; for code completion.&#xa;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;"/>
+                            <Property name="toolTipText" type="java.lang.String" value="SQL expression. Keep empty if you want to export all rows."/>
                           </Properties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
@@ -475,17 +481,6 @@
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
                               <BorderConstraints direction="West"/>
-                            </Constraint>
-                          </Constraints>
-                        </Component>
-                        <Component class="javax.swing.JLabel" name="openSubjectConditionEditor">
-                          <Properties>
-                            <Property name="text" type="java.lang.String" value="jLabel10"/>
-                            <Property name="toolTipText" type="java.lang.String" value="open SQL editor"/>
-                          </Properties>
-                          <Constraints>
-                            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-                              <BorderConstraints direction="East"/>
                             </Constraint>
                           </Constraints>
                         </Component>

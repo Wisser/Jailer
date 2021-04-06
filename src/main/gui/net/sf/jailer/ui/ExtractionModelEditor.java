@@ -809,6 +809,20 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 		};
+		gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        restrictionConditionEditor.addOnPanel.add(restrictionEditor.columnsA, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        restrictionConditionEditor.addOnPanel.add(restrictionEditor.columnsB, gridBagConstraints);
 		restrictionConditionEditor.setTitle("Restriction");
 		openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		openSubjectConditionEditor.setText(null);
@@ -1065,6 +1079,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jScrollPane4 = new javax.swing.JScrollPane();
         restrictionsTable = new javax.swing.JTable();
+        openSubjectConditionEditor = new javax.swing.JLabel();
         jSplitPane1 = new javax.swing.JSplitPane();
         jpanel = new javax.swing.JPanel();
         jPanel12 = new javax.swing.JPanel();
@@ -1098,7 +1113,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         condition = new javax.swing.JTextField();
         jPanel8 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
-        openSubjectConditionEditor = new javax.swing.JLabel();
         subjectTable = new JComboBox2();
         exportButton = new javax.swing.JButton();
         jPanel10 = new javax.swing.JPanel();
@@ -1136,6 +1150,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         restrictionsTable.setModel(restrictionTableModel());
         jScrollPane4.setViewportView(restrictionsTable);
+
+        openSubjectConditionEditor.setText("jLabel10");
+        openSubjectConditionEditor.setToolTipText("open SQL editor");
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -1338,7 +1355,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel7.setLayout(new java.awt.BorderLayout());
 
         condition.setText("jTextField1");
-        condition.setToolTipText("<html>SQL expression. Keep empty if you want to export all rows.\n<hr>\n<i>Ctrl+Space</i> for code completion.\n\t\t\t\t\t\t");
+        condition.setToolTipText("SQL expression. Keep empty if you want to export all rows.");
         jPanel7.add(condition, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1353,10 +1370,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jLabel7.setText(" Where ");
         jPanel8.add(jLabel7, java.awt.BorderLayout.WEST);
-
-        openSubjectConditionEditor.setText("jLabel10");
-        openSubjectConditionEditor.setToolTipText("open SQL editor");
-        jPanel8.add(openSubjectConditionEditor, java.awt.BorderLayout.EAST);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1924,20 +1937,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			m.addActionListener(new ActionListener () {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if (restrictionEditor.restricted.isEnabled() && !restrictionEditor.restricted.isSelected()) {
-						restrictionEditor.restricted.setSelected(true);
-						restrictionEditor.restricted.doClick();
-					}
-					if (restrictionEditor.restriction.isEnabled()) {
-						if (restrictionEditor.restriction.isEditable()) {
-							if (!restrictionEditor.restriction.hasFocus()) {
-								restrictionEditor.restriction.setSelectionEnd(restrictionEditor.restriction.getDocument().getLength());
-								restrictionEditor.restriction.setSelectionStart(restrictionEditor.restriction.getDocument().getLength());
-							}
-							restrictionEditor.restriction.replaceSelection(c + " ");
-							restrictionEditor.restriction.grabFocus();
-						}
-					}
+					restrictionConditionEditor.editorPane.replaceSelection(c);
 				}
 			});
 			popup.add(m);
@@ -1960,12 +1960,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		initialRestrictionCondition = null;
 		initXmlMappingEditor(association);
 		initRestrictedDependencyWarningField();
-		restrictionEditor.columnsA.setText(null);
-		restrictionEditor.columnsB.setText(null);
+		if (association != null) {
+			restrictionEditor.columnsA.setText(dataModel.getDisplayName(association.source));
+			restrictionEditor.columnsB.setText(dataModel.getDisplayName(association.destination));
+		}
 		restrictionEditor.columnsA.setIcon(dropDownIcon);
 		restrictionEditor.columnsB.setIcon(dropDownIcon);
-		restrictionEditor.columnsA.setEnabled(true);
-		restrictionEditor.columnsB.setEnabled(true);
+		restrictionEditor.columnsA.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+		restrictionEditor.columnsB.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 		restrictionEditor.openRestrictionConditionEditor.setEnabled(true);
 		if (maA != null) {
 			restrictionEditor.columnsA.removeMouseListener(maA);
@@ -1983,11 +1985,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 				@Override
 				public void mouseEntered(java.awt.event.MouseEvent evt) {
-					restrictionEditor.columnsB.setEnabled(false);
+					restrictionEditor.columnsB.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
 				}
 				@Override
 				public void mouseExited(java.awt.event.MouseEvent evt) {
-					restrictionEditor.columnsB.setEnabled(true);
+					restrictionEditor.columnsB.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 			   }
 			});
 			restrictionEditor.columnsA.addMouseListener(maA = new java.awt.event.MouseAdapter() {
@@ -1998,11 +2000,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 				@Override
 				public void mouseEntered(java.awt.event.MouseEvent evt) {
-					restrictionEditor.columnsA.setEnabled(false);
+					restrictionEditor.columnsA.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
 				}
 				@Override
 				public void mouseExited(java.awt.event.MouseEvent evt) {
-					restrictionEditor.columnsA.setEnabled(true);
+					restrictionEditor.columnsA.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 			   }
 			});
 		}

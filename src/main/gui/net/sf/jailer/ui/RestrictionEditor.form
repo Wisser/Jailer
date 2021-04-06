@@ -19,6 +19,39 @@
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
       </AuxValues>
     </Component>
+    <Component class="javax.swing.JLabel" name="columnsA">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="V"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="columnsB">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="V"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="apply">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="apply"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="openRestrictionConditionEditor">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="jLabel5"/>
+        <Property name="toolTipText" type="java.lang.String" value="open editor"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+      </AuxValues>
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="opaque" type="boolean" value="false"/>
@@ -154,15 +187,6 @@
                     <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JLabel" name="openRestrictionConditionEditor">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="jLabel5"/>
-                    <Property name="toolTipText" type="java.lang.String" value="open editor"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
-                  </AuxValues>
-                </Component>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JPanel" name="jPanel9">
@@ -182,19 +206,8 @@
               <SubComponents>
                 <Component class="javax.swing.JTextField" name="restriction">
                   <Properties>
-                    <Property name="columns" type="int" value="14"/>
-                    <Property name="text" type="java.lang.String" value="jTextField1"/>
-                    <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                      <Connection code="getConditionToolTip()" type="code"/>
-                    </Property>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JButton" name="apply">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="apply"/>
+                    <Property name="columns" type="int" value="16"/>
+                    <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;&#xa;SQL expression to restrict the join condition. &lt;br&gt;&#xa;Keep empty to reach all associated rows.&#xa;&lt;/html&gt;"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
@@ -279,19 +292,11 @@
             <Property name="verticalGap" type="int" value="0"/>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JLabel" name="columnsA">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="V"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
-              </AuxValues>
-            </Component>
             <Component class="javax.swing.JLabel" name="source">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
                   <FontInfo relative="true">
-                    <Font component="source" property="font" relativeSize="true" size="1"/>
+                    <Font bold="true" component="source" property="font" relativeSize="true" size="1"/>
                   </FontInfo>
                 </Property>
                 <Property name="text" type="java.lang.String" value="jLabel3"/>
@@ -302,11 +307,6 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel2">
               <Properties>
-                <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-                  <FontInfo relative="true">
-                    <Font bold="false" component="jLabel2" property="font" relativeSize="true" size="0"/>
-                  </FontInfo>
-                </Property>
                 <Property name="text" type="java.lang.String" value="A"/>
               </Properties>
             </Component>
@@ -336,19 +336,11 @@
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
               </AuxValues>
             </Component>
-            <Component class="javax.swing.JLabel" name="columnsB">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="V"/>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
-              </AuxValues>
-            </Component>
             <Component class="javax.swing.JLabel" name="destination">
               <Properties>
                 <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
                   <FontInfo relative="true">
-                    <Font component="destination" property="font" relativeSize="true" size="1"/>
+                    <Font bold="true" component="destination" property="font" relativeSize="true" size="1"/>
                   </FontInfo>
                 </Property>
                 <Property name="text" type="java.lang.String" value="jLabel3"/>
@@ -359,12 +351,12 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel3">
               <Properties>
-                <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
-                  <FontInfo relative="true">
-                    <Font bold="false" component="jLabel3" property="font" relativeSize="true" size="0"/>
-                  </FontInfo>
-                </Property>
                 <Property name="text" type="java.lang.String" value="B"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JLabel" name="jLabel6">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="as"/>
               </Properties>
             </Component>
           </SubComponents>

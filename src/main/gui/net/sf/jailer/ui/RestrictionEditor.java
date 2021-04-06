@@ -39,11 +39,6 @@ public class RestrictionEditor extends javax.swing.JPanel {
 	public RestrictionEditor() {
 		initComponents();
 		
-		Font font = new JLabel("normal").getFont();
-		Font boldFont = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-		source.setFont(boldFont);
-		destination.setFont(boldFont);
-		
 		ImageIcon scaledWarnIcon = UIUtil.scaleIcon(this, warnIcon, 1);
 		
 		restrictedDependencyWarning.setIcon(scaledWarnIcon);
@@ -108,6 +103,10 @@ public class RestrictionEditor extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         joinCondition2 = new javax.swing.JTextField();
+        columnsA = new javax.swing.JLabel();
+        columnsB = new javax.swing.JLabel();
+        apply = new javax.swing.JButton();
+        openRestrictionConditionEditor = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
@@ -117,23 +116,20 @@ public class RestrictionEditor extends javax.swing.JPanel {
         restrictedDependencyWarning = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
         restricted = new javax.swing.JRadioButton();
-        openRestrictionConditionEditor = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
         restriction = new javax.swing.JTextField();
-        apply = new javax.swing.JButton();
         jPanel10 = new javax.swing.JPanel();
         fkToNullCheckBox = new javax.swing.JCheckBox();
         jLabel5 = new javax.swing.JLabel();
         fk20DisabledHintLabel = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
-        columnsA = new javax.swing.JLabel();
         source = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         type = new javax.swing.JLabel();
         cardinality = new javax.swing.JLabel();
-        columnsB = new javax.swing.JLabel();
         destination = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         joinCondition = new javax.swing.JLabel();
@@ -145,6 +141,15 @@ public class RestrictionEditor extends javax.swing.JPanel {
         joinCondition2.setCaretPosition(1);
         joinCondition2.setFocusable(false);
         joinCondition2.setRequestFocusEnabled(false);
+
+        columnsA.setText("V");
+
+        columnsB.setText("V");
+
+        apply.setText("apply");
+
+        openRestrictionConditionEditor.setText("jLabel5");
+        openRestrictionConditionEditor.setToolTipText("open editor");
 
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
@@ -199,10 +204,6 @@ public class RestrictionEditor extends javax.swing.JPanel {
         restricted.setOpaque(false);
         jPanel8.add(restricted);
 
-        openRestrictionConditionEditor.setText("jLabel5");
-        openRestrictionConditionEditor.setToolTipText("open editor");
-        jPanel8.add(openRestrictionConditionEditor);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -212,13 +213,9 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel9.setOpaque(false);
         jPanel9.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
-        restriction.setColumns(14);
-        restriction.setText("jTextField1");
-        restriction.setToolTipText(getConditionToolTip());
+        restriction.setColumns(16);
+        restriction.setToolTipText("<html>\nSQL expression to restrict the join condition. <br>\nKeep empty to reach all associated rows.\n</html>");
         jPanel9.add(restriction);
-
-        apply.setText("apply");
-        jPanel9.add(apply);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -282,14 +279,10 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
         jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 4, 0));
 
-        columnsA.setText("V");
-        jPanel4.add(columnsA);
-
-        source.setFont(source.getFont().deriveFont(source.getFont().getSize()+1f));
+        source.setFont(source.getFont().deriveFont(source.getFont().getStyle() | java.awt.Font.BOLD, source.getFont().getSize()+1));
         source.setText("jLabel3");
         jPanel4.add(source);
 
-        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() & ~java.awt.Font.BOLD));
         jLabel2.setText("A");
         jPanel4.add(jLabel2);
 
@@ -301,16 +294,15 @@ public class RestrictionEditor extends javax.swing.JPanel {
         cardinality.setText("jLabel3");
         jPanel4.add(cardinality);
 
-        columnsB.setText("V");
-        jPanel4.add(columnsB);
-
-        destination.setFont(destination.getFont().deriveFont(destination.getFont().getSize()+1f));
+        destination.setFont(destination.getFont().deriveFont(destination.getFont().getStyle() | java.awt.Font.BOLD, destination.getFont().getSize()+1));
         destination.setText("jLabel3");
         jPanel4.add(destination);
 
-        jLabel3.setFont(jLabel3.getFont().deriveFont(jLabel3.getFont().getStyle() & ~java.awt.Font.BOLD));
         jLabel3.setText("B");
         jPanel4.add(jLabel3);
+
+        jLabel6.setText("as");
+        jPanel4.add(jLabel6);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -370,10 +362,6 @@ public class RestrictionEditor extends javax.swing.JPanel {
     	fkToNullCheckBoxPropertyChange(null);
     }//GEN-LAST:event_fkToNullCheckBoxComponentShown
 
-	private String getConditionToolTip() {
-		return "<html><i>Ctrl+Space</i> for code completion.";
-	}
-	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton apply;
     public javax.swing.JLabel cardinality;
@@ -388,6 +376,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel2;

@@ -737,10 +737,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		loadingCauseLabel.setVisible(false);
 		sortColumnsCheckBox.setVisible(false);
 
-		findColumnsLabel.setText(null);
-		findColumnsLabel.setToolTipText("Find Column...");
-		findColumnsLabel.setIcon(StringSearchPanel.getSearchIcon(false, this));
-
+		ImageIcon scaledFindColumnIcon1 = UIUtil.scaleIcon(this, findColumnIcon1);
+		ImageIcon scaledFindColumnIcon2 = UIUtil.scaleIcon(this, findColumnIcon2);
+		
+		findColumnsLabel.setText(getQueryBuilderDialog() != null? null : "find Column");
+		findColumnsLabel.setToolTipText("find Column...");
+		findColumnsLabel.setIcon(scaledFindColumnIcon1);
+		findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+		
 		findColumnsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private boolean in = false;
 
@@ -777,8 +781,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			private void updateBorder() {
-				findColumnsPanel.setBackground(in? new Color(255, 255, 100) : null);
-				findColumnsPanel.setOpaque(in);
+				findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(in? javax.swing.border.BevelBorder.LOWERED : javax.swing.border.BevelBorder.RAISED));
+				findColumnsLabel.setIcon(in? scaledFindColumnIcon2 : scaledFindColumnIcon1);
 			}
 		});
 
@@ -1473,12 +1477,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		if (andCondition.getEditor().getEditorComponent() instanceof JTextField) {
-			DBConditionEditor.initialObserve((JTextField) andCondition.getEditor().getEditorComponent(), new Runnable() {
-				@Override
-				public void run() {
-					createConditionEditor.run();
-					andConditionEditor.doCompletion((JTextField) andCondition.getEditor().getEditorComponent(), openConditionEditor);
-				}
+			DBConditionEditor.initialObserve((JTextField) andCondition.getEditor().getEditorComponent(), () -> {
+				createConditionEditor.run();
+				andConditionEditor.doCompletion((JTextField) andCondition.getEditor().getEditorComponent(), openConditionEditor, false);
+			}, () -> {
+				createConditionEditor.run();
+				andConditionEditor.doCompletion((JTextField) andCondition.getEditor().getEditorComponent(), openConditionEditor, true);
 			});
 		}
 		relatedRowsLabel.setIcon(blueIcon);
@@ -5000,7 +5004,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							@Override
 							public void run() {
 								popup = new JPopupMenu();
-								JMenuItem title = new JMenuItem("increase limit");
+								JMenuItem title = new JMenuItem("new limit");
 								title.setEnabled(false);
 								popup.add(title);
 								popup.addSeparator();
@@ -5196,6 +5200,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         andCondition = new javax.swing.JComboBox();
         openEditorLabel = new javax.swing.JLabel();
+        openEditorButton = new javax.swing.JToggleButton();
         pendingNonpendingPanel = new javax.swing.JPanel();
         cardPanel = new javax.swing.JPanel();
         tablePanel = new javax.swing.JPanel();
@@ -5243,7 +5248,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         menuPanel = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
-        openEditorButton = new javax.swing.JToggleButton();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -5268,6 +5272,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         openEditorLabel.setText(" And  ");
+
+        openEditorButton.setText("Where");
+        openEditorButton.setToolTipText("open SQL editor");
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -5331,7 +5338,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         findColumnsLabel.setText("Find Columns");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
         findColumnsPanel.add(findColumnsLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -5697,13 +5704,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         jPanel7.add(loadButton, gridBagConstraints);
-
-        openEditorButton.setText("Where");
-        openEditorButton.setToolTipText("open SQL editor");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        jPanel7.add(openEditorButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -7018,10 +7018,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private static ImageIcon warnIcon;
     private static ImageIcon blueIcon;
     private static ImageIcon scaledWarnIcon;
+    private static ImageIcon findColumnIcon1;
+    private static ImageIcon findColumnIcon2;
     static {
         // load images
     	warnIcon = UIUtil.readImage("/wanr.png");
     	blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
+    	findColumnIcon1 = UIUtil.readImage("/findcolumn.png");
+    	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
     }
 
 }

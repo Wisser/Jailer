@@ -3206,7 +3206,7 @@ public abstract class Desktop extends JDesktopPane {
 
 			csv += rb.internalFrame.getLocation().x + "; " + rb.internalFrame.getLocation().y + "; ";
 			csv += rb.internalFrame.getSize().width + "; " + rb.internalFrame.getSize().height + "; ";
-			csv += 500 + "; " + rb.browserContentPane.selectDistinctCheckBox.isSelected() + "; ";
+			csv += (rb.browserContentPane.ownLimit == null? "" : rb.browserContentPane.ownLimit) + "; " + rb.browserContentPane.selectDistinctCheckBox.isSelected() + "; ";
 
 			if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
 				csv += "T; " + CsvFile.encodeCell(rb.browserContentPane.table.getOriginalName()) + "; "
@@ -3331,6 +3331,11 @@ public abstract class Desktop extends JDesktopPane {
 				String where = l.cells.get(2);
 				Point loc = new Point(Integer.parseInt(l.cells.get(3)), Integer.parseInt(l.cells.get(4)));
 				Dimension size = new Dimension(Integer.parseInt(l.cells.get(5)), Integer.parseInt(l.cells.get(6)));
+				String ownLimitRaw = l.cells.get(7);
+				if ("500".equals(ownLimitRaw)) {
+					ownLimitRaw = ""; // legacy
+				}
+				Integer ownLimit = ownLimitRaw.isEmpty()? null : Integer.parseInt(ownLimitRaw);
 				boolean selectDistinct = Boolean.parseBoolean(l.cells.get(8));
 				RowBrowser rb = null;
 				if ("T".equals(l.cells.get(9))) {
@@ -3381,6 +3386,7 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 				if (rb != null) {
+					rb.browserContentPane.ownLimit = ownLimit;
 					rb.setHidden(Boolean.parseBoolean(l.cells.get(12)));
 					if (toBeAppended == null) {
 						rb.internalFrame.setLocation(loc);
