@@ -5004,6 +5004,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								title.setEnabled(false);
 								popup.add(title);
 								popup.addSeparator();
+								JMenu toAddTo = null;
+								int nr = 0;
 								for (Integer l: moreLimits) {
 									JMenuItem item = new JMenuItem(l.toString());
 									item.addActionListener(new ActionListener() {
@@ -5012,7 +5014,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 											setOwnReloadLimit(l);
 										}
 									});
-									popup.add(item);
+									++nr;
+									if (nr == 3 && moreLimits.size() > 3) {
+										JMenu subAdd = new JMenu("more limits");
+										if (toAddTo == null) {
+											popup.add(subAdd);
+										} else {
+											toAddTo.add(subAdd);
+										}
+										toAddTo = subAdd;
+									}
+									if (toAddTo == null) {
+										popup.add(item);
+									} else {
+										toAddTo.add(item);
+									}
 								}
 								popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 									@Override
