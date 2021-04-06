@@ -747,6 +747,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		findColumnsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private boolean in = false;
+			private boolean active = false;
 
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -757,9 +758,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							in = false;
 							updateBorder();
 							if (findColumnsPanel.isShowing()) {
-								Point point = new Point();
+								Point point = new Point(0, findColumnsPanel.getHeight());
 								SwingUtilities.convertPointToScreen(point, findColumnsPanel);
-								findColumns((int) point.getX(), (int) point.getY(), currentRowsTableReference == null? rowsTable : currentRowsTableReference.get(), currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
+								active = true;
+								updateBorder();
+								findColumns((int) point.getX(), (int) point.getY(), currentRowsTableReference == null? rowsTable : currentRowsTableReference.get(), currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get(), () -> { active = false; updateBorder(); });
 							}
 						}
 					});
@@ -781,8 +784,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			private void updateBorder() {
-				findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(in? javax.swing.border.BevelBorder.LOWERED : javax.swing.border.BevelBorder.RAISED));
-				findColumnsLabel.setIcon(in? scaledFindColumnIcon2 : scaledFindColumnIcon1);
+				findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(in || active? javax.swing.border.BevelBorder.LOWERED : javax.swing.border.BevelBorder.RAISED));
+				findColumnsLabel.setIcon(in || active? scaledFindColumnIcon2 : scaledFindColumnIcon1);
 			}
 		});
 
@@ -2246,7 +2249,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				findColumns(x, y, contextJTable, sortColumnsCheckBox.isSelected());
+				findColumns(x, y, contextJTable, sortColumnsCheckBox.isSelected(), null);
 			}
 		});
 		return menuItem;
@@ -6813,8 +6816,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public void setCurrentRowsSorted(Reference<Boolean> reference) {
 		currentRowsSortedReference = reference;
 	}
-
-	private void findColumns(final int x, final int y, final JTable contextJTable, boolean columnsSorted) {
+	
+	private StringSearchPanel searchPanel;
+	
+	private void findColumns(final int x, final int y, final JTable contextJTable, boolean columnsSorted, Runnable onClose) {
 		TableColumnModel columnModel = rowsTable.getColumnModel();
 		List<String> columNames = new ArrayList<String>();
 		Map<String, Integer> columNamesCount = new HashMap<String, Integer>();
@@ -6841,7 +6846,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		final JComboBox2 combobox = new JComboBox2();
 		combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
-		StringSearchPanel searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
+		searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
 			@Override
 			public void run() {
 				Object selected = combobox.getSelectedItem();
@@ -6916,6 +6921,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		};
 
 		searchPanel.setStringCount(columNamesCount);
+		searchPanel.setOnClose(onClose);
 		searchPanel.find(owner, "Find Column", x, y, true);
 	}
 

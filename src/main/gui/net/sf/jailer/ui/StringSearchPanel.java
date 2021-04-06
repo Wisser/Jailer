@@ -33,8 +33,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -213,6 +215,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			button.setSelected(false);
 		}
 	}
+	
+	public void setOnClose(Runnable onClose) {
+		this.onClose = onClose;
+	}
 
 	public void find(Window owner, Object titel, int x, int y, boolean locateUnderButton) {
 		dialog = owner instanceof Dialog? new EscapableDialog((Dialog) owner, String.valueOf(titel), false) {
@@ -296,6 +302,14 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				// ignore
 			}
 		}
+		dialog.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				if (onClose != null) {
+					onClose.run();
+				}
+			}
+		});
 		dialog.setVisible(true);
 	}
 
@@ -352,6 +366,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private final DataModel dataModel;
 	private final javax.swing.JComboBox combobox;
 	private final Runnable onSuccess;
+	private Runnable onClose;
 	private final JToggleButton button;
 	
     /**
