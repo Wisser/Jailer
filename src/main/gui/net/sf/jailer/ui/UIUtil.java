@@ -116,6 +116,7 @@ import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
+import net.sf.jailer.util.Pair;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 
 /**
@@ -1109,9 +1110,17 @@ public class UIUtil {
     	return null;
     }
 
+    private static Map<Pair<ImageIcon, Double>, ImageIcon> scaledIconPerFactor = new HashMap<Pair<ImageIcon, Double>, ImageIcon>();
+    
 	public static ImageIcon scaleIcon(ImageIcon icon, double factor) {
 		if (icon != null) {
-	        return scaleIcon(icon, (int)(icon.getIconWidth() * factor), (int)(icon.getIconHeight() * factor));
+			Pair<ImageIcon, Double> key = new Pair<ImageIcon, Double>(icon, factor);
+			ImageIcon result = scaledIconPerFactor.get(key);
+			if (result == null) {
+	        	result = scaleIcon(icon, (int)(icon.getIconWidth() * factor), (int)(icon.getIconHeight() * factor));
+	        	scaledIconPerFactor.put(key, result);
+			}
+			return result;
 		}
 		return null;
 	}
@@ -1119,19 +1128,16 @@ public class UIUtil {
 	public static synchronized ImageIcon scaleIcon(ImageIcon icon, int w, int h) {
 		if (icon != null) {
 			try {
-//				icon = new ImageIcon(scaledInstance(icon.getImage(), icon.getIconWidth() * 2, icon.getIconHeight() * 2));
 				Image scaled = scaledInstance(icon.getImage(), w, h);
 				if (!baseMultiResolutionImageClassExists || (icon.getIconWidth() <= w && icon.getIconHeight() <= h)) {
 					return new ImageIcon(scaled);
 				}
 				
 				List<Image> imageListArr = new ArrayList<Image>();
-				for (int p = 125; p <= 200; p += 25) {
-					int wp = (w * p + 50) / 100;
-					int hp = (h * p + 50) / 100;
-					if (icon.getIconWidth() <= wp && icon.getIconHeight() <= hp) {
-						break;
-					}
+				for (int p = 1125; p <= 6000; p += 125) {
+					double pSqrt = Math.sqrt(p / 1000.0);
+					int wp = (int) (w * pSqrt);
+					int hp = (int) (h * pSqrt);
 					Image scaledP = scaledInstance(icon.getImage(), wp, hp);
 					imageListArr.add(scaledP);	
 				}
