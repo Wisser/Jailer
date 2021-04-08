@@ -160,7 +160,7 @@
                           <SubComponents>
                             <Component class="javax.swing.JLabel" name="sortColumnsLabel">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Natural column order "/>
+                                <Property name="text" type="java.lang.String" value="natural "/>
                               </Properties>
                             </Component>
                           </SubComponents>

@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -35,6 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -99,7 +101,6 @@ import net.sf.jailer.database.SqlException;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
-import net.sf.jailer.extractionmodel.ExtractionModel.IncompatibleModelException;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.subsetting.RowLimitExceededException;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
@@ -1118,8 +1119,8 @@ public class UIUtil {
 	public static synchronized ImageIcon scaleIcon(ImageIcon icon, int w, int h) {
 		if (icon != null) {
 			try {
-				icon = new ImageIcon(icon.getImage().getScaledInstance(icon.getIconWidth() * 2, icon.getIconHeight() * 2, Image.SCALE_SMOOTH));
-				Image scaled = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+//				icon = new ImageIcon(scaledInstance(icon.getImage(), icon.getIconWidth() * 2, icon.getIconHeight() * 2));
+				Image scaled = scaledInstance(icon.getImage(), w, h);
 				if (!baseMultiResolutionImageClassExists || (icon.getIconWidth() <= w && icon.getIconHeight() <= h)) {
 					return new ImageIcon(scaled);
 				}
@@ -1131,7 +1132,7 @@ public class UIUtil {
 					if (icon.getIconWidth() <= wp && icon.getIconHeight() <= hp) {
 						break;
 					}
-					Image scaledP = icon.getImage().getScaledInstance(wp, hp, Image.SCALE_SMOOTH);
+					Image scaledP = scaledInstance(icon.getImage(), wp, hp);
 					imageListArr.add(scaledP);	
 				}
 				imageListArr.add(0, scaled);
@@ -1152,6 +1153,13 @@ public class UIUtil {
 			}
 		}
 		return null;
+	}
+
+	private static Image scaledInstance(Image image, int w, int h) {
+		BufferedImage bufferedImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = (Graphics2D) bufferedImage.getGraphics();
+		g.drawImage(image.getScaledInstance(w, h, Image.SCALE_SMOOTH), 0, 0, null);
+		return bufferedImage;
 	}
 
 	private static Constructor<?> baseMultiResolutionImageClassConstructor = null;
@@ -1359,6 +1367,7 @@ public class UIUtil {
 					}
 				};
 				new RSyntaxTextArea();
+				getSQLEditorFont();
 			} catch (Throwable t) {
 				// ignore
 			}
@@ -1695,5 +1704,14 @@ public class UIUtil {
 			jailerLogo = null;
 		}
     }
+
+    private static Font sqlEditorFont = null;
+    
+	public static Font getSQLEditorFont() {
+		if (sqlEditorFont == null) {
+			sqlEditorFont = new RSyntaxTextArea().getFont();
+		}
+		return sqlEditorFont;
+	}
 
 }

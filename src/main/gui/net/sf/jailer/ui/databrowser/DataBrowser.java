@@ -43,6 +43,7 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
@@ -101,6 +102,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -2547,6 +2549,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	                                break;
 	                            }
 	                        }
+            				initMacKeyStrokes();
 	                        ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
 	                        ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
 	                        Object dSize = UIManager.get("SplitPane.dividerSize");
@@ -2566,6 +2569,38 @@ public class DataBrowser extends javax.swing.JFrame {
                 	UIUtil.showException(null, "Error", e);
                 }
             }
+
+			private void initMacKeyStrokes() {
+				try {
+					if (System.getProperty("os.name", "").startsWith("Mac")) {
+						addOSXKeyStrokes((InputMap) UIManager.get("EditorPane.focusInputMap"));
+						addOSXKeyStrokes((InputMap) UIManager.get("FormattedTextField.focusInputMap"));
+						addOSXKeyStrokes((InputMap) UIManager.get("PasswordField.focusInputMap"));
+						addOSXKeyStrokes((InputMap) UIManager.get("TextField.focusInputMap"));
+						addOSXKeyStrokes((InputMap) UIManager.get("TextPane.focusInputMap"));
+						addOSXKeyStrokes((InputMap) UIManager.get("TextArea.focusInputMap"));
+						addOSXKeyStrokesList((InputMap) UIManager.get("Table.ancestorInputMap"));
+						addOSXKeyStrokesList((InputMap) UIManager.get("Tree.focusInputMap"));
+					}
+				} catch (Throwable t) {
+					// ignore
+				}
+			}
+
+			private void addOSXKeyStrokes(InputMap inputMap) {
+				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK),
+						DefaultEditorKit.copyAction);
+				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK),
+						DefaultEditorKit.cutAction);
+				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK),
+						DefaultEditorKit.pasteAction);
+				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK),
+						DefaultEditorKit.selectAllAction);
+			}
+			private void addOSXKeyStrokesList(InputMap inputMap) {
+				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), "copy");
+				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK), "selectAll");
+			}
         });
     }
 
@@ -3331,7 +3366,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private DBClosureView closureView;
     private boolean suppressUpdateClosureBrowser = false;
-
+    
     protected void updateClosureBrowser(final RowBrowser rowBrowser) {
     	if (suppressUpdateClosureBrowser) {
     		return;

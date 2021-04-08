@@ -206,7 +206,7 @@
               <SubComponents>
                 <Component class="javax.swing.JTextField" name="restriction">
                   <Properties>
-                    <Property name="columns" type="int" value="16"/>
+                    <Property name="columns" type="int" value="32"/>
                     <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;&#xa;SQL expression to restrict the join condition. &lt;br&gt;&#xa;Keep empty to reach all associated rows.&#xa;&lt;/html&gt;"/>
                   </Properties>
                   <AuxValues>

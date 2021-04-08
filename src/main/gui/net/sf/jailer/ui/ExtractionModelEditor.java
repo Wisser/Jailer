@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.function.Consumer;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -511,6 +512,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		tree.setExpandsSelectedPaths(true);
 		restrictionEditor = new RestrictionEditor();
 
+		condition.setFont(UIUtil.getSQLEditorFont());
+		restrictionEditor.restriction.setFont(UIUtil.getSQLEditorFont());
+		
 		if (isHorizontalLayout ) {
 			graphView = new GraphicalDataModelView(dataModel, this, subject, true, 948, 379, executionContext);
 		} else {
@@ -826,11 +830,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionConditionEditor.setTitle("Restriction");
 		openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		openSubjectConditionEditor.setText(null);
-		restrictionConditionEditor.observe(restrictionEditor.restriction, new Runnable() {
+		restrictionConditionEditor.observe(restrictionEditor.restriction, new Consumer<String>() {
 			@Override
-			public void run() {
+			public void accept(String text) {
 				if (currentAssociation != null && restrictionEditor.restriction.isEditable()) {
-					restrictionConditionEditor.edit(restrictionEditor.restriction, restrictionEditor.restriction.getText(), "Table A", "A", currentAssociation.source, "Table B", "B", currentAssociation.destination, true, false);
+					restrictionConditionEditor.edit(restrictionEditor.restriction, text, "Table A", "A", currentAssociation.source, "Table B", "B", currentAssociation.destination, true, false);
 				}
 			}
 		});
@@ -878,10 +882,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		   }
 		});
-		subjectConditionEditor.observe(condition, new Runnable() {
+		subjectConditionEditor.observe(condition, new Consumer<String>() {
 			@Override
-			public void run() {
-				subjectConditionEditor.edit(condition, condition.getText(), "Subject", "T", subject, null, null, null, false, true);
+			public void accept(String text) {
+				subjectConditionEditor.edit(condition, text, "Subject", "T", subject, null, null, null, false, true);
 			}
 		});
 

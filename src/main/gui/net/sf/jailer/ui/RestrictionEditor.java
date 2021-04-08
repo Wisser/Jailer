@@ -213,7 +213,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel9.setOpaque(false);
         jPanel9.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
-        restriction.setColumns(16);
+        restriction.setColumns(32);
         restriction.setToolTipText("<html>\nSQL expression to restrict the join condition. <br>\nKeep empty to reach all associated rows.\n</html>");
         jPanel9.add(restriction);
 

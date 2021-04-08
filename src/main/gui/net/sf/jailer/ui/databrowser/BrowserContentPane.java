@@ -77,6 +77,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
@@ -166,6 +167,7 @@ import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea;
 import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Desktop.RowToRowLink;
@@ -733,6 +735,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		} catch (Throwable t) {
 			// ignore
 		}
+
+		andCondition.getEditor().getEditorComponent().setFont(UIUtil.getSQLEditorFont());
 
 		loadingCauseLabel.setVisible(false);
 		sortColumnsCheckBox.setVisible(false);
@@ -1422,19 +1426,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		openEditorButton.setIcon(UIUtil.scaleIcon(this, conditionEditorIcon));
 		openEditorButton.setText(null);
 
-		final Runnable openConditionEditor = new Runnable() {
+		final Consumer<String> openConditionEditor = new Consumer<String>() {
 			@Override
-			public void run() {
-				openConditionEditor();
+			public void accept(String text) {
+				openConditionEditor(text);
 			}
 
-			public void openConditionEditor() {
+			public void openConditionEditor(String text) {
 				openEditorButton.setSelected(true);
 				final Point pos = new Point(andCondition.getX(), andCondition.getY());
 				SwingUtilities.convertPointToScreen(pos, andCondition.getParent());
 				Window owner = SwingUtilities.getWindowAncestor(BrowserContentPane.this);
 				andConditionEditor.setLocationAndFit(pos, owner != null? owner.getX() + owner.getWidth() - 8: Integer.MAX_VALUE);
-				andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false, true);
+				andConditionEditor.edit(text, "Table", "A", table, null, null, null, false, true, BrowserContentPane.this.dataModel);
 			}
 		};
 
@@ -1458,6 +1462,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 							openEditorButton.setSelected(false);
 						}
+
+						@Override
+						protected List<RSyntaxTextArea> getEditorPanesCache() {
+							return BrowserContentPane.this.getEditorPanesCache();
+						}
 					};
 					if (andCondition.getEditor().getEditorComponent() instanceof JTextField) {
 						andConditionEditor.observe((JTextField) andCondition.getEditor().getEditorComponent(), openConditionEditor);
@@ -1465,6 +1474,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		};
+		createConditionEditor.run();
 
 		openEditorButton.addActionListener(new ActionListener() {
 			@Override
@@ -1474,13 +1484,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					@Override
 					public void run() {
 						createConditionEditor.run();
-						openConditionEditor.run();
+						openConditionEditor.accept(getAndConditionText());
 					}
 				});
 			}
 		});
 		if (andCondition.getEditor().getEditorComponent() instanceof JTextField) {
-			DBConditionEditor.initialObserve((JTextField) andCondition.getEditor().getEditorComponent(), () -> {
+			DBConditionEditor.initialObserve((JTextField) andCondition.getEditor().getEditorComponent(), (text) -> {
 				createConditionEditor.run();
 				andConditionEditor.doCompletion((JTextField) andCondition.getEditor().getEditorComponent(), openConditionEditor, false);
 			}, () -> {
@@ -1604,7 +1614,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							public void actionPerformed(ActionEvent e) {
 								sortColumnsCheckBox.setSelected(false);
 								sortColumnsCheckBoxActionPerformed(null);
-								sortColumnsLabel.setText("Natural column order");
+								sortColumnsLabel.setText("natural ");
 							}
 						});
 						popup.add(natural);
@@ -1615,7 +1625,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							public void actionPerformed(ActionEvent e) {
 								sortColumnsCheckBox.setSelected(true);
 								sortColumnsCheckBoxActionPerformed(null);
-								sortColumnsLabel.setText("A-Z column order");
+								sortColumnsLabel.setText("a-z ");
 							}
 						});
 						popup.add(sorted);
@@ -1626,7 +1636,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							public void actionPerformed(ActionEvent e) {
 								sortColumnsCheckBox.setSelected(false);
 								sortColumnsCheckBoxActionPerformed(null);
-								sortColumnsLabel.setText("Natural column order");
+								sortColumnsLabel.setText("natural ");
 								UIUtil.invokeLater(new Runnable() {
 									@Override
 									public void run() {
@@ -1674,6 +1684,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			reloadRows();
 		}
 	}
+
+	protected List<RSyntaxTextArea> getEditorPanesCache() {
+		return null;
+	};
 
 	protected String hardWrap(String text) {
 		final int MAXLENTH = 400;
@@ -5142,16 +5156,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			int width = minTotalWidth / rowsTable.getColumnCount();
 
 			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(rowsTable, column.getHeaderValue(), false, false, 0, i);
-			int pw = comp.getPreferredSize().width;
-			if (pw < 100) {
-				pw = (pw * 110) / 100 + 2;
-			}
+			int pw = comp.getPreferredSize().width + 16;
+//			if (pw < 100) {
+//				pw = (pw * 110) / 100 + 2;
+//			}
 			width = Math.min(Math.max(width, pw), 150);
 
 			int line = 0;
 			for (; line < rowsTable.getRowCount(); ++line) {
 				comp = rowsTable.getCellRenderer(line, i).getTableCellRendererComponent(rowsTable, dtm.getValueAt(line, i), false, false, line, i);
-				width = Math.max(width, comp.getPreferredSize().width + 24);
+				width = Math.max(width, comp.getPreferredSize().width + 8);
 				if (line > MAXLINES) {
 					break;
 				}
@@ -5327,7 +5341,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         sortColumnsPanel.setLayout(new javax.swing.BoxLayout(sortColumnsPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        sortColumnsLabel.setText("Natural column order ");
+        sortColumnsLabel.setText("natural ");
         sortColumnsPanel.add(sortColumnsLabel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -6905,7 +6919,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			protected Integer maxX() {
 				if (owner != null) {
-					return owner.getX() + owner.getWidth() - preferredWidth();
+					return owner.getX() + owner.getWidth() - preferredWidth() - 8;
 				} else {
 					return null;
 				}
@@ -6922,7 +6936,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		searchPanel.setStringCount(columNamesCount);
 		searchPanel.setOnClose(onClose);
-		searchPanel.find(owner, "Find Column", x, y, true);
+		searchPanel.find(owner, "Find Column", x, y - (BrowserContentPane.this.getQueryBuilderDialog() != null? 0 : findColumnsLabel.getHeight()), BrowserContentPane.this.getQueryBuilderDialog() != null);
 	}
 
 	private Object columnNameFromColumnModel(TableColumnModel columnModel, int i) {

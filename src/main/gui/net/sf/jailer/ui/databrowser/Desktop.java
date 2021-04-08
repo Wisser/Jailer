@@ -100,6 +100,7 @@ import javax.swing.KeyStroke;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
@@ -720,11 +721,18 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if (Boolean.TRUE.equals(evt.getNewValue())) {
-					updateMenu();
+					Timer updateMenuPendingTimer = new Timer(120, null);
+					updateMenuPendingTimer.addActionListener(e -> {
+						updateMenu();
+						iFrameStateChangeRenderer.onIFrameSelected(jInternalFrame, 0.6);
+						updateMenuPendingTimer.stop();
+					});
+					updateMenuPendingTimer.setRepeats(false);
+					updateMenuPendingTimer.start();
 				}
 			}
 		});
-
+		
 		jInternalFrame.addComponentListener(new ComponentListener() {
 
 			@Override
@@ -781,6 +789,11 @@ public abstract class Desktop extends JDesktopPane {
 				rowsTable.addMouseMotionListener((MouseMotionListener) ml);
 			}
 
+			@Override
+			protected List<net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea> getEditorPanesCache() {
+				return editorPanesCache;
+			}
+			
 			private void updateRowView(MouseEvent e) {
 				int ri;
 				JComponent source = (JComponent) e.getSource();
@@ -1362,14 +1375,6 @@ public abstract class Desktop extends JDesktopPane {
 		if (tableBrowsers.size() > 1) {
 			iFrameStateChangeRenderer.onNewIFrame(jInternalFrame);
 		}
-		jInternalFrame.addPropertyChangeListener(JInternalFrame.IS_SELECTED_PROPERTY, new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (Boolean.TRUE.equals(evt.getNewValue())) {
-					iFrameStateChangeRenderer.onIFrameSelected(jInternalFrame, 0.6);
-				}
-			}
-		});
 
 		return tableBrowser;
 	}
@@ -3058,11 +3063,11 @@ public abstract class Desktop extends JDesktopPane {
 		if (updateMenuPending.get()) {
 			return;
 		}
-		UIUtil.invokeLater(1, new Runnable() {
+		UIUtil.invokeLater(4, new Runnable() {
 			@Override
 			public void run() {
 				updateMenuPending.set(false);
-				
+
 				boolean hasTableBrowser = false;
 				boolean hasIFrame = false;
 		
@@ -3296,6 +3301,7 @@ public abstract class Desktop extends JDesktopPane {
 	private void restoreSession(RowBrowser toBeAppended, Component pFrame, String sFile) throws Exception {
 		try {
 			UIUtil.setWaitCursor(pFrame);
+			editorPanesCache.clear();
 			iFrameStateChangeRenderer.startAtomic();
 			noArrangeLayoutOnNewTableBrowser = true;
 			
@@ -3945,6 +3951,8 @@ public abstract class Desktop extends JDesktopPane {
 	private void invalidateIFramesBuffers() {
 		++iFrameBufferGeneration;
 	}
+	
+	private List<net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea> editorPanesCache = new LinkedList<DBConditionEditor.RSyntaxTextArea>();
 
 	/**
 	 * Maximum number of concurrent DB connections.

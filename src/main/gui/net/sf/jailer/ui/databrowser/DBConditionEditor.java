@@ -29,6 +29,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
@@ -39,7 +42,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.text.BadLocationException;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -99,22 +101,13 @@ public abstract class DBConditionEditor extends EscapableDialog {
 					ok = false;
 				}
 				consume(ok? UIUtil.toSingleLineSQL(editorPane.getText().replaceFirst("(?is)^\\s*where\\b\\s*", "")) : null);
+				if (getEditorPanesCache() != null) {
+					getEditorPanesCache().add(editorPane);
+				}
 			}
 		});
 		
-		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
-			@Override
-			protected void runBlock() {
-				super.runBlock();
-				okButtonActionPerformed(null);
-			}
-			@Override
-			protected boolean withFindAndReplace() {
-				return false;
-			}
-		};
-		JScrollPane jScrollPane2 = new JScrollPane();
-		jScrollPane2.setViewportView(editorPane);
+		editorPaneScrollPane = new JScrollPane();
 		
 		JPanel corner = new SizeGrip();
 		gripPanel.add(corner);
@@ -126,16 +119,15 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 1.0;
-		jPanel1.add(jScrollPane2, gridBagConstraints);
-		jScrollPane2.setViewportView(editorPane);
+		jPanel1.add(editorPaneScrollPane, gridBagConstraints);
 		
-		if (dataModel != null) {
-			try {
-				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
-				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-				sqlAutoCompletion = new SQLAutoCompletion(provider, editorPane);
-			} catch (SQLException e) {
+		if (getEditorPanesCache() != null && getEditorPanesCache().isEmpty()) {
+			LinkedList<RSyntaxTextArea> editors = new LinkedList<RSyntaxTextArea>();
+			while (editors.size() < 2) {
+				createEditorPane(editorPaneScrollPane, dataModel);
+				editors.add(editorPane);
 			}
+			getEditorPanesCache().addAll(editors);
 		}
 		
 		setLocation(400, 150);
@@ -147,6 +139,8 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		escaped = true;
 		super.escapePressed();
 	}
+
+	private JScrollPane editorPaneScrollPane;
 
 	/** This method is called from within the constructor to
 	 * initialize the form.
@@ -328,8 +322,8 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	 * @param condition the condition
 	 * @return new condition or <code>null</code>, if user canceled the editor
 	 */
-	public void edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
-		if (condition.length() > 60 || Pattern.compile("(\\bselect\\b)|(^\\s*\\()", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
+	public void edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton, DataModel dataModel) {
+		if (!isVisible() && condition.length() > 60 || Pattern.compile("(\\bselect\\b)|(^\\s*\\()", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
 			condition = new BasicFormatterImpl().format(condition);
 		}
 		this.table1 = table1;
@@ -337,6 +331,8 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		this.table1alias = table1alias;
 		this.table2alias = table2alias;
 		this.addPseudoColumns = addPseudoColumns;
+
+		createEditorPane(editorPaneScrollPane, dataModel);
 
 		toSubQueryButton.setVisible(addConvertSubqueryButton);
 		toSubQueryButton.setEnabled(true);
@@ -374,7 +370,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	}
 
 	public void setLocationAndFit(Point pos, int maxXW) {
-		setLocation(pos);
+		setLocation(new Point(pos.x + 1, pos.y + 2));
 		UIUtil.fit(this);
         try {
             // Get the size of the screen
@@ -402,15 +398,82 @@ public abstract class DBConditionEditor extends EscapableDialog {
     private javax.swing.JButton toSubQueryButton;
     // End of variables declaration//GEN-END:variables
 
-	public final RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
-	private SQLAutoCompletion sqlAutoCompletion;
+    public RSyntaxTextArea editorPane;
+    protected abstract List<RSyntaxTextArea> getEditorPanesCache();
+	
+    private SQLAutoCompletion sqlAutoCompletion;
 
-	public static void initialObserve(final JTextField textfield, Runnable open, Runnable openAndDoCompletion) {
+	static class RSyntaxTextArea extends RSyntaxTextAreaWithSQLSyntaxStyle {
+		DBConditionEditor conditionEditor;
+		DataModelBasedSQLCompletionProvider provider;
+		SQLAutoCompletion sqlAutoCompletion;
+		public RSyntaxTextArea() {
+			super(false, false);
+		}
+		@Override
+		protected void runBlock() {
+			super.runBlock();
+			conditionEditor.okButtonActionPerformed(null);
+		}
+		@Override
+		protected boolean withFindAndReplace() {
+			return false;
+		}
+	};
+
+	private void createEditorPane(JScrollPane scrollPane, DataModel dataModel) {
+		RSyntaxTextArea editor;
+		if (getEditorPanesCache() == null || getEditorPanesCache().isEmpty()) {
+			editor = new RSyntaxTextArea();
+			if (dataModel != null) {
+				try {
+					provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
+					provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
+					sqlAutoCompletion = new SQLAutoCompletion(provider, editor);
+				} catch (SQLException e) {
+				}
+			}
+		} else {
+			editor = getEditorPanesCache().remove(0);
+			provider = editor.provider;
+			sqlAutoCompletion = editor.sqlAutoCompletion;
+		}
+		editor.conditionEditor = this;
+		editor.provider = provider;
+		editor.sqlAutoCompletion = sqlAutoCompletion;
+		editorPane = editor;
+		scrollPane.setViewportView(editorPane);
+	}
+	
+	public static void initialObserve(final JTextField textfield, Consumer<String> open, Runnable openAndDoCompletion) {
 		textfield.addMouseListener(new MouseAdapter() {
+			final long MAX_PTIME_DIFF = 250;
+			Long pTime;
+			boolean inProgress = false;
+			@Override
+			public void mousePressed(MouseEvent e) {
+				pTime = System.currentTimeMillis();
+			}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if (pTime != null && System.currentTimeMillis() - pTime <= MAX_PTIME_DIFF && e.getX() < textfield.getWidth() - 10) {
+					openSQLEditor(textfield, open);
+				}
+			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (e.getX() < textfield.getWidth() - 10) {
-					UIUtil.invokeLater(1, open);
+				openSQLEditor(textfield, open);
+			}
+			private void openSQLEditor(final JTextField textfield, Consumer<String> open) {
+				if (!inProgress) {
+					inProgress = true;
+					UIUtil.invokeLater(1, () -> {
+						try {
+							open.accept(textfield.getText());
+						} finally {
+							inProgress = false;
+						}
+					});
 				}
 			}
 		});
@@ -433,7 +496,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		am.put(a, a);
 	}
 
-	public void observe(final JTextField textfield, final Runnable open) {
+	public void observe(final JTextField textfield, final Consumer<String> open) {
 		InputMap im = textfield.getInputMap();
 		@SuppressWarnings("serial")
 		Action a = new AbstractAction() {
@@ -448,8 +511,9 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		am.put(a, a);
 	}
 	
-	public void doCompletion(final JTextField textfield, final Runnable open, boolean withCompletion) {
+	public void doCompletion(final JTextField textfield, final Consumer<String> open, boolean withCompletion) {
 		String origText = textfield.getText();
+		int origPos = textfield.getCaretPosition();
 		String caretMarker;
 		for (int suffix = 0; ; suffix++) {
 			caretMarker = "CARET" + suffix;
@@ -458,12 +522,10 @@ public abstract class DBConditionEditor extends EscapableDialog {
 			}
 		}
 		try {
-			textfield.getDocument().insertString(textfield.getCaretPosition(), caretMarker, null);
-		} catch (BadLocationException e1) {
-			e1.printStackTrace();
+			open.accept(origText.substring(0, origPos) + caretMarker + origText.substring(origPos));
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		open.run();
-		textfield.setText(origText);
 		String text = editorPane.getText();
 		int i = text.indexOf(caretMarker);
 		if (i >= 0) {

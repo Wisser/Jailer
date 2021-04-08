@@ -35,6 +35,7 @@ import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,7 +53,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.text.BadLocationException;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -562,7 +562,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	}
 
 	public void setLocationAndFit(Point pos) {
-		setLocation(pos);
+		setLocation(new Point(pos.x + 1, pos.y + 1));
 		UIUtil.fit(this);
         try {
             // Get the size of the screen
@@ -600,11 +600,19 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	public RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
 	private SQLAutoCompletion sqlAutoCompletion;
 
-	public void observe(final JTextField textfield, final Runnable open) {
+	public void observe(final JTextField textfield, final Consumer<String> open) {
 		textfield.addMouseListener(new MouseAdapter() {
+			final long MAX_PTIME_DIFF = 250;
+			Long pTime;
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				UIUtil.invokeLater(1, () -> openOnTextfield(textfield, open, false));
+			public void mousePressed(MouseEvent e) {
+				pTime = System.currentTimeMillis();
+			}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if (pTime != null && System.currentTimeMillis() - pTime <= MAX_PTIME_DIFF && e.getX() < textfield.getWidth() - 10) {
+					UIUtil.invokeLater(1, () -> openOnTextfield(textfield, open, false));
+				}
 			}
 		});
 
@@ -624,8 +632,9 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		am.put(a, a);
 	}
 
-	private void openOnTextfield(final JTextField textfield, final Runnable open, boolean doCompletion) {
+	private void openOnTextfield(final JTextField textfield, final Consumer<String> open, boolean doCompletion) {
 		String origText = textfield.getText();
+		int origPos = textfield.getCaretPosition();
 		String caretMarker;
 		for (int suffix = 0; ; suffix++) {
 			caretMarker = "CARET" + suffix;
@@ -634,12 +643,10 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 			}
 		}
 		try {
-			textfield.getDocument().insertString(textfield.getCaretPosition(), caretMarker, null);
-		} catch (BadLocationException e1) {
-			e1.printStackTrace();
+			open.accept(origText.substring(0, origPos) + caretMarker + origText.substring(origPos));
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		open.run();
-		textfield.setText(origText);
 		String text = editorPane.getText();
 		int i = text.indexOf(caretMarker);
 		if (i >= 0) {
