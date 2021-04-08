@@ -1,3 +1,8 @@
+10.4.3
+  - Improved rendering quality on HiDPI environments.
+  - Mac keyboard shortcuts are now also used with Nimbus-LAF.
+  - The GUI has been simplified in some places and made clearer.
+
 10.4.2
   - Further desktop improvements
     - Single-row views are now directly editable. It is also possible to search for columns within them.
