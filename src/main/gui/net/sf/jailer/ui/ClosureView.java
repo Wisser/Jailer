@@ -1054,7 +1054,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 								 getTableCellRendererComponent(
 										 closureTable, dataArray[line][i],
 									 false, false, line, i);
-				width = Math.max(width, comp.getPreferredSize().width);
+				width = Math.max(width, comp.getPreferredSize().width + 10);
 				if (dataArray[line][i] != null && !"".equals(dataArray[line][i])) {
 					isEmpty = false;
 				}

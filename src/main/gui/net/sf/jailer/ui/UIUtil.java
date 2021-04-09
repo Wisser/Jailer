@@ -1134,15 +1134,14 @@ public class UIUtil {
 				}
 				
 				List<Image> imageListArr = new ArrayList<Image>();
-				for (int p = 1125; p <= 6000; p += 125) {
+				for (int p = 1125; p <= 9000; p += (p > 4000? 500 : (p > 2000? 250 : 125))) {
 					double pSqrt = Math.sqrt(p / 1000.0);
-					int wp = (int) (w * pSqrt);
-					int hp = (int) (h * pSqrt);
+					int wp = (int) (w * pSqrt + 0.5);
+					int hp = (int) (h * pSqrt + 0.5);
 					Image scaledP = scaledInstance(icon.getImage(), wp, hp);
-					imageListArr.add(scaledP);	
+					imageListArr.add(scaledP);
 				}
 				imageListArr.add(0, scaled);
-				imageListArr.add(icon.getImage());
 				Image[] imageList = imageListArr.toArray(new Image[0]);
 				try {
 					if (baseMultiResolutionImageClassConstructor == null) {

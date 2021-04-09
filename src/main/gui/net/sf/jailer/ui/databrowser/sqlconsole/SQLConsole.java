@@ -1147,9 +1147,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								if (rb.rowsTable.getColumnModel().getColumn(i).getModelIndex() == skeys.get(0).getColumn()) {
 									String columnName = rb.rowsTable.getColumnName(i);
 									if (columnName != null) {
-										String tabName = columnName.replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$3");
-										if (tabName != null) {
-											columnName = UIUtil.fromHTMLFragment(tabName);
+										String[] ntPair = columnName.replaceAll("<br>", "\t").replaceAll("<[^>]*>", "").split("\t");
+										if (ntPair.length == 2) {
+											columnName = UIUtil.fromHTMLFragment(ntPair[0]);
+										}
+										if (ntPair.length == 3) {
+											columnName = UIUtil.fromHTMLFragment(ntPair[1]);
 										}
 										if (columnName.trim().isEmpty()) {
 											columnName = "#" + (i + 1);

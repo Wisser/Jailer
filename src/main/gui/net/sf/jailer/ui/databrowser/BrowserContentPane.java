@@ -6946,7 +6946,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			if (ntPair.length == 3) {
 				value = ntPair[1];
-			}		}
+			}
+		}
 		return value;
 	}
 	
