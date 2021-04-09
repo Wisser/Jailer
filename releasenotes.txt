@@ -1,5 +1,6 @@
 10.4.3
   - Improved rendering quality on HiDPI environments.
+  - Many icons have been improved and increased in resolution.
   - Mac keyboard shortcuts are now also used with Nimbus-LAF.
   - The GUI has been simplified in some places and made clearer.
 
