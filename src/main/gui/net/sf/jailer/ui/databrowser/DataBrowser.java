@@ -31,6 +31,7 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -1782,7 +1783,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(jSeparator4);
 
         loadScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
-        loadScriptMenuItem.setText("Open SQL Script...");
+        loadScriptMenuItem.setText("Load SQL Script...");
         loadScriptMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadScriptMenuItemActionPerformed(evt);
@@ -4247,7 +4248,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
 	private void initDnD(Component target) {
-		new DropTarget(target, new DropTargetListener() {
+		new DropTarget(target, DnDConstants.ACTION_COPY, new DropTargetListener() {
 			@Override
 			public void drop(DropTargetDropEvent dtde) {
 				try {

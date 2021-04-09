@@ -2500,6 +2500,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			editorPane.setText("");
 	        dirty = true;
 		}
+		editorPane.discardAllEdits();
         initialContentSize = editorPane.getDocument().getLength();
         initialContentHash = editorPane.getText().hashCode();
         consoleContainerPanel.setVisible(false);
