@@ -202,7 +202,7 @@ public class AssociationRenderer extends EdgeRenderer {
 			start = starPosition;
 			end = m_tmpPoints[forward? 0:1];
 			AffineTransform t = new AffineTransform();
-			t.setToRotation(-Math.PI/3);
+			t.setToRotation(-Math.PI/4);
 			Point2D p = new Point2D.Double(), shift = new Point2D.Double();
 			double d = m_tmpPoints[0].distance(m_tmpPoints[1]) / 9.0;
 			p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);

@@ -6390,7 +6390,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static TableContentViewFilter tableContentViewFilter = TableContentViewFilter.create();
 
 	private Icon dropDownIcon;
-	private ImageIcon relatedRowsIcon;
 	private ImageIcon redDotIcon;
 	private ImageIcon blueDotIcon;
 	private ImageIcon greenDotIcon;
@@ -6398,7 +6397,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	{
 		// load images
 		dropDownIcon = UIUtil.readImage("/dropdown.png");
-		relatedRowsIcon = UIUtil.readImage("/right.png");
 		redDotIcon = UIUtil.readImage("/reddot.gif");
 		blueDotIcon = UIUtil.readImage("/bluedot.gif");
 		greenDotIcon = UIUtil.readImage("/greendot.gif");

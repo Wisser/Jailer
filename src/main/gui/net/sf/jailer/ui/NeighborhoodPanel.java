@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -81,6 +83,9 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
         this.assocWithColor = assocWithColor;
         this.ignoredColor = ignoredColor;
     	initComponents();
+    	
+    	upLabel.setIcon(upbuttonIcon);
+    	downLabel.setIcon(dropDownIcon);
         
     	mouseWheelListener = new MouseWheelListener() {
     		@Override
@@ -429,4 +434,12 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
 		
     }
     
+    private Icon dropDownIcon;
+	private ImageIcon upbuttonIcon;
+	{
+		// load images
+		dropDownIcon = UIUtil.readImage("/dropdown.png");
+		upbuttonIcon = UIUtil.readImage("/upbutton.png");
+	}
+	
 }
