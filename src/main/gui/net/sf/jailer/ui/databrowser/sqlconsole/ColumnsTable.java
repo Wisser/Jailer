@@ -111,11 +111,16 @@ public class ColumnsTable extends JTable {
 			public Object getValueAt(int rowIndex, int columnIndex) {
 				int column = cm.getColumn(rowIndex).getModelIndex();
 				if (columnIndex == 0) {
-					String ntPair = rowsTable.getModel().getColumnName(column).replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$3\t$2");
-					int i = ntPair.indexOf('\t');
-					if (i >= 0) {
-						tableName.put(rowIndex, ntPair.substring(i + 1));
-						return UIUtil.fromHTMLFragment(ntPair.substring(0, i));
+					String[] ntPair = rowsTable.getModel().getColumnName(column).replaceAll("<br>", "\t").replaceAll("<[^>]*>", "").split("\t");
+					if (ntPair.length == 1) {
+						return UIUtil.fromHTMLFragment(ntPair[0]);
+					}
+					if (ntPair.length == 2) {
+						return UIUtil.fromHTMLFragment(ntPair[0]);
+					}
+					if (ntPair.length == 3) {
+						tableName.put(rowIndex, ntPair[0]);
+						return UIUtil.fromHTMLFragment(ntPair[1]);
 					}
 					return ntPair;
 				}

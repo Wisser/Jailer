@@ -6940,8 +6940,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private Object columnNameFromColumnModel(TableColumnModel columnModel, int i) {
 		Object value = columnModel.getColumn(i).getHeaderValue();
 		if (value != null && value.toString().startsWith("<html>")) {
-			value = UIUtil.fromHTMLFragment(value.toString().replaceFirst("^<html>.*<br>(.*)</html>$", "$1").replaceAll("<[^>]*>", ""));
-		}
+			String[] ntPair = value.toString().replaceAll("<br>", "\t").replaceAll("<[^>]*>", "").split("\t");
+			if (ntPair.length == 2) {
+				value = ntPair[0];
+			}
+			if (ntPair.length == 3) {
+				value = ntPair[1];
+			}		}
 		return value;
 	}
 	

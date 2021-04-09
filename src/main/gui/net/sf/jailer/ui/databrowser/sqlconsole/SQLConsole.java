@@ -101,6 +101,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
@@ -898,8 +899,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							columnLabel = sqlColumnExpression.get(i);
 						}
 					}
-					if (tabPerIndex.isEmpty()) {
-                		columnLabels[i] = columnLabel;
+					Column column = JDBCMetaDataBasedModelElementFinder.toColumn(metaData, i + 1, session);
+            		String type = column.toSQL("").substring(column.name.length()).trim();
+            		if (tabPerIndex.isEmpty()) {
+                		columnLabels[i] = "<html><b>" + columnLabel + "</b><br><font color=\"#888888\">" + type + "</font></html>";
                 	} else {
                 		String titel = tabPerIndex.get(i) == null? "" : datamodel.get().getDisplayName(tabPerIndex.get(i));
                 		if (titel.length() == 0) {
@@ -912,7 +915,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 		} else {
                 			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
                 		}
-                		columnLabels[i] = "<html><font color=\"#7070FF\">" + titel + "</font><br>" + columnLabel + "</html>";
+                		// TODO
+                		columnLabels[i] = "<html><font color=\"#7070FF\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#888888\">" + type + "</font></html>";
                 	}
                 }
                 final List<Table> resultTypes = nfResultTypes;
@@ -1714,7 +1718,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane2.setResizeWeight(0.6);
+        jSplitPane2.setResizeWeight(0.55);
         jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
 

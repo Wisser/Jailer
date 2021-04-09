@@ -253,7 +253,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			JComponent lCont = l;
 			if (alternativeColumnLabels != null && alternativeColumnLabels.length > columnIndex.get(i)) {
 				String altName = alternativeColumnLabels[columnIndex.get(i)];
-				String text = altName.replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$1$3$4\t$1$2$4");
+				String text = altName;
+				String[] ntPair = altName.replaceAll("<br>|<.html>", "\t").split("\t");
+				if (ntPair.length == 3) {
+					text = "<html>" + ntPair[1] + "</html>\t<html>" + ntPair[0] + "</html>";
+				}
 				l.setText(shortText(text));
 				l.setToolTipText(text);
 				if (!text.equals(altName)) {
