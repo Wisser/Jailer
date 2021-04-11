@@ -16,13 +16,11 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 

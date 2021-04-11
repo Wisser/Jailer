@@ -61,8 +61,8 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.text.DefaultEditorKit;
 import javax.swing.WindowConstants;
+import javax.swing.text.DefaultEditorKit;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
