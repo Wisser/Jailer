@@ -90,6 +90,7 @@ public class AssociationRenderer extends EdgeRenderer {
 	private Point2D starPosition = null;
 	private Point2D midPosition = null;
 	private Point2D pendingPosition = null;
+	private double starTheta;
 
 	/**
 	 * Return a non-transformed shape for the visual representation of the
@@ -194,6 +195,7 @@ public class AssociationRenderer extends EdgeRenderer {
 
 		starBounds = null;
 		starPosition = null;
+		starTheta = 0;
 		midPosition = new Point2D.Double((n1x + n2x) / 2, (n1y + n2y) / 2);
 
 		if (!forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.MANY_TO_ONE.equals(association.getCardinality()))
@@ -202,11 +204,12 @@ public class AssociationRenderer extends EdgeRenderer {
 			start = starPosition;
 			end = m_tmpPoints[forward? 0:1];
 			AffineTransform t = new AffineTransform();
-			t.setToRotation(-Math.PI/4);
+			t.setToRotation(-Math.PI/4.5);
 			Point2D p = new Point2D.Double(), shift = new Point2D.Double();
 			double d = m_tmpPoints[0].distance(m_tmpPoints[1]) / 9.0;
 			p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
 			t.transform(p, shift);
+			starTheta = Math.atan2(end.getY() - start.getY(), end.getX() - start.getX());
 			starPosition.setLocation(starPosition.getX() + shift.getX(), starPosition.getY() + shift.getY());
 			starBounds = new Rectangle2D.Double(starPosition.getX() - STAR_SIZE * (starWidth / 2), starPosition.getY() - STAR_SIZE * (starHeight / 2), starWidth * STAR_SIZE, starHeight * STAR_SIZE);
 		}
@@ -326,7 +329,12 @@ public class AssociationRenderer extends EdgeRenderer {
 		render(g, item);
 		if (starPosition != null && starImage != null) {
 			double size = STAR_SIZE;
+			AffineTransform t2 = new AffineTransform();
+			t2.translate(starWidth / 2, starHeight / 2);
+			t2.rotate(starTheta - Math.PI / 8.0);
+			t2.translate(-starWidth / 2, -starHeight / 2);
 			transform.setTransform(size, 0, 0, size, starPosition.getX() - size * (starWidth / 2), starPosition.getY() - size * (starHeight / 2));
+			transform.concatenate(t2);
 			g.drawImage(starImage, transform, null);
 			starPosition = null;
 		}
@@ -464,7 +472,7 @@ public class AssociationRenderer extends EdgeRenderer {
 	private Image starImage = null;
 	private double starWidth = 0;
 	private double starHeight = 0;
-	private final double STAR_SIZE = 0.22;
+	private final double STAR_SIZE = 0.25;
 	private Image pendingImage = null;
 	private double pendingWidth = 0;
 	private double pendingHeight = 0;

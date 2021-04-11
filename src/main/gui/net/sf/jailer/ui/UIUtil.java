@@ -1128,6 +1128,12 @@ public class UIUtil {
 	public static synchronized ImageIcon scaleIcon(ImageIcon icon, int w, int h) {
 		if (icon != null) {
 			try {
+				if (w <= 0) {
+					w = 1;
+				}
+				if (h <= 0) {
+					h = 1;
+				}
 				Image scaled = scaledInstance(icon.getImage(), w, h);
 				if (!baseMultiResolutionImageClassExists || (icon.getIconWidth() <= w && icon.getIconHeight() <= h)) {
 					return new ImageIcon(scaled);
@@ -1154,7 +1160,8 @@ public class UIUtil {
 					return new ImageIcon(scaled);
 				}
 			} catch (Exception e) {
-				return null;
+				e.printStackTrace();
+				return icon;
 			}
 		}
 		return null;

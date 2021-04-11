@@ -114,7 +114,6 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 					}
 				};
 				sendButton.addKeyListener(keyListener);
-				jButton1.setVisible(false);
 			}
 		} else {
 			if (title != null) {

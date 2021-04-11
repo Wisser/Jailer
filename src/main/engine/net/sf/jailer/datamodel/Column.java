@@ -265,7 +265,7 @@ public class Column {
 		if (typeReplacement != null && typeReplacement.containsKey(theType)) {
 			theType = typeReplacement.get(theType);
 		}
-		return (columnPrefix == null? "": columnPrefix) + name + " " + theType + (length == 0? "" : length == Integer.MAX_VALUE? "(max)" :
+		return (columnPrefix == null? "": columnPrefix) + name + " " + theType + (length <= 0? "" : length == Integer.MAX_VALUE? "(max)" :
 			"(" + length + (precision >= 0? ", " + precision : "") + ")");
 	}
 

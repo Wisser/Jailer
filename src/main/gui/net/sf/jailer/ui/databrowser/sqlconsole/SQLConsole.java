@@ -900,9 +900,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						}
 					}
 					Column column = JDBCMetaDataBasedModelElementFinder.toColumn(metaData, i + 1, session);
+					if (column.length >= 100000 && column.length != Integer.MAX_VALUE || column.precision > 1000) {
+						column = new Column(column.name, column.type, 0, -1);
+					}
             		String type = column.toSQL("").substring(column.name.length()).trim();
             		if (tabPerIndex.isEmpty()) {
-                		columnLabels[i] = "<html><b>" + columnLabel + "</b><br><font color=\"#888888\">" + type + "</font></html>";
+                		columnLabels[i] = "<html><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
                 	} else {
                 		String titel = tabPerIndex.get(i) == null? "" : datamodel.get().getDisplayName(tabPerIndex.get(i));
                 		if (titel.length() == 0) {
@@ -915,8 +918,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 		} else {
                 			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
                 		}
-                		// TODO
-                		columnLabels[i] = "<html><font color=\"#7070FF\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#888888\">" + type + "</font></html>";
+                		columnLabels[i] = "<html><font color=\"#6868FF\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
                 	}
                 }
                 final List<Table> resultTypes = nfResultTypes;
