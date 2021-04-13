@@ -17,6 +17,7 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
@@ -25,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -32,6 +34,7 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -47,6 +50,8 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -75,6 +80,7 @@ public class ColumnsTable extends JTable {
 	private boolean useTableName = true;
 	private final boolean inDesktop;
 	private boolean inClosure;
+	private int currentRow = -1;
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ColumnsTable(final BrowserContentPane rb, boolean inDesktop) {
@@ -311,6 +317,9 @@ public class ColumnsTable extends JTable {
 										background.getAlpha()));
 					}
 				}
+				if (currentRow == row) {
+					render.setBackground(new Color(122, 210, 255, 200));
+				}
 				return render;
 			}
 			private Color blend(Color color1) {
@@ -324,6 +333,16 @@ public class ColumnsTable extends JTable {
 			}
 		});
 		adjustTableColumnsWidth();
+		addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				currentRow = rowAtPoint(e.getPoint());
+				if (fixed != null) {
+					fixed.repaint();
+				}
+				repaint();
+			}
+		});
 	}
 
 	/**
@@ -443,6 +462,22 @@ public class ColumnsTable extends JTable {
 	
 	@Override
 	public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+	}
+
+	private JTable fixed;
+	
+	public void initFixedTable(JTable fixed) {
+		this.fixed = fixed;
+		fixed.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				currentRow = rowAtPoint(e.getPoint());
+				if (fixed != null) {
+					fixed.repaint();
+				}
+				repaint();
+			}
+		});
 	}
 
 }

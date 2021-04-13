@@ -132,8 +132,20 @@ public class BrowserContentCellEditor {
 			}
 		},
 		DATE {
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
-			SimpleDateFormat timeStampWONFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yy-MM-dd", Locale.ENGLISH);
+			SimpleDateFormat dateFormatAlt1 = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+			SimpleDateFormat dateFormatAlt2 = new SimpleDateFormat("dd.MM.yy", Locale.ENGLISH);
+			SimpleDateFormat dateFormatAlt3 = new SimpleDateFormat("dd.MM.yyyy", Locale.ENGLISH);
+			SimpleDateFormat dateFormatAlt4 = new SimpleDateFormat("MM/dd/yy", Locale.ENGLISH);
+			SimpleDateFormat dateFormatAlt5 = new SimpleDateFormat("MM/dd/yyyy", Locale.ENGLISH);
+			SimpleDateFormat dateFormatAlt6 = new SimpleDateFormat();
+			SimpleDateFormat timeStampWONFormat = new SimpleDateFormat("yy-MM-dd HH:mm:ss", Locale.ENGLISH);
+			SimpleDateFormat timeStampWONFormatAlt1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+			SimpleDateFormat timeStampWONFormatAlt2 = new SimpleDateFormat("dd.MM.yy HH:mm:ss", Locale.ENGLISH);
+			SimpleDateFormat timeStampWONFormatAlt3 = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.ENGLISH);
+			SimpleDateFormat timeStampWONFormatAlt4 = new SimpleDateFormat("MM/dd/yy HH:mm:ss", Locale.ENGLISH);
+			SimpleDateFormat timeStampWONFormatAlt5 = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH);
+			SimpleDateFormat timeStampWONFormatAlt6 = new SimpleDateFormat();
 
 			@Override
 			String cellContentToText(int columnType, Object content) {
@@ -145,9 +157,32 @@ public class BrowserContentCellEditor {
 
 			@Override
 			Object textToContent(int columnType, String text, Object oldContent) {
+				Object result = textToContent(columnType, text, oldContent, dateFormat, timeStampWONFormat);
+				if (result == INVALID) {
+					result = textToContent(columnType, text, oldContent, dateFormatAlt1, timeStampWONFormatAlt1);
+				}
+				if (result == INVALID) {
+					result = textToContent(columnType, text, oldContent, dateFormatAlt2, timeStampWONFormatAlt2);
+				}
+				if (result == INVALID) {
+					result = textToContent(columnType, text, oldContent, dateFormatAlt3, timeStampWONFormatAlt3);
+				}
+				if (result == INVALID) {
+					result = textToContent(columnType, text, oldContent, dateFormatAlt4, timeStampWONFormatAlt4);
+				}
+				if (result == INVALID) {
+					result = textToContent(columnType, text, oldContent, dateFormatAlt5, timeStampWONFormatAlt5);
+				}
+				if (result == INVALID) {
+					result = textToContent(columnType, text, oldContent, dateFormatAlt6, timeStampWONFormatAlt6);
+				}
+				return result;
+			}
+			
+			private Object textToContent(int columnType, String text, Object oldContent, SimpleDateFormat dateF, SimpleDateFormat tsF) {
 				try {
 					if (columnType == Types.DATE && (oldContent == null || oldContent instanceof Date)) {
-						return new java.sql.Date(dateFormat.parse(text).getTime());
+						return new java.sql.Date(dateF.parse(text).getTime());
 					}
 					try {
 						int dot = text.lastIndexOf('.');
@@ -163,12 +198,12 @@ public class BrowserContentCellEditor {
 							nano = Integer.parseInt(n);
 							text = text.substring(0, dot);
 						}
-						Timestamp result = new Timestamp(timeStampWONFormat.parse(text).getTime());
+						Timestamp result = new Timestamp(tsF.parse(text).getTime());
 						result.setNanos(nano);
 						return result;
 					} catch (ParseException e) {
 						if (text.length() <= 11) {
-							return new java.sql.Timestamp(dateFormat.parse(text).getTime());
+							return new java.sql.Timestamp(dateF.parse(text).getTime());
 						}
 					}
 				} catch (ParseException e) {

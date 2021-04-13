@@ -1033,9 +1033,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2_EM = new Color(255, 236, 236);
 			final Color BG3 = new Color(192, 236, 255);
 			final Color BG3_2 = new Color(184, 226, 255);
-			final Color BG4 = new Color(32, 210, 255, 180);
-			final Color BG4_2 = new Color(30, 196, 255, 180);
-			final Color BG4_LIGHT = new Color(30, 200, 255, 60);
+			final Color BG4 = new Color(122, 210, 255, 200);
+			final Color BG4_2 = new Color(120, 196, 255, 200);
+			final Color BG4_LIGHT = new Color(80, 200, 255, 200);
 			final Color FG1 = new Color(155, 0, 0);
 			final Color FG2 = new Color(0, 0, 255);
 			final Font font = new JLabel().getFont();
@@ -1130,7 +1130,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						}
 					} else {
-						((JLabel) render).setBackground(currentRowSelection == row? BG4.brighter() : (bgRow % 2 == 0? BG4 : BG4_2));
+						((JLabel) render).setBackground(currentRowSelection == row? BG4 : (bgRow % 2 == 0? BG4 : BG4_2));
 					}
 					if (table != rowsTable && isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
 								&& isPKComplete(type, r) && !rowIdSupport.getPrimaryKey(type, BrowserContentPane.this.session).getColumns().isEmpty()) {

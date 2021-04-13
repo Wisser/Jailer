@@ -33,7 +33,7 @@ import javax.swing.table.TableColumnModel;
 public class FixedColumnTable implements ChangeListener, PropertyChangeListener
 {
 	private JTable main;
-	private JTable fixed;
+	public JTable fixed;
 	private JScrollPane scrollPane;
 
 	/*
