@@ -249,7 +249,7 @@
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
                   <SubComponents>
-                    <Container class="javax.swing.JScrollPane" name="jScrollPane2">
+                    <Container class="javax.swing.JScrollPane" name="textViewScrollPane">
                       <Properties>
                         <Property name="enabled" type="boolean" value="false"/>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
@@ -257,6 +257,7 @@
                         </Property>
                       </Properties>
                       <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
                         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
                       </AuxValues>
                       <Constraints>

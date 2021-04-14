@@ -459,7 +459,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         columnsScrollPane = new javax.swing.JScrollPane();
         columnsSortedStateLabel = new javax.swing.JLabel();
         textTabPanel = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        textViewScrollPane = new javax.swing.JScrollPane();
         jTextArea = new javax.swing.JTextArea();
         columnSeparatorComboBox = new javax.swing.JComboBox<>();
         copyCBButton = new javax.swing.JButton();
@@ -575,13 +575,13 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         textTabPanel.setLayout(new java.awt.GridBagLayout());
 
-        jScrollPane2.setEnabled(false);
-        jScrollPane2.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
+        textViewScrollPane.setEnabled(false);
+        textViewScrollPane.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
 
         jTextArea.setColumns(20);
         jTextArea.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         jTextArea.setRows(5);
-        jScrollPane2.setViewportView(jTextArea);
+        textViewScrollPane.setViewportView(jTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -590,7 +590,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        textTabPanel.add(jScrollPane2, gridBagConstraints);
+        textTabPanel.add(textViewScrollPane, gridBagConstraints);
 
         columnSeparatorComboBox.setEditable(true);
         columnSeparatorComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -725,7 +725,6 @@ public class TabContentPanel extends javax.swing.JPanel {
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel13;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea;
     private javax.swing.JLabel loadingCauseLabel;
     private javax.swing.JLabel loadingLabel;
@@ -736,6 +735,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     public javax.swing.JTabbedPane tabbedPane;
     public javax.swing.JLabel textSortedStateLabel;
     public javax.swing.JPanel textTabPanel;
+    public javax.swing.JScrollPane textViewScrollPane;
     private javax.swing.JPanel typePanel;
     // End of variables declaration//GEN-END:variables
     public javax.swing.JLabel statementLabel;

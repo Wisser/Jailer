@@ -331,7 +331,7 @@
                                     <Property name="wheelScrollingEnabled" type="boolean" value="false"/>
                                   </Properties>
                                   <AuxValues>
-                                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
+                                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
                                     <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
                                   </AuxValues>
                                   <Constraints>

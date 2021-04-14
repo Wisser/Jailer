@@ -4206,7 +4206,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private boolean lastLimitExceeded;
 	private boolean lastClosureLimitExceeded;
 	private boolean isUpdatingTableModel;
-	private Set<Integer> foundColumn = new HashSet<Integer>();
+	public Set<Integer> foundColumn = new HashSet<Integer>();
 
 	/**
 	 * Updates the model of the {@link #rowsTable}.
@@ -6018,7 +6018,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     public javax.swing.JLabel rowsCount;
     public javax.swing.JTable rowsTable;
     protected javax.swing.JPanel rowsTableContainerPanel;
-    protected javax.swing.JScrollPane rowsTableScrollPane;
+    public javax.swing.JScrollPane rowsTableScrollPane;
     private javax.swing.JPanel rrPanel;
     javax.swing.JCheckBox selectDistinctCheckBox;
     protected javax.swing.JPanel singleRowViewContainterPanel;

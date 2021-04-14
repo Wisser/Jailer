@@ -47,6 +47,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -175,6 +176,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private JMenuItem menuItemAnalyse;
 	private int initialTabbedPaneSelection = 0;
 	private List<? extends SortKey> initialSortKeys = null;
+	private Point initialRowsTablesPos;
+	private Point initialTextTablesPos;
+	private Point initialColumnsTablesPos;
+	private Set<Integer> initialFoundColumn = new HashSet<Integer>();
 	private String initialSortKeysSql = null;
 	private int initialTabbedPaneSelectionLoc = -1;
 
@@ -984,10 +989,36 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final boolean finalLoadButtonIsVisible = loadButtonIsVisible;
 
                 UIUtil.invokeLater(new Runnable() {
-                    @Override
+                	TabContentPanel tabContentPanel;
+                	@Override
                     public void run() {
                         final BrowserContentPane rb = new ResultContentPane(datamodel.get(), finalResultType, "", session, null,
-                                null, null, new RowsClosure(), false, false, executionContext);
+                                null, null, new RowsClosure(), false, false, executionContext) {
+                        	@Override
+                        	public void afterReload() {
+                        		UIUtil.invokeLater(() -> {
+                        			if (initialTextTablesPos != null && tabContentPanel != null) {
+                            			if (tabContentPanel.textViewScrollPane.getViewport() != null) {
+                            				tabContentPanel.textViewScrollPane.getViewport().setViewPosition(initialTextTablesPos);
+                            			}
+                            			initialTextTablesPos = null;
+                            		}
+                        			if (initialRowsTablesPos != null) {
+                            			if (rowsTableScrollPane.getViewport() != null) {
+                            				rowsTableScrollPane.getViewport().setViewPosition(initialRowsTablesPos);
+                            			}
+                            			initialRowsTablesPos = null;
+                            		}
+                            		if (initialColumnsTablesPos != null && tabContentPanel != null) {
+                            			if (tabContentPanel.columnsScrollPane.getViewport() != null) {
+                            				tabContentPanel.columnsScrollPane.getViewport().setViewPosition(initialColumnsTablesPos);
+                            			}
+                            			initialColumnsTablesPos = null;
+                            		}
+                        		});
+                        		super.afterReload();
+                        	}
+                        };
                         if (resultTypes != null && resultTypes.size() > 1) {
                             rb.setResultSetType(resultTypes);
                         }
@@ -1005,7 +1036,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						} catch (Throwable e1) {
 							logger.info("error", e1);
 						}
-						final TabContentPanel tabContentPanel =
+						tabContentPanel =
                         		new TabContentPanel(rb.rowsCount,
                         				metaDataRenderer,
                         				finalResultSetType,
@@ -1054,6 +1085,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								initialSortKeysSql = sql;
 								try {
 									initialSortKeys = rb.rowsTable.getRowSorter().getSortKeys();
+									initialColumnsTablesPos = null;
+									if (tabContentPanel.columnsScrollPane.getViewport() != null) {
+										initialColumnsTablesPos = tabContentPanel.columnsScrollPane.getViewport().getViewPosition();
+									}
+									initialRowsTablesPos = null;
+									initialFoundColumn.clear();
+									initialFoundColumn.addAll(rb.foundColumn);
+									if (rb.rowsTableScrollPane.getViewport() != null) {
+										initialRowsTablesPos = rb.rowsTableScrollPane.getViewport().getViewPosition();
+									}
+									initialTextTablesPos = null;
+									if (tabContentPanel.textViewScrollPane.getViewport() != null) {
+										initialTextTablesPos = tabContentPanel.textViewScrollPane.getViewport().getViewPosition();
+									}
 								} catch (Exception e2) {
 									initialSortKeys = null;
 								}
@@ -1099,7 +1144,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         	}
                         }
                 		try {
-                    		if (initialSortKeys != null && initialSortKeysSql != null && initialSortKeysSql.equals(sql)) {
+                			rb.foundColumn.clear();
+                			rb.foundColumn.addAll(initialFoundColumn);
+							if (initialSortKeys != null && initialSortKeysSql != null && initialSortKeysSql.equals(sql)) {
                     			rb.getRowsTable().getRowSorter().setSortKeys(initialSortKeys);
                     		}
                 		} catch (Exception e) {
