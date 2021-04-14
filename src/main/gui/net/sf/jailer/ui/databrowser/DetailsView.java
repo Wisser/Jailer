@@ -254,15 +254,17 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			if (alternativeColumnLabels != null && alternativeColumnLabels.length > columnIndex.get(i)) {
 				String altName = alternativeColumnLabels[columnIndex.get(i)];
 				String text = altName;
-				String[] ntPair = altName.replaceAll("<br>|<.html>", "\t").split("\t");
-				if (ntPair.length == 3) {
+				String[] ntPair = altName.replaceAll("<.?html>", "").replaceAll("<br>", "\t").split("\t");
+				if (ntPair.length == 2) {
+					text = ntPair[0];
+				} else if (ntPair.length == 3) {
 					text = "<html>" + ntPair[1] + "</html>\t<html>" + ntPair[0] + "</html>";
 				}
-				l.setText(shortText(text));
-				l.setToolTipText(text);
+				l.setText(text);
+				l.setToolTipText(altName);
 				if (!text.equals(altName)) {
 					int pos = text.indexOf('\t');
-					if (i >= 0) {
+					if (pos >= 0) {
 						JPanel panel = new JPanel(new GridBagLayout());
 						JLabel tab = new JLabel(text.substring(pos + 1));
 						JLabel sep = new JLabel(" ");
@@ -279,8 +281,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					        panel.add(new JLabel(""), gbc);
 					    });
 						String cName = text.substring(0, pos);
-						l.setText(shortText(cName));
-						l.setToolTipText(cName);
+						l.setText(cName);
+						// l.setToolTipText(cName);
 						gridBagConstraints = new java.awt.GridBagConstraints();
 				        gridBagConstraints.gridx = 2;
 				        gridBagConstraints.gridy = 1;
@@ -300,7 +302,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				        panel.add(tab, gridBagConstraints);
 				        lCont = panel;
 					} else {
-						l.setText(altName.replaceFirst("^(<html>)(.*)<br>(.*)(</html>)$", "$1$3&nbsp;&nbsp;$2$4"));
+						l.setText(text.replaceAll("<[^>]+>", ""));
 					}
 				}
 			} else {
@@ -476,10 +478,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			isPacked = true;
 		}
 		onRowChanged(row);
-	}
-
-	private String shortText(String text) {
-		return text.replaceFirst("^(.{32}).+$", "$1...");
 	}
 
 	protected abstract void onRowChanged(int row);
