@@ -177,7 +177,8 @@ public class ColumnsTable extends JTable {
 			}
 			setDefaultEditor(getColumnClass(i), defaultEditor);
 		}
-
+		TableCellEditor defaultEditor = rowsTable.getDefaultEditor(Object.class);
+		setDefaultEditor(Object.class, defaultEditor);
 		InputMap im = getInputMap();
 		Object key = "copyClipboard";
 		im.put(KS_COPY_TO_CLIPBOARD, key);

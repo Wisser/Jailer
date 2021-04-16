@@ -16,14 +16,18 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.NumberFormat;
@@ -38,6 +42,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
@@ -54,7 +59,9 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.util.SizeGrip;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -213,7 +220,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 0;
 		
-		int i = 0;
 		final List<Column> columns = rowIdSupport.getColumns(table, session);
 		List<Integer> columnIndex = new ArrayList<Integer>();
 		for (int j = 0; j < columns.size(); ++j) {
@@ -247,10 +253,14 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		}
 		List<Runnable> removeTableNames = new ArrayList<Runnable>();
 		List<JLabel> tableNames = new ArrayList<JLabel>();
+		int i = 0;
 		while (i < columns.size()) {
 			Column c = columns.get(columnIndex.get(i));
 			JLabel l = new JLabel();
+			l.setVerticalAlignment(SwingConstants.TOP);
 			JComponent lCont = l;
+			JLabel tab = null;
+			JPanel panel2 = null;
 			if (alternativeColumnLabels != null && alternativeColumnLabels.length > columnIndex.get(i)) {
 				String altName = alternativeColumnLabels[columnIndex.get(i)];
 				String text = altName;
@@ -266,40 +276,57 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					int pos = text.indexOf('\t');
 					if (pos >= 0) {
 						JPanel panel = new JPanel(new GridBagLayout());
-						JLabel tab = new JLabel(text.substring(pos + 1));
-						JLabel sep = new JLabel(" ");
+						panel.setToolTipText(l.getToolTipText());
+						tab = new JLabel(text.substring(pos + 1));
+						tab.setToolTipText(l.getToolTipText());
+						tab.setOpaque(true);
+						JLabel sep = new JLabel("  ");
+						sep.setToolTipText(l.getToolTipText());
 						tableNames.add(tab);
+						JLabel fTab = tab;
 						removeTableNames.add(() -> {
-							tab.setVisible(false);
+							fTab.setVisible(false);
 							sep.setVisible(false);
+							l.setText(l.getText().replaceAll("<[^>]+>", ""));
 							GridBagConstraints gbc = new java.awt.GridBagConstraints();
 							gbc.gridx = 4;
 							gbc.gridy = 1;
 							gbc.weightx = 1;
 							gbc.fill = GridBagConstraints.HORIZONTAL;
-							gbc.anchor = GridBagConstraints.EAST;
+							gbc.anchor = GridBagConstraints.NORTHWEST;
 					        panel.add(new JLabel(""), gbc);
 					    });
 						String cName = text.substring(0, pos);
 						l.setText(cName);
-						// l.setToolTipText(cName);
 						gridBagConstraints = new java.awt.GridBagConstraints();
 				        gridBagConstraints.gridx = 2;
 				        gridBagConstraints.gridy = 1;
-				        gridBagConstraints.weightx = 1;
-				        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-				        gridBagConstraints.anchor = GridBagConstraints.EAST;
+				        gridBagConstraints.fill = GridBagConstraints.BOTH;
+				        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+				        gridBagConstraints.weighty = 1;
 				        panel.add(sep, gridBagConstraints);
 				        gridBagConstraints = new java.awt.GridBagConstraints();
 				        gridBagConstraints.gridx = 3;
 				        gridBagConstraints.gridy = 1;
-				        gridBagConstraints.anchor = GridBagConstraints.EAST;
+				        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+				        gridBagConstraints.fill = GridBagConstraints.BOTH;
+				        gridBagConstraints.weightx = 1;
+				        gridBagConstraints.weighty = 1;
 				        panel.add(l, gridBagConstraints);
 				        gridBagConstraints = new java.awt.GridBagConstraints();
 				        gridBagConstraints.gridx = 1;
 				        gridBagConstraints.gridy = 1;
-				        gridBagConstraints.anchor = GridBagConstraints.WEST;
-				        panel.add(tab, gridBagConstraints);
+				        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+				        panel2 = new JPanel(new FlowLayout(0, 0, 0));
+				        panel2.setOpaque(true);
+				        panel2.setBackground(Color.green);
+				        panel2.add(tab);
+				        gridBagConstraints = new java.awt.GridBagConstraints();
+				        gridBagConstraints.gridx = 1;
+				        gridBagConstraints.gridy = i;
+				        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+				        gridBagConstraints.fill = GridBagConstraints.BOTH;
+				        content.add(panel2, gridBagConstraints);
 				        lCont = panel;
 					} else {
 						l.setText(text.replaceAll("<[^>]+>", ""));
@@ -310,17 +337,14 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			}
 			l.setFont(nonbold);
 			gridBagConstraints = new java.awt.GridBagConstraints();
-			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
 			gridBagConstraints.weightx = 0;
 			gridBagConstraints.weighty = 0;
 			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridx = 2;
 			gridBagConstraints.gridy = i;
 			if (!selectableFields) {
-				l.setText(" " + l.getText() + "    ");
 				l.setVerticalAlignment(SwingConstants.TOP);
-			} else {
-				gridBagConstraints.insets = new Insets(0, 4, 0, 8);
 			}
 			content.add(lCont, gridBagConstraints);
 
@@ -329,7 +353,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			gridBagConstraints.weighty = 0;
 			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			gridBagConstraints.weightx = 1;
-			gridBagConstraints.gridx = 1;
+			gridBagConstraints.gridx = 6;
 			gridBagConstraints.gridy = i;
 			Object v = rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(row) : row).values[columnIndex.get(i)];
 //			if (v instanceof BigDecimal) {
@@ -366,39 +390,114 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			Object finalV = v;
 			if (selectableFields) {
 				JTextArea f = new JTextArea();
+				if (Environment.nimbus) {
+					f.setBorder(BorderFactory.createLineBorder(Color.white));
+				}
 				f.addFocusListener(new FocusListener() {
 					@Override
 					public void focusLost(FocusEvent e) {
+						Point vPos = jScrollPane1.getViewport().getViewPosition();
 						if (finalV instanceof UIUtil.IconWithText) {
 							f.setText(((UIUtil.IconWithText) finalV).text);
 						} else {
-							f.setText(finalV == null? "" : finalV.toString());
+							f.setText(finalV == null? "null" : finalV.toString());
 						}
+						UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(vPos));
 					}
 					
 					@Override
 					public void focusGained(FocusEvent e) {
+						Point vPos = jScrollPane1.getViewport().getViewPosition();
 						if (vOrig instanceof UIUtil.IconWithText) {
 							f.setText(((UIUtil.IconWithText) vOrig).text);
 						} else {
-							f.setText(vOrig == null? "" : vOrig.toString());
+							f.setText(vOrig == null? "null" : vOrig.toString());
 						}
 						if (vOrig != null) {
 							f.selectAll();
 						}
+						UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(vPos));
 					}
 				});
 				if (v instanceof UIUtil.IconWithText) {
 					f.setText(((UIUtil.IconWithText) v).text);
 				} else {
-					f.setText(v == null? "" : v.toString());
+					f.setText(v == null? "null" : v.toString());
 				}
 //				f.setEnabled(v != null);
 				if (v == null) {
-					f.setBackground(new Color(238, 238, 238));
+					f.setForeground(Color.GRAY);
+					f.setFont(italic);
 				}
 				f.setEditable(false);
+				f.setBackground(i % 2 == 0? BG1 : BG2);
+				l.setBackground(i % 2 == 0? BG1 : BG2);
+				f.setOpaque(true);
+				l.setOpaque(true);
 				content.add(f, gridBagConstraints);
+				JLabel l1 = new JLabel(" ");
+				JLabel l2 = new JLabel("    ");
+				l1.setOpaque(true);
+				l2.setOpaque(true);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				gridBagConstraints.weightx = 0;
+				gridBagConstraints.weighty = 0;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+				gridBagConstraints.gridx = 0;
+				gridBagConstraints.gridy = i;
+				content.add(l1, gridBagConstraints);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				gridBagConstraints.weightx = 0;
+				gridBagConstraints.weighty = 0;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+				gridBagConstraints.gridx = 4;
+				gridBagConstraints.gridy = i;
+				content.add(l2, gridBagConstraints);
+				f.setBackground(i % 2 == 0? BG1 : BG2);
+				l.setBackground(i % 2 == 0? BG1 : BG2);
+				l1.setBackground(i % 2 == 0? BG1 : BG2);
+				l2.setBackground(i % 2 == 0? BG1 : BG2);
+				lCont.setBackground(i % 2 == 0? BG1 : BG2);
+				if (panel2 != null) {
+					panel2.setBackground(i % 2 == 0? BG1 : BG2);
+				}
+				if (tab != null) {
+					tab.setBackground(i % 2 == 0? BG1 : BG2);
+				}
+				if (rowIdSupport.getPrimaryKey(table) != null && rowIdSupport.getPrimaryKey(table).getColumns().contains(c)) {
+					lCont.setForeground(FG1);
+					l.setForeground(FG1);
+					l1.setForeground(FG1);
+					l2.setForeground(FG1);
+				} else {
+					lCont.setForeground(Color.BLUE);
+					l.setForeground(Color.BLUE);
+					l1.setForeground(Color.BLUE);
+					l2.setForeground(Color.BLUE);
+				}
+				MouseListener ml = new MouseAdapter() {
+					@Override
+					public void mousePressed(MouseEvent e) {
+						f.grabFocus();
+					}
+				};
+				lCont.addMouseListener(ml);
+				l.addMouseListener(ml);
+				l1.addMouseListener(ml);
+				l2.addMouseListener(ml);
+				if (panel2 != null) {
+					panel2.addMouseListener(ml);
+				}
+				if (tab != null) {
+					tab.addMouseListener(ml);
+				}
+				labelColors.add(l.getBackground());
+				labels.add(l);
+				if (f.getText().trim().length() > 0) {
+					f.setToolTipText(UIUtil.toHTML(f.getText(), 200));
+				}
 			} else {
 				JLabel f = new JLabel();
 				String text;
@@ -414,8 +513,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					f.setForeground(Color.GRAY);
 				}
 				content.add(f, gridBagConstraints);
-				f.setBackground(i % 2 == 0? BG1 : BG2);
-				l.setBackground(i % 2 == 0? BG1 : BG2);
 				f.setOpaque(true);
 				l.setOpaque(true);
 				if (rowIdSupport.getPrimaryKey(table) != null && rowIdSupport.getPrimaryKey(table).getColumns().contains(c)) {
@@ -428,7 +525,19 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			}
 			++i;
 		}
-		
+		JPanel p = new JPanel();
+		p.setOpaque(true);
+		p.setBackground(i % 2 == 0? BG1 : BG2);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.weightx = 1;
+		gridBagConstraints.weighty = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = i;
+		gridBagConstraints.gridwidth = 10;
+		gridBagConstraints.weightx = 1;
+		gridBagConstraints.weighty = 1;
+		content.add(p, gridBagConstraints);
 		Set<String> un = new HashSet<String>();
 		tableNames.forEach(s -> {
 			if (!s.getText().matches("^((\\s*)|(<[^>]+>)*((&nbsp;)*)(<[^>]+>))*$")) {
@@ -441,18 +550,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			});
 		}
 		
-		if (selectableFields) {
-			JLabel l = new JLabel();
-			l.setText(" ");
-			gridBagConstraints = new java.awt.GridBagConstraints();
-			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-			gridBagConstraints.weightx = 1;
-			gridBagConstraints.weighty = 1;
-			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-			gridBagConstraints.gridx = 1;
-			gridBagConstraints.gridy = i;
-			content.add(l, gridBagConstraints);
-		}
 		Runnable update = new Runnable() {
 			@Override
 			public void run() {
@@ -628,9 +725,23 @@ public abstract class DetailsView extends javax.swing.JPanel {
     	}
 	}
 
+	public void prepareForNonModalUsage() {
+		closeButton.setVisible(false);
+		setBorder(BorderFactory.createLineBorder(Color.black));
+		SizeGrip corner = new SizeGrip();
+		boolean isLeftToRight = getComponentOrientation().isLeftToRight();
+        String str = isLeftToRight ? JScrollPane.LOWER_RIGHT_CORNER :
+                                        JScrollPane.LOWER_LEFT_CORNER;
+        jScrollPane1.setCorner(str, corner);
+        jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+ 	}
+
 	private void resetScrollPane() {
 		jScrollPane1.getVerticalScrollBar().setValue(jScrollPane1.getVerticalScrollBar().getMinimum());					
 		jScrollPane1.getHorizontalScrollBar().setValue(jScrollPane1.getHorizontalScrollBar().getMinimum());
 	}
 
+	// TODO support edit mode
+	
 }

@@ -1073,9 +1073,10 @@ public class UIUtil {
                 	sb.append("...");
                 	break;
                 }
-                if (lineNr > 1) {
-                	sb.append("\n");
-                }
+                sb.append("\n");
+            }
+            if (sb.length() > 0 && sb.charAt(sb.length() - 1) == '\n') {
+            	sb.setLength(sb.length() - 1);
             }
             plainText = sb.toString();
         }

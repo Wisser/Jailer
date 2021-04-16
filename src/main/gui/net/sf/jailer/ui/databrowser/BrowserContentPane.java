@@ -40,6 +40,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
+import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -4501,6 +4505,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			for (int i = 0; i < rowsTable.getColumnCount(); i++) {
 			   rowsTable.setDefaultEditor(rowsTable.getColumnClass(i), anEditor);
 		    }
+			rowsTable.setDefaultEditor(Object.class, anEditor);
 
 			List<? extends SortKey> sortKeys = new ArrayList(rowsTable.getRowSorter().getSortKeys());
 			List<Object> filterContent = new ArrayList<Object>();
@@ -5146,6 +5151,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (rowsTable.getColumnCount() > 0) {
 			MAXLINES = Math.max(10 * MAXLINES / rowsTable.getColumnCount(), 10);
 		}
+		int MAXCELLS = 12000;
+		int numCells = 0;
 		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
 		int minTotalWidth = (int) (Desktop.BROWSERTABLE_DEFAULT_WIDTH * getLayoutFactor()) - 18;
 		int totalWidth = 0;
@@ -5167,6 +5174,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				comp = rowsTable.getCellRenderer(line, i).getTableCellRendererComponent(rowsTable, dtm.getValueAt(line, i), false, false, line, i);
 				width = Math.max(width, comp.getPreferredSize().width + 8);
 				if (line > MAXLINES) {
+					break;
+				}
+				if (++numCells > MAXCELLS) {
 					break;
 				}
 			}
@@ -6234,7 +6244,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 
 	private void openDetails(final int x, final int y) {
-		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
+		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), false);
+		d.setUndecorated(true);
 		final boolean deselect = !currentSelectedRowCondition.equals("")
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
@@ -6261,13 +6272,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
+		detailsView.prepareForNonModalUsage();
+		d.addWindowFocusListener(new WindowFocusListener() {
+			@Override
+			public void windowLostFocus(WindowEvent e) {
+				d.setVisible(false);
+				d.dispose();
+			}
+			@Override
+			public void windowGainedFocus(WindowEvent e) {
+			}
+		});
 		d.pack();
 		d.setLocation(x - 16, y);
-		d.setSize(400, d.getHeight() + 20);
+		d.setSize(400, d.getHeight());
 		UIUtil.fit(d);
 		Window p = SwingUtilities.getWindowAncestor(rowsTable);
 		if (p != null) {
-			int maxX = p.getX() + p.getWidth() - d.getWidth();
+			int maxX = p.getX() + p.getWidth() - d.getWidth() - 8;
 			d.setLocation(Math.max(0, Math.min(maxX, d.getX())), d.getY());
 			int maxY = p.getY() + p.getHeight() - d.getHeight();
 			if (maxY < d.getY()) {
@@ -6277,9 +6299,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				d.setLocation(d.getX(), Math.max(0, maxY));
 			}
 		}
+		d.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
+				onRedraw();
+			}
+		});
 		d.setVisible(true);
-		setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
-		onRedraw();
 	}
 
 	private void updateWhereField() {
@@ -6321,7 +6348,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	public void openDetailsView(int rowIndex, int x, int y) {
-		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
+		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), false);
+		d.setUndecorated(true);
 		final boolean deselect = !currentSelectedRowCondition.equals("")
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
@@ -6348,21 +6376,32 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
+		detailsView.prepareForNonModalUsage();
+		d.addWindowFocusListener(new WindowFocusListener() {
+			@Override
+			public void windowLostFocus(WindowEvent e) {
+				d.setVisible(false);
+				d.dispose();
+			}
+			@Override
+			public void windowGainedFocus(WindowEvent e) {
+			}
+		});
 		d.pack();
 		d.setLocation(x - 16, y);
-		d.setSize(500, d.getHeight() + 20);
+		d.setSize(500, d.getHeight());
 		int h = d.getHeight();
 		UIUtil.fit(d);
 		if (d.getHeight() < h) {
 			y = Math.max(y - Math.min(h - d.getHeight(), Math.max(400 - d.getHeight(), 0)), 20);
 			d.pack();
 			d.setLocation(x, y);
-			d.setSize(500, d.getHeight() + 20);
+			d.setSize(500, d.getHeight() + 1);
 			UIUtil.fit(d);
 		}
 		Window p = SwingUtilities.getWindowAncestor(rowsTable);
 		if (p != null) {
-			int maxX = p.getX() + p.getWidth() - d.getWidth();
+			int maxX = p.getX() + p.getWidth() - d.getWidth() - 8;
 			d.setLocation(Math.max(0, Math.min(maxX, d.getX())), d.getY());
 			int maxY = p.getY() + p.getHeight() - d.getHeight();
 			if (maxY < d.getY()) {
@@ -6372,9 +6411,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				d.setLocation(d.getX(), Math.max(0, maxY));
 			}
 		}
+		d.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
+				onRedraw();
+			}
+		});
 		d.setVisible(true);
-		setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
-		onRedraw();
 	}
 
 	public void updateSingleRowDetailsView() {
