@@ -24,10 +24,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.MouseInputAdapter;
+
+import net.sf.jailer.ui.UIUtil;
 
 
 /**
@@ -52,7 +55,7 @@ public class SizeGrip extends JPanel {
 		addMouseListener(adapter);
 		addMouseMotionListener(adapter);
 		setPreferredSize(new Dimension(16, 16));
-		setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+		setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
 	}
 
 
@@ -96,6 +99,7 @@ public class SizeGrip extends JPanel {
 		Image image = null;
 		try {
 			image = ImageIO.read(url);
+			image = UIUtil.scaleIcon(new ImageIcon(image), 1.0).getImage();
 		} catch (IOException ioe) { // Never happens
 			ioe.printStackTrace();
 		}
@@ -183,14 +187,14 @@ public class SizeGrip extends JPanel {
 	@Override
 	public void updateUI() {
 		super.updateUI();
-		if (System.getProperty("os.name").contains("OS X")) {
+//		if (System.getProperty("os.name").contains("OS X")) {
 			if (osxSizeGrip==null) {
 				osxSizeGrip = createOSXSizeGrip();
 			}
-		}
-		else { // Clear memory in case of runtime LaF change.
-			osxSizeGrip = null;
-		}
+//		}
+//		else { // Clear memory in case of runtime LaF change.
+//			osxSizeGrip = null;
+//		}
 
 	}
 
@@ -211,6 +215,9 @@ public class SizeGrip extends JPanel {
 
 		@Override
 		public void mouseDragged(MouseEvent e) {
+			if (origPos == null) {
+				return;
+			}
 			Point newPos = e.getPoint();
 			SwingUtilities.convertPointToScreen(newPos, SizeGrip.this);
 			int xDelta = newPos.x - origPos.x;

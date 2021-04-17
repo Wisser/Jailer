@@ -69,7 +69,7 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content) {
+			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
 			}
 		},
@@ -85,8 +85,8 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content) {
-				return content == null || (content instanceof String && !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0));
+			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
+				return content == null || (content instanceof String && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0)));
 			}
 		},
 		NCHAR {
@@ -101,8 +101,8 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content) {
-				return content == null || (content instanceof CellContentConverter.NCharWrapper && !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0));
+			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
+				return content == null || (content instanceof CellContentConverter.NCharWrapper && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0)));
 			}
 		},
 		BOOLEAN {
@@ -127,7 +127,7 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content) {
+			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
 				return content == null || (content instanceof Boolean);
 			}
 		},
@@ -213,7 +213,7 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content) {
+			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
 			}
 		},
@@ -264,12 +264,12 @@ public class BrowserContentCellEditor {
 			}
 
 			@Override
-			boolean isEditable(int columnType, Object content) {
+			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
 			}
 		};
 
-		abstract boolean isEditable(int columnType, Object content);
+		abstract boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor);
 		abstract String cellContentToText(int columnType, Object content);
 		abstract Object textToContent(int columnType, String text, Object oldContent);
 	}
@@ -350,7 +350,7 @@ public class BrowserContentCellEditor {
 		}
 		Converter converter = converterPerType.get(columnTypes[column]);
 		if (converter != null) {
-			return converter.isEditable(columnTypes[column], content);
+			return converter.isEditable(columnTypes[column], content, this);
 		}
 		return false;
 	}
@@ -407,5 +407,24 @@ public class BrowserContentCellEditor {
 	 * Invalid content.
 	 */
 	public static final  Object INVALID = new Object();
+
+	private boolean inDetailsView = false;
+	private boolean isLoading = false;
+
+	public boolean isLoading() {
+		return isLoading;
+	}
+
+	public void setLoading(boolean isLoading) {
+		this.isLoading = isLoading;
+	}
+
+	public boolean isInDetailsView() {
+		return inDetailsView;
+	}
+
+	public void setInDetailsView(boolean inDetailsView) {
+		this.inDetailsView = inDetailsView;
+	}
 
 }

@@ -228,7 +228,7 @@ public class ColumnsTable extends JTable {
 								i = rb.rowsTable.getRowSorter().convertRowIndexToModel(ri);
 								Point p = new Point(e.getX(), e.getY());
 								SwingUtilities.convertPointToScreen(p, ColumnsTable.this);
-								rb.openDetailsView(i, (int) p.getX(), (int) p.getY());
+								rb.openDetails(i, (int) p.getX(), (int) p.getY());
 							}
 						}
 					}

@@ -43,7 +43,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
-import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -82,6 +81,7 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
@@ -431,6 +431,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								reloadAction.run();
 							}
 						}
+						++currentEditState;
 						afterReload();
 					} finally {
 						Desktop.forceAdjustRows = oldForceAdjustRows;
@@ -1014,7 +1015,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public void actionPerformed(ActionEvent e) {
 				Point loc = new Point(18, 16);
 				SwingUtilities.convertPointToScreen(loc, rowsTable);
-				openDetails(loc.x, loc.y);
+				openDetails(0, loc.x, loc.y);
 			}
 		});
 
@@ -1273,7 +1274,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						Point p = SwingUtilities.convertPoint(source, x, y, null);
 						if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() > 1) {
 							if (row != null) {
-								openDetailsView(i, p.x + getOwner().getX(), p.y + getOwner().getY());
+								openDetails(i, p.x + getOwner().getX(), p.y + getOwner().getY());
 							}
 						} else if (e.getButton() != MouseEvent.BUTTON1) {
 							JPopupMenu popup;
@@ -1962,7 +1963,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				det.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						openDetailsView(rowIndex, x, y);
+						openDetails(rowIndex, x, y);
 					}
 				});
 			}
@@ -2067,7 +2068,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			det.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					openDetailsView(rowIndex, x, y);
+					openDetails(rowIndex, x, y);
 				}
 			});
 
@@ -2375,7 +2376,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			det.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					openDetails(x, y);
+					openDetails(0, x, y);
 				}
 			});
 		}
@@ -4324,7 +4325,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						r = rows.get(row);
 					}
 					Table type = getResultSetTypeForColumn(column);
-					if (isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, row, column, r.values[column]) && isPKComplete(type, r)) {
+					if ((isEditMode || browserContentCellEditor.isInDetailsView()) && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, row, column, r.values[column]) && isPKComplete(type, r)) {
 						return !rowIdSupport.getPrimaryKey(type, session).getColumns().isEmpty();
 					}
 					return false;
@@ -4348,7 +4349,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								final String updateStatement = SQLDMLBuilder.buildUpdate(type, theRow, false, column, session);
 								theRow.values[column] = oldContent;
 								updateMode("updating", null);
-
+								browserContentCellEditor.setLoading(true);
+								
 								getRunnableQueue().add(new RunnableWithPriority() {
 									private Exception exception;
 
@@ -4402,6 +4404,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 												if (exception != null && !(exception instanceof CancellationException)) {
 													UIUtil.showException(BrowserContentPane.this, "Error", exception);
 													updateMode("table", null);
+													++currentEditState;
 												} else {
 													reloadRows();
 												}
@@ -4415,6 +4418,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									}
 								});
 							}
+						} else {
+							getToolkit().beep();
 						}
 					}
 				}
@@ -4730,7 +4735,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (useClassicSingleRowDetailsView) {
 				final boolean deselect = !getAndConditionText().equals("")
 						&& rows.size() == 1;
-					singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, alternativeColumnLabels, session) {
+					singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, alternativeColumnLabels, session, browserContentCellEditor, rowsTable.getModel()) {
 						@Override
 						protected void onRowChanged(int row) {
 						}
@@ -4739,6 +4744,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 						@Override
 						protected void onSelectRow(Row row) {
+						}
+						@Override
+						protected void waitLoading() {
 						}
 					};
 					((DetailsView) singleRowDetailsView).setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
@@ -6242,50 +6250,86 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	protected abstract void collectPositions(Map<String, Map<String, double[]>> positions);
 
-
-	private void openDetails(final int x, final int y) {
+	public void openDetails(int rowIndex, final int x, final int y) {
 		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), false);
 		d.setUndecorated(true);
 		final boolean deselect = !currentSelectedRowCondition.equals("")
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
-		DetailsView detailsView;
-		d.getContentPane().add(detailsView = new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, session) {
-			@Override
-			protected void onRowChanged(int row) {
-				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(row, false);
-			}
-			@Override
-			protected void onClose() {
-				d.setVisible(false);
-			}
-			@Override
-			protected void onSelectRow(Row row) {
-				d.setVisible(false);
-				if (deselect) {
-					andCondition.setSelectedItem("");
-				} else {
-					List<Row> rowList = new ArrayList<Row>();
-					rowList.add(row);
-					selectRow(rowList);
+		List<Supplier<DetailsView>> createDetailsViewF = new ArrayList<Supplier<DetailsView>>();
+		Supplier<DetailsView> createDetailsView = () -> {
+			DetailsView dv = new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, session, browserContentCellEditor, rowsTable.getModel()) {
+				@Override
+				protected void onRowChanged(int row) {
+					setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(row, false);
 				}
-			}
-		});
+				@Override
+				protected void onClose() {
+					d.setVisible(false);
+					d.dispose();
+				}
+				@Override
+				protected void onSelectRow(Row row) {
+					d.setVisible(false);
+					if (deselect) {
+						andCondition.setSelectedItem("");
+					} else {
+						List<Row> rowList = new ArrayList<Row>();
+						rowList.add(row);
+						selectRow(rowList);
+					}
+				}
+				@Override
+				protected void waitLoading() {
+					int oldState = currentEditState;
+					Timer timer = new Timer(500, null);
+					timer.setRepeats(false);
+					timer.addActionListener(e -> {
+						if (!d.isVisible()) {
+							timer.stop();
+						} else if (oldState != currentEditState) {
+							d.getContentPane().removeAll();
+							DetailsView v;
+							d.getContentPane().add(v = createDetailsViewF.get(0).get());
+							v.setSortColumns(sortColumnsCheckBox.isSelected());
+							v.editModeCheckBox.setSelected(editModeCheckBox.isSelected());
+							v.currentRow = -1;
+							if (v.rows.isEmpty()) {
+								d.setVisible(false);
+								d.dispose();
+							} else {
+								int newRow = Math.min(v.rows.size() - 1, currentRow);
+								v.setCurrentRow(newRow, true);
+								v.rowSpinner.setValue(newRow + 1);
+							}
+							timer.stop();
+						} else {
+							timer.restart();
+						}
+					});
+					timer.start();
+				}
+			};
+			dv.prepareForNonModalUsage();
+			d.addWindowFocusListener(new WindowFocusListener() {
+				@Override
+				public void windowLostFocus(WindowEvent e) {
+					d.setVisible(false);
+					d.dispose();
+				}
+				@Override
+				public void windowGainedFocus(WindowEvent e) {
+				}
+			});
+			return dv;
+		};
+		createDetailsViewF.add(createDetailsView);
+		DetailsView detailsView = createDetailsView.get();
+		d.getContentPane().add(detailsView );
 		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
-		detailsView.prepareForNonModalUsage();
-		d.addWindowFocusListener(new WindowFocusListener() {
-			@Override
-			public void windowLostFocus(WindowEvent e) {
-				d.setVisible(false);
-				d.dispose();
-			}
-			@Override
-			public void windowGainedFocus(WindowEvent e) {
-			}
-		});
 		d.pack();
 		d.setLocation(x - 16, y);
-		d.setSize(400, d.getHeight());
+		d.setSize(500, d.getHeight());
 		UIUtil.fit(d);
 		Window p = SwingUtilities.getWindowAncestor(rowsTable);
 		if (p != null) {
@@ -6345,80 +6389,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsClosure.currentClosureRowIDs.clear();
 		adjustGui();
 		reloadRows();
-	}
-
-	public void openDetailsView(int rowIndex, int x, int y) {
-		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), false);
-		d.setUndecorated(true);
-		final boolean deselect = !currentSelectedRowCondition.equals("")
-				&& currentSelectedRowCondition.equals(getAndConditionText())
-				&& rows.size() == 1;
-		DetailsView detailsView;
-		d.getContentPane().add(detailsView = new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, session) {
-			@Override
-			protected void onRowChanged(int row) {
-				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(row, false);
-			}
-			@Override
-			protected void onClose() {
-				d.setVisible(false);
-			}
-			@Override
-			protected void onSelectRow(Row row) {
-				d.setVisible(false);
-				if (deselect) {
-					andCondition.setSelectedItem("");
-				} else {
-					List<Row> rowList = new ArrayList<Row>();
-					rowList.add(row);
-					selectRow(rowList);
-				}
-			}
-		});
-		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
-		detailsView.prepareForNonModalUsage();
-		d.addWindowFocusListener(new WindowFocusListener() {
-			@Override
-			public void windowLostFocus(WindowEvent e) {
-				d.setVisible(false);
-				d.dispose();
-			}
-			@Override
-			public void windowGainedFocus(WindowEvent e) {
-			}
-		});
-		d.pack();
-		d.setLocation(x - 16, y);
-		d.setSize(500, d.getHeight());
-		int h = d.getHeight();
-		UIUtil.fit(d);
-		if (d.getHeight() < h) {
-			y = Math.max(y - Math.min(h - d.getHeight(), Math.max(400 - d.getHeight(), 0)), 20);
-			d.pack();
-			d.setLocation(x, y);
-			d.setSize(500, d.getHeight() + 1);
-			UIUtil.fit(d);
-		}
-		Window p = SwingUtilities.getWindowAncestor(rowsTable);
-		if (p != null) {
-			int maxX = p.getX() + p.getWidth() - d.getWidth() - 8;
-			d.setLocation(Math.max(0, Math.min(maxX, d.getX())), d.getY());
-			int maxY = p.getY() + p.getHeight() - d.getHeight();
-			if (maxY < d.getY()) {
-				int deltaH = Math.min(d.getY() - maxY, (int) (0.30 * d.getHeight()));
-				maxY += deltaH;
-				d.setSize(d.getWidth(), d.getHeight() - deltaH);
-				d.setLocation(d.getX(), Math.max(0, maxY));
-			}
-		}
-		d.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
-				onRedraw();
-			}
-		});
-		d.setVisible(true);
 	}
 
 	public void updateSingleRowDetailsView() {
@@ -7083,6 +7053,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         return scaledWarnIcon;
     }
 
+	private int currentEditState;
     private static ImageIcon warnIcon;
     private static ImageIcon blueIcon;
     private static ImageIcon scaledWarnIcon;

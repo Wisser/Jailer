@@ -1378,6 +1378,9 @@ public class UIUtil {
 					@Override
 					protected void onClose() {
 					}
+					@Override
+					protected void waitLoading() {
+					}
 				};
 				new RSyntaxTextArea();
 				getSQLEditorFont();
