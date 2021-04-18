@@ -631,6 +631,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					content.add(f, gridBagConstraints);
 					f.setOpaque(true);
 					l.setOpaque(true);
+					f.setBackground(i % 2 == 0? BG1 : BG2);
+					l.setBackground(i % 2 == 0? BG1 : BG2);
 					if (rowIdSupport.getPrimaryKey(table) != null && rowIdSupport.getPrimaryKey(table).getColumns().contains(c)) {
 						l.setForeground(FG1);
 					} else {
