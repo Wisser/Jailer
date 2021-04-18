@@ -6299,7 +6299,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		d.getContentPane().add(detailsView );
 		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 		d.pack();
-		d.setLocation(x - 16, y);
+		d.setLocation(x - 16, y + 2);
 		d.setSize(600, d.getHeight());
 		UIUtil.fit(d);
 		Window p = SwingUtilities.getWindowAncestor(rowsTable);
