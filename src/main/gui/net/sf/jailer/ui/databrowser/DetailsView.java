@@ -629,7 +629,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						f.setForeground(Color.GRAY);
 					}
 					content.add(f, gridBagConstraints);
-					l.setText(l.getText() + "  ");
+					l.setText(" " + l.getText() + "  ");
 					f.setOpaque(true);
 					l.setOpaque(true);
 					f.setBackground(i % 2 == 0? BG1 : BG2);
@@ -646,6 +646,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			}
 			editModeToggleButton.setEnabled(hasEditableColumn);
 			JPanel p = new JPanel();
+			Dimension preferredSize = new Dimension(1, 1);
+			p.setPreferredSize(preferredSize);
 			p.setOpaque(true);
 			p.setBackground(i % 2 == 0? BG1 : BG2);
 			gridBagConstraints = new java.awt.GridBagConstraints();
