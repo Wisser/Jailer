@@ -629,6 +629,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						f.setForeground(Color.GRAY);
 					}
 					content.add(f, gridBagConstraints);
+					l.setText(l.getText() + "  ");
 					f.setOpaque(true);
 					l.setOpaque(true);
 					f.setBackground(i % 2 == 0? BG1 : BG2);
