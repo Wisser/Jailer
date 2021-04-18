@@ -497,7 +497,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     value = outlineTableRender((OutlineInfo) value, isSelected);
                 }
                 Component render = olRenderer.getListCellRendererComponent(list, value, index, false, cellHasFocus);
-                render.setBackground(isSelected? new Color(240, 240, 255) : index == indexOfInfoAtCaret? new Color(255, 255, 170) : Color.WHITE);
+                render.setBackground(isSelected? new Color(240, 240, 255) : index == indexOfInfoAtCaret? new Color(255, 255, 200) : Color.WHITE);
                 if (render instanceof JLabel) {
                 	((JLabel) render).setToolTipText(tooltip);
 

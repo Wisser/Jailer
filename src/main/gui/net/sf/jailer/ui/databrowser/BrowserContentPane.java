@@ -674,7 +674,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static final KeyStroke KS_QUERYBUILDER = KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_FILTER = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_EDIT = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
-	private static final KeyStroke KS_DETAILS = KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK);
 
 	/**
 	 * And-condition-combobox model.
@@ -1008,14 +1007,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public void actionPerformed(ActionEvent e) {
 				setEditMode(!isEditMode);
 				updateTableModel();
-			}
-		});
-		registerAccelerator(KS_DETAILS, new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Point loc = new Point(18, 16);
-				SwingUtilities.convertPointToScreen(loc, rowsTable);
-				openDetails(0, loc.x, loc.y);
 			}
 		});
 
@@ -1955,9 +1946,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			JPopupMenu jPopupMenu = new JPopupMenu();
 			if (row != null) {
 				JMenuItem det = new JMenuItem("Details");
-				if (withKeyStroke) {
-					det.setAccelerator(KS_DETAILS);
-				}
 				jPopupMenu.add(det);
 				jPopupMenu.add(new JSeparator());
 				det.addActionListener(new ActionListener() {
@@ -2059,9 +2047,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		if (withSingleRow) {
 			JMenuItem det = new JMenuItem("Details");
-			if (withKeyStroke) {
-				det.setAccelerator(KS_DETAILS);
-			}
 			det.setEnabled(row != null);
 			popup.insert(det, 0);
 			popup.insert(new JSeparator(), 1);
@@ -2367,20 +2352,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 
 		popup.add(new JSeparator());
-
-		if (!forNavTree) {
-			JMenuItem det = new JMenuItem("Details");
-			det.setAccelerator(KS_DETAILS);
-			popup.add(det);
-			det.setEnabled(rows.size() > 0);
-			det.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					openDetails(0, x, y);
-				}
-			});
-		}
-
 		JMenuItem snw = new JMenuItem("Show in new Window");
 		popup.add(snw);
 		snw.addActionListener(new ActionListener() {
@@ -6282,7 +6253,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				@Override
 				protected void waitLoading() {
 					int oldState = currentEditState;
-					Timer timer = new Timer(500, null);
+					Timer timer = new Timer(100, null);
 					timer.setRepeats(false);
 					timer.addActionListener(e -> {
 						if (!d.isVisible()) {
@@ -6292,7 +6263,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							DetailsView v;
 							d.getContentPane().add(v = createDetailsViewF.get(0).get());
 							v.setSortColumns(sortColumnsCheckBox.isSelected());
-							v.editModeCheckBox.setSelected(editModeCheckBox.isSelected());
+							v.editModeToggleButton.setSelected(editModeToggleButton.isSelected());
 							v.currentRow = -1;
 							if (v.rows.isEmpty()) {
 								d.setVisible(false);
@@ -6329,7 +6300,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 		d.pack();
 		d.setLocation(x - 16, y);
-		d.setSize(500, d.getHeight());
+		d.setSize(600, d.getHeight());
 		UIUtil.fit(d);
 		Window p = SwingUtilities.getWindowAncestor(rowsTable);
 		if (p != null) {

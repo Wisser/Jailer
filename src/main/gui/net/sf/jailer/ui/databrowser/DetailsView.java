@@ -22,7 +22,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -39,6 +38,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Path2D;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.NumberFormat;
@@ -48,12 +48,15 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.RowSorter;
@@ -98,6 +101,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private final BrowserContentCellEditor browserContentCellEditor;
 	private final TableModel tableModel;
 	private boolean initialized = false;
+	private Consumer<Boolean> pendingUpdate;
 
 	/** Creates new form DetailsView 
 	 * @param rowSorter 
@@ -116,6 +120,32 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		this.tableModel = tableModel;
 		initComponents();
 		browserContentCellEditor.setLoading(false);
+		editModeToggleButton.setBackground(new Color(255, 206, 206));
+		editModeToggleButton.setForeground(Color.black);
+		editModeToggleButton.setIcon(editdetails);
+		FocusListener editCancelListener = new FocusListener() {
+			@Override
+			public void focusLost(FocusEvent e) {
+			}
+			@Override
+			public void focusGained(FocusEvent e) {
+				cancelEdit();
+			}
+		};
+		rowSpinner.addFocusListener(editCancelListener);
+		JComponent editor = rowSpinner.getEditor();
+		if (editor != null) {
+			editor.addFocusListener(editCancelListener);
+			if (editor instanceof JSpinner.DefaultEditor) {
+				if (((JSpinner.DefaultEditor) editor).getTextField() != null) {
+					((JSpinner.DefaultEditor) editor).getTextField().addFocusListener(editCancelListener);
+				}
+			}
+		}
+		sortCheckBox.addFocusListener(editCancelListener);
+		editModeToggleButton.addFocusListener(editCancelListener);
+		closeButton.addFocusListener(editCancelListener);
+		selectButton.addFocusListener(editCancelListener);
 		if (deselect) {
 			selectButton.setText("Deselect Row");
 		}
@@ -214,7 +244,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			browserContentCellEditor.setInDetailsView(true);
 			boolean changed = currentRow != row;
 			currentRow = row;
-	
+			cancelEdit();
+			
 			java.awt.GridBagConstraints gridBagConstraints;
 			
 			labels.clear();
@@ -263,6 +294,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			boolean hasEditableColumn = false;
 			List<Runnable> removeTableNames = new ArrayList<Runnable>();
 			List<JLabel> tableNames = new ArrayList<JLabel>();
+			Component nextFocusComponentForLastField = editModeToggleButton;
 			int i = 0;
 			while (i < columns.size()) {
 				Integer columnIndexAtI = columnIndex.get(i);
@@ -369,7 +401,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				int rowIndex = rowSorter != null? rowSorter.convertRowIndexToModel(row) : row;
 				Object v = rows.get(rowIndex).values[columnIndexAtI];
 				hasEditableColumn = hasEditableColumn || tableModel.isCellEditable(rowIndex, columnIndexAtI);
-				boolean isEditable = editModeCheckBox.isSelected() && tableModel.isCellEditable(rowIndex, columnIndexAtI);
+				boolean isEditable = editModeToggleButton.isSelected() && tableModel.isCellEditable(rowIndex, columnIndexAtI);
 				Object vOrig = v;
 				if (v instanceof Double) {
 					v = UIUtil.format((Double) v);
@@ -403,19 +435,31 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					} else {
 						f = new JTextField();
 					}
+					if (i == columns.size() - 1) {
+						f.setNextFocusableComponent(nextFocusComponentForLastField);
+					}
+					if (i == 0) {
+						nextFocusComponentForLastField = f;
+					}
 					if (Environment.nimbus) {
 						f.setBorder(BorderFactory.createLineBorder(isEditable? new Color(255, 242, 240) : Color.white));
 					}
-					boolean[] canceled = new boolean[1];
 					f.addKeyListener(new KeyListener() {
 						@Override
 						public void keyTyped(KeyEvent e) {
 							if (e.getKeyChar() == KeyEvent.VK_ESCAPE || e.getKeyChar() == KeyEvent.VK_CANCEL) {
-								canceled[0] = true;
-								editModeCheckBox.grabFocus();
+								if (pendingUpdate != null) {
+									pendingUpdate.accept(false);
+								}
+								pendingUpdate = null;
+								editModeToggleButton.grabFocus();
 							}
 							if (e.getKeyChar() == KeyEvent.VK_ENTER && !(f instanceof JTextArea)) {
-								editModeCheckBox.grabFocus();
+								if (pendingUpdate != null) {
+									pendingUpdate.accept(true);
+								}
+								pendingUpdate = null;
+								editModeToggleButton.grabFocus();
 							}
 						}
 			
@@ -432,41 +476,45 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						String origText;
 						@Override
 						public void focusLost(FocusEvent e) {
-							if (isEditable) {
-								f.setBackground(origColor);
-							}
-							Point vPos = jScrollPane1.getViewport().getViewPosition();
-							if (isEditable && !canceled[0] && origText != null
-									&& !origText.equals(f.getText())) {
-								tableModel.setValueAt(f.getText(), rowIndex, columnIndexAtI);
-								if (browserContentCellEditor.isLoading()) {
-									disableAll(DetailsView.this);
-									waitLoading();
-									return;
-								}
-								Object v = tableModel.getValueAt(rowIndex, columnIndexAtI);
-								if (v instanceof TableModelItem) {
-									v = ((TableModelItem) v).value;
-								}
-								f.setText(v == null ? "null" : v.toString());
-							} else {
-								if (finalV instanceof UIUtil.IconWithText) {
-									f.setText(((UIUtil.IconWithText) finalV).text);
-								} else {
-									f.setText(finalV == null ? "null" : finalV.toString());
-								}
-							}
-							origText = null;
-							UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(vPos));
 						}
 						
 						@Override
 						public void focusGained(FocusEvent e) {
+							if (pendingUpdate != null) {
+								pendingUpdate.accept(true);
+							}
+							pendingUpdate = ok -> {
+								if (isEditable) {
+									f.setBackground(origColor);
+								}
+								Point vPos = jScrollPane1.getViewport().getViewPosition();
+								if (isEditable && ok && origText != null
+										&& !origText.equals(f.getText())) {
+									tableModel.setValueAt(f.getText(), rowIndex, columnIndexAtI);
+									if (browserContentCellEditor.isLoading()) {
+										disableAll(DetailsView.this);
+										waitLoading();
+										return;
+									}
+									Object v = tableModel.getValueAt(rowIndex, columnIndexAtI);
+									if (v instanceof TableModelItem) {
+										v = ((TableModelItem) v).value;
+									}
+									f.setText(v == null ? "null" : v.toString());
+								} else {
+									if (finalV instanceof UIUtil.IconWithText) {
+										f.setText(((UIUtil.IconWithText) finalV).text);
+									} else {
+										f.setText(finalV == null ? "null" : finalV.toString());
+									}
+								}
+								origText = null;
+								UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(vPos));
+							};
 							origColor = f.getBackground();
 							if (isEditable) {
 								f.setBackground(null);
 							}
-							canceled[0] = false;
 							Point vPos = jScrollPane1.getViewport().getViewPosition();
 							if (isEditable) {
 								origText = browserContentCellEditor.cellContentToText(row, columnIndexAtI, vOrig);
@@ -478,7 +526,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 									f.setText(vOrig == null? "null" : vOrig.toString());
 								}
 							}
-							if (vOrig != null) {
+							if (vOrig != null && !isEditable) {
 								f.selectAll();
 							}
 							UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(vPos));
@@ -593,7 +641,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				}
 				++i;
 			}
-			editModeCheckBox.setEnabled(hasEditableColumn);
+			editModeToggleButton.setEnabled(hasEditableColumn);
 			JPanel p = new JPanel();
 			p.setOpaque(true);
 			p.setBackground(i % 2 == 0? BG1 : BG2);
@@ -681,7 +729,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         sortCheckBox = new javax.swing.JCheckBox();
         closeButton = new javax.swing.JButton();
         selectButton = new javax.swing.JButton();
-        editModeCheckBox = new javax.swing.JCheckBox();
+        editModeToggleButton = new javax.swing.JToggleButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -697,6 +745,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         add(rowSpinner, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -705,7 +754,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.gridwidth = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -735,6 +784,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         add(closeButton, gridBagConstraints);
 
@@ -749,22 +799,20 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         add(selectButton, gridBagConstraints);
 
-        editModeCheckBox.setText("Edit Mode");
-        editModeCheckBox.addActionListener(new java.awt.event.ActionListener() {
+        editModeToggleButton.setText("Edit Mode");
+        editModeToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editModeCheckBoxActionPerformed(evt);
+                editModeToggleButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.gridx = 6;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(editModeCheckBox, gridBagConstraints);
+        add(editModeToggleButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private boolean programChangedSortCheckBox = false;
@@ -790,9 +838,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
         onSelectRow(rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(currentRow) : currentRow));
     }//GEN-LAST:event_selectButtonActionPerformed
 
-    private void editModeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModeCheckBoxActionPerformed
+    private void editModeToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editModeToggleButtonActionPerformed
         setCurrentRow(currentRow, showSpinner);
-    }//GEN-LAST:event_editModeCheckBoxActionPerformed
+    }//GEN-LAST:event_editModeToggleButtonActionPerformed
 
 	public void updateInClosureState(boolean inClosure) {
 		if (inClosure) {
@@ -813,7 +861,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
-    protected javax.swing.JCheckBox editModeCheckBox;
+    public javax.swing.JToggleButton editModeToggleButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
@@ -855,16 +903,17 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				Stroke s = new BasicStroke();
 				g2d.setStroke(s);
 				g2d.setColor(new Color(0, 0, 255, 80));
-				GradientPaint paint = new GradientPaint(
-						0, 0, new Color(0, 90, 255, 80),
-						0, dim.height, new Color(0, 0, 255, 80));
-				g2d.setPaint(paint);
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 		                RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
 		                RenderingHints.VALUE_RENDER_QUALITY);
-				for (int x = 0; x < dim.width + dim.height; x += 8) {
-					g2d.drawLine(x, 0, x - dim.height, dim.height);
+				for (int x = dim.height / 8 + 1; x < dim.width - dim.height / 8 - 1; x += 8) {
+					int h = dim.height / 2;
+					Path2D.Double path = new Path2D.Double();
+					path.moveTo(x, 0);
+					path.curveTo(x - h, h, x + h, dim.height - h, x, dim.height);
+					g2d.draw(path);
+//					g2d.drawLine(x, 0, x - dim.height, dim.height);
 				}
 				g2d.setClip(clip);
         	}
@@ -919,8 +968,20 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		jScrollPane1.getHorizontalScrollBar().setValue(jScrollPane1.getHorizontalScrollBar().getMinimum());
 	}
 	
+	private void cancelEdit() {
+		if (pendingUpdate != null) {
+			pendingUpdate.accept(false);
+		}
+		pendingUpdate = null;
+	}
+	
 	private String shortText(String text) {
 		return text.replaceFirst("^(<[^>]+>)*([^<]{32}).+$", "$2...");
 	}
 	
+	private static ImageIcon editdetails;
+	static {
+		// load images
+		editdetails = UIUtil.readImage("/editdetails.png");
+	}
 }

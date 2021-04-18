@@ -38,6 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -82,9 +83,12 @@ public class TableDetailsView extends javax.swing.JPanel {
         	sortColumnsCheckBox.setSelected(currentView.sortColumnsCheckBox.isSelected());
         	foundColumn = currentView.foundColumn;
         }
+		ImageIcon scaledFindColumnIcon1 = UIUtil.scaleIcon(this, findColumnIcon1);
+		ImageIcon scaledFindColumnIcon2 = UIUtil.scaleIcon(this, findColumnIcon2);
+
 		findColumnsLabel.setText(null);
 		findColumnsLabel.setToolTipText("Find Column...");
-		findColumnsLabel.setIcon(StringSearchPanel.getSearchIcon(false, this));
+		findColumnsLabel.setIcon(scaledFindColumnIcon1);
 
 		findColumnsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private boolean in = false;
@@ -122,8 +126,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 			}
 
 			private void updateBorder() {
-				findColumnsPanel.setBackground(in? new Color(240, 240, 0) : null);
-				findColumnsPanel.setOpaque(in);
+				findColumnsLabel.setIcon(in? scaledFindColumnIcon2 : scaledFindColumnIcon1);
 			}
 		});
 		updateColumnsTable = new Runnable() {
@@ -210,7 +213,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 					});
 				}
 				columnsPanel.removeAll();
-				java.awt.Color bgDarker = new java.awt.Color(255, 255, 206);
+				java.awt.Color bgDarker = new Color(255, 255, 255);
 				boolean hasConstraints = false;
 				for (Column column: columns) {
 					hasConstraints = hasConstraints || !column.isNullable  || column.isVirtual ||  column.isIdentityColumn;
@@ -463,12 +466,12 @@ public class TableDetailsView extends javax.swing.JPanel {
         findColumnsPanel = new javax.swing.JPanel();
         findColumnsLabel = new javax.swing.JLabel();
 
-        setBackground(new java.awt.Color(255, 255, 230));
+        setBackground(new java.awt.Color(255, 255, 240));
         setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setBorder(null);
 
-        jPanel1.setBackground(new java.awt.Color(255, 255, 230));
+        jPanel1.setBackground(new java.awt.Color(255, 255, 240));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         tableNameLabel.setText("Test");
@@ -605,4 +608,13 @@ public class TableDetailsView extends javax.swing.JPanel {
     private javax.swing.JLabel warnLabel2;
     private javax.swing.JPanel warnPanel;
     // End of variables declaration//GEN-END:variables
+    
+    private static ImageIcon findColumnIcon1;
+    private static ImageIcon findColumnIcon2;
+    static {
+        // load images
+    	findColumnIcon1 = UIUtil.readImage("/findcolumn.png");
+    	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
+    }
+
 }

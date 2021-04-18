@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.syntaxtextarea;
 
+import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.Frame;
@@ -255,6 +256,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 		setHighlightCurrentLine(true);
 		setFadeCurrentLineHighlight(true);
+		setCurrentLineHighlightColor(new Color(255, 255, 200));
 		
 		createPopupMenu();
 		updateMenuItemState();

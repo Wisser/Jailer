@@ -187,15 +187,14 @@ public class SizeGrip extends JPanel {
 	@Override
 	public void updateUI() {
 		super.updateUI();
-//		if (System.getProperty("os.name").contains("OS X")) {
+		if (System.getProperty("os.name").contains("OS X")) {
 			if (osxSizeGrip==null) {
 				osxSizeGrip = createOSXSizeGrip();
 			}
-//		}
-//		else { // Clear memory in case of runtime LaF change.
-//			osxSizeGrip = null;
-//		}
-
+		}
+		else { // Clear memory in case of runtime LaF change.
+			osxSizeGrip = null;
+		}
 	}
 
 

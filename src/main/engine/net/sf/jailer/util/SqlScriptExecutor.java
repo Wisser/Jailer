@@ -404,7 +404,7 @@ public class SqlScriptExecutor {
 					logProgress.run();
 					tryMode = false;
 				} else {
-					currentStatement.append(line + " ");
+					currentStatement.append(line + "\n");
 				}
 				CancellationHandler.checkForCancellation(null);
 				synchronized (this) {
