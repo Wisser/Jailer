@@ -1,3 +1,7 @@
+10.4.4
+  - The detail view dialog has been made non-modal, allowing a smoother workflow.
+  - Rows can now also be edited via the detail view dialog.
+
 10.4.3
   - Improved rendering quality on HiDPI environments.
   - Many icons have been improved and increased in resolution.
