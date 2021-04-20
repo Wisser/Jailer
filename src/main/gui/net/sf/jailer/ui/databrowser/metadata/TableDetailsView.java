@@ -466,12 +466,12 @@ public class TableDetailsView extends javax.swing.JPanel {
         findColumnsPanel = new javax.swing.JPanel();
         findColumnsLabel = new javax.swing.JLabel();
 
-        setBackground(new java.awt.Color(255, 255, 240));
+        setBackground(new java.awt.Color(255, 255, 230));
         setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setBorder(null);
 
-        jPanel1.setBackground(new java.awt.Color(255, 255, 240));
+        jPanel1.setBackground(new java.awt.Color(255, 255, 230));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         tableNameLabel.setText("Test");
