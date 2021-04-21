@@ -44,8 +44,4 @@ public class JailerVersion {
 		System.out.print(VERSION);
 	}
 
-	// TODO reduce color saturation: yellow bg in colnsole/desktop
-	
-	// TODO investigate: how to get really big? (without eating too much)
-	
 }

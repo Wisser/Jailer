@@ -75,111 +75,46 @@
 					</tr>
 					<tr>
 						<td class="content" height="520" valign="top" width="100%"><small><small>&nbsp;</small></small><br />
-						<span style="font-weight: bold;">Relational Data Browsing</span><br />
+						<h1>Relational Data Browsing</h1><br />
 						<br />
 						Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships<br />
 						<br />
 						<a href="screenshot.html"><img src="data-browser-small.png" /></a><br />
+						<br /><h1>The Data Browser</h1>
+						("Jailer 10.4 Data Browser" or <span style="font-family: monospace;">JailerDataBrowser.sh|bat|exe</span>)
+						
+						<p><img alt="" src="db1.png" /></p>
+				<br />
+						<h1>All begins with the first table</h1>
+						
+						<p><img alt="" src="db2.png" /></p>
+<br />
+						Open Table "EMPLOYEE".
+						<p><img alt="" src="db3.png" /></p>
 						<br />
-						&nbsp;
-						<h4>1. Connect with the Database</h4>
-						Start the Data Browser (<span style="font-family: monospace;">JailerDataBrowser.exe</span> or <span style="font-family: monospace;">jailerDataBrowser.bat</span> on windows platform)
-
-						<table border="0" cellpadding="0" cellspacing="0" style="width: 100%; text-align: left;">
-							<tbody>
-								<tr>
-									<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailerDataBrowser.sh</span></td>
-								</tr>
-							</tbody>
-						</table>
+						<h1>Where do they all work?</h1>
+						
+						Under &quot;Related Rows&quot; we find the &quot;DEPARTMENT&quot; table.
+						<p><img alt="" src="db4.png" /></p>
+						<p><img alt="" src="db5.png" /></p>
 						<br />
-						and create a new data model. Press <span style="font-style: italic;">New</span> and enter &quot;Tutorial&quot; as the name for the new model.
-
-						<p><img alt="" src="screenshot4.1.gif" style="width: 697px; height: 280px;" /></p>
-
-						<p><br />
-						A data model holds information about the tables in the database and all associations between them.<br />
-						Most of the information can be retrieved automatically by analyzing the database schema.<br />
-						<br />
-						Click on <span style="font-style: italic;">Analyze Database</span>.<br />
-						You will be asked for the database connection information.</p>
-
-						<p><img alt="" src="screenshot4.2.gif" style="width: 655px; height: 328px;" /></p>
-
-						<p>Create a new connection.</p>
-
-						<p><img alt="" src="dbs1.gif" style="width: 409px; height: 316px;" /><br />
-						&nbsp;</p>
-
-						<p>Select the DBMS you are using from the displayed list, and fill out the following form:</p>
-						<img alt="" src="screenshot4.3.gif" style="width: 570px; height: 369px;" />
-						<p><br />
-						Finally click on <span style="font-style: italic;">Connect</span><span style="font-style: italic;">.</span> Jailer finds seven tables and five associations:<br />
-						<br />
-						<img src="exporting-data-Dateien/screen3.png" /><br />
-						<br />
-						<br />
-						Two associations are still missing:</p>
-
-						<ul>
-							<li>an employee is classified into a salary grade depending on his salary</li>
-							<li>employees may receive bonuses</li>
-						</ul>
-						<br />
-						Add the definitions manually (<big><span style="font-family: monospace;"><span style="font-family: mon;"><span style="font-style: italic;">Add</span>-</span></span></big>Button under <big><span style="font-family: monospace;"><font size="4">Associations</font></span></big>):<br />
-						<br />
-						<img src="exporting-data-Dateien/screen4.png" /><br />
-						<br />
-						<img src="exporting-data-Dateien/screen42.png" /><br />
-						<br />
-						The data model is&nbsp;now complete.
-						<p>&nbsp;</p>
-
-						<h4>3. Browse a Table</h4>
-						Select the menu item &quot;Open Table&quot; from &quot;File&quot; and choose &quot;EMPLOYEE&quot; as the table you want to browse:
-
-						<p>A Table Browser appears showing the&nbsp;rows of table EMPLOYEE.</p>
-
-						<p><img alt="" src="dbs6.gif" /></p>
-
-						<h4>&nbsp;</h4>
-
-						<h4><br />
-						<br />
-						3. Browse related Rows</h4>
-						Select the &quot;Children&quot; item from the &quot;Related Rows&quot; drop-down menu and choose &quot;EMPLOYEE on inverse-BOSS&quot;.<br />
-						<br />
-						<img alt="" src="dbs8.gif" /><br />
-						<br />
-						<br />
-						Another Table Browser appears showing the subordinates of each Employee (the&nbsp;inverse of the &quot;BOSS&quot; relationship)<br />
-						<br />
-						<img alt="" src="dbs7.gif" /><br />
-						<br />
-						<br />
-						<br />
-						&nbsp;
-						<h4>3. Generate SQL-Query</h4>
-						Within each table browser, a SQL-Query can be generated which selects exactly the browser's content.<br />
-						Essentially it's a join of all the tables&nbsp;in the navigation chain.
-						<p>Close the second &quot;EMPLOYEE&quot; browser, navigate from EMPLOYEE to PROJECT_PARTICIPATION, and from there to&nbsp;PROJECT.</p>
-
-						<p>Choose &quot;<span style="font-style: italic;">Query Builder</span>&quot; item from the &quot;<span style="font-style: italic;">SQL/Query</span>&quot; menu in the &quot;PROJECT&quot; browser:</p>
-
-						<p><img alt="" src="dbs9.gif" /></p>
-
-						<p><br />
-						The Query Builder form lets you save the query into a file, copy it to the clipboard &nbsp;or even execute it.<br />
-						Choose &quot;Execute&quot; to get a query-result browser:</p>
-						<img alt="" src="dbs10.gif" style="width: 990px; height: 667px;" />
-						<p><br />
-						Within this query-result browser, you can edit the query&nbsp;anyway you want.</p>
-
-						<p><img alt="" src="dbs11.gif" style="width: 810px; height: 519px;" /></p>
-
-						<p>&nbsp;</p>
-						</td>
-					</tr>
+						<h1>And what are they actually working on?</h1>
+						In the "closure" view we can see with which tables the selected table is related. Moreover, also the relations of these and so on.
+						<br><br>
+						Select "EMPLOYEE". With a double click on "PROJECT" the table "PROJECT_PARTICIPATION" and connected to it "PROJECT" opens.
+						<p><img alt="" src="db6.png" /></p>
+						<p><img alt="" src="db7.png" /></p>
+						<br>
+						We can minimize the "PROJECT_PARTIPITATION" table to see the relationship between collaborators and projects directly.
+						<p><img alt="" src="db8.png" /></p>
+						<p><img alt="" src="db9.png" /></p>
+						<br>
+						<h1>The way to the SQL console</h1>
+						Use the menu item "Query Builder (Ctrl+Q)" to create a SQL query semi-automatically from the desktop configuration.<br>Use "SQL Console (Ctrl+Enter)" to go directly to the SQL console.
+						<p><img alt="" src="db11.png" /></p>
+						<br>
+						Within the console, we can then formulate arbitrarily complex queries and inspect the results.
+						<p><img alt="" src="db10.png" /></p>
 				</tbody>
 			</table>
 			</div>
