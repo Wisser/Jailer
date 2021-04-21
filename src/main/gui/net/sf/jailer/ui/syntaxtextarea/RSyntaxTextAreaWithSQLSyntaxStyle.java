@@ -256,7 +256,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 		setHighlightCurrentLine(true);
 		setFadeCurrentLineHighlight(true);
-		setCurrentLineHighlightColor(new Color(255, 255, 200));
+		setCurrentLineHighlightColor(new Color(255, 255, 170));
 		
 		createPopupMenu();
 		updateMenuItemState();
