@@ -908,13 +908,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		                RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
 		                RenderingHints.VALUE_RENDER_QUALITY);
-				for (int x = dim.height / 16 + 1; x < dim.width - dim.height / 16 - 1; x += 5) {
+				for (int x = dim.height / 16 + 3; x < dim.width - dim.height / 16 - 1; x += 5) {
 					int h = dim.height / 2;
 					Path2D.Double path = new Path2D.Double();
 					path.moveTo(x, 1);
 					path.curveTo(x - h / 2, h, x + h / 2, dim.height - h, x, dim.height);
 					g2d.draw(path);
-//					g2d.drawLine(x, 0, x - dim.height, dim.height);
 				}
 				g2d.setClip(clip);
         	}
