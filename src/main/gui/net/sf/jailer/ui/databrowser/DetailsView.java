@@ -644,7 +644,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				}
 				++i;
 			}
-			editModeToggleButton.setEnabled(hasEditableColumn);
+			editModeToggleButton.setVisible(hasEditableColumn);
 			JPanel p = new JPanel();
 			Dimension preferredSize = new Dimension(1, 1);
 			p.setPreferredSize(preferredSize);
@@ -748,7 +748,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         add(rowSpinner, gridBagConstraints);
@@ -775,8 +774,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(sortCheckBox, gridBagConstraints);
 
@@ -802,7 +799,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         add(selectButton, gridBagConstraints);
@@ -912,11 +908,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		                RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
 		                RenderingHints.VALUE_RENDER_QUALITY);
-				for (int x = dim.height / 8 + 1; x < dim.width - dim.height / 8 - 1; x += 8) {
+				for (int x = dim.height / 16 + 1; x < dim.width - dim.height / 16 - 1; x += 5) {
 					int h = dim.height / 2;
 					Path2D.Double path = new Path2D.Double();
-					path.moveTo(x, 0);
-					path.curveTo(x - h, h, x + h, dim.height - h, x, dim.height);
+					path.moveTo(x, 1);
+					path.curveTo(x - h / 2, h, x + h / 2, dim.height - h, x, dim.height);
 					g2d.draw(path);
 //					g2d.drawLine(x, 0, x - dim.height, dim.height);
 				}

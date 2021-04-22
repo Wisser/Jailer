@@ -6544,12 +6544,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			pkColumnIndexes.put(type, indexes);
 		}
-		for (int i: indexes) {
+		for (int ii = 0; ii < indexes.length; ++ii) {
+			int i = indexes[ii];
 			if (i >= r.values.length) {
 				return false;
 			}
 			Object content = r.values[i];
-			if (/*content == null || */ content instanceof TableModelItem && (((TableModelItem) content).value == UIUtil.NULL || ((TableModelItem) content).value == null)) {
+			boolean isNullable = false;
+			if (type.primaryKey.getColumns().size() > ii && type.primaryKey.getColumns().get(ii) != null) {
+				isNullable = type.primaryKey.getColumns().get(ii).isNullable;
+			}
+			if ((content == null && !isNullable) || content instanceof TableModelItem && (((TableModelItem) content).value == UIUtil.NULL || ((TableModelItem) content).value == null)) {
 				return false;
 			}
 		}

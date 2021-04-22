@@ -249,7 +249,7 @@ public class ColumnsTable extends JTable {
 		});
 
 		setDefaultRenderer(Object.class, new TableCellRenderer() {
-			final Color BGCOLUMNS = new Color(255, 255, 220);
+			final Color BGCOLUMNS = new Color(255, 255, 230);
 			final Color BGSELECTED  = new Color(255, 230, 220);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
