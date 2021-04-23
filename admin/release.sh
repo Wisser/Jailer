@@ -47,4 +47,5 @@ zip -r jailer_$1.zip jailer
 # Web upload
 # cd docs
 # scp -r * rwisser,jailer@web.sf.net:/home/groups/j/ja/jailer/htdocs/
+# scp -r * rwisser,jailer@web.sf.net:/home/groups/j/ja/jailer/htdocs/doc/
 
