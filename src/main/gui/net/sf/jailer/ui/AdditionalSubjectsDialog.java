@@ -230,7 +230,6 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		setLocation(parent.getLocation().x + parent.getSize().width / 3 - getWidth() / 2,
 				parent.getLocation().y + parent.getSize().height / 3 - getHeight() / 2);
 		UIUtil.fit(this);
-		UIUtil.initPeer();
 	}
 
 	public boolean edit() {

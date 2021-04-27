@@ -75,7 +75,6 @@ public class JailerConsole {
 			// getLoadExportLog().setVisible(false);
 			getLoadSqlLog().setVisible(false);
 		}
-		UIUtil.initPeer();
 	}
 
 	/**

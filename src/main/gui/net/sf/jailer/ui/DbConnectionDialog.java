@@ -194,7 +194,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				} else {
 					setLocation(100, 150);
 				}
-				UIUtil.initPeer();
 				located = true;
 			}
 			setTitle((reason == null ? "" : (reason + " - ")) + "Connect.");

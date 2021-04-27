@@ -129,7 +129,6 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		pack();
 		setLocation(parent.getLocation().x + parent.getSize().width/2 - getPreferredSize().width/2,
 				parent.getLocation().y + parent.getSize().height/2 - getPreferredSize().height/2);
-		UIUtil.initPeer();
 	}
 
 	public boolean isRemoving() {

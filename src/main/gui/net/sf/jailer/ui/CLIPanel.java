@@ -96,7 +96,6 @@ public class CLIPanel extends javax.swing.JPanel {
 
         jPanel1 = new javax.swing.JPanel();
         jinfoLabe = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         commandLinePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         cliArea = new javax.swing.JTextArea();
@@ -111,7 +110,7 @@ public class CLIPanel extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jinfoLabe.setFont(jinfoLabe.getFont().deriveFont(jinfoLabe.getFont().getSize()+2f));
-        jinfoLabe.setText("<html>These command-line arguments cause the application to start in a state that is identical to the current one.</html>");
+        jinfoLabe.setText("<html>These command-line arguments cause the application to start in a state that is identical to the current one.<hr></html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -119,13 +118,6 @@ public class CLIPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jinfoLabe, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
-        jPanel1.add(jSeparator1, gridBagConstraints);
 
         commandLinePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Command line"));
         commandLinePanel.setLayout(new java.awt.GridBagLayout());
@@ -321,7 +313,6 @@ public class CLIPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel jinfoLabe;
     // End of variables declaration//GEN-END:variables
 }

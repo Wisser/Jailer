@@ -128,7 +128,6 @@ public class AssociationEditor extends javax.swing.JDialog {
 		setSize(Math.max(480, getWidth()), getHeight());
 		setLocation(parent.getLocation().x + parent.getSize().width/2 - getPreferredSize().width/2,
 				parent.getLocation().y + parent.getSize().height/2 - getPreferredSize().height/2);
-		UIUtil.initPeer();
 	}
 
 	private CompletionProvider provider;

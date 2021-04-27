@@ -559,7 +559,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			setSize(Math.max(Math.min(getSize().width, 900), 700), getSize().height);
 			placeholder.setVisible(false);
 			placeholder1.setVisible(false);
-			UIUtil.initPeer();
 			UIUtil.fit(this);
 		} finally {
 			UIUtil.resetWaitCursor(parent);

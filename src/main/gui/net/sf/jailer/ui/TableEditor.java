@@ -242,7 +242,6 @@ public abstract class TableEditor extends javax.swing.JDialog {
 		setLocation(parent.getLocation().x + parent.getSize().width/2 - getSize().width/2,
 				parent.getLocation().y + parent.getSize().height/2 - getSize().height/2);
 		
-		UIUtil.initPeer();
 	}
 	
 	/**
@@ -301,8 +300,8 @@ public abstract class TableEditor extends javax.swing.JDialog {
         displayName = new javax.swing.JTextField();
         warnPanel = new javax.swing.JPanel();
         warnPKChangedLabel = new javax.swing.JLabel();
-        warnSeparator = new javax.swing.JSeparator();
         warnNullablePKLabel = new javax.swing.JLabel();
+        warnSeparator = new javax.swing.JPanel();
 
         columnDetailsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -322,10 +321,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
             }
         });
         columnName.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 columnNameInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         columnName.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -378,10 +377,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
             }
         });
         columnType.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 columnTypeInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         columnType.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -407,10 +406,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
             }
         });
         columnLength.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 columnLengthInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         columnLength.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -436,10 +435,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
             }
         });
         columnPrec.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 columnPrecInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         columnPrec.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -667,12 +666,6 @@ public abstract class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         warnPanel.add(warnPKChangedLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        warnPanel.add(warnSeparator, gridBagConstraints);
 
         warnNullablePKLabel.setFont(warnNullablePKLabel.getFont().deriveFont(warnNullablePKLabel.getFont().getSize()+1f));
         warnNullablePKLabel.setForeground(new java.awt.Color(205, 0, 0));
@@ -684,6 +677,19 @@ public abstract class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         warnPanel.add(warnNullablePKLabel, gridBagConstraints);
+
+        warnSeparator.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        warnSeparator.setPreferredSize(new java.awt.Dimension(1, 2));
+        warnSeparator.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
+        warnPanel.add(warnSeparator, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1030,7 +1036,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
     private javax.swing.JLabel warnNullablePKLabel;
     private javax.swing.JLabel warnPKChangedLabel;
     private javax.swing.JPanel warnPanel;
-    private javax.swing.JSeparator warnSeparator;
+    private javax.swing.JPanel warnSeparator;
     // End of variables declaration//GEN-END:variables
 	
 	private static final long serialVersionUID = -3331167410435129849L;

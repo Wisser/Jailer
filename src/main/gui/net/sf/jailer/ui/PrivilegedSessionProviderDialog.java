@@ -115,7 +115,6 @@ public class PrivilegedSessionProviderDialog extends javax.swing.JDialog {
 						dialog.setLocation(100, 150);
 						dialog.pack();
 						dialog.setSize(Math.max(500, dialog.getWidth()), dialog.getHeight());
-						UIUtil.initPeer();
 						dialog.setVisible(true);
 					}
 				});

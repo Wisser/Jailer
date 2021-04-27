@@ -750,7 +750,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         jSeparator3 = new javax.swing.JSeparator();
         considerRestrictionsCheckbox = new javax.swing.JCheckBox();
         resetButton = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
+        jPanel5 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -944,12 +944,16 @@ public abstract class PathFinderView extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jPanel4, gridBagConstraints);
+
+        jPanel5.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel5.setPreferredSize(new java.awt.Dimension(1, 2));
+        jPanel5.setLayout(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jSeparator1, gridBagConstraints);
+        jPanel1.add(jPanel5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1048,9 +1052,9 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSplitPane jSplitPane1;

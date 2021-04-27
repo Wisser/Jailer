@@ -344,7 +344,6 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         columnOrderTable = new javax.swing.JTable();
         closeButton = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
         okButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jinfoLabe = new javax.swing.JLabel();
@@ -400,13 +399,6 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 100;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         jPanel1.add(closeButton, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
-        jPanel1.add(jSeparator1, gridBagConstraints);
 
         okButton.setText(" Ok ");
         okButton.setFocusCycleRoot(true);
@@ -491,7 +483,6 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel jinfoLabe;
     private javax.swing.JButton okButton;
     private JComboBox2<String> tablesComboBox;

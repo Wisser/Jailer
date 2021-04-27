@@ -383,7 +383,6 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         cancelButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         paramLabel1 = new javax.swing.JLabel();
         paramLabel2 = new javax.swing.JLabel();
         paramLabel3 = new javax.swing.JLabel();
@@ -409,7 +408,8 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         defaultLabel3 = new javax.swing.JLabel();
         defaultLabel4 = new javax.swing.JLabel();
         defaultAllLabel = new javax.swing.JLabel();
-        jSeparator2 = new javax.swing.JSeparator();
+        jPanel6 = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -461,15 +461,6 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 40);
         add(jLabel2, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 96;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 12, 0);
-        add(jSeparator1, gridBagConstraints);
 
         paramLabel1.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -678,13 +669,32 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 10);
         add(defaultAllLabel, gridBagConstraints);
+
+        jPanel6.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel6.setPreferredSize(new java.awt.Dimension(1, 2));
+        jPanel6.setLayout(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 0);
-        add(jSeparator2, gridBagConstraints);
+        add(jPanel6, gridBagConstraints);
+
+        jPanel5.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel5.setPreferredSize(new java.awt.Dimension(1, 2));
+        jPanel5.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 96;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 12, 0);
+        add(jPanel5, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -728,8 +738,8 @@ public class DbConnectionSettings extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JButton okButton;
     private javax.swing.JButton paramButton1;
     private javax.swing.JButton paramButton2;

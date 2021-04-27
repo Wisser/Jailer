@@ -85,7 +85,6 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 				 }
 			 }
 		});
-		UIUtil.initPeer();
 	}
 
 	/**

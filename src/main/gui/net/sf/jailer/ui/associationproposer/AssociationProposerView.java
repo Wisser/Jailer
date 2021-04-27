@@ -118,7 +118,6 @@ public class AssociationProposerView extends javax.swing.JPanel {
 		Font infoFont = jinfoLabe.getFont();
 		infoFont = new Font(infoFont.getName(), infoFont.getStyle(), (int) (infoFont.getSize() * 1.2));
 		jinfoLabe.setFont(infoFont);
-		jinfoLabe1.setFont(infoFont);
 	
 		try {
 			provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
@@ -516,8 +515,6 @@ public class AssociationProposerView extends javax.swing.JPanel {
         emptyLineCheckBox = new javax.swing.JCheckBox();
         dummyLabel1 = new javax.swing.JLabel();
         jinfoLabe = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
-        jinfoLabe1 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -752,7 +749,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(dummyLabel1, gridBagConstraints);
 
-        jinfoLabe.setText("Analyzes SQL statements and proposes association definitions.");
+        jinfoLabe.setText("<html>Analyzes SQL statements and proposes association definitions. This allows to reverse-engineer the data model based on existing SQL queries.<hr></html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -760,22 +757,6 @@ public class AssociationProposerView extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jinfoLabe, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
-        jPanel1.add(jSeparator1, gridBagConstraints);
-
-        jinfoLabe1.setText("This allows to reverse-engineer the data model based on existing SQL queries.");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        jPanel1.add(jinfoLabe1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -835,9 +816,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel jinfoLabe;
-    private javax.swing.JLabel jinfoLabe1;
     private javax.swing.JPanel knownPanel;
     private javax.swing.JTable knownTable;
     private javax.swing.JButton loadButton;

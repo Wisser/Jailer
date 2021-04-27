@@ -126,7 +126,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		sqlEditButton.setVisible(false);
 		pack();
 		setSize(Math.max(800, getWidth()), 500);
-		UIUtil.initPeer();
 	}
 	
 	private AutoCompletion autoCompletion = null;

@@ -18,6 +18,7 @@ package net.sf.jailer.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
@@ -60,10 +61,8 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -383,7 +382,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	this.prepare = prepare;
     	this.onSuccess = onSuccess;
         initComponents();
-
+        
         plugInPanel.setVisible(false);
 
         if (metaDataSource != null) {
@@ -552,7 +551,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        panel.add(new JSeparator(SwingConstants.HORIZONTAL), gridBagConstraints);
+        JPanel sepPanel = new JPanel(null);
+        sepPanel.setPreferredSize(new Dimension(1, 2));
+        sepPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        panel.add(sepPanel, gridBagConstraints);
         container.add(panel);
         
 		for (MDSchema dmSchema: metaDataSource.getSchemas()) {
@@ -698,12 +700,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         loadingPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        cancelLoadiingButton = new javax.swing.JToggleButton();
+        cancelLoadiingButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
-        cancelButton = new javax.swing.JToggleButton();
+        cancelButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         searchTextField = new javax.swing.JTextField();
-        okButton = new javax.swing.JToggleButton();
+        okButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         searchList = new javax.swing.JList<>();
         schemaPanel = new javax.swing.JPanel();
@@ -712,7 +714,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         visPanel = new javax.swing.JPanel();
-        selectAllButton = new javax.swing.JToggleButton();
+        selectAllButton = new javax.swing.JButton();
         plugInPanel = new javax.swing.JPanel();
 
         loadingPanel.setBackground(java.awt.Color.white);
@@ -754,7 +756,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         jPanel4.add(searchTextField, gridBagConstraints);
-        searchTextField.getAccessibleContext().setAccessibleDescription("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n</html>\n\n");
 
         okButton.setText("  Ok  ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -887,8 +888,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JToggleButton cancelButton;
-    private javax.swing.JToggleButton cancelLoadiingButton;
+    private javax.swing.JButton cancelButton;
+    private javax.swing.JButton cancelLoadiingButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -898,12 +899,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel loadingPanel;
-    private javax.swing.JToggleButton okButton;
+    private javax.swing.JButton okButton;
     private javax.swing.JPanel plugInPanel;
     private javax.swing.JPanel schemaPanel;
     private javax.swing.JList<String> searchList;
     private javax.swing.JTextField searchTextField;
-    private javax.swing.JToggleButton selectAllButton;
+    private javax.swing.JButton selectAllButton;
     private javax.swing.JPanel visPanel;
     // End of variables declaration//GEN-END:variables
     

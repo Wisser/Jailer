@@ -305,7 +305,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		} else {
 			setLocation(120, 170);
 		}
-		UIUtil.initPeer();
 	 }
 
 	protected List<String> retrieveDriverURLs(List<Line> driverlist) {

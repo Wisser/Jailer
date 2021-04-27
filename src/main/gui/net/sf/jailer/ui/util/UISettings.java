@@ -142,7 +142,7 @@ public class UISettings {
 	public static int s1, s2, s3, s4, s5, s6, s7, s8, s9;
 	public static String s10;
 	public static int s11 = 1;
-	
+
 	public synchronized static void storeStats() {
 		int i = 1;
 		StringBuilder sb = new StringBuilder();
@@ -298,13 +298,29 @@ public class UISettings {
 	}
 
 	public static void storeLastSession(BookmarkId bookmark, String module) {
-		store(LAST_SESSION + module, bookmark);
+		List<BookmarkId> lastSessions = restoreLastSessions(module);
+		if (lastSessions == null) {
+			lastSessions = new ArrayList<BookmarkId>();
+		} else {
+			lastSessions.remove(bookmark);
+			if (lastSessions.size() >= 10) {
+				lastSessions.remove(lastSessions.size() - 1);
+			}
+		}
+		lastSessions.add(0, bookmark);
+		store(LAST_SESSION + module, lastSessions);
 	}
 
-	public static BookmarkId restoreLastSession(String module) {
-		Object lastSession = restore(LAST_SESSION + module);
-		if (lastSession instanceof BookmarkId) {
-			return (BookmarkId) lastSession;
+	@SuppressWarnings("unchecked")
+	public static List<BookmarkId> restoreLastSessions(String module) {
+		Object lastSessions = restore(LAST_SESSION + module);
+		if (lastSessions instanceof List) {
+			return (List<BookmarkId>) lastSessions;
+		} else if (lastSessions instanceof BookmarkId) {
+			// migration
+			ArrayList<BookmarkId> result = new ArrayList<BookmarkId>();
+			result.add((BookmarkId) lastSessions);
+			return result;
 		} else {
 			return null;
 		}

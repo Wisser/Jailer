@@ -55,7 +55,6 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		timestampPattern.getEditor().setItem("yyyy.MM.dd.-H.mm.ss   ");
 		timestampExample.setText("yyyy.MM.dd.-H.mm.ss   ");
 		pack();
-		UIUtil.initPeer();
 	}
 	
 	private boolean okClicked;

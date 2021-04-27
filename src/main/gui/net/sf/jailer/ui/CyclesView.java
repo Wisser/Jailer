@@ -274,7 +274,6 @@ public class CyclesView extends javax.swing.JDialog {
 			super(extractionModelFrame, true);
 			initComponents();
 			setTitle("Find cycles");
-			UIUtil.initPeer();
 		}
 		
 		private void initComponents() {

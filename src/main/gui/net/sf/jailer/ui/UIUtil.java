@@ -28,6 +28,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -83,7 +84,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
+import javax.swing.plaf.BorderUIResource;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
@@ -928,20 +932,6 @@ public class UIUtil {
         return msg;
     }
 
-    /**
-     * Initializes peer of newly created window.
-     *
-     * Should not be neccassary, but there is a strange bug in AWT of jre 6 on
-     * multi-core/processor systems. Sleeping a little after creating peer and
-     * before making peer visible seems to help.
-     */
-    public static void initPeer() {
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-    }
-
     public static void fit(Window d) {
         try {
             // Get the size of the screen
@@ -1728,6 +1718,18 @@ public class UIUtil {
 			sqlEditorFont = new RSyntaxTextArea().getFont();
 		}
 		return sqlEditorFont;
+	}
+
+	public static void initNimbusTitledBorder() {
+       try {
+    	   UIManager.put("TitledBorder.border", new BorderUIResource((Border) UIManager.get("TitledBorder.border")) {
+               public Insets getBorderInsets(Component c)       {
+               	return new Insets(4, 4, 6, 4);
+               }
+           });
+       } catch (Exception e) {
+    	   // ignore
+       }
 	}
 
 }

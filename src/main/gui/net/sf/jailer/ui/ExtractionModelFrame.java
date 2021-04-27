@@ -2232,6 +2232,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	                    if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
 	                    	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
 	                    }
+	                    UIUtil.initNimbusTitledBorder();
 	                } catch (Exception x) {
 					}
 				}

@@ -460,7 +460,6 @@ public class DataModelEditor extends javax.swing.JDialog {
 		if (initiallyDirty) {
 			markDirty();
 		}
-		UIUtil.initPeer();
 		
 		addWindowListener(new WindowListener() {
 			@Override

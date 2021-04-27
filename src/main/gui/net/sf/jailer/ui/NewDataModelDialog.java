@@ -51,7 +51,6 @@ public class NewDataModelDialog extends javax.swing.JDialog {
 		pack();
 		setSize(Math.max(400, getWidth()), getHeight());
 		setLocation(parent.getX() + (parent.getWidth() - getWidth()) / 2, parent.getY() + (parent.getHeight() - getHeight()) / 2);
-		UIUtil.initPeer();
 		UIUtil.fit(this);
 		
 		initialFGColor = folderTextField.getForeground();
