@@ -61,6 +61,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -197,7 +198,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(2, 0, 2, 0);
         jPanel10.add(resentSessionsComboBox, gridBagConstraints);
-
+        resentSessionsComboBox.setMaximumRowCount(12);
 		ImageIcon imageIcon = UIUtil.jailerLogo;
 		infoBar.setIcon(imageIcon);
 		infoBarJM.setIcon(imageIcon);
@@ -345,7 +346,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		});
 
-		setLocation(70, 130);
+		setLocation(70, 80);
 		pack();
 		setSize(Math.max(840, getWidth()), 490);
 		refresh();
@@ -400,11 +401,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private void initRestoreLastSessionButton() {
 		restoreButton.setVisible(true);
 		resentSessionsComboBox.setVisible(true);
+		dummyLabel.setVisible(false);
 		final boolean forEMEditor = "S".equals(module);
 		final List<BookmarkId> lastSessions = UISettings.restoreLastSessions(module);
 		if (lastSessions == null || lastSessions.isEmpty()) {
 			restoreButton.setEnabled(false);
 			resentSessionsComboBox.setVisible(false);
+			dummyLabel.setVisible(true);
 			return;
 		}
 		
@@ -413,7 +416,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		for (Iterator<BookmarkId> i = lastSessions.iterator(); i.hasNext(); ) {
 			BookmarkId lastSession = i.next();
-			Date date = forEMEditor? lastSession.date : DataBrowser.getLastSessionDate();
+			Date date = lastSession.date;
 			if (date == null || !modelList.contains(lastSession.datamodelFolder)) {
 				i.remove();
 				continue;
@@ -430,16 +433,29 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				continue;
 			}
 			Pair<String, Long> details = modelDetails.get(lastSession.datamodelFolder);
-			model.add("<html><b>" + UIUtil.toHTMLFragment(UIUtil.toDateAsString(date.getTime()), 0) + "</b>&nbsp;" +
-					UIUtil.toHTMLFragment(
-							(lastSession.bookmark != null? (new File(lastSession.bookmark).getName()) : ((details != null? details.a : lastSession.datamodelFolder))) + 
-							(connectionInfo == null? "offline" : (connectionInfo.alias + " (" + connectionInfo.user + "@" + connectionInfo.url + ")"))
-							, 0) + "</html>");
+			model.add("<html><nobr>" + 
+					UIUtil.toHTMLFragment(UIUtil.toDateAsString(date.getTime()), 0) + "&nbsp;-&nbsp;" +
+					(module.equals("S")?
+					"<font color=\"#0000ff\"><b>" +
+					(lastSession.bookmark != null? UIUtil.toHTMLFragment(new File(lastSession.bookmark).getName(), 0) : "</b><i><font color=\"#888888\">New&nbsp;Model</font></i><b>") + "</b>" + 
+					"&nbsp;-&nbsp;</font>" : 
+					"<font color=\"#0000ff\">" +
+					(lastSession.getContentInfo() != null? UIUtil.toHTMLFragment(lastSession.getContentInfo(), 0) + "&nbsp;-&nbsp;" : "") + 
+					"</font>") + 
+					"<font color=\"#006600\">" +
+					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
+					"</font>&nbsp;-&nbsp;<font color=\"#663300\">" +
+					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(connectionInfo.user + "@" + connectionInfo.url, 0) + "</font>") + 
+					"</font></nobr></html>");
 			final ConnectionInfo finalConnectionInfo = connectionInfo;
 			actions.add(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					openBookmark(new BookmarkId(forEMEditor? lastSession.bookmark : "", lastSession.datamodelFolder, lastSession.connectionAlias, lastSession.rawSchemaMapping), finalConnectionInfo);
+					lastSessionRestored = true;
+					BookmarkId bookmark = new BookmarkId(forEMEditor? lastSession.bookmark : "", lastSession.datamodelFolder, lastSession.connectionAlias, lastSession.rawSchemaMapping);
+					bookmark.setContent(lastSession.getContent());
+					bookmark.setContentInfo(lastSession.getContentInfo());
+					openBookmark(bookmark, finalConnectionInfo);
 					UIUtil.resetWaitCursor(DataModelManagerDialog.this);
 					setVisible(false);
 					dispose();
@@ -449,9 +465,22 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		if (model.isEmpty()) {
 			restoreButton.setEnabled(false);
 			resentSessionsComboBox.setVisible(false);
+			dummyLabel.setVisible(true);
 			return;
 		}
 		restoreButton.addActionListener(actions.get(0));
+		ListCellRenderer<? super String> renderer = resentSessionsComboBox.getRenderer();
+		resentSessionsComboBox.setRenderer(new ListCellRenderer<String>() {
+			@Override
+			public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
+					boolean isSelected, boolean cellHasFocus) {
+				Component render = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (isSelected && render instanceof JLabel) {
+					((JLabel) render).setText(((JLabel) render).getText().replaceAll("<.?font[^>]*>", ""));
+				}
+				return render;
+			}
+		});
 		resentSessionsComboBox.setModel(new DefaultComboBoxModel<String>(model.toArray(new String[0])));
 		resentSessionsComboBox.setSelectedIndex(0);
 		resentSessionsComboBox.addItemListener(new ItemListener() {
@@ -473,6 +502,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	private final List<BookmarksPanel.BookmarkId> bookmarks = new ArrayList<BookmarksPanel.BookmarkId>();
 	private final Map<BookmarksPanel.BookmarkId, DbConnectionDialog.ConnectionInfo> ciOfBookmark = new HashMap<BookmarksPanel.BookmarkId, DbConnectionDialog.ConnectionInfo>();
+	public static boolean lastSessionRestored = false;
 
 	private void loadBookmarks() {
 		bookmarks.clear();
@@ -1062,6 +1092,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         bmRecUsedOkButton = new javax.swing.JButton();
         jPanel10 = new javax.swing.JPanel();
         restoreButton = new javax.swing.JButton();
+        dummyLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connect with DB");
@@ -1502,6 +1533,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 4);
         jPanel10.add(restoreButton, gridBagConstraints);
 
+        dummyLabel.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.weightx = 1.0;
+        jPanel10.add(dummyLabel, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -1786,7 +1824,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	protected abstract void onSelect(DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext);
 	protected abstract void onLoadExtractionmodel(String modelFile, ExecutionContext executionContext2);
 
-    private void openBookmark(BookmarkId bookmark, ConnectionInfo ci) {
+	private void openBookmark(BookmarkId bookmark, ConnectionInfo ci) {
 		DataModelManager.setCurrentModelSubfolder(bookmark.datamodelFolder, executionContext);
 		UIUtil.setWaitCursor(DataModelManagerDialog.this);
 		String oldBookmark = CommandLineInstance.getInstance().bookmark;
@@ -1800,6 +1838,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		String url = CommandLineInstance.getInstance().url;
 		String user = CommandLineInstance.getInstance().user;
 		try {
+			if (bookmark.getContent() != null) {
+				BufferedWriter out = new BufferedWriter(new FileWriter(Environment.newFile(DataBrowser.LAST_SESSION_FILE)));
+				out.write(bookmark.getContent());
+				out.close();
+			}
 			CommandLineInstance.getInstance().bookmark = bookmark.bookmark;
 			CommandLineInstance.getInstance().rawschemamapping = bookmark.rawSchemaMapping;
 			if (ci != null) {
@@ -1891,6 +1934,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel connectionDialogPanel;
     private javax.swing.JTable dataModelsTable;
     private javax.swing.JButton deleteButton;
+    private javax.swing.JLabel dummyLabel;
     private javax.swing.JButton editButton;
     private javax.swing.JLabel infoBarLabeRecUsedlBookmark;
     private javax.swing.JLabel infoBarLabel;

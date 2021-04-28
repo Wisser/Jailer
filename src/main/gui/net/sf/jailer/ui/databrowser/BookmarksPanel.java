@@ -503,6 +503,8 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		public final String connectionAlias;
 		public final String rawSchemaMapping;
 		public final Date date;
+		private String content;
+		private String contentInfo;
 		
 		public BookmarkId(String bookmark, String datamodelFolder, String connectionAlias, String rawSchemaMapping) {
 			this.bookmark = bookmark;
@@ -550,6 +552,22 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		}
 
 		private static final long serialVersionUID = -7491145126834345194L;
+
+		public void setContent(String content) {
+			this.content = content;
+		}
+		
+		public String getContent() {
+			return content;
+		}
+		
+		public void setContentInfo(String contentInfo) {
+			this.contentInfo = contentInfo;
+		}
+		
+		public String getContentInfo() {
+			return contentInfo;
+		}
 	}
 
 	private static final String[] INVALID_FILENAME_CHARACTERS = new String[] {"\\", "/", ":", ";", "*", "?", "\"", "<", ">", "|"};

@@ -50,7 +50,9 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -58,7 +60,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -4382,29 +4383,26 @@ public class DataBrowser extends javax.swing.JFrame {
         UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
 	}
 	
-	private static final String LAST_SESSION_FILE = ".lastsession";
+	public static final String LAST_SESSION_FILE = ".lastsession";
 
 	private void storeLastSession() {
 		BookmarkId bookmark;
 		try {
 			desktop.storeSession(Environment.newFile(LAST_SESSION_FILE).getPath());
+			BufferedReader in = new BufferedReader(new FileReader(Environment.newFile(LAST_SESSION_FILE)));
+			int c;
+			StringBuilder sb = new StringBuilder();
+			while ((c = in.read()) != -1) {
+				sb.append((char) c);
+			}
+			in.close();
 			bookmark = new BookmarkId(null, executionContext.getCurrentModelSubfolder(), executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping());
+			bookmark.setContent(sb.toString());
+			bookmark.setContentInfo(desktop.tableBrowsers.size() + (desktop.tableBrowsers.size() == 1? " Table" : " Tables"));
 		} catch (IOException e) {
 			bookmark = null;
 		}
 		UISettings.storeLastSession(bookmark, "B");
-	}
-
-	public static Date getLastSessionDate() {
-		try {
-			long lastModified = Environment.newFile(LAST_SESSION_FILE).lastModified();
-			if (lastModified == 0) {
-				return null;
-			}
-			return new Date(lastModified);
-		} catch (Exception e) {
-			return null;
-		}
 	}
 
 	private DesktopAnchorManager anchorManager;

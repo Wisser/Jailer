@@ -502,7 +502,7 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * All row-browsers.
 	 */
-	private List<RowBrowser> tableBrowsers = new ArrayList<RowBrowser>();
+	List<RowBrowser> tableBrowsers = new ArrayList<RowBrowser>();
 
 	/**
 	 * Opens a new row-browser.

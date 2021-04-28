@@ -66,7 +66,7 @@ public class UISettings {
 	/**
 	 * Name of property holding the last session.
 	 */
-	public static final String LAST_SESSION = "LAST_SESSION";
+	public static final String LAST_SESSIONS = "LAST_SESSIONS";
 
 	/**
 	 * Maximum size of any "recent" list.
@@ -308,19 +308,14 @@ public class UISettings {
 			}
 		}
 		lastSessions.add(0, bookmark);
-		store(LAST_SESSION + module, lastSessions);
+		store(LAST_SESSIONS + module, lastSessions);
 	}
 
 	@SuppressWarnings("unchecked")
 	public static List<BookmarkId> restoreLastSessions(String module) {
-		Object lastSessions = restore(LAST_SESSION + module);
+		Object lastSessions = restore(LAST_SESSIONS + module);
 		if (lastSessions instanceof List) {
 			return (List<BookmarkId>) lastSessions;
-		} else if (lastSessions instanceof BookmarkId) {
-			// migration
-			ArrayList<BookmarkId> result = new ArrayList<BookmarkId>();
-			result.add((BookmarkId) lastSessions);
-			return result;
 		} else {
 			return null;
 		}

@@ -21,6 +21,7 @@ import javax.swing.Timer;
 
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.ui.BrowserLauncher;
+import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 
@@ -75,7 +76,7 @@ public class UpdateInfoManager {
 					startShutdownHook();
 					String content = HttpUtil.get(versionURL
 							+ "?jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")"
-							+ "&modul=" + URLEncoder.encode(modul, "UTF-8")
+							+ "&modul=" + URLEncoder.encode(DataModelManagerDialog.lastSessionRestored? modul.toLowerCase() : modul, "UTF-8")
 							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
 							+ "&uuid=" + URLEncoder.encode(uuid.toString(), "UTF-8")
 							+ "&version=" + URLEncoder.encode(JailerVersion.VERSION, "UTF-8")
