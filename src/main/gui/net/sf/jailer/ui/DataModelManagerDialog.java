@@ -453,6 +453,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 		restoreButton.addActionListener(actions.get(0));
 		resentSessionsComboBox.setModel(new DefaultComboBoxModel<String>(model.toArray(new String[0])));
+		resentSessionsComboBox.setSelectedIndex(0);
 		resentSessionsComboBox.addItemListener(new ItemListener() {
 			boolean done = false;
 			@Override

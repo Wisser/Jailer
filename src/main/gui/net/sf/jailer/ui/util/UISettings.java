@@ -303,7 +303,7 @@ public class UISettings {
 			lastSessions = new ArrayList<BookmarkId>();
 		} else {
 			lastSessions.remove(bookmark);
-			if (lastSessions.size() >= 10) {
+			if (lastSessions.size() >= 16) {
 				lastSessions.remove(lastSessions.size() - 1);
 			}
 		}
