@@ -61,7 +61,6 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -195,6 +194,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(2, 0, 2, 0);
         jPanel10.add(resentSessionsComboBox, gridBagConstraints);
@@ -441,12 +441,45 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					"&nbsp;-&nbsp;</font>" : 
 					"<font color=\"#0000ff\">" +
 					(lastSession.getContentInfo() != null? UIUtil.toHTMLFragment(lastSession.getContentInfo(), 0) + "&nbsp;-&nbsp;" : "") + 
-					"</font>") + 
-					"<font color=\"#006600\">" +
+					"</font>") +
+					(module.equals("S")?
+					("<font color=\"#006600\">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
 					"</font>&nbsp;-&nbsp;<font color=\"#663300\">" +
 					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(connectionInfo.user + "@" + connectionInfo.url, 0) + "</font>") + 
-					"</font></nobr></html>");
+					"</font></nobr></html>")
+					:
+					(
+					"<font color=\"#006600\">" +
+					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : ("<b>" + UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "</b>") + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(connectionInfo.user + "@" + connectionInfo.url, 0) + "</font>") + 
+					"</font>&nbsp;-&nbsp;") +
+					"<font color=\"#663300\">" +
+					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
+					"</font>"
+					) +
+					"</nobr></html>");
+			
+			// TODO - alias oft nicht aussagekräftig
+			// TODO - bold immer vorne
+			
+			// TODO - "alias" in "name" umbenennen, überall
+			
+			// TODO - Test: was wenn DB-Alias inzwischen gelöscht oder umbenannt?
+			
+			// TODO - new connection dbconndialog: "description"(fka "alias") kein Pflichtfeld,
+			// TODO automatisch belegen anhand jdbc-url-pattern (aus driver.csv, multi-group, selektive groups vorne, user@-group-)
+			// TODO pattern mit kontext, chain of responsibility, (statt: kontec#xt aus url in driver.csv (als prefix) ermittelm)
+			// TODO jede einzelnes Pattern als space-separiete Liste von RE auffassen (damit: immer nur gruppe(0) relevant)
+			// TODO other: (?jdbc:odbc:([^:]+).*) (?jdbc:([^:]+).*)
+			
+			// TODO auch bei update, "\s*(\d+)"-Suffix berücksichtigen
+			// TODO was ist bei Copy via clipboard? (testen)
+			
+			// TODO dbconnection table with horizontal slider? (datamodel dann nach vorne)
+			
+			// TODO was wenn sehr lange url? (testen)
+			
+			
 			final ConnectionInfo finalConnectionInfo = connectionInfo;
 			actions.add(new ActionListener() {
 				@Override
@@ -1090,6 +1123,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         infoBarLabeRecUsedlBookmark = new javax.swing.JLabel();
         bmRecUsedCancelButton = new javax.swing.JButton();
         bmRecUsedOkButton = new javax.swing.JButton();
+        jPanel11 = new javax.swing.JPanel();
+        jPanel12 = new javax.swing.JPanel();
         jPanel10 = new javax.swing.JPanel();
         restoreButton = new javax.swing.JButton();
         dummyLabel = new javax.swing.JLabel();
@@ -1116,6 +1151,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         cardPanel.add(jPanel9, "loading");
 
         jPanel8.setLayout(new java.awt.GridBagLayout());
+
+        jTabbedPane1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -1523,12 +1560,25 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         jPanel8.add(jTabbedPane1, gridBagConstraints);
 
-        jPanel10.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        jPanel11.setBackground(new java.awt.Color(245, 245, 245));
+        jPanel11.setMinimumSize(new java.awt.Dimension(1, 8));
+        jPanel11.setPreferredSize(new java.awt.Dimension(1, 8));
+        jPanel11.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel8.add(jPanel11, gridBagConstraints);
+
+        jPanel12.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jPanel12.setLayout(new java.awt.GridBagLayout());
+
+        jPanel10.setBorder(javax.swing.BorderFactory.createTitledBorder("Recent Sessions"));
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
-        restoreButton.setText("Restore recent Session");
+        restoreButton.setText("Restore");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 4);
         jPanel10.add(restoreButton, gridBagConstraints);
@@ -1542,11 +1592,18 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel8.add(jPanel10, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        jPanel12.add(jPanel10, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel8.add(jPanel12, gridBagConstraints);
 
         cardPanel.add(jPanel8, "main");
 
@@ -1945,6 +2002,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;

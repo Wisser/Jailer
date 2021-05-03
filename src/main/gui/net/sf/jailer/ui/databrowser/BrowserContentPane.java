@@ -6259,16 +6259,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						if (!d.isVisible()) {
 							timer.stop();
 						} else if (oldState != currentEditState) {
-							d.getContentPane().removeAll();
-							DetailsView v;
-							d.getContentPane().add(v = createDetailsViewF.get(0).get());
-							v.setSortColumns(sortColumnsCheckBox.isSelected());
-							v.editModeToggleButton.setSelected(editModeToggleButton.isSelected());
-							v.currentRow = -1;
-							if (v.rows.isEmpty()) {
+							if (rows.size() <= rowIndex) {
 								d.setVisible(false);
 								d.dispose();
 							} else {
+								d.getContentPane().removeAll();
+								DetailsView v;
+								d.getContentPane().add(v = createDetailsViewF.get(0).get());
+								v.setSortColumns(sortColumnsCheckBox.isSelected());
+								v.editModeToggleButton.setSelected(editModeToggleButton.isSelected());
+								v.currentRow = -1;
 								int newRow = Math.min(v.rows.size() - 1, currentRow);
 								v.setCurrentRow(newRow, true);
 								v.rowSpinner.setValue(newRow + 1);
