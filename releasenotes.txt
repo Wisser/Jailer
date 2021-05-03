@@ -1,5 +1,6 @@
 10.4.5
   - Sessions can be restored from the history of recent sessions.
+  - The automatic initial naming of database connections has been greatly improved.
 
 10.4.4
   - The detail view dialog has been made non-modal, allowing a smoother workflow.
@@ -513,9 +514,9 @@
 
 7.5.5
   - data browser improvements
-	  - In-place editing of query results.
-	  - Column filtering in data browser.
-	  - Improved table search feature.
+    - In-place editing of query results.
+    - Column filtering in data browser.
+    - Improved table search feature.
 
 7.5.3
   - Performance and GUI improvements.
