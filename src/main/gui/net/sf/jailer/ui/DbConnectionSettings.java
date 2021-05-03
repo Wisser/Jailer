@@ -18,9 +18,12 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -314,10 +317,22 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			}
 		}
 		for (i = 0; i < pLabel.length; ++i) {
-			if (i < defValues.size() && defValues.size() > 1) {
+			if (i < defValues.size()) {
+				int fileButtonX = 5;
 				if (defValues.get(i).isEmpty() && !isOptional.get(i)) {
+					fileButtonX = 3;
 					defaultLabel[i].setVisible(false);
 					defaultButton[i].setVisible(false);
+				}
+				Container parent = pButton[i].getParent();
+				if (parent != null) {
+					GridBagLayout gridBagLayout = (GridBagLayout) parent.getLayout();
+					if (gridBagLayout != null) {
+						GridBagConstraints gc = gridBagLayout.getConstraints(pButton[i]);
+						parent.remove(pButton[i]);
+						gc.gridx = fileButtonX;
+						parent.add(pButton[i], gc);
+					}
 				}
 			}
 		}
@@ -666,6 +681,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 10);
         add(defaultAllLabel, gridBagConstraints);

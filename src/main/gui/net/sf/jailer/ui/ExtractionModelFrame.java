@@ -307,7 +307,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private String getConnectivityState() {
 		if (dbConnectionDialog != null && dbConnectionDialog.isConnected) {
-			return dbConnectionDialog.currentConnection.user + "@" + (dbConnectionDialog.currentConnection.alias);
+			return ((dbConnectionDialog.currentConnection.user != null && dbConnectionDialog.currentConnection.user.trim().length() > 0 && !dbConnectionDialog.currentConnection.alias.startsWith(dbConnectionDialog.currentConnection.user + "@")? dbConnectionDialog.currentConnection.user + "@" : "") + dbConnectionDialog.currentConnection.alias);
 		} else {
 			return "offline";
 		}

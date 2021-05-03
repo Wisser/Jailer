@@ -24,6 +24,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -32,8 +34,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -78,14 +82,18 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	 * Opens detail editor for a connection.
 	 * 
 	 * @param ci the connection
+	 * @param connectionList 
 	 * @return <code>true</code> if connection has been edited
 	 */
-	public boolean edit(ConnectionInfo ci) {
+	public boolean edit(ConnectionInfo ci, List<ConnectionInfo> connectionList) {
+		this.connectionList = connectionList;
 		setDetails(ci);
 		setVisible(true);
 		return isOk;
 	}
-
+	
+	private List<ConnectionInfo> connectionList;
+	
 	/**
 	 * Sets details.
 	 * 
@@ -94,6 +102,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	 */
 	public void setDetails(ConnectionInfo ci) {
 		this.ci = ci;
+		nameContent = "@";
 		alias.setText(ci.alias);
 		dbUrl.setText(ci.url);
 		user.setText(ci.user);
@@ -109,6 +118,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		} catch (Exception e) {
 			// ignore
 		}
+		String newName = createNewName(ci.user, ci.url);
+		if (newName.replaceFirst("\\s*\\(\\d+\\)$", "").equals(ci.alias.replaceFirst("\\s*\\(\\d+\\)$", ""))) {
+			nameContent = ci.alias;
+		}
 	}
 
 	/** Creates new form DbConnectionDialog 
@@ -119,6 +132,19 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 	private final Window parent;
 	private List<Line> driverlist;
+	private String nameContent = "";
+	
+	private void updateNameField() {
+		String usr = user.getText().trim();
+		String url = dbUrl.getText();
+		String newName = createNewName(usr, url);
+		if (nameContent.equals(alias.getText()) || alias.getText().trim().isEmpty()) {
+			alias.setText(newName);
+			nameContent = newName;
+		}
+	}
+
+	private List<Pattern> pattern = new ArrayList<Pattern>();
 	
 	/** Creates new form DbConnectionDialog 
 	 * @param forNew 
@@ -149,6 +175,52 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		} catch (Throwable t) {
 			driverlist = null;
 		}
+		
+		if (driverlist != null) {
+			try {
+				driverlist.forEach(line -> {
+					String res = line.cells.get(5).trim();
+					if (res.startsWith("\"") && res.endsWith("\"")) {
+						res = res.substring(1, res.length() - 2).trim();
+					}
+					for (String re: res.split(" +")) {
+						try {
+							pattern.add(Pattern.compile(re, Pattern.CASE_INSENSITIVE));
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+					}
+				});
+			} catch (Throwable t) {
+				// ignore
+			}
+		}
+		
+		alias.addFocusListener(new FocusListener() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateNameField();
+			}
+			@Override
+			public void focusGained(FocusEvent e) {
+			}
+		});
+		DocumentListener docListener = new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				updateNameField();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				updateNameField();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				updateNameField();
+			}
+		};
+		dbUrl.getDocument().addDocumentListener(docListener);
+		user.getDocument().addDocumentListener(docListener);
 		
 		Arrays.asList(jar1, jar2, jar3, jar4, dbUrl).forEach(f -> f.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
@@ -249,6 +321,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		});
 		helpjdbc.setIcon(helpIcon);
 		helpjdbc.setText(null);
+		loadButton1.setText(null);
+		loadButton2.setText(null);
+		loadButton3.setText(null);
+		loadButton4.setText(null);
 		loadButton1.setIcon(loadIcon);
 		loadButton2.setIcon(loadIcon);
 		loadButton3.setIcon(loadIcon);
@@ -257,7 +333,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowOpened(WindowEvent evt) {
-				alias.grabFocus();
+				user.grabFocus();
 				UIUtil.invokeLater(4, () -> {
 					List<String> driverURLs = retrieveDriverURLs(driverlist);
 					if (forNew && driverURLs != null && downloadButton.isEnabled() && driverURLs.stream().allMatch(
@@ -354,7 +430,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jLabel11 = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
         helpjdbc = new javax.swing.JLabel();
-        alias = new javax.swing.JTextField();
         loadButton1 = new javax.swing.JButton();
         loadButton2 = new javax.swing.JButton();
         jar3 = new javax.swing.JTextField();
@@ -373,6 +448,9 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jSeparator1 = new javax.swing.JSeparator();
         downloadButton = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
+        jPanel6 = new javax.swing.JPanel();
+        renameButton = new javax.swing.JButton();
+        alias = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Database Connection");
@@ -380,7 +458,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(" Alias ");
+        jLabel1.setText(" Name ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
@@ -551,13 +629,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         jPanel1.add(helpjdbc, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(alias, gridBagConstraints);
 
         loadButton1.setText(" Browse..");
         loadButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -733,6 +804,28 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 16, 0);
         jPanel1.add(jSeparator2, gridBagConstraints);
 
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        renameButton.setText("Rename");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        jPanel6.add(renameButton, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel6.add(alias, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jPanel6, gridBagConstraints);
+
         getContentPane().add(jPanel1, "card2");
 
         pack();
@@ -866,11 +959,16 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     			if (content.length() > 1
     					&& content.substring(0, 1).equals(content.substring(content.length() - 1))
     					&& Arrays.asList(SEPARATORS).contains(content.substring(0, 1))) {
+    				nameContent = "@";
     				String separator = content.substring(0, 1);
     				content = content.substring(1);
     				String[] fields = content.split(Pattern.quote(separator));
     				for (int i = 0; i < textFields.length && i < fields.length; ++i) {
     					textFields[i].setText(fields[i]);
+    				}
+    				String newName = createNewName(user.getText(), dbUrl.getText());
+    				if (newName.replaceFirst("\\s*\\(\\d+\\)$", "").equals(alias.getText().replaceFirst("\\s*\\(\\d+\\)$", ""))) {
+    					nameContent = alias.getText();
     				}
     				showFeedback("credentials taken from clipboard");
             		return;
@@ -1023,6 +1121,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextField jar1;
@@ -1035,6 +1134,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JButton loadButton4;
     private javax.swing.JButton okButton;
     javax.swing.JPasswordField password;
+    private javax.swing.JButton renameButton;
     private javax.swing.JButton selectConnectionButton;
     private javax.swing.JButton testConnectionButton;
     public javax.swing.JTextField user;
@@ -1047,7 +1147,47 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		feedbackTimer.restart();
 	}
 
-    private javax.swing.JTextField[] textFields;
+    private String createNewName(String usr, String url) {
+    	final int MAX_LENGTH = 64;
+    	String simplifiedUrl = url.replaceAll("[\\[\\]<>]", "");
+		Optional<String> descOpt = pattern.stream().map(p -> {
+			Matcher m = p.matcher(simplifiedUrl);
+			String d = null;
+			if (m.matches() && m.groupCount() > 0) {
+				d = m.group(1);
+				if (d.length() > MAX_LENGTH) {
+					d = d.substring(0, MAX_LENGTH);
+				}
+			}
+			return d;
+		}).filter(d -> d != null).findFirst();
+		String desc = descOpt.isPresent()? descOpt.get().trim() : "";
+		String newName;
+		if (usr.isEmpty() && desc.isEmpty()) {
+			newName = "Connection";
+		} else if (usr.isEmpty()) {
+			newName = desc;
+		} else if (desc.isEmpty()) {
+			newName = usr;
+		} else {
+			newName = usr + "@" + desc;
+		}
+		for (int nr = 1; ; ++nr) {
+			String newAlias = newName + (nr > 1? " (" + nr + ")" : "");
+			boolean found = false;
+			for (ConnectionInfo ci: connectionList) {
+				if (ci != this.ci && ci.alias.equals(newAlias)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				return newAlias;
+			}
+		}
+	}
+
+	private javax.swing.JTextField[] textFields;
     
 	private Icon helpIcon;
 	private Icon loadIcon;

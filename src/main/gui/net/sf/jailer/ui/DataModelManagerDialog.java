@@ -433,53 +433,33 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				continue;
 			}
 			Pair<String, Long> details = modelDetails.get(lastSession.datamodelFolder);
+			boolean needUserName = connectionInfo != null && connectionInfo.user != null && !connectionInfo.alias.startsWith(connectionInfo.user + "@");
 			model.add("<html><nobr>" + 
 					UIUtil.toHTMLFragment(UIUtil.toDateAsString(date.getTime()), 0) + "&nbsp;-&nbsp;" +
 					(module.equals("S")?
 					"<font color=\"#0000ff\"><b>" +
 					(lastSession.bookmark != null? UIUtil.toHTMLFragment(new File(lastSession.bookmark).getName(), 0) : "</b><i><font color=\"#888888\">New&nbsp;Model</font></i><b>") + "</b>" + 
 					"&nbsp;-&nbsp;</font>" : 
-					"<font color=\"#0000ff\">" +
-					(lastSession.getContentInfo() != null? UIUtil.toHTMLFragment(lastSession.getContentInfo(), 0) + "&nbsp;-&nbsp;" : "") + 
-					"</font>") +
+					"") +
 					(module.equals("S")?
 					("<font color=\"#006600\">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
 					"</font>&nbsp;-&nbsp;<font color=\"#663300\">" +
-					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(connectionInfo.user + "@" + connectionInfo.url, 0) + "</font>") + 
+					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(((needUserName && connectionInfo.user != null && connectionInfo.user.trim().length() > 0? connectionInfo.user + " - ;" : "") + connectionInfo.url), 0) + "</font>") + 
 					"</font></nobr></html>")
 					:
 					(
 					"<font color=\"#006600\">" +
-					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : ("<b>" + UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "</b>") + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(connectionInfo.user + "@" + connectionInfo.url, 0) + "</font>") + 
-					"</font>&nbsp;-&nbsp;") +
+					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : ("<b>" + UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "</b>") + "&nbsp;-&nbsp;<font color=\"#000000\">" + 
+					"<font color=\"#0000ff\">" +
+					(lastSession.getContentInfo() != null? UIUtil.toHTMLFragment(lastSession.getContentInfo(), 0) + "&nbsp;-&nbsp;" : "") + 
+					"</font>" +
 					"<font color=\"#663300\">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
-					"</font>"
+					"</font>&nbsp;-&nbsp;" + UIUtil.toHTMLFragment(((needUserName && connectionInfo.user != null && connectionInfo.user.trim().length() > 0? connectionInfo.user + " - ;" : "") + connectionInfo.url), 0) + "</font>") + 
+					"</font>")					
 					) +
 					"</nobr></html>");
-			
-			// TODO - alias oft nicht aussagekräftig
-			// TODO - bold immer vorne
-			
-			// TODO - "alias" in "name" umbenennen, überall
-			
-			// TODO - Test: was wenn DB-Alias inzwischen gelöscht oder umbenannt?
-			
-			// TODO - new connection dbconndialog: "description"(fka "alias") kein Pflichtfeld,
-			// TODO automatisch belegen anhand jdbc-url-pattern (aus driver.csv, multi-group, selektive groups vorne, user@-group-)
-			// TODO pattern mit kontext, chain of responsibility, (statt: kontec#xt aus url in driver.csv (als prefix) ermittelm)
-			// TODO jede einzelnes Pattern als space-separiete Liste von RE auffassen (damit: immer nur gruppe(0) relevant)
-			// TODO other: (?jdbc:odbc:([^:]+).*) (?jdbc:([^:]+).*)
-			
-			// TODO auch bei update, "\s*(\d+)"-Suffix berücksichtigen
-			// TODO was ist bei Copy via clipboard? (testen)
-			
-			// TODO dbconnection table with horizontal slider? (datamodel dann nach vorne)
-			
-			// TODO was wenn sehr lange url? (testen)
-			
-			
 			final ConnectionInfo finalConnectionInfo = connectionInfo;
 			actions.add(new ActionListener() {
 				@Override
@@ -508,8 +488,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
 					boolean isSelected, boolean cellHasFocus) {
 				Component render = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				if (isSelected && render instanceof JLabel) {
-					((JLabel) render).setText(((JLabel) render).getText().replaceAll("<.?font[^>]*>", ""));
+				if (render instanceof JLabel) {
+					((JLabel) render).setToolTipText(((JLabel) render).getText().replace("&nbsp;-&nbsp;", "<br>"));
+					if (isSelected) {
+						((JLabel) render).setText(((JLabel) render).getText().replaceAll("<.?font[^>]*>", ""));
+					}
 				}
 				return render;
 			}
@@ -531,6 +514,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				}
 			}
 		});
+		resentSessionsComboBox.setToolTipText(model.get(0).replace("&nbsp;-&nbsp;", "<br>"));
 	}
 
 	private final List<BookmarksPanel.BookmarkId> bookmarks = new ArrayList<BookmarksPanel.BookmarkId>();

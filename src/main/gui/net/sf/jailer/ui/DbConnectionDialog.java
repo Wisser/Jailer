@@ -428,7 +428,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				data[i++] = new Object[] { ci.alias, ci.user, ci.url, ci.dataModelFolder == null? "Default" : modelDetails == null? "" : modelDetails.a };
 			}
 		}
-		DefaultTableModel tableModel = new DefaultTableModel(data, !showOnlyRecentyUsedConnections? new String[] { "Alias", "User", "URL", "Data Model" } : new String[] { "Alias", "User", "URL", "Data Model", "Time" }) {
+		DefaultTableModel tableModel = new DefaultTableModel(data, !showOnlyRecentyUsedConnections? new String[] { "Name", "User", "URL", "Data Model" } : new String[] { "Name", "User", "URL", "Data Model", "Time" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -990,7 +990,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					if (jars.length > 1) {
 						ci.jar2 = jars[1];
 					}
-					ci.alias = s.a;
+					ci.alias = ""; // s.a;
 					break;
 				}
 			}
@@ -1081,7 +1081,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * @return <code>true</code> if connection has been edited
 	 */
 	private boolean edit(ConnectionInfo ci, boolean forNew) {
-		return new DbConnectionDetailsEditor(parent, jdbcHelpURL, forNew).edit(ci);
+		return new DbConnectionDetailsEditor(parent, jdbcHelpURL, forNew).edit(ci, connectionList);
 	}
 
 	private void connect() {

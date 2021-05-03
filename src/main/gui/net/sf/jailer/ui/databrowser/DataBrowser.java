@@ -1043,7 +1043,7 @@ public class DataBrowser extends javax.swing.JFrame {
         ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
         String dburl = connection != null ? (connection.url) : " ";
         connectivityState.setToolTipText(dburl);
-        dburl = connection != null ? (connection.user + "@" + connection.alias) : " ";
+        dburl = connection != null ? ((connection.user != null && connection.user.trim().length() > 0 && !connection.alias.startsWith(connection.user+ "@")? connection.user + "@" : "") + connection.alias) : " ";
         if (dburl.length() > MAX_LENGTH) {
             dburl = dburl.substring(0, MAX_LENGTH - 3) + "...";
         }
