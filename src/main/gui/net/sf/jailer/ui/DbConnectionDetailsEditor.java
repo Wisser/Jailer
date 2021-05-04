@@ -155,6 +155,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		this.parent = parent;
 		this.needsTest = needsTest;
 		initComponents();
+		renameButton.setIcon(resetIcon);
+		renameButton.setText(null);
 		feedbackTimer = new Timer(4000, e -> {
 			feedbackLabel.setText(" ");
 		});
@@ -221,6 +223,37 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		};
 		dbUrl.getDocument().addDocumentListener(docListener);
 		user.getDocument().addDocumentListener(docListener);
+		
+		DocumentListener renameListener = new DocumentListener() {
+			private void check() {
+				String usr = user.getText().trim();
+				String url = dbUrl.getText();
+				String newName = createNewName(usr, url);
+				renameButton.setEnabled(!newName.equals(alias.getText()));
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				check();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				check();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				check();
+			}
+		};
+		dbUrl.getDocument().addDocumentListener(renameListener);
+		user.getDocument().addDocumentListener(renameListener);
+		alias.getDocument().addDocumentListener(renameListener);
+		
+		renameButton.addActionListener(e -> {
+			String usr = user.getText().trim();
+			String url = dbUrl.getText();
+			alias.setText(nameContent = createNewName(usr, url));
+			alias.grabFocus();
+		});
 		
 		Arrays.asList(jar1, jar2, jar3, jar4, dbUrl).forEach(f -> f.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
@@ -408,6 +441,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        helpjdbc = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -429,7 +463,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         selectConnectionButton = new javax.swing.JButton();
         jLabel11 = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
-        helpjdbc = new javax.swing.JLabel();
         loadButton1 = new javax.swing.JButton();
         loadButton2 = new javax.swing.JButton();
         jar3 = new javax.swing.JTextField();
@@ -448,9 +481,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jSeparator1 = new javax.swing.JSeparator();
         downloadButton = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
-        jPanel6 = new javax.swing.JPanel();
-        renameButton = new javax.swing.JButton();
         alias = new javax.swing.JTextField();
+        renameButton = new javax.swing.JButton();
+
+        helpjdbc.setText("help");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Database Connection");
@@ -470,6 +504,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(jLabel2, gridBagConstraints);
 
         jLabel3.setText(" 3. additional JAR ");
@@ -477,6 +512,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 42;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(jLabel3, gridBagConstraints);
 
         jLabel4.setText(" ");
@@ -623,13 +659,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(password, gridBagConstraints);
 
-        helpjdbc.setText("help");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jPanel1.add(helpjdbc, gridBagConstraints);
-
         loadButton1.setText(" Browse..");
         loadButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -639,6 +668,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(loadButton1, gridBagConstraints);
 
         loadButton2.setText(" Browse..");
@@ -650,6 +680,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 40;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(loadButton2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -669,6 +700,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(jLabel10, gridBagConstraints);
 
         jLabel12.setText(" 2. additional JAR ");
@@ -676,6 +708,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 41;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(jLabel12, gridBagConstraints);
 
         loadButton3.setText(" Browse..");
@@ -687,6 +720,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 41;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(loadButton3, gridBagConstraints);
 
         loadButton4.setText(" Browse..");
@@ -698,6 +732,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 42;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(loadButton4, gridBagConstraints);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
@@ -803,28 +838,20 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 16, 0);
         jPanel1.add(jSeparator2, gridBagConstraints);
-
-        jPanel6.setLayout(new java.awt.GridBagLayout());
-
-        renameButton.setText("Rename");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        jPanel6.add(renameButton, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel6.add(alias, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jPanel6, gridBagConstraints);
+        jPanel1.add(alias, gridBagConstraints);
+
+        renameButton.setText("Rename");
+        renameButton.setToolTipText("Reset Name");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel1.add(renameButton, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -1121,7 +1148,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextField jar1;
@@ -1191,10 +1217,12 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     
 	private Icon helpIcon;
 	private Icon loadIcon;
+    private Icon resetIcon;
 	{
 		// load images
 		helpIcon = UIUtil.readImage("/help.png");
-		loadIcon = UIUtil.readImage("/load.png");
+		loadIcon = UIUtil.readImage("/load2.png");
+		resetIcon = UIUtil.readImage("/reset.png");
 	}
 	 
 	private static final long serialVersionUID = -492511696901313920L;

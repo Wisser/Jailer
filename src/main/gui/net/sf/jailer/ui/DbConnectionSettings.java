@@ -772,10 +772,10 @@ public class DbConnectionSettings extends javax.swing.JPanel {
     private javax.swing.JLabel urlLabel;
     // End of variables declaration//GEN-END:variables
     
-	private static Icon loadIcon;
+    private static Icon loadIcon;
 	static {
 		// load images
-		loadIcon = UIUtil.readImage("/load.png");
+		loadIcon = UIUtil.readImage("/load2.png");
 		leftIcon = UIUtil.readImage("/left.png");
 	}
 
