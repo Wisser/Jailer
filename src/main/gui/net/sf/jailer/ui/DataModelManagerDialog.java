@@ -406,7 +406,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		final List<BookmarkId> lastSessions = UISettings.restoreLastSessions(module);
 		if (lastSessions == null || lastSessions.isEmpty()) {
 			restoreButton.setEnabled(false);
-			resentSessionsComboBox.setVisible(false);
+			hideRecentSessionsPanel();
 			dummyLabel.setVisible(true);
 			return;
 		}
@@ -477,7 +477,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 		if (model.isEmpty()) {
 			restoreButton.setEnabled(false);
-			resentSessionsComboBox.setVisible(false);
+			hideRecentSessionsPanel();
 			dummyLabel.setVisible(true);
 			return;
 		}
@@ -515,6 +515,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		});
 		resentSessionsComboBox.setToolTipText(model.get(0).replace("&nbsp;-&nbsp;", "<br>"));
+	}
+
+	private void hideRecentSessionsPanel() {
+		resentSessionsComboBox.setVisible(false);
+		jPanel11.setVisible(false);
+		jPanel12.setVisible(false);
+		jTabbedPane1.setBorder(null);
 	}
 
 	private final List<BookmarksPanel.BookmarkId> bookmarks = new ArrayList<BookmarksPanel.BookmarkId>();
