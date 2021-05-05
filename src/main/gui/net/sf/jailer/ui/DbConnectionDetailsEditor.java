@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -224,6 +225,24 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		dbUrl.getDocument().addDocumentListener(docListener);
 		user.getDocument().addDocumentListener(docListener);
 		
+		driverClass.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				update();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				update();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				update();
+			}
+			private void update() {
+				jtdsWarnLabel.setVisible(driverClass.getText().equals("net.sourceforge.jtds.jdbc.Driver"));
+				jSeparator2.setVisible(!jtdsWarnLabel.isVisible());
+			}
+		});
 		DocumentListener renameListener = new DocumentListener() {
 			private void check() {
 				String usr = user.getText().trim();
@@ -354,6 +373,9 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		});
 		helpjdbc.setIcon(helpIcon);
 		helpjdbc.setText(null);
+		ImageIcon scaledWarnIcon = UIUtil.scaleIcon(jtdsWarnLabel, warnIcon, 1);
+		jtdsWarnLabel.setIcon(scaledWarnIcon);
+		jtdsWarnLabel.setVisible(false);
 		loadButton1.setText(null);
 		loadButton2.setText(null);
 		loadButton3.setText(null);
@@ -483,12 +505,13 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jSeparator2 = new javax.swing.JSeparator();
         alias = new javax.swing.JTextField();
         renameButton = new javax.swing.JButton();
+        jtdsWarnLabel = new javax.swing.JLabel();
 
         helpjdbc.setText("help");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Database Connection");
-        getContentPane().setLayout(new java.awt.CardLayout());
+        getContentPane().setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -853,7 +876,22 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(renameButton, gridBagConstraints);
 
-        getContentPane().add(jPanel1, "card2");
+        jtdsWarnLabel.setForeground(java.awt.Color.red);
+        jtdsWarnLabel.setText("<html>Due to known problems with the jTDS JDBC driver, it is strongly recommended to use the original driver for SQL Server or Sybase.<html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 54;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(jtdsWarnLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        getContentPane().add(jPanel1, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1154,6 +1192,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JTextField jar2;
     private javax.swing.JTextField jar3;
     private javax.swing.JTextField jar4;
+    private javax.swing.JLabel jtdsWarnLabel;
     private javax.swing.JButton loadButton1;
     private javax.swing.JButton loadButton2;
     private javax.swing.JButton loadButton3;
@@ -1218,12 +1257,13 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	private Icon helpIcon;
 	private Icon loadIcon;
     private Icon resetIcon;
-	{
+    private ImageIcon warnIcon;
+    {
 		// load images
 		helpIcon = UIUtil.readImage("/help.png");
 		loadIcon = UIUtil.readImage("/load2.png");
 		resetIcon = UIUtil.readImage("/reset.png");
-	}
-	 
+		warnIcon = UIUtil.readImage("/wanr.png");
+    }
 	private static final long serialVersionUID = -492511696901313920L;
 }

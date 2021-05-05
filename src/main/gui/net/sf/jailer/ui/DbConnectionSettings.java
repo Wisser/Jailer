@@ -190,14 +190,15 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 				}
 				Component r = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (line != null && r instanceof JLabel) {
-					if (line.cells.get(1) != null && line.cells.get(1).length() == 0) {
+					if (line.cells.get(2) != null && line.cells.get(2).length() == 0) {
 						((JLabel) r).setFont(((JLabel) r).getFont().deriveFont((((JLabel) r).getFont().getStyle() | Font.ITALIC)));
 					}
 				}
 				return r;
 			}
 		});
-		dbmsComboBox.setSelectedIndex(0);
+		dbmsComboBox.setSelectedIndex(-1);
+		detailsPanel.setVisible(false);
 		String titel = "Connection Settings";
 		if (owner instanceof Frame) {
 			dialog = new EscapableDialog((Frame) owner, titel, true) {
@@ -218,6 +219,8 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			defaultLabel[i].setVisible(true);
 			defaultButton[i].setVisible(true);
 		}
+		detailsPanel.setVisible(true);
+		initialLabel.setVisible(false);
 		dialog.pack();
 		dialog.setSize(Math.max(dialog.getWidth(), 540), dialog.getHeight());
 		dialog.setLocation(
@@ -240,6 +243,8 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 	private Color pTextFieldBGColor;
 
 	private void updateFields() {
+		detailsPanel.setVisible(dbmsComboBox.getSelectedIndex() >= 0);
+		initialLabel.setVisible(dbmsComboBox.getSelectedIndex() < 0);
 		if (dbmsComboBox.getSelectedItem() instanceof Line) {
 			url = ((Line) dbmsComboBox.getSelectedItem()).cells.get(1);
 		}
@@ -393,10 +398,12 @@ public class DbConnectionSettings extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
-        okButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        dbmsComboBox = new javax.swing.JComboBox<>();
+        jLabel3 = new javax.swing.JLabel();
+        initialLabel = new javax.swing.JLabel();
+        detailsPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         paramLabel1 = new javax.swing.JLabel();
         paramLabel2 = new javax.swing.JLabel();
@@ -411,8 +418,6 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         paramButton3 = new javax.swing.JButton();
         paramButton4 = new javax.swing.JButton();
         urlLabel = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        dbmsComboBox = new javax.swing.JComboBox<>();
         defaultButton1 = new javax.swing.JToggleButton();
         defaultButton2 = new javax.swing.JToggleButton();
         defaultButton3 = new javax.swing.JToggleButton();
@@ -425,8 +430,289 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         defaultAllLabel = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        okButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jLabel5.setText("DBMS");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 4, 0, 4);
+        jPanel3.add(jLabel5, gridBagConstraints);
+
+        dbmsComboBox.setMaximumRowCount(24);
+        dbmsComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dbmsComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        jPanel3.add(dbmsComboBox, gridBagConstraints);
+
+        jLabel3.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        jPanel3.add(jLabel3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        add(jPanel3, gridBagConstraints);
+
+        initialLabel.setText("<html><i>Select DBMS</i></html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(initialLabel, gridBagConstraints);
+
+        detailsPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel2.setText("URL");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 98;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 32);
+        detailsPanel.add(jLabel2, gridBagConstraints);
+
+        paramLabel1.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 2);
+        detailsPanel.add(paramLabel1, gridBagConstraints);
+
+        paramLabel2.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 4);
+        detailsPanel.add(paramLabel2, gridBagConstraints);
+
+        paramLabel3.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 4);
+        detailsPanel.add(paramLabel3, gridBagConstraints);
+
+        paramLabel4.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 4);
+        detailsPanel.add(paramLabel4, gridBagConstraints);
+
+        paramField1.setText("jTextField2");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        detailsPanel.add(paramField1, gridBagConstraints);
+
+        paramField2.setText("jTextField2");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        detailsPanel.add(paramField2, gridBagConstraints);
+
+        paramField3.setText("jTextField2");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        detailsPanel.add(paramField3, gridBagConstraints);
+
+        paramField4.setText("jTextField2");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        detailsPanel.add(paramField4, gridBagConstraints);
+
+        paramButton1.setText("jButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        detailsPanel.add(paramButton1, gridBagConstraints);
+
+        paramButton2.setText("jButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        detailsPanel.add(paramButton2, gridBagConstraints);
+
+        paramButton3.setText("jButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        detailsPanel.add(paramButton3, gridBagConstraints);
+
+        paramButton4.setText("jButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        detailsPanel.add(paramButton4, gridBagConstraints);
+
+        urlLabel.setFont(urlLabel.getFont().deriveFont(urlLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        urlLabel.setText("URL");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 98;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        detailsPanel.add(urlLabel, gridBagConstraints);
+
+        defaultButton1.setText("jToggleButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        detailsPanel.add(defaultButton1, gridBagConstraints);
+
+        defaultButton2.setText("jToggleButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        detailsPanel.add(defaultButton2, gridBagConstraints);
+
+        defaultButton3.setText("jToggleButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        detailsPanel.add(defaultButton3, gridBagConstraints);
+
+        defaultButton4.setText("jToggleButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        detailsPanel.add(defaultButton4, gridBagConstraints);
+
+        defaultAllButton.setText("jToggleButton1");
+        defaultAllButton.setIconTextGap(0);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        detailsPanel.add(defaultAllButton, gridBagConstraints);
+
+        defaultLabel1.setFont(defaultLabel1.getFont().deriveFont(defaultLabel1.getFont().getStyle() | java.awt.Font.BOLD));
+        defaultLabel1.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
+        detailsPanel.add(defaultLabel1, gridBagConstraints);
+
+        defaultLabel2.setFont(defaultLabel2.getFont().deriveFont(defaultLabel2.getFont().getStyle() | java.awt.Font.BOLD));
+        defaultLabel2.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
+        detailsPanel.add(defaultLabel2, gridBagConstraints);
+
+        defaultLabel3.setFont(defaultLabel3.getFont().deriveFont(defaultLabel3.getFont().getStyle() | java.awt.Font.BOLD));
+        defaultLabel3.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
+        detailsPanel.add(defaultLabel3, gridBagConstraints);
+
+        defaultLabel4.setFont(defaultLabel4.getFont().deriveFont(defaultLabel4.getFont().getStyle() | java.awt.Font.BOLD));
+        defaultLabel4.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
+        detailsPanel.add(defaultLabel4, gridBagConstraints);
+
+        defaultAllLabel.setFont(defaultAllLabel.getFont().deriveFont(defaultAllLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        defaultAllLabel.setText("Use defaults");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 10);
+        detailsPanel.add(defaultAllLabel, gridBagConstraints);
+
+        jPanel6.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel6.setPreferredSize(new java.awt.Dimension(1, 2));
+        jPanel6.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 0);
+        detailsPanel.add(jPanel6, gridBagConstraints);
+
+        jPanel5.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel5.setPreferredSize(new java.awt.Dimension(1, 2));
+        jPanel5.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 96;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 12, 0);
+        detailsPanel.add(jPanel5, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(detailsPanel, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -462,255 +748,6 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(jPanel1, gridBagConstraints);
-
-        jLabel1.setText("  ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        add(jLabel1, gridBagConstraints);
-
-        jLabel2.setText("URL");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 98;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 40);
-        add(jLabel2, gridBagConstraints);
-
-        paramLabel1.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
-        add(paramLabel1, gridBagConstraints);
-
-        paramLabel2.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 4);
-        add(paramLabel2, gridBagConstraints);
-
-        paramLabel3.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 4);
-        add(paramLabel3, gridBagConstraints);
-
-        paramLabel4.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 4);
-        add(paramLabel4, gridBagConstraints);
-
-        paramField1.setText("jTextField2");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        add(paramField1, gridBagConstraints);
-
-        paramField2.setText("jTextField2");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        add(paramField2, gridBagConstraints);
-
-        paramField3.setText("jTextField2");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        add(paramField3, gridBagConstraints);
-
-        paramField4.setText("jTextField2");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        add(paramField4, gridBagConstraints);
-
-        paramButton1.setText("jButton1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
-        add(paramButton1, gridBagConstraints);
-
-        paramButton2.setText("jButton1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
-        add(paramButton2, gridBagConstraints);
-
-        paramButton3.setText("jButton1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
-        add(paramButton3, gridBagConstraints);
-
-        paramButton4.setText("jButton1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
-        add(paramButton4, gridBagConstraints);
-
-        urlLabel.setFont(urlLabel.getFont().deriveFont(urlLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        urlLabel.setText("URL");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 98;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        add(urlLabel, gridBagConstraints);
-
-        jLabel5.setText("DBMS");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 4);
-        add(jLabel5, gridBagConstraints);
-
-        dbmsComboBox.setMaximumRowCount(24);
-        dbmsComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dbmsComboBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
-        add(dbmsComboBox, gridBagConstraints);
-
-        defaultButton1.setText("jToggleButton1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
-        add(defaultButton1, gridBagConstraints);
-
-        defaultButton2.setText("jToggleButton1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
-        add(defaultButton2, gridBagConstraints);
-
-        defaultButton3.setText("jToggleButton1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
-        add(defaultButton3, gridBagConstraints);
-
-        defaultButton4.setText("jToggleButton1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
-        add(defaultButton4, gridBagConstraints);
-
-        defaultAllButton.setText("jToggleButton1");
-        defaultAllButton.setIconTextGap(0);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-        add(defaultAllButton, gridBagConstraints);
-
-        defaultLabel1.setFont(defaultLabel1.getFont().deriveFont(defaultLabel1.getFont().getStyle() | java.awt.Font.BOLD));
-        defaultLabel1.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
-        add(defaultLabel1, gridBagConstraints);
-
-        defaultLabel2.setFont(defaultLabel2.getFont().deriveFont(defaultLabel2.getFont().getStyle() | java.awt.Font.BOLD));
-        defaultLabel2.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
-        add(defaultLabel2, gridBagConstraints);
-
-        defaultLabel3.setFont(defaultLabel3.getFont().deriveFont(defaultLabel3.getFont().getStyle() | java.awt.Font.BOLD));
-        defaultLabel3.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
-        add(defaultLabel3, gridBagConstraints);
-
-        defaultLabel4.setFont(defaultLabel4.getFont().deriveFont(defaultLabel4.getFont().getStyle() | java.awt.Font.BOLD));
-        defaultLabel4.setText("jLabel3");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
-        add(defaultLabel4, gridBagConstraints);
-
-        defaultAllLabel.setFont(defaultAllLabel.getFont().deriveFont(defaultAllLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        defaultAllLabel.setText("Use defaults");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 10);
-        add(defaultAllLabel, gridBagConstraints);
-
-        jPanel6.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        jPanel6.setPreferredSize(new java.awt.Dimension(1, 2));
-        jPanel6.setLayout(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 0, 0);
-        add(jPanel6, gridBagConstraints);
-
-        jPanel5.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        jPanel5.setPreferredSize(new java.awt.Dimension(1, 2));
-        jPanel5.setLayout(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 96;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 12, 0);
-        add(jPanel5, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -750,10 +787,13 @@ public class DbConnectionSettings extends javax.swing.JPanel {
     private javax.swing.JLabel defaultLabel2;
     private javax.swing.JLabel defaultLabel3;
     private javax.swing.JLabel defaultLabel4;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel detailsPanel;
+    private javax.swing.JLabel initialLabel;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JButton okButton;

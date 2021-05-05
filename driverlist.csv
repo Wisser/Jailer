@@ -21,4 +21,4 @@ Cloudscape;jdbc:cloudscape:<DB>;COM.cloudscape.core.JDBCDriver;;;jdbc:cloudscape
 Cloudscape RMI;jdbc:rmi://<HOST(localhost)>:<PORT>/jdbc:cloudscape:<DB>;RmiJdbc.RJDriver;;;jdbc:rmi://.*?:([^:]+)
 Derby;jdbc:derby://<HOST(localhost)>:<PORT>/<DATABASE>;org.apache.derby.jdbc.ClientDriver;lib/derbyclient.jar lib/derbytools.jar;;jdbc:derby://.*/(.+) jdbc:derby://([^/:]+).*
 Derby embedded;jdbc:derby:<DATABASE>;org.apache.derby.jdbc.EmbeddedDriver;lib/derbyclient.jar lib/derbytools.jar;;jdbc:derby:.*?([^/\\\\]+)
-<other>;;;;;jdbc:odbc:([^:]+).* jdbc:([^:]+).*
+<other>;jdbc:<SUBPROTOCOL>:<NODE>[/<DATABASE>];;;;jdbc:odbc:([^:]+).* jdbc:([^:]+).*
