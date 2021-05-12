@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -106,7 +105,7 @@ public class BrowserContentCellEditor {
 				return content == null || (content instanceof CellContentConverter.NCharWrapper && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0)));
 			}
 		},
-		BOOLEAN {
+		BIT_OR_BOOLEAN {
 			@Override
 			String cellContentToText(int columnType, Object content) {
 				return String.valueOf(content);
@@ -115,33 +114,16 @@ public class BrowserContentCellEditor {
 			@Override
 			Object textToContent(int columnType, String text, Object oldContent) {
 				String lcText = text.toLowerCase();
-				if (trueValues.contains(lcText)) {
+				if (trueValuesTF.contains(lcText)) {
 					return true;
 				}
-				if (falseValues.contains(lcText)) {
-					return false;
-				}
-				return INVALID;
-			}
-
-			@Override
-			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
-				return true;
-			}
-		},
-		BIT {
-			@Override
-			String cellContentToText(int columnType, Object content) {
-				return String.valueOf(content);
-			}
-
-			@Override
-			Object textToContent(int columnType, String text, Object oldContent) {
-				String lcText = text.toLowerCase();
-				if (trueValues.contains(lcText)) {
+				if (trueValues01.contains(lcText)) {
 					return 1;
 				}
-				if (falseValues.contains(lcText)) {
+				if (falseValuesTF.contains(lcText)) {
+					return false;
+				}
+				if (falseValues01.contains(lcText)) {
 					return 0;
 				}
 				return INVALID;
@@ -295,8 +277,10 @@ public class BrowserContentCellEditor {
 		abstract Object textToContent(int columnType, String text, Object oldContent);
 	}
 
-	private static List<String> trueValues = Arrays.asList("true", "yes", "1", "t", "y");
-	private static List<String> falseValues = Arrays.asList("false", "no", "0", "f", "n");
+	private static List<String> trueValuesTF = Arrays.asList("true", "yes", "t", "y");
+	private static List<String> trueValues01 = Arrays.asList("1", "01", "001", "0001", "00001");
+	private static List<String> falseValuesTF = Arrays.asList("false", "no", "f", "n");
+	private static List<String> falseValues01 = Arrays.asList("0", "00", "000", "0000", "00000");
 	
 	private Map<Integer, Converter> converterPerType = new HashMap<Integer, Converter>();
 	{
@@ -321,8 +305,8 @@ public class BrowserContentCellEditor {
 
 		converterPerType.put(CellContentConverter.TIMESTAMP_WITH_NANO, Converter.TIMESTAMP_WITH_NANO);
 
-		converterPerType.put(Types.BIT, Converter.BIT);
-		converterPerType.put(Types.BOOLEAN, Converter.BOOLEAN);
+		converterPerType.put(Types.BIT, Converter.BIT_OR_BOOLEAN);
+		converterPerType.put(Types.BOOLEAN, Converter.BIT_OR_BOOLEAN);
 	}
 	
 	/**
@@ -350,14 +334,6 @@ public class BrowserContentCellEditor {
 				for (int i = 0; i < columnTypes.length && i < columnTypeNames.length; ++i) {
 					if (session.dbms.getTimestampWithNanoTypeName().equalsIgnoreCase(columnTypeNames[i])) {
 						columnTypes[i] = CellContentConverter.TIMESTAMP_WITH_NANO;
-					}
-				}
-			}
-			if (DBMS.POSTGRESQL.equals(session.dbms)) {
-				// TODO BIT==BOOLEAN, #textToContent returns int/boolean depending on input (0/1 or true/false)
-				for (int i = 0; i < columnTypes.length && i < columnTypeNames.length; ++i) {
-					if (columnTypes[i] == Types.BIT) {
-						columnTypes[i] = Types.BOOLEAN;
 					}
 				}
 			}
