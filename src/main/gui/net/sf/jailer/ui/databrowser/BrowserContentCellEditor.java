@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -45,7 +46,7 @@ public class BrowserContentCellEditor {
 	 * Cell content to text converter.
 	 */
 	private enum Converter {
-		DECMAL {
+		DECIMAL {
 			@Override
 			String cellContentToText(int columnType, Object content) {
 				if (content instanceof BigDecimal) {
@@ -106,12 +107,9 @@ public class BrowserContentCellEditor {
 			}
 		},
 		BOOLEAN {
-			List<String> trueValues = Arrays.asList("true", "yes", "1", "t", "y");
-			List<String> falseValues = Arrays.asList("false", "no", "0", "f", "n");
-			
 			@Override
 			String cellContentToText(int columnType, Object content) {
-				return String.valueOf((Boolean) content);
+				return String.valueOf(content);
 			}
 
 			@Override
@@ -128,7 +126,30 @@ public class BrowserContentCellEditor {
 
 			@Override
 			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
-				return content == null || (content instanceof Boolean);
+				return true;
+			}
+		},
+		BIT {
+			@Override
+			String cellContentToText(int columnType, Object content) {
+				return String.valueOf(content);
+			}
+
+			@Override
+			Object textToContent(int columnType, String text, Object oldContent) {
+				String lcText = text.toLowerCase();
+				if (trueValues.contains(lcText)) {
+					return 1;
+				}
+				if (falseValues.contains(lcText)) {
+					return 0;
+				}
+				return INVALID;
+			}
+
+			@Override
+			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
+				return true;
 			}
 		},
 		DATE {
@@ -274,16 +295,19 @@ public class BrowserContentCellEditor {
 		abstract Object textToContent(int columnType, String text, Object oldContent);
 	}
 
+	private static List<String> trueValues = Arrays.asList("true", "yes", "1", "t", "y");
+	private static List<String> falseValues = Arrays.asList("false", "no", "0", "f", "n");
+	
 	private Map<Integer, Converter> converterPerType = new HashMap<Integer, Converter>();
 	{
-		converterPerType.put(Types.DECIMAL, Converter.DECMAL);
-		converterPerType.put(Types.DOUBLE, Converter.DECMAL);
-		converterPerType.put(Types.FLOAT, Converter.DECMAL);
-		converterPerType.put(Types.INTEGER, Converter.DECMAL);
-		converterPerType.put(Types.NUMERIC, Converter.DECMAL);
-		converterPerType.put(Types.SMALLINT, Converter.DECMAL);
-		converterPerType.put(Types.TINYINT, Converter.DECMAL);
-		converterPerType.put(Types.BIGINT, Converter.DECMAL);
+		converterPerType.put(Types.DECIMAL, Converter.DECIMAL);
+		converterPerType.put(Types.DOUBLE, Converter.DECIMAL);
+		converterPerType.put(Types.FLOAT, Converter.DECIMAL);
+		converterPerType.put(Types.INTEGER, Converter.DECIMAL);
+		converterPerType.put(Types.NUMERIC, Converter.DECIMAL);
+		converterPerType.put(Types.SMALLINT, Converter.DECIMAL);
+		converterPerType.put(Types.TINYINT, Converter.DECIMAL);
+		converterPerType.put(Types.BIGINT, Converter.DECIMAL);
 		
 		converterPerType.put(Types.CHAR, Converter.CHAR);
 		converterPerType.put(Types.NCHAR, Converter.NCHAR);
@@ -297,6 +321,7 @@ public class BrowserContentCellEditor {
 
 		converterPerType.put(CellContentConverter.TIMESTAMP_WITH_NANO, Converter.TIMESTAMP_WITH_NANO);
 
+		converterPerType.put(Types.BIT, Converter.BIT);
 		converterPerType.put(Types.BOOLEAN, Converter.BOOLEAN);
 	}
 	
@@ -320,10 +345,20 @@ public class BrowserContentCellEditor {
 	public BrowserContentCellEditor(int[] columnTypes, String[] columnTypeNames, Session session) {
 		this.columnTypes = columnTypes;
 		this.session = session;
-		if (session != null && session.dbms.getTimestampWithNanoTypeName() != null) {
-			for (int i = 0; i < columnTypes.length && i < columnTypeNames.length; ++i) {
-				if (session.dbms.getTimestampWithNanoTypeName().equalsIgnoreCase(columnTypeNames[i])) {
-					columnTypes[i] = CellContentConverter.TIMESTAMP_WITH_NANO;
+		if (session != null) {
+			if (session.dbms.getTimestampWithNanoTypeName() != null) {
+				for (int i = 0; i < columnTypes.length && i < columnTypeNames.length; ++i) {
+					if (session.dbms.getTimestampWithNanoTypeName().equalsIgnoreCase(columnTypeNames[i])) {
+						columnTypes[i] = CellContentConverter.TIMESTAMP_WITH_NANO;
+					}
+				}
+			}
+			if (DBMS.POSTGRESQL.equals(session.dbms)) {
+				// TODO BIT==BOOLEAN, #textToContent returns int/boolean depending on input (0/1 or true/false)
+				for (int i = 0; i < columnTypes.length && i < columnTypeNames.length; ++i) {
+					if (columnTypes[i] == Types.BIT) {
+						columnTypes[i] = Types.BOOLEAN;
+					}
 				}
 			}
 		}
