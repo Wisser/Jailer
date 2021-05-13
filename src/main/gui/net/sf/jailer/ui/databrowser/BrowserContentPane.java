@@ -748,8 +748,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		ImageIcon scaledFindColumnIcon1 = UIUtil.scaleIcon(this, findColumnIcon1);
 		ImageIcon scaledFindColumnIcon2 = UIUtil.scaleIcon(this, findColumnIcon2);
 		
-		findColumnsLabel.setText(getQueryBuilderDialog() != null? null : "find Column");
-		findColumnsLabel.setToolTipText("find Column...");
+		findColumnsLabel.setText(getQueryBuilderDialog() != null? null : "Find Column");
+		findColumnsLabel.setToolTipText("Find Column...");
 		findColumnsLabel.setIcon(scaledFindColumnIcon1);
 		findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 		
@@ -5294,7 +5294,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         statusPanel.setLayout(new java.awt.GridBagLayout());
 
-        sortColumnsCheckBox.setText("sort columns   ");
+        sortColumnsCheckBox.setText("Sort Columns   ");
         sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sortColumnsCheckBoxActionPerformed(evt);

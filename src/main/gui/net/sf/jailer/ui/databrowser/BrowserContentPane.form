@@ -95,7 +95,7 @@
                       <SubComponents>
                         <Component class="javax.swing.JCheckBox" name="sortColumnsCheckBox">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="sort columns   "/>
+                            <Property name="text" type="java.lang.String" value="Sort Columns   "/>
                           </Properties>
                           <Events>
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sortColumnsCheckBoxActionPerformed"/>

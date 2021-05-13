@@ -31,6 +31,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.CellContentConverter.PObjectWrapper;
 import net.sf.jailer.util.CellContentConverter.TimestampWithNano;
 import net.sf.jailer.util.SqlUtil;
 
@@ -277,9 +278,9 @@ public class BrowserContentCellEditor {
 		abstract Object textToContent(int columnType, String text, Object oldContent);
 	}
 
-	private static List<String> trueValuesTF = Arrays.asList("true", "yes", "t", "y");
+	private static List<String> trueValuesTF = Arrays.asList("true", "tru", "tr", "yes", "ye", "j", "t", "y");
 	private static List<String> trueValues01 = Arrays.asList("1", "01", "001", "0001", "00001");
-	private static List<String> falseValuesTF = Arrays.asList("false", "no", "f", "n");
+	private static List<String> falseValuesTF = Arrays.asList("false", "fals", "fal", "fa", "no", "f", "n");
 	private static List<String> falseValues01 = Arrays.asList("0", "00", "000", "0000", "00000");
 	
 	private Map<Integer, Converter> converterPerType = new HashMap<Integer, Converter>();
@@ -308,7 +309,7 @@ public class BrowserContentCellEditor {
 		converterPerType.put(Types.BIT, Converter.BIT_OR_BOOLEAN);
 		converterPerType.put(Types.BOOLEAN, Converter.BIT_OR_BOOLEAN);
 	}
-	
+	 
 	/**
 	 * {@link Types} per column.
 	 */
@@ -329,12 +330,17 @@ public class BrowserContentCellEditor {
 	public BrowserContentCellEditor(int[] columnTypes, String[] columnTypeNames, Session session) {
 		this.columnTypes = columnTypes;
 		this.session = session;
-		if (session != null) {
-			if (session.dbms.getTimestampWithNanoTypeName() != null) {
+		if (this.session != null) {
+			if (this.session.dbms.getTimestampWithNanoTypeName() != null) {
 				for (int i = 0; i < columnTypes.length && i < columnTypeNames.length; ++i) {
-					if (session.dbms.getTimestampWithNanoTypeName().equalsIgnoreCase(columnTypeNames[i])) {
+					if (this.session.dbms.getTimestampWithNanoTypeName().equalsIgnoreCase(columnTypeNames[i])) {
 						columnTypes[i] = CellContentConverter.TIMESTAMP_WITH_NANO;
 					}
+				}
+			}
+			for (int i = 0; i < columnTypes.length && i < columnTypeNames.length; ++i) {
+				if (CellContentConverter.isPostgresObjectType(columnTypeNames[i]) || columnTypes[i] == Types.ARRAY) {
+					columnTypes[i] = Types.VARCHAR;
 				}
 			}
 		}
@@ -361,6 +367,9 @@ public class BrowserContentCellEditor {
 		}
 		Converter converter = converterPerType.get(columnTypes[column]);
 		if (converter != null) {
+			if (content instanceof PObjectWrapper) {
+				content = ((PObjectWrapper) content).getValue();
+			}
 			return converter.isEditable(columnTypes[column], content, this);
 		}
 		return false;
@@ -376,6 +385,9 @@ public class BrowserContentCellEditor {
 	 * @return text
 	 */
 	public String cellContentToText(int row, int column, Object content) {
+		if (content instanceof PObjectWrapper) {
+			content = ((PObjectWrapper) content).getValue();
+		}
 		if (content == null) {
 			return "";
 		}

@@ -81,6 +81,7 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.util.SizeGrip;
+import net.sf.jailer.util.CellContentConverter.PObjectWrapper;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -402,6 +403,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				Object v = rows.get(rowIndex).values[columnIndexAtI];
 				hasEditableColumn = hasEditableColumn || tableModel.isCellEditable(rowIndex, columnIndexAtI);
 				boolean isEditable = editModeToggleButton.isSelected() && tableModel.isCellEditable(rowIndex, columnIndexAtI);
+				if (v instanceof PObjectWrapper) {
+					v = ((PObjectWrapper) v).getValue();
+				}
 				Object vOrig = v;
 				if (v instanceof Double) {
 					v = UIUtil.format((Double) v);

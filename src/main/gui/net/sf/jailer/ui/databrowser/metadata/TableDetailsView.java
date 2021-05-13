@@ -53,6 +53,7 @@ import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.util.Quoting;
+import net.sf.jailer.util.CellContentConverter.PObjectWrapper;
 
 /**
  * Table Details View.
@@ -199,6 +200,8 @@ public class TableDetailsView extends javax.swing.JPanel {
 							} catch (Exception e) {
 								// ignore
 							}
+						} else if (v instanceof PObjectWrapper) {
+							v = ((PObjectWrapper) v).getValue();
 						}
 						columnValue.put(columns.get(i), v);
 					}

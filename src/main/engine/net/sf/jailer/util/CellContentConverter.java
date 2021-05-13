@@ -356,7 +356,7 @@ public class CellContentConverter {
 		}
 		@Override
 		public String toString() {
-			return value;
+			return String.valueOf(value);
 		}
 		@Override
 		public int compareTo(NCharWrapper o) {
@@ -528,7 +528,7 @@ public class CellContentConverter {
 		return object;
 	}
 
-	private boolean isPostgresObjectType(String columnTypeName) {
+	public static boolean isPostgresObjectType(String columnTypeName) {
 		if (columnTypeName == null) {
 			return false;
 		}
