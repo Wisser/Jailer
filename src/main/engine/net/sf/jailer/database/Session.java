@@ -558,7 +558,7 @@ public class Session {
 	 * @param withExplicitCommit if <code>true</code>, switch of autocommit and commit explicitly
 	 */
 	private long executeQuery(Connection theConnection, String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, long limit, int timeout, boolean withExplicitCommit) throws SQLException {
-		if (!transactional) {
+		if (!transactional || DBMS.MySQL.equals(dbms)) {
 			synchronized (theConnection) {
 				return executeQuery0(theConnection, sqlQuery, reader, alternativeSQL, context, limit, timeout, withExplicitCommit);
 			}
