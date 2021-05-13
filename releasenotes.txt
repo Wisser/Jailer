@@ -1,5 +1,6 @@
-10.4.6
+10.4.7
   - Inplace editors for PostgreSQL data types "hstore", "ghstore", "json", "jsonb" and "boolean".
+  - Prevention of the  "Streaming result set is still active." error with mysql.
 
 10.4.5
   - Sessions can be restored from the history of recent sessions.
