@@ -864,6 +864,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         int level = 0;
         boolean isNewScope = true;
         Map<String, Integer> levelPerAlias = new LinkedHashMap<String, Integer>();
+        Map<String, Boolean> isStarRelevantPerAlias = new HashMap<String, Boolean>();
         Stack<String> tokenStack = new Stack<String>();
         Stack<Integer> tokenPosStack = new Stack<Integer>();
 		Stack<Boolean> inWithStack = new Stack<Boolean>();
@@ -875,10 +876,12 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         int beginEndCount = 0;
         boolean result = matcher.find();
         StringBuffer head = new StringBuffer();
+        boolean nextIsStarRelevant = true;
         if (result) {
             do {
                 String clause = matcher.group(1);
                 String clauseLC = clause == null? null : clause.toLowerCase(Locale.ENGLISH);
+                boolean isStarRelevant = nextIsStarRelevant;
                 String keyword = matcher.group(2);
                 String identifier = matcher.group(3);
 
@@ -894,8 +897,13 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 		clauseLC = "group";
                 		clause = clauseLC;
                 	} 
-                    if (!"from".equals(clauseLC) && !"update".equals(clauseLC) && !"into".equals(clauseLC)) {
+                	nextIsStarRelevant = true;
+                	boolean notDmlKW = !"update".equals(clauseLC) && !"into".equals(clauseLC);
+					if (!"from".equals(clauseLC) && notDmlKW) {
                         keyword = clause;
+                    }
+					if (!notDmlKW) {
+                    	nextIsStarRelevant = false;
                     }
                 }
                 
@@ -1020,6 +1028,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                     }
                                     if (mdTable != null) {
 	                                    Integer prevLevel = levelPerAlias.get(alias);
+	                                    isStarRelevantPerAlias.put(alias, isStarRelevant);
 	                                    if (prevLevel == null || prevLevel < level) {
 	                                        aliases.put(alias, mdTable);
 	                                        levelPerAlias.put(alias, level);
@@ -1074,7 +1083,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	                                    Integer prevLevel = levelPerAlias.get(alias);
 	                                    if (prevLevel == null || prevLevel < level) {
 	                                        aliases.put(alias, mdTable);
-	                                        levelPerAlias.put(alias, level);
+	                                        isStarRelevantPerAlias.put(alias, isStarRelevant);
+		                                    levelPerAlias.put(alias, level);
 	                                        tokenStack.clear();
 	                                    }
                                     }
@@ -1174,7 +1184,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         }
         for (Entry<String, Integer> e: levelPerAlias.entrySet()) {
             if (e.getValue() == maxLevel) {
-                if (aliasesOnTopLevel != null) {
+                if (aliasesOnTopLevel != null && Boolean.TRUE.equals(isStarRelevantPerAlias.get(e.getKey()))) {
                     aliasesOnTopLevel.put(e.getKey(), aliases.get(e.getKey()));
                 }
             }
