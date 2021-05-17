@@ -1,3 +1,6 @@
+10.4.8
+  - An error in the autocompletion of "*" in "Insert into... Select..." statements has been corrected.
+
 10.4.7
   - Inplace editors for PostgreSQL data types "hstore", "ghstore", "json", "jsonb" and "boolean".
   - Prevention of the  "Streaming result set is still active." error with mysql.
