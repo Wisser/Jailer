@@ -1185,7 +1185,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
     	JDBCMetaDataBasedModelElementFinder.resetCaches(metaDataSource.getSession());
         setOutline(new ArrayList<OutlineInfo>(), -1);
-        proceduresPerSchema.clear();
+        // proceduresPerSchema.clear();
+        proceduresPerSchema = Collections.synchronizedMap(new HashMap<String, MemorizedResultSet>()); // dont wait
 
         MDTable selectedTable = null;
         if (metaDataTree.getSelectionPath() != null) {
