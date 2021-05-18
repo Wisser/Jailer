@@ -871,6 +871,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		Stack<Boolean> isSubselectStack = new Stack<Boolean>();
 		Stack<Boolean> inFromStack = new Stack<Boolean>();
 		Set<String> ctes = new HashSet<String>();
+		Set<String> inferedTables = new HashSet<String>();
+		String prevClauseLC = null;
         int nextInsertPos = -1;
         int scopeBeginn = 0;
         int beginEndCount = 0;
@@ -885,6 +887,12 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 String keyword = matcher.group(2);
                 String identifier = matcher.group(3);
 
+                if (prevClauseLC != null && identifier != null) {
+                	if ("from".equals(prevClauseLC) || "join".equals(prevClauseLC) || "into".equals(prevClauseLC) || "update".equals(prevClauseLC)) {
+                		inferedTables.add(Quoting.normalizeIdentifier(identifier));
+                	}
+                }
+                
                 head.setLength(0);
         		matcher.appendReplacement(head, "");
 
@@ -1018,6 +1026,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             }
                             if (mdSchema != null) {
                                 TABLE mdTable = findTable(mdSchema, table);
+                                if (inferedTables.contains(Quoting.normalizeIdentifier(table))) {
+                                	mdTable = createDummyTable(mdSchema, table);
+                                }
                                 if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.normalizeIdentifier(table))) {
                                     if (outlineInfos != null && (mdTable == null || mdTable instanceof MDTable)) {
                                     	OutlineInfo info = new OutlineInfo((MDTable) mdTable, alias, level, pos, mdTable == null? table : null);
@@ -1069,6 +1080,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             }
                             if (mdSchema != null) {
                                 TABLE mdTable = findTable(mdSchema, table);
+                                if (inferedTables.contains(Quoting.normalizeIdentifier(table))) {
+                                	mdTable = createDummyTable(mdSchema, table);
+                                }
                                 if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.normalizeIdentifier(table))) {
                                     if (outlineInfos != null) {
                                         if (mdTable == null || mdTable instanceof MDTable) {
@@ -1173,6 +1187,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     }
                 }
                 
+                prevClauseLC = clauseLC != null? clauseLC : keyword != null? keyword.toLowerCase(Locale.ENGLISH) : null;
                 result = matcher.find();
             } while (result);
         }
@@ -1367,6 +1382,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     protected abstract SCHEMA getDefaultSchema(SOURCE metaDataSource);
     protected abstract SCHEMA findSchema(SOURCE metaDataSource, String name);
     protected abstract TABLE findTable(SCHEMA schema, String name);
+    protected TABLE createDummyTable(SCHEMA schema, String name) {
+    	return null;
+    }
     protected abstract String getTableName(TABLE table);
     protected abstract List<TABLE> getTables(SCHEMA schema);
     protected abstract String getSchemaName(SCHEMA schema);

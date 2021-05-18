@@ -145,4 +145,9 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 		return metaDataSource.isInitialized() && (metaDataSource.getDefaultSchema() == null || metaDataSource.getDefaultSchema().isLoaded());
 	}
 
+	@Override
+	protected MDTable createDummyTable(MDSchema schema, String name) {
+		return new MDTable(name, schema, false, false);
+	}
+
 }
