@@ -1048,6 +1048,8 @@ public class DataBrowser extends javax.swing.JFrame {
             dburl = dburl.substring(0, MAX_LENGTH - 3) + "...";
         }
         connectivityState.setText(dburl);
+        setTitle((dburl.trim().length() > 0? dburl + " - " : "") + DataBrowserContext.getAppName(false));
+
         DataModel dataModel = datamodel != null ? datamodel.get() : null;
         String modelname = "Data Model \"" + (dataModel == null ? DataModel.DEFAULT_NAME : dataModel.getName()) + "\"";
         String lastMod = dataModel == null ? "" : dataModel.getLastModifiedAsString();
