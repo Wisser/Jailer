@@ -2971,6 +2971,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 
 		try {
+			removeMetaDataSource(session);
 			Component pFrame = SwingUtilities.getWindowAncestor(this);
 			if (pFrame == null) {
 				pFrame = this;
@@ -3947,6 +3948,10 @@ public abstract class Desktop extends JDesktopPane {
 
 	}
 	
+    private void removeMetaDataSource(Session session) {
+    	session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", Boolean.TRUE);
+    }
+
 	private int iFrameBufferGeneration;
 	
 	private void invalidateIFramesBuffers() {

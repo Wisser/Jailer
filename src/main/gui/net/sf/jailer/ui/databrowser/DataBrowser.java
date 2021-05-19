@@ -2714,10 +2714,10 @@ public class DataBrowser extends javax.swing.JFrame {
             String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
             DataModelEditor dataModelEditor = new DataModelEditor(this, merge, false, null, null, null, modelname, null, dbConnectionDialog, executionContext);
             dataModelEditor.setVisible(true);
-            removeMetaDataSource(session);
             desktop.reloadDataModel(desktop.schemaMapping);
             dataModelViewFrame = null;
             updateDataModelView(null);
+            toFront();
             updateStatusBar();
             askForDataModel();
         } catch (Exception e) {
@@ -2766,10 +2766,10 @@ public class DataBrowser extends javax.swing.JFrame {
                     if (dataModelEditor.dataModelHasChanged()) {
                         dataModelEditor.setVisible(true);
                     }
-                    removeMetaDataSource(session);
                     desktop.reloadDataModel(desktop.schemaMapping);
                     dataModelViewFrame = null;
                     updateDataModelView(null);
+    	            toFront();
                     updateStatusBar();
                     askForDataModel();
                 }
@@ -3563,10 +3563,6 @@ public class DataBrowser extends javax.swing.JFrame {
     	return (MetaDataSource) session.getSessionProperty(DataBrowser.class, "MetaDataSource");
     }
 
-    private void removeMetaDataSource(Session session) {
-    	session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", Boolean.TRUE);
-    }
-
     private MetaDataPanel metaDataPanel;
     private Runnable createMetaDataPanel;
 
@@ -4124,11 +4120,11 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void openColumnOrderEditor(Table table) {
 		try {
         	if (new ColumnOrderEditor(this, table, datamodel.get(), executionContext).wasOk()) {
-				removeMetaDataSource(session);
-	            desktop.reloadDataModel(desktop.schemaMapping);
+				desktop.reloadDataModel(desktop.schemaMapping);
 	            dataModelViewFrame = null;
 	            updateDataModelView(null);
 	            updateStatusBar();
+	            toFront();
 	            askForDataModel();
         	}
 		} catch (Throwable e) {
