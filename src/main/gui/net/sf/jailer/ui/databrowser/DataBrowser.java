@@ -1184,6 +1184,9 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenuItem3 = new javax.swing.JMenuItem();
         closeAllMenuItem = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        reconnectMenuItem = new javax.swing.JMenuItem();
+        newBrowserjMenuItem = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         loadScriptMenuItem = new javax.swing.JMenuItem();
         saveScriptMenuItem = new javax.swing.JMenuItem();
@@ -1191,9 +1194,6 @@ public class DataBrowser extends javax.swing.JFrame {
         jSeparator9 = new javax.swing.JPopupMenu.Separator();
         storeSessionItem = new javax.swing.JMenuItem();
         restoreSessionItem = new javax.swing.JMenuItem();
-        jSeparator7 = new javax.swing.JPopupMenu.Separator();
-        reconnectMenuItem = new javax.swing.JMenuItem();
-        newBrowserjMenuItem = new javax.swing.JMenuItem();
         jSeparator12 = new javax.swing.JPopupMenu.Separator();
         exitMenuItem = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
@@ -1776,13 +1776,30 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(jMenuItem3);
 
         closeAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        closeAllMenuItem.setText("Close All Tables");
+        closeAllMenuItem.setText("Close all Tables");
         closeAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeAllMenuItemActionPerformed(evt);
             }
         });
         jMenu1.add(closeAllMenuItem);
+        jMenu1.add(jSeparator7);
+
+        reconnectMenuItem.setText("Reconnect...");
+        reconnectMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reconnectMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(reconnectMenuItem);
+
+        newBrowserjMenuItem.setText("New Data Browser");
+        newBrowserjMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newBrowserjMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(newBrowserjMenuItem);
         jMenu1.add(jSeparator4);
 
         loadScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
@@ -1829,23 +1846,6 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(restoreSessionItem);
-        jMenu1.add(jSeparator7);
-
-        reconnectMenuItem.setText("Reconnect...");
-        reconnectMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                reconnectMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(reconnectMenuItem);
-
-        newBrowserjMenuItem.setText("New Data Browser");
-        newBrowserjMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newBrowserjMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(newBrowserjMenuItem);
         jMenu1.add(jSeparator12);
 
         exitMenuItem.setText("Exit");
