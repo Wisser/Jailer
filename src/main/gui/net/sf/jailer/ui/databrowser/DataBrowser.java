@@ -251,6 +251,10 @@ public class DataBrowser extends javax.swing.JFrame {
         jTabbedPane1.setTabComponentAt(0, new JLabel("Closure", closureIcon, JLabel.LEFT));
         jTabbedPane1.setTabComponentAt(1, new JLabel("Condition Editor", findIcon, JLabel.LEFT));
         
+        
+        jTabbedPane1.removeTabAt(1); // TODO
+        
+        
         whereConditionEditorPanel = new WhereConditionEditorPanel();
 		searchPanelContainer.add(whereConditionEditorPanel);
         
@@ -1468,7 +1472,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
         desktopSplitPane.setLeftComponent(jLayeredPane1);
 
-        closurePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Closure"));
         closurePanel.setLayout(new java.awt.GridBagLayout());
         jTabbedPane1.addTab("tab1", closurePanel);
 

@@ -743,6 +743,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			// ignore
 		}
 
+		conditionEditorButton.setVisible(false); // TODO
+		
+		// TODO show tooltip of "where-clause" combobox formatted
+		
 		andCondition.getEditor().getEditorComponent().setFont(UIUtil.getSQLEditorFont());
 
 		loadingCauseLabel.setVisible(false);
