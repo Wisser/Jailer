@@ -914,11 +914,12 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				label = new javax.swing.JLabel();
 				String type = c.toSQL(null).substring(c.name.length());
 				label.setToolTipText(type);
+				String typeLabel = type;
 				int l = Math.max(Math.min(24 - c.name.length(), 14), 8);
-				if (type.length() > l) {
-					type = type.substring(0, l) + "..";
+				if (typeLabel.length() > l) {
+					typeLabel = typeLabel.substring(0, l) + "..";
 				}
-				label.setText(" " + type + " ");
+				label.setText(" " + typeLabel + " ");
 				label.setForeground(Color.GRAY);
 				label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
 
