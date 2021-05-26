@@ -4452,7 +4452,7 @@ public class DataBrowser extends javax.swing.JFrame {
         addSqlConsoleIcon = UIUtil.readImage("/add.png");
         navigationIcon = UIUtil.readImage("/navigation.png");
         closureIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closure.png"));
-        findIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/findColumn.png"));
+        findIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/findcolumn.png"));
     }
 
 }
