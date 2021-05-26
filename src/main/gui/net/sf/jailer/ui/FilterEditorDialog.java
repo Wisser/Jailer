@@ -536,7 +536,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		templatesDetailsMulitlineLabel.setText(null);
 		templatesDetailsMulitlineLabel.setIcon(conditionEditorIcon);
-		templatesDetailsMulitlineLabel.setToolTipText("open SQL editor");
+		templatesDetailsMulitlineLabel.setToolTipText("Open SQL editor");
 		templatesDetailsMulitlineLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 
 			private boolean isActive() {

@@ -442,7 +442,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 20;
-		final javax.swing.JComboBox comboBox = searchComboBox;
+		final JComboBox2 comboBox = searchComboBox;
         JToggleButton searchButton = StringSearchPanel.createSearchButton(this.parent, comboBox, "Find Table", new Runnable() {
 		    @Override
 		    public void run() {
@@ -1210,7 +1210,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         closureTable = new javax.swing.JTable();
         searchComboBox = new JComboBox2();
         jLabel7 = new javax.swing.JLabel();
-        columnsComboBox = new javax.swing.JComboBox();
+        columnsComboBox = new JComboBox2();
         findButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -1228,7 +1228,6 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         setTitle("Closure Browser");
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        tablePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Closure"));
         tablePanel.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setMinimumSize(new java.awt.Dimension(23, 64));
@@ -1258,7 +1257,6 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
         tablePanel.add(jScrollPane1, gridBagConstraints);
 
         searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -1428,9 +1426,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     protected abstract void select(String selectedTable);
 	protected abstract void scrollToTable(Table table);
 
-	// Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable closureTable;
-    private javax.swing.JComboBox columnsComboBox;
+    private JComboBox2 columnsComboBox;
     public javax.swing.JPanel contentPanel;
     private javax.swing.JButton findButton;
     private javax.swing.JButton findPathButton;

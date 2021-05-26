@@ -732,6 +732,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		initComponents();
+		conditionEditorButton.setIcon(UIUtil.scaleIcon(this, findColumnIconWhere));
+		conditionEditorButton.setText(null);
+		loadButton.setIcon(runIcon);
 		try {
 			Icon errorIcon = UIManager.getIcon("OptionPane.errorIcon");
 			errorLabel.setIcon(errorIcon);
@@ -5254,6 +5257,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         menuPanel = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
+        conditionEditorButton = new javax.swing.JToggleButton();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -5272,7 +5276,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sqlLabel1 = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
-        wherejLabel = new javax.swing.JLabel();
+        whereLabel = new javax.swing.JLabel();
 
         andCondition.setEditable(true);
         andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -5701,15 +5705,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
         loadButton.setText("Reload");
+        loadButton.setToolTipText("Reload Rows");
         loadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         jPanel7.add(loadButton, gridBagConstraints);
+
+        conditionEditorButton.setText("jToggleButton1");
+        conditionEditorButton.setToolTipText("Open Condition Editor");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        jPanel7.add(conditionEditorButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -5882,11 +5894,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel14.setLayout(new java.awt.GridBagLayout());
 
-        wherejLabel.setText(" Where ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        jPanel14.add(wherejLabel, gridBagConstraints);
+        whereLabel.setText(" Where ");
+        jPanel14.add(whereLabel, new java.awt.GridBagConstraints());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -5956,6 +5965,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     javax.swing.JComboBox andCondition;
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
+    private javax.swing.JToggleButton conditionEditorButton;
     private javax.swing.JButton deselectButton;
     private javax.swing.JButton errorDetailsButton;
     private javax.swing.JLabel errorLabel;
@@ -6021,7 +6031,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     javax.swing.JPanel sqlPanel;
     protected javax.swing.JPanel statusPanel;
     private javax.swing.JPanel tablePanel;
-    private javax.swing.JLabel wherejLabel;
+    private javax.swing.JLabel whereLabel;
     // End of variables declaration//GEN-END:variables
 
 	JPanel thumbnail;
@@ -6345,12 +6355,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				} else {
 					toolTip = sb.toString();
 				}
-				wherejLabel.setToolTipText(UIUtil.toHTML(toolTip, 0));
+				whereLabel.setToolTipText(UIUtil.toHTML(toolTip, 0));
 			} else {
-				wherejLabel.setToolTipText(null);
+				whereLabel.setToolTipText(null);
 			}
 		} else {
-			wherejLabel.setToolTipText(null);
+			whereLabel.setToolTipText(null);
 		}
 	}
 
@@ -7034,13 +7044,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private static ImageIcon blueIcon;
     private static ImageIcon scaledWarnIcon;
     private static ImageIcon findColumnIcon1;
+    private static ImageIcon findColumnIconWhere;
+    private static ImageIcon runIcon;
     private static ImageIcon findColumnIcon2;
     static {
         // load images
     	warnIcon = UIUtil.readImage("/wanr.png");
     	blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
+    	findColumnIconWhere = UIUtil.readImage("/findcolumnWhere.png");
     	findColumnIcon1 = UIUtil.readImage("/findcolumn.png");
     	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
+    	runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
     }
 
 }

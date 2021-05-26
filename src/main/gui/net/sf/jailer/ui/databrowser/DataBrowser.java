@@ -247,6 +247,12 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         initComponents();
         initMenu();
+
+        jTabbedPane1.setTabComponentAt(0, new JLabel("Closure", closureIcon, JLabel.LEFT));
+        jTabbedPane1.setTabComponentAt(1, new JLabel("Condition Editor", findIcon, JLabel.LEFT));
+        
+        whereConditionEditorPanel = new WhereConditionEditorPanel();
+		searchPanelContainer.add(whereConditionEditorPanel);
         
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, downloadMenuItem, "B");
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
@@ -1140,7 +1146,9 @@ public class DataBrowser extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jInternalFrame1 = new javax.swing.JInternalFrame();
         hiddenPanel = new javax.swing.JPanel();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
         closurePanel = new javax.swing.JPanel();
+        searchPanelContainer = new javax.swing.JPanel();
         consoleDummyPanel = new javax.swing.JPanel();
         addSQLConsoleTab = new javax.swing.JPanel();
         controlPanel = new javax.swing.JPanel();
@@ -1460,8 +1468,15 @@ public class DataBrowser extends javax.swing.JFrame {
 
         desktopSplitPane.setLeftComponent(jLayeredPane1);
 
+        closurePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Closure"));
         closurePanel.setLayout(new java.awt.GridBagLayout());
-        desktopSplitPane.setRightComponent(closurePanel);
+        jTabbedPane1.addTab("tab1", closurePanel);
+
+        searchPanelContainer.setBorder(javax.swing.BorderFactory.createTitledBorder("Search Panel"));
+        searchPanelContainer.setLayout(new javax.swing.BoxLayout(searchPanelContainer, javax.swing.BoxLayout.LINE_AXIS));
+        jTabbedPane1.addTab("tab2", searchPanelContainer);
+
+        desktopSplitPane.setRightComponent(jTabbedPane1);
 
         workbenchTabbedPane.addTab("Desktop", desktopSplitPane);
         workbenchTabbedPane.addTab("SQL Console", consoleDummyPanel);
@@ -2874,6 +2889,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane4;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTree jTree1;
     private javax.swing.JMenu jviewMenu;
@@ -2909,6 +2925,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem schemaMappingMenuItem;
     private javax.swing.JLabel schemaName;
     private javax.swing.JPanel schemaNamePanel;
+    private javax.swing.JPanel searchPanelContainer;
     private javax.swing.JCheckBoxMenuItem showDataModelMenuItem;
     private javax.swing.JRadioButtonMenuItem smallLayoutRadioButtonMenuItem;
     private javax.swing.JMenuItem storeSessionItem;
@@ -4405,7 +4422,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private DesktopAnchorManager anchorManager;
 	private DesktopOutline desktopOutline;
-
+	private WhereConditionEditorPanel whereConditionEditorPanel;
+	
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;
 	private ImageIcon redIcon;
@@ -4416,6 +4434,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon addSqlConsoleIcon;
 	private ImageIcon navigationIcon;
 	private ImageIcon desktopIcon;
+	private ImageIcon closureIcon;
+	private ImageIcon findIcon;
 	{
         // load images
         tableIcon = UIUtil.readImage("/table.png");
@@ -4428,7 +4448,8 @@ public class DataBrowser extends javax.swing.JFrame {
         desktopIcon = UIUtil.readImage("/navigation.png");
         addSqlConsoleIcon = UIUtil.readImage("/add.png");
         navigationIcon = UIUtil.readImage("/navigation.png");
+        closureIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closure.png"));
+        findIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/findColumn.png"));
     }
 
-	// TODO $props in "where", with values-query, dialog with combo-box, persisted in the *.dbl files
 }
