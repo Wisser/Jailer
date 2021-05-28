@@ -105,6 +105,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -132,6 +133,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -200,6 +202,171 @@ import net.sf.jailer.util.SqlUtil;
 @SuppressWarnings("serial")
 public abstract class BrowserContentPane extends javax.swing.JPanel {
 
+	private final class RowTableRowSorter extends TableRowSorter<TableModel> {
+		private final int defaultSortColumn;
+
+		private RowTableRowSorter(TableModel model, int defaultSortColumn) {
+			super(model);
+			this.defaultSortColumn = defaultSortColumn;
+		}
+
+		@Override
+		protected boolean useToString(int column) {
+			return false;
+		}
+
+		@Override
+		public List<? extends SortKey> getSortKeys() {
+			if (dontPaintSortIcon) {
+				return new ArrayList<SortKey>();
+			}
+		    return super.getSortKeys();
+		}
+
+		@Override
+		public void toggleSortOrder(int column) {
+		}
+		
+		public void doToggleSortOrder(int column) {
+			if (association != null && association.isInsertDestinationBeforeSource()) {
+				if (!useInheritedBlockNumbers) {
+					return;
+				}
+			}
+			ignoreSortKey = false;
+			boolean toggled = false;
+		    List<? extends SortKey> sortKeys = getSortKeys();
+		    if (sortKeys.size() > 0) {
+		        if (sortKeys.get(0).getColumn() == column && sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING) {
+		            List<SortKey> sk = new ArrayList<SortKey>();
+		            if (defaultSortColumn >= 0) {
+		            	sk.add(new SortKey(defaultSortColumn, SortOrder.ASCENDING));
+		            }
+					setSortKeys(sk);
+		            toggled = true;
+		        }
+		    }
+		    if (!toggled) {
+		    	super.toggleSortOrder(column);
+		    }
+			UIUtil.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					sortChildren();
+					jLayeredPane2.repaint();
+				}
+			});
+		}
+
+		@Override
+		public Comparator<?> getComparator(int n) {
+			List<? extends SortKey> sortKeys = super.getSortKeys();
+			final boolean desc = sortKeys.size() > 0 && sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING;
+
+			return new Comparator<Object>() {
+				@SuppressWarnings("unchecked")
+				@Override
+				public int compare(Object o1, Object o2) {
+					RowSorter pSorter = null;
+					RowSorter ppSorter = null;
+					RowBrowser pb = getParentBrowser();
+					if (pb != null) {
+						if (pb.browserContentPane != null) {
+							if (pb.browserContentPane.rowsTable != null) {
+								pSorter = pb.browserContentPane.rowsTable.getRowSorter();
+								if (pb.browserContentPane.getParentBrowser() != null) {
+									if (pb.browserContentPane.getParentBrowser().browserContentPane != null) {
+										if (pb.browserContentPane.getParentBrowser().browserContentPane.rowsTable != null) {
+											ppSorter = pb.browserContentPane.getParentBrowser().browserContentPane.rowsTable.getRowSorter();
+										}
+									}
+								}
+							}
+						}
+					}
+					if (o1 instanceof TableModelItem && o2 instanceof TableModelItem) {
+						if (useInheritedBlockNumbers && !ignoreSortKey) {
+							double b1 = ((TableModelItem) o1).inheritedBlockNumber;
+							double b2 = ((TableModelItem) o2).inheritedBlockNumber;
+
+							if (ppSorter != null) {
+								double b;
+								b = b1 < ppSorter.getModelRowCount()? ppSorter.convertRowIndexToView((int) b1) : -1;
+								if (b < 0) {
+									b = b1 + Integer.MAX_VALUE / 2;
+								}
+								b1 = b;
+								b = b2 < ppSorter.getModelRowCount()? ppSorter.convertRowIndexToView((int) b2) : -1;
+								if (b < 0) {
+									b = b2 + Integer.MAX_VALUE / 2;
+								}
+								b2 = b;
+							}
+							if (b1 != b2) {
+								return (int) ((b1 - b2) * (desc? -1 : 1));
+							}
+						} else {
+							int b1 = ((TableModelItem) o1).blockNr;
+							int b2 = ((TableModelItem) o2).blockNr;
+
+							if (pSorter != null) {
+								int b;
+								b = b1 < pSorter.getModelRowCount()? pSorter.convertRowIndexToView(b1) : -1;
+								if (b < 0) {
+									b = b1 + Integer.MAX_VALUE / 2;
+								}
+								b1 = b;
+								b = b2 < pSorter.getModelRowCount()? pSorter.convertRowIndexToView(b2) : -1;
+								if (b < 0) {
+									b = b2 + Integer.MAX_VALUE / 2;
+								}
+								b2 = b;
+							}
+							if (b1 != b2) {
+								return (b1 - b2) * (desc? -1 : 1);
+							}
+						}
+					}
+
+					if (ignoreSortKey) {
+						return 0;
+					}
+
+					if (o1 instanceof TableModelItem) {
+						o1 = ((TableModelItem) o1).value;
+					}
+					if (o2 instanceof TableModelItem) {
+						o2 = ((TableModelItem) o2).value;
+					}
+					if (o1 == UIUtil.NULL) {
+						o1 = null;
+					}
+					if (o2 == UIUtil.NULL) {
+						o2 = null;
+					}
+					if (o1 == null && o2 == null) {
+						return 0;
+					}
+					if (o1 == null) {
+						return 1;
+					}
+					if (o2 == null) {
+						return -1;
+					}
+					if (o1.getClass().equals(o2.getClass())) {
+						if (o1 instanceof String) {
+							return ((String) o1).compareToIgnoreCase((String) o2);
+						}
+						if (o1 instanceof Comparable<?>) {
+							return ((Comparable<Object>) o1).compareTo(o2);
+						}
+						return 0;
+					}
+					return o1.getClass().getName().compareTo(o2.getClass().getName());
+				}
+			};
+		}
+	}
 	/**
 	 * Concurrently loads rows.
 	 */
@@ -898,7 +1065,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (!(graphics instanceof Graphics2D)) {
 					return;
 				}
-
+				
 				int maxI = Math.min(rowsTable.getRowCount(), rows.size());
 				Rectangle visRect = rowsTable.getVisibleRect();
 
@@ -965,7 +1132,49 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		};
+		jLayeredPane2.remove(rowsTableScrollPane);
+		rowsTableScrollPane = new JScrollPane() {
+			@Override
+			public void paint(Graphics graphics) {
+				super.paint(graphics);
+				if (!(graphics instanceof Graphics2D)) {
+					return;
+				}
+				Graphics2D g2d = (Graphics2D) graphics;
+				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+				g2d.setStroke(new BasicStroke(1));
 
+				if (currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
+					Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
+					g2d.drawImage(currentSearchButtonIcon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
+				}
+				for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
+					if (BrowserContentPane.this.table != null) {
+						if (BrowserContentPane.this.table.getColumns().get(i).name.toLowerCase().contains("e")) { // TODO
+							int vi = rowsTable.convertColumnIndexToView(i);
+							if (vi >= 0) {
+								Point location = calcSearchColumnPosition(vi);
+								Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
+								g2d.drawImage(ready.getImage(), location.x + loc.x, location.y + loc.y, null, null);
+							}
+						}
+					}
+				}
+			}
+		};
+		rowsTableScrollPane.setWheelScrollingEnabled(false);
+
+        rowsTableScrollPane.setViewportView(rowsTable);
+		
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jLayeredPane2.add(rowsTableScrollPane, gridBagConstraints);
+        initRowsTableSearchButtonSupport();
+		
 		InputMap im = rowsTable.getInputMap();
 		Object key = "copyClipboard";
 		im.put(KS_COPY_TO_CLIPBOARD, key);
@@ -1685,6 +1894,111 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		suppressReload = false;
 		if (reload) {
 			reloadRows();
+		}
+	}
+
+	private int currentSearchButtonColumnIndex = -1;
+	private Point currentSearchButtonLocation = null;
+	private ImageIcon currentSearchButtonIcon = null;
+	private ImageIcon half = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereHalf);
+	private ImageIcon ready = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereReady);
+
+	private void initRowsTableSearchButtonSupport() {
+		MouseAdapter l = new MouseAdapter() {
+			@Override
+			public void mouseExited(MouseEvent e) {
+				currentSearchButtonColumnIndex = -1;
+				jLayeredPane2.repaint();
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				JTableHeader header = (JTableHeader) (e.getSource());
+				if (!header.isEnabled()) {
+		            return;
+		        }
+		        int column = columnIndex(e, header);
+		        if (column >= 0) {
+		        	column = header.getTable().convertColumnIndexToView(column);
+		        	if (column < 0) {
+		        		return;
+		        	}
+		        	currentSearchButtonColumnIndex = column;
+		    		currentSearchButtonLocation = calcSearchColumnPosition(column);
+					int iconWidth = ready != null? ready.getIconWidth() : 0;
+					int iconHeight = ready != null? ready.getIconHeight() : 0;
+					int dx = currentSearchButtonLocation.x + iconWidth / 2 - e.getX();
+					int dy = currentSearchButtonLocation.y + iconHeight / 2 - e.getY();
+					double d = Math.sqrt(dx * dx + dy * dy);
+					currentSearchButtonIcon = d <= iconWidth * 1.1? ready : half;
+		        } else {
+		        	currentSearchButtonColumnIndex = -1;
+		        }
+		        jLayeredPane2.repaint();
+			}
+
+			public void mouseClicked(MouseEvent e) {
+				JTableHeader header = (JTableHeader) (e.getSource());
+				if (!header.isEnabled()) {
+		            return;
+		        }
+		        if (SwingUtilities.isLeftMouseButton(e)) {
+		            JTable table = header.getTable();
+		            RowSorter sorter;
+		            if (table != null && (sorter = table.getRowSorter()) != null) {
+		                int columnIndex = header.columnAtPoint(e.getPoint());
+		                if (columnIndex != -1) {
+		                    columnIndex = table.convertColumnIndexToModel(
+		                            columnIndex);
+		                    if (sorter instanceof RowTableRowSorter) {
+		                    	((RowTableRowSorter) sorter).doToggleSortOrder(columnIndex);
+		                    }
+		                }
+		            }
+		        }
+		        int column = columnIndex(e, header);
+
+				if (column >= 0) {
+					System.out.println("search " + column);
+				}
+				mouseMoved(e);
+				jLayeredPane2.repaint();
+			}
+
+			private int columnIndex(MouseEvent e, JTableHeader header) {
+				JTable tableView = header.getTable();
+				TableColumnModel columnModel = tableView.getColumnModel();
+				int viewColumn = columnModel.getColumnIndexAtX(e.getX());
+				int column = tableView.convertColumnIndexToModel(viewColumn);
+				return column;
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				mouseMoved(e);
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				mouseMoved(e);
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				mouseMoved(e);
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				currentSearchButtonColumnIndex = -1;
+				jLayeredPane2.repaint();
+			}
+		};
+		rowsTable.getTableHeader().addMouseListener(l);
+		rowsTable.getTableHeader().addMouseMotionListener(l);
+		try {
+			((DefaultTableCellRenderer) rowsTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+		} catch (Exception e) {
+			// ignore
 		}
 	}
 
@@ -4219,7 +4533,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private boolean dontPaintSortIcon = false;
-
+	
 	private void doUpdateTableModel(int limit, boolean limitExceeded, boolean closureLimitExceeded) {
 		lastLimit = limit;
 		lastLimitExceeded = limitExceeded;
@@ -4505,165 +4819,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rowsTable.setModel(dtm);
 			rowsTable.getSelectionModel().clearSelection();
 			rowsTable.setRowHeight(initialRowHeight);
-
+			
 			noRowsFoundPanel.setVisible(dtm.getRowCount() == 0 && getAndConditionText().length() > 0);
 
 			final int defaultSortColumn = getDefaultSortColumn();
 
-			TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(dtm) {
-				@Override
-				protected boolean useToString(int column) {
-					return false;
-				}
-
-				@Override
-			    public List<? extends SortKey> getSortKeys() {
-					if (dontPaintSortIcon) {
-						return new ArrayList<SortKey>();
-					}
-			        return super.getSortKeys();
-			    }
-
-				@Override
-			    public void toggleSortOrder(int column) {
-					if (association != null && association.isInsertDestinationBeforeSource()) {
-						if (!useInheritedBlockNumbers) {
-							return;
-						}
-					}
-					ignoreSortKey = false;
-					boolean toggled = false;
-			        List<? extends SortKey> sortKeys = getSortKeys();
-			        if (sortKeys.size() > 0) {
-			            if (sortKeys.get(0).getColumn() == column && sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING) {
-			                List<SortKey> sk = new ArrayList<SortKey>();
-			                if (defaultSortColumn >= 0) {
-			                	sk.add(new SortKey(defaultSortColumn, SortOrder.ASCENDING));
-			                }
-							setSortKeys(sk);
-			                toggled = true;
-			            }
-			        }
-			        if (!toggled) {
-			        	super.toggleSortOrder(column);
-			        }
-					UIUtil.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							sortChildren();
-						}
-					});
-			    }
-
-				@Override
-				public Comparator<?> getComparator(int n) {
-					List<? extends SortKey> sortKeys = super.getSortKeys();
-					final boolean desc = sortKeys.size() > 0 && sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING;
-
-					return new Comparator<Object>() {
-						@SuppressWarnings("unchecked")
-						@Override
-						public int compare(Object o1, Object o2) {
-							RowSorter pSorter = null;
-							RowSorter ppSorter = null;
-							RowBrowser pb = getParentBrowser();
-							if (pb != null) {
-								if (pb.browserContentPane != null) {
-									if (pb.browserContentPane.rowsTable != null) {
-										pSorter = pb.browserContentPane.rowsTable.getRowSorter();
-										if (pb.browserContentPane.getParentBrowser() != null) {
-											if (pb.browserContentPane.getParentBrowser().browserContentPane != null) {
-												if (pb.browserContentPane.getParentBrowser().browserContentPane.rowsTable != null) {
-													ppSorter = pb.browserContentPane.getParentBrowser().browserContentPane.rowsTable.getRowSorter();
-												}
-											}
-										}
-									}
-								}
-							}
-							if (o1 instanceof TableModelItem && o2 instanceof TableModelItem) {
-								if (useInheritedBlockNumbers && !ignoreSortKey) {
-									double b1 = ((TableModelItem) o1).inheritedBlockNumber;
-									double b2 = ((TableModelItem) o2).inheritedBlockNumber;
-
-									if (ppSorter != null) {
-										double b;
-										b = b1 < ppSorter.getModelRowCount()? ppSorter.convertRowIndexToView((int) b1) : -1;
-										if (b < 0) {
-											b = b1 + Integer.MAX_VALUE / 2;
-										}
-										b1 = b;
-										b = b2 < ppSorter.getModelRowCount()? ppSorter.convertRowIndexToView((int) b2) : -1;
-										if (b < 0) {
-											b = b2 + Integer.MAX_VALUE / 2;
-										}
-										b2 = b;
-									}
-									if (b1 != b2) {
-										return (int) ((b1 - b2) * (desc? -1 : 1));
-									}
-								} else {
-									int b1 = ((TableModelItem) o1).blockNr;
-									int b2 = ((TableModelItem) o2).blockNr;
-
-									if (pSorter != null) {
-										int b;
-										b = b1 < pSorter.getModelRowCount()? pSorter.convertRowIndexToView(b1) : -1;
-										if (b < 0) {
-											b = b1 + Integer.MAX_VALUE / 2;
-										}
-										b1 = b;
-										b = b2 < pSorter.getModelRowCount()? pSorter.convertRowIndexToView(b2) : -1;
-										if (b < 0) {
-											b = b2 + Integer.MAX_VALUE / 2;
-										}
-										b2 = b;
-									}
-									if (b1 != b2) {
-										return (b1 - b2) * (desc? -1 : 1);
-									}
-								}
-							}
-
-							if (ignoreSortKey) {
-								return 0;
-							}
-
-							if (o1 instanceof TableModelItem) {
-								o1 = ((TableModelItem) o1).value;
-							}
-							if (o2 instanceof TableModelItem) {
-								o2 = ((TableModelItem) o2).value;
-							}
-							if (o1 == UIUtil.NULL) {
-								o1 = null;
-							}
-							if (o2 == UIUtil.NULL) {
-								o2 = null;
-							}
-							if (o1 == null && o2 == null) {
-								return 0;
-							}
-							if (o1 == null) {
-								return 1;
-							}
-							if (o2 == null) {
-								return -1;
-							}
-							if (o1.getClass().equals(o2.getClass())) {
-								if (o1 instanceof String) {
-									return ((String) o1).compareToIgnoreCase((String) o2);
-								}
-								if (o1 instanceof Comparable<?>) {
-									return ((Comparable<Object>) o1).compareTo(o2);
-								}
-								return 0;
-							}
-							return o1.getClass().getName().compareTo(o2.getClass().getName());
-						}
-					};
-				}
-			};
+			TableRowSorter<TableModel> sorter = new RowTableRowSorter(dtm, defaultSortColumn);
 			sorter.addRowSorterListener(new RowSorterListener() {
 				@Override
 				public void sorterChanged(RowSorterEvent e) {
@@ -5149,7 +5310,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			int width = minTotalWidth / rowsTable.getColumnCount();
 
 			Component comp = defaultTableCellRenderer.getTableCellRendererComponent(rowsTable, column.getHeaderValue(), false, false, 0, i);
-			int pw = comp.getPreferredSize().width + 16;
+			int pw = comp.getPreferredSize().width + 16
+					+ 16; // Searchbutton
 //			if (pw < 100) {
 //				pw = (pw * 110) / 100 + 2;
 //			}
@@ -6686,7 +6848,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void sortChildren() {
 		try {
-			if (rowsTable.getRowSorter().getSortKeys().isEmpty()) {
+			if (rowsTable.getRowSorter().getSortKeys().isEmpty() && BrowserContentPane.this.getQueryBuilderDialog() != null /* SQL console */) {
 				List<SortKey> sk = new ArrayList<SortKey>();
 				sk.add(new SortKey(rowsTable.getColumnCount() - 1, SortOrder.ASCENDING));
 				rowsTable.getRowSorter().setSortKeys(sk);
@@ -7043,19 +7205,50 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         return scaledWarnIcon;
     }
 
+	private Point calcSearchColumnPosition(int column) {
+		JTableHeader header;
+		Point result = new Point();
+		header = rowsTable.getTableHeader();
+		result.x = header.getHeaderRect(column).x - header.getX() + header.getHeaderRect(column).width - (ready != null? ready.getIconWidth() : 0);
+		result.y = ready == null? 4 : (rowsTable.getTableHeader().getHeight() - ready.getIconHeight()) / 2;
+		if (result.y >= 8) {
+			result.y = 2;
+			result.x -= 4;
+		} else if (Environment.nimbus) {
+			RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
+			boolean withSortIcon = false;
+			if (rowSorter != null) {
+				List<? extends SortKey> sKeys = rowSorter.getSortKeys();
+				if (!sKeys.isEmpty()) {
+					if (sKeys.get(0).getSortOrder() != SortOrder.UNSORTED && sKeys.get(0).getColumn() == column) {
+						withSortIcon = true;
+					}
+				}
+			}
+			if (withSortIcon) {
+				result.x -= 12;
+			}
+		}
+		return result;
+	}
+
 	private int currentEditState;
     private static ImageIcon warnIcon;
     private static ImageIcon blueIcon;
     private static ImageIcon scaledWarnIcon;
     private static ImageIcon findColumnIcon1;
+    private static ImageIcon findColumnIconWhereHalf;
     private static ImageIcon findColumnIconWhere;
+    private static ImageIcon findColumnIconWhereReady;
     private static ImageIcon runIcon;
     private static ImageIcon findColumnIcon2;
     static {
         // load images
     	warnIcon = UIUtil.readImage("/wanr.png");
     	blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
+    	findColumnIconWhereHalf = UIUtil.readImage("/findcolumnWhereHalf.png");
     	findColumnIconWhere = UIUtil.readImage("/findcolumnWhere.png");
+    	findColumnIconWhereReady = UIUtil.readImage("/findcolumnWhereReady.png");
     	findColumnIcon1 = UIUtil.readImage("/findcolumn.png");
     	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
     	runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));

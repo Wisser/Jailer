@@ -134,7 +134,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						try {
 							queue.take().run();
 						} catch (Throwable t) {
-							logger.info("error", t);
+							// ignore, was: logger.info("error", t);
 						}
 					}
 				}
