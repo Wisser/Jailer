@@ -910,7 +910,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			// ignore
 		}
 
-		conditionEditorButton.setVisible(false); // TODO
+		// conditionEditorButton.setVisible(false); // TODO
 		
 		// TODO show tooltip of "where-clause" combobox formatted
 		
@@ -1152,10 +1152,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (BrowserContentPane.this.table != null) {
 						if (BrowserContentPane.this.table.getColumns().get(i).name.toLowerCase().contains("e")) { // TODO
 							int vi = rowsTable.convertColumnIndexToView(i);
-							if (vi >= 0) {
+							if (vi >= 0 && vi != currentSearchButtonColumnIndex) {
 								Point location = calcSearchColumnPosition(vi);
 								Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
-								g2d.drawImage(ready.getImage(), location.x + loc.x, location.y + loc.y, null, null);
+								g2d.drawImage(half.getImage(), location.x + loc.x, location.y + loc.y, null, null);
 							}
 						}
 					}
@@ -1900,8 +1900,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private int currentSearchButtonColumnIndex = -1;
 	private Point currentSearchButtonLocation = null;
 	private ImageIcon currentSearchButtonIcon = null;
-	private ImageIcon half = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereHalf);
-	private ImageIcon ready = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereReady);
+	private ImageIcon half = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereHalf, 0.9);
+	private ImageIcon ready = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereReady, 0.9);
+	private ImageIcon readySelected = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereReadySelected, 0.9);
 
 	private void initRowsTableSearchButtonSupport() {
 		MouseAdapter l = new MouseAdapter() {
@@ -1930,7 +1931,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					int dx = currentSearchButtonLocation.x + iconWidth / 2 - e.getX();
 					int dy = currentSearchButtonLocation.y + iconHeight / 2 - e.getY();
 					double d = Math.sqrt(dx * dx + dy * dy);
-					currentSearchButtonIcon = d <= iconWidth * 1.1? ready : half;
+					currentSearchButtonIcon = d <= iconWidth * 1.0? readySelected : ready;
 		        } else {
 		        	currentSearchButtonColumnIndex = -1;
 		        }
@@ -7213,14 +7214,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		result.y = ready == null? 4 : (rowsTable.getTableHeader().getHeight() - ready.getIconHeight()) / 2;
 		if (result.y >= 8) {
 			result.y = 2;
-			result.x -= 4;
+			result.x -= 2;
 		} else if (Environment.nimbus) {
 			RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
 			boolean withSortIcon = false;
 			if (rowSorter != null) {
+				int viewColumn = rowsTable.convertColumnIndexToView(column);
 				List<? extends SortKey> sKeys = rowSorter.getSortKeys();
 				if (!sKeys.isEmpty()) {
-					if (sKeys.get(0).getSortOrder() != SortOrder.UNSORTED && sKeys.get(0).getColumn() == column) {
+					if (sKeys.get(0).getSortOrder() != SortOrder.UNSORTED && sKeys.get(0).getColumn() == viewColumn) {
 						withSortIcon = true;
 					}
 				}
@@ -7240,6 +7242,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private static ImageIcon findColumnIconWhereHalf;
     private static ImageIcon findColumnIconWhere;
     private static ImageIcon findColumnIconWhereReady;
+    private static ImageIcon findColumnIconWhereReadySelected;
     private static ImageIcon runIcon;
     private static ImageIcon findColumnIcon2;
     static {
@@ -7247,8 +7250,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     	warnIcon = UIUtil.readImage("/wanr.png");
     	blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
     	findColumnIconWhereHalf = UIUtil.readImage("/findcolumnWhereHalf.png");
-    	findColumnIconWhere = UIUtil.readImage("/findcolumnWhere.png");
+    	findColumnIconWhere = UIUtil.readImage("/findcolumnWhereReady.png");
     	findColumnIconWhereReady = UIUtil.readImage("/findcolumnWhereReady.png");
+    	findColumnIconWhereReadySelected = UIUtil.readImage("/findcolumnWhereReadySel.png");
     	findColumnIcon1 = UIUtil.readImage("/findcolumn.png");
     	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
     	runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
