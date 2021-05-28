@@ -1,3 +1,7 @@
+10.4.9
+  - Fix for bug "Exported enum names are truncated in lookup table definitions".
+    https://sourceforge.net/p/jailer/discussion/700499/thread/69ccdee460
+
 10.4.8
   - An error in the autocompletion of "*" in "Insert into... Select..." statements has been corrected.
   - Working with multiple browser windows has been made clearer.
