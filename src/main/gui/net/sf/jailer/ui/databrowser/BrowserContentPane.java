@@ -910,7 +910,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			// ignore
 		}
 
-		// conditionEditorButton.setVisible(false); // TODO
+		conditionEditorButton.setVisible(false); // TODO
 		
 		// TODO show tooltip of "where-clause" combobox formatted
 		
@@ -1144,22 +1144,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setStroke(new BasicStroke(1));
 
-				if (currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
-					Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
-					g2d.drawImage(currentSearchButtonIcon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
-				}
-				for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
-					if (BrowserContentPane.this.table != null) {
-						if (BrowserContentPane.this.table.getColumns().get(i).name.toLowerCase().contains("e")) { // TODO
-							int vi = rowsTable.convertColumnIndexToView(i);
-							if (vi >= 0 && vi != currentSearchButtonColumnIndex) {
-								Point location = calcSearchColumnPosition(vi);
-								Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
-								g2d.drawImage(half.getImage(), location.x + loc.x, location.y + loc.y, null, null);
-							}
-						}
-					}
-				}
+//				if (currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
+//					Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
+//					g2d.drawImage(currentSearchButtonIcon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
+//				}
+//				for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
+//					if (BrowserContentPane.this.table != null) {
+//						if (BrowserContentPane.this.table.getColumns().get(i).name.toLowerCase().contains("e")) { // TODO
+//							int vi = rowsTable.convertColumnIndexToView(i);
+//							if (vi >= 0 && vi != currentSearchButtonColumnIndex) {
+//								Point location = calcSearchColumnPosition(vi);
+//								Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
+//								g2d.drawImage(half.getImage(), location.x + loc.x, location.y + loc.y, null, null);
+//							}
+//						}
+//					}
+//				}
 			}
 		};
 		rowsTableScrollPane.setWheelScrollingEnabled(false);
