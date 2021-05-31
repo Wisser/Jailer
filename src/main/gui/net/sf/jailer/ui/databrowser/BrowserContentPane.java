@@ -1922,8 +1922,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		        if (column >= 0) {
 		        	column = header.getTable().convertColumnIndexToView(column);
 		        	if (column < 0) {
+		        		header.setToolTipText(null);
 		        		return;
 		        	}
+		        	TableColumn theColumn = header.getColumnModel().getColumn(column);
+		        	header.setToolTipText(theColumn.getHeaderValue() == null? "" : (theColumn.getHeaderValue().toString()));
 		        	currentSearchButtonColumnIndex = column;
 		    		currentSearchButtonLocation = calcSearchColumnPosition(column);
 					int iconWidth = ready != null? ready.getIconWidth() : 0;
@@ -1943,7 +1946,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (!header.isEnabled()) {
 		            return;
 		        }
-		        if (SwingUtilities.isLeftMouseButton(e)) {
+		        int column = columnIndex(e, header);
+
+		        if (column >= 0 && SwingUtilities.isRightMouseButton(e)) {
+					JPopupMenu menu = new JPopupMenu();
+					JMenuItem mi = new JMenuItem("Edit Condition");
+					mi.setEnabled(true); // TODO
+					mi.addActionListener(evt -> {
+						System.out.println("Search " + column); // TODO
+					});
+					menu.add(mi);
+					Point p = SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), rowsTable);
+					if (e.getComponent() == null) {
+						p = new Point(e.getX(), e.getY());
+					}
+//					UIUtil.showPopup(rowsTable, (int) p.getX(), (int) p.getY(), menu); // TODO
+				} else if (column >= 0 && column == currentSearchButtonColumnIndex && currentSearchButtonIcon == readySelected) {
+					System.out.println("search " + column); // TODO
+				} else if (SwingUtilities.isLeftMouseButton(e)) {
 		            JTable table = header.getTable();
 		            RowSorter sorter;
 		            if (table != null && (sorter = table.getRowSorter()) != null) {
@@ -1957,11 +1977,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		                }
 		            }
 		        }
-		        int column = columnIndex(e, header);
-
-				if (column >= 0) {
-					System.out.println("search " + column);
-				}
 				mouseMoved(e);
 				jLayeredPane2.repaint();
 			}
