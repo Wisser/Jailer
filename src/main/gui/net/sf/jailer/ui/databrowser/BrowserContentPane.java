@@ -7040,7 +7040,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		final JComboBox2 combobox = new JComboBox2();
 		combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
-		searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
+		Map<String, Color> fgColorMap;
+		fgColorMap = new HashMap<String, Color>();
+    	if (table.primaryKey != null) {
+    		table.primaryKey.getColumns().forEach(c -> { if (c.name != null) { fgColorMap.put(c.name, Color.red); }});
+    	}
+    	searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
 			@Override
 			public void run() {
 				Object selected = combobox.getSelectedItem();
@@ -7091,7 +7096,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					rowsTable.repaint();
 				}
 			}
-		}) {
+		}, fgColorMap) {
 			@Override
 			protected Integer preferredWidth() {
 				return 260;

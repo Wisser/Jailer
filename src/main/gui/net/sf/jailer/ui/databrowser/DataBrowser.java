@@ -252,10 +252,10 @@ public class DataBrowser extends javax.swing.JFrame {
         jTabbedPane1.setTabComponentAt(1, new JLabel("Condition Editor", findIcon, JLabel.LEFT));
         
         
-        jTabbedPane1.removeTabAt(1); // TODO
+//        jTabbedPane1.removeTabAt(1); // TODO
         
         
-        whereConditionEditorPanel = new WhereConditionEditorPanel();
+        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, whereConditionEditorPanel);
 		searchPanelContainer.add(whereConditionEditorPanel);
         
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, downloadMenuItem, "B");
@@ -1475,7 +1475,6 @@ public class DataBrowser extends javax.swing.JFrame {
         closurePanel.setLayout(new java.awt.GridBagLayout());
         jTabbedPane1.addTab("tab1", closurePanel);
 
-        searchPanelContainer.setBorder(javax.swing.BorderFactory.createTitledBorder("Search Panel"));
         searchPanelContainer.setLayout(new javax.swing.BoxLayout(searchPanelContainer, javax.swing.BoxLayout.LINE_AXIS));
         jTabbedPane1.addTab("tab2", searchPanelContainer);
 
@@ -3396,6 +3395,16 @@ public class DataBrowser extends javax.swing.JFrame {
     	if (suppressUpdateClosureBrowser) {
     		return;
     	}
+		whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel.get(),
+				rowBrowser != null && rowBrowser.browserContentPane != null ? rowBrowser.browserContentPane.table
+						: null,
+				rowBrowser != null && rowBrowser.browserContentPane != null
+						? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
+						: null,
+				whereConditionEditorPanel);
+		searchPanelContainer.removeAll();
+    	searchPanelContainer.add(whereConditionEditorPanel);
+        
         if (rowBrowser != null) {
             if (rowBrowser.browserContentPane.table instanceof SqlStatementTable) {
                 updateClosureBrowser(null);

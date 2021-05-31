@@ -485,7 +485,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
 		final JComboBox comboBox = clauseDetailsObjectTextField;
-        jPanel14.add(StringSearchPanel.createSearchButton(null, comboBox, "Value", null, null, null, null, false, null, true, true), gridBagConstraints);
+        jPanel14.add(StringSearchPanel.createSearchButton(null, comboBox, "Value", null, null, null, null, false, null, true, true, null), gridBagConstraints);
 
 		ActionListener l = new ActionListener() {
 			@Override

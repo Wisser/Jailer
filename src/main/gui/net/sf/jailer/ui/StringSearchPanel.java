@@ -113,10 +113,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 	
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton) {
-		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, alternativeIcon, additionalComponentFactory, locateUnderButton, false);
+		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, alternativeIcon, additionalComponentFactory, locateUnderButton, false, null);
 	}
 
-	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText) {
+	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText, final Map<String, Color> fbColorMap) {
 		final JToggleButton button = new JToggleButton();
 		button.setIcon(getSearchIcon(alternativeIcon, button));
 		button.addActionListener(new ActionListener() {
@@ -135,7 +135,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					        	} else {
 					        		location = buttonLocation;
 					        	}
-								StringSearchPanel searchPanel = new StringSearchPanel(button, comboBox, metaDataSource, dataModel, prepare, onSuccess);
+								StringSearchPanel searchPanel = new StringSearchPanel(button, comboBox, metaDataSource, dataModel, prepare, onSuccess, fbColorMap);
 								searchPanel.keepSearchText = keepSearchText;
 								if (additionalComponentFactory != null) {
 									searchPanel.plugInPanel.add(additionalComponentFactory.create(searchPanel), java.awt.BorderLayout.CENTER);
@@ -366,6 +366,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private final Runnable onSuccess;
 	private Runnable onClose;
 	private final JToggleButton button;
+	private final Map<String, Color> fbColorMap;
 	
     /**
      * Creates new form StringSearchPanel
@@ -373,14 +374,16 @@ public class StringSearchPanel extends javax.swing.JPanel {
      * @param dataModel 
      * @param metaDataSource 
      * @param prepare 
+     * @param fbColorMap 
      */
-    public StringSearchPanel(JToggleButton button, javax.swing.JComboBox combobox, MetaDataSource metaDataSource, DataModel dataModel, Prepare prepare, final Runnable onSuccess) {
+    public StringSearchPanel(JToggleButton button, javax.swing.JComboBox combobox, MetaDataSource metaDataSource, DataModel dataModel, Prepare prepare, final Runnable onSuccess, Map<String, Color> fbColorMap) {
     	this.button = button;
     	this.combobox = combobox;
     	this.dataModel = dataModel;
     	this.metaDataSource = metaDataSource;
     	this.prepare = prepare;
     	this.onSuccess = onSuccess;
+    	this.fbColorMap = fbColorMap;
         initComponents();
         
         plugInPanel.setVisible(false);
@@ -492,6 +495,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				}
 				Color bgColor = Color.WHITE;
 				Color fgColor = new Color(0, 0, 0);
+				if (fbColorMap != null && fbColorMap.get(value) != null) {
+					fgColor = fbColorMap.get(value);
+				}
 				String hlColor = "#050aff";
 				if (isSelected) {
 					bgColor = new Color(0, 0, 145);

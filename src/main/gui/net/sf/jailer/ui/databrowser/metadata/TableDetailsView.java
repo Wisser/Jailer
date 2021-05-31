@@ -67,6 +67,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 	private final Runnable updateColumnsTable;
 	private boolean cacheable = true;
 	private Map<String, JComponent> rows = new HashMap<String, JComponent>();
+	private final Map<String, Color> fgColorMap;
 	
 	/**
      * Creates new form TableDetailsView
@@ -74,7 +75,11 @@ public class TableDetailsView extends javax.swing.JPanel {
      */
     public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, final Row row, final DataModel dataModel, TableDetailsView currentView) {
         initComponents();
-        if (jScrollPane1.getHorizontalScrollBar() != null) {
+		fgColorMap = new HashMap<String, Color>();
+    	if (table.primaryKey != null) {
+    		table.primaryKey.getColumns().forEach(c -> { if (c.name != null) { fgColorMap.put(c.name, Color.red); }});
+    	}
+    	if (jScrollPane1.getHorizontalScrollBar() != null) {
         	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
         }
         if (jScrollPane1.getVerticalScrollBar() != null) {
@@ -414,7 +419,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 					}
 				}
 			}
-		}) {
+		}, fgColorMap) {
 			@Override
 			protected Integer preferredWidth() {
 				return 260;
@@ -560,7 +565,7 @@ public class TableDetailsView extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints);
 
-        sortColumnsCheckBox.setText("sort columns      ");
+        sortColumnsCheckBox.setText("Sort Columns      ");
         sortColumnsCheckBox.setOpaque(false);
         sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
