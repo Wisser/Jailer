@@ -476,6 +476,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         this.executionContext = executionContext;
         initComponents();
 
+        refreshButton.setText(null);
+        refreshButton.setIcon(resetIcon);
+        
         hideOutline();
         lastDividerLocation = -1;
 
@@ -1927,6 +1930,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     static ImageIcon synonymsIcon;
     static ImageIcon databaseIcon;
     static ImageIcon schemaIcon;
+	private static ImageIcon resetIcon;
     private static HashMap<ImageIcon, ImageIcon> combinedIcons = new HashMap<ImageIcon, ImageIcon>();
 
     private final AtomicReference<JDialog> waitDialog = new AtomicReference<JDialog>(null);
@@ -1964,6 +1968,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         tableIcon = UIUtil.readImage("/table.png");
         databaseIcon = UIUtil.readImage("/database.png");
         schemaIcon = UIUtil.readImage("/schema.png");
+        resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
     }
 
 }

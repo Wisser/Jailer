@@ -149,6 +149,7 @@ import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
 import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
+import net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.metadata.MDGeneric;
@@ -211,6 +212,8 @@ public class DataBrowser extends javax.swing.JFrame {
     private final ExecutionContext executionContext;
 
     private final JComboBox2<String> tablesComboBox;
+    private final RSyntaxTextArea searchBarEditor = new RSyntaxTextArea();
+	
 	private boolean initialized = false;
 
 	/**
@@ -249,15 +252,37 @@ public class DataBrowser extends javax.swing.JFrame {
         initMenu();
 
         jTabbedPane1.setTabComponentAt(0, new JLabel("Closure", closureIcon, JLabel.LEFT));
-        jTabbedPane1.setTabComponentAt(1, new JLabel("Condition Editor", findIcon, JLabel.LEFT));
         
-        
-//        jTabbedPane1.removeTabAt(1); // TODO
-        
-        
-        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, whereConditionEditorPanel);
-		searchPanelContainer.add(whereConditionEditorPanel);
-        
+        searchPanelContainer.getParent().remove(searchPanelContainer);
+        searchPanelContainer = new JPanel() {
+        	final int WIDTH = 300;
+            @Override
+        	public Dimension getPreferredSize() {
+        		return new Dimension(WIDTH, super.getPreferredSize().height);
+        	}
+
+        	@Override
+        	public Dimension getMinimumSize() {
+        		return new Dimension(WIDTH, super.getMinimumSize().height);
+        	}
+
+        	@Override
+        	public Dimension getMaximumSize() {
+        		return new Dimension(WIDTH, super.getMaximumSize().height);
+        	}
+        };
+        searchPanelContainer.setLayout(new java.awt.BorderLayout());
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel4.add(searchPanelContainer, gridBagConstraints);
+
+        searchBarToggleButton.setSelected(Boolean.TRUE.equals(UISettings.restore("searchBarToggleButton")));
+        searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
+        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, whereConditionEditorPanel, searchBarEditor);
+        searchPanelContainer.setVisible(false);
+    	
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, downloadMenuItem, "B");
 		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
 		if (datamodel != null) {
@@ -301,7 +326,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		tablesComboBox.grabFocus();
 
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -332,6 +357,8 @@ public class DataBrowser extends javax.swing.JFrame {
         jLayeredPane1.setLayout(null);
         jLayeredPane1.setLayer(layeredPaneContent, JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.setLayer(dummy, JLayeredPane.DEFAULT_LAYER);
+        searchBarToggleButton.setText(null);
+        searchBarToggleButton.setIcon(findColumnIconWhere);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -924,7 +951,7 @@ public class DataBrowser extends javax.swing.JFrame {
         initDnD(this);
     }
 
-    private Map<JRadioButtonMenuItem, Integer> rowLimitButtonToLimit = new HashMap<JRadioButtonMenuItem, Integer>();
+	private Map<JRadioButtonMenuItem, Integer> rowLimitButtonToLimit = new HashMap<JRadioButtonMenuItem, Integer>();
 
 	private void initRowLimitButtons() {
 		ButtonGroup group = new ButtonGroup();
@@ -1145,14 +1172,15 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel5 = new javax.swing.JPanel();
         workbenchTabbedPane = new javax.swing.JTabbedPane();
         desktopSplitPane = new javax.swing.JSplitPane();
+        jPanel4 = new javax.swing.JPanel();
         jLayeredPane1 = new javax.swing.JLayeredPane();
         layeredPaneContent = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jInternalFrame1 = new javax.swing.JInternalFrame();
         hiddenPanel = new javax.swing.JPanel();
+        searchPanelContainer = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         closurePanel = new javax.swing.JPanel();
-        searchPanelContainer = new javax.swing.JPanel();
         consoleDummyPanel = new javax.swing.JPanel();
         addSQLConsoleTab = new javax.swing.JPanel();
         controlPanel = new javax.swing.JPanel();
@@ -1163,6 +1191,7 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationTree = new javax.swing.JTree();
         outLinePanel = new javax.swing.JPanel();
         openTableButton = new javax.swing.JButton();
+        searchBarToggleButton = new javax.swing.JToggleButton();
         tablesCardPanel = new javax.swing.JPanel();
         tablesPanel = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
@@ -1437,6 +1466,8 @@ public class DataBrowser extends javax.swing.JFrame {
         desktopSplitPane.setContinuousLayout(true);
         desktopSplitPane.setOneTouchExpandable(true);
 
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
         layeredPaneContent.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setAutoscrolls(true);
@@ -1470,13 +1501,25 @@ public class DataBrowser extends javax.swing.JFrame {
         jLayeredPane1.add(layeredPaneContent);
         layeredPaneContent.setBounds(0, 0, 24, 36);
 
-        desktopSplitPane.setLeftComponent(jLayeredPane1);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel4.add(jLayeredPane1, gridBagConstraints);
+
+        searchPanelContainer.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel4.add(searchPanelContainer, gridBagConstraints);
+
+        desktopSplitPane.setTopComponent(jPanel4);
 
         closurePanel.setLayout(new java.awt.GridBagLayout());
         jTabbedPane1.addTab("tab1", closurePanel);
-
-        searchPanelContainer.setLayout(new javax.swing.BoxLayout(searchPanelContainer, javax.swing.BoxLayout.LINE_AXIS));
-        jTabbedPane1.addTab("tab2", searchPanelContainer);
 
         desktopSplitPane.setRightComponent(jTabbedPane1);
 
@@ -1514,7 +1557,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -1524,7 +1567,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         navigationPanel.add(outLinePanel, gridBagConstraints);
@@ -1542,6 +1585,19 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         navigationPanel.add(openTableButton, gridBagConstraints);
+
+        searchBarToggleButton.setText("jToggleButton1");
+        searchBarToggleButton.setToolTipText("Open Search Sidebar");
+        searchBarToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchBarToggleButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        navigationPanel.add(searchBarToggleButton, gridBagConstraints);
 
         tableTreesTabbedPane.addTab("Navigation", navigationPanel);
 
@@ -2869,6 +2925,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
@@ -2927,6 +2984,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem schemaMappingMenuItem;
     private javax.swing.JLabel schemaName;
     private javax.swing.JPanel schemaNamePanel;
+    private javax.swing.JToggleButton searchBarToggleButton;
     private javax.swing.JPanel searchPanelContainer;
     private javax.swing.JCheckBoxMenuItem showDataModelMenuItem;
     private javax.swing.JRadioButtonMenuItem smallLayoutRadioButtonMenuItem;
@@ -3395,15 +3453,19 @@ public class DataBrowser extends javax.swing.JFrame {
     	if (suppressUpdateClosureBrowser) {
     		return;
     	}
-		whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel.get(),
-				rowBrowser != null && rowBrowser.browserContentPane != null ? rowBrowser.browserContentPane.table
-						: null,
+		Table table = rowBrowser != null && rowBrowser.browserContentPane != null ? rowBrowser.browserContentPane.table : null;
+		searchPanelContainer.removeAll();
+		searchPanelContainer.setVisible(table != null);
+		searchBarToggleButton.setEnabled(rowBrowser != null);
+    	if (table != null) {
+    		whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel.get(),
+				table,
 				rowBrowser != null && rowBrowser.browserContentPane != null
 						? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
 						: null,
-				whereConditionEditorPanel);
-		searchPanelContainer.removeAll();
-    	searchPanelContainer.add(whereConditionEditorPanel);
+				whereConditionEditorPanel, searchBarEditor);
+    		searchPanelContainer.add(whereConditionEditorPanel);
+    	}
         
         if (rowBrowser != null) {
             if (rowBrowser.browserContentPane.table instanceof SqlStatementTable) {
@@ -4241,6 +4303,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
     }//GEN-LAST:event_renderHtmlActionPerformed
 
+    private void searchBarToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBarToggleButtonActionPerformed
+    	UISettings.store("searchBarToggleButton", searchBarToggleButton.isSelected());
+        searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
+    }//GEN-LAST:event_searchBarToggleButtonActionPerformed
+
     private String bookmarkName(String bookmarkFileName) {
 		if (bookmarkFileName.endsWith(BookmarksPanel.BOOKMARKFILE_EXTENSION)) {
 			return bookmarkFileName.substring(0, bookmarkFileName.length() - BookmarksPanel.BOOKMARKFILE_EXTENSION.length());
@@ -4448,6 +4515,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon desktopIcon;
 	private ImageIcon closureIcon;
 	private ImageIcon findIcon;
+	private ImageIcon findColumnIconWhere;
 	{
         // load images
         tableIcon = UIUtil.readImage("/table.png");
@@ -4462,6 +4530,7 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationIcon = UIUtil.readImage("/navigation.png");
         closureIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closure.png"));
         findIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/findcolumn.png"));
-    }
+        findColumnIconWhere = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/findcolumnWhereReady.png"));
+	}
 
 }

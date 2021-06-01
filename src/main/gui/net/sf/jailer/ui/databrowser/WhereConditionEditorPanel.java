@@ -20,6 +20,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Window;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,10 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
+import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 
 /**
  * SQL-Where-Condition Editor.
@@ -56,21 +61,34 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private List<Column> searchColumns = new ArrayList<Column>();
 	private JToggleButton searchButton;
 	private Map<String, Color> fgColorMap;
-	
+	private final RSyntaxTextAreaWithSQLSyntaxStyle editor;
+
     /**
      * Creates new form SearchPanel
      * @param sorted 
      */
-    public WhereConditionEditorPanel(Window parent, DataModel dataModel, Table table, Boolean sorted, WhereConditionEditorPanel predecessor) {
+    public WhereConditionEditorPanel(Window parent, DataModel dataModel, Table table, Boolean sorted, WhereConditionEditorPanel predecessor, RSyntaxTextAreaWithSQLSyntaxStyle editor) {
     	this.dataModel = dataModel;
     	this.table = table;
+    	this.editor = editor;
         initComponents();
+        
+        if (dataModel != null) {
+			try {
+				DataModelBasedSQLCompletionProvider provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
+				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
+				new SQLAutoCompletion(provider, editor);
+			} catch (SQLException e) {
+			}
+        }
+	
+        syntaxPanePanel.add(editor);
         
         Font font = new JLabel("L").getFont();
 		tableLabel.setFont(new Font(font.getName(), font.getStyle(), (int)(font.getSize() * 1.2)));
 		if (table == null) {
-        	jPanel2.setVisible(false);
-        } else {
+	    	setVisible(false);
+		} else {
         	fgColorMap = new HashMap<String, Color>();
         	if (table.primaryKey != null) {
         		table.primaryKey.getColumns().forEach(c -> { if (c.name != null) { fgColorMap.put(c.name, Color.red); }});
@@ -95,15 +113,15 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        jPanel6.add(searchButton, gridBagConstraints);
 	        searchComboBox.setVisible(false);
 	
-	        if (jScrollPane2.getHorizontalScrollBar() != null) {
-	        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
+	        if (jScrollPane1.getHorizontalScrollBar() != null) {
+	        	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
+	        }
+	        if (jScrollPane1.getVerticalScrollBar() != null) {
+	        	jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
 	        }
 	        
 	        updateSearchUI();
 	        sortCheckBox.setSelected(Boolean.TRUE.equals(sorted));
-        }
-        if (predecessor != null) {
-        	jSplitPane1.setDividerLocation(predecessor.jSplitPane1.getDividerLocation());
         }
     }
     
@@ -175,6 +193,8 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        
 	        ++y;
 		}
+		
+		revalidate();
     }
 
     protected void addColumn() {
@@ -197,39 +217,21 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jSplitPane1 = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
-        sepsPanel = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
         jPanel5 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
         searchComboBox = new javax.swing.JComboBox<>();
         sortCheckBox = new javax.swing.JCheckBox();
         searchFieldsPanel = new javax.swing.JPanel();
-        jPanel4 = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         tableLabel = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        syntaxPanePanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        sepsPanel.setMinimumSize(new java.awt.Dimension(400, 0));
-        sepsPanel.setLayout(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(sepsPanel, gridBagConstraints);
-
-        jPanel2.setLayout(new java.awt.GridBagLayout());
-
-        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
@@ -270,13 +272,6 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel5.add(searchFieldsPanel, gridBagConstraints);
 
-        jPanel4.setLayout(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 100;
-        gridBagConstraints.weighty = 1.0;
-        jPanel5.add(jPanel4, gridBagConstraints);
-
         jPanel7.setBackground(java.awt.Color.white);
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
@@ -303,38 +298,30 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel5.add(jPanel7, gridBagConstraints);
 
-        jScrollPane2.setViewportView(jPanel5);
+        syntaxPanePanel.setLayout(new java.awt.BorderLayout());
+        jScrollPane1.setViewportView(syntaxPanePanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        jPanel5.add(jScrollPane1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel2.add(jScrollPane2, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 0.001;
-        jPanel1.add(jPanel2, gridBagConstraints);
-
-        jSplitPane1.setLeftComponent(jPanel1);
-
-        jPanel3.setLayout(new java.awt.GridBagLayout());
-
-        jLabel2.setText("jLabel1");
-        jPanel3.add(jLabel2, new java.awt.GridBagConstraints());
-
-        jSplitPane1.setRightComponent(jPanel3);
+        jPanel1.add(jPanel5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jSplitPane1, gridBagConstraints);
+        add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void sortCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortCheckBoxActionPerformed
@@ -343,21 +330,16 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JComboBox<String> searchComboBox;
     private javax.swing.JPanel searchFieldsPanel;
-    private javax.swing.JPanel sepsPanel;
     private javax.swing.JCheckBox sortCheckBox;
+    private javax.swing.JPanel syntaxPanePanel;
     private javax.swing.JLabel tableLabel;
     // End of variables declaration//GEN-END:variables
     
