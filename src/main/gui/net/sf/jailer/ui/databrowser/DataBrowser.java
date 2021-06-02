@@ -255,7 +255,7 @@ public class DataBrowser extends javax.swing.JFrame {
         
         searchPanelContainer.getParent().remove(searchPanelContainer);
         searchPanelContainer = new JPanel() {
-        	final int WIDTH = 300;
+        	final int WIDTH = 240;
             @Override
         	public Dimension getPreferredSize() {
         		return new Dimension(WIDTH, super.getPreferredSize().height);

@@ -7040,11 +7040,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		final JComboBox2 combobox = new JComboBox2();
 		combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
-		Map<String, Color> fgColorMap;
-		fgColorMap = new HashMap<String, Color>();
+		Map<String, Consumer<JLabel>> renderConsumer;
+		renderConsumer = new HashMap<String, Consumer<JLabel>>();
+		table.getColumns().forEach(c -> { if (c.name != null) { renderConsumer.put(c.name, label -> label.setIcon(emptyIcon)); }});
     	if (table.primaryKey != null) {
-    		table.primaryKey.getColumns().forEach(c -> { if (c.name != null) { fgColorMap.put(c.name, Color.red); }});
-    	}
+			table.primaryKey.getColumns().forEach(c -> {
+				if (c.name != null) {
+					renderConsumer.put(c.name, 
+							label -> {
+								label.setForeground(Color.red);
+								label.setIcon(constraintPKIcon);
+							}
+					);
+				}
+			});
+	   	}
     	searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
 			@Override
 			public void run() {
@@ -7096,7 +7106,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					rowsTable.repaint();
 				}
 			}
-		}, fgColorMap) {
+		}, renderConsumer) {
 			@Override
 			protected Integer preferredWidth() {
 				return 260;
@@ -7265,6 +7275,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private static ImageIcon findColumnIconWhereReadySelected;
     private static ImageIcon runIcon;
     private static ImageIcon findColumnIcon2;
+    private static ImageIcon constraintPKIcon;
+    private static ImageIcon emptyIcon;
     static {
         // load images
     	warnIcon = UIUtil.readImage("/wanr.png");
@@ -7276,6 +7288,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     	findColumnIcon1 = UIUtil.readImage("/findcolumn.png");
     	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
     	runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
+    	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
+    	emptyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"));
     }
 
 }

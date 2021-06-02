@@ -36,6 +36,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -67,7 +68,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 	private final Runnable updateColumnsTable;
 	private boolean cacheable = true;
 	private Map<String, JComponent> rows = new HashMap<String, JComponent>();
-	private final Map<String, Color> fgColorMap;
+	private final Map<String, Consumer<JLabel>> renderConsumer;
 	
 	/**
      * Creates new form TableDetailsView
@@ -75,10 +76,20 @@ public class TableDetailsView extends javax.swing.JPanel {
      */
     public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, final Row row, final DataModel dataModel, TableDetailsView currentView) {
         initComponents();
-		fgColorMap = new HashMap<String, Color>();
+		renderConsumer = new HashMap<String, Consumer<JLabel>>();
+		table.getColumns().forEach(c -> { if (c.name != null) { renderConsumer.put(c.name, label -> label.setIcon(emptyIcon)); }});
     	if (table.primaryKey != null) {
-    		table.primaryKey.getColumns().forEach(c -> { if (c.name != null) { fgColorMap.put(c.name, Color.red); }});
-    	}
+			table.primaryKey.getColumns().forEach(c -> {
+				if (c.name != null) {
+					renderConsumer.put(c.name, 
+							label -> {
+								label.setForeground(Color.red);
+								label.setIcon(constraintPKIcon);
+							}
+					);
+				}
+			});
+	   	}
     	if (jScrollPane1.getHorizontalScrollBar() != null) {
         	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
         }
@@ -419,7 +430,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 					}
 				}
 			}
-		}, fgColorMap) {
+		}, renderConsumer) {
 			@Override
 			protected Integer preferredWidth() {
 				return 260;
@@ -619,10 +630,14 @@ public class TableDetailsView extends javax.swing.JPanel {
     
     private static ImageIcon findColumnIcon1;
     private static ImageIcon findColumnIcon2;
+    private static ImageIcon constraintPKIcon;
+    private static ImageIcon emptyIcon;
     static {
         // load images
     	findColumnIcon1 = UIUtil.readImage("/findcolumn.png");
     	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
+    	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
+    	emptyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"));
     }
 
 }

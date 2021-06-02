@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -59,6 +60,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -116,7 +118,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, alternativeIcon, additionalComponentFactory, locateUnderButton, false, null);
 	}
 
-	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText, final Map<String, Color> fbColorMap) {
+	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText, final Map<String, Consumer<JLabel>> renderConsumer) {
 		final JToggleButton button = new JToggleButton();
 		button.setIcon(getSearchIcon(alternativeIcon, button));
 		button.addActionListener(new ActionListener() {
@@ -135,7 +137,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					        	} else {
 					        		location = buttonLocation;
 					        	}
-								StringSearchPanel searchPanel = new StringSearchPanel(button, comboBox, metaDataSource, dataModel, prepare, onSuccess, fbColorMap);
+								StringSearchPanel searchPanel = new StringSearchPanel(button, comboBox, metaDataSource, dataModel, prepare, onSuccess, renderConsumer);
 								searchPanel.keepSearchText = keepSearchText;
 								if (additionalComponentFactory != null) {
 									searchPanel.plugInPanel.add(additionalComponentFactory.create(searchPanel), java.awt.BorderLayout.CENTER);
@@ -202,7 +204,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 
 	private void consumeResult() {
-		if (result != null && !result.equals(showAllLabel)) {
+		if (acceptAll || result != null && !result.equals(showAllLabel)) {
 			combobox.setSelectedItem(result);
 			if (onSuccess != null) {
 				onSuccess.run();
@@ -308,6 +310,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				}
 			}
 		});
+		plainIsValid = false;
 		dialog.setVisible(true);
 	}
 
@@ -328,7 +331,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private String showAllLabel;
 	private boolean keepSearchText = false;
 	
-	private void updateList() {
+	public void updateList() {
+		updateList(true);
+	}
+
+	public void updateList(boolean filter) {
 		DefaultListModel<String> matches = new DefaultListModel<String>();
 		String text = searchTextField.getText();
 		boolean withPrefix = !text.startsWith(" ");
@@ -339,7 +346,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		for (int i = 0; i < size; ++i) {
 			String item = model.getElementAt(i);
 			if (!item.isEmpty()) {
-				if (searchText.isEmpty() 
+				if (!filter
+						|| searchText.isEmpty() 
 						|| withPrefix && withSuffix && item.toUpperCase(Locale.ENGLISH).contains(searchText)
 						|| !withPrefix && withSuffix && item.toUpperCase(Locale.ENGLISH).startsWith(searchText)
 						|| withPrefix && !withSuffix && item.toUpperCase(Locale.ENGLISH).endsWith(searchText)
@@ -366,7 +374,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private final Runnable onSuccess;
 	private Runnable onClose;
 	private final JToggleButton button;
-	private final Map<String, Color> fbColorMap;
+	private final Map<String, Consumer<JLabel>> renderConsumer;
 	
     /**
      * Creates new form StringSearchPanel
@@ -374,16 +382,16 @@ public class StringSearchPanel extends javax.swing.JPanel {
      * @param dataModel 
      * @param metaDataSource 
      * @param prepare 
-     * @param fbColorMap 
+     * @param renderConsumer 
      */
-    public StringSearchPanel(JToggleButton button, javax.swing.JComboBox combobox, MetaDataSource metaDataSource, DataModel dataModel, Prepare prepare, final Runnable onSuccess, Map<String, Color> fbColorMap) {
+    public StringSearchPanel(JToggleButton button, javax.swing.JComboBox combobox, MetaDataSource metaDataSource, DataModel dataModel, Prepare prepare, final Runnable onSuccess, Map<String, Consumer<JLabel>> renderConsumer) {
     	this.button = button;
     	this.combobox = combobox;
     	this.dataModel = dataModel;
     	this.metaDataSource = metaDataSource;
     	this.prepare = prepare;
     	this.onSuccess = onSuccess;
-    	this.fbColorMap = fbColorMap;
+    	this.renderConsumer = renderConsumer;
         initComponents();
         
         plugInPanel.setVisible(false);
@@ -422,7 +430,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				} else if (e.getKeyChar() == KeyEvent.VK_DOWN) {
 					searchList.grabFocus();
 				} else if (e.getKeyChar() == '\n') {
-					result  = searchList.getSelectedValue();
+					result = searchList.getSelectedValue();
+			    	plainIsValid = e.getSource() == searchTextField;
 					close();
 				}
 			}
@@ -481,7 +490,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() > 1) {
-					result  = searchList.getSelectedValue();
+					result = searchList.getSelectedValue();
 					close();
 				}
 			}
@@ -495,9 +504,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				}
 				Color bgColor = Color.WHITE;
 				Color fgColor = new Color(0, 0, 0);
-				if (fbColorMap != null && fbColorMap.get(value) != null) {
-					fgColor = fbColorMap.get(value);
-				}
 				String hlColor = "#050aff";
 				if (isSelected) {
 					bgColor = new Color(0, 0, 145);
@@ -520,6 +526,16 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				Component render = super.getListCellRendererComponent(list, html, index, false, cellHasFocus);
 				render.setBackground(bgColor);
 				render.setForeground(fgColor);
+				if (renderConsumer != null) {
+					Consumer<JLabel> cons = renderConsumer.get(value);
+					if (cons != null && render instanceof JLabel) {
+						cons.accept((JLabel) render);
+					}
+				}
+				if (isSelected) {
+					render.setBackground(bgColor);
+					render.setForeground(fgColor);
+				}
 				return render;
 			}
 			
@@ -533,7 +549,21 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		updateList();
     }
 
-    private void createSchemaSelectionList(JPanel container, final List<MDSchema> vis) {
+    public void setInitialValue(String value) {
+		searchTextField.setText(value);
+		searchTextField.selectAll();
+		updateList(false);
+		acceptAll = true;
+	}
+
+    private boolean acceptAll = false;
+    private boolean plainIsValid = false;
+    
+    public String getPlainValue() {
+	    return plainIsValid? searchTextField.getText() : combobox.getSelectedItem() instanceof String? (String) combobox.getSelectedItem() : searchTextField.getText();
+    }
+    
+	private void createSchemaSelectionList(JPanel container, final List<MDSchema> vis) {
     	container.setLayout(new GridLayout(metaDataSource.getSchemas().size() + 1, 1));
     	Set<MDSchema> selectedSchemas = new HashSet<MDSchema>();
     	boolean loadVis = false;
@@ -867,7 +897,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-    	result  = searchList.getSelectedValue();
+    	result = searchList.getSelectedValue();
+    	plainIsValid = true;
 		close();
     }//GEN-LAST:event_okButtonActionPerformed
 

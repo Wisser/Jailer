@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.util;
 
+import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -24,9 +25,18 @@ import javax.swing.SwingUtilities;
 
 public abstract class SmallButton extends JLabel {
 
+	private final boolean borderStyle;
+	private static final Color BORDER_LIGHT = Color.lightGray;
+	private static final Color BORDER_SHADOW = Color.gray;
+	
 	public SmallButton(Icon icon) {
+		this(icon, false);
+	}
+	
+	public SmallButton(Icon icon, boolean borderStyle) {
 		super(icon);
-		setEnabled(false);
+		this.borderStyle = borderStyle;
+		onMouseExited();
 		addMouseListener(new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -39,11 +49,11 @@ public abstract class SmallButton extends JLabel {
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
-				setEnabled(false);
+				onMouseExited();
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				setEnabled(true);
+				onMouseEntered();
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -55,5 +65,21 @@ public abstract class SmallButton extends JLabel {
 	}
 
 	protected abstract void onClick();
+
+	protected void onMouseExited() {
+		if (borderStyle) {
+			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED, BORDER_LIGHT, BORDER_SHADOW));
+		} else {
+			setEnabled(false);
+		}
+	}
+
+	protected void onMouseEntered() {
+		if (borderStyle) {
+			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, BORDER_LIGHT, BORDER_SHADOW));
+		} else {
+			setEnabled(true);
+		}
+	}
 	
 }
