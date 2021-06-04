@@ -1694,6 +1694,33 @@ public class UIUtil {
 		}
 		return result;
 	}
+	
+	private static final String[] INVALID_FILENAME_CHARACTERS = new String[] {"\\", "/", ":", ";", "*", "?", "\"", "<", ">", "|"};
+	private static final String[][] INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT = new String[INVALID_FILENAME_CHARACTERS.length][];
+	static {
+    	for (int i = 0; i < INVALID_FILENAME_CHARACTERS.length; ++i) {
+    		INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT[i] 
+    				= new String[] { 
+    						new String(INVALID_FILENAME_CHARACTERS[i]), 
+    						String.format("%%%02X", 0xFF & (int) (INVALID_FILENAME_CHARACTERS[i].charAt(0)))
+    				};
+    	}
+    }
+
+	public static String toValidFileName(String text) {
+		for (String[] cp: INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT) {
+			text = text.replace(cp[0], cp[1]);
+		}
+		return text.trim();
+	}
+
+	public static String fromValidFileName(String text) {
+		for (String[] cp: INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT) {
+			text = text.replace(cp[1], cp[0]);
+		}
+		return text.trim();
+	}
+
 
 	public static ImageIcon jailerLogo;
 	public static ImageIcon jailerLogo16;

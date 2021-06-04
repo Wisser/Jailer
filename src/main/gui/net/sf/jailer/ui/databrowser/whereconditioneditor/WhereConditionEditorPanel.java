@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer.ui.databrowser;
+package net.sf.jailer.ui.databrowser.whereconditioneditor;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -46,11 +46,13 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
@@ -71,27 +73,7 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private JToggleButton searchButton;
 	private final RSyntaxTextAreaWithSQLSyntaxStyle editor;
 	private Font font;
-
-	private enum Operator {
-		Equal("="),
-		NotEqual("<>"),
-		Less("<"),
-		LessOrEqual("<="),
-		Greater(">"),
-		GreaterOrEquals(">="),
-		Like("like"),
-		ILike("ilike");
-		
-		final String sql;
-		
-		Operator(String sql) {
-			this.sql = sql;
-		}
-
-		String render() {
-			return " " + sql + " ";
-		}
-	}
+	private final ExecutionContext executionContext;
 
 	private class Comparison {
 		Operator operator;
@@ -109,10 +91,11 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
      * Creates new form SearchPanel
      * @param sorted 
      */
-    public WhereConditionEditorPanel(Window parent, DataModel dataModel, Table table, Boolean sorted, WhereConditionEditorPanel predecessor, RSyntaxTextAreaWithSQLSyntaxStyle editor) {
+    public WhereConditionEditorPanel(Window parent, DataModel dataModel, Table table, Boolean sorted, WhereConditionEditorPanel predecessor, RSyntaxTextAreaWithSQLSyntaxStyle editor, ExecutionContext executionContext) {
     	this.dataModel = dataModel;
     	this.table = table;
     	this.editor = editor;
+    	this.executionContext = executionContext;
         initComponents();
         
         if (dataModel != null) {

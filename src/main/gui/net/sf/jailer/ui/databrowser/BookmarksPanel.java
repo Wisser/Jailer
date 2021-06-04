@@ -115,7 +115,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
  		closeButton.setVisible(false);
  		dialog.setVisible(true);
  		
- 		String name = toValidFileName(nameTextField.getText());
+ 		String name = UIUtil.toValidFileName(nameTextField.getText());
 
  		if (!isOk || name.isEmpty()) {
  			return null;
@@ -159,7 +159,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		
 		for (StringBuilder bm: loadBookmarks(executionContext)) {
 			if (!bookmarksSet.contains(bm.toString())) {
-				new File(getBookmarksFolder(executionContext), toValidFileName(bm.toString())).delete();
+				new File(getBookmarksFolder(executionContext), UIUtil.toValidFileName(bm.toString())).delete();
 			}
 		}
 	}
@@ -195,11 +195,11 @@ public class BookmarksPanel extends javax.swing.JPanel {
 			protected void updateFromDetailsView(StringBuilder element, JComponent detailsView, List<StringBuilder> model,
 					StringBuilder errorMessage) {
 				if (forRenaming) {
-					String dest = toValidFileName(renameTextField.getText()) + BOOKMARKFILE_EXTENSION;
+					String dest = UIUtil.toValidFileName(renameTextField.getText()) + BOOKMARKFILE_EXTENSION;
 					StringBuilder source = element;
 					if (dest.length() > 0 && !dest.equals(source.toString())) {
 						new File(getBookmarksFolder(executionContext), dest).delete();
-						new File(getBookmarksFolder(executionContext), toValidFileName(source.toString())).renameTo(new File(getBookmarksFolder(executionContext), dest));
+						new File(getBookmarksFolder(executionContext), UIUtil.toValidFileName(source.toString())).renameTo(new File(getBookmarksFolder(executionContext), dest));
 						source.setLength(0);
 						source.append(renameTextField.getText() + BOOKMARKFILE_EXTENSION);
 					}
@@ -394,7 +394,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		} catch (Exception e) {
 			// ignore
 		}
-		bmFile = new File(getBookmarksFolder(executionContext), toValidFileName(bookmark) + BOOKMARKFILE_EXTENSION);
+		bmFile = new File(getBookmarksFolder(executionContext), UIUtil.toValidFileName(bookmark) + BOOKMARKFILE_EXTENSION);
 		if (bmFile.exists()) {
 			return bmFile;
 		} else {
@@ -422,7 +422,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						UISettings.s6 += 1000;
-						File bookMarkFile = new File(getBookmarksFolder(executionContext), toValidFileName(nb));
+						File bookMarkFile = new File(getBookmarksFolder(executionContext), UIUtil.toValidFileName(nb));
 						desktop.restoreSession(null, bookMarkFile);
 						if (bookMarkFile.exists()) {
 							bookMarkFile.setLastModified(System.currentTimeMillis());
@@ -457,14 +457,14 @@ public class BookmarksPanel extends javax.swing.JPanel {
 			ArrayList<String> result = new ArrayList<String>();
 			if (fileList != null) {
 				for (String vf: fileList) {
-					result.add(fromValidFileName(vf));
+					result.add(UIUtil.fromValidFileName(vf));
 				}
 			}
 			Collections.sort(result, new Comparator<String>() {
 				@Override
 				public int compare(String o1, String o2) {
-					long l1 = new File(bookmarksFolder, toValidFileName(o1)).lastModified();
-					long l2 = new File(bookmarksFolder, toValidFileName(o2)).lastModified();
+					long l1 = new File(bookmarksFolder, UIUtil.toValidFileName(o1)).lastModified();
+					long l2 = new File(bookmarksFolder, UIUtil.toValidFileName(o2)).lastModified();
 					if (l1 > l2) {
 						return -1;
 					} else if (l1 < l2) {
@@ -568,32 +568,6 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		public String getContentInfo() {
 			return contentInfo;
 		}
-	}
-
-	private static final String[] INVALID_FILENAME_CHARACTERS = new String[] {"\\", "/", ":", ";", "*", "?", "\"", "<", ">", "|"};
-	private static final String[][] INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT = new String[INVALID_FILENAME_CHARACTERS.length][];
-	static {
-    	for (int i = 0; i < INVALID_FILENAME_CHARACTERS.length; ++i) {
-    		INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT[i] 
-    				= new String[] { 
-    						new String(INVALID_FILENAME_CHARACTERS[i]), 
-    						String.format("%%%02X", 0xFF & (int) (INVALID_FILENAME_CHARACTERS[i].charAt(0)))
-    				};
-    	}
-    }
-
-	private static String toValidFileName(String text) {
-		for (String[] cp: INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT) {
-			text = text.replace(cp[0], cp[1]);
-		}
-		return text.trim();
-	}
-
-	private static String fromValidFileName(String text) {
-		for (String[] cp: INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT) {
-			text = text.replace(cp[1], cp[0]);
-		}
-		return text.trim();
 	}
 
 	/**

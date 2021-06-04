@@ -160,6 +160,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
+import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.SmallButton;
@@ -280,7 +281,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         searchBarToggleButton.setSelected(Boolean.TRUE.equals(UISettings.restore("searchBarToggleButton")));
         searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
-        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, whereConditionEditorPanel, searchBarEditor);
+        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, whereConditionEditorPanel, searchBarEditor, executionContext);
         searchPanelContainer.setVisible(false);
     	
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, downloadMenuItem, "B");
@@ -3463,7 +3464,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				rowBrowser != null && rowBrowser.browserContentPane != null
 						? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
 						: null,
-				whereConditionEditorPanel, searchBarEditor);
+				whereConditionEditorPanel, searchBarEditor, executionContext);
     		searchPanelContainer.add(whereConditionEditorPanel);
     	}
         
