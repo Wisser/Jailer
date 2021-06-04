@@ -46,6 +46,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -389,6 +390,9 @@ public class MDTable extends MDObject {
 	    					// ignore
 	    				}
 	    			}
+	            }
+	            if (ddl != null && !ddl.trim().contains("\n")) {
+	            	ddl = new BasicFormatterImpl().format(ddl);
 	            }
 	            try {
 	            	readColumns(true); // load primary key

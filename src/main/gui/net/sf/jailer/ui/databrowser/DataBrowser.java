@@ -281,7 +281,13 @@ public class DataBrowser extends javax.swing.JFrame {
 
         searchBarToggleButton.setSelected(Boolean.TRUE.equals(UISettings.restore("searchBarToggleButton")));
         searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
-        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, whereConditionEditorPanel, searchBarEditor, executionContext);
+        whereConditionEditorCloseButton = new SmallButton(closeIcon, true) {
+			@Override
+			protected void onClick() {
+				searchBarToggleButton.doClick();
+			}
+		};
+        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, executionContext);
         searchPanelContainer.setVisible(false);
     	
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, downloadMenuItem, "B");
@@ -3456,7 +3462,7 @@ public class DataBrowser extends javax.swing.JFrame {
     	}
 		Table table = rowBrowser != null && rowBrowser.browserContentPane != null ? rowBrowser.browserContentPane.table : null;
 		searchPanelContainer.removeAll();
-		searchPanelContainer.setVisible(table != null);
+		searchPanelContainer.setVisible(table != null && searchBarToggleButton.isSelected());
 		searchBarToggleButton.setEnabled(rowBrowser != null);
     	if (table != null) {
     		whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel.get(),
@@ -3464,7 +3470,8 @@ public class DataBrowser extends javax.swing.JFrame {
 				rowBrowser != null && rowBrowser.browserContentPane != null
 						? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
 						: null,
-				whereConditionEditorPanel, searchBarEditor, executionContext);
+				whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton,
+				executionContext);
     		searchPanelContainer.add(whereConditionEditorPanel);
     	}
         
@@ -4503,6 +4510,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private DesktopAnchorManager anchorManager;
 	private DesktopOutline desktopOutline;
 	private WhereConditionEditorPanel whereConditionEditorPanel;
+	private JComponent whereConditionEditorCloseButton;
 	
 	private ImageIcon tableIcon;
 	private ImageIcon databaseIcon;
