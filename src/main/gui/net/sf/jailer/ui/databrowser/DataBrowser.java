@@ -149,7 +149,6 @@ import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
 import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
-import net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.metadata.MDGeneric;
@@ -162,6 +161,9 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
+import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
@@ -213,7 +215,26 @@ public class DataBrowser extends javax.swing.JFrame {
     private final ExecutionContext executionContext;
 
     private final JComboBox2<String> tablesComboBox;
-    private final RSyntaxTextArea searchBarEditor = new RSyntaxTextArea();
+    
+	private static class SearchBarRSyntaxTextArea extends RSyntaxTextAreaWithSQLSyntaxStyle {
+		WhereConditionEditorPanel whereConditionEditorPanel;
+		public SearchBarRSyntaxTextArea() {
+			super(false, false);
+		}
+		@Override
+		protected void runBlock() {
+			super.runBlock();
+			if (whereConditionEditorPanel != null) {
+				whereConditionEditorPanel.parseCondition();
+			}
+		}
+		@Override
+		protected boolean withFindAndReplace() {
+			return false;
+		}
+	};
+
+	private final SearchBarRSyntaxTextArea searchBarEditor = new SearchBarRSyntaxTextArea();
 	
 	private boolean initialized = false;
 
@@ -287,7 +308,9 @@ public class DataBrowser extends javax.swing.JFrame {
 				searchBarToggleButton.doClick();
 			}
 		};
-        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, executionContext);
+        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, session, executionContext);
+        searchBarEditor.whereConditionEditorPanel = whereConditionEditorPanel;
+        whereConditionEditorSubject = null;
         searchPanelContainer.setVisible(false);
     	
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, downloadMenuItem, "B");
@@ -727,6 +750,13 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected boolean desktopOutlineDraggingInProgress() {
 				return desktopOutline != null && desktopOutline.draggingInProgress();
+			}
+
+			@Override
+			protected void onConditionChange(BrowserContentPane browserContentPane, String cond) {
+				if (whereConditionEditorPanel != null && whereConditionEditorSubject == browserContentPane) {
+					whereConditionEditorPanel.parseCondition(cond);
+				}
 			}
         };
 
@@ -3465,14 +3495,22 @@ public class DataBrowser extends javax.swing.JFrame {
 		searchPanelContainer.setVisible(table != null && searchBarToggleButton.isSelected());
 		searchBarToggleButton.setEnabled(rowBrowser != null);
     	if (table != null) {
-    		whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel.get(),
-				table,
+    		BrowserContentCellEditor cellEditor = rowBrowser != null && rowBrowser.browserContentPane != null
+			? rowBrowser.browserContentPane.browserContentCellEditor
+			: null;
+			whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel.get(),
+				table, cellEditor,
 				rowBrowser != null && rowBrowser.browserContentPane != null
-						? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
-						: null,
-				whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton,
+				? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
+				: null,
+				whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, session,
 				executionContext);
     		searchPanelContainer.add(whereConditionEditorPanel);
+    		searchBarEditor.whereConditionEditorPanel = whereConditionEditorPanel;
+            if (rowBrowser != null && rowBrowser.browserContentPane != null) {
+    			whereConditionEditorSubject = rowBrowser.browserContentPane;
+    			whereConditionEditorPanel.parseCondition(rowBrowser.browserContentPane.getAndConditionText());
+    		}
     	}
         
         if (rowBrowser != null) {
@@ -4510,6 +4548,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private DesktopAnchorManager anchorManager;
 	private DesktopOutline desktopOutline;
 	private WhereConditionEditorPanel whereConditionEditorPanel;
+	private BrowserContentPane whereConditionEditorSubject;
 	private JComponent whereConditionEditorCloseButton;
 	
 	private ImageIcon tableIcon;

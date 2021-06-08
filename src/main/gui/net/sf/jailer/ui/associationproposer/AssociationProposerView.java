@@ -966,5 +966,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
     		UIUtil.showException(this, "Error", t);
     	}
 	}
+	
+	// TODO warning if one of the two PKs is only partially covered.
 }
 

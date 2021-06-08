@@ -1284,6 +1284,10 @@ public abstract class Desktop extends JDesktopPane {
 				Desktop.this.onLayoutChanged(false, false);
 			}
 
+			@Override
+			protected void onConditionChange(String cond) {
+				Desktop.this.onConditionChange(this, cond);
+			}
 		};
 
 		Rectangle r = layout(parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
@@ -3734,6 +3738,7 @@ public abstract class Desktop extends JDesktopPane {
 	protected abstract void checkAnchorRetension();
 	protected abstract void changeColumnOrder(Table table);
 	protected abstract void onRowSelect(Table table, Row row);
+	protected abstract void onConditionChange(BrowserContentPane browserContentPane, String cond);
 
 	/**
 	 * Scrolls an iFrame to the center of the desktop.

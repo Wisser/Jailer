@@ -738,7 +738,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * For in-place editing.
 	 */
-	private BrowserContentCellEditor browserContentCellEditor = new BrowserContentCellEditor(new int[0], new String[0], null);
+	public BrowserContentCellEditor browserContentCellEditor = new BrowserContentCellEditor(new int[0], new String[0], null);
 
 	/**
 	 * Cache for association row count.
@@ -2086,7 +2086,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	protected void historizeAndCondition(Object item) {
-		if (item == null || (item.toString().trim().isEmpty() && !item.toString().isEmpty())) {
+		if (item == null) {
+			return;
+		}
+		String cond = item.toString().trim();
+		onConditionChange(cond);
+		if ((cond.isEmpty() && !item.toString().isEmpty())) {
 			return;
 		}
 		for (int i = 0; i < andCondModel.getSize(); ++i) {
@@ -6329,6 +6334,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract RowBrowser navigateTo(Association association, List<Row> pRows);
 
 	protected abstract void onContentChange(List<Row> rows, boolean reloadChildren);
+	protected void onConditionChange(String cond) {
+	};
 
 	protected abstract void onRedraw();
 	protected abstract void onHide();

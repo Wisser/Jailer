@@ -24,12 +24,19 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Window;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
@@ -42,19 +49,25 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.database.InlineViewStyle;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.ui.util.SmallButton;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -73,8 +86,12 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private JToggleButton searchButton;
 	private final RSyntaxTextAreaWithSQLSyntaxStyle editor;
 	private Font font;
+	private final BrowserContentCellEditor cellEditor;
 	private final ExecutionContext executionContext;
-
+	private InlineViewStyle inlineViewStyle;
+	private final Session session;
+	private DocumentListener documentListener;
+	
 	private class Comparison {
 		Operator operator;
 		final Column column;
@@ -89,15 +106,16 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
     /**
      * Creates new form SearchPanel
-     * @param sorted 
      */
-	public WhereConditionEditorPanel(Window parent, DataModel dataModel, Table table, Boolean sorted,
+	public WhereConditionEditorPanel(Window parent, DataModel dataModel, Table table, BrowserContentCellEditor cellEditor, Boolean sorted,
 			WhereConditionEditorPanel predecessor, RSyntaxTextAreaWithSQLSyntaxStyle editor,
 			JComponent closeButton,
-			ExecutionContext executionContext) {
+			Session session, ExecutionContext executionContext) {
     	this.dataModel = dataModel;
     	this.table = table;
     	this.editor = editor;
+    	this.cellEditor = cellEditor;
+    	this.session = session;
     	this.executionContext = executionContext;
         initComponents();
         
@@ -125,6 +143,16 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 		if (table == null) {
 	    	setVisible(false);
 		} else {
+			inlineViewStyle = (InlineViewStyle) session.getSessionProperty(getClass(), "inlineViewStyle");
+			if (inlineViewStyle == null) {
+				try {
+					inlineViewStyle = InlineViewStyle.forSession(session);
+					session.setSessionProperty(getClass(), "inlineViewStyle", inlineViewStyle);
+				} catch (Exception e) {
+					setVisible(false);
+					return;
+				}
+			}
 			List<String> config = ConditionStorage.load(table, executionContext);
 			if (config.isEmpty()) {
 				if (table.primaryKey != null) {
@@ -134,6 +162,31 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 				comparisons.addAll(table.getColumns().stream().filter(c -> config.contains(c.name)).map(c -> new Comparison(Operator.Equal, c)).collect(Collectors.toList()));
 			}
         	tableLabel.setText(this.dataModel.getDisplayName(table));
+        	
+        	if (editor != null) {
+        		if (predecessor != null && predecessor.documentListener != null) {
+        			editor.getDocument().removeDocumentListener(predecessor.documentListener);
+        		}
+        		documentListener = new DocumentListener() {
+					@Override
+					public void removeUpdate(DocumentEvent e) {
+						updateApplyButton();
+					}
+					@Override
+					public void insertUpdate(DocumentEvent e) {
+						updateApplyButton();
+					}
+					@Override
+					public void changedUpdate(DocumentEvent e) {
+						updateApplyButton();
+					}
+					private void updateApplyButton() {
+						applyButton.setEnabled(!editor.getText().equals(latestParsedCondition));
+					}
+				};
+        		editor.getDocument().addDocumentListener(documentListener);
+        	}
+        	
 	        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 1;
 	        gridBagConstraints.gridy = 20;
@@ -164,7 +217,90 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        sortCheckBox.setSelected(Boolean.TRUE.equals(sorted));
         }
     }
+	
+	/**
+	 * Parses a condition and updates the UI accordingly.
+	 * 
+	 * @param condition the condition
+	 */
+	public void parseCondition(String condition) {
+		if (latestCondition != null && latestCondition.equals(condition)) {
+			return;
+		}
+		latestCondition = condition;
+		editor.setText(condition);
+		editor.discardAllEdits();
+		parseCondition();
+	}
     
+	/**
+	 * Parses current condition and updates the UI accordingly.
+	 */
+	public void parseCondition() {
+		String condition = latestParsedCondition = editor.getText();
+		applyButton.setEnabled(false);
+		positions.clear();
+		String quoteRE = "[\"\u00B4\\[\\]`]";
+		for (Column column: table.getColumns()) {
+			String regex = "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
+					+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(" + Pattern.quote("!=") + "|" + 
+					Stream.of(Operator.values())
+						.map(o -> o.sql)
+						.sorted((a, b) -> b.length() - a.length())
+						.map(sql -> Character.isAlphabetic(sql.charAt(0))? "\\b" + Pattern.quote(sql) + "\\b" : Pattern.quote(sql))
+						.collect(Collectors.joining("|"))
+					+ "))\\s*(.*?)$";
+			Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+			Matcher matcher = identOperator.matcher(condition);
+			if (matcher.find()) {
+				String q1 = matcher.group(1);
+				String q2 = matcher.group(2);
+				if (q1 == null && q2 == null || (q1 != null && q1.equals(q2)) || "[".equals(q1) || "]".equals(q2)) {
+					Operator operator;
+					String value = null;
+					if (matcher.group(3) != null) {
+						operator = Operator.Equal;
+						value = "null";
+						Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(3), matcher.end(3));
+						positions.put(column, pos);
+					} else if (matcher.group(4) != null) {
+						operator = Operator.NotEqual;
+						value = "null";
+						Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(4), matcher.end(4));
+						positions.put(column, pos);
+					} else {
+						String op = matcher.group(5);
+						if ("!=".equals(op)) {
+							operator = Operator.NotEqual;
+						} else {
+							operator = Stream.of(Operator.values()).filter(o -> o.sql.equals(op)).findFirst().get();
+						}
+						String valueRegex = "^((?:(?:0x(:?\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.,\\-\\+])+|(?:true|false)|(?:\\w+\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(:?\\w+))?)";
+						value = matcher.group(6);
+						int vPos = matcher.start(6);
+						matcher = Pattern.compile(valueRegex, Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(value);
+						if (matcher.find()) {
+							value = matcher.group(1);
+							Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(1) + vPos, matcher.end(1) + vPos);
+							positions.put(column, pos);
+						} else {
+							value = null;
+						}
+					}
+					if (value != null) {
+						System.out.println(column.name + " " + operator + " " + value); // TODO
+						continue;
+					}
+				}
+			}
+			// TODO remove field
+		}
+	}
+    
+	private String latestCondition = null;
+	private String latestParsedCondition = null;
+	private Map<Column, Pair<Integer, Integer>> positions = new HashMap<Column, Pair<Integer, Integer>>();
+	
     private void updateSearchUI() {
     	Set<Column> searchColumns = comparisons.stream().map(c -> c.column).collect(Collectors.toSet());
     	List<String> colNames = new ArrayList<String>();
@@ -296,6 +432,20 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        searchFieldsPanel.add(wrap.apply(operatorField, y), gridBagConstraints);
 	        
 	        JTextField valueTextField = new JTextField();
+	        valueTextField.addFocusListener(new FocusListener() {
+				@Override
+				public void focusLost(FocusEvent e) {
+				}
+				@Override
+				public void focusGained(FocusEvent e) {
+					Pair<Integer, Integer> pos = positions.get(comparison.column);
+					if (pos != null) {
+						editor.select(pos.a, pos.b);
+					} else {
+						editor.setCaretPosition(editor.getCaretPosition());
+					}
+				}
+			});
 	        DBConditionEditor.initialObserve(valueTextField, x -> openStringSearchPanel(valueTextField), () -> openStringSearchPanel(valueTextField));
 			gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 3;
@@ -359,6 +509,7 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         syntaxPanePanel = new javax.swing.JPanel();
+        applyButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -445,11 +596,23 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(jScrollPane1, gridBagConstraints);
+
+        applyButton.setText("Apply");
+        applyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel2.add(applyButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -477,6 +640,10 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
     private void sortCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortCheckBoxActionPerformed
     	updateSearchUI();
     }//GEN-LAST:event_sortCheckBoxActionPerformed
+
+    private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
+        parseCondition();
+    }//GEN-LAST:event_applyButtonActionPerformed
 
 
     private void openStringSearchPanel(JTextField valueTextField) {
@@ -533,6 +700,7 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton applyButton;
     private javax.swing.JPanel closeButtonContainerPanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
