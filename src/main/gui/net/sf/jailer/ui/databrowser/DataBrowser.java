@@ -161,9 +161,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
-import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
-import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
@@ -277,7 +275,7 @@ public class DataBrowser extends javax.swing.JFrame {
         
         searchPanelContainer.getParent().remove(searchPanelContainer);
         searchPanelContainer = new JPanel() {
-        	final int WIDTH = 240;
+        	final int WIDTH = 260;
             @Override
         	public Dimension getPreferredSize() {
         		return new Dimension(WIDTH, super.getPreferredSize().height);
@@ -308,7 +306,12 @@ public class DataBrowser extends javax.swing.JFrame {
 				searchBarToggleButton.doClick();
 			}
 		};
-        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, session, executionContext);
+        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, session, executionContext) {
+        	@Override
+			protected void consume(String condition) {
+				// nothing to do	
+			}
+        };
         searchBarEditor.whereConditionEditorPanel = whereConditionEditorPanel;
         whereConditionEditorSubject = null;
         searchPanelContainer.setVisible(false);
@@ -3504,7 +3507,27 @@ public class DataBrowser extends javax.swing.JFrame {
 				? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
 				: null,
 				whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, session,
-				executionContext);
+				executionContext) {
+					@Override
+					protected void consume(String condition) {
+						if (rowBrowser != null && rowBrowser.browserContentPane != null) {
+							String andConditionText = rowBrowser.browserContentPane.getAndConditionText();
+							andConditionText = new BasicFormatterImpl().format(andConditionText.trim());
+							condition = new BasicFormatterImpl().format(condition.trim());
+							if (!andConditionText.equals((condition))) {
+								boolean oldSuppessReloadOnAndConditionAction = rowBrowser.browserContentPane.suppessReloadOnAndConditionAction;
+								try {
+									rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = true;
+									rowBrowser.browserContentPane.setAndCondition((condition), false);
+									rowBrowser.browserContentPane.loadButton.grabFocus();
+									rowBrowser.browserContentPane.reloadRows();
+								} finally {
+									rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = oldSuppessReloadOnAndConditionAction;
+								}
+							}
+						}
+					}
+	        };
     		searchPanelContainer.add(whereConditionEditorPanel);
     		searchBarEditor.whereConditionEditorPanel = whereConditionEditorPanel;
             if (rowBrowser != null && rowBrowser.browserContentPane != null) {

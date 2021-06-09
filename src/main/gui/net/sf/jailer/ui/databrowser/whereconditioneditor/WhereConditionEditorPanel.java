@@ -26,9 +26,12 @@ import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +54,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.InlineViewStyle;
@@ -62,6 +66,7 @@ import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.DBConditionEditor;
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
@@ -75,7 +80,7 @@ import net.sf.jailer.util.Quoting;
  *
  * @author Ralf Wisser
  */
-public class WhereConditionEditorPanel extends javax.swing.JPanel {
+public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
 	// TODO remove empty lines before putting text back into sql console after user edit
 	// TODO respect quoting
@@ -91,10 +96,14 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private InlineViewStyle inlineViewStyle;
 	private final Session session;
 	private DocumentListener documentListener;
-	
+	private String tableAlias = "A";
+
 	private class Comparison {
 		Operator operator;
+		String value = "";
 		final Column column;
+		JComponent operatorField;
+		JTextField valueTextField;
 		
 		Comparison(Operator operator, Column column) {
 			this.operator = operator;
@@ -140,6 +149,17 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 		tableLabel.setFont(new Font(font.getName(), font.getStyle() | Font.BOLD, (int)(font.getSize() /* * 1.2 */)));
 		tableLabel.setIcon(tableIcon);
 		closeButtonContainerPanel.add(closeButton);
+    	if (predecessor == null) {
+    		int location = 348;
+    		if (parent != null) {
+    			int maxLoc = (int) (parent.getHeight() * 0.4);
+    			if (location > maxLoc + 50) {
+    				location = maxLoc;
+    			}
+    		}
+			splitPane.setDividerLocation(location);
+    	}
+    	
 		if (table == null) {
 	    	setVisible(false);
 		} else {
@@ -163,9 +183,25 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 			}
         	tableLabel.setText(this.dataModel.getDisplayName(table));
         	
-        	if (editor != null) {
-        		if (predecessor != null && predecessor.documentListener != null) {
-        			editor.getDocument().removeDocumentListener(predecessor.documentListener);
+            if (jScrollPane1.getHorizontalScrollBar() != null) {
+            	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
+            }
+            if (jScrollPane1.getVerticalScrollBar() != null) {
+            	jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
+            }
+            if (jScrollPane2.getHorizontalScrollBar() != null) {
+            	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
+            }
+            if (jScrollPane2.getVerticalScrollBar() != null) {
+            	jScrollPane2.getVerticalScrollBar().setUnitIncrement(16);
+            }
+            
+            if (editor != null) {
+        		if (predecessor != null) {
+        			if (predecessor.documentListener != null) {
+        				editor.getDocument().removeDocumentListener(predecessor.documentListener);
+        			}
+        			splitPane.setDividerLocation(predecessor.splitPane.getDividerLocation());
         		}
         		documentListener = new DocumentListener() {
 					@Override
@@ -218,6 +254,8 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
         }
     }
 	
+	protected abstract void consume(String condition);
+	
 	/**
 	 * Parses a condition and updates the UI accordingly.
 	 * 
@@ -228,8 +266,9 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 			return;
 		}
 		latestCondition = condition;
-		editor.setText(condition);
+		editor.setText(new BasicFormatterImpl().format(condition));
 		editor.discardAllEdits();
+		editor.setCaretPosition(0);
 		parseCondition();
 	}
     
@@ -239,35 +278,47 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	public void parseCondition() {
 		String condition = latestParsedCondition = editor.getText();
 		applyButton.setEnabled(false);
-		positions.clear();
+		valuePositions.clear();
+		fullPositions.clear();
 		String quoteRE = "[\"\u00B4\\[\\]`]";
+		Set<Comparison> seen = new HashSet<Comparison>();
 		for (Column column: table.getColumns()) {
-			String regex = "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
+			String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.,\\-\\+])+|(?:true|false)|(?:\\w+\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
+			String regex = "(?:(?:and\\s+)?(?:" + tableAlias + "\\s*\\.\\s*)?)" + "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
 					+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(" + Pattern.quote("!=") + "|" + 
 					Stream.of(Operator.values())
 						.map(o -> o.sql)
 						.sorted((a, b) -> b.length() - a.length())
 						.map(sql -> Character.isAlphabetic(sql.charAt(0))? "\\b" + Pattern.quote(sql) + "\\b" : Pattern.quote(sql))
 						.collect(Collectors.joining("|"))
-					+ "))\\s*(.*?)$";
+					+ "))\\s*" + valueRegex;
 			Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 			Matcher matcher = identOperator.matcher(condition);
 			if (matcher.find()) {
+				int start = matcher.start();
 				String q1 = matcher.group(1);
 				String q2 = matcher.group(2);
+				if ("".equals(q1)) {
+					q1 = null;
+				}
+				if ("".equals(q2)) {
+					q2 = null;
+				}
 				if (q1 == null && q2 == null || (q1 != null && q1.equals(q2)) || "[".equals(q1) || "]".equals(q2)) {
 					Operator operator;
-					String value = null;
-					if (matcher.group(3) != null) {
+					String sqlValue = null;
+					if (matcher.group(3) != null && !"".equals(matcher.group(3))) {
 						operator = Operator.Equal;
-						value = "null";
+						sqlValue = "is null";
 						Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(3), matcher.end(3));
-						positions.put(column, pos);
-					} else if (matcher.group(4) != null) {
-						operator = Operator.NotEqual;
-						value = "null";
+						valuePositions.put(column, pos);
+						fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
+					} else if (matcher.group(4) != null && !"".equals(matcher.group(4))) {
+						operator = Operator.Equal;
+						sqlValue = "is not null";
 						Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(4), matcher.end(4));
-						positions.put(column, pos);
+						valuePositions.put(column, pos);
+						fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
 					} else {
 						String op = matcher.group(5);
 						if ("!=".equals(op)) {
@@ -275,31 +326,43 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 						} else {
 							operator = Stream.of(Operator.values()).filter(o -> o.sql.equals(op)).findFirst().get();
 						}
-						String valueRegex = "^((?:(?:0x(:?\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.,\\-\\+])+|(?:true|false)|(?:\\w+\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(:?\\w+))?)";
-						value = matcher.group(6);
-						int vPos = matcher.start(6);
-						matcher = Pattern.compile(valueRegex, Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(value);
-						if (matcher.find()) {
-							value = matcher.group(1);
-							Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(1) + vPos, matcher.end(1) + vPos);
-							positions.put(column, pos);
-						} else {
-							value = null;
-						}
+						sqlValue = matcher.group(6);
+						int opPos = matcher.start(5);
+						Pair<Integer, Integer> pos = new Pair<Integer, Integer>(opPos, matcher.end(6));
+						valuePositions.put(column, pos);
+						fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
 					}
-					if (value != null) {
-						System.out.println(column.name + " " + operator + " " + value); // TODO
-						continue;
+					if (sqlValue != null) {
+						String value = sqlValue; // TODO
+						comparisons.stream().filter(c -> c.column.equals(column)).findAny().ifPresentOrElse(
+								c -> {
+									c.operator = operator;
+									c.value = value;
+									seen.add(c);
+								}, () -> {
+									Comparison c = new Comparison(operator, column);
+									c.value = value;
+									comparisons.add(c);
+									seen.add(c);
+								});
 					}
 				}
 			}
-			// TODO remove field
 		}
+		comparisons.forEach(c -> {
+			if (!seen.contains(c)) {
+				c.value = "";
+				c.operator = Operator.Equal;
+			}
+		});
+		updateSearchUI();
+		consume(latestParsedCondition);
 	}
     
 	private String latestCondition = null;
 	private String latestParsedCondition = null;
-	private Map<Column, Pair<Integer, Integer>> positions = new HashMap<Column, Pair<Integer, Integer>>();
+	private Map<Column, Pair<Integer, Integer>> valuePositions = new HashMap<Column, Pair<Integer, Integer>>();
+	private Map<Column, Pair<Integer, Integer>> fullPositions = new HashMap<Column, Pair<Integer, Integer>>();
 	
     private void updateSearchUI() {
     	Set<Column> searchColumns = comparisons.stream().map(c -> c.column).collect(Collectors.toSet());
@@ -384,11 +447,13 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        SmallButton hideButton = new SmallButton(UIUtil.scaleIcon(this, deleteIcon, 1.1), true) {
 				@Override
 				protected void onClick() {
+					accept(comparison, "", Operator.Equal);
 					comparisons.remove(comparison);
 					updateSearchUI();
 					storeConfig();
 				}
 			};
+			hideButton.setToolTipText("Remove Search Field");
 			gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 4;
 	        gridBagConstraints.gridy = 3 * y + 1;
@@ -403,6 +468,9 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
 	        searchFieldsPanel.add(wrap.apply(sep, y), gridBagConstraints);
 
+	        JTextField valueTextField = new JTextField(comparison.value);
+	        comparison.valueTextField = valueTextField;
+	        
 	        final int finalMaxWidth = maxWidth;
 			SmallButton operatorField = new SmallButton(null, true) {
 				@Override
@@ -412,6 +480,7 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 						JMenuItem item = new JMenuItem(operator.sql);
 						item.addActionListener(e -> {
 							setText(operator.render());
+							accept(comparison, valueTextField.getText(), operator);
 							comparison.operator = operator;
 						});
 						popup.add(item);
@@ -423,7 +492,9 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 					return new Dimension(finalMaxWidth, super.getPreferredSize().height);
 				}
 			};
+			comparison.operatorField = operatorField;
 	        operatorField.setText(" " + comparison.operator.sql + " ");
+	        operatorField.setVisible(!comparison.value.toLowerCase().matches("\\s*is\\s+(not\\s+)?null\\s*"));
 	        gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 2;
 	        gridBagConstraints.gridy = 3 * y + 1;
@@ -431,14 +502,14 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        gridBagConstraints.anchor = GridBagConstraints.WEST;
 	        searchFieldsPanel.add(wrap.apply(operatorField, y), gridBagConstraints);
 	        
-	        JTextField valueTextField = new JTextField();
 	        valueTextField.addFocusListener(new FocusListener() {
 				@Override
 				public void focusLost(FocusEvent e) {
 				}
 				@Override
 				public void focusGained(FocusEvent e) {
-					Pair<Integer, Integer> pos = positions.get(comparison.column);
+					// TODO
+					Pair<Integer, Integer> pos = valuePositions.get(comparison.column);
 					if (pos != null) {
 						editor.select(pos.a, pos.b);
 					} else {
@@ -446,7 +517,21 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 					}
 				}
 			});
-	        DBConditionEditor.initialObserve(valueTextField, x -> openStringSearchPanel(valueTextField), () -> openStringSearchPanel(valueTextField));
+	        valueTextField.addKeyListener(new KeyListener() {
+				@Override
+				public void keyTyped(KeyEvent e) {
+					if (e.getKeyChar() == '\n') {
+						accept(comparison, valueTextField.getText(), comparison.operator);
+					}
+				}
+				@Override
+				public void keyReleased(KeyEvent e) {
+				}
+				@Override
+				public void keyPressed(KeyEvent e) {
+				}
+			});
+			DBConditionEditor.initialObserve(valueTextField, x -> openStringSearchPanel(valueTextField, comparison), () -> openStringSearchPanel(valueTextField, comparison));
 			gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 3;
 	        gridBagConstraints.gridy = 3 * y + 1;
@@ -466,6 +551,16 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 
 	        ++y;
 		}
+        JPanel sepPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 1, 1));
+        sepPanel.setOpaque(false);
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3 * y;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.weightx = 1;
+        gridBagConstraints.weighty = 1;
+        searchFieldsPanel.add(wrap.apply(sepPanel, 1), gridBagConstraints);
 		
 		revalidate();
     }
@@ -496,22 +591,29 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        splitPane = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
         searchComboBox = new javax.swing.JComboBox<>();
         sortCheckBox = new javax.swing.JCheckBox();
-        searchFieldsPanel = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         tableLabel = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         closeButtonContainerPanel = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jPanel3 = new javax.swing.JPanel();
+        searchFieldsPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         syntaxPanePanel = new javax.swing.JPanel();
         applyButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
+
+        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        splitPane.setContinuousLayout(true);
+        splitPane.setOneTouchExpandable(true);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -543,16 +645,8 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel5.add(jPanel6, gridBagConstraints);
-
-        searchFieldsPanel.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        jPanel5.add(searchFieldsPanel, gridBagConstraints);
 
         jPanel7.setBackground(java.awt.Color.white);
         jPanel7.setLayout(new java.awt.GridBagLayout());
@@ -588,6 +682,35 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel5.add(jPanel7, gridBagConstraints);
 
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        searchFieldsPanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel3.add(searchFieldsPanel, gridBagConstraints);
+
+        jScrollPane2.setViewportView(jPanel3);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel5.add(jScrollPane2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jPanel5, gridBagConstraints);
+
+        splitPane.setTopComponent(jPanel1);
+
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Condition"));
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -614,27 +737,15 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel2.add(applyButton, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 1.0;
-        jPanel5.add(jPanel2, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jPanel5, gridBagConstraints);
+        splitPane.setBottomComponent(jPanel2);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        add(splitPane, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void sortCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortCheckBoxActionPerformed
@@ -646,7 +757,7 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_applyButtonActionPerformed
 
 
-    private void openStringSearchPanel(JTextField valueTextField) {
+    private void openStringSearchPanel(JTextField valueTextField, Comparison comparison) {
     	if (getParent() == null) {
     		return; // too late
     	}
@@ -660,7 +771,8 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 		StringSearchPanel searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
 			@Override
 			public void run() {
-				accept(valueTextField, theSearchPanel.get(0).getPlainValue());
+				valueTextField.setText(theSearchPanel.get(0).getPlainValue());
+				accept(comparison, theSearchPanel.get(0).getPlainValue(), comparison.operator);
 			}
 		}, null) {
 			@Override
@@ -693,9 +805,102 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
 		// TODO new Timer(1000, e -> { ((DefaultComboBoxModel) combobox.getModel()).addElement("" + System.currentTimeMillis()); searchPanel.updateList(); }).start();
     }
 
-	protected void accept(JTextField valueTextField, String value) {
+	protected void accept(Comparison comparison, String value, Operator operator) {
 		if (value != null) {
-			valueTextField.setText(value);
+			if (!value.trim().equals(comparison.value.trim()) || operator != comparison.operator) {
+				editor.setText(latestParsedCondition);
+				comparison.operator = operator;
+				if (value.trim().isEmpty()) {
+					// field cleared
+					Pair<Integer, Integer> fullPos = fullPositions.get(comparison.column);
+					if (fullPos != null) {
+						editor.select(fullPos.a, fullPos.b);
+						editor.replaceSelection("");
+						comparison.value = "";
+						if (comparison.operatorField != null) {
+							comparison.operatorField.setVisible(true);
+						}
+					}
+					valuePositions.remove(comparison.column);
+					fullPositions.remove(comparison.column);
+				} else {
+					String oldValue = comparison.value;
+					comparison.value = value;
+					String sqlValue;
+					String op;
+					if (comparison.value.toLowerCase().matches("\\s*is\\s+null\\s*")) {
+						sqlValue = "is null";
+						op = "";
+						if (comparison.operatorField != null) {
+							comparison.operatorField.setVisible(false);
+						}
+					} else if (comparison.value.toLowerCase().matches("\\s*is\\s+not\\s+null\\s*")) {
+						sqlValue = "is not null";
+						op = "";
+						if (comparison.operatorField != null) {
+							comparison.operatorField.setVisible(false);
+						}
+					} else {
+						sqlValue = value; // TODO
+						if (sqlValue.contains("0")) {
+							sqlValue = null; // TODO
+						}
+						if (sqlValue == null) {
+							comparison.valueTextField.setBackground(new Color(255, 200, 200));
+							comparison.value = oldValue;
+							return;
+						}
+						op = comparison.operator.sql + " ";
+						if (comparison.operatorField != null) {
+							comparison.operatorField.setVisible(true);
+						}
+					}
+					Pair<Integer, Integer> pos = valuePositions.get(comparison.column);
+					String opSqlValue = op + sqlValue;
+					if (pos != null) {
+						try {
+							if (pos.a > 0) {
+								char lastChar = editor.getDocument().getText(pos.a - 1, 1).charAt(0);
+								if (!Character.isWhitespace(lastChar)) {
+									opSqlValue = " " + opSqlValue;
+								}
+							}
+						} catch (Exception e) {
+							// ignore
+						}
+						editor.select(pos.a, pos.b);
+						editor.replaceSelection(opSqlValue);
+						pos = new Pair<Integer, Integer>(pos.a, pos.a + opSqlValue.length());
+						valuePositions.put(comparison.column, pos);
+						Pair<Integer, Integer> fullPos = fullPositions.get(comparison.column);
+						if (fullPos != null) {
+							fullPositions.put(comparison.column, new Pair<Integer, Integer>(fullPos.a, pos.b));
+						}
+						editor.select(pos.a, pos.b);
+					} else {
+						int start = editor.getDocument().getEndPosition().getOffset() - 1;
+						String prefix = "";
+						try {
+							if (start > 0 && !editor.getDocument().getText(start - 1, 1).matches("\\r|\\n")) {
+								prefix = "\n";
+							}
+							if (!editor.getText().trim().isEmpty()) {
+								prefix += "and ";
+							}
+						} catch (BadLocationException e) {
+							prefix = "\n";
+						}
+						String name = prefix + tableAlias + "." + comparison.column.name + " ";
+						editor.append(name + opSqlValue);
+						pos = new Pair<Integer, Integer>(start + name.length(), start + name.length() + opSqlValue.length());
+						valuePositions.put(comparison.column, pos);
+						fullPositions.put(comparison.column, new Pair<Integer, Integer>(start, pos.b));
+						editor.select(pos.a, pos.b);
+					}
+				}
+				editor.setText(editor.getText().replaceFirst("^\\s*and\\s", "").replaceAll("\n\\s*\\n", "").trim());
+				parseCondition();
+			}
 		}
 	}
 
@@ -704,14 +909,17 @@ public class WhereConditionEditorPanel extends javax.swing.JPanel {
     private javax.swing.JPanel closeButtonContainerPanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JComboBox<String> searchComboBox;
     private javax.swing.JPanel searchFieldsPanel;
     private javax.swing.JCheckBox sortCheckBox;
+    private javax.swing.JSplitPane splitPane;
     private javax.swing.JPanel syntaxPanePanel;
     private javax.swing.JLabel tableLabel;
     // End of variables declaration//GEN-END:variables

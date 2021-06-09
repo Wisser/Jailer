@@ -3436,8 +3436,9 @@ public abstract class Desktop extends JDesktopPane {
 		for (RowBrowser rb : getRootBrowsers(true)) {
 			if (rb.browserContentPane.table != null) {
 				if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
-					root = rb;
-					break;
+					if (root == null || root.internalFrame.getY() > rb.internalFrame.getY()) {
+						root = rb;
+					}
 				}
 			}
 		}

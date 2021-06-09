@@ -203,10 +203,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		button.setEnabled(comboBox.getModel().getSize() > 1 || comboBox.getModel().getSize() == 1 && !"".equals(comboBox.getModel().getElementAt(0)));
 	}
 
+	private boolean isEscaped = false;
+
 	private void consumeResult() {
 		if (acceptAll || result != null && !result.equals(showAllLabel)) {
 			combobox.setSelectedItem(result);
-			if (onSuccess != null) {
+			if (!isEscaped && onSuccess != null) {
 				onSuccess.run();
 			}
 		}
@@ -221,6 +223,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 
 	public void find(Window owner, Object titel, int x, int y, boolean locateUnderButton) {
+		isEscaped = false;
 		dialog = owner instanceof Dialog? new EscapableDialog((Dialog) owner, String.valueOf(titel), false) {
 		} : new EscapableDialog((Frame) owner, String.valueOf(titel), false) {
 		};
@@ -426,6 +429,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			@Override
 			public void keyTyped(KeyEvent e) {
 				if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
+					isEscaped = true;
 					close();
 				} else if (e.getKeyChar() == KeyEvent.VK_DOWN) {
 					searchList.grabFocus();

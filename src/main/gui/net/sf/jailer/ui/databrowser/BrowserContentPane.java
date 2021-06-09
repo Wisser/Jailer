@@ -2102,7 +2102,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		andCondModel.insertElementAt(item, 1);
 	}
 
-	private boolean suppessReloadOnAndConditionAction = false;
+	public boolean suppessReloadOnAndConditionAction = false;
 
 	void setAndCondition(String cond, boolean historize) {
 		try {
