@@ -73,8 +73,6 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.fife.rsta.ui.EscapableDialog;
-
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
@@ -206,15 +204,20 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private boolean isEscaped = false;
 
 	private void consumeResult() {
+		boolean success = false;
 		if (acceptAll || result != null && !result.equals(showAllLabel)) {
 			combobox.setSelectedItem(result);
 			if (!isEscaped && onSuccess != null) {
 				onSuccess.run();
+				success = true;
 			}
 		}
 		result = null;
 		if (button != null) {
 			button.setSelected(false);
+		}
+		if (!success) {
+			onAbort();
 		}
 	}
 	
@@ -224,9 +227,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
 	public void find(Window owner, Object titel, int x, int y, boolean locateUnderButton) {
 		isEscaped = false;
-		dialog = owner instanceof Dialog? new EscapableDialog((Dialog) owner, String.valueOf(titel), false) {
-		} : new EscapableDialog((Frame) owner, String.valueOf(titel), false) {
-		};
+		dialog = new JDialog(owner, String.valueOf(titel));
+		dialog.setModal(false);
 		dialog.setUndecorated(true);
 		dialog.addWindowFocusListener(new WindowFocusListener() {
 			@Override
@@ -911,7 +913,14 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}//GEN-LAST:event_cancelButtonActionPerformed
 
 	public void close() {
+		onClose(searchTextField.getText());
 		dialog.setVisible(false);
+	}
+
+	protected void onClose(String text) {
+	}
+
+	protected void onAbort() {
 	}
 
     private void cancelLoadiingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelLoadiingButtonActionPerformed

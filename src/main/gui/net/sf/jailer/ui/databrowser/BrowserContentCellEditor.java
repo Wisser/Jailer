@@ -156,7 +156,7 @@ public class BrowserContentCellEditor {
 				if (columnType == Types.DATE && (content == null || content instanceof Date)) {
 					return dateFormat.format((Date) content);
 				}
-				return String.valueOf((Timestamp) content);
+				return String.valueOf(/*(Timestamp)*/ content);
 			}
 
 			@Override
@@ -228,6 +228,12 @@ public class BrowserContentCellEditor {
 			
 			@Override
 			String cellContentToText(int columnType, Object content) {
+				if (!(content instanceof TimestampWithNano)) {
+					if (columnType == Types.DATE && (content == null || content instanceof Date)) {
+						return dateFormat.format((Date) content);
+					}
+					return String.valueOf(/*(Timestamp)*/ content);
+				}
 				String text = timeStampWONFormat.format((Timestamp) content);
 				String nano = String.valueOf(1000000000L + ((TimestampWithNano) content).getNanos()).substring(1);
 				while (nano.length() > 1 && nano.endsWith("0")) {
@@ -316,6 +322,13 @@ public class BrowserContentCellEditor {
 	private final int[] columnTypes;
 
 	/**
+	 * {@link Types} per column.
+	 */
+	public int[] getColumnTypes() {
+		return columnTypes;
+	}
+
+	/**
 	 * The session.
 	 */
 	private final Session session;
@@ -350,11 +363,10 @@ public class BrowserContentCellEditor {
 	 * Is given cell editable?
 	 * 
 	 * @param table the table 
-	 * @param row row number
 	 * @param column column number
 	 * @param content cell content
 	 */
-	public boolean isEditable(Table table, int row, int column, Object content) {
+	public boolean isEditable(Table table, int column, Object content) {
 		if (column < 0 || column >= columnTypes.length) {
 			return false;
 		}
@@ -378,13 +390,12 @@ public class BrowserContentCellEditor {
 	/**
 	 * Converts cell content to text.
 	 * 
-	 * @param row row number
 	 * @param column column number
 	 * @param content cell content
 	 * 
 	 * @return text
 	 */
-	public String cellContentToText(int row, int column, Object content) {
+	public String cellContentToText(int column, Object content) {
 		if (content instanceof PObjectWrapper) {
 			content = ((PObjectWrapper) content).getValue();
 		}
@@ -396,6 +407,7 @@ public class BrowserContentCellEditor {
 			try {
 				return converter.cellContentToText(columnTypes[column], content);
 			} catch (Exception e) {
+				e.printStackTrace();
 				// ignore
 			}
 		}
@@ -405,13 +417,12 @@ public class BrowserContentCellEditor {
 	/**
 	 * Converts text to cell content.
 	 * 
-	 * @param row row number
 	 * @param column column number
 	 * @param text the text
 	 * 
 	 * @return cell content or {@link #INVALID} if text cannot be converted
 	 */
-	public Object textToContent(int row, int column, String text, Object oldContent) {
+	public Object textToContent(int column, String text, Object oldContent) {
 		if (text.trim().equals("")) {
 			return null;
 		}

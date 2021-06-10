@@ -761,6 +761,13 @@ public class DataBrowser extends javax.swing.JFrame {
 					whereConditionEditorPanel.parseCondition(cond);
 				}
 			}
+
+			@Override
+			protected void onContentCellEditorCreated(BrowserContentPane browserContentPane, BrowserContentCellEditor cellEditor) {
+				if (whereConditionEditorPanel != null && whereConditionEditorSubject == browserContentPane) {
+					whereConditionEditorPanel.setCellEditor(cellEditor);
+				}
+			}
         };
 
 		desktop.addMouseMotionListener(new MouseMotionListener() {
@@ -3519,7 +3526,6 @@ public class DataBrowser extends javax.swing.JFrame {
 								try {
 									rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = true;
 									rowBrowser.browserContentPane.setAndCondition((condition), false);
-									rowBrowser.browserContentPane.loadButton.grabFocus();
 									rowBrowser.browserContentPane.reloadRows();
 								} finally {
 									rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = oldSuppessReloadOnAndConditionAction;

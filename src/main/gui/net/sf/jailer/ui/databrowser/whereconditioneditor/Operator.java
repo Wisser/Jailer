@@ -27,8 +27,7 @@ enum Operator {
 	LessOrEqual("<="),
 	Greater(">"),
 	GreaterOrEquals(">="),
-	Like("like"),
-	ILike("ilike");
+	Like("like");
 	
 	final String sql;
 	

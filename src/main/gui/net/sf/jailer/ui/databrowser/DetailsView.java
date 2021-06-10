@@ -521,7 +521,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							}
 							Point vPos = jScrollPane1.getViewport().getViewPosition();
 							if (isEditable) {
-								origText = browserContentCellEditor.cellContentToText(row, columnIndexAtI, vOrig);
+								origText = browserContentCellEditor.cellContentToText(columnIndexAtI, vOrig);
 								f.setText(origText);
 							} else {
 								if (vOrig instanceof UIUtil.IconWithText) {

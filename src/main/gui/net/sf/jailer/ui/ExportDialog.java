@@ -410,6 +410,18 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
 
 			theSettings.restore(settingsContext, settingsContextSecondaryKey);
+			
+			try {
+				JTextField c;
+				c = (JTextField) iFMTableSchemaComboBox.getEditor().getEditorComponent();
+				if ("Item 1".equals(c.getText())) {
+					c.setText(DEFAULT_SCHEMA);
+				}
+
+			} catch (ClassCastException e) {
+				// ignore
+			}
+
 			for (JTextField field: defaults.keySet()) {
 				if (field.getText().length() == 0) {
 					field.setText(defaults.get(field));

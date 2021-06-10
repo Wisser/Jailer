@@ -1333,7 +1333,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							}
 						} else {
-							if (isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
+							if (isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, convertedColumnIndex, r.values[convertedColumnIndex])
 									&& isPKComplete(type, r) && !rowIdSupport.getPrimaryKey(type, BrowserContentPane.this.session).getColumns().isEmpty()) {
 								((JLabel) render).setBackground((bgRow % 2 == 0) ? BG1_EM : BG2_EM);
 								render.setName("final");
@@ -1344,7 +1344,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					} else {
 						((JLabel) render).setBackground(currentRowSelection == row? BG4 : (bgRow % 2 == 0? BG4 : BG4_2));
 					}
-					if (table != rowsTable && isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
+					if (table != rowsTable && isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, convertedColumnIndex, r.values[convertedColumnIndex])
 								&& isPKComplete(type, r) && !rowIdSupport.getPrimaryKey(type, BrowserContentPane.this.session).getColumns().isEmpty()) {
 						((JLabel) render).setBackground((column % 2 == 0) ? BG1_EM : BG2_EM);
 						render.setName("final");
@@ -4254,6 +4254,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					}
 					browserContentCellEditor = new BrowserContentCellEditor(columnTypes, columnTypeNames, session);
+					onContentCellEditorCreated(browserContentCellEditor);
 				}
 
 				@Override
@@ -4638,7 +4639,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						r = rows.get(row);
 					}
 					Table type = getResultSetTypeForColumn(column);
-					if ((isEditMode || browserContentCellEditor.isInDetailsView()) && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, row, column, r.values[column]) && isPKComplete(type, r)) {
+					if ((isEditMode || browserContentCellEditor.isInDetailsView()) && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, column, r.values[column]) && isPKComplete(type, r)) {
 						return !rowIdSupport.getPrimaryKey(type, session).getColumns().isEmpty();
 					}
 					return false;
@@ -4650,9 +4651,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Row theRow = null;
 					if (row < rows.size()) {
 						theRow = rows.get(row);
-						Object content = browserContentCellEditor.textToContent(row, column, text, theRow.values[column]);
+						Object content = browserContentCellEditor.textToContent(column, text, theRow.values[column]);
 						if (content != BrowserContentCellEditor.INVALID) {
-							if (!browserContentCellEditor.cellContentToText(row, column, theRow.values[column]).equals(text)) {
+							if (!browserContentCellEditor.cellContentToText(column, theRow.values[column]).equals(text)) {
 								Table type = getResultSetTypeForColumn(column);
 								if (resultSetType != null) {
 									theRow = createRowWithNewID(theRow, type);
@@ -4813,7 +4814,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						inplaceEditorcurrentRow = rowsTable.getRowSorter().convertRowIndexToModel(row);
 						int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 						if (r != null) {
-							value = browserContentCellEditor.cellContentToText(row, convertedColumnIndex, r.values[convertedColumnIndex]);
+							value = browserContentCellEditor.cellContentToText(convertedColumnIndex, r.values[convertedColumnIndex]);
 						}
 					}
 					return super.getTableCellEditorComponent(table, value, isSelected, row, column);
@@ -6335,7 +6336,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	protected abstract void onContentChange(List<Row> rows, boolean reloadChildren);
 	protected void onConditionChange(String cond) {
-	};
+	}
+	protected void onContentCellEditorCreated(BrowserContentCellEditor cellEditor) {
+	}
 
 	protected abstract void onRedraw();
 	protected abstract void onHide();

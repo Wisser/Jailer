@@ -465,7 +465,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 				openSQLEditor(textfield, open);
 			}
 			private void openSQLEditor(final JTextField textfield, Consumer<String> open) {
-				if (!inProgress) {
+				if (!inProgress && textfield.isEnabled()) {
 					inProgress = true;
 					UIUtil.invokeLater(1, () -> {
 						try {
@@ -484,7 +484,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 			boolean done = false;
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (!done) {
+				if (!done && textfield.isEnabled()) {
 					done = true;
 					openAndDoCompletion.run();
 				}
