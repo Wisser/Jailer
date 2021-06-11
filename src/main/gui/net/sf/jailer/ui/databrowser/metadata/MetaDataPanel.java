@@ -1312,7 +1312,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     }
                 }
             } else if (userObject instanceof MDTable) {
-                if (userObject == mdTable) {
+                if (((MDTable) userObject).getSchema() == mdTable.getSchema() && ((MDTable) userObject).getName().equals(mdTable.getName())) {
                     return new TreePath(((DefaultMutableTreeNode) root).getPath());
                 }
             }

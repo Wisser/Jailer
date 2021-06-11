@@ -17,9 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.Point;
@@ -55,6 +53,7 @@ import java.util.function.Consumer;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -63,8 +62,10 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -77,6 +78,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.util.SizeGrip;
 
 /**
  * Substring search for combo boxes.
@@ -236,6 +238,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				if (!loadingDialogisVisible.get()) {
 					dialog.dispose();
 					consumeResult();
+				} else {
+					onAbort();
 				}
 			}
 			@Override
@@ -399,6 +403,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	this.renderConsumer = renderConsumer;
         initComponents();
         
+        bottomPanel.setVisible(false);
+        setStatus(null, null);
         plugInPanel.setVisible(false);
 
         if (metaDataSource != null) {
@@ -459,15 +465,19 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		searchTextField.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				updateList();
+				update();
 			}
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				updateList();
+				update();
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
+				update();
+			}
+			protected void update() {
 				updateList();
+				infoLabel.setVisible(searchTextField.getText().isEmpty());
 			}
 		});
 		
@@ -555,13 +565,31 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		updateList();
     }
 
-    public void setInitialValue(String value) {
+    /**
+     * Sets status text and icon.
+     */
+    public void setStatus(String text, Icon icon) {
+		statusLabel.setText(text);
+		statusLabel.setIcon(icon);
+		statusPanel.setVisible(text != null || icon != null);
+		bottomPanel.setVisible(text != null || icon != null || withSG);
+    }
+
+	public void setInitialValue(String value) {
 		searchTextField.setText(value);
 		searchTextField.selectAll();
 		updateList(false);
 		acceptAll = true;
 	}
+	
+	public void withSizeGrip() {
+		JPanel corner = new SizeGrip();
+		sizeGripPanel.add(corner, java.awt.BorderLayout.EAST);
+		withSG = true;
+		bottomPanel.setVisible(true);
+	}
 
+	private boolean withSG = false;
     private boolean acceptAll = false;
     private boolean plainIsValid = false;
     
@@ -746,8 +774,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         cancelButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
         searchTextField = new javax.swing.JTextField();
         okButton = new javax.swing.JButton();
+        infoLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         searchList = new javax.swing.JList<>();
         schemaPanel = new javax.swing.JPanel();
@@ -758,6 +788,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
         visPanel = new javax.swing.JPanel();
         selectAllButton = new javax.swing.JButton();
         plugInPanel = new javax.swing.JPanel();
+        bottomPanel = new javax.swing.JPanel();
+        statusPanel = new javax.swing.JPanel();
+        statusLabel = new javax.swing.JLabel();
+        sizeGripPanel = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
 
         loadingPanel.setBackground(java.awt.Color.white);
 
@@ -790,14 +826,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        searchTextField.setText("jTextField1");
+        jLayeredPane1.setLayout(new java.awt.GridBagLayout());
+
         searchTextField.setToolTipText("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n</html>\n\n");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        jPanel4.add(searchTextField, gridBagConstraints);
+        jLayeredPane1.add(searchTextField, gridBagConstraints);
 
         okButton.setText("  Ok  ");
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -808,7 +845,26 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        jPanel4.add(okButton, gridBagConstraints);
+        jLayeredPane1.add(okButton, gridBagConstraints);
+
+        infoLabel.setFont(infoLabel.getFont().deriveFont((infoLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
+        infoLabel.setForeground(java.awt.Color.lightGray);
+        infoLabel.setText("  Type partial value to search");
+        jLayeredPane1.setLayer(infoLabel, javax.swing.JLayeredPane.MODAL_LAYER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jLayeredPane1.add(infoLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel4.add(jLayeredPane1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -886,7 +942,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.weighty = 1.0;
@@ -900,6 +956,59 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.1;
         add(plugInPanel, gridBagConstraints);
+
+        bottomPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        bottomPanel.setLayout(new java.awt.GridBagLayout());
+
+        statusPanel.setBackground(new java.awt.Color(255, 255, 204));
+        statusPanel.setLayout(new java.awt.GridBagLayout());
+
+        statusLabel.setForeground(new java.awt.Color(0, 0, 77));
+        statusLabel.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        statusPanel.add(statusLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        bottomPanel.add(statusPanel, gridBagConstraints);
+
+        sizeGripPanel.setOpaque(false);
+        sizeGripPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        bottomPanel.add(sizeGripPanel, gridBagConstraints);
+
+        jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+
+        jLabel3.setText(" ");
+        jPanel5.add(jLabel3);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.weightx = 1.0;
+        bottomPanel.add(jPanel5, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        add(bottomPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -938,14 +1047,19 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel bottomPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton cancelLoadiingButton;
+    private javax.swing.JLabel infoLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel loadingPanel;
@@ -955,6 +1069,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private javax.swing.JList<String> searchList;
     private javax.swing.JTextField searchTextField;
     private javax.swing.JButton selectAllButton;
+    private javax.swing.JPanel sizeGripPanel;
+    private javax.swing.JLabel statusLabel;
+    private javax.swing.JPanel statusPanel;
     private javax.swing.JPanel visPanel;
     // End of variables declaration//GEN-END:variables
     

@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -76,13 +78,14 @@ import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.databrowser.Desktop;
-import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.ui.util.SmallButton;
+import net.sf.jailer.util.CancellationException;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
@@ -98,6 +101,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	// TODO remove empty lines before putting text back into sql console after user edit
 	// TODO respect quoting
 	// TODO offer null and not null
+	
+	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 10000;
+	// TODO caching, cache-clear after modification or timeout
+	// TODO weak map
+	private final int MAX_SIZE_DISTINCTEXISTINGVALUES = 10_000_000;
+	private final int MAX_SIZE_DISTINCTEXISTINGVALUESCACHE = 21_000_000;
 	
 	private final DataModel dataModel;
 	private final Table table;
@@ -217,6 +226,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         				editor.getDocument().removeDocumentListener(predecessor.documentListener);
         			}
         			splitPane.setDividerLocation(predecessor.splitPane.getDividerLocation());
+        			predecessor.cancel();
         		}
         		documentListener = new DocumentListener() {
 					@Override
@@ -399,9 +409,16 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						.map(sql -> Character.isAlphabetic(sql.charAt(0))? "\\b" + Pattern.quote(sql) + "\\b" : Pattern.quote(sql))
 						.collect(Collectors.joining("|"))
 					+ "))\\s*" + valueRegex;
-			Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
-			Matcher matcher = identOperator.matcher(latestParsedCondition);
-			if (matcher.find()) {
+			boolean found = false;
+			Matcher matcher = null;
+			try {
+				Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+				matcher = identOperator.matcher(latestParsedCondition);
+				found = matcher.find();
+			} catch (Throwable t) {
+				// ignore
+			}
+			if (found) {
 				int start = matcher.start();
 				String q1 = matcher.group(1);
 				String q2 = matcher.group(2);
@@ -977,10 +994,22 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	}
     	Window owner = SwingUtilities.getWindowAncestor(valueTextField);
 		JComboBox combobox = new JComboBox();
-		combobox.setModel(new DefaultComboBoxModel<String>());
-		for (Column c: table.getColumns()) {
-			((DefaultComboBoxModel) combobox.getModel()).addElement(c.name); // TODO
-		}
+		DefaultComboBoxModel<String> defaultComboBoxModel = new DefaultComboBoxModel<String>();
+		combobox.setModel(defaultComboBoxModel);
+		Map<String, Consumer<JLabel>> renderConsumer = new HashMap<String, Consumer<JLabel>>();
+		String item;
+		Color color;
+		
+		color = Color.blue;
+		item = "is null";
+		defaultComboBoxModel.addElement(item);
+		renderConsumer.put(item, label -> label.setForeground(color));
+		item = "is not null";
+		defaultComboBoxModel.addElement(item);
+		renderConsumer.put(item, label -> label.setForeground(color));
+		
+		// TODO history
+		
 		List<StringSearchPanel> theSearchPanel = new ArrayList<StringSearchPanel>();
 		String origText = valueTextField.getText();
 		StringSearchPanel searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
@@ -988,15 +1017,18 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			public void run() {
 				valueTextField.setText(theSearchPanel.get(0).getPlainValue());
 				accept(comparison, theSearchPanel.get(0).getPlainValue(), comparison.operator);
+		    	cancel();
 			}
-		}, null) {
+		}, renderConsumer) {
 			@Override
 			protected void onClose(String text) {
 		    	valueTextField.setText(text);
+		    	cancel();
 			}
 			@Override
 			protected void onAbort() {
 				valueTextField.setText(origText);
+		    	cancel();
 			}
 			@Override
 			protected Integer preferredWidth() {
@@ -1020,13 +1052,117 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			}
 		};
 		theSearchPanel.add(searchPanel);
+
 		Point point = new Point(0, 0);
 		SwingUtilities.convertPointToScreen(point, valueTextField);
+		searchPanel.withSizeGrip();
 		searchPanel.find(owner, "Condition", point.x, point.y, true);
 		searchPanel.setInitialValue(valueTextField.getText());
+		searchPanel.setStatus("loading existing values...", null);
+		Object cancellationContext = nextCancellationContext;
 		
-		// TODO new Timer(1000, e -> { ((DefaultComboBoxModel) combobox.getModel()).addElement("" + System.currentTimeMillis()); searchPanel.updateList(); }).start();
+		runnableQueue.add(() -> {
+			try {
+				boolean[] incomplete = new boolean[1];
+				incomplete[0] = false;
+				List<String> distinctExisting = loadDistinctExistingValues(comparison, cancellationContext, incomplete);
+				UIUtil.invokeLater(() -> {
+					distinctExisting.forEach(s -> defaultComboBoxModel.addElement(s));
+					searchPanel.updateList(false);
+					if (incomplete[0] || distinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
+						UIUtil.invokeLater(() -> {
+							searchPanel.setStatus("incomplete"
+									+ (incomplete[0] ? "" : ("(>" + MAX_NUM_DISTINCTEXISTINGVALUES + " values)")),
+									UIUtil.scaleIcon(searchPanel, warnIcon));
+						});
+						return;
+					}
+				});
+			} catch (CancellationException e) {
+				// ok;
+			} catch (Throwable e) {
+				UIUtil.invokeLater(() -> {
+					searchPanel.setStatus("error loading values", UIUtil.scaleIcon(searchPanel, warnIcon));
+				});
+				return;
+			}
+			UIUtil.invokeLater(() -> {
+				searchPanel.setStatus(null, null);
+			});
+		});
     }
+    
+    private Object nextCancellationContext = new Object();
+    
+    private void cancel() {
+    	CancellationHandler.cancelSilently(nextCancellationContext);
+    	nextCancellationContext = new Object();
+    }
+    
+    private final String DISTINCTEXISTINGVALUESCACHEKEY = "DistinctExistingValuesCache";
+    private final String DISTINCTEXISTINGVALUESICCACHEKEY = "DistinctExistingValuesICCache";
+
+	@SuppressWarnings("unchecked")
+	private List<String> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, boolean incomplete[]) throws SQLException {
+		final int MAX_TEXT_LENGTH = 1024 * 4;
+		
+		Map<Pair<String, String>, List<String>> cache = (Map<Pair<String, String>, List<String>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
+		if (cache == null) {
+			cache = new HashMap<Pair<String,String>, List<String>>();
+			session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY, cache);
+		}
+		Set<Pair<String, String>> icCache = (Set<Pair<String, String>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY);
+		if (icCache == null) {
+			icCache = new HashSet<Pair<String,String>>();
+			session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY, icCache);
+		}
+		Pair<String, String> key = new Pair<String, String>(table.getName(), comparison.column.name);
+		List<String> result = cache.get(key);
+		if (icCache.contains(key)) {
+			incomplete[0] = true;
+		}
+		
+		if (result == null) {
+			result = new ArrayList<String>();
+			int columnIndex = 0;
+			while (columnIndex < table.getColumns().size()) {
+				if (comparison.column.equals(table.getColumns().get(columnIndex))) {
+					int finalColumnIndex = columnIndex;
+					List<String> finalResult = result;
+					Set<Pair<String, String>> finalIcCache = icCache;
+					String sqlQuery = "Select distinct " + comparison.column.name + " from " + table.getName() + " where " +  comparison.column.name + " is not null";
+					AbstractResultSetReader reader = new AbstractResultSetReader() {
+						@Override
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							Object obj = getCellContentConverter(resultSet, session, session.dbms).getObject(resultSet, 1);
+							if (cellEditor.isEditable(table, finalColumnIndex, obj)) {
+								String text = cellEditor.cellContentToText(finalColumnIndex, obj);
+								if (text.length() <= MAX_TEXT_LENGTH) {
+									finalResult.add(text);
+								} else {
+									incomplete[0] = true;
+									finalIcCache.add(key);
+								}
+							} else {
+								incomplete[0] = true;
+								finalIcCache.add(key);
+							}
+						}
+					};
+					try {
+						session.executeQuery(sqlQuery + " order by " + comparison.column.name, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 1);
+					} catch (SQLException e) {
+						// try without ordering
+						session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 1);
+						result.sort(String::compareToIgnoreCase);
+					}
+				}
+				++columnIndex;
+			}
+		}
+		cache.put(key, result);
+		return result;
+	}
 
 	protected void accept(Comparison comparison, String value, Operator operator) {
 		if (value != null) {
@@ -1130,7 +1266,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	}
     	int i = 0;
     	while (i < table.getColumns().size()) {
-    		if (table.getColumns().get(i) == comparison.column) {
+    		if (comparison.column.equals(table.getColumns().get(i))) {
     			Object obj = cellEditor.textToContent(i, value, null);
     			if (obj == BrowserContentCellEditor.INVALID) {
     				return null;
@@ -1182,11 +1318,44 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		
 	};
     
+	/**
+	 * For concurrent loading of distinct values.
+	 */
+	private static final BlockingQueue<Runnable> runnableQueue = new LinkedBlockingQueue<Runnable>();
+	private static final int MAX_CONCURRENT_CONNECTIONS = 1;
+	static {
+		// initialize listeners for #runnableQueue
+		for (int i = 0; i < MAX_CONCURRENT_CONNECTIONS; ++i) {
+			Thread t = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					for (;;) {
+						Runnable take = null;
+						try {
+							take = runnableQueue.take();
+							take.run();
+						} catch (InterruptedException e) {
+							// ignore
+						} catch (CancellationException e) {
+							// ignore
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+					}
+				}
+			}, "DistinctValuesReader-" + (i + 1));
+			t.setDaemon(true);
+			t.start();
+		}
+	}
+
 	private static ImageIcon tableIcon;
 	private static ImageIcon deleteIcon;
+    static ImageIcon warnIcon;
 	static {
         // load images
         tableIcon = UIUtil.readImage("/table.png");
         deleteIcon = UIUtil.readImage("/delete.png");
-    }
+        warnIcon = UIUtil.readImage("/wanr.png");
+	}
 }

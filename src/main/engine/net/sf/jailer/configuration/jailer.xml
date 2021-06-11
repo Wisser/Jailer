@@ -1394,6 +1394,20 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
                 <value>'$1'::$2</value>
             </entry>
         </sqlExpressionRule>
+        <stringLiteralEscapeSequences>
+            <entry>
+                <key>'</key>
+                <value>''</value>
+            </entry>
+            <entry>
+                <key>\n</key>
+                <value>' || chr(10) || '</value>
+            </entry>
+            <entry>
+                <key>\r</key>
+                <value>' || chr(13) || '</value>
+            </entry>
+        </stringLiteralEscapeSequences>
         <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
         <fetchSize>4096</fetchSize>
 

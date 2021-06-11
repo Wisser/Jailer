@@ -16,11 +16,9 @@
 package net.sf.jailer.util;
 
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -34,13 +32,13 @@ public class CancellationHandler {
 	/**
 	 * Contexts for which user have requested cancellation.
 	 */
-	private static Set<Object> cancelled = new HashSet<Object>();
+	private static Map<Object, Object> cancelled = new WeakHashMap<Object, Object>();
 	
 	/**
 	 * List of all currently running statements per context.
 	 */
-	private static Map<Object, IdentityHashMap<Statement, Statement>> currentStatements = new HashMap<Object, IdentityHashMap<Statement, Statement>>();
-	
+	private static Map<Object, IdentityHashMap<Statement, Statement>> currentStatements = new WeakHashMap<Object, IdentityHashMap<Statement, Statement>>();
+
 	/**
 	 * The logger.
 	 */
@@ -86,7 +84,7 @@ public class CancellationHandler {
 	 * @param context cancellation context, <code>null</code> for default context
 	 */
 	private static synchronized void synchronizedCancel(Object context) {
-		cancelled.add(context == null? DEFAULT_CONTEXT : context);
+		cancelled.put(context == null? DEFAULT_CONTEXT : context, context == null? DEFAULT_CONTEXT : context);
 		if (currentStatements.containsKey(context == null? DEFAULT_CONTEXT : context)) {
 			final IdentityHashMap<Statement, Statement> toBeCanceled = new IdentityHashMap<Statement, Statement>(currentStatements.get(context == null? DEFAULT_CONTEXT : context));
 			currentStatements.remove(context == null? DEFAULT_CONTEXT : context);
@@ -100,13 +98,15 @@ public class CancellationHandler {
 							// ignore
 						}
 					}
-				});
+				}, "Cancel-Statement-" + (count++));
 				thread.setDaemon(true);
 				thread.start();
 			}
 		}
 	}
 
+	private static int count = 0;
+	
 	/**
 	 * Indicates that a statement is going to be executed.
 	 * 
@@ -142,7 +142,7 @@ public class CancellationHandler {
 	 * @throws CancellationException if cancellation have been requested
 	 */
 	public static synchronized void checkForCancellation(Object context) throws CancellationException {
-		if (cancelled.contains(context == null? DEFAULT_CONTEXT : context)) {
+		if (cancelled.containsKey(context == null? DEFAULT_CONTEXT : context)) {
 			throw new CancellationException();
 		}
 	}
