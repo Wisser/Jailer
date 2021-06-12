@@ -62,10 +62,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -227,8 +225,16 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		this.onClose = onClose;
 	}
 
+	private Integer estimatedItemsCount = null;
+	private Integer cellHeight;
+	
+	public void setEstimatedItemsCount(Integer estimatedItemsCount) {
+		this.estimatedItemsCount = estimatedItemsCount;
+	}
+
 	public void find(Window owner, Object titel, int x, int y, boolean locateUnderButton) {
 		isEscaped = false;
+		explictlyClosed = false;
 		dialog = new JDialog(owner, String.valueOf(titel));
 		dialog.setModal(false);
 		dialog.setUndecorated(true);
@@ -269,8 +275,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		plugInPanel.setVisible(false);
 		
 		dialog.pack();
+		int oHeight = dialog.getHeight();
+		dialog.pack();
 		double mh = 440;
-		double f = searchList.getModel().getSize() / 18.0;
+		int size = searchList.getModel().getSize();
+		double f = size / 18.0;
 		if (f < 1) {
 			mh = Math.max(240, mh * f);
 		}
@@ -285,6 +294,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		}
 		Integer prefWidth = preferredWidth();
 		Integer maxX = maxX();
+		if (estimatedItemsCount != null && estimatedItemsCount > 0) {
+			height = (int) ((estimatedItemsCount - 0.5) * Math.max(16, cellHeight) + oHeight);
+		}
 		dialog.setSize(prefWidth != null ? prefWidth : Math.max(minWidth, dialog.getWidth()), Math.min(height, 600));
 		if (maxX != null) {
 			dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
@@ -341,11 +353,16 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private boolean keepSearchText = false;
 	
 	public void updateList() {
-		updateList(true);
+		updateList(true, false);
+	}
+	
+	public void updateList(boolean filter) {
+		updateList(filter, false);
 	}
 
-	public void updateList(boolean filter) {
+	public void updateList(boolean filter, boolean allowDuplicates) {
 		DefaultListModel<String> matches = new DefaultListModel<String>();
+		Set<String> seen = new HashSet<String>();
 		String text = searchTextField.getText();
 		boolean withPrefix = !text.startsWith(" ");
 		boolean withSuffix = !text.endsWith(" ");
@@ -362,7 +379,13 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						|| withPrefix && !withSuffix && item.toUpperCase(Locale.ENGLISH).endsWith(searchText)
 						|| !withPrefix && !withSuffix && item.toUpperCase(Locale.ENGLISH).equals(searchText)
 						) {
+					if (!searchText.isEmpty() && !allowDuplicates) {
+						if (seen.contains(item)) {
+							matches.removeElement(item);
+						}
+					}
 					matches.addElement(item);
+					seen.add(item);
 					if (!showAll && matches.getSize() > MAX_LIST_LENGTH) {
 						showAllLabel = "show all ...";
 						matches.addElement(showAllLabel);
@@ -372,7 +395,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			}
 		}
 		searchList.setModel(matches);
-		if (!matches.isEmpty()) {
+		if (!acceptAll && !matches.isEmpty()) {
 			searchList.setSelectedIndex(0);
 		}
 	}
@@ -407,6 +430,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
         setStatus(null, null);
         plugInPanel.setVisible(false);
 
+        DefaultListModel<String> model = new DefaultListModel<String>();
+		searchList.setModel(model);
+		cellHeight = searchList.getMinimumSize().height;
+		model.addElement("1");
+		model.addElement("2");
+		model.addElement("3");
+		model.addElement("4");
+		cellHeight = (searchList.getMinimumSize().height - cellHeight) / 4;
+		
         if (metaDataSource != null) {
         	List<MDSchema> vis = new ArrayList<MDSchema>();
         	Set<MDSchema> visAsSet = new HashSet<MDSchema>();
@@ -438,13 +470,14 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			public void keyTyped(KeyEvent e) {
 				if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
 					isEscaped = true;
-					close();
+					close(true);
 				} else if (e.getKeyChar() == KeyEvent.VK_DOWN) {
 					searchList.grabFocus();
-				} else if (e.getKeyChar() == '\n') {
+					searchList.setSelectedIndex(0);
+				} else if (e.getKeyChar() == '\n') { // TODO VK_ENTER?
 					result = searchList.getSelectedValue();
 			    	plainIsValid = e.getSource() == searchTextField;
-					close();
+					close(true);
 				}
 			}
 			@Override
@@ -455,6 +488,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				int kc = e.getKeyCode();
 				if (kc == KeyEvent.VK_DOWN) {
 					searchList.grabFocus();
+					searchList.setSelectedIndex(0);
 				}
 			}
 		};
@@ -507,7 +541,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() > 1) {
 					result = searchList.getSelectedValue();
-					close();
+					close(true);
 				}
 			}
 		});
@@ -578,7 +612,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public void setInitialValue(String value) {
 		searchTextField.setText(value);
 		searchTextField.selectAll();
-		updateList(false);
+		updateList(false, true);
 		acceptAll = true;
 	}
 	
@@ -874,11 +908,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         add(jPanel4, gridBagConstraints);
 
-        searchList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
+        searchList.setVisibleRowCount(1);
         jScrollPane1.setViewportView(searchList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1014,14 +1044,21 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     	result = searchList.getSelectedValue();
     	plainIsValid = true;
-		close();
+		close(true);
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-    	close();
+    	close(true);
 	}//GEN-LAST:event_cancelButtonActionPerformed
 
-	public void close() {
+    private boolean explictlyClosed = false;
+    
+	public boolean isExplictlyClosed() {
+		return explictlyClosed;
+	}
+
+	public void close(boolean explictlyClosed) {
+		this.explictlyClosed = explictlyClosed;
 		onClose(searchTextField.getText());
 		dialog.setVisible(false);
 	}

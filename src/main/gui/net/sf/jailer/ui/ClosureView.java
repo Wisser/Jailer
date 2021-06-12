@@ -233,7 +233,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
 						@Override
 						protected void close() {
-							searchPanel.close();
+							searchPanel.close(true);
 						}
 						@Override
 						protected void apply(Table source, Table destination) {

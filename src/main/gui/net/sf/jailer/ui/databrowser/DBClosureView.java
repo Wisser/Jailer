@@ -500,7 +500,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
 					@Override
 					protected void close() {
-						searchPanel.close();
+						searchPanel.close(true);
 					}
 
 					@Override

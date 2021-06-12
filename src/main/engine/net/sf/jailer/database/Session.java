@@ -297,6 +297,7 @@ public class Session {
 				return con;
 			}
 			private Connection getConnection0() throws SQLException {
+				@SuppressWarnings("resource")
 				Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;
 
 				if (con == null && Boolean.TRUE.equals(sharesConnection.get())) {
@@ -747,6 +748,7 @@ public class Session {
 	 */
 	private static final int PERMITS = Integer.MAX_VALUE / 4;
 	private Semaphore semaphore = new Semaphore(PERMITS);
+
 	private static final int MAXIMUM_NUMBER_OF_FAILURES = 100;
 
 	/**
@@ -1060,9 +1062,11 @@ public class Session {
 									statement.getResultSet().close();
 								} else {
 									rowCount = statement.getUpdateCount();
+									lastUpdateTS = System.currentTimeMillis();
 								}
 							} else {
 								rowCount = statement.executeUpdate(sql);
+								lastUpdateTS = System.currentTimeMillis();
 							}
 						} finally {
 							if (acquired) {
@@ -1084,9 +1088,11 @@ public class Session {
 									statement.getResultSet().close();
 								} else {
 									rowCount = statement.getUpdateCount();
+									lastUpdateTS = System.currentTimeMillis();
 								}
 							} else {
 								rowCount = statement.executeUpdate(sql);
+								lastUpdateTS = System.currentTimeMillis();
 							}
 						} finally {
 							if (acquired) {
@@ -1480,7 +1486,8 @@ public class Session {
 	}
 
 	private static volatile Connection globalFallbackConnection = null;
-
+	public static volatile long lastUpdateTS;
+	
 	public static void setGlobalFallbackConnection(Connection globalFallbackConnection) {
 		Session.globalFallbackConnection = globalFallbackConnection;
 	}

@@ -45,3 +45,16 @@ public class JailerVersion {
 	}
 
 }
+
+// TODO
+
+//1z"ORA-00922: Fehlende oder ungültige Option
+//" in statement "CREATE TABLE Item 1.JAILER_IFM
+//(
+//OLD_VALUE1 NUMBER(10), NEW_VALUE1 NUMBER(10)
+//) NOLOGGING"
+//10.4.9
+//CREATE TABLE Item 1.JAILER_IFM
+//(
+//OLD_VALUE1 NUMBER(10), NEW_VALUE1 NUMBER(10)
+//) NOLOGGING

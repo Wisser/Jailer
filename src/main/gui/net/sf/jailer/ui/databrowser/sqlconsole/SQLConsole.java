@@ -1240,6 +1240,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					}
                 });
             } else {
+            	Session.lastUpdateTS = System.currentTimeMillis();
                 status.timeInMS += (System.currentTimeMillis() - startTime);
                 int updateCount = !hasUpdateCount? 0 : statement.getUpdateCount();
                 if (updateCount >= 0) {
