@@ -910,8 +910,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			// ignore
 		}
 
-		conditionEditorButton.setVisible(false); // TODO
-		
 		// TODO show tooltip of "where-clause" combobox formatted
 		
 		andCondition.getEditor().getEditorComponent().setFont(UIUtil.getSQLEditorFont());
@@ -5906,6 +5904,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         conditionEditorButton.setText("jToggleButton1");
         conditionEditorButton.setToolTipText("Open Condition Editor");
+        conditionEditorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                conditionEditorButtonActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -6121,6 +6124,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private void errorDetailsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_errorDetailsButtonActionPerformed
         UIUtil.showException(this, "Error", currentErrorDetail);
     }//GEN-LAST:event_errorDetailsButtonActionPerformed
+
+    private void conditionEditorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_conditionEditorButtonActionPerformed
+        if (conditionEditorButton.isSelected()) {
+        	Point p = new Point(0, conditionEditorButton.getHeight());
+    		SwingUtilities.convertPointToScreen(p, conditionEditorButton);
+        	openConditionEditor(p, true, () -> conditionEditorButton.setSelected(false));
+        }
+    }//GEN-LAST:event_conditionEditorButtonActionPerformed
 
 	private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_loadButtonActionPerformed
 		if (System.currentTimeMillis() - lastReloadTS > 200) {
@@ -6338,6 +6349,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected void onConditionChange(String cond) {
 	}
 	protected void onContentCellEditorCreated(BrowserContentCellEditor cellEditor) {
+	}
+	protected void openConditionEditor(Point location, boolean singleFieldMode, Runnable onClose) {
 	}
 
 	protected abstract void onRedraw();

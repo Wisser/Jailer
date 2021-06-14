@@ -1293,6 +1293,11 @@ public abstract class Desktop extends JDesktopPane {
 			protected void onContentCellEditorCreated(BrowserContentCellEditor cellEditor) {
 				Desktop.this.onContentCellEditorCreated(this, cellEditor);
 			}
+
+			@Override
+			protected void openConditionEditor(Point location, boolean singleFieldMode, Runnable onClose) {
+				Desktop.this.openConditionEditor(this, location, singleFieldMode, onClose);
+			}
 		};
 
 		Rectangle r = layout(parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
@@ -3024,7 +3029,8 @@ public abstract class Desktop extends JDesktopPane {
 	protected abstract void repaintOutline();
 	protected abstract boolean desktopOutlineDraggingInProgress();
 	protected abstract void openGlobalPopup(MouseEvent e);
-
+	protected abstract void openConditionEditor(BrowserContentPane browserContentPane, Point location, boolean singleFieldMode, Runnable onClose);
+	
 	public void openSchemaMappingDialog(boolean silent) {
 		try {
 			Map<String, String> mapping = schemaMapping;

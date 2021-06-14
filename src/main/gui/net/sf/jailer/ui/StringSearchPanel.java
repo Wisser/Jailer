@@ -59,6 +59,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -113,10 +114,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 	
 	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton) {
-		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, alternativeIcon, additionalComponentFactory, locateUnderButton, false, null);
+		return createSearchButton(owner, comboBox, titel, onSuccess, prepare, metaDataSource, dataModel, alternativeIcon, additionalComponentFactory, locateUnderButton, false, null, false);
 	}
 
-	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText, final Map<String, Consumer<JLabel>> renderConsumer) {
+	public static JToggleButton createSearchButton(final Window owner, final javax.swing.JComboBox comboBox, final Object titel, final Runnable onSuccess, final Prepare prepare, final MetaDataSource metaDataSource, final DataModel dataModel, boolean alternativeIcon, final AdditionalComponentFactory additionalComponentFactory, final boolean locateUnderButton, final boolean keepSearchText, final Map<String, Consumer<JLabel>> renderConsumer, boolean closeOwner) {
 		final JToggleButton button = new JToggleButton();
 		button.setIcon(getSearchIcon(alternativeIcon, button));
 		button.addActionListener(new ActionListener() {
@@ -136,6 +137,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					        		location = buttonLocation;
 					        	}
 								StringSearchPanel searchPanel = new StringSearchPanel(button, comboBox, metaDataSource, dataModel, prepare, onSuccess, renderConsumer);
+								searchPanel.setCloseOwner(closeOwner);
 								searchPanel.keepSearchText = keepSearchText;
 								if (additionalComponentFactory != null) {
 									searchPanel.plugInPanel.add(additionalComponentFactory.create(searchPanel), java.awt.BorderLayout.CENTER);
@@ -231,21 +233,35 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public void setEstimatedItemsCount(Integer estimatedItemsCount) {
 		this.estimatedItemsCount = estimatedItemsCount;
 	}
+	
+	public class StringSearchDialog extends JDialog {
+
+		public StringSearchDialog(Window owner, String titel) {
+			super(owner, titel);
+		}
+		
+	};
 
 	public void find(Window owner, Object titel, int x, int y, boolean locateUnderButton) {
 		isEscaped = false;
 		explictlyClosed = false;
-		dialog = new JDialog(owner, String.valueOf(titel));
+		dialog = new StringSearchDialog(owner, String.valueOf(titel));
 		dialog.setModal(false);
 		dialog.setUndecorated(true);
 		dialog.addWindowFocusListener(new WindowFocusListener() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
 				if (!loadingDialogisVisible.get()) {
+					if (owner != null && isCloseOwner() && e.getOppositeWindow() != owner) {
+						if (!(owner instanceof JFrame)) {
+							owner.dispose();
+							owner.setVisible(false);
+						} else {
+							System.out.print(""); // TODO
+						}
+					}
 					dialog.dispose();
 					consumeResult();
-				} else {
-					onAbort();
 				}
 			}
 			@Override
@@ -1083,7 +1099,17 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		this.stringCount = stringCount;
 	}
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+	private boolean closeOwner;
+	
+    public boolean isCloseOwner() {
+		return closeOwner;
+	}
+
+	public void setCloseOwner(boolean closeOwner) {
+		this.closeOwner = closeOwner;
+	}
+
+	// Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton cancelLoadiingButton;
