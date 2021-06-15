@@ -23,12 +23,12 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -119,6 +119,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private DocumentListener documentListener;
 	private String tableAlias = "A";
 	private final boolean asPopup;
+	private final int initialColumn;
 
 	private class Comparison {
 		Operator operator;
@@ -142,13 +143,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	@SuppressWarnings("rawtypes")
 	public WhereConditionEditorPanel(Window parent, DataModel dataModel, Table table, BrowserContentCellEditor cellEditor, Boolean sorted,
 			WhereConditionEditorPanel predecessor, RSyntaxTextAreaWithSQLSyntaxStyle editor,
-			JComponent closeButton, boolean asPopup,
+			JComponent closeButton, boolean asPopup, int initialColumn,
 			Session session, ExecutionContext executionContext) {
     	this.dataModel = dataModel;
     	this.table = table;
     	this.editor = editor;
     	this.cellEditor = cellEditor;
     	this.asPopup = asPopup;
+    	this.initialColumn = initialColumn;
     	this.session = session;
     	this.executionContext = executionContext;
         initComponents();
@@ -207,7 +209,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					return;
 				}
 			}
-			List<String> config = ConditionStorage.load(table, executionContext);
+			List<String> config;
+			if (initialColumn >= 0) {
+				config = new ArrayList<String>();
+				config.add(table.getColumns().get(initialColumn).name);
+			} else {
+				config = ConditionStorage.load(table, executionContext);
+			}
 			if (config.isEmpty()) {
 				if (table.primaryKey != null) {
 					comparisons.addAll(table.primaryKey.getColumns().stream().map(c -> new Comparison(Operator.Equal, c)).collect(Collectors.toList()));
@@ -230,33 +238,34 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
             	jScrollPane2.getVerticalScrollBar().setUnitIncrement(16);
             }
             
-            if (editor != null) {
-        		if (predecessor != null) {
-        			if (predecessor.documentListener != null) {
-        				editor.getDocument().removeDocumentListener(predecessor.documentListener);
-        			}
-        			splitPane.setDividerLocation(predecessor.splitPane.getDividerLocation());
-        			predecessor.cancel();
-        		}
-        		documentListener = new DocumentListener() {
-					@Override
-					public void removeUpdate(DocumentEvent e) {
-						updateApplyButton();
-					}
-					@Override
-					public void insertUpdate(DocumentEvent e) {
-						updateApplyButton();
-					}
-					@Override
-					public void changedUpdate(DocumentEvent e) {
-						updateApplyButton();
-					}
-					private void updateApplyButton() {
-						applyButton.setEnabled(!editor.getText().equals(latestParsedCondition));
-					}
-				};
-        		editor.getDocument().addDocumentListener(documentListener);
-        	}
+			if (predecessor != null) {
+				if (predecessor.documentListener != null) {
+					editor.getDocument().removeDocumentListener(predecessor.documentListener);
+				}
+				splitPane.setDividerLocation(predecessor.splitPane.getDividerLocation());
+				predecessor.cancel();
+			}
+			documentListener = new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					updateApplyButton();
+				}
+
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					updateApplyButton();
+				}
+
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					updateApplyButton();
+				}
+
+				private void updateApplyButton() {
+					applyButton.setEnabled(!editor.getText().equals(latestParsedCondition));
+				}
+			};
+			editor.getDocument().addDocumentListener(documentListener);
         	
 	        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 1;
@@ -296,9 +305,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					}
 				}
 			};
-			if (editor != null) {
-				editor.addFocusListener(focusListener);
-			}
+			editor.addFocusListener(focusListener);
 			searchButton.addFocusListener(focusListener);
 			sortCheckBox.addFocusListener(focusListener);
 
@@ -693,19 +700,21 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			
 	        SmallButton hideButton = new LightBorderSmallButton(UIUtil.scaleIcon(this, deleteIcon, 1.1)) {
 				@Override
-				protected void onClick() {
+				protected void onClick(MouseEvent e) {
 					if (allDisabled) {
 						return;
 					}
 					accept(comparison, "", Operator.Equal);
-					comparisons.remove(comparison);
+					if (!e.isShiftDown()) {
+						comparisons.remove(comparison);
+					}
 					updateSearchUI();
 					storeConfig();
 				}
 			};
 			hideButton.addFocusListener(focusListener);
 			allFields.add(hideButton);
-	    	hideButton.setToolTipText("Remove Search Field");
+	    	hideButton.setToolTipText("<html><i>Click</i>: <b>Remove Search Field </b><br><i>Shift+Click</i>:  <b>Clear Search Field</b></html>");
 			gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 4;
 	        gridBagConstraints.gridy = 3 * y + 1;
@@ -719,15 +728,52 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        gridBagConstraints.gridy = 3 * y + 1;
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
 	        searchFieldsPanel.add(wrap.apply(sep, y), gridBagConstraints);
-
-	        JTextField valueTextField = new JTextField(comparison.value);
+	        JTextField valueTextField = new JTextField(comparison.value) {
+	        	@Override
+				public Dimension getMinimumSize() {
+	        		String text = getText();
+	        		int cp = getCaretPosition();
+	        		setText("");
+	        		try {
+	        			return super.getMinimumSize();
+	        		} finally {
+	        			setText(text);
+	        			setCaretPosition(cp);
+	        		}
+				}
+	        	@Override
+				public Dimension getMaximumSize() {
+	        		String text = getText();
+	        		int cp = getCaretPosition();
+	        		setText("");
+	        		try {
+	        			return super.getMaximumSize();
+	        		} finally {
+	        			setText(text);
+	        			setCaretPosition(cp);
+	        		}
+				}
+	        	@Override
+				public Dimension getPreferredSize() {
+	        		String text = getText();
+	        		int cp = getCaretPosition();
+	        		setText("");
+	        		try {
+	        			return super.getPreferredSize();
+	        		} finally {
+	        			setText(text);
+	        			setCaretPosition(cp);
+	        		}
+				}
+	        };
+	        setValueFieldText(valueTextField, comparison.value);
 	        comparison.valueTextField = valueTextField;
 	        allFields.add(valueTextField);
 	    	
 	        final int finalMaxWidth = maxWidth;
 			SmallButton operatorField = new LightBorderSmallButton(null) {
 				@Override
-				protected void onClick() {
+				protected void onClick(MouseEvent evt) {
 					if (allDisabled) {
 						return;
 					}
@@ -794,8 +840,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							// ignore
 						}
 						editor.select(pos.a + offset, pos.b);
-						// TODO
-						editor.scrollRectToVisible(new Rectangle()); // new Rectangle(editor.getVisibleRect().getSize()));
+						UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(new Point(0, jScrollPane1.getViewport().getViewPosition().y)));
 					} else {
 						editor.setCaretPosition(0);
 					}
@@ -862,6 +907,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		focusedComparision.ifPresent(c -> c.valueTextField.grabFocus());
     }
 
+	private void setValueFieldText(JTextField valueTextField, String value) {
+		valueTextField.setText(value);
+		UIUtil.invokeLater(() -> valueTextField.setToolTipText(value));
+		if (value.trim().length() > 0) {
+			valueTextField.setCaretPosition(0);
+		}
+	}
+
 	protected void addColumn() {
     	Object toFind = searchComboBox.getSelectedItem();
     	for (Column column: table.getColumns()) {
@@ -874,8 +927,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	private void storeConfig() {
-		List<String> config = new ArrayList<String>(comparisons.stream().map(c -> c.column.name).collect(Collectors.toList()));
-		ConditionStorage.store(table, config, executionContext);
+		if (initialColumn < 0) {
+			List<String> config = new ArrayList<String>(comparisons.stream().map(c -> c.column.name).collect(Collectors.toList()));
+			ConditionStorage.store(table, config, executionContext);
+		}
 	}
 	
 	private Runnable onFocusGained;
@@ -926,7 +981,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel6.add(searchComboBox, gridBagConstraints);
 
-        sortCheckBox.setText("Sort Columns");
+        sortCheckBox.setText("Sort Columns  ");
         sortCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sortCheckBoxActionPerformed(evt);
@@ -979,6 +1034,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel5.add(titlePanel, gridBagConstraints);
+
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
@@ -1054,7 +1111,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         parseCondition();
     }//GEN-LAST:event_applyButtonActionPerformed
 
-
+	public void openStringSearchPanelOfInitialColumn() {
+		if (initialColumn >= 0) {
+			comparisons.stream().filter(c -> table.getColumns().get(initialColumn).equals(c.column)).findAny().ifPresent(c -> {
+				openStringSearchPanel(c.valueTextField, c);
+			});
+		}
+	}
+	
     @SuppressWarnings("unchecked")
 	private void openStringSearchPanel(JTextField valueTextField, Comparison comparison) {
     	if (getParent() == null) {
@@ -1066,14 +1130,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		DefaultComboBoxModel<String> defaultComboBoxModel = new DefaultComboBoxModel<String>();
 		combobox.setModel(defaultComboBoxModel);
 		Map<String, Consumer<JLabel>> renderConsumer = new IdentityHashMap<String, Consumer<JLabel>>();
-//		Color histColor = new Color(0, 0, 0); // TODO color for history item?
 		ImageIcon sHistIcon = UIUtil.scaleIcon(this, histIcon);
 		if (comparison.column.name != null) {
 			getHistory(comparison.column).forEach(h -> {
 				defaultComboBoxModel.addElement(h);
 				renderConsumer.put(h, label -> {
 					label.setIcon(sHistIcon);
-//					label.setForeground(histColor);
 				});
 			});
 		}
@@ -1104,7 +1166,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		StringSearchPanel searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
 			@Override
 			public void run() {
-				valueTextField.setText(theSearchPanel.get(0).getPlainValue());
+				setValueFieldText(valueTextField, theSearchPanel.get(0).getPlainValue());
 				if (theSearchPanel.get(0).isExplictlyClosed()) {
 					accept(comparison, theSearchPanel.get(0).getPlainValue(), comparison.operator);
 				}
@@ -1113,12 +1175,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}, renderConsumer) {
 			@Override
 			protected void onClose(String text) {
-		    	valueTextField.setText(text);
+				setValueFieldText(valueTextField, text);
 		    	cancel();
 			}
 			@Override
 			protected void onAbort() {
-				valueTextField.setText(origText);
+				setValueFieldText(valueTextField, origText);
 		    	cancel();
 			}
 			@Override
@@ -1478,12 +1540,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         tableIcon = UIUtil.readImage("/table.png");
         deleteIcon = UIUtil.readImage("/delete.png");
         histIcon = UIUtil.readImage("/history.png");
-        nullIcon = UIUtil.readImage("/null.png");    // TODO draw better looking picture
+        nullIcon = UIUtil.readImage("/null.png");
         emptyIcon = UIUtil.readImage("/empty.png");
         warnIcon = UIUtil.readImage("/wanr.png");
 	}
 
 	// TODO remove empty lines before putting text back into sql console after user edit
-	// TODO respect quoting
 	
 }

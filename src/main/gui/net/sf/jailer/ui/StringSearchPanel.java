@@ -256,8 +256,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						if (!(owner instanceof JFrame)) {
 							owner.dispose();
 							owner.setVisible(false);
-						} else {
-							System.out.print(""); // TODO
 						}
 					}
 					dialog.dispose();
@@ -292,12 +290,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		
 		dialog.pack();
 		int oHeight = dialog.getHeight();
-		dialog.pack();
 		double mh = 440;
 		int size = searchList.getModel().getSize();
 		double f = size / 18.0;
 		if (f < 1) {
-			mh = Math.max(240, mh * f);
+			mh = Math.max(240, mh * f + 16);
 		}
 		int height = Math.max(dialog.getHeight(), (int) mh);
 		if (!locateUnderButton) {
@@ -311,7 +308,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		Integer prefWidth = preferredWidth();
 		Integer maxX = maxX();
 		if (estimatedItemsCount != null && estimatedItemsCount > 0) {
-			height = (int) ((estimatedItemsCount - 0.5) * Math.max(16, cellHeight) + oHeight);
+			height = (int) ((estimatedItemsCount) * Math.max(16, cellHeight) + oHeight);
 		}
 		dialog.setSize(prefWidth != null ? prefWidth : Math.max(minWidth, dialog.getWidth()), Math.min(height, 600));
 		if (maxX != null) {

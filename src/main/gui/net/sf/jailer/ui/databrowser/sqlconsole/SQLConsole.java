@@ -29,6 +29,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -2089,7 +2090,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     		add(titleLbl);
     		SmallButton closeButton = new SmallButton(closeIcon) {
     			@Override
-    			protected void onClick() {
+    			protected void onClick(MouseEvent e) {
     				tabbedPane.remove(rTabContainer);
     			}
     		};

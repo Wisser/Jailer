@@ -220,14 +220,16 @@ public class DataBrowser extends javax.swing.JFrame {
     
 	private class WhereConditionEditorPanelForDataBrowser extends WhereConditionEditorPanel {
 		private final RowBrowser rowBrowser;
+		private final int initialColumn;
 
 		private WhereConditionEditorPanelForDataBrowser(Window parent, DataModel dataModel, Table table,
 				BrowserContentCellEditor cellEditor, Boolean sorted, WhereConditionEditorPanel predecessor,
-				RSyntaxTextAreaWithSQLSyntaxStyle editor, JComponent closeButton, boolean asPopup, Session session,
+				RSyntaxTextAreaWithSQLSyntaxStyle editor, JComponent closeButton, boolean asPopup, int initialColumn, Session session,
 				ExecutionContext executionContext, RowBrowser rowBrowser) {
-			super(parent, dataModel, table, cellEditor, sorted, predecessor, editor, closeButton, asPopup, session, 
+			super(parent, dataModel, table, cellEditor, sorted, predecessor, editor, closeButton, asPopup, initialColumn, session, 
 					executionContext);
 			this.rowBrowser = rowBrowser;
+			this.initialColumn = initialColumn;
 		}
 
 		@Override
@@ -242,6 +244,9 @@ public class DataBrowser extends javax.swing.JFrame {
 						rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = true;
 						rowBrowser.browserContentPane.setAndCondition((condition), false);
 						rowBrowser.browserContentPane.reloadRows();
+						if (initialColumn >= 0) {
+							rowBrowser.browserContentPane.onConditionChange(rowBrowser.browserContentPane.getAndConditionText());
+						}
 						UISettings.s12 += 1000;
 					} finally {
 						rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = oldSuppessReloadOnAndConditionAction;
@@ -345,7 +350,7 @@ public class DataBrowser extends javax.swing.JFrame {
         searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
         whereConditionEditorCloseButton = new SmallButton(closeIcon, true) {
 			@Override
-			protected void onClick() {
+			protected void onClick(MouseEvent e) {
 				searchBarToggleButton.doClick();
 			}
 		};
@@ -357,7 +362,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		searchBarEditor.grabFocus();
 		popUpSearchBarEditor.grabFocus();
 		
-        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, session, executionContext) {
+        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, -1, session, executionContext) {
         	@Override
 			protected void consume(String condition) {
 				// nothing to do	
@@ -826,8 +831,8 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 			@Override
-			protected void openConditionEditor(BrowserContentPane browserContentPane, Point location, boolean singleFieldMode, Runnable onClose) {
-				DataBrowser.this.openConditionEditor(browserContentPane, location, singleFieldMode, onClose);
+			protected void openConditionEditor(BrowserContentPane browserContentPane, Point location, int column, Runnable onClose) {
+				DataBrowser.this.openConditionEditor(browserContentPane, location, column, onClose);
 			}
         };
 
@@ -3572,7 +3577,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			whereConditionEditorPanel = new WhereConditionEditorPanelForDataBrowser(this, datamodel.get(), table, cellEditor, rowBrowser != null && rowBrowser.browserContentPane != null
 			? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
 			: null,
-					whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, session, executionContext, rowBrowser);
+					whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, -1, session, executionContext, rowBrowser);
     		searchPanelContainer.add(whereConditionEditorPanel);
     		searchBarEditor.whereConditionEditorPanel = whereConditionEditorPanel;
             if (rowBrowser != null && rowBrowser.browserContentPane != null) {
@@ -3766,77 +3771,83 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private WhereConditionEditorPanelForDataBrowser popUpWhereConditionEditorPanel;
     
-	protected void openConditionEditor(BrowserContentPane browserContentPane, Point location, boolean singleFieldMode, Runnable onClose) {
-		JDialog dialog = new JDialog(this, "");
-		Runnable close = () -> {
-			dialog.setVisible(false);
-			dialog.dispose();
-		};
-		dialog.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				if (onClose != null) {
-					onClose.run();
-				}
-			}
-		});
-		RowBrowser rowBrowser = browserContentPane.getRowBrowser();
-		Table table = rowBrowser != null && rowBrowser.browserContentPane != null ? rowBrowser.browserContentPane.table : null;
-		if (table != null) {
-    		BrowserContentCellEditor cellEditor = rowBrowser != null && rowBrowser.browserContentPane != null
-			? rowBrowser.browserContentPane.browserContentCellEditor
-			: null;
-			popUpWhereConditionEditorPanel = new WhereConditionEditorPanelForDataBrowser(dialog, datamodel.get(), table, cellEditor, rowBrowser != null && rowBrowser.browserContentPane != null
-			? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
-			: null,
-					popUpWhereConditionEditorPanel, popUpSearchBarEditor, whereConditionEditorCloseButton, true, session, executionContext, rowBrowser) {
-	        	@Override
-				protected void onEscape() {
-					close.run();
-				}
-	        };
-			if (rowBrowser != null && rowBrowser.browserContentPane != null) {
-				popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
-	            popUpWhereConditionEditorPanel.parseCondition(rowBrowser.browserContentPane.getAndConditionText());
-    		}
-			dialog.setModal(false);
-			dialog.setUndecorated(true);
-			dialog.addWindowFocusListener(new WindowFocusListener() {
+	protected void openConditionEditor(BrowserContentPane browserContentPane, Point location, int column, Runnable onClose) {
+		UIUtil.invokeLater(() -> {
+			JDialog dialog = new JDialog(this, "");
+			Runnable close = () -> {
+				dialog.setVisible(false);
+				dialog.dispose();
+			};
+			dialog.addWindowListener(new WindowAdapter() {
 				@Override
-				public void windowLostFocus(WindowEvent e) {
-					if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
-						close.run();
+				public void windowClosed(WindowEvent e) {
+					if (onClose != null) {
+						onClose.run();
 					}
 				}
-				@Override
-				public void windowGainedFocus(WindowEvent e) {
-				}
 			});
-			
-			int x = location.x;
-			int y = location.y;
-			
-			dialog.getContentPane().add(popUpWhereConditionEditorPanel);
-			
-			dialog.pack();
-			double mh = 310;
-			int height = Math.max(dialog.getHeight(), (int) mh);
-			dialog.setLocation(x, y);
-			int minWidth = 600;
-			Integer maxX = getX() + getWidth() - dialog.getPreferredSize().width - 8;;
-			dialog.setSize(Math.max(minWidth, dialog.getWidth()), Math.min(height, 600));
-			if (maxX != null) {
-				dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
-			}
-			Integer maxY = getY() + getHeight() - height - 8;
-			if (maxY != null && maxY < dialog.getY()) {
-				int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
-				maxY += deltaH;
-				dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
-				dialog.setLocation(dialog.getX(), Math.max(0, maxY));
-			}
-			dialog.setVisible(true);
-    	}
+			RowBrowser rowBrowser = browserContentPane.getRowBrowser();
+			Table table = rowBrowser != null && rowBrowser.browserContentPane != null ? rowBrowser.browserContentPane.table : null;
+			if (table != null) {
+	    		BrowserContentCellEditor cellEditor = rowBrowser != null && rowBrowser.browserContentPane != null
+				? rowBrowser.browserContentPane.browserContentCellEditor
+				: null;
+				popUpWhereConditionEditorPanel = new WhereConditionEditorPanelForDataBrowser(dialog, datamodel.get(), table, cellEditor, rowBrowser != null && rowBrowser.browserContentPane != null
+				? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
+				: null,
+						popUpWhereConditionEditorPanel, popUpSearchBarEditor, whereConditionEditorCloseButton, true, column, session, executionContext, rowBrowser) {
+		        	@Override
+					protected void onEscape() {
+						close.run();
+					}
+		        };
+				if (rowBrowser != null && rowBrowser.browserContentPane != null) {
+					popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
+		            popUpWhereConditionEditorPanel.parseCondition(rowBrowser.browserContentPane.getAndConditionText());
+	    		}
+				dialog.setModal(false);
+				dialog.setUndecorated(true);
+				dialog.addWindowFocusListener(new WindowFocusListener() {
+					@Override
+					public void windowLostFocus(WindowEvent e) {
+						if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
+							close.run();
+						}
+					}
+					@Override
+					public void windowGainedFocus(WindowEvent e) {
+					}
+				});
+				
+				int x = location.x;
+				int y = location.y;
+				
+				dialog.getContentPane().add(popUpWhereConditionEditorPanel);
+				
+				dialog.pack();
+				double mh = column >= 0? 140 : 310;
+				int height = Math.max(dialog.getHeight(), (int) mh);
+				dialog.setLocation(x, y);
+				int minWidth = 600;
+				int wid = Math.max(minWidth, dialog.getWidth());
+				Integer maxX = getX() + getWidth() - wid - 8;;
+				dialog.setSize(wid, Math.min(height, 600));
+				if (maxX != null) {
+					dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+				}
+				Integer maxY = getY() + getHeight() - height - 8;
+				if (maxY != null && maxY < dialog.getY()) {
+					int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
+					maxY += deltaH;
+					dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
+					dialog.setLocation(dialog.getX(), Math.max(0, maxY));
+				}
+				dialog.setVisible(true);
+				UIUtil.invokeLater(4, () -> {
+					popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
+				});
+	    	}
+		});
 	}
 
 	private MetaDataSource getMetaDataSource(Session session) {
@@ -4233,7 +4244,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			titelPanel.add(titleLbl);
 			SmallButton closeButton = new SmallButton(closeIcon) {
 				@Override
-				protected void onClick() {
+				protected void onClick(MouseEvent e) {
 					if (closeSQLConsole(sqlConsole, true)) {
 						workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
 					}

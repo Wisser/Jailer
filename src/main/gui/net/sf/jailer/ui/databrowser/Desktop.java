@@ -1295,8 +1295,8 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected void openConditionEditor(Point location, boolean singleFieldMode, Runnable onClose) {
-				Desktop.this.openConditionEditor(this, location, singleFieldMode, onClose);
+			protected void openConditionEditor(Point location, int column, Runnable onClose) {
+				Desktop.this.openConditionEditor(this, location, column, onClose);
 			}
 		};
 
@@ -3029,7 +3029,7 @@ public abstract class Desktop extends JDesktopPane {
 	protected abstract void repaintOutline();
 	protected abstract boolean desktopOutlineDraggingInProgress();
 	protected abstract void openGlobalPopup(MouseEvent e);
-	protected abstract void openConditionEditor(BrowserContentPane browserContentPane, Point location, boolean singleFieldMode, Runnable onClose);
+	protected abstract void openConditionEditor(BrowserContentPane browserContentPane, Point location, int column, Runnable onClose);
 	
 	public void openSchemaMappingDialog(boolean silent) {
 		try {

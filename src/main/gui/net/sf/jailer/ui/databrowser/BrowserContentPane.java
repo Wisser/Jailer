@@ -910,8 +910,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			// ignore
 		}
 
-		// TODO show tooltip of "where-clause" combobox formatted
-		
 		andCondition.getEditor().getEditorComponent().setFont(UIUtil.getSQLEditorFont());
 
 		loadingCauseLabel.setVisible(false);
@@ -1021,7 +1019,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						String value = f.getText();
 						String ttInfo = "<i>Ctrl+Space</i> for code completion.";
 						if (value != null && value.toString().trim().length() > 0) {
-							String tooltip = (value.toString());
+							String tooltip = new BasicFormatterImpl().format(value.toString());
 							andCondition.setToolTipText("<html>" + UIUtil.toHTMLFragment(tooltip, 200) + "<hr>" + ttInfo);
 						} else {
 							andCondition.setToolTipText("<html>" + ttInfo);
@@ -1142,22 +1140,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setStroke(new BasicStroke(1));
 
-//				if (currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
-//					Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
-//					g2d.drawImage(currentSearchButtonIcon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
-//				}
-//				for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
-//					if (BrowserContentPane.this.table != null) {
-//						if (BrowserContentPane.this.table.getColumns().get(i).name.toLowerCase().contains("e")) { // TODO
-//							int vi = rowsTable.convertColumnIndexToView(i);
-//							if (vi >= 0 && vi != currentSearchButtonColumnIndex) {
-//								Point location = calcSearchColumnPosition(vi);
-//								Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
-//								g2d.drawImage(half.getImage(), location.x + loc.x, location.y + loc.y, null, null);
-//							}
-//						}
-//					}
-//				}
+				if (table != null && browserContentCellEditor != null && getQueryBuilderDialog() != null) {
+					if (currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
+						Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
+						g2d.drawImage(currentSearchButtonIcon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
+					}
+					for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
+						if (BrowserContentPane.this.table != null) {
+							if (browserContentCellEditor.getColumnTypes().length > i && browserContentCellEditor.isEditable(table, i, null)) {
+								int vi = rowsTable.convertColumnIndexToView(i);
+								if (vi >= 0 && vi != currentSearchButtonColumnIndex) {
+									Point location = calcSearchColumnPosition(vi);
+									Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
+									g2d.drawImage(half.getImage(), location.x + loc.x, location.y + loc.y, null, null);
+								}
+							}
+						}
+					}
+				}
 			}
 		};
 		rowsTableScrollPane.setWheelScrollingEnabled(false);
@@ -1918,6 +1918,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		        }
 		        int column = columnIndex(e, header);
 		        if (column >= 0) {
+		        	int modelIndex = column;
 		        	column = header.getTable().convertColumnIndexToView(column);
 		        	if (column < 0) {
 		        		header.setToolTipText(null);
@@ -1926,13 +1927,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		        	TableColumn theColumn = header.getColumnModel().getColumn(column);
 		        	header.setToolTipText(theColumn.getHeaderValue() == null? "" : (theColumn.getHeaderValue().toString()));
 		        	currentSearchButtonColumnIndex = column;
-		    		currentSearchButtonLocation = calcSearchColumnPosition(column);
-					int iconWidth = ready != null? ready.getIconWidth() : 0;
-					int iconHeight = ready != null? ready.getIconHeight() : 0;
-					int dx = currentSearchButtonLocation.x + iconWidth / 2 - e.getX();
-					int dy = currentSearchButtonLocation.y + iconHeight / 2 - e.getY();
-					double d = Math.sqrt(dx * dx + dy * dy);
-					currentSearchButtonIcon = d <= iconWidth * 1.0? readySelected : ready;
+		        	if (table != null && browserContentCellEditor.getColumnTypes().length > modelIndex && browserContentCellEditor.isEditable(table, modelIndex, null)) {
+			    		currentSearchButtonLocation = calcSearchColumnPosition(column);
+						int iconWidth = ready != null? ready.getIconWidth() : 0;
+						int iconHeight = ready != null? ready.getIconHeight() : 0;
+						int dx = currentSearchButtonLocation.x + iconWidth / 2 - e.getX();
+						int dy = currentSearchButtonLocation.y + iconHeight / 2 - e.getY();
+						double d = Math.sqrt(dx * dx + dy * dy);
+						currentSearchButtonIcon = d <= iconWidth * 1.0? readySelected : ready;
+		        	} else {
+		        		currentSearchButtonColumnIndex = -1;
+		        	}
 		        } else {
 		        	currentSearchButtonColumnIndex = -1;
 		        }
@@ -1941,26 +1946,38 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			public void mouseClicked(MouseEvent e) {
 				JTableHeader header = (JTableHeader) (e.getSource());
+				JTable tableView = header.getTable();
+				TableColumnModel columnModel = tableView.getColumnModel();
+				int viewIndex = columnModel.getColumnIndexAtX(e.getX());
 				if (!header.isEnabled()) {
 		            return;
 		        }
 		        int column = columnIndex(e, header);
-
-		        if (column >= 0 && SwingUtilities.isRightMouseButton(e)) {
+		        Point location = new Point(0, 0);
+		        if (column >= 0) {
+			        int x = 0;
+			        for(int c = 0; c < viewIndex; c++) {
+			            x = x + columnModel.getColumn(c).getWidth();
+			        }
+					location = new Point(x, header.getHeight());
+					SwingUtilities.convertPointToScreen(location, header);
+		        }
+				Point finalLocation = location;
+		        if (column >= 0 && SwingUtilities.isRightMouseButton(e) && getQueryBuilderDialog() != null) {
 					JPopupMenu menu = new JPopupMenu();
 					JMenuItem mi = new JMenuItem("Edit Condition");
-					mi.setEnabled(true); // TODO
+					mi.setEnabled(table != null && browserContentCellEditor.getColumnTypes().length > column && browserContentCellEditor.isEditable(table, column, null));
 					mi.addActionListener(evt -> {
-						System.out.println("Search " + column); // TODO
+						openConditionEditor(finalLocation, column, null);
 					});
 					menu.add(mi);
 					Point p = SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), rowsTable);
 					if (e.getComponent() == null) {
 						p = new Point(e.getX(), e.getY());
 					}
-//					UIUtil.showPopup(rowsTable, (int) p.getX(), (int) p.getY(), menu); // TODO
-				} else if (column >= 0 && column == currentSearchButtonColumnIndex && currentSearchButtonIcon == readySelected) {
-					System.out.println("search " + column); // TODO
+					UIUtil.showPopup(rowsTable, (int) p.getX(), (int) p.getY(), menu);
+				} else if (viewIndex >= 0 && viewIndex == currentSearchButtonColumnIndex && currentSearchButtonIcon == readySelected && getQueryBuilderDialog() != null) {
+					openConditionEditor(finalLocation, column, null);
 				} else if (SwingUtilities.isLeftMouseButton(e)) {
 		            JTable table = header.getTable();
 		            RowSorter sorter;
@@ -6129,7 +6146,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         if (conditionEditorButton.isSelected()) {
         	Point p = new Point(0, conditionEditorButton.getHeight());
     		SwingUtilities.convertPointToScreen(p, conditionEditorButton);
-        	openConditionEditor(p, true, () -> conditionEditorButton.setSelected(false));
+        	openConditionEditor(p, -1, () -> conditionEditorButton.setSelected(false));
         }
     }//GEN-LAST:event_conditionEditorButtonActionPerformed
 
@@ -6350,7 +6367,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 	protected void onContentCellEditorCreated(BrowserContentCellEditor cellEditor) {
 	}
-	protected void openConditionEditor(Point location, boolean singleFieldMode, Runnable onClose) {
+	protected void openConditionEditor(Point location, int column, Runnable onClose) {
 	}
 
 	protected abstract void onRedraw();
@@ -7272,7 +7289,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
 			boolean withSortIcon = false;
 			if (rowSorter != null) {
-				int viewColumn = rowsTable.convertColumnIndexToView(column);
+				int viewColumn = rowsTable.convertColumnIndexToModel(column);
 				List<? extends SortKey> sKeys = rowSorter.getSortKeys();
 				if (!sKeys.isEmpty()) {
 					if (sKeys.get(0).getSortOrder() != SortOrder.UNSORTED && sKeys.get(0).getColumn() == viewColumn) {

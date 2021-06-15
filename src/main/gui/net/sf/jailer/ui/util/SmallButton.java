@@ -42,7 +42,7 @@ public abstract class SmallButton extends JLabel {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (entered && SwingUtilities.isLeftMouseButton(e)) {
-					onClick();
+					onClick(e);
 				}
 			}
 			@Override
@@ -59,13 +59,13 @@ public abstract class SmallButton extends JLabel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
-					onClick();
+					onClick(e);
 				}
 			}
 		});
 	}
 
-	protected abstract void onClick();
+	protected abstract void onClick(MouseEvent e);
 
 	protected void onMouseExited() {
 		entered = false;

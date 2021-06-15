@@ -538,7 +538,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     		
     		SmallButton excludeButton = new SmallButton(scaledCancelIcon) {
 				@Override
-				protected void onClick() {
+				protected void onClick(MouseEvent e) {
 					excludedTables.add(node.table);
 					showGraph(false);
 				}
