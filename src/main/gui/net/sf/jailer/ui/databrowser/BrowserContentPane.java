@@ -1689,7 +1689,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		openEditorButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				loadButton.grabFocus();
 				UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {

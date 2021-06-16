@@ -400,7 +400,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					matches.addElement(item);
 					seen.add(item);
 					if (!showAll && matches.getSize() > MAX_LIST_LENGTH) {
-						showAllLabel = "show all ...";
+						showAllLabel = "more...";
 						matches.addElement(showAllLabel);
 						break;
 					}
@@ -839,8 +839,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         statusPanel = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
         sizeGripPanel = new javax.swing.JPanel();
-        jPanel5 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
+        bottomComponentsPanel = new javax.swing.JPanel();
 
         loadingPanel.setBackground(java.awt.Color.white);
 
@@ -1014,7 +1013,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
         statusPanel.add(statusLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1029,21 +1028,18 @@ public class StringSearchPanel extends javax.swing.JPanel {
         sizeGripPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         bottomPanel.add(sizeGripPanel, gridBagConstraints);
 
-        jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
-
-        jLabel3.setText(" ");
-        jPanel5.add(jLabel3);
-
+        bottomComponentsPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        bottomPanel.add(jPanel5, gridBagConstraints);
+        bottomPanel.add(bottomComponentsPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1105,21 +1101,24 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public void setCloseOwner(boolean closeOwner) {
 		this.closeOwner = closeOwner;
 	}
+	
+	public void addBottomcomponent(JComponent component) {
+		bottomComponentsPanel.add(component, java.awt.BorderLayout.CENTER);
+	}
 
-	// Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel bottomComponentsPanel;
     private javax.swing.JPanel bottomPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton cancelLoadiingButton;
     private javax.swing.JLabel infoLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel loadingPanel;

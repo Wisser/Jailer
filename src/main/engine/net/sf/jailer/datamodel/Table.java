@@ -555,7 +555,6 @@ public class Table extends ModelElement implements Comparable<Table> {
 	/**
 	 * Gets all non-virtual columns of the table in the order in which they are selected.
 	 * 
-	 * @param session current session
 	 * @return all non-virtual columns of the table in the order in which they are selected
 	 */
 	public List<Column> getSelectionClause() {

@@ -623,5 +623,20 @@ public abstract class EntityGraph {
 		Long cnt = (Long) getSession().getSessionProperty(EntityGraph.class, "ExportedCount");
 		return cnt == null? 0 : cnt;
 	}
+	
+	/**
+	 * Gets all non-virtual columns of the table in the order in which they are selected.
+	 * 
+	 * @return all non-virtual columns of the table in the order in which they are selected
+	 * 
+	 * @throws Exception if selection clause is empty
+	 */
+	protected List<Column> getSelectionClause(Table table) {
+		List<Column> selectionClause = table.getSelectionClause();
+		if (selectionClause.isEmpty()) {
+			throw new RuntimeException("All columns of the table \"" + table.getName() + "\" are virtual or have an exclude filter.");
+		}
+		return selectionClause;
+	}
 
 }

@@ -23,6 +23,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -52,6 +53,8 @@ import java.util.stream.Stream;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -176,6 +179,24 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         editor.setEnabled(true);
         syntaxPanePanel.add(editor);
         
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        resetButton = new JButton("Reset", UIUtil.scaleIcon(this, resetIcon));
+		resetButton.addActionListener(e -> {
+			if (allDisabled) {
+				return;
+			}
+			comparisons.forEach(comparision -> accept(comparision, "", Operator.Equal));
+			updateSearchUI();
+			storeConfig();
+		});
+		resetButton.setToolTipText("Reset all Fields");
+		sortCheckBox.setVisible(false);
+		jPanel6.add(resetButton, gridBagConstraints);
+
         font = tableLabel.getFont();
 		tableLabel.setFont(new Font(font.getName(), font.getStyle() | Font.BOLD, (int)(font.getSize() /* * 1.2 */)));
 		tableLabel.setIcon(tableIcon);
@@ -267,7 +288,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			};
 			editor.getDocument().addDocumentListener(documentListener);
         	
-	        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 1;
 	        gridBagConstraints.gridy = 20;
 			final Window owner = parent;
@@ -903,6 +924,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1;
         searchFieldsPanel.add(wrap.apply(sepPanel, 1), gridBagConstraints);
 		
+        resetButton.setEnabled(comparisons.stream().anyMatch(c -> c.valueTextField.getText().trim().length() > 0));
+        
 		revalidate();
 		focusedComparision.ifPresent(c -> c.valueTextField.grabFocus());
     }
@@ -919,11 +942,17 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	Object toFind = searchComboBox.getSelectedItem();
     	for (Column column: table.getColumns()) {
         	if (Quoting.staticUnquote(column.name).equals(toFind)) {
-        		comparisons.add(new Comparison(Operator.Equal, column));
+        		Comparison newComparision = new Comparison(Operator.Equal, column);
+				comparisons.add(newComparision);
+            	updateSearchUI();
+            	storeConfig();
+            	UIUtil.invokeLater(() -> {
+            		jPanel3.scrollRectToVisible(new Rectangle(0, jPanel3.getHeight() - 1, 1, 1));
+            		openStringSearchPanel(newComparision.valueTextField, newComparision);
+            	});
+            	break;
         	}
         }
-    	updateSearchUI();
-    	storeConfig();
 	}
 
 	private void storeConfig() {
@@ -1205,11 +1234,24 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			}
 		};
 		theSearchPanel.add(searchPanel);
+		
+		String condition;
+		Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
+		if (pos != null) {
+			condition = (editor.getText().substring(0, pos.a) + editor.getText().substring(pos.b)).replaceFirst("^\\s*and\\s", "").trim();
+		} else {
+			condition = editor.getText().trim();
+		}
+		
 		searchPanel.setCloseOwner(asPopup);
+		JCheckBox fullSearchCheckbox = new JCheckBox("Show all values");
+		fullSearchCheckbox.setToolTipText(
+				"<html><i>selected</i>:<b> show all values from column</b><hr>"
+				+ "<i>not selected</i>:<b> Show only values where a non-empty result is retrieved considering the overall condition.</b></html>");
 		Point point = new Point(0, 0);
 		SwingUtilities.convertPointToScreen(point, valueTextField);
 		searchPanel.withSizeGrip();
-		int estDVCount = estimateDistinctExistingValues(comparison);
+		int estDVCount = estimateDistinctExistingValues(comparison, condition);
 		Integer estimatedItemsCount = defaultComboBoxModel.getSize() + estDVCount ;
 		searchPanel.setEstimatedItemsCount(estimatedItemsCount );
 		searchPanel.find(owner, "Condition", point.x, point.y, true);
@@ -1221,8 +1263,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			try {
 				boolean[] incomplete = new boolean[1];
 				incomplete[0] = false;
-				List<String> distinctExisting = loadDistinctExistingValues(comparison, cancellationContext, incomplete);
+				List<String> distinctExisting = loadDistinctExistingValues(comparison, cancellationContext, incomplete, condition);
 				UIUtil.invokeLater(() -> {
+					searchPanel.addBottomcomponent(fullSearchCheckbox);
 					distinctExisting.forEach(s -> {
 						defaultComboBoxModel.addElement(s);
 						renderConsumer.put(s, label -> label.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
@@ -1265,7 +1308,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     private final String DISTINCTEXISTINGVALUESTSKEY = "DistinctExistingValuesTS";
 
 	@SuppressWarnings("unchecked")
-	private List<String> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, boolean incomplete[]) throws SQLException {
+	private List<String> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, boolean incomplete[], String condition) throws SQLException {
 		final int MAX_TEXT_LENGTH = 1024 * 4;
 		
 		Long ts = (Long) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY);
@@ -1280,7 +1323,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			icCache = new LRUCache<Pair<String,String>, Boolean>(SIZE_DISTINCTEXISTINGVALUESCACHE);
 			session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY, icCache);
 		}
-		Pair<String, String> key = new Pair<String, String>(table.getName(), comparison.column.name);
+		Pair<String, String> key = new Pair<String, String>(table.getName() + "+" + condition, comparison.column.name);
 		List<String> result = cache.get(key);
 		if (Boolean.TRUE.equals(icCache.get(key))) {
 			incomplete[0] = true;
@@ -1293,7 +1336,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				if (comparison.column.equals(table.getColumns().get(columnIndex))) {
 					int finalColumnIndex = columnIndex;
 					List<String> finalResult = result;
-					String sqlQuery = "Select distinct " + comparison.column.name + " from " + table.getName() + " where " +  comparison.column.name + " is not null";
+					String sqlQuery = "Select distinct A." + comparison.column.name + " from " + table.getName() + " A where " +  comparison.column.name + " is not null"
+							+ (condition.isEmpty()? "" : (" and (" + condition + ")"));
 					AbstractResultSetReader reader = new AbstractResultSetReader() {
 						@Override
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
@@ -1329,11 +1373,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		return result;
 	}
 
-    private int estimateDistinctExistingValues(Comparison comparison) {
+    private int estimateDistinctExistingValues(Comparison comparison, String condition) {
     	@SuppressWarnings("unchecked")
 		Map<Pair<String, String>, List<String>> cache = (Map<Pair<String, String>, List<String>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
 		if (cache != null) {
-			Pair<String, String> key = new Pair<String, String>(table.getName(), comparison.column.name);
+			Pair<String, String> key = new Pair<String, String>(table.getName() + "+" + condition, comparison.column.name);
 			List<String> result = cache.get(key);
 			if (result != null) {
 				return result.size();
@@ -1434,7 +1478,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						editor.select(pos.a, pos.b);
 					}
 				}
-				editor.setText(editor.getText().replaceFirst("^\\s*and\\s", "").replaceAll("\n\\s*\\n", "").trim() + "\n");
+				String text = editor.getText().replaceFirst("^\\s*and\\s", "").replaceAll("\n\\s*\\n", "").trim();
+				if (!text.isEmpty()) {
+					text += "\n";
+				}
+				editor.setText(text);
 				parseCondition();
 			}
 		}
@@ -1528,12 +1576,16 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			t.start();
 		}
 	}
-
+	
+	private JButton resetButton;
+	
 	private static ImageIcon tableIcon;
 	private static ImageIcon deleteIcon;
 	private static ImageIcon histIcon;
 	private static ImageIcon emptyIcon;
 	private static ImageIcon nullIcon;
+	private static ImageIcon resetIcon;
+	
     static ImageIcon warnIcon;
 	static {
         // load images
@@ -1543,6 +1595,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         nullIcon = UIUtil.readImage("/null.png");
         emptyIcon = UIUtil.readImage("/empty.png");
         warnIcon = UIUtil.readImage("/wanr.png");
+        resetIcon = UIUtil.readImage("/reset.png");
 	}
 
 	// TODO remove empty lines before putting text back into sql console after user edit

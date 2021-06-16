@@ -906,7 +906,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 
-		for (Column c: table.getSelectionClause()) {
+		for (Column c: getSelectionClause(table)) {
 			if (!first) {
 				sb.append(", ");
 			}
