@@ -289,7 +289,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		plugInPanel.setVisible(false);
 		
 		dialog.pack();
-		int oHeight = dialog.getHeight();
+		oHeight = dialog.getHeight();
 		double mh = 440;
 		int size = searchList.getModel().getSize();
 		double f = size / 18.0;
@@ -339,13 +339,35 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		dialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosed(WindowEvent e) {
+				UIUtil.setPopupActive(false);
 				if (onClose != null) {
 					onClose.run();
 				}
 			}
 		});
 		plainIsValid = false;
+		UIUtil.setPopupActive(true);
 		dialog.setVisible(true);
+	}
+
+	private int oHeight;
+	
+	public void resetHeight() {
+		Integer maxX = maxX();
+		if (estimatedItemsCount != null && estimatedItemsCount >= 0) {
+			int height = (int) ((estimatedItemsCount) * Math.max(16, cellHeight) + oHeight);
+			dialog.setSize(dialog.getWidth(), Math.min(height, 600));
+			if (maxX != null) {
+				dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+			}
+			Integer maxY = maxY(dialog.getHeight());
+			if (maxY != null && maxY < dialog.getY()) {
+				int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
+				maxY += deltaH;
+				dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
+				dialog.setLocation(dialog.getX(), Math.max(0, maxY));
+			}
+		}
 	}
 
 	protected Integer preferredWidth() {
@@ -360,8 +382,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		return null;
 	}
 
-	private final int MAX_LIST_LENGTH = 80;
-	private boolean showAll = false;
+	private int maxListLength = 80;
 	private String showAllLabel;
 	private boolean keepSearchText = false;
 	
@@ -399,7 +420,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					}
 					matches.addElement(item);
 					seen.add(item);
-					if (!showAll && matches.getSize() > MAX_LIST_LENGTH) {
+					if (matches.getSize() > maxListLength) {
 						showAllLabel = "more...";
 						matches.addElement(showAllLabel);
 						break;
@@ -532,8 +553,13 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				if (showAllLabel != null && showAllLabel.equals(searchList.getSelectedValue())) {
-					showAll = true;
-					updateList();
+					maxListLength += 5000;
+					try {
+						UIUtil.setWaitCursor(StringSearchPanel.this);
+						updateList();
+					} finally {
+						UIUtil.resetWaitCursor(StringSearchPanel.this);
+					}
 				}
 			}
 		});
@@ -613,6 +639,14 @@ public class StringSearchPanel extends javax.swing.JPanel {
     }
 
     /**
+     * Closes panel.
+     */
+	public void abort() {
+		isEscaped = true;
+		close(true);
+	}
+
+	/**
      * Sets status text and icon.
      */
     public void setStatus(String text, Icon icon) {
@@ -1018,7 +1052,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -1036,7 +1070,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         bottomComponentsPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         bottomPanel.add(bottomComponentsPanel, gridBagConstraints);

@@ -238,11 +238,11 @@ public class DataBrowser extends javax.swing.JFrame {
 				String andConditionText = rowBrowser.browserContentPane.getAndConditionText();
 				andConditionText = new BasicFormatterImpl().format(andConditionText.trim());
 				condition = new BasicFormatterImpl().format(condition.trim());
-				if (!andConditionText.equals((condition))) {
+				if (!andConditionText.equals(condition)) {
 					boolean oldSuppessReloadOnAndConditionAction = rowBrowser.browserContentPane.suppessReloadOnAndConditionAction;
 					try {
 						rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = true;
-						rowBrowser.browserContentPane.setAndCondition((condition), false);
+						rowBrowser.browserContentPane.setAndCondition(UIUtil.toSingleLineSQL(condition), true);
 						rowBrowser.browserContentPane.reloadRows();
 						if (initialColumn >= 0) {
 							rowBrowser.browserContentPane.onConditionChange(rowBrowser.browserContentPane.getAndConditionText());

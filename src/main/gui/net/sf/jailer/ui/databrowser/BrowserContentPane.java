@@ -989,7 +989,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				Component render = acRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				if (render instanceof JLabel) {
 					if (value != null && value.toString().trim().length() > 0) {
-						String tooltip = (value.toString());
+						String tooltip = new BasicFormatterImpl().format(value.toString());
 						((JLabel) render).setToolTipText(UIUtil.toHTML(tooltip, 200));
 					} else {
 						((JLabel) render).setToolTipText(null);
@@ -2100,11 +2100,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	protected void historizeAndCondition(Object item) {
-		if (item == null) {
+		if (item == null || (item.toString().trim().isEmpty() && !item.toString().isEmpty())) {
 			return;
 		}
 		String cond = item.toString().trim();
-		onConditionChange(cond);
 		if ((cond.isEmpty() && !item.toString().isEmpty())) {
 			return;
 		}

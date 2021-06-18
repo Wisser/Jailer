@@ -1276,7 +1276,7 @@ public class UIUtil {
 		return isPopupActive;
 	}
 
-	private static synchronized void setPopupActive(boolean b) {
+	public static synchronized void setPopupActive(boolean b) {
 		isPopupActive = b;
 	}
 

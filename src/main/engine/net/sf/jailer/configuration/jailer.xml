@@ -514,10 +514,6 @@ order by
                 <value>\0</value>
             </entry>
             <entry>
-                <key>'</key>
-                <value>\'</value>
-            </entry>
-            <entry>
                 <key>"</key>
                 <value>\"</value>
             </entry>
@@ -719,10 +715,6 @@ union all
             <entry>
                 <key>\0</key>
                 <value>\0</value>
-            </entry>
-            <entry>
-                <key>'</key>
-                <value>\'</value>
             </entry>
             <entry>
                 <key>"</key>

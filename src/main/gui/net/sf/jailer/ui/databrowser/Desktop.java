@@ -1526,7 +1526,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	protected Color getAssociationColor1(Association association) {
-		Color color = new java.awt.Color(0, 120, 255);
+		Color color = Environment.nimbus? new java.awt.Color(140, 150, 255) : new java.awt.Color(0, 120, 255);
 		if (association.isIgnored()) {
 			color = new java.awt.Color(153, 153, 153);
 		} else if (association.isInsertDestinationBeforeSource()) {
@@ -1538,7 +1538,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private Color getAssociationColor2(Association association) {
-		Color color = new java.awt.Color(0, 60, 235);
+		Color color = Environment.nimbus? new java.awt.Color(100, 160, 255) : new java.awt.Color(0, 60, 235);
 		if (association.isIgnored()) {
 			color = new java.awt.Color(133, 133, 153);
 		} else if (association.isInsertSourceBeforeDestination()) {

@@ -23,6 +23,8 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
+import net.sf.jailer.ui.UIUtil;
+
 public abstract class SmallButton extends JLabel {
 
 	private final boolean borderStyle;
@@ -42,7 +44,7 @@ public abstract class SmallButton extends JLabel {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (entered && SwingUtilities.isLeftMouseButton(e)) {
-					onClick(e);
+					doClick(e);
 				}
 			}
 			@Override
@@ -59,7 +61,18 @@ public abstract class SmallButton extends JLabel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
-					onClick(e);
+					doClick(e);
+				}
+			}
+			
+			boolean sent = false;
+			private void doClick(MouseEvent e) {
+				if (!sent) {
+					sent = true;
+					UIUtil.invokeLater(() -> {
+						sent = false;
+						onClick(e);
+					});
 				}
 			}
 		});

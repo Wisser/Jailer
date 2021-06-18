@@ -25,6 +25,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -105,7 +106,7 @@ import net.sf.jailer.util.Quoting;
  */
 public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
-	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 10_000;
+	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 100_000;
 	private final int MAX_SIZE_DISTINCTEXISTINGVALUES = 500_000;
 	private final int SIZE_DISTINCTEXISTINGVALUESCACHE = 40;
 	private final int MAX_HISTORY_SIZE = 8;
@@ -184,8 +185,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        resetButton = new JButton("Reset", UIUtil.scaleIcon(this, resetIcon));
-		resetButton.addActionListener(e -> {
+        clearButton = new JButton("Clear", UIUtil.scaleIcon(this, clearIcon));
+        clearButton.addActionListener(e -> {
 			if (allDisabled) {
 				return;
 			}
@@ -193,9 +194,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			updateSearchUI();
 			storeConfig();
 		});
-		resetButton.setToolTipText("Reset all Fields");
+        clearButton.setToolTipText("Clear all Fields");
 		sortCheckBox.setVisible(false);
-		jPanel6.add(resetButton, gridBagConstraints);
+		jPanel6.add(clearButton, gridBagConstraints);
 
         font = tableLabel.getFont();
 		tableLabel.setFont(new Font(font.getName(), font.getStyle() | Font.BOLD, (int)(font.getSize() /* * 1.2 */)));
@@ -264,7 +265,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					editor.getDocument().removeDocumentListener(predecessor.documentListener);
 				}
 				splitPane.setDividerLocation(predecessor.splitPane.getDividerLocation());
-				predecessor.cancel();
 			}
 			documentListener = new DocumentListener() {
 				@Override
@@ -480,7 +480,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		for (int columnIndex = 0; columnIndex < table.getColumns().size(); ++columnIndex) {
 			Column column = table.getColumns().get(columnIndex);
 			String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.,\\-\\+])+|(?:true|false)|(?:\\w+\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
-			String regex = "(?:(?:and\\s+)?(?:" + tableAlias + "\\s*\\.\\s*)?)" + "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
+			String regex = "(?:(?:and\\s+)?(?:\\b" + tableAlias + "\\s*\\.\\s*))" + "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
 					+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(" + Pattern.quote("!=") + "|" + 
 					Stream.of(Operator.values())
 						.map(o -> o.sql)
@@ -713,35 +713,54 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 1;
 	        gridBagConstraints.gridy = 3 * y;
-	        gridBagConstraints.gridwidth = 4;
+	        gridBagConstraints.gridwidth = 5;
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
 	        searchFieldsPanel.add(wrap.apply(namePanel, y), gridBagConstraints);
 	        boolean isPk = table.primaryKey != null && table.primaryKey.getColumns().contains(comparison.column);
 			nameLabel.setForeground(isPk? Color.red : Color.black);
 			
-	        SmallButton hideButton = new LightBorderSmallButton(UIUtil.scaleIcon(this, deleteIcon, 1.1)) {
+			SmallButton hideButton = new LightBorderSmallButton(UIUtil.scaleIcon(this, deleteIcon, 1.1)) {
 				@Override
 				protected void onClick(MouseEvent e) {
 					if (allDisabled) {
 						return;
 					}
 					accept(comparison, "", Operator.Equal);
-					if (!e.isShiftDown()) {
-						comparisons.remove(comparison);
-					}
+					comparisons.remove(comparison);
 					updateSearchUI();
 					storeConfig();
 				}
 			};
 			hideButton.addFocusListener(focusListener);
 			allFields.add(hideButton);
-	    	hideButton.setToolTipText("<html><i>Click</i>: <b>Remove Search Field </b><br><i>Shift+Click</i>:  <b>Clear Search Field</b></html>");
+	    	hideButton.setToolTipText("Remove Search Field");
+			gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 5;
+	        gridBagConstraints.gridy = 3 * y + 1;
+	        gridBagConstraints.fill = GridBagConstraints.BOTH;
+	        gridBagConstraints.anchor = GridBagConstraints.EAST;
+	        searchFieldsPanel.add(wrap.apply(hideButton, y), gridBagConstraints);
+	        
+	        SmallButton clearButton = new LightBorderSmallButton(UIUtil.scaleIcon(this, clearIcon, 1.1)) {
+				@Override
+				protected void onClick(MouseEvent e) {
+					if (allDisabled) {
+						return;
+					}
+					accept(comparison, "", Operator.Equal);
+					updateSearchUI();
+					storeConfig();
+				}
+			};
+			clearButton.addFocusListener(focusListener);
+			allFields.add(clearButton);
+			clearButton.setToolTipText("Clear Search Field");
 			gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 4;
 	        gridBagConstraints.gridy = 3 * y + 1;
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
 	        gridBagConstraints.anchor = GridBagConstraints.EAST;
-	        searchFieldsPanel.add(wrap.apply(hideButton, y), gridBagConstraints);
+	        searchFieldsPanel.add(wrap.apply(clearButton, y), gridBagConstraints);
 
 	        JLabel sep = new JLabel("  ");
 			gridBagConstraints = new java.awt.GridBagConstraints();
@@ -898,7 +917,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        gridBagConstraints.gridx = 1;
 	        gridBagConstraints.gridy = 3 * y + 2;
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
-	        gridBagConstraints.gridwidth = 4;
+	        gridBagConstraints.gridwidth = 5;
 	        searchFieldsPanel.add(wrap.apply(sepPanel, y), gridBagConstraints);
 
 	        int columnIndex = 0;
@@ -919,12 +938,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3 * y;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.weightx = 1;
         gridBagConstraints.weighty = 1;
         searchFieldsPanel.add(wrap.apply(sepPanel, 1), gridBagConstraints);
 		
-        resetButton.setEnabled(comparisons.stream().anyMatch(c -> c.valueTextField.getText().trim().length() > 0));
+        clearButton.setEnabled(comparisons.stream().anyMatch(c -> c.valueTextField.getText().trim().length() > 0));
         
 		revalidate();
 		focusedComparision.ifPresent(c -> c.valueTextField.grabFocus());
@@ -932,7 +951,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
 	private void setValueFieldText(JTextField valueTextField, String value) {
 		valueTextField.setText(value);
-		UIUtil.invokeLater(() -> valueTextField.setToolTipText(value));
+		UIUtil.invokeLater(() -> valueTextField.setToolTipText(value == null || value.isEmpty()? null : value));
 		if (value.trim().length() > 0) {
 			valueTextField.setCaretPosition(0);
 		}
@@ -1147,8 +1166,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			});
 		}
 	}
-	
-    @SuppressWarnings("unchecked")
+
+	@SuppressWarnings("unchecked")
 	private void openStringSearchPanel(JTextField valueTextField, Comparison comparison) {
     	if (getParent() == null) {
     		return; // too late
@@ -1192,6 +1211,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		
 		List<StringSearchPanel> theSearchPanel = new ArrayList<StringSearchPanel>();
 		String origText = valueTextField.getText();
+		Object cancellationContext = getNextCancellationContext();
 		StringSearchPanel searchPanel = new StringSearchPanel(null, combobox, null, null, null, new Runnable() {
 			@Override
 			public void run() {
@@ -1199,18 +1219,18 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				if (theSearchPanel.get(0).isExplictlyClosed()) {
 					accept(comparison, theSearchPanel.get(0).getPlainValue(), comparison.operator);
 				}
-		    	cancel();
+		    	cancel(cancellationContext);
 			}
 		}, renderConsumer) {
 			@Override
 			protected void onClose(String text) {
 				setValueFieldText(valueTextField, text);
-		    	cancel();
+		    	cancel(cancellationContext);
 			}
 			@Override
 			protected void onAbort() {
 				setValueFieldText(valueTextField, origText);
-		    	cancel();
+		    	cancel(cancellationContext);
 			}
 			@Override
 			protected Integer preferredWidth() {
@@ -1253,44 +1273,175 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		searchPanel.withSizeGrip();
 		int estDVCount = estimateDistinctExistingValues(comparison, condition);
 		Integer estimatedItemsCount = defaultComboBoxModel.getSize() + estDVCount ;
-		searchPanel.setEstimatedItemsCount(estimatedItemsCount );
+		searchPanel.setEstimatedItemsCount(estimatedItemsCount);
 		searchPanel.find(owner, "Condition", point.x, point.y, true);
 		searchPanel.setInitialValue(valueTextField.getText());
 		searchPanel.setStatus("loading existing values...", null);
-		Object cancellationContext = nextCancellationContext;
-		
-		runnableQueue.add(() -> {
-			try {
+		JPanel bottom = new JPanel(new GridBagLayout());
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        bottom.add(fullSearchCheckbox, gridBagConstraints);
+        SmallButton clearCacheButton = new LightBorderSmallButton(resetIcon) {
+			@Override
+			protected void onClick(MouseEvent e) {
+				clearCache();
+				searchPanel.abort();
+				UIUtil.invokeLater(() -> openStringSearchPanel(valueTextField, comparison));
+			}
+		};
+		gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1;
+        bottom.add(new JPanel(null), gridBagConstraints);
+		clearCacheButton.setText("Clear Cache");
+        clearCacheButton.setToolTipText(
+        		"<html>The values were cached by a previous request and are therefore potentially stale. <br>"
+        		+ "Clearing the cache has the effect of reading up-to-date values.</html>");
+        clearCacheButton.setVisible(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        bottom.add(clearCacheButton, gridBagConstraints);
+		searchPanel.addBottomcomponent(bottom);
+		fullSearchCheckbox.setVisible(false);
+		List<String> initialModel = new ArrayList<String>();
+		for (int i = 0; i < defaultComboBoxModel.getSize(); ++i) {
+			initialModel.add(defaultComboBoxModel.getElementAt(i));
+		}
+		Pattern nullPattern = Pattern.compile("\\s*is\\s+(not\\s+)?null\\s*", Pattern.CASE_INSENSITIVE);
+				
+		runnableQueue.add(new Runnable() {
+			public void run() {
+				boolean[] fromCache = new boolean[1];
+				boolean[] fromCacheFull = new boolean[1];
 				boolean[] incomplete = new boolean[1];
 				incomplete[0] = false;
-				List<String> distinctExisting = loadDistinctExistingValues(comparison, cancellationContext, incomplete, condition);
-				UIUtil.invokeLater(() -> {
-					searchPanel.addBottomcomponent(fullSearchCheckbox);
-					distinctExisting.forEach(s -> {
-						defaultComboBoxModel.addElement(s);
-						renderConsumer.put(s, label -> label.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
-					});
-					searchPanel.updateList(false, true);
-					if (incomplete[0] || distinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
-						UIUtil.invokeLater(() -> {
-							searchPanel.setStatus("incomplete"
-									+ (incomplete[0] ? "" : ("(>" + MAX_NUM_DISTINCTEXISTINGVALUES + " values)")),
-									UIUtil.scaleIcon(searchPanel, warnIcon));
-						});
+				List<String> distinctExisting = null;
+				List<String> distinctExistingModel = new ArrayList<String>();
+				if (!condition.isEmpty()) {
+					try {
+						distinctExisting = loadDistinctExistingValues(comparison, cancellationContext, incomplete, fromCache,
+								condition);
+					} catch (CancellationException e) {
 						return;
+					} catch (Throwable e) {
+						// ignore
+					}
+				}
+				List<String> finalDistinctExisting = distinctExisting;
+				UIUtil.invokeLater(() -> {
+					fullSearchCheckbox.setVisible(true);
+					fullSearchCheckbox.setEnabled(false);
+					fullSearchCheckbox.setSelected(finalDistinctExisting == null);
+					if (finalDistinctExisting != null) {
+						setStatus(incomplete, finalDistinctExisting);
+						defaultComboBoxModel.removeAllElements();
+						initialModel.forEach(s -> {
+							if (finalDistinctExisting.contains(s) || nullPattern.matcher(s).matches()) {
+								defaultComboBoxModel.addElement(s);
+							}
+						});
+						finalDistinctExisting.forEach(s -> {
+							defaultComboBoxModel.addElement(s);
+							renderConsumer.put(s, label -> label
+									.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
+						});
+						distinctExistingModel.clear();
+						for (int i = 0; i < defaultComboBoxModel.getSize(); ++i) {
+							distinctExistingModel.add(defaultComboBoxModel.getElementAt(i));
+						}
+						searchPanel.setEstimatedItemsCount(defaultComboBoxModel.getSize());
+						searchPanel.resetHeight();
+						if (fromCache[0]) {
+							clearCacheButton.setVisible(true);
+						}
+						searchPanel.updateList(false, true);
 					}
 				});
-			} catch (CancellationException e) {
-				// ok;
-			} catch (Throwable e) {
+
+				boolean[] incompleteFull = new boolean[1];
+				incompleteFull[0] = false;
+				List<String> distinctExistingFull = null;
+				List<String> distinctExistingFullModel = new ArrayList<String>();
+				try {
+					distinctExistingFull = loadDistinctExistingValues(comparison, cancellationContext, incompleteFull, fromCacheFull, "");
+					// dedup
+					if (distinctExisting != null) {
+						Map<String, String> fullSet = new HashMap<String, String>();
+						distinctExistingFull.forEach(s -> fullSet.put(s, s));;
+						int s = distinctExisting.size();
+						for (int i = 0; i < s; ++i) {
+							String f = fullSet.get(distinctExisting.get(i));
+							if (f != null) {
+								distinctExisting.set(i, f);
+							}
+						}
+					}
+				} catch (CancellationException e) {
+					return;
+				} catch (Throwable e) {
+					UIUtil.invokeLater(() -> {
+						searchPanel.setStatus("error loading values", UIUtil.scaleIcon(searchPanel, warnIcon));
+					});
+					return;
+				}
+				List<String> finalDistinctExistingFull = distinctExistingFull;
 				UIUtil.invokeLater(() -> {
-					searchPanel.setStatus("error loading values", UIUtil.scaleIcon(searchPanel, warnIcon));
+					if (finalDistinctExistingFull != null) {
+						fullSearchCheckbox.setEnabled(finalDistinctExisting != null);
+						if (finalDistinctExisting != null && finalDistinctExisting.equals(finalDistinctExistingFull)) {
+							fullSearchCheckbox.setSelected(true);
+							fullSearchCheckbox.setEnabled(false);
+						}
+						finalDistinctExistingFull.forEach(s -> {
+							defaultComboBoxModel.addElement(s);
+							renderConsumer.put(s, label -> label
+									.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
+						});
+						distinctExistingFullModel.clear();
+						distinctExistingFullModel.addAll(initialModel);
+						distinctExistingFullModel.addAll(finalDistinctExistingFull);
+						if (fromCache[0] || fromCacheFull[0]) {
+							clearCacheButton.setVisible(true);
+						}
+						ActionListener action = e -> {
+							defaultComboBoxModel.removeAllElements();
+							if (fullSearchCheckbox.isSelected()) {
+								distinctExistingFullModel.forEach(s -> {
+									defaultComboBoxModel.addElement(s);
+								});
+								setStatus(incompleteFull, finalDistinctExistingFull);
+								clearCacheButton.setVisible(fromCacheFull[0]);
+							} else {
+								distinctExistingModel.forEach(s -> {
+									defaultComboBoxModel.addElement(s);
+								});
+								setStatus(incomplete, finalDistinctExisting);
+								clearCacheButton.setVisible(fromCache[0]);
+							}
+							searchPanel.setEstimatedItemsCount(defaultComboBoxModel.getSize());
+							searchPanel.resetHeight();
+							searchPanel.updateList(false, true);
+						};
+						fullSearchCheckbox.addActionListener(action);
+						action.actionPerformed(null);
+					}
 				});
-				return;
 			}
-			UIUtil.invokeLater(() -> {
-				searchPanel.setStatus(null, null);
-			});
+
+			protected void setStatus(boolean[] incomplete, List<String> values) {
+				if (incomplete[0] || values.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
+					searchPanel.setStatus("incomplete"
+								+ (incomplete[0] ? "" : ("(>" + MAX_NUM_DISTINCTEXISTINGVALUES + " values)")),
+								UIUtil.scaleIcon(searchPanel, warnIcon));
+				} else {
+					searchPanel.setStatus(null, null);
+				}
+			}
 		});
     }
     
@@ -1298,8 +1449,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
 	private Object nextCancellationContext = new Object();
     
-    private void cancel() {
-    	CancellationHandler.cancelSilently(nextCancellationContext);
+    public Object getNextCancellationContext() {
+		Object cancellationContext = nextCancellationContext;
+		nextCancellationContext = new Object();
+		return cancellationContext;
+	}
+
+	private void cancel(Object cancellationContext) {
+    	CancellationHandler.cancelSilently(cancellationContext);
     	nextCancellationContext = new Object();
     }
     
@@ -1307,29 +1464,40 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     private final String DISTINCTEXISTINGVALUESICCACHEKEY = "DistinctExistingValuesICCache";
     private final String DISTINCTEXISTINGVALUESTSKEY = "DistinctExistingValuesTS";
 
+	protected synchronized void clearCache() {
+		session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY, null);
+		session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY, null);
+		session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY, null);
+	}
+
 	@SuppressWarnings("unchecked")
-	private List<String> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, boolean incomplete[], String condition) throws SQLException {
+	private List<String> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, boolean incomplete[], boolean[] fromCache, String condition) throws SQLException {
 		final int MAX_TEXT_LENGTH = 1024 * 4;
-		
-		Long ts = (Long) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY);
-		Map<Pair<String, String>, List<String>> cache = (Map<Pair<String, String>, List<String>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
-		if (cache == null || ts == null || ts < Session.lastUpdateTS) {
-			cache = new LRUCache<Pair<String,String>, List<String>>(SIZE_DISTINCTEXISTINGVALUESCACHE);
-			session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY, cache);
-			session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY, System.currentTimeMillis());
-		}
-		Map<Pair<String, String>, Boolean> icCache = (Map<Pair<String, String>, Boolean>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY);
-		if (icCache == null) {
-			icCache = new LRUCache<Pair<String,String>, Boolean>(SIZE_DISTINCTEXISTINGVALUESCACHE);
-			session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY, icCache);
-		}
+		List<String> result;
+		Map<Pair<String, String>, Boolean> icCache;
+		Map<Pair<String, String>, List<String>> cache;
 		Pair<String, String> key = new Pair<String, String>(table.getName() + "+" + condition, comparison.column.name);
-		List<String> result = cache.get(key);
-		if (Boolean.TRUE.equals(icCache.get(key))) {
-			incomplete[0] = true;
+		synchronized (this) {
+			Long ts = (Long) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY);
+			cache = (Map<Pair<String, String>, List<String>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
+			if (cache == null || ts == null || ts < Session.lastUpdateTS || ts < System.currentTimeMillis() - 10 * (1000 * 60 * 60) /* 10 h */) {
+				cache = new LRUCache<Pair<String,String>, List<String>>(SIZE_DISTINCTEXISTINGVALUESCACHE);
+				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY, cache);
+				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY, System.currentTimeMillis());
+			}
+			icCache = (Map<Pair<String, String>, Boolean>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY);
+			if (icCache == null) {
+				icCache = new LRUCache<Pair<String,String>, Boolean>(SIZE_DISTINCTEXISTINGVALUESCACHE);
+				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY, icCache);
+			}
+			result = cache.get(key);
+			if (Boolean.TRUE.equals(icCache.get(key))) {
+				incomplete[0] = true;
+			}
 		}
 		
 		if (result == null) {
+			fromCache[0] = false;
 			result = new ArrayList<String>();
 			int columnIndex = 0;
 			while (columnIndex < table.getColumns().size()) {
@@ -1364,12 +1532,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				}
 				++columnIndex;
 			}
+		} else {
+			fromCache[0] = true;
 		}
 		Long sumLength = result.stream().collect(Collectors.summingLong(String::length));
 		if (sumLength == null || sumLength <= MAX_SIZE_DISTINCTEXISTINGVALUES) {
 			cache.put(key, result);
 			icCache.put(key, incomplete[0]);
 		}
+		
 		return result;
 	}
 
@@ -1577,9 +1748,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 	}
 	
-	private JButton resetButton;
+	private JButton clearButton;
 	
 	private static ImageIcon tableIcon;
+	private static ImageIcon clearIcon;
 	private static ImageIcon deleteIcon;
 	private static ImageIcon histIcon;
 	private static ImageIcon emptyIcon;
@@ -1590,6 +1762,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	static {
         // load images
         tableIcon = UIUtil.readImage("/table.png");
+        clearIcon = UIUtil.readImage("/clear.png");
         deleteIcon = UIUtil.readImage("/delete.png");
         histIcon = UIUtil.readImage("/history.png");
         nullIcon = UIUtil.readImage("/null.png");
@@ -1598,6 +1771,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         resetIcon = UIUtil.readImage("/reset.png");
 	}
 
+	// TODO close button, move panel, size grip
+	// TODO multi-value-select? (in clause?)
 	// TODO remove empty lines before putting text back into sql console after user edit
 	
 }
