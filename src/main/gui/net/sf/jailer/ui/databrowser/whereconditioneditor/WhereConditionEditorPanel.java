@@ -542,17 +542,18 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						}
 						if (value != null) {
 							String theValue = value;
-							comparisons.stream().filter(c -> c.column.equals(column)).findAny().ifPresentOrElse(
-									c -> {
-										c.operator = operator;
-										c.value = theValue;
-										seen.add(c);
-									}, () -> {
-										Comparison c = new Comparison(operator, column);
-										c.value = theValue;
-										comparisons.add(c);
-										seen.add(c);
-									});
+							Optional<Comparison> comp = comparisons.stream().filter(c -> c.column.equals(column)).findAny();
+							Comparison c = comp.orElseGet(() -> null);
+							if (c != null) {
+								c.operator = operator;
+								c.value = theValue;
+								seen.add(c);
+							} else {
+								c = new Comparison(operator, column);
+								c.value = theValue;
+								comparisons.add(c);
+								seen.add(c);
+							}
 						}
 					}
 				}
