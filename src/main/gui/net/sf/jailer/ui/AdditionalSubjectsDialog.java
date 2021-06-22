@@ -647,4 +647,6 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
 		conditionEditorIcon = UIUtil.readImage("/edit.png");
 	}
+	
+	// TODO embed WhereConditionEditorPanel
 }

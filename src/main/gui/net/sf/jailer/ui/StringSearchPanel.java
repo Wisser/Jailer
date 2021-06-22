@@ -379,6 +379,13 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 
 	protected Integer maxY(int height) {
+		Window window = SwingUtilities.getWindowAncestor(this);
+		if (window != null) {
+			while (window.getOwner() != null) {
+				window = window.getOwner();
+			}
+			return window.getY() + Math.max(0, window.getHeight() - height - 8);
+		}
 		return null;
 	}
 

@@ -1179,7 +1179,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 								"Help desk: https://sourceforge.net/p/jailer/discussion\n" + 
 								"Mail: rwisser@users.sourceforge.net",
 								title, JOptionPane.WARNING_MESSAGE);
-							UIUtil.sendIssue(title, ci.url);
 						}
 					}
 				} catch (Throwable e) {

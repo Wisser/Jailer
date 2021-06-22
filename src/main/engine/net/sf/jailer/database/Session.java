@@ -288,7 +288,7 @@ public class Session {
 							valid = true;
 						}
 						if (!valid) {
-							LogUtil.warn(new RuntimeException("invalid connection, reconnecting (" + idleTime + ")"));
+							// LogUtil.warn(new RuntimeException("invalid connection, reconnecting (" + idleTime + ")"));
 							reconnect();
 							return getConnection0();
 						}

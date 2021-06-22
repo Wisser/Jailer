@@ -189,6 +189,7 @@ import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CellContentConverter.PObjectWrapper;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -518,6 +519,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							updateMode("error", null);
 							unhide();
 							if (theSession == null || !theSession.isDown()) {
+								if (e instanceof SqlException && ((SqlException) e).sqlStatement != null && UIUtil.suspectQuery != null) {
+									if (((SqlException) e).sqlStatement.replaceAll("\\s", "").contains(UIUtil.suspectQuery.replaceAll("\\s", ""))) {
+										LogUtil.warn(e);
+										UIUtil.suspectQuery = null;
+									}
+								}
 								errorMessageTextArea.setText(e.getMessage());
 								errorMessageTextArea.setToolTipText(UIUtil.toHTML(UIUtil.lineWrap(e.getMessage(), 100).toString(), 120));
 								errorMessageTextArea.setCaretPosition(0);

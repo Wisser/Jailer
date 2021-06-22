@@ -26,7 +26,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -36,10 +38,14 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,12 +60,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -75,6 +84,7 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -97,11 +107,15 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.database.BasicDataSource;
+import net.sf.jailer.database.Session;
+import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
+import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.RestrictionDefinition;
 import net.sf.jailer.datamodel.Table;
@@ -110,10 +124,15 @@ import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
+import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
+import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
+import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.undo.CompensationAction;
 import net.sf.jailer.ui.undo.UndoManager;
 import net.sf.jailer.ui.util.UISettings;
@@ -297,6 +316,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		boolean saveNeedsSave = needsSave;
 		initComponents();
 
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        jPanel3.add(createWhereConEditorButton(() -> getSubject(), () -> condition.getText(), s -> {
+        	condition.setText(UIUtil.toSingleLineSQL(s));
+        }, true, "T", null), gridBagConstraints);
+
 		exportButton.setIcon(runIcon);
 		limitLabel.setText(SubjectLimitEditor.subjectLimitDefinitionRender(extractionModel.subjectLimitDefinition));
 
@@ -319,7 +346,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		AutoCompletion.enable(rootTable);
 		AutoCompletion.enable(subjectTable);
 
-		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -511,7 +538,60 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tree.setExpandsSelectedPaths(true);
 		restrictionEditor = new RestrictionEditor();
-
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridheight = 10;
+		gridBagConstraints.anchor = GridBagConstraints.NORTH;
+		Component createWhereConEditorButton = createWhereConEditorButton(
+				() -> {
+					List<Column> pks = new ArrayList<Column>();
+					List<Column> columns = new ArrayList<Column>();
+					if (currentAssociation.source.primaryKey.getColumns() != null) {
+						currentAssociation.source.primaryKey.getColumns().forEach(c -> {
+							Column newColumn = new Column("A." + c.name, c.type,  c.length, c.precision);
+							newColumn.isNullable = c.isNullable;
+							pks.add(newColumn);
+						});
+					}
+					if (currentAssociation.source.getColumns() != null) {
+						currentAssociation.source.getColumns().forEach(c -> {
+							Column newColumn = new Column("A." + c.name, c.type,  c.length, c.precision);
+							newColumn.isNullable = c.isNullable;
+							columns.add(newColumn);
+						});
+					}
+					if (currentAssociation.destination.primaryKey.getColumns() != null) {
+						currentAssociation.destination.primaryKey.getColumns().forEach(c -> {
+							Column newColumn = new Column("B." + c.name, c.type,  c.length, c.precision);
+							newColumn.isNullable = c.isNullable;
+							pks.add(newColumn);
+						});
+					}
+					if (currentAssociation.destination.getColumns() != null) {
+						currentAssociation.destination.getColumns().forEach(c -> {
+							Column newColumn = new Column("B." + c.name, c.type,  c.length, c.precision);
+							newColumn.isNullable = c.isNullable;
+							columns.add(newColumn);
+						});
+					}
+					PrimaryKey pk = new PrimaryKey(pks, false);
+					Table table = new Table(currentAssociation.source.getName() + " A join " + currentAssociation.destination.getName() + " B on (" + currentAssociation.getUnrestrictedJoinCondition() + ")", pk, false, false);
+					table.setColumns(columns);
+					return table;
+		}, () -> restrictionEditor.restriction.getText(), 
+				s -> {
+					restrictionEditor.restriction.setText(s);
+					onApply(true);
+				}, false, null, provider -> {
+					if (provider != null) {
+						provider.addAlias("A", currentAssociation.source);
+						provider.addAlias("B", currentAssociation.destination);
+					}
+				});
+		restrictionEditor.jPanel7.add(createWhereConEditorButton, gridBagConstraints);
+		createWhereConEditorButton.setEnabled(restrictionEditor.restriction.isEnabled());
+		restrictionEditor.restriction.addPropertyChangeListener("enabled", e -> createWhereConEditorButton.setEnabled(restrictionEditor.restriction.isEnabled()));
 		condition.setFont(UIUtil.getSQLEditorFont());
 		restrictionEditor.restriction.setFont(UIUtil.getSQLEditorFont());
 		
@@ -901,6 +981,150 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 		updateLeftButton();
 		updateAdditionalSubjectsButton();
+	}
+	
+	private WhereConditionEditorPanel whereConditionEditorPanel;
+	RSyntaxTextAreaWithSQLSyntaxStyle whereConditionEditorEditor;
+	
+	private BrowserContentCellEditor getBrowserContentCellEditor(Table table, Session session) throws SQLException {
+		String key = "browserContentCellEditor-" + table.getName();
+		BrowserContentCellEditor browserContentCellEditor[] = new BrowserContentCellEditor[] { (BrowserContentCellEditor) session.getSessionProperty(getClass(), key) };
+		if (browserContentCellEditor[0] == null) {
+			AbstractResultSetReader reader = new AbstractResultSetReader() {
+				@Override
+				public void init(ResultSet resultSet) throws SQLException {
+					ResultSetMetaData metaData = getMetaData(resultSet);
+					int columnCount = metaData.getColumnCount();
+					int[] columnTypes = new int[columnCount];
+					String[] columnTypeNames = new String[columnCount];
+					for (int ci = 1; ci <= columnCount; ++ci) {
+						columnTypes[ci - 1] = metaData.getColumnType(ci);
+						columnTypeNames[ci - 1] = metaData.getColumnTypeName(ci);
+					}
+					browserContentCellEditor[0] = new BrowserContentCellEditor(columnTypes, columnTypeNames, session);
+				}
+	
+				@Override
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					// nothing to do
+				}
+			};
+			String sqlQuery = "Select " + (table.getColumns().stream().map(c -> c.name).collect(Collectors.joining(", "))) + " From " + table.getName() + " Where 1=0";
+			session.executeQuery(sqlQuery, reader, null, null, 1);
+			session.setSessionProperty(getClass(), key, browserContentCellEditor[0]);
+		}
+		return browserContentCellEditor[0];
+	}
+
+	private Component createWhereConEditorButton(Supplier<Table> getSubject, Supplier<String> initialText, Consumer<String> consumer, boolean locateUnderButton, String tableAlias, Consumer<DataModelBasedSQLCompletionProvider> providerConsumer) {
+		whereConditionEditorEditor = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
+			@Override
+			protected void runBlock() {
+				super.runBlock();
+				if (whereConditionEditorPanel != null) {
+					whereConditionEditorPanel.parseCondition();
+				}
+			}
+			@Override
+			protected boolean withFindAndReplace() {
+				return false;
+			}
+		};
+		whereConditionEditorEditor.setEnabled(true);
+		whereConditionEditorEditor.setMarkOccurrences(false);
+		whereConditionEditorEditor.grabFocus();
+		
+		JButton button = new JButton(null, UIUtil.scaleIcon(this, findColumnIconWhere));
+		button.addActionListener(e -> {
+			if (getSubject.get() != null && extractionModelFrame.theSession != null || extractionModelFrame.connectToDBIfNeeded("Open Condition Editor")) {
+				try {
+					UIUtil.setWaitCursor(ExtractionModelEditor.this);
+					Window windowAncestor = SwingUtilities.getWindowAncestor(ExtractionModelEditor.this);
+					JDialog dialog = new JDialog(windowAncestor);
+					Runnable close = () -> {
+						dialog.setVisible(false);
+						dialog.dispose();
+					};
+					if (extractionModelFrame.theSession == null) {
+						BasicDataSource dataSource = new BasicDataSource(extractionModelFrame.dbConnectionDialog.currentConnection.driverClass, extractionModelFrame.dbConnectionDialog.currentConnection.url, extractionModelFrame.dbConnectionDialog.currentConnection.user, extractionModelFrame.dbConnectionDialog.getPassword(), 0, extractionModelFrame.dbConnectionDialog.currentJarURLs());
+						extractionModelFrame.theSession = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, windowAncestor);
+					}
+					String initialCondition = initialText.get();
+					WhereConditionEditorPanel wcep = new WhereConditionEditorPanel(windowAncestor,
+						dataModel, getSubject.get(), getBrowserContentCellEditor(getSubject.get(), extractionModelFrame.theSession),
+						false,
+						whereConditionEditorPanel, whereConditionEditorEditor,
+						null, true, -1, locateUnderButton,
+						extractionModelFrame.theSession, executionContext) {
+					
+						@Override
+						protected void onEscape() {
+							consumer.accept(initialCondition);
+							close.run();
+						}
+						
+						@Override
+						protected void consume(String condition) {
+							consumer.accept(condition);
+						}
+					};
+					whereConditionEditorPanel = wcep;
+					whereConditionEditorPanel.setTableAlias(tableAlias);
+					if (providerConsumer != null) {
+						providerConsumer.accept(whereConditionEditorPanel.provider);
+					}
+					
+					whereConditionEditorPanel.parseCondition(initialCondition);
+					dialog.setModal(false);
+					dialog.setUndecorated(true);
+					dialog.addWindowFocusListener(new WindowFocusListener() {
+						@Override
+						public void windowLostFocus(WindowEvent e) {
+							if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
+								close.run();
+							}
+						}
+						@Override
+						public void windowGainedFocus(WindowEvent e) {
+						}
+					});
+					
+					Point location = new Point(0, button.getHeight());
+					SwingUtilities.convertPointToScreen(location, button);
+							
+					int x = location.x;
+					int y = location.y;
+						
+					dialog.getContentPane().add(whereConditionEditorPanel);
+						
+					dialog.pack();
+					double mh = 310;
+					int height = Math.max(dialog.getHeight(), (int) mh);
+					dialog.setLocation(x, y);
+					int minWidth = 640;
+					int wid = Math.max(minWidth, dialog.getWidth());
+					Integer maxX = getX() + getWidth() - wid - 8;;
+					dialog.setSize(wid, Math.min(height, 600));
+					if (maxX != null) {
+						dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+					}
+					Integer maxY = getY() + getHeight() - height - 8;
+					if (maxY != null && maxY < dialog.getY()) {
+						int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
+						maxY += deltaH;
+						dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
+						dialog.setLocation(dialog.getX(), Math.max(0, maxY));
+					}
+					UIUtil.invokeLater(() -> dialog.setVisible(true));
+				} catch (Exception e1) {
+					UIUtil.showException(ExtractionModelEditor.this, "Error", e1);
+				} finally {
+					UIUtil.resetWaitCursor(ExtractionModelEditor.this);
+				}
+				
+			}	
+		});
+		return button;
 	}
 
 	public void undoChange() {
@@ -1356,16 +1580,22 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(additionalSubjectsButton, gridBagConstraints);
 
-        jPanel7.setLayout(new java.awt.BorderLayout());
+        jPanel7.setLayout(new java.awt.GridBagLayout());
 
         condition.setText("jTextField1");
         condition.setToolTipText("SQL expression. Keep empty if you want to export all rows.");
-        jPanel7.add(condition, java.awt.BorderLayout.CENTER);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel7.add(condition, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         jPanel3.add(jPanel7, gridBagConstraints);
@@ -1400,7 +1630,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -1435,7 +1665,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(jPanel10, gridBagConstraints);
 
@@ -1471,7 +1701,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         jPanel3.add(jPanel13, gridBagConstraints);
@@ -2220,7 +2450,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		closureView.refresh();
 		closureBorderView.refresh();
 		extractionModelFrame.restrictedDependenciesView.refresh();
-		tree.grabFocus();
+		if (extractionModelFrame.hasFocus()) {
+			tree.grabFocus();
+		}
 	}
 
 	public void removeRestrictions(Collection<Association> associations) {
@@ -3527,6 +3759,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private Icon conditionEditorSelectedIcon;
 	private ImageIcon leftIcon;
 	private ImageIcon leftIconP;
+	private ImageIcon findColumnIconWhere;
 	private Icon runIcon;
 	{
 		// load images
@@ -3536,6 +3769,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		leftIconP = UIUtil.readImage("/leftp.png");
 		leftIcon = UIUtil.readImage("/left.png");
         runIcon = UIUtil.readImage("/run.png");
+        findColumnIconWhere = UIUtil.readImage("/findcolumnWhereReady.png");
 	}
 
 	private static final long serialVersionUID = -5640822484296649670L;

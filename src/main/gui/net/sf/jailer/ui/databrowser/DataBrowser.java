@@ -99,6 +99,7 @@ import javax.swing.JTree;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
@@ -226,7 +227,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				BrowserContentCellEditor cellEditor, Boolean sorted, WhereConditionEditorPanel predecessor,
 				RSyntaxTextAreaWithSQLSyntaxStyle editor, JComponent closeButton, boolean asPopup, int initialColumn, Session session,
 				ExecutionContext executionContext, RowBrowser rowBrowser) {
-			super(parent, dataModel, table, cellEditor, sorted, predecessor, editor, closeButton, asPopup, initialColumn, session, 
+			super(parent, dataModel, table, cellEditor, sorted, predecessor, editor, closeButton, asPopup, initialColumn, true, session, 
 					executionContext);
 			this.rowBrowser = rowBrowser;
 			this.initialColumn = initialColumn;
@@ -362,7 +363,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		searchBarEditor.grabFocus();
 		popUpSearchBarEditor.grabFocus();
 		
-        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, -1, session, executionContext) {
+        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, -1, true, session, executionContext) {
         	@Override
 			protected void consume(String condition) {
 				// nothing to do	
@@ -3771,9 +3772,11 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private WhereConditionEditorPanelForDataBrowser popUpWhereConditionEditorPanel;
     
+    private boolean neverOpened = true;
+    
 	protected void openConditionEditor(BrowserContentPane browserContentPane, Point location, int column, Runnable onClose) {
+		JDialog dialog = new JDialog(this, "");
 		UIUtil.invokeLater(() -> {
-			JDialog dialog = new JDialog(this, "");
 			Runnable close = () -> {
 				dialog.setVisible(false);
 				dialog.dispose();
@@ -3848,6 +3851,18 @@ public class DataBrowser extends javax.swing.JFrame {
 				});
 	    	}
 		});
+		if (neverOpened) {
+			neverOpened = false;
+			UIUtil.invokeLater(8, () -> {
+				Timer timer = new Timer(100, e -> {
+					if (!dialog.isVisible()) {
+						openConditionEditor(browserContentPane, location, column, onClose);
+					}
+				});
+				timer.setRepeats(false);
+				timer.start();
+			});
+		}
 	}
 
 	private MetaDataSource getMetaDataSource(Session session) {

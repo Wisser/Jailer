@@ -184,13 +184,16 @@ public class Environment {
 				+ stateOffset;
 		AWTWatchdog.start();
 		LogUtil.setWarn(new LogUtil.Warn() {
+			int cd = 4;
 			@Override
 			public void warn(Throwable t) {
 				StringWriter sw = new StringWriter();
 		        PrintWriter pw = new PrintWriter(sw);
 		        t.printStackTrace(pw);
 		        UIUtil.sendIssue("warn", sw.toString().replaceAll("at (.*)?\\.((\\w|\\$)+\\.(\\w|\\$)+\\()", "$2"));
-		        LogUtil.setWarn(null);
+		        if (--cd < 0) {
+		        	LogUtil.setWarn(null);
+		        }
 			}
 		});
 

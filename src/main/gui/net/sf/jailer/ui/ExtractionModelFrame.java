@@ -111,7 +111,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	/**
 	 * Dialog for DB-connects.
 	 */
-	private DbConnectionDialog dbConnectionDialog;
+	DbConnectionDialog dbConnectionDialog;
 
 	/**
 	 * The filter editor.
@@ -1340,7 +1340,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						args.add(tmpFileName != null? tmpFileName : extractionModelEditor.extractionModelFile);
 						dbConnectionDialog.addDbArgs(args);
 						BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
-						Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, this);
+						if (theSession != null) {
+							theSession.shutDown();
+							theSession = null;
+						}
+			    		Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, this);
 
 						final Set<Table> toCheck = new HashSet<Table>();
 						if (session != null) {
@@ -1534,6 +1538,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}//GEN-LAST:event_disconnectDbActionPerformed
 
 	private void disconnect() {
+		if (theSession != null) {
+			theSession.shutDown();
+			theSession = null;
+		}
 		dbConnectionDialog.isConnected = false;
 		updateMenuItems();
 	}
@@ -1615,9 +1623,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 *
 	 * @return <code>false</code> if connection fails
 	 */
-	private boolean connectToDBIfNeeded(String reason) {
+	boolean connectToDBIfNeeded(String reason) {
 		try {
 			if (!dbConnectionDialog.isConnected) {
+				if (theSession != null) {
+					theSession.shutDown();
+					theSession = null;
+				}
 				return dbConnectionDialog.connect(reason);
 			}
 			return true;
@@ -2044,7 +2056,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	try {
 	    	if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Referential Consistency Check")) {
 	    		BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
-				Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), false, this);
+				if (theSession != null) {
+					theSession.shutDown();
+					theSession = null;
+				}
+	    		Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), false, this);
 				if (session != null) {
 					try {
 						new ConstraintChecker(this, extractionModelEditor.dataModel, false, session) {
@@ -2113,6 +2129,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	if (tmpFile != null) {
         		tmpFile.delete();
         	}
+    		if (theSession != null) {
+    			theSession.shutDown();
+    			theSession = null;
+    		}
         }
     }
 
@@ -2543,6 +2563,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenu viewMenu;
     private javax.swing.JMenuItem zoomToFit;
     // End of variables declaration//GEN-END:variables
+
+	Session theSession;
 
 	private static final long serialVersionUID = -2252377308370736756L;
 

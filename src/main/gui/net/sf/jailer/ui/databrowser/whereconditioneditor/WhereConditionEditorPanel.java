@@ -124,7 +124,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private String tableAlias = "A";
 	private final boolean asPopup;
 	private final int initialColumn;
-
+	public final DataModelBasedSQLCompletionProvider provider;
+	
 	private class Comparison {
 		Operator operator;
 		String value = "";
@@ -147,7 +148,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	@SuppressWarnings("rawtypes")
 	public WhereConditionEditorPanel(Window parent, DataModel dataModel, Table table, BrowserContentCellEditor cellEditor, Boolean sorted,
 			WhereConditionEditorPanel predecessor, RSyntaxTextAreaWithSQLSyntaxStyle editor,
-			JComponent closeButton, boolean asPopup, int initialColumn,
+			JComponent closeButton, boolean asPopup, int initialColumn, boolean locateUnderButton,
 			Session session, ExecutionContext executionContext) {
     	this.dataModel = dataModel;
     	this.table = table;
@@ -162,20 +163,23 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         	initPopupView();
         }
         
+        DataModelBasedSQLCompletionProvider theProvider = null;
         if (dataModel != null) {
 			try {
-				DataModelBasedSQLCompletionProvider provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
-				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-				new SQLAutoCompletion(provider, editor);
-				if (provider != null) {
-					provider.removeAliases();
-					if (table != null) {
-						provider.addAlias("A", table);
+				theProvider = new DataModelBasedSQLCompletionProvider(null, dataModel);
+				theProvider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
+				new SQLAutoCompletion(theProvider, editor);
+				if (theProvider != null) {
+					theProvider.removeAliases();
+					if (tableAlias != null && table != null) {
+						theProvider.addAlias("A", table);
 					}
 				}
 			} catch (SQLException e) {
+				// ignore
 			}
         }
+        this.provider = theProvider;
         
         editor.setEnabled(true);
         syntaxPanePanel.add(editor);
@@ -201,7 +205,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         font = tableLabel.getFont();
 		tableLabel.setFont(new Font(font.getName(), font.getStyle() | Font.BOLD, (int)(font.getSize() /* * 1.2 */)));
 		tableLabel.setIcon(tableIcon);
-		closeButtonContainerPanel.add(closeButton);
+		if (closeButton != null) {
+			closeButtonContainerPanel.add(closeButton);
+		}
     	if (predecessor == null) {
     		int location;
     		if (asPopup) {
@@ -291,9 +297,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 1;
 	        gridBagConstraints.gridy = 20;
-			final Window owner = parent;
 			final JComboBox comboBox = searchComboBox;
-	        searchButton = StringSearchPanel.createSearchButton(owner, comboBox, "Add Search Field", new Runnable() {
+	        searchButton = StringSearchPanel.createSearchButton(null, comboBox, "Add Search Field", new Runnable() {
 			    @Override
 			    public void run() {
 			        addColumn();
@@ -353,7 +358,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			return;
 		}
 		latestCondition = condition;
-		editor.setText(new BasicFormatterImpl().format(condition) + "\n");
+		String formated = new BasicFormatterImpl().format(condition);
+		if (formated.trim().isEmpty()) {
+			formated = "";
+		} else {
+			formated += "\n";
+		}
+		editor.setText(formated);
 		editor.discardAllEdits();
 		editor.setCaretPosition(0);
 		parseCondition();
@@ -480,7 +491,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		for (int columnIndex = 0; columnIndex < table.getColumns().size(); ++columnIndex) {
 			Column column = table.getColumns().get(columnIndex);
 			String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.,\\-\\+])+|(?:true|false)|(?:\\w+\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
-			String regex = "(?:(?:and\\s+)?(?:\\b" + tableAlias + "\\s*\\.\\s*))" + "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
+			String regex = "(?:(?:and\\s+)?(?:\\b" + (tableAlias == null? "" : (tableAlias + "\\s*\\.")) + "\\s*))" + "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
 					+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(" + Pattern.quote("!=") + "|" + 
 					Stream.of(Operator.values())
 						.map(o -> o.sql)
@@ -568,6 +579,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
     
 	private String toValue(String sqlValue, int columnIndex) {
+		// TODO convert a set of values with single statements
 		final String CACHE = "toValueCache";
 		@SuppressWarnings("unchecked")
 		Map<String, Map<Integer, String>> cache = (Map<String, Map<Integer, String>>) session.getSessionProperty(getClass(), CACHE);
@@ -949,6 +961,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		revalidate();
 		focusedComparision.ifPresent(c -> c.valueTextField.grabFocus());
     }
+
+	public String getTableAlias() {
+		return tableAlias;
+	}
+
+	public void setTableAlias(String tableAlias) {
+		this.tableAlias = tableAlias;
+	}
 
 	private void setValueFieldText(JTextField valueTextField, String value) {
 		valueTextField.setText(value);
@@ -1394,7 +1414,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				UIUtil.invokeLater(() -> {
 					if (finalDistinctExistingFull != null) {
 						fullSearchCheckbox.setEnabled(finalDistinctExisting != null);
-						if (finalDistinctExisting != null && finalDistinctExisting.equals(finalDistinctExistingFull)) {
+						if (finalDistinctExisting != null
+								&& finalDistinctExisting.equals(finalDistinctExistingFull)
+								&& distinctExistingModel.size() == distinctExistingFullModel.size()) {
 							fullSearchCheckbox.setSelected(true);
 							fullSearchCheckbox.setEnabled(false);
 						}
@@ -1404,7 +1426,16 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 									.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
 						});
 						distinctExistingFullModel.clear();
-						distinctExistingFullModel.addAll(initialModel);
+						if (!condition.isEmpty()) {
+							distinctExistingFullModel.addAll(initialModel);
+						} else {
+							initialModel.forEach(s -> {
+								if (finalDistinctExistingFull.contains(s) || nullPattern.matcher(s).matches()) {
+									distinctExistingFullModel.add(s);
+								}
+							});
+						}
+						
 						distinctExistingFullModel.addAll(finalDistinctExistingFull);
 						if (fromCache[0] || fromCacheFull[0]) {
 							clearCacheButton.setVisible(true);
@@ -1477,7 +1508,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		List<String> result;
 		Map<Pair<String, String>, Boolean> icCache;
 		Map<Pair<String, String>, List<String>> cache;
-		Pair<String, String> key = new Pair<String, String>(table.getName() + "+" + condition, comparison.column.name);
+		String tabName = table.getName();
+		Pair<String, String> key = new Pair<String, String>(tabName + "+" + condition, comparison.column.name);
 		synchronized (this) {
 			Long ts = (Long) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY);
 			cache = (Map<Pair<String, String>, List<String>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
@@ -1505,7 +1537,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				if (comparison.column.equals(table.getColumns().get(columnIndex))) {
 					int finalColumnIndex = columnIndex;
 					List<String> finalResult = result;
-					String sqlQuery = "Select distinct A." + comparison.column.name + " from " + table.getName() + " A where " +  comparison.column.name + " is not null"
+					String sqlQuery = "Select distinct " + comparison.column.name + " from " + tabName + " where " +  comparison.column.name + " is not null"
 							+ (condition.isEmpty()? "" : (" and (" + condition + ")"));
 					AbstractResultSetReader reader = new AbstractResultSetReader() {
 						@Override
@@ -1642,7 +1674,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						} catch (BadLocationException e) {
 							prefix = "\n";
 						}
-						String name = prefix + tableAlias + "." + comparison.column.name + " ";
+						String name = prefix + (tableAlias != null? tableAlias + "." : "") + comparison.column.name + " ";
 						editor.append(name + opSqlValue);
 						pos = new Pair<Integer, Integer>(start + name.length(), start + name.length() + opSqlValue.length());
 						valuePositions.put(comparison.column, pos);
@@ -1655,6 +1687,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					text += "\n";
 				}
 				editor.setText(text);
+				UIUtil.suspectQuery = text;
 				parseCondition();
 			}
 		}
