@@ -17,8 +17,8 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,6 +31,7 @@ import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 
 import net.sf.jailer.datamodel.Table;
@@ -85,10 +86,12 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		protected JComponent createDetailsView(AdditionalSubject element) {
 			detailsComboBox.setModel(subjectListModel(true));
 			if (element.getSubject() != null) {
-				detailsComboBox.setSelectedItem(extractionModel.dataModel.getDisplayName(element.getSubject()));
+				detailsComboBox.setSelectedItem(extractionModel.dataModel.getDisplayName(detailsTable = element.getSubject()));
 			} else {
+				detailsTable = null;
 				detailsComboBox.setSelectedItem("");
 			}
+			whereConEditorButton.setEnabled(detailsTable != null);
 			detailsCondtition.setText(element.getCondition());
 			currentLimitDefinition = element.getSubjectLimitDefinition();
         	limitLabel.setText(SubjectLimitEditor.subjectLimitDefinitionRender(currentLimitDefinition));
@@ -150,12 +153,14 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	}
 
 	private AdditionalSubjectListEditor additionalSubjectListEditor;
-	
+	private Table detailsTable;
+	private JButton whereConEditorButton;
 	
 	/**
 	 * Creates new form AdditionalSubjectsDialog
+	 * @param extractionModelEditor 
 	 */
-	public AdditionalSubjectsDialog(java.awt.Frame parent, final ExtractionModel extractionModel, Table subject, String subjectCond) {
+	public AdditionalSubjectsDialog(Frame parent, ExtractionModelEditor extractionModelEditor, final ExtractionModel extractionModel, Table subject, String subjectCond) {
 		super(parent, true);
 		this.parent = parent;
 		this.extractionModel = extractionModel;
@@ -171,6 +176,24 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         detailsPanel.add(StringSearchPanel.createSearchButton(null, detailsComboBox, "Find Table", null), gridBagConstraints);
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        whereConEditorButton = extractionModelEditor.createWhereConEditorButton(() -> detailsTable, () -> detailsCondtition.getText(), s -> {
+        	detailsCondtition.setText(UIUtil.toSingleLineSQL(s));
+        }, true, "T", null);
+		whereConEditorButton.setEnabled(detailsTable != null);
+		detailsPanel.add(whereConEditorButton, gridBagConstraints);
+
+		detailsComboBox.addItemListener(e -> {
+        	detailsTable = null;
+    		Object item = detailsComboBox.getSelectedItem();
+    		if (item != null) {
+    			detailsTable = extractionModel.dataModel.getTableByDisplayName(item.toString());
+    		}
+    		whereConEditorButton.setEnabled(detailsTable != null);
+        });
 
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 1;
@@ -180,47 +203,33 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		gridBagConstraints.weighty = 1.0;
 		subjectsPanel.add(additionalSubjectListEditor, gridBagConstraints);
 		
-		detailsLabel.setIcon(conditionEditorIcon);
-		detailsLabel.setText(null);
-		detailsLabel.setToolTipText("open SQL editor");
+		detailsButton.setIcon(conditionEditorIcon);
+		detailsButton.setText(null);
+		detailsButton.setToolTipText("open SQL editor");
 		final ParameterSelector.ParametersGetter parametersGetter = new ParameterSelector.ParametersGetter() {
 			@Override
 			public Set<String> getParameters() {
 				return AdditionalSubjectsDialog.this.extractionModel.dataModel.getParameters(AdditionalSubjectsDialog.this.subjectCond, subjects);
 			}
 		};
-		detailsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				mouseClicked(e);
+		detailsButton.addActionListener(e -> {
+			ConditionEditor conditionEditor = new ConditionEditor(AdditionalSubjectsDialog.this.parent,
+					parametersGetter, AdditionalSubjectsDialog.this.extractionModel.dataModel, null);
+			Object item = detailsComboBox.getSelectedItem();
+			conditionEditor.setTitle("");
+			Table table = null;
+			if (item != null) {
+				table = extractionModel.dataModel.getTableByDisplayName(item.toString());
+				conditionEditor.setTitle(item.toString());
 			}
-			@Override
-			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				ConditionEditor conditionEditor = new ConditionEditor(AdditionalSubjectsDialog.this.parent, parametersGetter, AdditionalSubjectsDialog.this.extractionModel.dataModel, null);
-				Object item = detailsComboBox.getSelectedItem();
-				conditionEditor.setTitle("");
-				Table table = null;
-				if (item != null) {
-					table = extractionModel.dataModel.getTableByDisplayName(item.toString());
-					conditionEditor.setTitle(item.toString());
+			String cond = conditionEditor.edit(detailsCondtition.getText(), "Subject", "T", table, null, null, null,
+					false, true);
+			if (cond != null) {
+				if (!detailsCondtition.getText().equals((cond))) {
+					detailsCondtition.setText((cond));
 				}
-				String cond = conditionEditor.edit(detailsCondtition.getText(), "Subject", "T", table, null, null, null, false, true);
-				if (cond != null) {
-					if (!detailsCondtition.getText().equals((cond))) {
-						detailsCondtition.setText((cond));
-					}
-					detailsLabel.setIcon(conditionEditorIcon);
-				}
+				detailsButton.setIcon(conditionEditorIcon);
 			}
-			
-			@Override
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				detailsLabel.setIcon(conditionEditorSelectedIcon);
-			}
-			@Override
-			public void mouseExited(java.awt.event.MouseEvent evt) {
-				detailsLabel.setIcon(conditionEditorIcon);
-		   }
 		});
 		
 		collectRemaining();
@@ -302,13 +311,13 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
         detailsPanel = new javax.swing.JPanel();
         detailsComboBox = new JComboBox2();
-        detailsLabel = new javax.swing.JLabel();
         detailsCondtition = new javax.swing.JTextField();
         detailsWhere = new javax.swing.JLabel();
         jPanel13 = new javax.swing.JPanel();
         limitLabel = new javax.swing.JLabel();
         limitButton = new javax.swing.JToggleButton();
         detailsWhere1 = new javax.swing.JLabel();
+        detailsButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -330,15 +339,9 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         detailsPanel.add(detailsComboBox, gridBagConstraints);
 
-        detailsLabel.setText("jLabel1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        detailsPanel.add(detailsLabel, gridBagConstraints);
-
         detailsCondtition.setText("jTextField1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -387,6 +390,12 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         detailsPanel.add(detailsWhere1, gridBagConstraints);
+
+        detailsButton.setText("jButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        detailsPanel.add(detailsButton, gridBagConstraints);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Additional Subjects");
@@ -619,9 +628,9 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
     private javax.swing.JButton addAllButton;
     private javax.swing.JButton addIsolatedlButton;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JButton detailsButton;
     private JComboBox2 detailsComboBox;
     private javax.swing.JTextField detailsCondtition;
-    private javax.swing.JLabel detailsLabel;
     private javax.swing.JPanel detailsPanel;
     private javax.swing.JLabel detailsWhere;
     private javax.swing.JLabel detailsWhere1;
@@ -638,15 +647,11 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
 	private ImageIcon conditionEditorIcon = null;
-	private ImageIcon conditionEditorSelectedIcon = null;
 
 	private boolean ok;
 
 	{
 		// load image
-		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
 		conditionEditorIcon = UIUtil.readImage("/edit.png");
 	}
-	
-	// TODO embed WhereConditionEditorPanel
 }

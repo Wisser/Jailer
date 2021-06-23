@@ -355,7 +355,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public void resetHeight() {
 		Integer maxX = maxX();
 		if (estimatedItemsCount != null && estimatedItemsCount >= 0) {
-			int height = (int) ((estimatedItemsCount) * Math.max(16, cellHeight) + oHeight);
+			int height = (int) ((Math.max(2, estimatedItemsCount)) * Math.max(16, cellHeight) + oHeight);
 			dialog.setSize(dialog.getWidth(), Math.min(height, 600));
 			if (maxX != null) {
 				dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());

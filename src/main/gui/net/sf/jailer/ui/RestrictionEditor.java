@@ -120,6 +120,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         fkToNullCheckBox = new javax.swing.JCheckBox();
         jLabel5 = new javax.swing.JLabel();
         fk20DisabledHintLabel = new javax.swing.JLabel();
+        jPanel11 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         source = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -267,6 +268,15 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel7.add(jPanel10, gridBagConstraints);
 
+        jPanel11.setOpaque(false);
+        jPanel11.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        jPanel7.add(jPanel11, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -377,6 +387,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
+    public javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;

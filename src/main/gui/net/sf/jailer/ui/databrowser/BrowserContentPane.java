@@ -810,7 +810,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return currentRowSelection;
 	}
 
-	private List<Row> parentRows;
+	List<Row> parentRows;
 	private JComponent singleRowDetailsView;
 	private MouseListener rowTableListener;
 	private TempClosureListener tempClosureListener = new TempClosureListener();
@@ -1146,10 +1146,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				Graphics2D g2d = (Graphics2D) graphics;
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setStroke(new BasicStroke(1));
+				Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), new Point(0, 0), this);
 
 				if (table != null && browserContentCellEditor != null && getQueryBuilderDialog() != null) {
 					if (currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
-						Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
 						g2d.drawImage(currentSearchButtonIcon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
 					}
 					for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
@@ -1158,7 +1158,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								int vi = rowsTable.convertColumnIndexToView(i);
 								if (vi >= 0 && vi != currentSearchButtonColumnIndex) {
 									Point location = calcSearchColumnPosition(vi);
-									Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), rowsTable.getTableHeader().getLocation(), jLayeredPane2);
 									g2d.drawImage(half.getImage(), location.x + loc.x, location.y + loc.y, null, null);
 								}
 							}
@@ -1918,7 +1917,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				JTableHeader header = (JTableHeader) (e.getSource());
+				JTableHeader header = (JTableHeader) e.getSource();
 				if (!header.isEnabled()) {
 		            return;
 		        }
@@ -1936,11 +1935,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		        	if (table != null && browserContentCellEditor.getColumnTypes().length > modelIndex && browserContentCellEditor.isEditable(table, modelIndex, null)) {
 			    		currentSearchButtonLocation = calcSearchColumnPosition(column);
 						int iconWidth = ready != null? ready.getIconWidth() : 0;
-						int iconHeight = ready != null? ready.getIconHeight() : 0;
 						int dx = currentSearchButtonLocation.x + iconWidth / 2 - e.getX();
-						int dy = currentSearchButtonLocation.y + iconHeight / 2 - e.getY();
-						double d = Math.sqrt(dx * dx + dy * dy);
-						currentSearchButtonIcon = d <= iconWidth * 1.0? readySelected : ready;
+						double d = 2 * Math.abs(dx);
+						currentSearchButtonIcon = d <= iconWidth * 3.0? readySelected : ready;
 		        	} else {
 		        		currentSearchButtonColumnIndex = -1;
 		        	}
@@ -1951,7 +1948,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			public void mouseClicked(MouseEvent e) {
-				JTableHeader header = (JTableHeader) (e.getSource());
+				JTableHeader header = (JTableHeader) e.getSource();
 				JTable tableView = header.getTable();
 				TableColumnModel columnModel = tableView.getColumnModel();
 				int viewIndex = columnModel.getColumnIndexAtX(e.getX());
@@ -7285,7 +7282,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		JTableHeader header;
 		Point result = new Point();
 		header = rowsTable.getTableHeader();
-		result.x = header.getHeaderRect(column).x - header.getX() + header.getHeaderRect(column).width - (ready != null? ready.getIconWidth() : 0);
+		result.x = header.getHeaderRect(column).x + header.getHeaderRect(column).width - (ready != null? ready.getIconWidth() : 0);
 		result.y = ready == null? 4 : (rowsTable.getTableHeader().getHeight() - ready.getIconHeight()) / 2;
 		if (result.y >= 8) {
 			result.y = 2;

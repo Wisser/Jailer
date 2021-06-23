@@ -15,22 +15,14 @@
  */
 package net.sf.jailer.ui.databrowser;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
-import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.Stroke;
-import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -38,7 +30,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.Path2D;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.NumberFormat;
@@ -63,12 +54,10 @@ import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.MouseInputAdapter;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 
@@ -80,6 +69,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
+import net.sf.jailer.ui.util.MovePanel;
 import net.sf.jailer.ui.util.SizeGrip;
 import net.sf.jailer.util.CellContentConverter.PObjectWrapper;
 import net.sf.jailer.util.Quoting;
@@ -897,31 +887,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         
-        JPanel movePanel = new JPanel() {
-        	@Override
-        	protected void paintComponent(Graphics g) {
-        		super.paintComponent(g);
-        		Dimension dim = getSize();
-        		Graphics2D g2d = (Graphics2D) g;
-        		Shape clip = g2d.getClip();
-				g2d.clipRect(0, 0, dim.width, dim.height);
-				Stroke s = new BasicStroke();
-				g2d.setStroke(s);
-				g2d.setColor(new Color(0, 0, 255, 80));
-				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-		                RenderingHints.VALUE_ANTIALIAS_ON);
-				g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-		                RenderingHints.VALUE_RENDER_QUALITY);
-				for (int x = dim.height / 16 + 3; x < dim.width - dim.height / 16 - 1; x += 5) {
-					int h = dim.height / 2;
-					Path2D.Double path = new Path2D.Double();
-					path.moveTo(x, 1);
-					path.curveTo(x - h / 2, h, x + h / 2, dim.height - h, x, dim.height);
-					g2d.draw(path);
-				}
-				g2d.setClip(clip);
-        	}
-        };
+        JPanel movePanel = new MovePanel();
         
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -930,41 +896,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.weightx = 1.0;
         add(movePanel, gridBagConstraints);
-        
-        MouseInputAdapter ml = new MouseInputAdapter() {
-    		private Point origPos;
-    		@Override
-    		public void mouseDragged(MouseEvent e) {
-    			if (origPos == null) {
-    				return;
-    			}
-    			Point newPos = e.getPoint();
-    			SwingUtilities.convertPointToScreen(newPos, DetailsView.this);
-    			int xDelta = newPos.x - origPos.x;
-    			int yDelta = newPos.y - origPos.y;
-    			Window wind = SwingUtilities.getWindowAncestor(DetailsView.this);
-    			if (wind!=null) { // Should always be true
-    				wind.setLocation(wind.getX() + xDelta, wind.getY() + yDelta);
-    				wind.invalidate();
-    				wind.validate();
-    			}
-    			origPos.setLocation(newPos);
-    		}
-
-    		@Override
-    		public void mousePressed(MouseEvent e) {
-    			origPos = e.getPoint();
-    			SwingUtilities.convertPointToScreen(origPos, DetailsView.this);
-    		}
-
-    		@Override
-    		public void mouseReleased(MouseEvent e) {
-    			origPos = null;
-    		}
-    	};
-    	movePanel.addMouseListener(ml);
-    	movePanel.addMouseMotionListener(ml);
-    	movePanel.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
  	}
 
 	private void resetScrollPane() {

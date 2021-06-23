@@ -73,6 +73,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
@@ -173,6 +174,7 @@ import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.ui.util.UpdateInfoManager;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Quoting;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * Data Browser Frame.
@@ -453,7 +455,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jLayeredPane1.setLayer(layeredPaneContent, JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.setLayer(dummy, JLayeredPane.DEFAULT_LAYER);
         searchBarToggleButton.setText(null);
-        searchBarToggleButton.setIcon(findColumnIconWhere);
+        searchBarToggleButton.setIcon(searchIcon);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -3798,7 +3800,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				popUpWhereConditionEditorPanel = new WhereConditionEditorPanelForDataBrowser(dialog, datamodel.get(), table, cellEditor, rowBrowser != null && rowBrowser.browserContentPane != null
 				? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
 				: null,
-						popUpWhereConditionEditorPanel, popUpSearchBarEditor, whereConditionEditorCloseButton, true, column, session, executionContext, rowBrowser) {
+						popUpWhereConditionEditorPanel, popUpSearchBarEditor, null, true, column, session, executionContext, rowBrowser) {
 		        	@Override
 					protected void onEscape() {
 						close.run();
@@ -3807,6 +3809,33 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (rowBrowser != null && rowBrowser.browserContentPane != null) {
 					popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
 		            popUpWhereConditionEditorPanel.parseCondition(rowBrowser.browserContentPane.getAndConditionText());
+		            List<Row> parentRows = rowBrowser.browserContentPane.parentRows;
+					if (rowBrowser.browserContentPane.association != null && parentRows != null && !parentRows.isEmpty()) {
+		            	String cond;
+		            	String unrestrictedJoinCondition = rowBrowser.browserContentPane.association.getUnrestrictedJoinCondition();
+						if (!rowBrowser.browserContentPane.association.reversed) {
+                            cond = SqlUtil.reversRestrictionCondition(unrestrictedJoinCondition);
+                        } else {
+                        	cond = unrestrictedJoinCondition;
+                        }
+		            	ArrayList<Row> parentRowsBatch = new ArrayList<Row>();
+		            	Runnable addExtRow = () -> {
+		            		String bRows = parentRowsBatch.stream().map(r -> "(" + r.rowId + ")").collect(Collectors.joining(" or "));
+			            	String extJoin = "join " + rowBrowser.browserContentPane.association.source.getName() + " B on (" + cond + ") and (" + bRows + ")";
+			            	popUpWhereConditionEditorPanel.addExtJoin(extJoin);
+		            	};
+		            	parentRows.forEach(row -> {
+		            		parentRowsBatch.add(row);
+		            		if (parentRowsBatch.size() >= 50) {
+			            		addExtRow.run();
+				            	parentRowsBatch.clear();
+		            		}
+		            	});
+		            	if (parentRowsBatch.size() > 0) {
+		            		addExtRow.run();
+			            	parentRowsBatch.clear();
+	            		}
+		            }
 	    		}
 				dialog.setModal(false);
 				dialog.setUndecorated(true);
@@ -3828,7 +3857,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				dialog.getContentPane().add(popUpWhereConditionEditorPanel);
 				
 				dialog.pack();
-				double mh = column >= 0? 140 : 310;
+				double mh = column >= 0? 220 : 280;
 				int height = Math.max(dialog.getHeight(), (int) mh);
 				dialog.setLocation(x, y);
 				int minWidth = 600;
@@ -4731,8 +4760,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon navigationIcon;
 	private ImageIcon desktopIcon;
 	private ImageIcon closureIcon;
-	private ImageIcon findIcon;
-	private ImageIcon findColumnIconWhere;
+	private ImageIcon searchIcon;
 	{
         // load images
         tableIcon = UIUtil.readImage("/table.png");
@@ -4746,8 +4774,7 @@ public class DataBrowser extends javax.swing.JFrame {
         addSqlConsoleIcon = UIUtil.readImage("/add.png");
         navigationIcon = UIUtil.readImage("/navigation.png");
         closureIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closure.png"));
-        findIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/findcolumn.png"));
-        findColumnIconWhere = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/findcolumnWhereReady.png"));
+        searchIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/search.png"));
 	}
 
 }

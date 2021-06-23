@@ -51,8 +51,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -67,6 +67,7 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -90,6 +91,9 @@ import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.ui.util.LRUCache;
+import net.sf.jailer.ui.util.LightBorderSmallButton;
+import net.sf.jailer.ui.util.MovePanel;
+import net.sf.jailer.ui.util.SizeGrip;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
@@ -161,6 +165,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         initComponents();
         if (asPopup) {
         	initPopupView();
+        } else {
+        	setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
+    		statusPanel.setVisible(false);
+        	popupTitelPanel.setVisible(false);
         }
         
         DataModelBasedSQLCompletionProvider theProvider = null;
@@ -206,7 +214,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		tableLabel.setFont(new Font(font.getName(), font.getStyle() | Font.BOLD, (int)(font.getSize() /* * 1.2 */)));
 		tableLabel.setIcon(tableIcon);
 		if (closeButton != null) {
-			closeButtonContainerPanel.add(closeButton);
+			gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 0;
+	        gridBagConstraints.gridy = 0;
+	        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+	        closeButtonContainerPanel.add(closeButton, gridBagConstraints);
 		}
     	if (predecessor == null) {
     		int location;
@@ -341,8 +353,53 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     }
 	
 	private void initPopupView() {
+		setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
 		titlePanel.setVisible(false);
 		splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+		
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        statusPanel.add(new JLabel(" "), gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        statusPanel.add(new SizeGrip(), gridBagConstraints);
+		
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        MovePanel movePanel = new MovePanel();
+        movePanel.setOpaque(false);
+		popupTitelPanel.add(movePanel, gridBagConstraints);
+        
+		String displayName = dataModel.getDisplayName(table);
+		popupTabNameLabel.setText(displayName.replaceFirst("^(.{40})...*$", "$1..."));
+		popupTabNameLabel.setToolTipText(displayName);
+		popupTabNameLabel.setIcon(tableIcon);
+		
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        popupTitelPanel.add(new SmallButton(closeIcon, true) {
+			@Override
+			protected void onClick(MouseEvent e) {
+				Window window = SwingUtilities.getWindowAncestor(this);
+				window.setVisible(false);
+				window.dispose();
+			}
+		}, gridBagConstraints);
 	}
 
 	protected abstract void consume(String condition);
@@ -1027,12 +1084,18 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         searchFieldsPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
+        statusPanel = new javax.swing.JPanel();
+        popupTitelPanel = new javax.swing.JPanel();
+        popupTabNameLabel = new javax.swing.JLabel();
+        jPanel7 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         syntaxPanePanel = new javax.swing.JPanel();
         applyButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
+        splitPane.setBorder(null);
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         splitPane.setContinuousLayout(true);
         splitPane.setOneTouchExpandable(true);
@@ -1091,7 +1154,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         titlePanel.add(jSeparator1, gridBagConstraints);
 
         closeButtonContainerPanel.setOpaque(false);
-        closeButtonContainerPanel.setLayout(new java.awt.BorderLayout());
+        closeButtonContainerPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -1135,8 +1198,45 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
         splitPane.setTopComponent(jPanel1);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Condition"));
         jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        statusPanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel2.add(statusPanel, gridBagConstraints);
+
+        popupTitelPanel.setBackground(new java.awt.Color(250, 250, 255));
+        popupTitelPanel.setLayout(new java.awt.GridBagLayout());
+
+        popupTabNameLabel.setFont(popupTabNameLabel.getFont().deriveFont(popupTabNameLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        popupTabNameLabel.setText("jLabel1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        popupTitelPanel.add(popupTabNameLabel, gridBagConstraints);
+
+        jPanel7.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jPanel7.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 32, 0, 0);
+        popupTitelPanel.add(jPanel7, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        jPanel2.add(popupTitelPanel, gridBagConstraints);
+
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Condition"));
+        jPanel4.setLayout(new java.awt.GridBagLayout());
 
         syntaxPanePanel.setLayout(new java.awt.BorderLayout());
         jScrollPane1.setViewportView(syntaxPanePanel);
@@ -1147,7 +1247,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel2.add(jScrollPane1, gridBagConstraints);
+        jPanel4.add(jScrollPane1, gridBagConstraints);
 
         applyButton.setText("Apply");
         applyButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1159,7 +1259,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        jPanel2.add(applyButton, gridBagConstraints);
+        jPanel4.add(applyButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(jPanel4, gridBagConstraints);
 
         splitPane.setBottomComponent(jPanel2);
 
@@ -1536,31 +1644,41 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			while (columnIndex < table.getColumns().size()) {
 				if (comparison.column.equals(table.getColumns().get(columnIndex))) {
 					int finalColumnIndex = columnIndex;
-					List<String> finalResult = result;
-					String sqlQuery = "Select distinct " + comparison.column.name + " from " + tabName + " where " +  comparison.column.name + " is not null"
-							+ (condition.isEmpty()? "" : (" and (" + condition + ")"));
-					AbstractResultSetReader reader = new AbstractResultSetReader() {
-						@Override
-						public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							Object obj = getCellContentConverter(resultSet, session, session.dbms).getObject(resultSet, 1);
-							if (cellEditor.isEditable(table, finalColumnIndex, obj)) {
-								String text = cellEditor.cellContentToText(finalColumnIndex, obj);
-								if (text.length() <= MAX_TEXT_LENGTH) {
-									finalResult.add(text);
-								} else {
-									incomplete[0] = true;
-								}
-							} else {
-								incomplete[0] = true;
-							}
+					if (tableAlias == null && condition.isEmpty()) {
+						if (comparison.column.name.startsWith("A.")) {
+							tabName = tabName.replaceFirst("^(.* A)\\s+join(.* B)\\s+on.*$", "$1");
+						} else if (comparison.column.name.startsWith("B.")) {
+							tabName = tabName.replaceFirst("^(.* A)\\s+join(.* B)\\s+on.*$", "$2");
 						}
-					};
-					try {
-						session.executeQuery(sqlQuery + " order by " + comparison.column.name, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 1);
-					} catch (SQLException e) {
-						// try without ordering
-						session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 1);
-						result.sort(String::compareToIgnoreCase);
+					}
+					if (extJoins.isEmpty()) {
+						loadValues(comparison, cancellationContext, incomplete, condition, MAX_TEXT_LENGTH, result, tabName,
+							finalColumnIndex, "", true);
+					} else {
+						try {
+							if (extJoins.size() == 1) {
+								loadValues(comparison, cancellationContext, incomplete, condition, MAX_TEXT_LENGTH,
+										result, tabName, finalColumnIndex, " " + extJoins.get(0), true);
+							} else {
+								for (String ej : extJoins) {
+									loadValues(comparison, cancellationContext, incomplete, condition, MAX_TEXT_LENGTH,
+											result, tabName, finalColumnIndex, " " + ej, false);
+									Set<String> asSet = new HashSet<String>(result);
+									result.clear();
+									result.addAll(asSet);
+									if (result.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
+										break;
+									}
+								}
+								result.sort(String::compareToIgnoreCase);
+							}
+						} catch (Exception e) {
+							LogUtil.warn(e);
+							incomplete[0] = false;
+							result.clear();
+							loadValues(comparison, cancellationContext, incomplete, condition, MAX_TEXT_LENGTH, result,
+									tabName, finalColumnIndex, "", true);
+						}
 					}
 				}
 				++columnIndex;
@@ -1575,6 +1693,48 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		
 		return result;
+	}
+
+	private void loadValues(Comparison comparison, Object cancellationContext, boolean[] incomplete, String condition,
+			final int MAX_TEXT_LENGTH, List<String> result, String tabName, int finalColumnIndex,
+			String extJoin, boolean orderBy) throws SQLException {
+		String columnName = comparison.column.name;
+		if (tableAlias != null) {
+			columnName = tableAlias + "." + columnName;
+			tabName += " " + tableAlias;
+		}
+		String sqlQuery = "Select distinct " + columnName + " from " + tabName + extJoin + " where " +  columnName + " is not null"
+				+ (condition.isEmpty()? "" : (" and (" + condition + ")"));
+		AbstractResultSetReader reader = new AbstractResultSetReader() {
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				Object obj = getCellContentConverter(resultSet, session, session.dbms).getObject(resultSet, 1);
+				if (cellEditor.isEditable(table, finalColumnIndex, obj)) {
+					String text = cellEditor.cellContentToText(finalColumnIndex, obj);
+					if (text.length() <= MAX_TEXT_LENGTH) {
+						result.add(text);
+					} else {
+						incomplete[0] = true;
+					}
+				} else {
+					incomplete[0] = true;
+				}
+			}
+		};
+		if (orderBy) {
+			List<String> prev = new ArrayList<String>(result);
+			try {
+				session.executeQuery(sqlQuery + " order by " + columnName, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 1);
+			} catch (SQLException e) {
+				result.clear();
+				result.addAll(prev);
+				// try without ordering
+				session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 1);
+				result.sort(String::compareToIgnoreCase);
+			}
+		} else {
+			session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 1);
+		}
 	}
 
     private int estimateDistinctExistingValues(Comparison comparison, String condition) {
@@ -1717,39 +1877,25 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel popupTabNameLabel;
+    private javax.swing.JPanel popupTitelPanel;
     private javax.swing.JComboBox<String> searchComboBox;
     private javax.swing.JPanel searchFieldsPanel;
     private javax.swing.JCheckBox sortCheckBox;
     private javax.swing.JSplitPane splitPane;
+    private javax.swing.JPanel statusPanel;
     private javax.swing.JPanel syntaxPanePanel;
     private javax.swing.JLabel tableLabel;
     private javax.swing.JPanel titlePanel;
     // End of variables declaration//GEN-END:variables
     
-    
-    private static abstract class LightBorderSmallButton extends SmallButton {
-    	
-		public LightBorderSmallButton(Icon icon) {
-			super(icon, true);
-		}
-    	
-		protected void onMouseExited() {
-			super.onMouseExited();
-			Color borderColor = new Color(0, 0, 0, 0);
-			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED, borderColor, borderColor));
-		}
-
-		protected void onMouseEntered() {
-			super.onMouseEntered();
-			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Color.LIGHT_GRAY, Color.GRAY));
-		}
-		
-	};
     
 	/**
 	 * For concurrent loading of distinct values.
@@ -1782,6 +1928,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 	}
 	
+	private List<String> extJoins = new ArrayList<String>();
+	
+	public void addExtJoin(String extJoin) {
+		extJoins.add(extJoin);
+	}
+	
 	private JButton clearButton;
 	
 	private static ImageIcon tableIcon;
@@ -1791,6 +1943,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private static ImageIcon emptyIcon;
 	private static ImageIcon nullIcon;
 	private static ImageIcon resetIcon;
+	private static ImageIcon closeIcon;
 	
     static ImageIcon warnIcon;
 	static {
@@ -1803,9 +1956,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         emptyIcon = UIUtil.readImage("/empty.png");
         warnIcon = UIUtil.readImage("/wanr.png");
         resetIcon = UIUtil.readImage("/reset.png");
+        closeIcon = UIUtil.readImage("/Close-16-1.png");
 	}
 
-	// TODO close button, move panel, size grip
+	// TODO support properties
 	// TODO multi-value-select? (in clause?)
 	// TODO remove empty lines before putting text back into sql console after user edit
 	

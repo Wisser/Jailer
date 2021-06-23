@@ -225,7 +225,7 @@ public class SizeGrip extends JPanel {
 			if (wind!=null) { // Should always be true
 				if (getComponentOrientation().isLeftToRight()) {
 					int w = wind.getWidth();
-					if (newPos.x>=wind.getX() + 300) {
+					if (newPos.x>=wind.getX() + 100) {
 						w += xDelta;
 					}
 					int h = wind.getHeight();

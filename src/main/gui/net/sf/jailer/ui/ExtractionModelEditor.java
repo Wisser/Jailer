@@ -135,6 +135,8 @@ import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.undo.CompensationAction;
 import net.sf.jailer.ui.undo.UndoManager;
+import net.sf.jailer.ui.util.LightBorderSmallButton;
+import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
@@ -539,11 +541,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		tree.setExpandsSelectedPaths(true);
 		restrictionEditor = new RestrictionEditor();
 		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridx = 5;
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridheight = 10;
 		gridBagConstraints.anchor = GridBagConstraints.NORTH;
-		Component createWhereConEditorButton = createWhereConEditorButton(
+		JButton whereConEditorButton = createWhereConEditorButton(
 				() -> {
 					List<Column> pks = new ArrayList<Column>();
 					List<Column> columns = new ArrayList<Column>();
@@ -576,7 +578,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						});
 					}
 					PrimaryKey pk = new PrimaryKey(pks, false);
-					Table table = new Table(currentAssociation.source.getName() + " A join " + currentAssociation.destination.getName() + " B on (" + currentAssociation.getUnrestrictedJoinCondition() + ")", pk, false, false);
+					String unrestrictedJoinCondition = currentAssociation.getUnrestrictedJoinCondition();
+					if (currentAssociation.reversed) {
+						unrestrictedJoinCondition = SqlUtil.reversRestrictionCondition(unrestrictedJoinCondition);
+					}
+					Table table = new Table(currentAssociation.source.getName() + " A join " + currentAssociation.destination.getName() + " B on (" + unrestrictedJoinCondition + ")", pk, false, false);
 					table.setColumns(columns);
 					return table;
 		}, () -> restrictionEditor.restriction.getText(), 
@@ -589,9 +595,19 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						provider.addAlias("B", currentAssociation.destination);
 					}
 				});
-		restrictionEditor.jPanel7.add(createWhereConEditorButton, gridBagConstraints);
-		createWhereConEditorButton.setEnabled(restrictionEditor.restriction.isEnabled());
-		restrictionEditor.restriction.addPropertyChangeListener("enabled", e -> createWhereConEditorButton.setEnabled(restrictionEditor.restriction.isEnabled()));
+		SmallButton sm = new LightBorderSmallButton(whereConEditorButton.getIcon()) {
+			@Override
+			protected void onClick(MouseEvent e) {
+				whereConEditorButton.doClick();
+			}
+		};
+		whereConEditorButton.setVisible(false);
+		restrictionEditor.jPanel11.add(whereConEditorButton, gridBagConstraints);
+		restrictionEditor.jPanel11.add(sm, gridBagConstraints);
+		whereConEditorButton.setEnabled(restrictionEditor.restriction.isEnabled());
+		sm.setEnabled(restrictionEditor.restriction.isEnabled());
+		restrictionEditor.restriction.addPropertyChangeListener("enabled", e -> whereConEditorButton.setEnabled(restrictionEditor.restriction.isEnabled()));
+		restrictionEditor.restriction.addPropertyChangeListener("enabled", e -> sm.setVisible(restrictionEditor.restriction.isEnabled()));
 		condition.setFont(UIUtil.getSQLEditorFont());
 		restrictionEditor.restriction.setFont(UIUtil.getSQLEditorFont());
 		
@@ -1016,7 +1032,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		return browserContentCellEditor[0];
 	}
 
-	private Component createWhereConEditorButton(Supplier<Table> getSubject, Supplier<String> initialText, Consumer<String> consumer, boolean locateUnderButton, String tableAlias, Consumer<DataModelBasedSQLCompletionProvider> providerConsumer) {
+	JButton createWhereConEditorButton(Supplier<Table> getSubject, Supplier<String> initialText, Consumer<String> consumer, boolean locateUnderButton, String tableAlias, Consumer<DataModelBasedSQLCompletionProvider> providerConsumer) {
 		whereConditionEditorEditor = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			@Override
 			protected void runBlock() {
@@ -1034,12 +1050,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		whereConditionEditorEditor.setMarkOccurrences(false);
 		whereConditionEditorEditor.grabFocus();
 		
-		JButton button = new JButton(null, UIUtil.scaleIcon(this, findColumnIconWhere));
+		JButton button = new JButton(null, UIUtil.scaleIcon(this, searchIcon));
 		button.addActionListener(e -> {
 			if (getSubject.get() != null && extractionModelFrame.theSession != null || extractionModelFrame.connectToDBIfNeeded("Open Condition Editor")) {
+				Window windowAncestor = SwingUtilities.getWindowAncestor(button);
 				try {
-					UIUtil.setWaitCursor(ExtractionModelEditor.this);
-					Window windowAncestor = SwingUtilities.getWindowAncestor(ExtractionModelEditor.this);
+					UIUtil.setWaitCursor(windowAncestor);
 					JDialog dialog = new JDialog(windowAncestor);
 					Runnable close = () -> {
 						dialog.setVisible(false);
@@ -1089,8 +1105,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						}
 					});
 					
-					Point location = new Point(0, button.getHeight());
-					SwingUtilities.convertPointToScreen(location, button);
+					Component comp = button.isVisible()? button : button.getParent();
+					Point location = new Point(0, comp.getHeight());
+					SwingUtilities.convertPointToScreen(location, comp);
 							
 					int x = location.x;
 					int y = location.y;
@@ -1098,10 +1115,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					dialog.getContentPane().add(whereConditionEditorPanel);
 						
 					dialog.pack();
-					double mh = 310;
+					double mh = 260;
 					int height = Math.max(dialog.getHeight(), (int) mh);
 					dialog.setLocation(x, y);
-					int minWidth = 640;
+					int minWidth = 660;
 					int wid = Math.max(minWidth, dialog.getWidth());
 					Integer maxX = getX() + getWidth() - wid - 8;;
 					dialog.setSize(wid, Math.min(height, 600));
@@ -1117,9 +1134,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					}
 					UIUtil.invokeLater(() -> dialog.setVisible(true));
 				} catch (Exception e1) {
-					UIUtil.showException(ExtractionModelEditor.this, "Error", e1);
+					UIUtil.showException(windowAncestor, "Error", e1);
 				} finally {
-					UIUtil.resetWaitCursor(ExtractionModelEditor.this);
+					UIUtil.resetWaitCursor(windowAncestor);
 				}
 				
 			}	
@@ -2743,7 +2760,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		AdditionalSubjectsDialog additionalSubjectsDialog;
 		try {
 			UIUtil.setWaitCursor(this);
-			additionalSubjectsDialog = new AdditionalSubjectsDialog(extractionModelFrame, extractionModel, subject, condition.getText());
+			additionalSubjectsDialog = new AdditionalSubjectsDialog(extractionModelFrame, this, extractionModel, subject, condition.getText());
 		} finally {
 			UIUtil.resetWaitCursor(this);
 		}
@@ -3759,7 +3776,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private Icon conditionEditorSelectedIcon;
 	private ImageIcon leftIcon;
 	private ImageIcon leftIconP;
-	private ImageIcon findColumnIconWhere;
+	private ImageIcon searchIcon;
 	private Icon runIcon;
 	{
 		// load images
@@ -3769,7 +3786,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		leftIconP = UIUtil.readImage("/leftp.png");
 		leftIcon = UIUtil.readImage("/left.png");
         runIcon = UIUtil.readImage("/run.png");
-        findColumnIconWhere = UIUtil.readImage("/findcolumnWhereReady.png");
+        searchIcon = UIUtil.readImage("/search.png");
 	}
 
 	private static final long serialVersionUID = -5640822484296649670L;
