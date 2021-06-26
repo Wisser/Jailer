@@ -1,3 +1,6 @@
+10.5
+  - The new "Where Condition" Editor allows quick and easy narrowing of table contents to the relevant data.
+
 10.4.9
   - Fix for bug "Exported enum names are truncated in lookup table definitions".
     https://sourceforge.net/p/jailer/discussion/700499/thread/69ccdee460

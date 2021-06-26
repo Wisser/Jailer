@@ -108,6 +108,7 @@ import net.sf.jailer.util.Quoting;
  *
  * @author Ralf Wisser
  */
+@SuppressWarnings("serial")
 public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
 	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 100_000;
@@ -541,98 +542,104 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	 * Parses current condition concurrently.
 	 */
 	private void doParseCondition() {
-		valuePositions.clear();
-		fullPositions.clear();
-		String quoteRE = "[\"\u00B4\\[\\]`]";
-		Set<Comparison> seen = new HashSet<Comparison>();
-		for (int columnIndex = 0; columnIndex < table.getColumns().size(); ++columnIndex) {
-			Column column = table.getColumns().get(columnIndex);
-			String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.,\\-\\+])+|(?:true|false)|(?:\\w+\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
-			String regex = "(?:(?:and\\s+)?(?:\\b" + (tableAlias == null? "" : (tableAlias + "\\s*\\.")) + "\\s*))" + "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
-					+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(" + Pattern.quote("!=") + "|" + 
-					Stream.of(Operator.values())
-						.map(o -> o.sql)
-						.sorted((a, b) -> b.length() - a.length())
-						.map(sql -> Character.isAlphabetic(sql.charAt(0))? "\\b" + Pattern.quote(sql) + "\\b" : Pattern.quote(sql))
-						.collect(Collectors.joining("|"))
-					+ "))\\s*" + valueRegex;
-			boolean found = false;
-			Matcher matcher = null;
-			try {
-				Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
-				matcher = identOperator.matcher(latestParsedCondition);
-				found = matcher.find();
-			} catch (Throwable t) {
-				// ignore
-			}
-			if (found) {
-				int start = matcher.start();
-				String q1 = matcher.group(1);
-				String q2 = matcher.group(2);
-				if ("".equals(q1)) {
-					q1 = null;
+		try {
+			valuePositions.clear();
+			fullPositions.clear();
+			String quoteRE = "[\"\u00B4\\[\\]`]";
+			Set<Comparison> seen = new HashSet<Comparison>();
+			for (int columnIndex = 0; columnIndex < table.getColumns().size(); ++columnIndex) {
+				Column column = table.getColumns().get(columnIndex);
+				String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.,\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
+				String regex = "(?:(?:and\\s+)?(?:\\b" + (tableAlias == null ? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
+						+ "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
+						+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(" + Pattern.quote("!=") + "|"
+						+ Stream.of(Operator.values()).map(o -> o.sql).sorted((a, b) -> b.length() - a.length())
+								.map(sql -> Character.isAlphabetic(sql.charAt(0)) ? "\\b" + Pattern.quote(sql) + "\\b"
+										: Pattern.quote(sql))
+								.collect(Collectors.joining("|"))
+						+ "))\\s*" + valueRegex;
+				boolean found = false;
+				Matcher matcher = null;
+				try {
+					Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+					matcher = identOperator.matcher(latestParsedCondition);
+					found = matcher.find();
+				} catch (Throwable t) {
+					// ignore
 				}
-				if ("".equals(q2)) {
-					q2 = null;
-				}
-				if (q1 == null && q2 == null || (q1 != null && q1.equals(q2)) || "[".equals(q1) || "]".equals(q2)) {
-					Operator operator;
-					String sqlValue = null;
-					String value = null;
-					if (matcher.group(3) != null && !"".equals(matcher.group(3))) {
-						operator = Operator.Equal;
-						value = sqlValue = "is null";
-						Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(3), matcher.end(3));
-						valuePositions.put(column, pos);
-						fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
-					} else if (matcher.group(4) != null && !"".equals(matcher.group(4))) {
-						operator = Operator.Equal;
-						value = sqlValue = "is not null";
-						Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(4), matcher.end(4));
-						valuePositions.put(column, pos);
-						fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
-					} else {
-						String op = matcher.group(5);
-						if ("!=".equals(op)) {
-							operator = Operator.NotEqual;
-						} else {
-							operator = Stream.of(Operator.values()).filter(o -> o.sql.equals(op)).findFirst().get();
-						}
-						sqlValue = matcher.group(6);
-						int opPos = matcher.start(5);
-						Pair<Integer, Integer> pos = new Pair<Integer, Integer>(opPos, matcher.end(6));
-						valuePositions.put(column, pos);
-						fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
+				if (found) {
+					int start = matcher.start();
+					String q1 = matcher.group(1);
+					String q2 = matcher.group(2);
+					if ("".equals(q1)) {
+						q1 = null;
 					}
-					if (sqlValue != null) {
-						if (value == null) {
-							value = toValue(sqlValue, columnIndex);
-						}
-						if (value != null) {
-							String theValue = value;
-							Optional<Comparison> comp = comparisons.stream().filter(c -> c.column.equals(column)).findAny();
-							Comparison c = comp.orElseGet(() -> null);
-							if (c != null) {
-								c.operator = operator;
-								c.value = theValue;
-								seen.add(c);
+					if ("".equals(q2)) {
+						q2 = null;
+					}
+					if (q1 == null && q2 == null || (q1 != null && q1.equals(q2)) || "[".equals(q1) || "]".equals(q2)) {
+						Operator operator;
+						String sqlValue = null;
+						String value = null;
+						if (matcher.group(3) != null && !"".equals(matcher.group(3))) {
+							operator = Operator.Equal;
+							value = sqlValue = "is null";
+							Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(3), matcher.end(3));
+							valuePositions.put(column, pos);
+							fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
+						} else if (matcher.group(4) != null && !"".equals(matcher.group(4))) {
+							operator = Operator.Equal;
+							value = sqlValue = "is not null";
+							Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(4), matcher.end(4));
+							valuePositions.put(column, pos);
+							fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
+						} else {
+							String op = matcher.group(5);
+							if ("!=".equals(op)) {
+								operator = Operator.NotEqual;
 							} else {
-								c = new Comparison(operator, column);
-								c.value = theValue;
-								comparisons.add(c);
-								seen.add(c);
+								operator = Stream.of(Operator.values()).filter(o -> o.sql.equals(op)).findFirst().get();
+							}
+							sqlValue = matcher.group(6);
+							int opPos = matcher.start(5);
+							Pair<Integer, Integer> pos = new Pair<Integer, Integer>(opPos, matcher.end(6));
+							valuePositions.put(column, pos);
+							fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
+						}
+						if (sqlValue != null) {
+							if (value == null) {
+								value = toValue(sqlValue, columnIndex);
+							}
+							if (value != null) {
+								String theValue = value;
+								Optional<Comparison> comp = comparisons.stream().filter(c -> c.column.equals(column))
+										.findAny();
+								Comparison c = comp.orElseGet(() -> null);
+								if (c != null) {
+									c.operator = operator;
+									c.value = theValue;
+									seen.add(c);
+								} else {
+									c = new Comparison(operator, column);
+									c.value = theValue;
+									comparisons.add(c);
+									seen.add(c);
+								}
 							}
 						}
 					}
 				}
 			}
+			comparisons.forEach(c -> {
+				if (!seen.contains(c)) {
+					c.value = "";
+					c.operator = Operator.Equal;
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
-		comparisons.forEach(c -> {
-			if (!seen.contains(c)) {
-				c.value = "";
-				c.operator = Operator.Equal;
-			}
-		});
 	}
     
 	private String toValue(String sqlValue, int columnIndex) {
@@ -1448,12 +1455,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				boolean[] fromCache = new boolean[1];
 				boolean[] fromCacheFull = new boolean[1];
 				boolean[] incomplete = new boolean[1];
+				boolean[] withNull = new boolean[1];
 				incomplete[0] = false;
 				List<String> distinctExisting = null;
 				List<String> distinctExistingModel = new ArrayList<String>();
 				if (!condition.isEmpty()) {
 					try {
-						distinctExisting = loadDistinctExistingValues(comparison, cancellationContext, incomplete, fromCache,
+						distinctExisting = loadDistinctExistingValues(comparison, cancellationContext, incomplete, withNull, fromCache,
 								condition);
 					} catch (CancellationException e) {
 						return;
@@ -1470,7 +1478,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						setStatus(incomplete, finalDistinctExisting);
 						defaultComboBoxModel.removeAllElements();
 						initialModel.forEach(s -> {
-							if (finalDistinctExisting.contains(s) || nullPattern.matcher(s).matches()) {
+							if (finalDistinctExisting.contains(s) || (withNull[0] && !finalDistinctExisting.isEmpty() && nullPattern.matcher(s).matches())) {
 								defaultComboBoxModel.addElement(s);
 							}
 						});
@@ -1494,10 +1502,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
 				boolean[] incompleteFull = new boolean[1];
 				incompleteFull[0] = false;
+				boolean[] withNullFull = new boolean[1];
+				withNullFull[0] = false;
 				List<String> distinctExistingFull = null;
 				List<String> distinctExistingFullModel = new ArrayList<String>();
 				try {
-					distinctExistingFull = loadDistinctExistingValues(comparison, cancellationContext, incompleteFull, fromCacheFull, "");
+					distinctExistingFull = loadDistinctExistingValues(comparison, cancellationContext, incompleteFull, withNullFull, fromCacheFull, "");
 					// dedup
 					if (distinctExisting != null) {
 						Map<String, String> fullSet = new HashMap<String, String>();
@@ -1519,7 +1529,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					return;
 				}
 				List<String> finalDistinctExistingFull = distinctExistingFull;
-				UIUtil.invokeLater(() -> {
+				UIUtil.invokeLater(new Runnable() { public void run() {
 					if (finalDistinctExistingFull != null) {
 						fullSearchCheckbox.setEnabled(finalDistinctExisting != null);
 						if (finalDistinctExisting != null
@@ -1534,14 +1544,17 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 									.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
 						});
 						distinctExistingFullModel.clear();
-						if (!condition.isEmpty()) {
+						if (fullSearchCheckbox.isEnabled()) {
 							distinctExistingFullModel.addAll(initialModel);
 						} else {
 							initialModel.forEach(s -> {
-								if (finalDistinctExistingFull.contains(s) || nullPattern.matcher(s).matches()) {
+								if (finalDistinctExistingFull.contains(s) || (withNullFull[0] && !finalDistinctExistingFull.isEmpty() && nullPattern.matcher(s).matches())) {
 									distinctExistingFullModel.add(s);
 								}
 							});
+							if (distinctExistingFullModel.isEmpty() && withNullFull[0]) {
+								distinctExistingFullModel.add("is null");
+							}
 						}
 						
 						distinctExistingFullModel.addAll(finalDistinctExistingFull);
@@ -1570,7 +1583,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						fullSearchCheckbox.addActionListener(action);
 						action.actionPerformed(null);
 					}
-				});
+				}});
 			}
 
 			protected void setStatus(boolean[] incomplete, List<String> values) {
@@ -1602,19 +1615,22 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     
     private final String DISTINCTEXISTINGVALUESCACHEKEY = "DistinctExistingValuesCache";
     private final String DISTINCTEXISTINGVALUESICCACHEKEY = "DistinctExistingValuesICCache";
+    private final String DISTINCTEXISTINGVALUESWNCACHEKEY = "DistinctExistingValuesWNCache";
     private final String DISTINCTEXISTINGVALUESTSKEY = "DistinctExistingValuesTS";
 
 	protected synchronized void clearCache() {
 		session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY, null);
 		session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESICCACHEKEY, null);
+		session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESWNCACHEKEY, null);
 		session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY, null);
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<String> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, boolean incomplete[], boolean[] fromCache, String condition) throws SQLException {
+	private List<String> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, boolean incomplete[], boolean[] withNull, boolean[] fromCache, String condition) throws SQLException {
 		final int MAX_TEXT_LENGTH = 1024 * 4;
 		List<String> result;
 		Map<Pair<String, String>, Boolean> icCache;
+		Map<Pair<String, String>, Boolean> wnCache;
 		Map<Pair<String, String>, List<String>> cache;
 		String tabName = table.getName();
 		Pair<String, String> key = new Pair<String, String>(tabName + "+" + condition, comparison.column.name);
@@ -1635,6 +1651,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			if (Boolean.TRUE.equals(icCache.get(key))) {
 				incomplete[0] = true;
 			}
+			wnCache = (Map<Pair<String, String>, Boolean>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESWNCACHEKEY);
+			if (wnCache == null) {
+				wnCache = new LRUCache<Pair<String,String>, Boolean>(SIZE_DISTINCTEXISTINGVALUESCACHE);
+				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESWNCACHEKEY, wnCache);
+			}
+			if (Boolean.TRUE.equals(wnCache.get(key))) {
+				withNull[0] = true;
+			}
 		}
 		
 		if (result == null) {
@@ -1643,7 +1667,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			int columnIndex = 0;
 			while (columnIndex < table.getColumns().size()) {
 				if (comparison.column.equals(table.getColumns().get(columnIndex))) {
-					int finalColumnIndex = columnIndex;
 					if (tableAlias == null && condition.isEmpty()) {
 						if (comparison.column.name.startsWith("A.")) {
 							tabName = tabName.replaceFirst("^(.* A)\\s+join(.* B)\\s+on.*$", "$1");
@@ -1651,18 +1674,19 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							tabName = tabName.replaceFirst("^(.* A)\\s+join(.* B)\\s+on.*$", "$2");
 						}
 					}
+					boolean needsSort = false;
 					if (extJoins.isEmpty()) {
-						loadValues(comparison, cancellationContext, incomplete, condition, MAX_TEXT_LENGTH, result, tabName,
-							finalColumnIndex, "", true);
+						loadValues(comparison, cancellationContext, incomplete, withNull, condition, MAX_TEXT_LENGTH, result, tabName,
+							columnIndex, "", true);
 					} else {
 						try {
 							if (extJoins.size() == 1) {
-								loadValues(comparison, cancellationContext, incomplete, condition, MAX_TEXT_LENGTH,
-										result, tabName, finalColumnIndex, " " + extJoins.get(0), true);
+								loadValues(comparison, cancellationContext, incomplete, withNull, condition, MAX_TEXT_LENGTH,
+										result, tabName, columnIndex, " " + extJoins.get(0), true);
 							} else {
 								for (String ej : extJoins) {
-									loadValues(comparison, cancellationContext, incomplete, condition, MAX_TEXT_LENGTH,
-											result, tabName, finalColumnIndex, " " + ej, false);
+									loadValues(comparison, cancellationContext, incomplete, withNull, condition, MAX_TEXT_LENGTH,
+											result, tabName, columnIndex, " " + ej, false);
 									Set<String> asSet = new HashSet<String>(result);
 									result.clear();
 									result.addAll(asSet);
@@ -1670,14 +1694,18 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 										break;
 									}
 								}
-								result.sort(String::compareToIgnoreCase);
+								needsSort = true;
 							}
 						} catch (Exception e) {
 							LogUtil.warn(e);
 							incomplete[0] = false;
+							withNull[0] = false;
 							result.clear();
-							loadValues(comparison, cancellationContext, incomplete, condition, MAX_TEXT_LENGTH, result,
-									tabName, finalColumnIndex, "", true);
+							loadValues(comparison, cancellationContext, incomplete, withNull, condition, MAX_TEXT_LENGTH, result,
+									tabName, columnIndex, "", true);
+						}
+						if (needsSort == true || cellEditor.useCaseIntensitiveOrderingInGUI(columnIndex)) {
+							sortValues(result, columnIndex);
 						}
 					}
 				}
@@ -1690,50 +1718,69 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		if (sumLength == null || sumLength <= MAX_SIZE_DISTINCTEXISTINGVALUES) {
 			cache.put(key, result);
 			icCache.put(key, incomplete[0]);
+			wnCache.put(key, withNull[0]);
 		}
 		
 		return result;
 	}
 
-	private void loadValues(Comparison comparison, Object cancellationContext, boolean[] incomplete, String condition,
-			final int MAX_TEXT_LENGTH, List<String> result, String tabName, int finalColumnIndex,
+	@SuppressWarnings("unchecked")
+	private void sortValues(List<String> result, int columnIndex) {
+		if (cellEditor.useCaseIntensitiveOrderingInGUI(columnIndex)) {
+			result.sort(String::compareToIgnoreCase);
+		} else {
+			try {
+				Map<String, Comparable<Object>> objects = new HashMap<String, Comparable<Object>>();
+				result.forEach(s -> objects.put(s, (Comparable<Object>) cellEditor.textToContent(columnIndex, s, null)));
+				result.sort((a, b) -> objects.get(a).compareTo(objects.get(b)));
+			} catch (Exception e) {
+				result.sort(String::compareToIgnoreCase);
+			}
+		}
+	}
+
+	private void loadValues(Comparison comparison, Object cancellationContext, boolean[] incomplete, boolean[] withNull, String condition,
+			final int MAX_TEXT_LENGTH, List<String> result, String tabName, int columnIndex,
 			String extJoin, boolean orderBy) throws SQLException {
 		String columnName = comparison.column.name;
 		if (tableAlias != null) {
 			columnName = tableAlias + "." + columnName;
 			tabName += " " + tableAlias;
 		}
-		String sqlQuery = "Select distinct " + columnName + " from " + tabName + extJoin + " where " +  columnName + " is not null"
-				+ (condition.isEmpty()? "" : (" and (" + condition + ")"));
+		String sqlQuery = "Select distinct " + columnName + " from " + tabName + extJoin + (condition.isEmpty()? "" : (" where " + condition));
 		AbstractResultSetReader reader = new AbstractResultSetReader() {
 			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				Object obj = getCellContentConverter(resultSet, session, session.dbms).getObject(resultSet, 1);
-				if (cellEditor.isEditable(table, finalColumnIndex, obj)) {
-					String text = cellEditor.cellContentToText(finalColumnIndex, obj);
-					if (text.length() <= MAX_TEXT_LENGTH) {
-						result.add(text);
+				if (obj == null) {
+					withNull[0] = true;
+				} else {
+					if (cellEditor.isEditable(table, columnIndex, obj)) {
+						String text = cellEditor.cellContentToText(columnIndex, obj);
+						if (text.length() <= MAX_TEXT_LENGTH) {
+							result.add(text);
+						} else {
+							incomplete[0] = true;
+						}
 					} else {
 						incomplete[0] = true;
 					}
-				} else {
-					incomplete[0] = true;
 				}
 			}
 		};
 		if (orderBy) {
 			List<String> prev = new ArrayList<String>(result);
 			try {
-				session.executeQuery(sqlQuery + " order by " + columnName, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 1);
+				session.executeQuery(sqlQuery + " order by " + columnName, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
 			} catch (SQLException e) {
 				result.clear();
 				result.addAll(prev);
 				// try without ordering
-				session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 1);
-				result.sort(String::compareToIgnoreCase);
+				session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
+				sortValues(result, columnIndex);
 			}
 		} else {
-			session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 1);
+			session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
 		}
 	}
 

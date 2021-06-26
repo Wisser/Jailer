@@ -1044,7 +1044,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public void itemStateChanged(ItemEvent e) {
 				if (!suppessReloadOnAndConditionAction) {
 					if (e.getStateChange() == ItemEvent.SELECTED) {
-						historizeAndCondition(e.getItem());
+						Object cond = e.getItem();
+						if (cond instanceof String) {
+							onConditionChange((String) cond);
+						}
+						historizeAndCondition(cond);
 						reloadRows();
 					}
 				}
@@ -1385,10 +1389,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									// highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? bold :
 									nonbold);
 							String text = ((JLabel) render).getText();
-							if (text.length() > 400 || text.indexOf('\n') >= 0) {
+							if (text.length() > 400 || text.indexOf('\n') >= 0 || text.indexOf((char) 182) >= 0) {
 								String tip = tipCache.get(text);
 								if (tip == null) {
-									tip = UIUtil.toHTML(hardWrap(text), 200);
+									tip = UIUtil.toHTML(hardWrap(text.replace((char) 182, '\n')), 200);
 									tipCache.put(text, tip);
 								}
 								((JLabel) render).setToolTipText(tip);
@@ -1671,7 +1675,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						protected void consume(String cond) {
 							if (cond != null) {
 								if (!getAndConditionText().equals((cond))) {
-									setAndCondition((cond), true);
+									setAndCondition(cond, true);
+									onConditionChange(cond);
 									loadButton.grabFocus();
 									reloadRows();
 								}
@@ -4534,7 +4539,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					valueAsString = " " + valueAsString + suffix;
 				}
 			}
-			return valueAsString;
+			return valueAsString.replace('\n', (char) 182);
 		}
 	}
 

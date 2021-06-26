@@ -552,6 +552,7 @@ order by
         	<statementSuffix>limit %1$s</statementSuffix>
         </limitTransactionSize>
 
+        <timestampPattern>'str_to_date('''yyyy-MM-dd HH:mm:ss'.${NANO}'', ''%Y-%m-%d %H:%i:%s.%f'')'</timestampPattern>
         <identityInserts>false</identityInserts>
         <emptyBLOBValue>BINARY ''</emptyBLOBValue>
         <emptyCLOBValue>''</emptyCLOBValue>
@@ -756,6 +757,7 @@ union all
         </limitTransactionSize>
 
         <identityInserts>false</identityInserts>
+        <timestampPattern>'str_to_date('''yyyy-MM-dd HH:mm:ss'.${NANO}'', ''%Y-%m-%d %H:%i:%s.%f'')'</timestampPattern>
         <emptyBLOBValue>BINARY ''</emptyBLOBValue>
         <emptyCLOBValue>''</emptyCLOBValue>
         <emptyNCLOBValue>''</emptyNCLOBValue>

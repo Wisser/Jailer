@@ -73,6 +73,11 @@ public class BrowserContentCellEditor {
 			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
 			}
+
+			@Override
+			boolean useCaseIntensitiveOrderingInGUI() {
+				return false;
+			}
 		},
 		CHAR {
 			@Override
@@ -89,6 +94,11 @@ public class BrowserContentCellEditor {
 			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
 				return content == null || (content instanceof String && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0)));
 			}
+
+			@Override
+			boolean useCaseIntensitiveOrderingInGUI() {
+				return true;
+			}
 		},
 		NCHAR {
 			@Override
@@ -104,6 +114,11 @@ public class BrowserContentCellEditor {
 			@Override
 			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
 				return content == null || (content instanceof CellContentConverter.NCharWrapper && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0)));
+			}
+
+			@Override
+			boolean useCaseIntensitiveOrderingInGUI() {
+				return true;
 			}
 		},
 		BIT_OR_BOOLEAN {
@@ -133,6 +148,11 @@ public class BrowserContentCellEditor {
 			@Override
 			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
+			}
+
+			@Override
+			boolean useCaseIntensitiveOrderingInGUI() {
+				return false;
 			}
 		},
 		DATE {
@@ -220,6 +240,11 @@ public class BrowserContentCellEditor {
 			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
 			}
+
+			@Override
+			boolean useCaseIntensitiveOrderingInGUI() {
+				return false;
+			}
 		},
 		
 		TIMESTAMP_WITH_NANO {
@@ -277,11 +302,17 @@ public class BrowserContentCellEditor {
 			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
 				return true;
 			}
+
+			@Override
+			boolean useCaseIntensitiveOrderingInGUI() {
+				return false;
+			}
 		};
 
 		abstract boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor);
 		abstract String cellContentToText(int columnType, Object content);
 		abstract Object textToContent(int columnType, String text, Object oldContent);
+		abstract boolean useCaseIntensitiveOrderingInGUI();
 	}
 
 	private static List<String> trueValuesTF = Arrays.asList("true", "tru", "tr", "yes", "ye", "j", "t", "y");
@@ -435,6 +466,19 @@ public class BrowserContentCellEditor {
 			}
 		}
 		return INVALID;
+	}
+
+	/**
+	 * Should cell content be sorted case insensitive?
+	 * 
+	 * @param column column number
+	 */
+	public boolean useCaseIntensitiveOrderingInGUI(int column) {
+		Converter converter = converterPerType.get(columnTypes[column]);
+		if (converter != null) {
+			return converter.useCaseIntensitiveOrderingInGUI();
+		}
+		return false;
 	}
 
 	/**
