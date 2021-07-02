@@ -1,6 +1,5 @@
 package net.sf.jailer.ui.syntaxtextarea;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +20,7 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 	private final Map<String, Table> schemaTablePerUUCName = new HashMap<String, Table>();
 	private final Map<String, List<Table>> tablesPerSchema = new HashMap<String, List<Table>>();
 	
-	public DataModelBasedSQLCompletionProvider(Session session, DataModel metaDataSource) throws SQLException {
+	public DataModelBasedSQLCompletionProvider(Session session, DataModel metaDataSource) {
 		super(session, metaDataSource);
 		for (Table table: metaDataSource.getTables()) {
 			String schema = table.getSchema("");

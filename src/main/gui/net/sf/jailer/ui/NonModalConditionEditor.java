@@ -32,7 +32,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -175,22 +174,19 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		jScrollPane2.setViewportView(editorPane);
 		
 		if (dataModel != null) {
-			try {
-				provider = new DataModelBasedSQLCompletionProvider(null, dataModel) {
-					@Override
-					protected List<String> getColumns(Table table, long timeOut, JComponent waitCursorSubject) {
-						List<String> columns = super.getColumns(table, timeOut, waitCursorSubject);
-						if (withPseudoColumns) {
-							columns.add("$DISTANCE");
-							columns.add("$IS_SUBJECT");
-						}
-						return columns;
+			provider = new DataModelBasedSQLCompletionProvider(null, dataModel) {
+				@Override
+				protected List<String> getColumns(Table table, long timeOut, JComponent waitCursorSubject) {
+					List<String> columns = super.getColumns(table, timeOut, waitCursorSubject);
+					if (withPseudoColumns) {
+						columns.add("$DISTANCE");
+						columns.add("$IS_SUBJECT");
 					}
-				};
-				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-				sqlAutoCompletion = new SQLAutoCompletion(provider, editorPane);
-			} catch (SQLException e) {
-			}
+					return columns;
+				}
+			};
+			provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
+			sqlAutoCompletion = new SQLAutoCompletion(provider, editorPane);
 		}
 		
 		setLocation(400, 150);

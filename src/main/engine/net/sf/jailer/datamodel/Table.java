@@ -112,7 +112,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 */
 	public Table(String name, PrimaryKey primaryKey, boolean defaultUpsert, boolean defaultExcludeFromDeletion) {
 		this.name = name;
-		this.primaryKey = primaryKey;
+		this.primaryKey = primaryKey != null? primaryKey : new PrimaryKey(new ArrayList<Column>(), false);
 		this.defaultUpsert = defaultUpsert;
 		this.defaultExcludeFromDeletion = defaultExcludeFromDeletion;
 	}
@@ -162,6 +162,9 @@ public class Table extends ModelElement implements Comparable<Table> {
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof Table) {
+			if (name == null) {
+				return false;
+			}
 			return name.equals(((Table) other).name);
 		}
 		return false;
@@ -172,7 +175,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 */
 	@Override
 	public int hashCode() {
-		return name.hashCode();
+		return name == null? 0 : name.hashCode();
 	}
 	
 	/**
@@ -509,7 +512,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	private int indexOfDot(String fullName) {
 		if (fullName.length() > 0) {
 			char c = fullName.charAt(0);
-			if (SqlUtil.LETTERS_AND_DIGITS.indexOf(c) < 0) {
+			if (!SqlUtil.isLetterOrDigit(c)) {
 				// quoting
 				int end = fullName.substring(1).indexOf(c);
 				if (end >= 0) {

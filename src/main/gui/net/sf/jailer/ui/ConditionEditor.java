@@ -24,7 +24,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -126,12 +125,9 @@ public class ConditionEditor extends EscapableDialog {
 		jScrollPane2.setViewportView(editorPane);
 		
 		if (dataModel != null) {
-			try {
-				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
-				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-				new SQLAutoCompletion(provider, editorPane);
-			} catch (SQLException e) {
-			}
+			provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
+			provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
+			new SQLAutoCompletion(provider, editorPane);
 		}
 
 		setLocation(400, 150);

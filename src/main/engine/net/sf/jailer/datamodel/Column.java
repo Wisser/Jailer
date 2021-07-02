@@ -181,7 +181,7 @@ public class Column {
 		}
 
 		Character quote = null;
-		if (columnDeclaration.length() > 0 && SqlUtil.LETTERS_AND_DIGITS.indexOf(columnDeclaration.charAt(0)) < 0) {
+		if (columnDeclaration.length() > 0 && !SqlUtil.isLetterOrDigit(columnDeclaration.charAt(0))) {
 			quote = columnDeclaration.charAt(0);
 			if (columnDeclaration.substring(1).indexOf(quote) >= 0) {
 				StringBuilder sb = new StringBuilder();

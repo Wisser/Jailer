@@ -37,6 +37,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Segment;
 
 import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.CompletionProvider;
@@ -59,7 +60,7 @@ import net.sf.jailer.util.SqlUtil;
  */
 public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends DefaultCompletionProvider {
 
-    protected SOURCE metaDataSource;
+	protected SOURCE metaDataSource;
     private final Session session;
     private Quoting llQuoting;
     private Map<String, TABLE> userDefinedAliases = new HashMap<String, TABLE>();
@@ -70,7 +71,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
      * @param session
      *            the session
      */
-    public SQLCompletionProvider(Session session, SOURCE metaDataSource) throws SQLException {
+    public SQLCompletionProvider(Session session, SOURCE metaDataSource) {
         this.metaDataSource = metaDataSource;
         this.session = session;
     }
@@ -1378,6 +1379,28 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         this.defaultClause = clause;
     }
 
+	/**
+	 * A segment to use for fast char access.
+	 */
+	private Segment s = new Segment();
+
+	@Override
+	public boolean isAutoActivateOkay(JTextComponent tc) {
+		Document doc = tc.getDocument();
+		String text = "";
+		try {
+			int caretPosition = tc.getCaretPosition();
+			int o = Math.min(caretPosition, 8);
+			doc.getText(caretPosition - o, 1 + o, s);
+			text = s.toString();
+		} catch (BadLocationException ble) { // Never happens
+			ble.printStackTrace();
+		}
+		return text.matches("(?is).*(\\w|((,|join|on|select|where|from|into)\\s?)|\\*|\\.)");
+	}
+
+	// TODO improve "join" auto completion
+	
     protected abstract List<String> getColumns(TABLE table, long timeOut, JComponent waitCursorSubject);
     protected abstract SCHEMA getDefaultSchema(SOURCE metaDataSource);
     protected abstract SCHEMA findSchema(SOURCE metaDataSource, String name);

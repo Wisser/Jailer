@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -86,7 +87,6 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.databrowser.Desktop;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
-import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
@@ -129,7 +129,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private String tableAlias = "A";
 	private final boolean asPopup;
 	private final int initialColumn;
-	public final DataModelBasedSQLCompletionProvider provider;
+	public final SQLCompletionProvider provider;
 	
 	private class Comparison {
 		Operator operator;
@@ -150,11 +150,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     /**
      * Creates new form SearchPanel
      */
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public WhereConditionEditorPanel(Window parent, DataModel dataModel, Table table, BrowserContentCellEditor cellEditor, Boolean sorted,
 			WhereConditionEditorPanel predecessor, RSyntaxTextAreaWithSQLSyntaxStyle editor,
 			JComponent closeButton, boolean asPopup, int initialColumn, boolean locateUnderButton,
-			Session session, ExecutionContext executionContext) {
+			Session session, SQLCompletionProvider theProvider, ExecutionContext executionContext) {
     	this.dataModel = dataModel;
     	this.table = table;
     	this.editor = editor;
@@ -172,22 +172,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         	popupTitelPanel.setVisible(false);
         }
         
-        DataModelBasedSQLCompletionProvider theProvider = null;
-        if (dataModel != null) {
-			try {
-				theProvider = new DataModelBasedSQLCompletionProvider(null, dataModel);
-				theProvider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-				new SQLAutoCompletion(theProvider, editor);
-				if (theProvider != null) {
-					theProvider.removeAliases();
-					if (tableAlias != null && table != null) {
-						theProvider.addAlias("A", table);
-					}
+		if (theProvider != null) {
+			new SQLAutoCompletion(theProvider, editor);
+			if (theProvider != null) {
+				theProvider.removeAliases();
+				if (tableAlias != null && table != null) {
+					theProvider.addAlias("A", table);
 				}
-			} catch (SQLException e) {
-				// ignore
 			}
-        }
+		}
         this.provider = theProvider;
         
         editor.setEnabled(true);
@@ -383,10 +376,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         movePanel.setOpaque(false);
 		popupTitelPanel.add(movePanel, gridBagConstraints);
         
-		String displayName = dataModel.getDisplayName(table);
-		popupTabNameLabel.setText(displayName.replaceFirst("^(.{40})...*$", "$1..."));
-		popupTabNameLabel.setToolTipText(displayName);
-		popupTabNameLabel.setIcon(tableIcon);
+		if (table.getName() != null) {
+			String displayName = dataModel.getDisplayName(table);
+			popupTabNameLabel.setText(displayName.replaceFirst("^(.{40})...*$", "$1..."));
+			popupTabNameLabel.setToolTipText(displayName);
+			popupTabNameLabel.setIcon(tableIcon);
+		}
 		
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -507,7 +502,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		return result;
 	}
 
-	public void setCellEditor(BrowserContentCellEditor cellEditor) {
+	public synchronized void setCellEditor(BrowserContentCellEditor cellEditor) {
 		this.cellEditor = cellEditor;
 		if (continueParsing != null && cellEditor != null && cellEditor.getColumnTypes().length > 0) {
 			continueParsing.run();
@@ -548,85 +543,89 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			String quoteRE = "[\"\u00B4\\[\\]`]";
 			Set<Comparison> seen = new HashSet<Comparison>();
 			for (int columnIndex = 0; columnIndex < table.getColumns().size(); ++columnIndex) {
-				Column column = table.getColumns().get(columnIndex);
-				String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.,\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
-				String regex = "(?:(?:and\\s+)?(?:\\b" + (tableAlias == null ? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
-						+ "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
-						+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(" + Pattern.quote("!=") + "|"
-						+ Stream.of(Operator.values()).map(o -> o.sql).sorted((a, b) -> b.length() - a.length())
-								.map(sql -> Character.isAlphabetic(sql.charAt(0)) ? "\\b" + Pattern.quote(sql) + "\\b"
-										: Pattern.quote(sql))
-								.collect(Collectors.joining("|"))
-						+ "))\\s*" + valueRegex;
-				boolean found = false;
-				Matcher matcher = null;
-				try {
-					Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-					matcher = identOperator.matcher(latestParsedCondition);
-					found = matcher.find();
-				} catch (Throwable t) {
-					// ignore
-				}
-				if (found) {
-					int start = matcher.start();
-					String q1 = matcher.group(1);
-					String q2 = matcher.group(2);
-					if ("".equals(q1)) {
-						q1 = null;
+				for (boolean noAlias: new boolean[] { false, true }) {
+					Column column = table.getColumns().get(columnIndex);
+					String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.,\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
+					String regex = "(?:(?:and\\s+)?" + "(?:\\b" + (tableAlias == null || noAlias? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
+							+ (noAlias? "(?<!\\.\\s*)" : "")
+							+ "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
+							+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(" + Pattern.quote("!=") + "|"
+							+ Stream.of(Operator.values()).map(o -> o.sql).sorted((a, b) -> b.length() - a.length())
+									.map(sql -> Character.isAlphabetic(sql.charAt(0)) ? "\\b" + Pattern.quote(sql) + "\\b"
+											: Pattern.quote(sql))
+									.collect(Collectors.joining("|"))
+							+ "))\\s*" + valueRegex;
+					boolean found = false;
+					Matcher matcher = null;
+					try {
+						Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+						matcher = identOperator.matcher(latestParsedCondition);
+						found = matcher.find();
+					} catch (Throwable t) {
+						// ignore
 					}
-					if ("".equals(q2)) {
-						q2 = null;
-					}
-					if (q1 == null && q2 == null || (q1 != null && q1.equals(q2)) || "[".equals(q1) || "]".equals(q2)) {
-						Operator operator;
-						String sqlValue = null;
-						String value = null;
-						if (matcher.group(3) != null && !"".equals(matcher.group(3))) {
-							operator = Operator.Equal;
-							value = sqlValue = "is null";
-							Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(3), matcher.end(3));
-							valuePositions.put(column, pos);
-							fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
-						} else if (matcher.group(4) != null && !"".equals(matcher.group(4))) {
-							operator = Operator.Equal;
-							value = sqlValue = "is not null";
-							Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(4), matcher.end(4));
-							valuePositions.put(column, pos);
-							fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
-						} else {
-							String op = matcher.group(5);
-							if ("!=".equals(op)) {
-								operator = Operator.NotEqual;
-							} else {
-								operator = Stream.of(Operator.values()).filter(o -> o.sql.equals(op)).findFirst().get();
-							}
-							sqlValue = matcher.group(6);
-							int opPos = matcher.start(5);
-							Pair<Integer, Integer> pos = new Pair<Integer, Integer>(opPos, matcher.end(6));
-							valuePositions.put(column, pos);
-							fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
+					if (found) {
+						int start = matcher.start();
+						String q1 = matcher.group(1);
+						String q2 = matcher.group(2);
+						if ("".equals(q1)) {
+							q1 = null;
 						}
-						if (sqlValue != null) {
-							if (value == null) {
-								value = toValue(sqlValue, columnIndex);
-							}
-							if (value != null) {
-								String theValue = value;
-								Optional<Comparison> comp = comparisons.stream().filter(c -> c.column.equals(column))
-										.findAny();
-								Comparison c = comp.orElseGet(() -> null);
-								if (c != null) {
-									c.operator = operator;
-									c.value = theValue;
-									seen.add(c);
+						if ("".equals(q2)) {
+							q2 = null;
+						}
+						if (q1 == null && q2 == null || (q1 != null && q1.equals(q2)) || "[".equals(q1) || "]".equals(q2)) {
+							Operator operator;
+							String sqlValue = null;
+							String value = null;
+							if (matcher.group(3) != null && !"".equals(matcher.group(3))) {
+								operator = Operator.Equal;
+								value = sqlValue = "is null";
+								Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(3), matcher.end(3));
+								valuePositions.put(column, pos);
+								fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
+							} else if (matcher.group(4) != null && !"".equals(matcher.group(4))) {
+								operator = Operator.Equal;
+								value = sqlValue = "is not null";
+								Pair<Integer, Integer> pos = new Pair<Integer, Integer>(matcher.start(4), matcher.end(4));
+								valuePositions.put(column, pos);
+								fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
+							} else {
+								String op = matcher.group(5);
+								if ("!=".equals(op)) {
+									operator = Operator.NotEqual;
 								} else {
-									c = new Comparison(operator, column);
-									c.value = theValue;
-									comparisons.add(c);
-									seen.add(c);
+									operator = Stream.of(Operator.values()).filter(o -> o.sql.equals(op)).findFirst().get();
+								}
+								sqlValue = matcher.group(6);
+								int opPos = matcher.start(5);
+								Pair<Integer, Integer> pos = new Pair<Integer, Integer>(opPos, matcher.end(6));
+								valuePositions.put(column, pos);
+								fullPositions.put(column, new Pair<Integer, Integer>(start, pos.b));
+							}
+							if (sqlValue != null) {
+								if (value == null) {
+									value = toValue(sqlValue, columnIndex);
+								}
+								if (value != null) {
+									String theValue = value;
+									Optional<Comparison> comp = comparisons.stream().filter(c -> c.column.equals(column))
+											.findAny();
+									Comparison c = comp.orElseGet(() -> null);
+									if (c != null) {
+										c.operator = operator;
+										c.value = theValue;
+										seen.add(c);
+									} else {
+										c = new Comparison(operator, column);
+										c.value = theValue;
+										comparisons.add(c);
+										seen.add(c);
+									}
 								}
 							}
 						}
+					break;
 					}
 				}
 			}
@@ -709,8 +708,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				if (!colNames.contains(uqName)) {
     				colNames.add(uqName);
     				if (cellEditor != null && cellEditor.getColumnTypes().length > 0 && !cellEditor.isEditable(table, i, null)) {
-    					columnLabelConsumers.put(uqName, label -> label.setEnabled(false));
-    				}
+    					columnLabelConsumers.put(uqName, label -> { label.setEnabled(false); label.setIcon(emptyIcon); });
+    				} else if (table.primaryKey != null && table.primaryKey.getColumns().stream().anyMatch(pk -> pk.equals(column))) {
+    					columnLabelConsumers.put(uqName, label -> { label.setForeground(Color.red); label.setIcon(constraintPKIcon); });
+    		    	} else {
+    					columnLabelConsumers.put(uqName, label -> { label.setIcon(emptyIcon); });
+    		    	}
     			}
     		}
     		++i;
@@ -1051,8 +1054,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
             	updateSearchUI();
             	storeConfig();
             	UIUtil.invokeLater(() -> {
-            		jPanel3.scrollRectToVisible(new Rectangle(0, jPanel3.getHeight() - 1, 1, 1));
-            		openStringSearchPanel(newComparision.valueTextField, newComparision);
+            		if (newComparision.valueTextField.isEnabled()) {
+	            		jPanel3.scrollRectToVisible(new Rectangle(0, jPanel3.getHeight() - 1, 1, 1));
+	            		openStringSearchPanel(newComparision.valueTextField, newComparision);
+            		}
             	});
             	break;
         	}
@@ -1457,7 +1462,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				boolean[] incomplete = new boolean[1];
 				boolean[] withNull = new boolean[1];
 				incomplete[0] = false;
-				List<String> distinctExisting = null;
+				LinkedHashMap<String, Integer> distinctExisting = null;
 				List<String> distinctExistingModel = new ArrayList<String>();
 				if (!condition.isEmpty()) {
 					try {
@@ -1469,7 +1474,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						// ignore
 					}
 				}
-				List<String> finalDistinctExisting = distinctExisting;
+				LinkedHashMap<String, Integer> finalDistinctExisting = distinctExisting;
 				UIUtil.invokeLater(() -> {
 					fullSearchCheckbox.setVisible(true);
 					fullSearchCheckbox.setEnabled(false);
@@ -1478,11 +1483,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						setStatus(incomplete, finalDistinctExisting);
 						defaultComboBoxModel.removeAllElements();
 						initialModel.forEach(s -> {
-							if (finalDistinctExisting.contains(s) || (withNull[0] && !finalDistinctExisting.isEmpty() && nullPattern.matcher(s).matches())) {
+							if (finalDistinctExisting.containsKey(s) || (withNull[0] && !finalDistinctExisting.isEmpty() && nullPattern.matcher(s).matches())) {
 								defaultComboBoxModel.addElement(s);
 							}
 						});
-						finalDistinctExisting.forEach(s -> {
+						finalDistinctExisting.keySet().forEach(s -> {
 							defaultComboBoxModel.addElement(s);
 							renderConsumer.put(s, label -> label
 									.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
@@ -1504,22 +1509,22 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				incompleteFull[0] = false;
 				boolean[] withNullFull = new boolean[1];
 				withNullFull[0] = false;
-				List<String> distinctExistingFull = null;
+				LinkedHashMap<String, Integer> distinctExistingFull = null;
 				List<String> distinctExistingFullModel = new ArrayList<String>();
 				try {
 					distinctExistingFull = loadDistinctExistingValues(comparison, cancellationContext, incompleteFull, withNullFull, fromCacheFull, "");
 					// dedup
-					if (distinctExisting != null) {
-						Map<String, String> fullSet = new HashMap<String, String>();
-						distinctExistingFull.forEach(s -> fullSet.put(s, s));;
-						int s = distinctExisting.size();
-						for (int i = 0; i < s; ++i) {
-							String f = fullSet.get(distinctExisting.get(i));
-							if (f != null) {
-								distinctExisting.set(i, f);
-							}
-						}
-					}
+//					if (distinctExisting != null) {
+//						Map<String, String> fullSet = new HashMap<String, String>();
+//						distinctExistingFull.forEach(s -> fullSet.put(s, s));;
+//						int s = distinctExisting.size();
+//						for (int i = 0; i < s; ++i) {
+//							String f = fullSet.get(distinctExisting.get(i));
+//							if (f != null) {
+//								distinctExisting.set(i, f);
+//							}
+//						}
+//					}
 				} catch (CancellationException e) {
 					return;
 				} catch (Throwable e) {
@@ -1528,7 +1533,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					});
 					return;
 				}
-				List<String> finalDistinctExistingFull = distinctExistingFull;
+				LinkedHashMap<String, Integer> finalDistinctExistingFull = distinctExistingFull;
 				UIUtil.invokeLater(new Runnable() { public void run() {
 					if (finalDistinctExistingFull != null) {
 						fullSearchCheckbox.setEnabled(finalDistinctExisting != null);
@@ -1538,7 +1543,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							fullSearchCheckbox.setSelected(true);
 							fullSearchCheckbox.setEnabled(false);
 						}
-						finalDistinctExistingFull.forEach(s -> {
+						finalDistinctExistingFull.keySet().forEach(s -> {
 							defaultComboBoxModel.addElement(s);
 							renderConsumer.put(s, label -> label
 									.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
@@ -1548,16 +1553,21 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							distinctExistingFullModel.addAll(initialModel);
 						} else {
 							initialModel.forEach(s -> {
-								if (finalDistinctExistingFull.contains(s) || (withNullFull[0] && !finalDistinctExistingFull.isEmpty() && nullPattern.matcher(s).matches())) {
+								if (finalDistinctExistingFull.containsKey(s) || (withNullFull[0] && !finalDistinctExistingFull.isEmpty() && nullPattern.matcher(s).matches())) {
 									distinctExistingFullModel.add(s);
 								}
 							});
 							if (distinctExistingFullModel.isEmpty() && withNullFull[0]) {
-								distinctExistingFullModel.add("is null");
+								String text = "is null";
+								distinctExistingFullModel.add(text);
+								ImageIcon sNullIcon = UIUtil.scaleIcon(WhereConditionEditorPanel.this, nullIcon);
+								searchPanel.renderConsumer.put(text, label -> {
+									label.setIcon(sNullIcon);
+								});
 							}
 						}
 						
-						distinctExistingFullModel.addAll(finalDistinctExistingFull);
+						distinctExistingFullModel.addAll(finalDistinctExistingFull.keySet());
 						if (fromCache[0] || fromCacheFull[0]) {
 							clearCacheButton.setVisible(true);
 						}
@@ -1586,14 +1596,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				}});
 			}
 
-			protected void setStatus(boolean[] incomplete, List<String> values) {
-				if (incomplete[0] || values.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
+			protected void setStatus(boolean[] incomplete, LinkedHashMap<String, Integer> finalDistinctExisting) {
+				if (incomplete[0] || finalDistinctExisting.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
 					searchPanel.setStatus("incomplete"
 								+ (incomplete[0] ? "" : ("(>" + MAX_NUM_DISTINCTEXISTINGVALUES + " values)")),
 								UIUtil.scaleIcon(searchPanel, warnIcon));
 				} else {
 					searchPanel.setStatus(null, null);
 				}
+				searchPanel.setStringCount(finalDistinctExisting);
 			}
 		});
     }
@@ -1626,19 +1637,19 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<String> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, boolean incomplete[], boolean[] withNull, boolean[] fromCache, String condition) throws SQLException {
+	private LinkedHashMap<String, Integer> loadDistinctExistingValues(Comparison comparison, Object cancellationContext, boolean incomplete[], boolean[] withNull, boolean[] fromCache, String condition) throws SQLException {
 		final int MAX_TEXT_LENGTH = 1024 * 4;
-		List<String> result;
+		LinkedHashMap<String, Integer> result;
 		Map<Pair<String, String>, Boolean> icCache;
 		Map<Pair<String, String>, Boolean> wnCache;
-		Map<Pair<String, String>, List<String>> cache;
+		Map<Pair<String, String>, LinkedHashMap<String, Integer>> cache;
 		String tabName = table.getName();
 		Pair<String, String> key = new Pair<String, String>(tabName + "+" + condition, comparison.column.name);
 		synchronized (this) {
 			Long ts = (Long) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY);
-			cache = (Map<Pair<String, String>, List<String>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
+			cache = (Map<Pair<String, String>, LinkedHashMap<String, Integer>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
 			if (cache == null || ts == null || ts < Session.lastUpdateTS || ts < System.currentTimeMillis() - 10 * (1000 * 60 * 60) /* 10 h */) {
-				cache = new LRUCache<Pair<String,String>, List<String>>(SIZE_DISTINCTEXISTINGVALUESCACHE);
+				cache = new LRUCache<Pair<String,String>, LinkedHashMap<String, Integer>>(SIZE_DISTINCTEXISTINGVALUESCACHE);
 				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY, cache);
 				session.setSessionProperty(getClass(), DISTINCTEXISTINGVALUESTSKEY, System.currentTimeMillis());
 			}
@@ -1663,7 +1674,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		
 		if (result == null) {
 			fromCache[0] = false;
-			result = new ArrayList<String>();
+			result = new LinkedHashMap<String, Integer>();
 			int columnIndex = 0;
 			while (columnIndex < table.getColumns().size()) {
 				if (comparison.column.equals(table.getColumns().get(columnIndex))) {
@@ -1687,9 +1698,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 								for (String ej : extJoins) {
 									loadValues(comparison, cancellationContext, incomplete, withNull, condition, MAX_TEXT_LENGTH,
 											result, tabName, columnIndex, " " + ej, false);
-									Set<String> asSet = new HashSet<String>(result);
-									result.clear();
-									result.addAll(asSet);
 									if (result.size() > MAX_NUM_DISTINCTEXISTINGVALUES) {
 										break;
 									}
@@ -1714,7 +1722,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		} else {
 			fromCache[0] = true;
 		}
-		Long sumLength = result.stream().collect(Collectors.summingLong(String::length));
+		Long sumLength = result.keySet().stream().collect(Collectors.summingLong(String::length));
 		if (sumLength == null || sumLength <= MAX_SIZE_DISTINCTEXISTINGVALUES) {
 			cache.put(key, result);
 			icCache.put(key, incomplete[0]);
@@ -1725,7 +1733,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void sortValues(List<String> result, int columnIndex) {
+	private void sortValues(LinkedHashMap<String, Integer> resultMap, int columnIndex) {
+		List<String> result = new ArrayList<String>(resultMap.keySet());
 		if (cellEditor.useCaseIntensitiveOrderingInGUI(columnIndex)) {
 			result.sort(String::compareToIgnoreCase);
 		} else {
@@ -1737,17 +1746,23 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				result.sort(String::compareToIgnoreCase);
 			}
 		}
+		Map<String, Integer> unsorted = new HashMap<String, Integer>(resultMap);
+		resultMap.clear();
+		result.forEach(s -> {
+			resultMap.put(s, unsorted.get(s));
+		});
 	}
 
 	private void loadValues(Comparison comparison, Object cancellationContext, boolean[] incomplete, boolean[] withNull, String condition,
-			final int MAX_TEXT_LENGTH, List<String> result, String tabName, int columnIndex,
+			final int MAX_TEXT_LENGTH, LinkedHashMap<String, Integer> result, String tabName, int columnIndex,
 			String extJoin, boolean orderBy) throws SQLException {
 		String columnName = comparison.column.name;
 		if (tableAlias != null) {
 			columnName = tableAlias + "." + columnName;
 			tabName += " " + tableAlias;
 		}
-		String sqlQuery = "Select distinct " + columnName + " from " + tabName + extJoin + (condition.isEmpty()? "" : (" where " + condition));
+		String sqlQuery = "Select " + columnName + ", count(1) from " + tabName + extJoin + (condition.isEmpty()? "" : (" where " + condition))
+				+ " group by " + columnName;
 		AbstractResultSetReader reader = new AbstractResultSetReader() {
 			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
@@ -1757,8 +1772,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				} else {
 					if (cellEditor.isEditable(table, columnIndex, obj)) {
 						String text = cellEditor.cellContentToText(columnIndex, obj);
+						int rc = resultSet.getInt(2);
 						if (text.length() <= MAX_TEXT_LENGTH) {
-							result.add(text);
+							Integer count = result.get(text);
+							if (count == null) {
+								result.put(text, rc);
+							} else {
+								result.put(text, count + rc);
+							}
 						} else {
 							incomplete[0] = true;
 						}
@@ -1769,12 +1790,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			}
 		};
 		if (orderBy) {
-			List<String> prev = new ArrayList<String>(result);
+			Map<String, Integer> prev = new HashMap<String, Integer>(result);
 			try {
 				session.executeQuery(sqlQuery + " order by " + columnName, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
 			} catch (SQLException e) {
 				result.clear();
-				result.addAll(prev);
+				result.putAll(prev);
 				// try without ordering
 				session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
 				sortValues(result, columnIndex);
@@ -1786,10 +1807,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
     private int estimateDistinctExistingValues(Comparison comparison, String condition) {
     	@SuppressWarnings("unchecked")
-		Map<Pair<String, String>, List<String>> cache = (Map<Pair<String, String>, List<String>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
+		Map<Pair<String, String>, LinkedHashMap<String, Integer>> cache = (Map<Pair<String, String>, LinkedHashMap<String, Integer>>) session.getSessionProperty(getClass(), DISTINCTEXISTINGVALUESCACHEKEY);
 		if (cache != null) {
 			Pair<String, String> key = new Pair<String, String>(table.getName() + "+" + condition, comparison.column.name);
-			List<String> result = cache.get(key);
+			LinkedHashMap<String, Integer> result = cache.get(key);
 			if (result != null) {
 				return result.size();
 			}
@@ -1801,7 +1822,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		if (value != null) {
 			value = value.trim();
 			if (!value.trim().equals(comparison.value.trim()) || operator != comparison.operator) {
+				editor.beginAtomicEdit();
 				editor.setText(latestParsedCondition);
+				String erased;
+				for (int i = 0;; ++i) {
+					erased = "e" + i;
+					if (!latestParsedCondition.contains(erased)) {
+						break;
+					}
+				}
 				comparison.operator = operator;
 				++UISettings.s12;
 				if (value.trim().isEmpty()) {
@@ -1809,7 +1838,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					Pair<Integer, Integer> fullPos = fullPositions.get(comparison.column);
 					if (fullPos != null) {
 						editor.select(fullPos.a, fullPos.b);
-						editor.replaceSelection("");
+						editor.replaceSelection(erased);
 						comparison.value = "";
 						if (comparison.operatorField != null) {
 							comparison.operatorField.setVisible(true);
@@ -1889,11 +1918,26 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						editor.select(pos.a, pos.b);
 					}
 				}
-				String text = editor.getText().replaceFirst("^\\s*and\\s", "").replaceAll("\n\\s*\\n", "").trim();
+				String text = editor.getText();
+				for (;;) {
+					String cleanText = text
+							.replaceFirst("(?is)\\(\\s*" + erased + "\\s*\\)", erased)
+							.replaceFirst("(?is)\\b(and|or|not)\\b\\s*" + erased, erased);
+					if (cleanText.equals(text)) {
+						break;
+					}
+					text = cleanText;
+				}
+				text = text
+						.replace(erased, "")
+						.replaceFirst("(?is)^\\s*(and|or)\\s", "")
+						.replaceAll("\\n\\s*\\n", "\n")
+						.trim();
 				if (!text.isEmpty()) {
 					text += "\n";
 				}
 				editor.setText(text);
+				editor.endAtomicEdit();
 				UIUtil.suspectQuery = text;
 				parseCondition();
 			}
@@ -1991,6 +2035,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private static ImageIcon nullIcon;
 	private static ImageIcon resetIcon;
 	private static ImageIcon closeIcon;
+    private static ImageIcon constraintPKIcon;
 	
     static ImageIcon warnIcon;
 	static {
@@ -2004,6 +2049,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         warnIcon = UIUtil.readImage("/wanr.png");
         resetIcon = UIUtil.readImage("/reset.png");
         closeIcon = UIUtil.readImage("/Close-16-1.png");
+    	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
 	}
 
 	// TODO support properties

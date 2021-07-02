@@ -27,7 +27,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
-import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -140,12 +139,9 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
 		jScrollPane2.setViewportView(editorPane);
 		
 		if (dataModel != null) {
-			try {
-				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
-				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-				sqlAutoCompletion = new SQLAutoCompletion(provider, editorPane);
-			} catch (SQLException e) {
-			}
+			provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
+			provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
+			sqlAutoCompletion = new SQLAutoCompletion(provider, editorPane);
 		}
 		
 		setLocation(400, 150);

@@ -196,6 +196,9 @@ public class RowIdSupport {
 	}
 
 	private boolean isRowIDApplicable(Table table, Session session) {
+		if (table == null || table.getName() == null) {
+			return false;
+		}
 		Boolean result = (Boolean) session.getSessionProperty(RowIdSupport.class, table.getName());
 		if (result != null) {
 			return result;

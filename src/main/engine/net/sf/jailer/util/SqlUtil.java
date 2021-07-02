@@ -382,8 +382,6 @@ public class SqlUtil {
 		return sb.toString();
 	}
 
-	public static final String LETTERS_AND_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
-
 	public static String toString(Double content) {
 		String s = content.toString();
 		if (s.contains("E")) {
@@ -624,6 +622,10 @@ public class SqlUtil {
 			}
 		}
 		return quoting.quote(columnLabel);
+	}
+
+	public static boolean isLetterOrDigit(char c) {
+		return Character.isAlphabetic(c) || Character.isLetterOrDigit(c) || c == '_';
 	}
 
 }

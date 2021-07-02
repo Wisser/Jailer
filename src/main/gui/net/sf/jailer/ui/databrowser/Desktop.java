@@ -75,6 +75,7 @@ import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1566,7 +1567,7 @@ public abstract class Desktop extends JDesktopPane {
 			y = maxH;
 		}
 		if (xPosition >= 0) {
-			x = (int) (xPosition * (BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor);
+			x = (int) ((xPosition * (BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor));
 		}
 		// int h = fullSize || association == null ||
 		// (association.getCardinality() != Cardinality.MANY_TO_ONE &&
@@ -2723,6 +2724,54 @@ public abstract class Desktop extends JDesktopPane {
 			layouting = false;
 		}
 	}
+	
+	private int minX = 0;
+	private Supplier<Integer> minXProvider;
+	
+	public Supplier<Integer> getMinXProvider() {
+		return minXProvider;
+	}
+
+	public void setMinXProvider(Supplier<Integer> minXProvider) {
+		this.minXProvider = minXProvider;
+	}
+
+	public void updateMinX() {
+		int minX = minXProvider != null? minXProvider.get() : 0;
+		int aktMinX = Integer.MAX_VALUE;
+		Set<RowBrowser> maximized = new HashSet<Desktop.RowBrowser>();
+		for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {
+			if (rb.internalFrame.isMaximum()) {
+				maximized.add(rb);
+			}
+			if (maximized.contains(rb)) {
+				try {
+					rb.internalFrame.setMaximum(false);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+			}
+			int x = rb.internalFrame.getX();
+			if (x < aktMinX) {
+				aktMinX = Math.max(0, x);
+			}
+		}
+		int fX = (int) (0.2 * BROWSERTABLE_DEFAULT_DISTANCE * minX);
+		this.minX = fX;
+		int dX = (int) (fX * layoutMode.factor) - aktMinX;
+		if (dX != 0) {
+			for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {
+				rb.internalFrame.setLocation(Math.max(0, rb.internalFrame.getX() + dX), rb.internalFrame.getY());
+				if (maximized.contains(rb)) {
+					try {
+						rb.internalFrame.setMaximum(true);
+					} catch (PropertyVetoException e) {
+						// ignore
+					}
+				}
+			}
+		}
+	}
 
 	private void layout(List<RowBrowser> toLayout, int maxH) {
 		List<RowBrowser> roots = new ArrayList<RowBrowser>();
@@ -2796,7 +2845,7 @@ public abstract class Desktop extends JDesktopPane {
 			JInternalFrame iFrame = root.getUserObject().internalFrame;
 			int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor);
 			int y = (int) (BROWSERTABLE_DEFAULT_MIN_Y * layoutMode.factor);
-			x += (root.getLevel() - 1) * (int) ((BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor);
+			x += (root.getLevel() - 1) * (int) ((BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor) + minX * layoutMode.factor;
 			y += (int) (root.getPosition() * (BROWSERTABLE_DEFAULT_HEIGHT + 8) * layoutMode.factor);
 			int h = (int) (BROWSERTABLE_DEFAULT_HEIGHT * layoutMode.factor);
 			Rectangle r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
@@ -3438,7 +3487,8 @@ public abstract class Desktop extends JDesktopPane {
 		} finally {
 			noArrangeLayoutOnNewTableBrowser = false;
 			iFrameStateChangeRenderer.rollbackAtomic();
-			UIUtil.resetWaitCursor(pFrame);
+			updateMinX();
+	        UIUtil.resetWaitCursor(pFrame);
 		}
 	}
 

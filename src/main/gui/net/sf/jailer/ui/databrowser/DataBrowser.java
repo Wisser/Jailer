@@ -167,6 +167,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
+import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.util.AnimationController;
 import net.sf.jailer.ui.util.SmallButton;
@@ -230,6 +231,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				RSyntaxTextAreaWithSQLSyntaxStyle editor, JComponent closeButton, boolean asPopup, int initialColumn, Session session,
 				ExecutionContext executionContext, RowBrowser rowBrowser) {
 			super(parent, dataModel, table, cellEditor, sorted, predecessor, editor, closeButton, asPopup, initialColumn, true, session, 
+					new DataModelBasedSQLCompletionProvider(session, datamodel.get()),
 					executionContext);
 			this.rowBrowser = rowBrowser;
 			this.initialColumn = initialColumn;
@@ -365,7 +367,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		searchBarEditor.grabFocus();
 		popUpSearchBarEditor.grabFocus();
 		
-        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, -1, true, session, executionContext) {
+        whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, -1, true, session, null, executionContext) {
         	@Override
 			protected void consume(String condition) {
 				// nothing to do	
@@ -838,6 +840,27 @@ public class DataBrowser extends javax.swing.JFrame {
 				DataBrowser.this.openConditionEditor(browserContentPane, location, column, onClose);
 			}
         };
+        
+        desktop.setMinXProvider(() -> searchPanelContainer.isVisible()? 1 : 0);
+        searchPanelContainer.addComponentListener(new ComponentListener() {
+        	private void update() {
+				desktop.updateMinX();
+			}
+			@Override
+			public void componentShown(ComponentEvent e) {
+				update();
+			}
+			@Override
+			public void componentHidden(ComponentEvent e) {
+				update();
+			}
+			@Override
+			public void componentResized(ComponentEvent e) {
+			}
+			@Override
+			public void componentMoved(ComponentEvent e) {
+			}
+		});
 
 		desktop.addMouseMotionListener(new MouseMotionListener() {
 			@Override
@@ -3867,7 +3890,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (maxX != null) {
 					dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
 				}
-				Integer maxY = getY() + getHeight() - height - 8;
+				Integer maxY = getY() + getHeight() - dialog.getHeight() - 8;
 				if (maxY != null && maxY < dialog.getY()) {
 					int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
 					maxY += deltaH;
@@ -3905,7 +3928,7 @@ public class DataBrowser extends javax.swing.JFrame {
     	if (newSession == null) {
     		return;
     	}
-
+    	
     	ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
     	String alias = connection != null ? " " + connection.alias : " ";
 
@@ -3913,7 +3936,7 @@ public class DataBrowser extends javax.swing.JFrame {
     	CancellationHandler.reset(null);
     	try {
 	    	updateNavigationCombobox();
-
+	    	
 	    	tablesPanel.removeAll();
 	    	metaDataPanel = (MetaDataPanel) session.getSessionProperty(getClass(), "metaDataPanel");
 			MetaDataSource metaDataSource;

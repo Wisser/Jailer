@@ -1172,7 +1172,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     	if (pendingCount.get() > 0) {
     		return;
     	}
-    	inResetCount++;
+		inResetCount++;
     	refreshButton.setEnabled(false);
     	final AtomicBoolean waitStateIsResetted = new AtomicBoolean(false);
     	Timer timer = new Timer(100, new ActionListener() {

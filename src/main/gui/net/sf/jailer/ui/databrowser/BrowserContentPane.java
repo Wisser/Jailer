@@ -495,6 +495,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (!finished) {
 				reconnectIfConnectionIsInvalid(false);
 			}
+			if (exception != null && (browserContentCellEditor == null || browserContentCellEditor.getColumnTypes().length == 0)) {
+				try {
+					browserContentCellEditor = BrowserContentCellEditor.forTable(table, session);
+					onContentCellEditorCreated(browserContentCellEditor);
+				} catch (Throwable t) {
+					// ignore
+				}
+			}
 			CancellationHandler.reset(this);
 			UIUtil.invokeLater(new Runnable() {
 				@Override
@@ -710,7 +718,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Table to read rows from.
 	 */
-	Table table;
+	public Table table;
 
 	/**
 	 * The data model.
@@ -1152,13 +1160,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				g2d.setStroke(new BasicStroke(1));
 				Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), new Point(0, 0), this);
 
-				if (table != null && browserContentCellEditor != null && getQueryBuilderDialog() != null) {
+				if (getQueryBuilderDialog() != null /* TODO */ && BrowserContentPane.this.table != null && browserContentCellEditor != null) {
 					if (currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
 						g2d.drawImage(currentSearchButtonIcon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
 					}
 					for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
 						if (BrowserContentPane.this.table != null) {
-							if (browserContentCellEditor.getColumnTypes().length > i && browserContentCellEditor.isEditable(table, i, null)) {
+							if (browserContentCellEditor.getColumnTypes().length > i && browserContentCellEditor.isEditable(BrowserContentPane.this.table, i, null)) {
 								int vi = rowsTable.convertColumnIndexToView(i);
 								if (vi >= 0 && vi != currentSearchButtonColumnIndex) {
 									Point location = calcSearchColumnPosition(vi);
@@ -1971,7 +1979,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					SwingUtilities.convertPointToScreen(location, header);
 		        }
 				Point finalLocation = location;
-		        if (column >= 0 && SwingUtilities.isRightMouseButton(e) && getQueryBuilderDialog() != null) {
+		        if (column >= 0 && SwingUtilities.isRightMouseButton(e) && getQueryBuilderDialog() != null /* TODO */) {
 					JPopupMenu menu = new JPopupMenu();
 					JMenuItem mi = new JMenuItem("Edit Condition");
 					mi.setEnabled(table != null && browserContentCellEditor.getColumnTypes().length > column && browserContentCellEditor.isEditable(table, column, null));
@@ -1984,7 +1992,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						p = new Point(e.getX(), e.getY());
 					}
 					UIUtil.showPopup(rowsTable, (int) p.getX(), (int) p.getY(), menu);
-				} else if (viewIndex >= 0 && viewIndex == currentSearchButtonColumnIndex && currentSearchButtonIcon == readySelected && getQueryBuilderDialog() != null) {
+				} else if (viewIndex >= 0 && viewIndex == currentSearchButtonColumnIndex && currentSearchButtonIcon == readySelected && getQueryBuilderDialog() != null /* TODO */) {
 					openConditionEditor(finalLocation, column, null);
 				} else if (SwingUtilities.isLeftMouseButton(e)) {
 		            JTable table = header.getTable();
@@ -6663,7 +6671,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 
-	private String statementForReloading;
+	protected String statementForReloading;
 
 	public synchronized void setStatementForReloading(String statementForReloading) {
 		this.statementForReloading = statementForReloading;

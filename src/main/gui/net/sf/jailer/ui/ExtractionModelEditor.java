@@ -43,9 +43,6 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,7 +58,6 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -108,8 +104,6 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.BasicDataSource;
-import net.sf.jailer.database.Session;
-import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -133,6 +127,7 @@ import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.ui.undo.CompensationAction;
 import net.sf.jailer.ui.undo.UndoManager;
 import net.sf.jailer.ui.util.LightBorderSmallButton;
@@ -591,6 +586,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					onApply(true);
 				}, false, null, provider -> {
 					if (provider != null) {
+						provider.removeAliases();
 						provider.addAlias("A", currentAssociation.source);
 						provider.addAlias("B", currentAssociation.destination);
 					}
@@ -1002,37 +998,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private WhereConditionEditorPanel whereConditionEditorPanel;
 	RSyntaxTextAreaWithSQLSyntaxStyle whereConditionEditorEditor;
 	
-	private BrowserContentCellEditor getBrowserContentCellEditor(Table table, Session session) throws SQLException {
-		String key = "browserContentCellEditor-" + table.getName();
-		BrowserContentCellEditor browserContentCellEditor[] = new BrowserContentCellEditor[] { (BrowserContentCellEditor) session.getSessionProperty(getClass(), key) };
-		if (browserContentCellEditor[0] == null) {
-			AbstractResultSetReader reader = new AbstractResultSetReader() {
-				@Override
-				public void init(ResultSet resultSet) throws SQLException {
-					ResultSetMetaData metaData = getMetaData(resultSet);
-					int columnCount = metaData.getColumnCount();
-					int[] columnTypes = new int[columnCount];
-					String[] columnTypeNames = new String[columnCount];
-					for (int ci = 1; ci <= columnCount; ++ci) {
-						columnTypes[ci - 1] = metaData.getColumnType(ci);
-						columnTypeNames[ci - 1] = metaData.getColumnTypeName(ci);
-					}
-					browserContentCellEditor[0] = new BrowserContentCellEditor(columnTypes, columnTypeNames, session);
-				}
-	
-				@Override
-				public void readCurrentRow(ResultSet resultSet) throws SQLException {
-					// nothing to do
-				}
-			};
-			String sqlQuery = "Select " + (table.getColumns().stream().map(c -> c.name).collect(Collectors.joining(", "))) + " From " + table.getName() + " Where 1=0";
-			session.executeQuery(sqlQuery, reader, null, null, 1);
-			session.setSessionProperty(getClass(), key, browserContentCellEditor[0]);
-		}
-		return browserContentCellEditor[0];
-	}
-
-	JButton createWhereConEditorButton(Supplier<Table> getSubject, Supplier<String> initialText, Consumer<String> consumer, boolean locateUnderButton, String tableAlias, Consumer<DataModelBasedSQLCompletionProvider> providerConsumer) {
+	JButton createWhereConEditorButton(Supplier<Table> getSubject, Supplier<String> initialText, Consumer<String> consumer, boolean locateUnderButton, String tableAlias, Consumer<SQLCompletionProvider> providerConsumer) {
 		whereConditionEditorEditor = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			@Override
 			protected void runBlock() {
@@ -1067,11 +1033,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					}
 					String initialCondition = initialText.get();
 					WhereConditionEditorPanel wcep = new WhereConditionEditorPanel(windowAncestor,
-						dataModel, getSubject.get(), getBrowserContentCellEditor(getSubject.get(), extractionModelFrame.theSession),
+						dataModel, getSubject.get(), BrowserContentCellEditor.forTable(getSubject.get(), extractionModelFrame.theSession),
 						false,
 						whereConditionEditorPanel, whereConditionEditorEditor,
 						null, true, -1, locateUnderButton,
-						extractionModelFrame.theSession, executionContext) {
+						extractionModelFrame.theSession, new DataModelBasedSQLCompletionProvider(extractionModelFrame.theSession, dataModel), executionContext) {
 					
 						@Override
 						protected void onEscape() {
@@ -1125,7 +1091,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					if (maxX != null) {
 						dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
 					}
-					Integer maxY = getY() + getHeight() - height - 8;
+					Integer maxY = getY() + getHeight() - dialog.getHeight() - 8;
 					if (maxY != null && maxY < dialog.getY()) {
 						int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
 						maxY += deltaH;

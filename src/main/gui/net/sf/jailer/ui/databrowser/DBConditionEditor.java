@@ -28,7 +28,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
-import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -426,12 +425,9 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		if (getEditorPanesCache() == null || getEditorPanesCache().isEmpty()) {
 			editor = new RSyntaxTextArea();
 			if (dataModel != null) {
-				try {
-					provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
-					provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-					sqlAutoCompletion = new SQLAutoCompletion(provider, editor);
-				} catch (SQLException e) {
-				}
+				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
+				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
+				sqlAutoCompletion = new SQLAutoCompletion(provider, editor);
 			}
 		} else {
 			editor = getEditorPanesCache().remove(0);

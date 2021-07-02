@@ -29,6 +29,7 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.CompletionCellRenderer;
 import org.fife.ui.autocomplete.CompletionProvider;
+import org.fife.ui.autocomplete.CompletionProviderBase;
 import org.fife.ui.autocomplete.Util;
 import org.fife.ui.rtextarea.RTextArea;
 
@@ -45,6 +46,9 @@ public class SQLAutoCompletion extends AutoCompletion {
 	public SQLAutoCompletion(final CompletionProvider provider, final RTextArea editorPane) {
 		super(provider);
 		this.editorPane = editorPane;
+		setAutoActivationDelay(100);
+		setAutoActivationEnabled(true);
+		setAutoCompleteSingleChoices(false);
 		install(editorPane);
 		setListCellRenderer(new CompletionCellRenderer() {
 			@Override

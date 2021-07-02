@@ -30,6 +30,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -70,6 +73,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -110,8 +114,10 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
+import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
+import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
@@ -128,6 +134,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.metadata.ResultSetRenderer;
+import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
@@ -219,6 +226,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel5.add(historyComboBox, gridBagConstraints);
 
+        
         this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(true, true) {
         	{
         		setBracketMatchingEnabled(true);
@@ -994,7 +1002,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 	@Override
                     public void run() {
                         final BrowserContentPane rb = new ResultContentPane(datamodel.get(), finalResultType, "", session, null,
-                                null, null, new RowsClosure(), false, false, executionContext) {
+                                null, (JFrame) SwingUtilities.getWindowAncestor(SQLConsole.this), new RowsClosure(), false, false, executionContext) {
                         	@Override
                         	public void afterReload() {
                         		UIUtil.invokeLater(() -> {
@@ -1941,14 +1949,82 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
+    
+	private class WhereConditionEditorPanelConsole extends WhereConditionEditorPanel {
+		private final ResultContentPane resultContentPane;
+		private final int initialColumn;
 
+		private WhereConditionEditorPanelConsole(Window parent, DataModel dataModel, Table table,
+				BrowserContentCellEditor cellEditor, Boolean sorted, WhereConditionEditorPanel predecessor,
+				RSyntaxTextAreaWithSQLSyntaxStyle editor, JComponent closeButton, boolean asPopup, int initialColumn, Session session,
+				ExecutionContext executionContext, ResultContentPane resultContentPane) throws SQLException {
+			super(parent, dataModel, table, cellEditor, sorted, predecessor, editor, closeButton, asPopup, initialColumn, true, session, 
+					new MetaDataBasedSQLCompletionProvider(session, metaDataSource), executionContext);
+			this.resultContentPane = resultContentPane;
+			this.initialColumn = initialColumn;
+		}
+
+		@Override
+		protected void consume(String condition) {
+			if (resultContentPane != null) {
+//				String andConditionText = rowBrowser.browserContentPane.getAndConditionText();
+//				andConditionText = new BasicFormatterImpl().format(andConditionText.trim());
+//				condition = new BasicFormatterImpl().format(condition.trim());
+//				if (!andConditionText.equals(condition)) {
+//					boolean oldSuppessReloadOnAndConditionAction = rowBrowser.browserContentPane.suppessReloadOnAndConditionAction;
+//					try {
+//						rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = true;
+//						rowBrowser.browserContentPane.setAndCondition(UIUtil.toSingleLineSQL(condition), true);
+//						rowBrowser.browserContentPane.reloadRows();
+//						if (initialColumn >= 0) {
+//							rowBrowser.browserContentPane.onConditionChange(rowBrowser.browserContentPane.getAndConditionText());
+//						}
+//						UISettings.s12 += 1000;
+//					} finally {
+//						rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = oldSuppessReloadOnAndConditionAction;
+//					}
+//				}
+			}
+		}
+
+		@Override
+		protected void onEscape() {
+			// do nothing
+		}
+	};
+	
+	private WhereConditionEditorPanelConsole popUpWhereConditionEditorPanel;
+	private static class SearchBarRSyntaxTextArea extends RSyntaxTextAreaWithSQLSyntaxStyle {
+		WhereConditionEditorPanel whereConditionEditorPanel;
+		public SearchBarRSyntaxTextArea() {
+			super(false, false);
+			setEnabled(true);
+			setMarkOccurrences(false);
+			grabFocus();
+		}
+		@Override
+		protected void runBlock() {
+			super.runBlock();
+			if (whereConditionEditorPanel != null) {
+				whereConditionEditorPanel.parseCondition();
+			}
+		}
+		@Override
+		protected boolean withFindAndReplace() {
+			return false;
+		}
+	};
+	private final SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
+	
     class ResultContentPane extends BrowserContentPane {
+    	private final Frame parentFrame;
         public ResultContentPane(DataModel dataModel, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
                 RowsClosure rowsClosure, Boolean selectDistinct,
                 boolean reload, ExecutionContext executionContext) {
             super(dataModel, table, condition, session, parentRows, association, parentFrame,
             		rowsClosure, selectDistinct, reload, executionContext);
+            this.parentFrame = parentFrame;
             noSingleRowDetailsView = true;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
         }
@@ -2075,6 +2151,96 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
 		@Override
 		protected void deselectChildrenIfNeededWithoutReload() {
+		}
+		@Override
+		protected void openConditionEditor(Point location, int column, Runnable onClose) {
+			JDialog dialog = new JDialog(parentFrame, "");
+			UIUtil.invokeLater(() -> {
+				Runnable close = () -> {
+					dialog.setVisible(false);
+					dialog.dispose();
+				};
+				dialog.addWindowListener(new WindowAdapter() {
+					@Override
+					public void windowClosed(WindowEvent e) {
+						if (onClose != null) {
+							onClose.run();
+						}
+					}
+				});
+				if (table != null) {
+		    		BrowserContentCellEditor cellEditor = browserContentCellEditor;
+					try {
+						popUpWhereConditionEditorPanel = new WhereConditionEditorPanelConsole(dialog, datamodel.get(), table, cellEditor, null,
+								popUpWhereConditionEditorPanel, popUpSearchBarEditor, null, true, column, session, executionContext, ResultContentPane.this) {
+							@Override
+							protected void onEscape() {
+								close.run();
+							}
+						};
+					} catch (SQLException e1) {
+						UIUtil.showException(SQLConsole.this, "Error", e1);
+						return;
+					}
+					popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
+					popUpWhereConditionEditorPanel.parseCondition(statementForReloading);
+					
+					dialog.setModal(false);
+					dialog.setUndecorated(true);
+					dialog.addWindowFocusListener(new WindowFocusListener() {
+						@Override
+						public void windowLostFocus(WindowEvent e) {
+							if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
+								close.run();
+							}
+						}
+						@Override
+						public void windowGainedFocus(WindowEvent e) {
+						}
+					});
+					
+					int x = location.x;
+					int y = location.y;
+					
+					dialog.getContentPane().add(popUpWhereConditionEditorPanel);
+					
+					dialog.pack();
+					double mh = column >= 0? 220 : 280;
+					int height = Math.max(dialog.getHeight(), (int) mh);
+					dialog.setLocation(x, y);
+					int minWidth = 600;
+					int wid = Math.max(minWidth, dialog.getWidth());
+					Window window = parentFrame;
+					Integer maxX = window.getX() + window.getWidth() - wid - 8;;
+					dialog.setSize(wid, Math.min(height, 600));
+					if (maxX != null) {
+						dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+					}
+					Integer maxY = window.getY() + window.getHeight() - dialog.getHeight() - 8;
+					if (maxY != null && maxY < dialog.getY()) {
+						int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
+						maxY += deltaH;
+						dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
+						dialog.setLocation(dialog.getX(), Math.max(0, maxY));
+					}
+					dialog.setVisible(true);
+					UIUtil.invokeLater(4, () -> {
+						popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
+					});
+		    	}
+			});
+//			if (neverOpened) {
+//				neverOpened = false;
+//				UIUtil.invokeLater(8, () -> {
+//					Timer timer = new Timer(100, e -> {
+//						if (!dialog.isVisible()) {
+//							openConditionEditor(browserContentPane, location, column, onClose);
+//						}
+//					});
+//					timer.setRepeats(false);
+//					timer.start();
+//				});
+//			}
 		}
     }
 

@@ -16,6 +16,9 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
@@ -26,8 +29,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import net.sf.jailer.database.Session;
+import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CellContentConverter;
@@ -503,6 +508,39 @@ public class BrowserContentCellEditor {
 
 	public void setInDetailsView(boolean inDetailsView) {
 		this.inDetailsView = inDetailsView;
+	}
+
+	public static BrowserContentCellEditor forTable(Table table, Session session) throws SQLException {
+		String key = "browserContentCellEditor-" + table.getName();
+		BrowserContentCellEditor browserContentCellEditor[] = new BrowserContentCellEditor[] {
+				(BrowserContentCellEditor) session.getSessionProperty(BrowserContentCellEditor.class, key) };
+		if (browserContentCellEditor[0] == null) {
+			AbstractResultSetReader reader = new AbstractResultSetReader() {
+				@Override
+				public void init(ResultSet resultSet) throws SQLException {
+					ResultSetMetaData metaData = getMetaData(resultSet);
+					int columnCount = metaData.getColumnCount();
+					int[] columnTypes = new int[columnCount];
+					String[] columnTypeNames = new String[columnCount];
+					for (int ci = 1; ci <= columnCount; ++ci) {
+						columnTypes[ci - 1] = metaData.getColumnType(ci);
+						columnTypeNames[ci - 1] = metaData.getColumnTypeName(ci);
+					}
+					browserContentCellEditor[0] = new BrowserContentCellEditor(columnTypes, columnTypeNames, session);
+				}
+
+				@Override
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					// nothing to do
+				}
+			};
+			String sqlQuery = "Select "
+					+ (table.getColumns().stream().map(c -> c.name).collect(Collectors.joining(", "))) + " From "
+					+ table.getName() + " Where 1=0";
+			session.executeQuery(sqlQuery, reader, null, null, 1);
+			session.setSessionProperty(BrowserContentCellEditor.class, key, browserContentCellEditor[0]);
+		}
+		return browserContentCellEditor[0];
 	}
 
 }

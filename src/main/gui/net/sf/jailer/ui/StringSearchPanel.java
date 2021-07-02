@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Window;
@@ -447,7 +448,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private final Runnable onSuccess;
 	private Runnable onClose;
 	private final JToggleButton button;
-	private final Map<String, Consumer<JLabel>> renderConsumer;
+	public final Map<String, Consumer<JLabel>> renderConsumer;
 	
     /**
      * Creates new form StringSearchPanel
@@ -612,13 +613,13 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				if (i >= 0) {
 					item = item.substring(0, i) + "<b><font color=\"" + hlColor + "\">" + item.substring(i, i + search.length()) + "</font></b>" + item.substring(i + search.length());
 				}
-				if (stringCount != null) {
-					Integer count = stringCount.get(value.toString());
-					if (count != null && count > 1) {
-						item += "&nbsp;<font color=" + (isSelected? "#66ff66" : "#006600") + ">&nbsp;&nbsp;(" + count + ")</font>";
-					}
-				}
-				String html = "<html>" + item;
+//				if (stringCount != null) {
+//					Integer count = stringCount.get(value.toString());
+//					if (count != null && count > 1) {
+//						item += "&nbsp;<font color=" + (isSelected? "#66ff66" : "#006600") + ">&nbsp;&nbsp;(" + count + ")</font>";
+//					}
+//				}
+				String html = "<html>" + item + "</html>";
 				Component render = super.getListCellRendererComponent(list, html, index, false, cellHasFocus);
 				render.setBackground(bgColor);
 				render.setForeground(fgColor);
@@ -631,6 +632,43 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				if (isSelected) {
 					render.setBackground(bgColor);
 					render.setForeground(fgColor);
+				}
+				if (stringCount != null && stringCountLeftPad != null) {
+					Integer count = stringCount.get(value.toString());
+					if (count != null) {
+						JPanel panel = new JPanel(new GridBagLayout());
+						GridBagConstraints gbc = new GridBagConstraints();
+						gbc.gridx = 1;
+						gbc.gridy = 1;
+						gbc.weightx = 1;
+						gbc.fill = GridBagConstraints.HORIZONTAL;
+						gbc.anchor = GridBagConstraints.WEST;
+						panel.add(render, gbc);
+						gbc = new GridBagConstraints();
+						gbc.gridx = 2;
+						gbc.gridy = 1;
+						gbc.weightx = 0;
+						gbc.fill = GridBagConstraints.NONE;
+						gbc.anchor = GridBagConstraints.EAST;
+						JLabel cl = new JLabel(stringCountLeftPad + " ");
+						cl.setForeground(new Color(255, 255, 255, 0));
+						panel.add(cl, gbc);
+						if (count > 1) {
+							gbc = new GridBagConstraints();
+							gbc.gridx = 2;
+							gbc.gridy = 1;
+							gbc.weightx = 0;
+							gbc.fill = GridBagConstraints.NONE;
+							gbc.anchor = GridBagConstraints.EAST;
+							cl = new JLabel(" " + count + "  ");
+							cl.setForeground(new Color(0, 140, 0));
+							panel.add(cl, gbc);
+						}
+						panel.setOpaque(false);
+						render.setMinimumSize(new Dimension(1, render.getMinimumSize().height));
+						render.setPreferredSize(new Dimension(1, render.getPreferredSize().height));
+						return panel;
+					}
 				}
 				return render;
 			}
@@ -1128,9 +1166,19 @@ public class StringSearchPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_selectAllButtonActionPerformed
 
     Map<String, Integer> stringCount = null;
-
+    private String stringCountLeftPad = null;
+    
 	public void setStringCount(Map<String, Integer> stringCount) {
 		this.stringCount = stringCount;
+		this.stringCountLeftPad = null;
+		stringCount.values().stream().max(Integer::compare).ifPresent(max -> {
+			if (max > 1) {
+				stringCountLeftPad = " ";
+				for (int i = String.valueOf(max).length(); i > 0; --i) {
+					stringCountLeftPad += "0";
+				}
+			}
+		});
 	}
 
 	private boolean closeOwner;

@@ -1741,7 +1741,7 @@ public class UIUtil {
     private static Font sqlEditorFont = null;
 	
     public static String suspectQuery;
-    
+	
 	public static Font getSQLEditorFont() {
 		if (sqlEditorFont == null) {
 			sqlEditorFont = new RSyntaxTextArea().getFont();
