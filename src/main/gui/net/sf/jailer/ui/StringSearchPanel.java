@@ -611,7 +611,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				int i = value.toString().trim().toUpperCase(Locale.ENGLISH).indexOf(search);
 				String item = value.toString();
 				if (i >= 0) {
-					item = item.substring(0, i) + "<b><font color=\"" + hlColor + "\">" + item.substring(i, i + search.length()) + "</font></b>" + item.substring(i + search.length());
+					item = UIUtil.toHTMLFragment(item.substring(0, i), 0) + "<b><font color=\"" + hlColor + "\">" + UIUtil.toHTMLFragment(item.substring(i, i + search.length()), 0) + "</font></b>" + UIUtil.toHTMLFragment(item.substring(i + search.length()), 0);
+				} else {
+					item = UIUtil.toHTMLFragment(item, 0);
 				}
 //				if (stringCount != null) {
 //					Integer count = stringCount.get(value.toString());
@@ -619,7 +621,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 //						item += "&nbsp;<font color=" + (isSelected? "#66ff66" : "#006600") + ">&nbsp;&nbsp;(" + count + ")</font>";
 //					}
 //				}
-				String html = "<html>" + item + "</html>";
+				String html = "<html><nobr>" + item + "</html>";
 				Component render = super.getListCellRendererComponent(list, html, index, false, cellHasFocus);
 				render.setBackground(bgColor);
 				render.setForeground(fgColor);
@@ -628,6 +630,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					if (cons != null && render instanceof JLabel) {
 						cons.accept((JLabel) render);
 					}
+				}
+				if (render instanceof JLabel) {
+					String text = ((JLabel) render).getText();
+					((JLabel) render).setToolTipText(text);
 				}
 				if (isSelected) {
 					render.setBackground(bgColor);
@@ -667,6 +673,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						panel.setOpaque(false);
 						render.setMinimumSize(new Dimension(1, render.getMinimumSize().height));
 						render.setPreferredSize(new Dimension(1, render.getPreferredSize().height));
+						if (render instanceof JLabel) {
+							String text = ((JLabel) render).getText();
+							panel.setToolTipText(text);
+						}
 						return panel;
 					}
 				}
