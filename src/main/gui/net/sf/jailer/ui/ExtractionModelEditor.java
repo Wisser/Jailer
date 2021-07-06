@@ -40,6 +40,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -84,6 +86,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -317,9 +321,32 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-        jPanel3.add(createWhereConEditorButton(() -> getSubject(), () -> condition.getText(), s -> {
+        JButton button = createWhereConEditorButton(() -> getSubject(), () -> condition.getText(), s -> {
         	condition.setText(UIUtil.toSingleLineSQL(s));
-        }, true, "T", null), gridBagConstraints);
+        }, true, "T", null);
+		jPanel3.add(button, gridBagConstraints);
+		
+		button.setEnabled(subjectTable.getSelectedIndex() >= 0);
+		subjectTable.getModel().addListDataListener(new ListDataListener() {
+			@Override
+			public void intervalRemoved(ListDataEvent arg0) {
+				button.setEnabled(subjectTable.getSelectedIndex() >= 0);
+				}
+			@Override
+			public void intervalAdded(ListDataEvent arg0) {
+				button.setEnabled(subjectTable.getSelectedIndex() >= 0);
+			}
+			@Override
+			public void contentsChanged(ListDataEvent arg0) {
+				button.setEnabled(subjectTable.getSelectedIndex() >= 0);
+			}
+		});
+		subjectTable.addPropertyChangeListener("model", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent arg0) {
+				button.setEnabled(subjectTable.getSelectedIndex() >= 0);
+			}
+		});
 
 		exportButton.setIcon(runIcon);
 		limitLabel.setText(SubjectLimitEditor.subjectLimitDefinitionRender(extractionModel.subjectLimitDefinition));
@@ -1018,7 +1045,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		JButton button = new JButton(null, UIUtil.scaleIcon(this, searchIcon));
 		button.addActionListener(e -> {
-			if (getSubject.get() != null && extractionModelFrame.theSession != null || extractionModelFrame.connectToDBIfNeeded("Open Condition Editor")) {
+			if (getSubject.get() != null && (extractionModelFrame.theSession != null || extractionModelFrame.connectToDBIfNeeded("Open Condition Editor"))) {
 				Window windowAncestor = SwingUtilities.getWindowAncestor(button);
 				try {
 					UIUtil.setWaitCursor(windowAncestor);
