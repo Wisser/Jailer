@@ -843,8 +843,12 @@ public class DataBrowser extends javax.swing.JFrame {
         
         desktop.setMinXProvider(() -> searchPanelContainer.isVisible()? 1 : 0);
         searchPanelContainer.addComponentListener(new ComponentListener() {
+        	boolean inQueue = false;
         	private void update() {
-				desktop.updateMinX();
+        		if (!inQueue) {
+        			UIUtil.invokeLater(() -> { inQueue = false; desktop.updateMinX(); });
+        			inQueue = true;
+        		}
 			}
 			@Override
 			public void componentShown(ComponentEvent e) {

@@ -527,10 +527,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			}
 			@Override
 			public void keyPressed(KeyEvent e) {
-				int kc = e.getKeyCode();
-				if (kc == KeyEvent.VK_DOWN) {
-					searchList.grabFocus();
-					searchList.setSelectedIndex(0);
+				if (e.getComponent() == searchTextField) {
+					int kc = e.getKeyCode();
+					if (kc == KeyEvent.VK_DOWN) {
+						searchList.grabFocus();
+						searchList.setSelectedIndex(0);
+					}
 				}
 			}
 		};

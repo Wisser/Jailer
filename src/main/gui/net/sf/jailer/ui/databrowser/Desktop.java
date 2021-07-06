@@ -2737,6 +2737,9 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	public void updateMinX() {
+		if (desktopAnimation.isActive()) {
+			return;
+		}
 		int minX = minXProvider != null? minXProvider.get() : 0;
 		int aktMinX = Integer.MAX_VALUE;
 		Set<RowBrowser> maximized = new HashSet<Desktop.RowBrowser>();

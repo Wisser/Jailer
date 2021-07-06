@@ -807,9 +807,6 @@ public class UIUtil {
      */
     public static void showException(Component parent, String title, Throwable t, Object context, JComponent additionalControl) {
     	Throwable original = t;
-
-    	// TODO exception stack trace stripping ala AWTWatchdog#sendThreadDump
-
     	if (context == EXCEPTION_CONTEXT_USER_ERROR || context == EXCEPTION_CONTEXT_MB_USER_ERROR) {
         	if (t instanceof IndexOutOfBoundsException
         			|| t instanceof NullPointerException
@@ -1014,17 +1011,60 @@ public class UIUtil {
     private static int issueCount = 0;
     private static long lastIssueTS = 0;
 
-    public static void sendIssue(final String type, final String issue) {
+    public static void sendIssue(final String type,  String theIssue) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 		    	try {
 					final int MAX_CL = 1300;
-					int maxEIssueLength = 4 * MAX_CL;
+					int maxEIssueLength = MAX_CL + 10;
 					String ipf = ++issueCount + "z" + (lastIssueTS != 0? (System.currentTimeMillis() - lastIssueTS) / 1000 + "s." : "");
 					lastIssueTS = System.currentTimeMillis();
 					String url;
+					int i = 0;
+					String issue = theIssue;
 					do {
+						if (i == 1) {
+							issue = issue
+									.replaceAll("\\s*(\\n)\\s*", "$1")
+									.replaceAll("(?is), birthday, type\\) Select distinct ", "~btsD")
+									.replaceAll("(?is), birthday, type\\) Select ", "~btS")
+									.replaceAll("(?is)select distinct ", "~d")
+									.replaceAll("(?is)select ", "~s")
+									.replaceAll("(?is) from ", "~f")
+									.replaceAll("(?is) from dual union all ", "~fD")
+									.replaceAll("(?is) union all ", "~u")
+									.replaceAll("(?is) where ", "~w")
+									.replaceAll("(?is)Insert into ", "~i")
+									.replaceAll("(?is)JAILER_ENTITY", "~e")
+									.replaceAll("(?is)r_entitygraph", "~g")
+									.replaceAll("(?is) Duplicate", "~dU")
+									;
+							StringBuilder sb = new StringBuilder();
+							String lastLine = null;
+							for (String line: issue.split("\\n")) {
+								if (lastLine == null) {
+									sb.append(line);
+								} else {
+									int l = Math.min(lastLine.length(), line.length());
+									int j = 0;
+									for (; j < l; ++j) {
+										if (line.charAt(j) != lastLine.charAt(j)) {
+											break;
+										}
+									}
+									if (j > 4) {
+										sb.append("~" + j + ".");
+										sb.append(line.substring(j));
+									} else {
+										sb.append(line);
+									}
+								}
+								sb.append("\n");
+								lastLine = line;
+							}
+							issue = sb.toString();
+						}
 						String eIssue = URLEncoder.encode(ipf + issue, "UTF-8");
 			            if (eIssue.length() > maxEIssueLength) {
 			            	eIssue = eIssue.substring(0, maxEIssueLength);
@@ -1034,6 +1074,7 @@ public class UIUtil {
 							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
 							+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")";
 						maxEIssueLength -= 10;
+						++i;
 					} while (url.length() > MAX_CL && maxEIssueLength > 100);
 					HttpUtil.get(url);
 				} catch (UnsupportedEncodingException e) {
