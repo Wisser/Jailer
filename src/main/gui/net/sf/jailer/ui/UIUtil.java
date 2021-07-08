@@ -1016,7 +1016,7 @@ public class UIUtil {
 			@Override
 			public void run() {
 		    	try {
-					final int MAX_CL = 1300;
+					final int MAX_CL = 3900;
 					int maxEIssueLength = MAX_CL + 10;
 					String ipf = ++issueCount + "z" + (lastIssueTS != 0? (System.currentTimeMillis() - lastIssueTS) / 1000 + "s." : "");
 					lastIssueTS = System.currentTimeMillis();
@@ -1031,14 +1031,14 @@ public class UIUtil {
 									.replaceAll("(?is), birthday, type\\) Select ", "~btS")
 									.replaceAll("(?is)select distinct ", "~d")
 									.replaceAll("(?is)select ", "~s")
-									.replaceAll("(?is) from ", "~f")
-									.replaceAll("(?is) from dual union all ", "~fD")
-									.replaceAll("(?is) union all ", "~u")
-									.replaceAll("(?is) where ", "~w")
+									.replaceAll("(?is)from ", "~f")
+									.replaceAll("(?is)from dual union all ", "~fD")
+									.replaceAll("(?is)union all ", "~u")
+									.replaceAll("(?is)where ", "~w")
 									.replaceAll("(?is)Insert into ", "~i")
 									.replaceAll("(?is)JAILER_ENTITY", "~e")
 									.replaceAll("(?is)r_entitygraph", "~g")
-									.replaceAll("(?is) Duplicate", "~dU")
+									.replaceAll("(?is)Duplicate", "~dU")
 									;
 							StringBuilder sb = new StringBuilder();
 							String lastLine = null;
@@ -1069,7 +1069,7 @@ public class UIUtil {
 			            if (eIssue.length() > maxEIssueLength) {
 			            	eIssue = eIssue.substring(0, maxEIssueLength);
 			            }
-						url = "http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + eIssue
+						url = "http://jailer.sourceforge.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + eIssue
 							+ "&uuid=" + URLEncoder.encode(String.valueOf(UISettings.restore("uuid")), "UTF-8")
 							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
 							+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")";

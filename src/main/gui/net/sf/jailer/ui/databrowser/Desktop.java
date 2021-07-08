@@ -1552,7 +1552,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private Rectangle layout(RowBrowser parent, Association association, BrowserContentPane browserContentPane,
 			Collection<RowBrowser> ignore, int maxH, int xPosition) {
-		int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor);
+		int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor + minX * layoutMode.factor);
 		int y = (int) (BROWSERTABLE_DEFAULT_MIN_Y * layoutMode.factor);
 
 		while (parent != null && parent.isHidden()) {

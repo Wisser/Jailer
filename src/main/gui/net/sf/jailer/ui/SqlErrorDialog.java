@@ -352,7 +352,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 			if (issue.length() > MAX_LENGTH) {
 				issue = issue.substring(0, MAX_LENGTH);
 			}
-			url = new URI("http://jailer.sf.net/issueReport.php?type="
+			url = new URI("http://jailer.sourceforge.net/issueReport.php?type="
 					+ URLEncoder.encode(sqlError ? "SQL" : "GUI", "UTF-8") + "&" + "issue="
 					+ URLEncoder.encode(issue.replace('\r', ' '), "UTF-8")
 					+ "&uuid=" + URLEncoder.encode(String.valueOf(UISettings.restore("uuid")), "UTF-8")
