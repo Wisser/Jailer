@@ -1,5 +1,5 @@
 10.5.2
-  - Minor corrections and improved error reporting mechanism.
+  - Minor fixes and improved error reporting mechanism.
 
 10.5.1
   - The new "Where Condition" Editor allows quick and easy narrowing of table contents to the relevant data.

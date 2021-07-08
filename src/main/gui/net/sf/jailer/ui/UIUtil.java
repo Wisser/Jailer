@@ -897,12 +897,6 @@ public class UIUtil {
 
             boolean silent = "AWT".equals(context);
 
-            iMsg = iMsg
-            		.replaceAll("\\bat [^\\n]*/", "at ")
-            		.replaceAll("\\bat java.", "atj..")
-					.replaceAll("\\bat javax.swing.", "atjs..")
-					.replaceAll("\\bat net.sf.jailer.", "atn..")
-					.replaceAll("\\s*(\\n)\\s*", "$1");
             sendIssue("internal", (silent? "S" : "") + iMsg);
 
             if (silent) {
@@ -1026,7 +1020,8 @@ public class UIUtil {
 					do {
 						if (i == 1) {
 							issue = issue
-									.replaceAll("\\s*(\\n)\\s*", "$1")
+									.replaceAll("(?is)(\\n) +", "$1")
+									.replaceAll("(?is)\\s*(\\n)\\s*", "$1")
 									.replaceAll("(?is), birthday, type\\) Select distinct ", "~btsD")
 									.replaceAll("(?is), birthday, type\\) Select ", "~btS")
 									.replaceAll("(?is)select distinct ", "~d")
