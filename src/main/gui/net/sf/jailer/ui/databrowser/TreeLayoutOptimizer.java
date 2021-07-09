@@ -18,7 +18,10 @@ package net.sf.jailer.ui.databrowser;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.SortedSet;
 import java.util.Stack;
+import java.util.TreeSet;
+import java.util.function.Consumer;
 
 /**
  * Experimental layout optimization.
@@ -48,6 +51,11 @@ public class TreeLayoutOptimizer<T> {
 			children.add(child);
 			child.parent = this;
 			child.level = level + 1;
+		}
+		
+		public void visit(Consumer<Node<T>> visitor) {
+			visitor.accept(this);
+			children.forEach(child -> child.visit(visitor));
 		}
 		
 		public double getPosition() {
@@ -148,6 +156,25 @@ public class TreeLayoutOptimizer<T> {
 		optimizeLeafs(root);
 		resolveOverlaps(root, root, new HashMap<Integer, Node<T>>());
 		root.adjustPosition(root.getMinPosition());
+		SortedSet<Double> ys = new TreeSet<Double>();
+		root.children.forEach(child -> child.visit(node -> ys.add(node.position)));
+		double yo = 0;
+		double shift = 0;
+		for (double y: ys) {
+			if (y > yo + 1) {
+				double d = y - (yo + 1);
+				double fShift = shift;
+				root.children.forEach(child -> child.visit(
+						node -> {
+							if (node.position >= y - fShift) {
+								node.position -= d;
+							}
+						}));
+						
+				shift += d;
+			}
+			yo = y;
+		}
 	}
 
 	private static <T> void resolveOverlaps(Node<T> node, Node<T> root, HashMap<Integer, Node<T>> pred) {

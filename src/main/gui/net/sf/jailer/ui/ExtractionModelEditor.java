@@ -631,7 +631,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		sm.setEnabled(restrictionEditor.restriction.isEnabled());
 		restrictionEditor.restriction.addPropertyChangeListener("enabled", e -> whereConEditorButton.setEnabled(restrictionEditor.restriction.isEnabled()));
 		restrictionEditor.restriction.addPropertyChangeListener("enabled", e -> sm.setVisible(restrictionEditor.restriction.isEnabled()));
-		condition.setFont(UIUtil.getSQLEditorFont());
+		// condition.setFont(UIUtil.getSQLEditorFont());
 		restrictionEditor.restriction.setFont(UIUtil.getSQLEditorFont());
 		
 		if (isHorizontalLayout ) {

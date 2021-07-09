@@ -608,7 +608,7 @@ public class SqlUtil {
 	}
 
 	public static String columnLabel(Quoting quoting, Session session, DBMS targetDBMSConfiguration, Table table, String columnLabel) {
-		if (targetDBMSConfiguration != session.dbms) {
+//		if (targetDBMSConfiguration != session.dbms) {
 			int count = 0;
 			String name = null;
 			for (Column column: table.getColumns()) {
@@ -620,7 +620,7 @@ public class SqlUtil {
 			if (count == 1 && name != null) {
 				return name;
 			}
-		}
+//		}
 		return quoting.quote(columnLabel);
 	}
 
