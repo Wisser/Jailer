@@ -1,4 +1,8 @@
-10.5.2
+10.5.4
+  - Fixing an error when rearranging table windows.
+  - Added a "welcome" dialog for new users.
+
+10.5.3
   - Improved automatic arrangement of table windows in the data browser.
   - Minor fixes and improved error reporting mechanism.
 
