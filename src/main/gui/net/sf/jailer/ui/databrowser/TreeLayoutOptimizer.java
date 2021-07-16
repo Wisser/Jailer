@@ -24,7 +24,7 @@ import java.util.TreeSet;
 import java.util.function.Consumer;
 
 /**
- * Experimental layout optimization.
+ * Data browser table windows layout optimizer.
  * 
  * @author Ralf Wisser
  */
@@ -213,8 +213,10 @@ public class TreeLayoutOptimizer<T> {
 		for (Node<T> child: node.children) {
 			child.position = Math.max(node.position - (node.children.size() - 1) / 2.0, maxPositionPerLevel[child.level] + 1);
 			maxPositionPerLevel[child.level] = child.position;
-			adjustParentPosition(node, maxPositionPerLevel);
 			layoutNode(child, maxPositionPerLevel);
+		}
+		if (!node.children.isEmpty()) {
+			adjustParentPosition(node, maxPositionPerLevel);
 		}
 	}
 	
@@ -348,5 +350,5 @@ public class TreeLayoutOptimizer<T> {
 			}
 		}
 	}
-	
+
 }

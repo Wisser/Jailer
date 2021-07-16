@@ -7347,4 +7347,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     	emptyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"));
     }
 
+    // TODO align horizontally: doubleclick on outline and in popup menu
+    
+    // TODO --blabla ("README.md")
+    
+    // TODO Navigation menu also as UI widget ala "anchor" (DesktopAnchorManager)
+
 }

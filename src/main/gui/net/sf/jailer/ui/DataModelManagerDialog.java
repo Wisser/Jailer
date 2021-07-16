@@ -19,6 +19,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -68,6 +69,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+
+import org.fife.rsta.ui.EscapableDialog;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
@@ -319,6 +322,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		addWindowListener(new WindowListener() {
 			@Override
 			public void windowOpened(WindowEvent e) {
+				openWelcomeDilog();
 			}
 			@Override
 			public void windowIconified(WindowEvent e) {
@@ -385,6 +389,79 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				okButton.grabFocus();
 			}
 		}
+	}
+
+	private static boolean wdOpened = false;
+	
+	protected void openWelcomeDilog() {
+		if (wdOpened) {
+			return;
+		}
+		wdOpened = true;
+
+		if (!"B".equals(module)) {
+			return;
+		}
+
+		final String ASK_LATER = "WelcomeAskLater"; 
+		Object askLater = UISettings.restore(ASK_LATER);
+		if (Boolean.FALSE.equals(askLater)) {
+			return;
+		}
+		if (askLater == null) {
+			if (UISettings.restore("uuid") != null) {
+				return;
+			}
+		}
+		UISettings.store(ASK_LATER, false);
+		
+		ciOfBookmark.entrySet().stream().filter(e -> "CUSTOMER - FILM".equals(e.getKey().bookmark)).findAny()
+				.ifPresent(e -> {
+					WelcomePanel welcomePanel = new WelcomePanel();
+					
+					DMMDInfoBar iBar = new DMMDInfoBar("Welcome",
+							"Since you are here for the first time, \nI suggest showing you the demo database.    \n",
+							"");
+					iBar.setIcon(UIUtil.jailerLogo);
+					UIUtil.replace(welcomePanel.infoLabel, iBar);
+
+					EscapableDialog dialog = new EscapableDialog(this) {
+					};
+					
+					dialog.setTitle("Jailer " + JailerVersion.VERSION);
+					
+					welcomePanel.okButton.addActionListener(evt -> {
+						BookmarkId bookmark = e.getKey();
+						ConnectionInfo ci = e.getValue();
+						UIUtil.setWaitCursor(dialog);
+						openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
+						UIUtil.resetWaitCursor(dialog);
+						dialog.setVisible(false);
+						dialog.dispose();
+						setVisible(false);
+						dispose();
+					});
+					welcomePanel.notYetButton.addActionListener(evt -> {
+						UISettings.store(ASK_LATER, true);
+						dialog.dispose();
+						dialog.setVisible(false);
+					});
+					welcomePanel.noButton.addActionListener(evt -> {
+						dialog.dispose();
+						dialog.setVisible(false);
+					});
+					
+					dialog.getContentPane().add(welcomePanel);
+					dialog.pack();
+					Point ownerLoc;
+					Dimension ownerSize;
+					ownerLoc = getLocation();
+					ownerSize = getSize();
+					int x = (int) (ownerLoc.getX() + ownerSize.getWidth() / 2 - dialog.getWidth() / 2);
+					int y = (int) (ownerLoc.getY() + ownerSize.getHeight() / 2 - dialog.getHeight() / 2);
+					dialog.setLocation(x, y);
+					dialog.setVisible(true);
+				});
 	}
 
 	private JTable initBookmarkTables() {
@@ -2020,7 +2097,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     private javax.swing.JComboBox locationComboBox = new JComboBox2();
     private javax.swing.JComboBox<String> resentSessionsComboBox = new JComboBox2();
-     
-	private static final long serialVersionUID = -3983034803834547687L;
 
+	private static final long serialVersionUID = -3983034803834547687L;
+	
 }

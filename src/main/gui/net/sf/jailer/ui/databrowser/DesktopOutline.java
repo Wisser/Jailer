@@ -35,7 +35,10 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyVetoException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -280,10 +283,15 @@ public class DesktopOutline extends JPanel {
 					}
 				}
 			}
+			Set<RowBrowser> onPath = new HashSet<RowBrowser>();
+			calcOnPath(onPath, getBrowsers());
 			for (RowBrowser browser: getBrowsers()) {
 				if (!browser.isHidden()) {
 					rectangle = subBorder(browser.internalFrame.getBounds());
 					Color backgroundColor1 = new Color(160, 200, 255);
+					if (onPath.contains(browser)) {
+						backgroundColor1 = new Color(180, 255, 220);
+					}
 					sx = (int)(offX + scale * (double) rectangle.x + 0.5);
 					sy = (int)(offY + scale * (double) rectangle.y + 0.5);
 					sw = (int)(scale * (double) rectangle.width + 0.5);
@@ -343,10 +351,14 @@ public class DesktopOutline extends JPanel {
 						}
 					}
 					g2d.setClip(clip);
-				}
-				if (!browser.isHidden() && browser.internalFrame.isSelected()) {
-					rectangle = subBorder(browser.internalFrame.getBounds());
-					paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, new Color(0, 100, 255), null, new BasicStroke(2));
+					if (onPath.contains(browser)) {
+						rectangle = subBorder(browser.internalFrame.getBounds());
+						if (browser.internalFrame.isSelected()) {
+							paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, new Color(0, 100, 255), null, new BasicStroke(2));
+						} else {
+							paintRect(g2d, rectangle.x, rectangle.y, rectangle.width, rectangle.height, new Color(0, 100, 255).brighter(), null, new BasicStroke(1));
+						}
+					}
 				}
 			}
 			rectangle = desktop.getVisibleRect();
@@ -359,6 +371,17 @@ public class DesktopOutline extends JPanel {
 			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) (System.currentTimeMillis() / 50.0 % 16)));
 			g2d.drawRoundRect(sx, sy, sw, sh, 8, 8);
 		}
+	}
+
+	private void calcOnPath(Set<RowBrowser> onPath, List<RowBrowser> browsers) {
+		browsers.stream().filter(b -> b.internalFrame.isSelected()).findAny().ifPresent(
+			b -> {
+				while (b != null) {
+					onPath.add(b);
+					b = b.parent;
+				}
+			});
+		
 	}
 
 	private List<RowBrowser> getBrowsers() {

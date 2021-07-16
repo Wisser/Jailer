@@ -583,5 +583,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		}
 		return result;
 	}
+	
+	// TODO improve UI
 
 }

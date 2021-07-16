@@ -1,6 +1,11 @@
 Layout; MEDIUM
-1; ; ; 0; 6; 476; 460; 500; true; T; CUSTOMER; ; false; 
-2; 1; ; 586; 6; 476; 460; 500; true; T; RENTAL; inverse-FK_RENTAL_CUSTOMER; false; 
-3; 2; ; 1172; 6; 476; 460; 500; true; T; INVENTORY; FK_RENTAL_INVENTORY; true; 
-5; 2; ; 1172; 474; 476; 460; 500; true; T; PAYMENT; inverse-FK_PAYMENT_RENTAL; false; 
-4; 3; ; 1172; 6; 476; 460; 500; true; T; FILM; FK_INVENTORY_FILM; false; 
+1; ; ; 22; 0; 476; 460; ; true; T; CUSTOMER; ; false; 0|ASCENDING
+2; 1; ; 608; 0; 476; 460; ; true; T; RENTAL; inverse-FK_RENTAL_CUSTOMER; false; 0|ASCENDING
+3; 2; ; 1216; 6; 476; 460; ; true; T; INVENTORY; FK_RENTAL_INVENTORY; true; 
+4; 3; ; 1194; 468; 476; 460; ; true; T; FILM; FK_INVENTORY_FILM; false; 
+5; 4; ; 1780; 0; 476; 460; ; true; T; FILM_ACTOR; inverse-FK_FILM_ACTOR_FILM; false; 0|ASCENDING
+6; 5; ; 2366; 0; 476; 460; ; true; T; ACTOR; FK_FILM_ACTOR_ACTOR; false; 
+7; 4; ; 1780; 468; 476; 460; ; true; T; LANGUAGE; FK_FILM_LANGUAGE; false; 
+8; 4; ; 1780; 936; 476; 460; ; true; T; FILM_CATEGORY; inverse-FK_FILM_CATEGORY_FILM; false; 0|ASCENDING
+9; 2; ; 1194; 0; 476; 460; ; true; T; PAYMENT; inverse-FK_PAYMENT_RENTAL; false; 0|ASCENDING
+10; 1; ; 608; 468; 476; 460; ; true; T; ADDRESS; FK_CUSTOMER_ADDRESS; false; 

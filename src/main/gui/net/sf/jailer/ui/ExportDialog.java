@@ -2834,5 +2834,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
         runIcon = UIUtil.readImage("/run.png");
 	}
+	
+	// TODO store target-db setting persistently, with "reset"-Button or another way to show that this should be an exception
 
 }
