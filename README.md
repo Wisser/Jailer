@@ -3,7 +3,7 @@
 Jailer is a tool for database subsetting and relational data browsing.
 
  - The Subsetter exports consistent, referentially intact row-sets from relational databases,
-   generates topologically sorted SQL-DML, DbUnit datasets and hierarchically structured XML.
+   generates topologically sorted SQL-DML, DbUnit datasets and XML.
  - The Data Browser allows bidirectional navigation through the database
    by following foreign-key-based or user-defined relationships.
 

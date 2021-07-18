@@ -2648,6 +2648,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				rebase();
 			}
 		});
+		userActions.forEach(action -> {
+			JMenuItem uaItem = new JMenuItem(action.description);
+			uaItem.setToolTipText(action.tooltip);
+			popup.add(uaItem);
+			uaItem.setEnabled(action.isApplicable.get());
+			uaItem.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					action.action.run();
+				}
+			});
+		});
 		popup.addSeparator();
 		JMenuItem qb = new JMenuItem("Query Builder");
 		qb.setAccelerator(KS_QUERYBUILDER);
@@ -7319,6 +7331,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return result;
 	}
 
+	public static class UserAction {
+		private final String description;
+		private final String tooltip;
+		private final Supplier<Boolean> isApplicable;
+		private final Runnable action;
+		
+		public UserAction(String description, String tooltip, Supplier<Boolean> isApplicable, Runnable action) {
+			this.description = description;
+			this.tooltip = tooltip;
+			this.isApplicable = isApplicable;
+			this.action = action;
+		}
+	}
+	
+	private List<UserAction> userActions = new ArrayList<UserAction>();
+	
+	public void addUserAction(UserAction userAction) {
+		userActions.add(userAction);
+	}
+	
 	private int currentEditState;
     private static ImageIcon warnIcon;
     private static ImageIcon blueIcon;
@@ -7332,6 +7364,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private static ImageIcon findColumnIcon2;
     private static ImageIcon constraintPKIcon;
     private static ImageIcon emptyIcon;
+
     static {
         // load images
     	warnIcon = UIUtil.readImage("/wanr.png");
@@ -7346,11 +7379,4 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
     	emptyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"));
     }
-
-    // TODO align horizontally: doubleclick on outline and in popup menu
-    
-    // TODO --blabla ("README.md")
-    
-    // TODO Navigation menu also as UI widget ala "anchor" (DesktopAnchorManager)
-
 }

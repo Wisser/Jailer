@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -49,6 +50,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -322,6 +324,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			fields.put("insertIncrementally", insertIncrementally);
 			fields.put("independentWorkingTables", independentWorkingTables);
 			fields.put("isolationLevel", isolationLevelComboBox);
+			fields.put("targetDBMS", targetDBMSComboBox);
 			fields.put("upsertCheckbox", upsertCheckbox);
 			fields.put("scopeLocal", scopeLocal);
 			fields.put("scopeGlobal", scopeGlobal);
@@ -397,7 +400,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			initSourceSchemaMapping(dataModel, fields, defaults);
 			initIsolationLevel(session);
 			initScopeButtons(session);
-
+			initTargetDBMS(session);
+			
 			if (session.dbms.getRowidName() == null) {
 				rowidPK.setSelected(true);
 				rowidRowid.setEnabled(false);
@@ -563,7 +567,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			   }
 			});
 
-			initTargetDBMS(session);
 			workingTableSchemaComboBox.setEnabled(!scopeLocal.isSelected());
 			
 			pack();
@@ -635,6 +638,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	@SuppressWarnings({ "unchecked" })
 	private void initTargetDBMS(Session session) {
+		resetTargetButton.setVisible(false);
+		resetTargetButton.setBackground(new Color(255, 255, 210));
+		resetTargetButton.setIcon(resetIcon);
 		if (scriptFormat == ScriptFormat.SQL) {
 			targetDBMSComboBox.setModel(new DefaultComboBoxModel<DBMS>(DBMS.values()));
 			targetDBMSComboBox.setRenderer(new DefaultListCellRenderer() {
@@ -649,10 +655,21 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				}
 			});
 			targetDBMSComboBox.setSelectedItem(sourceDBMS);
+			resetTargetButton.addActionListener(e -> targetDBMSComboBox.setSelectedItem(sourceDBMS));
+
+			Runnable updateResetButton = () -> {
+				if (sourceDBMS == targetDBMSComboBox.getSelectedItem()) {
+					resetTargetButton.setVisible(false);
+				} else {
+					resetTargetButton.setVisible(true);
+				}
+			};
+			updateResetButton.run();
 			targetDBMSComboBox.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					updateCLIArea();
+					updateResetButton.run();
 				}
 			});
 			targetDBMSComboBox.setMaximumRowCount(20);
@@ -1176,7 +1193,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         workingTableSchemaComboBox = new javax.swing.JComboBox();
         jLabel17 = new javax.swing.JLabel();
         toLabel = new javax.swing.JLabel();
-        targetDBMSComboBox = new javax.swing.JComboBox();
         targetDBMSLabel = new javax.swing.JLabel();
         iFMTableSchemaComboBox = new javax.swing.JComboBox();
         iFMTPanel = new javax.swing.JPanel();
@@ -1205,6 +1221,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         rowidPK = new javax.swing.JRadioButton();
         rowidBoth = new javax.swing.JRadioButton();
         rowidRowid = new javax.swing.JRadioButton();
+        resetTargetButton = new javax.swing.JButton();
+        targetDBMSPanel = new javax.swing.JPanel();
+        targetDBMSComboBox = new javax.swing.JComboBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1755,13 +1774,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(toLabel, gridBagConstraints);
 
-        targetDBMSComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 35;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(targetDBMSComboBox, gridBagConstraints);
-
         targetDBMSLabel.setText(" Target DBMS"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1941,6 +1953,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 30;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(browseInsertButton, gridBagConstraints);
 
         browseDeleteButton.setText(" Browse..");
@@ -1952,6 +1965,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 34;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(browseDeleteButton, gridBagConstraints);
 
         targetDBMSLabel1.setText(" Isolation level"); // NOI18N
@@ -2078,6 +2092,35 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         jPanel1.add(rowidPanel, gridBagConstraints);
+
+        resetTargetButton.setText("Reset Target DBMS");
+        resetTargetButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetTargetButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 35;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel1.add(resetTargetButton, gridBagConstraints);
+
+        targetDBMSPanel.setLayout(new java.awt.GridBagLayout());
+
+        targetDBMSComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 35;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        targetDBMSPanel.add(targetDBMSComboBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 35;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(targetDBMSPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -2406,6 +2449,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
     private void rowidPKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rowidPKActionPerformed
     }//GEN-LAST:event_rowidPKActionPerformed
+
+    private void resetTargetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetTargetButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_resetTargetButtonActionPerformed
 
 	public boolean isOk() {
 		return isOk;
@@ -2795,6 +2842,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel parameterPanel;
     private javax.swing.JLabel placeholder;
     private javax.swing.JLabel placeholder1;
+    private javax.swing.JButton resetTargetButton;
     private javax.swing.JTextField rowLimit;
     private javax.swing.JRadioButton rowidBoth;
     private javax.swing.JLabel rowidLabel;
@@ -2814,6 +2862,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JComboBox targetDBMSComboBox;
     private javax.swing.JLabel targetDBMSLabel;
     private javax.swing.JLabel targetDBMSLabel1;
+    private javax.swing.JPanel targetDBMSPanel;
     private javax.swing.JTextField threads;
     private javax.swing.JLabel toLabel;
     public javax.swing.JCheckBox transactional;
@@ -2827,12 +2876,14 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private Icon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;
 	private Icon runIcon;
+	private Icon resetIcon;
 	{
 		// load images
 		loadIcon = UIUtil.readImage("/load.png");
 		conditionEditorIcon = UIUtil.readImage("/edit.png");
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
         runIcon = UIUtil.readImage("/run.png");
+        resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
 	}
 	
 	// TODO store target-db setting persistently, with "reset"-Button or another way to show that this should be an exception

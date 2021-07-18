@@ -522,7 +522,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					("<font color=\"#006600\">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
 					"</font>&nbsp;-&nbsp;<font color=\"#663300\">" +
-					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(((needUserName && connectionInfo.user != null && connectionInfo.user.trim().length() > 0? connectionInfo.user + " - ;" : "") + connectionInfo.url), 0) + "</font>") + 
+					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(((needUserName && connectionInfo.user != null && connectionInfo.user.trim().length() > 0? connectionInfo.user + " - " : "") + connectionInfo.url), 0) + "</font>") + 
 					"</font></nobr></html>")
 					:
 					(
@@ -533,7 +533,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					"</font>" +
 					"<font color=\"#663300\">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
-					"</font>&nbsp;-&nbsp;" + UIUtil.toHTMLFragment(((needUserName && connectionInfo.user != null && connectionInfo.user.trim().length() > 0? connectionInfo.user + " - ;" : "") + connectionInfo.url), 0) + "</font>") + 
+					"</font>&nbsp;-&nbsp;" + UIUtil.toHTMLFragment(((needUserName && connectionInfo.user != null && connectionInfo.user.trim().length() > 0? connectionInfo.user + " - " : "") + connectionInfo.url), 0) + "</font>") + 
 					"</font>")					
 					) +
 					"</nobr></html>");

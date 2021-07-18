@@ -120,6 +120,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.UserAction;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
@@ -1300,6 +1301,12 @@ public abstract class Desktop extends JDesktopPane {
 				Desktop.this.openConditionEditor(this, location, column, onClose);
 			}
 		};
+		browserContentPane.addUserAction(new UserAction(
+				"Align Horizontally",
+				"Align horizontally with predecessors",
+				() -> anchorManager.isApplicable(tableBrowser),
+				() -> anchorManager.layout(tableBrowser)
+				));
 
 		Rectangle r = layout(parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
 		java.awt.event.MouseWheelListener mouseWheelListener = new java.awt.event.MouseWheelListener() {

@@ -37,8 +37,8 @@ import java.awt.geom.Rectangle2D;
 import java.beans.PropertyVetoException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -65,7 +65,7 @@ public class DesktopOutline extends JPanel {
 	private Point draggingViewPosition = null;
 	public Rectangle visibleRectInOutline = null;
 	
-	public DesktopOutline(JComponent sameWidthFriend, JPanel controlPanel, JScrollPane scrollPane, Desktop desktop) {
+	public DesktopOutline(JComponent sameWidthFriend, JPanel controlPanel, JScrollPane scrollPane, Desktop desktop, Consumer<RowBrowser> doubleClickAction) {
 		this.sameWidthFriend = sameWidthFriend;
 		this.controlPanel = controlPanel;
 		this.scrollPane = scrollPane;
@@ -144,6 +144,8 @@ public class DesktopOutline extends JPanel {
 					}
 					if (e.getButton() == MouseEvent.BUTTON3) {
 	                    showPopupMenu(desktop, e, browser);
+					} else if (e.getClickCount() > 1) {
+						doubleClickAction.accept(browser);
 					}
 				}
 			}

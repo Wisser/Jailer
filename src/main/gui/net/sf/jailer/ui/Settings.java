@@ -23,12 +23,15 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+
+import net.sf.jailer.configuration.DBMS;
 
 /**
  * Persists settings of formular fields.
@@ -116,7 +119,7 @@ public class Settings  {
 				} else if (entry.getValue() instanceof JComboBox) {
 					Object sItem = ((JComboBox) entry.getValue()).getSelectedItem();
 					if (sItem != null) {
-						setting.put(entry.getKey(), sItem.toString());
+						setting.put(entry.getKey(), sItem instanceof DBMS? ((DBMS) sItem).getId() : sItem.toString());
 					}
 				}
 			}
@@ -163,6 +166,15 @@ public class Settings  {
 					} else if (entry.getValue() instanceof JRadioButton && setting.containsKey(entry.getKey())) {
 						if (((JRadioButton) entry.getValue()).isEnabled()) {
 							((JRadioButton) entry.getValue()).setSelected(Boolean.valueOf(setting.get(entry.getKey())));
+						}
+					} else if (entry.getValue() instanceof JComboBox && "targetDBMS".equals(entry.getKey())) {
+						try {
+							String settingItem = setting.get(entry.getKey());
+							Stream.of(DBMS.values()).filter(dbms -> {
+								return dbms.getId().equals(settingItem);
+							}).findAny().ifPresent(dbms -> ((JComboBox) entry.getValue()).setSelectedItem(dbms));
+						} catch (Exception e) {
+							// ignore
 						}
 					} else if (entry.getValue() instanceof JComboBox && setting.containsKey(entry.getKey())) {
 						((JComboBox) entry.getValue()).setSelectedItem(setting.get(entry.getKey()));
