@@ -3375,6 +3375,8 @@ public abstract class Desktop extends JDesktopPane {
 	 * Restores browser session.
 	 */
 	private void restoreSession(RowBrowser toBeAppended, Component pFrame, String sFile) throws Exception {
+		boolean oldLayouting = layouting;
+		layouting = true;
 		try {
 			UIUtil.setWaitCursor(pFrame);
 			editorPanesCache.clear();
@@ -3475,6 +3477,25 @@ public abstract class Desktop extends JDesktopPane {
 						rb.internalFrame.setSize(size);
 					}
 					deserializedSortKey(rb.browserContentPane.rowsTable, l.cells.get(13));
+					if (sFile.endsWith("CUSTOMER - FILM.dbl") && rb.browserContentPane != null
+							&& rb.browserContentPane.table != null
+							&& "RENTAL".equals(rb.browserContentPane.table.getName())) { // Demo
+						Timer timer = new Timer(100, null);
+						RowBrowser rowBrowser = rb;
+						timer.addActionListener(e -> {
+							if (rowBrowser.browserContentPane.rowsTable.getRowCount() > 1) {
+								rowBrowser.browserContentPane.rowsTable.getSelectionModel().setSelectionInterval(1, 1);
+								try {
+									rowBrowser.internalFrame.setSelected(true);
+								} catch (PropertyVetoException e1) {
+									// ignore
+								}
+								timer.stop();
+							}
+						});
+						timer.setDelay(100);
+						timer.start();
+					}
 				}
 			}
 			checkDesktopSize();
@@ -3498,6 +3519,7 @@ public abstract class Desktop extends JDesktopPane {
 			noArrangeLayoutOnNewTableBrowser = false;
 			iFrameStateChangeRenderer.rollbackAtomic();
 			updateMinX();
+			UIUtil.invokeLater(() -> { layouting = oldLayouting; });
 	        UIUtil.resetWaitCursor(pFrame);
 		}
 	}

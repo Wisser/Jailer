@@ -393,6 +393,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private int maxListLength = 80;
 	private String showAllLabel;
 	private boolean keepSearchText = false;
+	private boolean isFiltered = true;
 	
 	public void updateList() {
 		updateList(true, false);
@@ -440,6 +441,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		if (!acceptAll && !matches.isEmpty()) {
 			searchList.setSelectedIndex(0);
 		}
+		isFiltered = filter;
 	}
 
 	private final MetaDataSource metaDataSource;
@@ -566,7 +568,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					maxListLength += 5000;
 					try {
 						UIUtil.setWaitCursor(StringSearchPanel.this);
-						updateList();
+						updateList(isFiltered);
 					} finally {
 						UIUtil.resetWaitCursor(StringSearchPanel.this);
 					}
