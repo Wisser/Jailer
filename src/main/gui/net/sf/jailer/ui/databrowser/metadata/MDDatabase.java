@@ -19,7 +19,10 @@ import java.lang.reflect.Method;
 import java.sql.DatabaseMetaData;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JComponent;
 
@@ -59,10 +62,9 @@ public class MDDatabase extends MDGeneric {
 	 * 
 	 * @return render of the database object
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public JComponent createRender(Session session, ExecutionContext executionContext) throws Exception {
-        List<Object[]> rowList = new ArrayList<Object[]>();
-        
         DatabaseMetaData md = getMetaDataSource().getSession().getMetaData();
         String[] names = new String[] {
 	        "getURL",
@@ -194,14 +196,33 @@ public class MDDatabase extends MDGeneric {
 	        "supportsStoredProcedures"
 	    };
 
-        for (String name: names) {
-        	try {
-        		Method m = md.getClass().getMethod(name);
-        		rowList.add(new Object[] { name.startsWith("get")? name.substring(3) : name, m.invoke(md) });
-        	} catch (Throwable t) {
-        		logger.info("error", t);
+        List<Object[]> rowList = Collections.synchronizedList(new ArrayList<Object[]>());
+        AtomicBoolean ready = new AtomicBoolean(false);
+        
+        Thread thread = new Thread(() -> {
+			for (String name : names) {
+				try {
+					Method m = md.getClass().getMethod(name);
+					String displayName = name.startsWith("get") ? name.substring(3) : name;
+					displayName = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
+					rowList.add(new Object[] { displayName, m.invoke(md) });
+				} catch (Throwable t) {
+					logger.info("error", t);
+				}
+			}
+			ready.set(true);
+		});
+        thread.setDaemon(true);
+        thread.start();
+
+    	Thread.sleep(10);
+        for (int i = 0; i < 20; ++i) {
+        	if (ready.get()) {
+        		break;
         	}
+        	Thread.sleep(100);
         }
+        thread.stop();
 
         MemorizedResultSet rs = new MemorizedResultSet(rowList, 2, new String[] { "Property", "Value" }, new int[] { Types.VARCHAR, Types.VARCHAR });
         return new ResultSetRenderer(rs, getName(), dataModel, getMetaDataSource().getSession(), executionContext);
