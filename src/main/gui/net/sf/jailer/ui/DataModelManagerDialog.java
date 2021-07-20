@@ -410,12 +410,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 		if (askLater == null) {
 			if (UISettings.restore("uuid") != null) {
-				return;
+				if (UISettings.restore("buser") == null) {
+					return;
+				}
 			}
 		}
 		UISettings.store(ASK_LATER, false);
 		
-		ciOfBookmark.entrySet().stream().filter(e -> "CUSTOMER - FILM".equals(e.getKey().bookmark)).findAny()
+		ciOfBookmark.entrySet().stream().filter(e -> "INVENTORY - ACTOR".equals(e.getKey().bookmark)).findAny()
 				.ifPresent(e -> {
 					WelcomePanel welcomePanel = new WelcomePanel();
 					
@@ -433,6 +435,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					welcomePanel.okButton.addActionListener(evt -> {
 						BookmarkId bookmark = e.getKey();
 						ConnectionInfo ci = e.getValue();
+						UIUtil.subModule += 1;
 						UIUtil.setWaitCursor(dialog);
 						openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
 						UIUtil.resetWaitCursor(dialog);

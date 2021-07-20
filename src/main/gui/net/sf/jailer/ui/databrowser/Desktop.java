@@ -3477,14 +3477,14 @@ public abstract class Desktop extends JDesktopPane {
 						rb.internalFrame.setSize(size);
 					}
 					deserializedSortKey(rb.browserContentPane.rowsTable, l.cells.get(13));
-					if (sFile.endsWith("CUSTOMER - FILM.dbl") && rb.browserContentPane != null
+					if (sFile.endsWith("INVENTORY - ACTOR.dbl") && rb.browserContentPane != null
 							&& rb.browserContentPane.table != null
-							&& "RENTAL".equals(rb.browserContentPane.table.getName())) { // Demo
+							&& "INVENTORY".equals(rb.browserContentPane.table.getName())) { // Demo
 						Timer timer = new Timer(100, null);
 						RowBrowser rowBrowser = rb;
 						timer.addActionListener(e -> {
-							if (rowBrowser.browserContentPane.rowsTable.getRowCount() > 1) {
-								rowBrowser.browserContentPane.rowsTable.getSelectionModel().setSelectionInterval(1, 1);
+							if (rowBrowser.browserContentPane.rowsTable.getRowCount() > 5) {
+								rowBrowser.browserContentPane.rowsTable.getSelectionModel().setSelectionInterval(5, 5);
 								try {
 									rowBrowser.internalFrame.setSelected(true);
 								} catch (PropertyVetoException e1) {
