@@ -1,5 +1,5 @@
 10.5.4
-  - Fixing an error when rearranging table windows.
+  - Fixed an error when rearranging table windows.
   - Added a "welcome" dialog for new users.
 
 10.5.3
