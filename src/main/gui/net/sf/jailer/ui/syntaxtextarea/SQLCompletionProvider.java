@@ -1027,7 +1027,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             }
                             if (mdSchema != null) {
                                 TABLE mdTable = findTable(mdSchema, table);
-                                if (inferedTables.contains(Quoting.normalizeIdentifier(table))) {
+                                if (mdTable == null && inferedTables.contains(Quoting.normalizeIdentifier(table))) {
                                 	mdTable = createDummyTable(mdSchema, table);
                                 }
                                 if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.normalizeIdentifier(table))) {
@@ -1081,7 +1081,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             }
                             if (mdSchema != null) {
                                 TABLE mdTable = findTable(mdSchema, table);
-                                if (inferedTables.contains(Quoting.normalizeIdentifier(table))) {
+                                if (mdTable == null && inferedTables.contains(Quoting.normalizeIdentifier(table))) {
                                 	mdTable = createDummyTable(mdSchema, table);
                                 }
                                 if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.normalizeIdentifier(table))) {

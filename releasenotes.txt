@@ -1,3 +1,6 @@
+10.5.5
+  - Performance issues with autocomplete have been fixed.
+
 10.5.4
   - Fixed an error when rearranging table windows.
   - Added a "welcome" dialog for new users.

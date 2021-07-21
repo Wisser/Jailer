@@ -46,7 +46,7 @@ public class SQLAutoCompletion extends AutoCompletion {
 	public SQLAutoCompletion(final CompletionProvider provider, final RTextArea editorPane) {
 		super(provider);
 		this.editorPane = editorPane;
-		setAutoActivationDelay(1000);
+		setAutoActivationDelay(100);
 		setAutoActivationEnabled(true);
 		setAutoCompleteSingleChoices(false);
 		install(editorPane);
