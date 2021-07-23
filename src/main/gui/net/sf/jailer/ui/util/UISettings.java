@@ -304,7 +304,7 @@ public class UISettings {
 			lastSessions = new ArrayList<BookmarkId>();
 		} else {
 			lastSessions.remove(bookmark);
-			if (lastSessions.size() >= 16) {
+			if (lastSessions.size() >= 64) {
 				lastSessions.remove(lastSessions.size() - 1);
 			}
 		}
