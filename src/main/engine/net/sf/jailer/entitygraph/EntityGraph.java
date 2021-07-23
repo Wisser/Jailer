@@ -569,27 +569,29 @@ public abstract class EntityGraph {
 		if (checkExist) {
 			checkExist(executionContext);
 		}
-		final int count[] = new int[] { 0 };
-		getSession().executeQuery("Select count(*) from " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext), new Session.AbstractResultSetReader() {
-			@Override
-			public void readCurrentRow(ResultSet resultSet) throws SQLException {
-				count[0] = resultSet.getInt(1);
+		synchronized (EntityGraph.class) {
+			final int count[] = new int[] { 0 };
+			getSession().executeQuery("Select count(*) from " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext), new Session.AbstractResultSetReader() {
+				@Override
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					count[0] = resultSet.getInt(1);
+				}
+			});
+			if (count[0] == 1) {
+				boolean wasSilent = getSession().getSilent();
+				try {
+					getSession().setSilent(true);
+					getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(DEPENDENCY, getSession(), executionContext));
+					getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(ENTITY, getSession(), executionContext));
+					getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext));
+				} catch (SQLException e) {
+					// "truncate" not supported
+					return;
+				} finally {
+					getSession().setSilent(wasSilent);
+				}
+				isTruncated = true;
 			}
-		});
-		if (count[0] == 1) {
-			boolean wasSilent = getSession().getSilent();
-			try {
-				getSession().setSilent(true);
-				getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(DEPENDENCY, getSession(), executionContext));
-				getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(ENTITY, getSession(), executionContext));
-				getSession().execute("Truncate Table " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext));
-			} catch (SQLException e) {
-				// "truncate" not supported
-				return;
-			} finally {
-				getSession().setSilent(wasSilent);
-			}
-			isTruncated = true;
 		}
 	}
 
@@ -597,15 +599,17 @@ public abstract class EntityGraph {
 	 * Check if the graph still exists.
 	 */
 	public void checkExist(ExecutionContext executionContext) throws SQLException {
-		final boolean found[] = new boolean[] { false };
-		getSession().executeQuery("Select * from " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext) + " Where id=" + graphID, new Session.AbstractResultSetReader() {
-			@Override
-			public void readCurrentRow(ResultSet resultSet) throws SQLException {
-				found[0] = true;
+		synchronized (EntityGraph.class) {
+			final boolean found[] = new boolean[] { false };
+			getSession().executeQuery("Select * from " + SQLDialect.dmlTableReference(ENTITY_GRAPH, getSession(), executionContext) + " Where id=" + graphID, new Session.AbstractResultSetReader() {
+				@Override
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					found[0] = true;
+				}
+			});
+			if (!found[0]) {
+				throw new RuntimeException("EntityGraph has been deleted.");
 			}
-		});
-		if (!found[0]) {
-			throw new RuntimeException("EntityGraph has been deleted.");
 		}
 	}
 

@@ -128,12 +128,14 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param session for executing SQL-Statements
 	 */
 	protected static void init(int graphID, Session session, ExecutionContext executionContext) {
-		try {
-			session.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, session, executionContext) + "(id, age) values (" + graphID + ", 1)");
-		} catch (SQLException e) {
-			throw new RuntimeException("Can't find working tables! " +
-					"Run 'bin/jailer.sh create-ddl' " +
-					"and execute the DDL-script first!", e);
+		synchronized (EntityGraph.class) {
+			try {
+				session.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, session, executionContext) + "(id, age) values (" + graphID + ", 1)");
+			} catch (SQLException e) {
+				throw new RuntimeException("Can't find working tables! " +
+						"Run 'bin/jailer.sh create-ddl' " +
+						"and execute the DDL-script first!", e);
+			}
 		}
 	}
 
