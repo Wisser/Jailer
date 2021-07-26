@@ -1168,18 +1168,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (BrowserContentPane.this.table != null && browserContentCellEditor != null) {
 					Shape clip = g2d.getClip();
 					g2d.clipRect(0, 0, getViewportBorderBounds().width, getViewportBorderBounds().height);
-					
-					if (useWhereClauseEditor() && currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
-						ImageIcon icon = currentSearchButtonIcon;
-						if (filteredColumns != null && filteredColumns.contains(rowsTable.convertColumnIndexToView(currentSearchButtonColumnIndex))) {
-							if (currentSearchButtonIcon == ready) {
-								icon = usedReady;
-							} else if (currentSearchButtonIcon == readySelected) {
-								icon = usedReadySelected;
-							}
-						}
-						g2d.drawImage(icon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
-					}
 					for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
 						if (BrowserContentPane.this.table != null) {
 							if (browserContentCellEditor.getColumnTypes().length > i && browserContentCellEditor.isEditable(BrowserContentPane.this.table, i, null)) {
@@ -1196,7 +1184,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 										c2 = c;
 									}
 									g2d.setPaint(new GradientPaint(0, 0, c1, 1, hr.height, c2));
-									g2d.fillRect(hr.x + 4 + loc.x, hr.y + 6, hr.width - 6, hr.height - 6);
+									g2d.fillRect(hr.x + 1 + loc.x, hr.y + 6, hr.width - 2, hr.height - 6);
 								}
 								if (useWhereClauseEditor() && vi >= 0 && vi != currentSearchButtonColumnIndex) {
 									Point location = calcSearchColumnPosition(vi);
@@ -1209,12 +1197,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						}
 					}
+					if (useWhereClauseEditor() && currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
+						ImageIcon icon = currentSearchButtonIcon;
+						if (filteredColumns != null && filteredColumns.contains(rowsTable.convertColumnIndexToView(currentSearchButtonColumnIndex))) {
+							if (currentSearchButtonIcon == ready) {
+								icon = usedReady;
+							} else if (currentSearchButtonIcon == readySelected) {
+								icon = usedReadySelected;
+							}
+						}
+						g2d.drawImage(icon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
+					}
 					g2d.clip(clip);
 				}
 			}
 		};
 		rowsTableScrollPane.setWheelScrollingEnabled(false);
-
         rowsTableScrollPane.setViewportView(rowsTable);
 		
         gridBagConstraints = new java.awt.GridBagConstraints();
