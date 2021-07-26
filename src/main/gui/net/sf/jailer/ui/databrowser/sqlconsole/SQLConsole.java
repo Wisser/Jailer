@@ -906,6 +906,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 	}
                 }
                 final String columnLabels[] = new String[metaData.getColumnCount()];
+                final Color columnHeaderColors[] = new Color[metaData.getColumnCount()];
+                int a = 10;
+                final Color hBG[] = new Color[] {
+                		new Color(0, 255, 0, a),
+                		new Color(255, 0, 0, a),
+                   		new Color(0, 0, 255, a + 8),
+                   		new Color(255, 255, 0, a + 32),
+                };
+                Map<Table, Integer> tableOrd = new HashMap<Table, Integer>();
+                int nextOrd = 0;
                 for (int i = 0; i < metaData.getColumnCount(); ++i) {
                 	String columnLabel = metaData.getColumnLabel(i + 1);
 					if (columnLabel == null || columnLabel.matches("\\s*|\\?column\\?")) {
@@ -921,7 +931,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             		if (tabPerIndex.isEmpty()) {
                 		columnLabels[i] = "<html><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
                 	} else {
-                		String titel = tabPerIndex.get(i) == null? "" : datamodel.get().getDisplayName(tabPerIndex.get(i));
+                		String bgColor = "0066ff";
+                		Table table = tabPerIndex.get(i);
+                		if (table != null) {
+                			Integer ord = tableOrd.get(table);
+                			if (ord == null) {
+                				ord = nextOrd++;
+                				tableOrd.put(table, ord);
+                			}
+                			columnHeaderColors[i] = hBG[ord % hBG.length];
+                		}
+						String titel = table == null? "" : datamodel.get().getDisplayName(table);
                 		if (titel.length() == 0) {
                 			titel = "&nbsp;";
                 		} else {
@@ -932,7 +952,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 		} else {
                 			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
                 		}
-                		columnLabels[i] = "<html><font color=\"#6868FF\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
+                		columnLabels[i] = "<html><font color=\"#" + bgColor + "\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
                 	}
                 }
                 final List<Table> resultTypes = nfResultTypes;
@@ -1032,6 +1052,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             rb.setResultSetType(resultTypes);
                         }
                         rb.setAlternativeColumnLabels(columnLabels);
+                        rb.setColumnHeaderColors(columnHeaderColors);
                         rb.setTableFilterEnabled(metaDataDetails.getSize() > 1 && metaDataDetails.getSize() <= limit);
                         rb.setStatementForReloading(finalSqlStatement);
                         metaDataDetails.reset();
@@ -1965,7 +1986,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 
 		@Override
-		protected void consume(String condition) {
+		protected void consume(String condition, Set<Integer> involvedColumns) {
 			if (resultContentPane != null) {
 //				String andConditionText = rowBrowser.browserContentPane.getAndConditionText();
 //				andConditionText = new BasicFormatterImpl().format(andConditionText.trim());
@@ -1973,6 +1994,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 //				if (!andConditionText.equals(condition)) {
 //					boolean oldSuppessReloadOnAndConditionAction = rowBrowser.browserContentPane.suppessReloadOnAndConditionAction;
 //					try {
+//						rowBrowser.browserContentPane.filteredColumns = involvedColumns;
 //						rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = true;
 //						rowBrowser.browserContentPane.setAndCondition(UIUtil.toSingleLineSQL(condition), true);
 //						rowBrowser.browserContentPane.reloadRows();

@@ -1073,7 +1073,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						}
 						
 						@Override
-						protected void consume(String condition) {
+						protected void consume(String condition, Set<Integer> involvedColumns) {
 							consumer.accept(condition);
 						}
 					};

@@ -238,7 +238,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 
 		@Override
-		protected void consume(String condition) {
+		protected void consume(String condition, Set<Integer> involvedColumns) {
 			if (rowBrowser != null && rowBrowser.browserContentPane != null) {
 				String andConditionText = rowBrowser.browserContentPane.getAndConditionText();
 				andConditionText = new BasicFormatterImpl().format(andConditionText.trim());
@@ -246,6 +246,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (!andConditionText.equals(condition)) {
 					boolean oldSuppessReloadOnAndConditionAction = rowBrowser.browserContentPane.suppessReloadOnAndConditionAction;
 					try {
+						rowBrowser.browserContentPane.filteredColumns = involvedColumns;
 						rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = true;
 						rowBrowser.browserContentPane.setAndCondition(UIUtil.toSingleLineSQL(condition), true);
 						rowBrowser.browserContentPane.reloadRows();
@@ -369,7 +370,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		
         whereConditionEditorPanel = new WhereConditionEditorPanel(this, datamodel, null, null, null, whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, -1, true, session, null, executionContext) {
         	@Override
-			protected void consume(String condition) {
+			protected void consume(String condition, Set<Integer> involvedColumns) {
 				// nothing to do	
 			}
 

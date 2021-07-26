@@ -145,6 +145,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 	
 	private List<Comparison> comparisons = new ArrayList<Comparison>();
+	private Set<Integer> involvedColumns = new HashSet<Integer>();
 	private Map<String, Consumer<JLabel>> columnLabelConsumers = new HashMap<String, Consumer<JLabel>>();
 	
     /**
@@ -398,7 +399,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}, gridBagConstraints);
 	}
 
-	protected abstract void consume(String condition);
+	protected abstract void consume(String condition, Set<Integer> involvedColumns);
     protected abstract void onEscape();
 
 	/**
@@ -433,7 +434,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			return;
 		}
 		latestParsedCondition = editor.getText();
-		consume(latestParsedCondition);
+		consume(latestParsedCondition, involvedColumns);
 		applyButton.setEnabled(false);
 		AtomicBoolean disabled = new AtomicBoolean(false);
 		Timer timer = new Timer(200, e -> {
@@ -538,6 +539,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	 */
 	private void doParseCondition() {
 		try {
+			involvedColumns.clear();
 			valuePositions.clear();
 			fullPositions.clear();
 			String quoteRE = "[\"\u00B4\\[\\]`]";
@@ -608,6 +610,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 									value = toValue(sqlValue, columnIndex);
 								}
 								if (value != null) {
+									involvedColumns.add(columnIndex);
 									String theValue = value;
 									Optional<Comparison> comp = comparisons.stream().filter(c -> c.column.equals(column))
 											.findAny();

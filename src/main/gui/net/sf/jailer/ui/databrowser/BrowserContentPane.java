@@ -1165,20 +1165,38 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				g2d.setStroke(new BasicStroke(1));
 				Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), new Point(0, 0), this);
 
-				if (useWhereClauseEditor() && BrowserContentPane.this.table != null && browserContentCellEditor != null) {
+				if (BrowserContentPane.this.table != null && browserContentCellEditor != null) {
 					Shape clip = g2d.getClip();
 					g2d.clipRect(0, 0, getViewportBorderBounds().width, getViewportBorderBounds().height);
 					
-					if (currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
-						g2d.drawImage(currentSearchButtonIcon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
+					if (useWhereClauseEditor() && currentSearchButtonColumnIndex >= 0 && currentSearchButtonIcon != null && currentSearchButtonLocation != null) {
+						ImageIcon icon = currentSearchButtonIcon;
+						if (filteredColumns != null && filteredColumns.contains(rowsTable.convertColumnIndexToView(currentSearchButtonColumnIndex))) {
+							if (currentSearchButtonIcon == ready) {
+								icon = usedReady;
+							} else if (currentSearchButtonIcon == readySelected) {
+								icon = usedReadySelected;
+							}
+						}
+						g2d.drawImage(icon.getImage(), currentSearchButtonLocation.x + loc.x, currentSearchButtonLocation.y + loc.y, null, null);
 					}
 					for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
 						if (BrowserContentPane.this.table != null) {
 							if (browserContentCellEditor.getColumnTypes().length > i && browserContentCellEditor.isEditable(BrowserContentPane.this.table, i, null)) {
 								int vi = rowsTable.convertColumnIndexToView(i);
-								if (vi >= 0 && vi != currentSearchButtonColumnIndex) {
+								if (columnHeaderColors != null && columnHeaderColors[i] != null) {
+									JTableHeader header = rowsTable.getTableHeader();
+									Rectangle hr = header.getHeaderRect(vi);
+									g2d.setColor(columnHeaderColors[i]);
+									g2d.fillRect(hr.x + 4 + loc.x, hr.y + 6, hr.width - 6, hr.height - 6);
+								}
+								if (useWhereClauseEditor() && vi >= 0 && vi != currentSearchButtonColumnIndex) {
 									Point location = calcSearchColumnPosition(vi);
-									g2d.drawImage(half.getImage(), location.x + loc.x, location.y + loc.y, null, null);
+									if (filteredColumns != null && filteredColumns.contains(i)) {
+										g2d.drawImage(usedReady.getImage(), location.x + loc.x, location.y + loc.y, null, null);
+									} else {
+										g2d.drawImage(half.getImage(), location.x + loc.x, location.y + loc.y, null, null);
+									}
 								}
 							}
 						}
@@ -1925,9 +1943,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private int currentSearchButtonColumnIndex = -1;
 	private Point currentSearchButtonLocation = null;
 	private ImageIcon currentSearchButtonIcon = null;
-	private ImageIcon half = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereHalf, 0.9);
-	private ImageIcon ready = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereReady, 0.9);
-	private ImageIcon readySelected = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereReadySelected, 0.9);
+	private final double F = 1.0;
+	private ImageIcon half = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereHalf, F);
+	private ImageIcon ready = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereReady, F);
+	private ImageIcon readySelected = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereReadySelected, F);
+	private ImageIcon usedReady = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereUsedReady, F);
+	private ImageIcon usedReadySelected = UIUtil.scaleIcon(BrowserContentPane.this, findColumnIconWhereUsedReadySelected, F);
 
 	private void initRowsTableSearchButtonSupport() {
 		MouseAdapter l = new MouseAdapter() {
@@ -5090,7 +5111,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					boolean hasFocus, int row, int column) {
 				try {
 					dontPaintSortIcon = ignoreSortKey;
-					return origRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
+					Color fg = pkColumns.contains(convertedColumnIndex) || pkColumnsConsole.contains(convertedColumnIndex) ? new Color(200, 0, 0) :
+						fkColumns.contains(convertedColumnIndex) || fkColumnsConsole.contains(convertedColumnIndex) ? new Color(0, 0, 255) : null;
+					Component render = origRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					if (fg != null) {
+						render.setForeground(fg);
+					}
+					return render;
 				} finally {
 					dontPaintSortIcon = false;
 				}
@@ -6840,6 +6868,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		this.alternativeColumnLabels = columnLabels;
 	}
 
+	private Color[] columnHeaderColors;
+
+	public void setColumnHeaderColors(Color[] columnHeaderColors) {
+		this.columnHeaderColors = columnHeaderColors;
+	}
+
 	private void selectRow(final List<Row> toSelect) {
 		StringBuilder conds = new StringBuilder();
 		int numConds = 0;
@@ -7361,6 +7395,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 	
 	private int currentEditState;
+
+	protected Set<Integer> filteredColumns;
     private static ImageIcon warnIcon;
     private static ImageIcon blueIcon;
     private static ImageIcon scaledWarnIcon;
@@ -7369,6 +7405,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private static ImageIcon findColumnIconWhere;
     private static ImageIcon findColumnIconWhereReady;
     private static ImageIcon findColumnIconWhereReadySelected;
+    private static ImageIcon findColumnIconWhereUsedReady;
+    private static ImageIcon findColumnIconWhereUsedReadySelected;
     private static ImageIcon runIcon;
     private static ImageIcon findColumnIcon2;
     private static ImageIcon constraintPKIcon;
@@ -7382,10 +7420,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     	findColumnIconWhere = UIUtil.readImage("/findcolumnWhereReady.png");
     	findColumnIconWhereReady = UIUtil.readImage("/findcolumnWhereReady.png");
     	findColumnIconWhereReadySelected = UIUtil.readImage("/findcolumnWhereReadySel.png");
+    	findColumnIconWhereUsedReady = UIUtil.readImage("/findcolumnWhereUReady.png");
+    	findColumnIconWhereUsedReadySelected = UIUtil.readImage("/findcolumnWhereUReadySel.png");
     	findColumnIcon1 = UIUtil.readImage("/findcolumn.png");
     	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
     	runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
     	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
     	emptyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"));
     }
+
 }
