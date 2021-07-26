@@ -910,7 +910,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 int a = 10;
                 final Color hBG[] = new Color[] {
                 		new Color(0, 255, 0, a),
-                		new Color(255, 0, 0, a + 1),
+                		new Color(255, 0, 0, a + 8 + 1),
                    		new Color(0, 0, 255, a + 0),
                    		new Color(255, 255, 0, a * 4 + 1),
                 };
