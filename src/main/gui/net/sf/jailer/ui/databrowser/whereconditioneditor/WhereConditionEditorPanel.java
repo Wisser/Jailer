@@ -547,7 +547,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			for (int columnIndex = 0; columnIndex < table.getColumns().size(); ++columnIndex) {
 				for (boolean noAlias: new boolean[] { false, true }) {
 					Column column = table.getColumns().get(columnIndex);
-					String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.,\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
+					String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
 					String regex = "(?:(?:and\\s+)?" + "(?:\\b" + (tableAlias == null || noAlias? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
 							+ (noAlias? "(?<!\\.\\s*)" : "")
 							+ "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
