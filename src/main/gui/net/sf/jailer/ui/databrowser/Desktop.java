@@ -2769,15 +2769,13 @@ public abstract class Desktop extends JDesktopPane {
 		int fX = (int) (0.2 * BROWSERTABLE_DEFAULT_DISTANCE * minX);
 		this.minX = fX;
 		int dX = (int) (fX * layoutMode.factor) - aktMinX;
-		if (dX != 0) {
-			for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {
-				rb.internalFrame.setLocation(Math.max(0, rb.internalFrame.getX() + dX), rb.internalFrame.getY());
-				if (maximized.contains(rb)) {
-					try {
-						rb.internalFrame.setMaximum(true);
-					} catch (PropertyVetoException e) {
-						// ignore
-					}
+		for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {
+			rb.internalFrame.setLocation(Math.max(0, rb.internalFrame.getX() + dX), rb.internalFrame.getY());
+			if (maximized.contains(rb)) {
+				try {
+					rb.internalFrame.setMaximum(true);
+				} catch (PropertyVetoException e) {
+					// ignore
 				}
 			}
 		}
@@ -3279,6 +3277,16 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	private void storeSession(RowBrowser rb, Map<RowBrowser, Integer> browserNumber, FileWriter out) throws IOException {
 		if (rb.browserContentPane.table != null) {
+			boolean maximum = rb.internalFrame.isMaximum();
+			
+			if (maximum) {
+				try {
+					rb.internalFrame.setMaximum(false);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+			}
+			
 			String csv = browserNumber.get(rb) + "; " + (rb.parent == null ? "" : browserNumber.get(rb.parent)) + "; ";
 
 			String where = rb.browserContentPane.getAndConditionText().trim();
@@ -3294,7 +3302,16 @@ public abstract class Desktop extends JDesktopPane {
 						+ (rb.association == null ? "" : CsvFile.encodeCell(rb.association.getName())) + "; ";
 			}
 			csv += rb.isHidden() + "; ";
-			csv += rb.browserContentPane.ignoreSortKey? "" : serializedSortKey(rb.browserContentPane.rowsTable);
+			csv += rb.browserContentPane.ignoreSortKey? "" : serializedSortKey(rb.browserContentPane.rowsTable) + "; ";
+			csv += maximum + ";";
+			if (maximum) {
+				try {
+					rb.internalFrame.setMaximum(true);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+			}
+			
 			out.append(csv).append(LF);
 			for (RowBrowser child : tableBrowsers) {
 				if (child.parent == rb) {
@@ -3397,6 +3414,7 @@ public abstract class Desktop extends JDesktopPane {
 				knownTablesMap.putTableName(table.getOriginalName());
 				originalNameToTable.put(table.getOriginalName(), table);
 			}
+			JInternalFrame toBeMaximized = null;
 			for (CsvFile.Line l : lines) {
 				if (l.cells.get(0).equals("Layout")) {
 					try {
@@ -3475,6 +3493,9 @@ public abstract class Desktop extends JDesktopPane {
 					if (toBeAppended == null) {
 						rb.internalFrame.setLocation(loc);
 						rb.internalFrame.setSize(size);
+						if (Boolean.parseBoolean(l.cells.get(14))) {
+							toBeMaximized = rb.internalFrame;
+						}
 					}
 					deserializedSortKey(rb.browserContentPane.rowsTable, l.cells.get(13));
 					if (sFile.endsWith("INVENTORY - ACTOR.dbl") && rb.browserContentPane != null
@@ -3499,8 +3520,19 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 			checkDesktopSize();
+			if (toBeMaximized != null) {
+				JInternalFrame maximize = toBeMaximized;
+				UIUtil.invokeLater(2, () -> {
+					try {
+						maximize.setMaximum(true);
+					} catch (PropertyVetoException e) {
+						e.printStackTrace();
+						// ignore
+					}
+				});
+			}
 			makePrimaryRootVisible();
-	
+
 			for (RowBrowser rb : toBeLoaded) {
 				rb.browserContentPane.reloadRows();
 			}
