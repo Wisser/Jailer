@@ -1,4 +1,7 @@
 10.5.5
+  - The user interface of the data browser and SQL console has been made a bit more appealing.
+
+10.5.5
   - Performance issues with autocomplete have been fixed.
 
 10.5.4
