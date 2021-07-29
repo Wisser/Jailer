@@ -1732,7 +1732,7 @@ public class UIUtil {
 	}
 
 	public static final Color FG_PK = new Color(170, 0, 0);
-	public static final Color FG_FK = new Color(0, 90, 0);
+	public static final Color FG_FK = new Color(0, 0, 200);
 
 	private static final String[] INVALID_FILENAME_CHARACTERS = new String[] {"\\", "/", ":", ";", "*", "?", "\"", "<", ">", "|"};
 	private static final String[][] INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT = new String[INVALID_FILENAME_CHARACTERS.length][];
