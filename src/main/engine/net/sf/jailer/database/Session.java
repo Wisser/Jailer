@@ -262,48 +262,57 @@ public class Session {
 			private Connection defaultConnection = null;
 			private Random random = new Random();
 			@Override
-			public synchronized Connection getConnection() throws SQLException {
-				Connection con = getConnection0();
-				Long ts = lastConnectionActiviyTimeStamp.get(con);
-				releaseConnection(con);
-				boolean isInvalid = false;
-				boolean currentAutoCommit = true;
-				try {
-					if (con != null) {
-						currentAutoCommit = con.getAutoCommit();
-					}
-				} catch (Throwable t) {
-					isInvalid = true;
+			public Connection getConnection() throws SQLException {
+				Connection con = getConnectionIfExist();
+				if (con != null) {
+					// prevent synchronization
+					return con;
 				}
-				if (ts != null && con != null && con == connection.get() && currentAutoCommit && !Session.this.transactional && !isDown()) {
-					long idleTime = System.currentTimeMillis() - ts;
-					long databaseConnectionInteractiveTimeout = Configuration.getInstance().getDatabaseConnectionInteractiveTimeout() * 1000L;
-
-					if (isInvalid || idleTime >= databaseConnectionInteractiveTimeout) {
-						boolean valid;
-						try {
-							valid = con.isValid(4);
-						} catch (Throwable t) {
-							LogUtil.warn(t);
-							valid = true;
+				synchronized (this) {
+					con = getConnection0();
+					Long ts = lastConnectionActiviyTimeStamp.get(con);
+					releaseConnection(con);
+					boolean isInvalid = false;
+					boolean currentAutoCommit = true;
+					try {
+						if (con != null) {
+							currentAutoCommit = con.getAutoCommit();
 						}
-						if (!valid) {
-							// LogUtil.warn(new RuntimeException("invalid connection, reconnecting (" + idleTime + ")"));
-							reconnect();
-							return getConnection0();
+					} catch (Throwable t) {
+						isInvalid = true;
+					}
+					if (ts != null && con != null && con == connection.get() && currentAutoCommit && !Session.this.transactional && !isDown()) {
+						long idleTime = System.currentTimeMillis() - ts;
+						long databaseConnectionInteractiveTimeout = Configuration.getInstance().getDatabaseConnectionInteractiveTimeout() * 1000L;
+	
+						if (isInvalid || idleTime >= databaseConnectionInteractiveTimeout) {
+							boolean valid;
+							try {
+								valid = con.isValid(4);
+							} catch (Throwable t) {
+								LogUtil.warn(t);
+								valid = true;
+							}
+							if (!valid) {
+								// LogUtil.warn(new RuntimeException("invalid connection, reconnecting (" + idleTime + ")"));
+								reconnect();
+								return getConnection0();
+							}
 						}
 					}
+					return con;
 				}
-				return con;
 			}
-			private Connection getConnection0() throws SQLException {
-				@SuppressWarnings("resource")
+			private Connection getConnectionIfExist() throws SQLException {
 				Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;
 
 				if (con == null && Boolean.TRUE.equals(sharesConnection.get())) {
 					con = defaultConnection;
 				}
-
+				return con;
+			}
+			private Connection getConnection0() throws SQLException {
+				Connection con = getConnectionIfExist();
 				if (con == null) {
 					try {
 						con = dataSource.getConnection();
