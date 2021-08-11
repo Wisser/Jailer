@@ -263,14 +263,18 @@ public class Session {
 			private Random random = new Random();
 			@Override
 			public Connection getConnection() throws SQLException {
+				long databaseConnectionInteractiveTimeout = Configuration.getInstance().getDatabaseConnectionInteractiveTimeout() * 1000L;
 				Connection con = getConnectionIfExist();
 				if (con != null) {
-					// prevent synchronization
-					return con;
+					Long ts = lastConnectionActiviyTimeStamp.get(con);
+					if (ts != null && System.currentTimeMillis() - ts < databaseConnectionInteractiveTimeout) {
+						// prevent synchronization
+						releaseConnection(con);
+						return con;
+					}
 				}
 				synchronized (this) {
 					con = getConnection0();
-					Long ts = lastConnectionActiviyTimeStamp.get(con);
 					releaseConnection(con);
 					boolean isInvalid = false;
 					boolean currentAutoCommit = true;
@@ -281,10 +285,10 @@ public class Session {
 					} catch (Throwable t) {
 						isInvalid = true;
 					}
+					Long ts = lastConnectionActiviyTimeStamp.get(con);
 					if (ts != null && con != null && con == connection.get() && currentAutoCommit && !Session.this.transactional && !isDown()) {
 						long idleTime = System.currentTimeMillis() - ts;
-						long databaseConnectionInteractiveTimeout = Configuration.getInstance().getDatabaseConnectionInteractiveTimeout() * 1000L;
-	
+						
 						if (isInvalid || idleTime >= databaseConnectionInteractiveTimeout) {
 							boolean valid;
 							try {
