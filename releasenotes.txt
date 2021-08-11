@@ -1,4 +1,7 @@
-10.5.5
+10.5.7
+  - An error in the validation of database connections that have not been used for a long time has been corrected.
+
+10.5.6
   - The user interface of the data browser and SQL console has been made a bit more appealing.
 
 10.5.5
