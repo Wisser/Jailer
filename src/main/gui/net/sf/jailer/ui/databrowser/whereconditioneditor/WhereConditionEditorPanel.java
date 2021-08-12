@@ -444,6 +444,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		});
 		timer.setRepeats(false);
 		timer.start();
+		if (searchButton == null) {
+			LogUtil.warn(new RuntimeException("Condition editor not initialized"));
+		}
 		continueParsing = () -> {
 			Desktop.runnableQueue.add(new RunnableWithPriority() {
 				@Override
