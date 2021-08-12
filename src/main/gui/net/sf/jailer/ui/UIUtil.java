@@ -1700,6 +1700,10 @@ public class UIUtil {
 	private static boolean errorSeen = false;
 
 	public static ImageIcon readImage(String resource) {
+		return readImage(resource, true);
+	}
+
+	public static ImageIcon readImage(String resource, boolean showError) {
 		ImageIcon result = images.get(resource);
 		if (result == null) {
 			String name = "/net/sf/jailer/ui/resource" + resource;
@@ -1720,7 +1724,7 @@ public class UIUtil {
 					}
 				}
 			} catch (Throwable t) {
-				if (!errorSeen) {
+				if (!errorSeen && showError) {
 					errorSeen = true;
 					invokeLater(8, () -> showException(null, "Error", new IOException("unable to load image " + name + ": " + t.getMessage(), t), EXCEPTION_CONTEXT_MB_USER_ERROR));
 				}

@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
@@ -45,6 +46,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -172,64 +174,104 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 
 	public Pair<String, String> edit(List<Line> lines) {
 		DefaultComboBoxModel<Line> dbmses = new DefaultComboBoxModel<Line>();
-		for (Line line: lines) {
-			if (line.cells.get(0).length() > 0) {
-				dbmses.addElement(line);
-			}
-		}
-		url = "";
-		dbmsComboBox.setModel(dbmses);
-		dbmsComboBox.setRenderer(new DefaultListCellRenderer() {
-			@Override
-			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
-					boolean cellHasFocus) {
-				Line line = null;
-				if (value instanceof Line) {
-					line = (Line) value;
-					value = line.cells.get(0);
-				}
-				Component r = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				if (line != null && r instanceof JLabel) {
-					if (line.cells.get(2) != null && line.cells.get(2).length() == 0) {
-						((JLabel) r).setFont(((JLabel) r).getFont().deriveFont((((JLabel) r).getFont().getStyle() | Font.ITALIC)));
+		try {
+			UIUtil.setWaitCursor(owner);
+			jPanel2.removeAll();
+			int i = 0;
+			List<JToggleButton> tbs = new ArrayList<JToggleButton>();
+			for (Line line: lines) {
+				if (line.cells.get(0).length() > 0) {
+					dbmses.addElement(line);
+					String text = line.cells.get(0);
+					if ("<other>".equals(text)) {
+						text = "<html><i>Other</i></html>";
 					}
+					JToggleButton tb = new JToggleButton(text) {
+						@Override
+						public Dimension getPreferredSize() {
+							Dimension s = super.getPreferredSize();
+							return new Dimension(Math.max(160, s.width), s.height);
+						}
+						@Override
+						public Dimension getMinimumSize() {
+							Dimension s = super.getMinimumSize();
+							return new Dimension(Math.max(160, s.width), s.height);
+						}
+					};
+					tb.setIcon(UIUtil.scaleIcon(UIUtil.readImage("/dbmslogo/" + line.cells.get(6), false), 0.5));
+					tb.setVerticalTextPosition(SwingConstants.BOTTOM);
+				    tb.setHorizontalTextPosition(SwingConstants.CENTER);
+					tbs.add(tb);
+					tb.addActionListener(e -> {
+						tbs.forEach(t -> { if (t != tb) { t.setSelected(false); }});
+						dbmsComboBox.setSelectedItem(line);
+					});
+				    GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+			        gridBagConstraints.gridx = i % 6;
+			        gridBagConstraints.gridy = i / 6;
+			        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+			        gridBagConstraints.weightx = 1.0;
+			        gridBagConstraints.weighty = 1.0;
+			        jPanel2.add(tb, gridBagConstraints);
+			        ++i;
 				}
-				return r;
 			}
-		});
-		dbmsComboBox.setSelectedIndex(-1);
-		detailsPanel.setVisible(false);
-		String titel = "Connection Settings";
-		if (owner instanceof Frame) {
-			dialog = new EscapableDialog((Frame) owner, titel, true) {
-			};
-		} else if (owner instanceof Dialog) {
-			dialog = new EscapableDialog((Dialog) owner, titel, true) {
-			};
-		} else {
-			dialog = new EscapableDialog((Dialog) null, titel, true) {
-			};
+			url = "";
+			dbmsComboBox.setModel(dbmses);
+			dbmsComboBox.setRenderer(new DefaultListCellRenderer() {
+				@Override
+				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+						boolean cellHasFocus) {
+					Line line = null;
+					if (value instanceof Line) {
+						line = (Line) value;
+						value = line.cells.get(0);
+					}
+					Component r = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+					if (line != null && r instanceof JLabel) {
+						if (line.cells.get(2) != null && line.cells.get(2).length() == 0) {
+							((JLabel) r).setFont(((JLabel) r).getFont().deriveFont((((JLabel) r).getFont().getStyle() | Font.ITALIC)));
+						}
+					}
+					return r;
+				}
+			});
+			dbmsComboBox.setSelectedIndex(-1);
+			detailsPanel.setVisible(false);
+			String titel = "Connection Settings";
+			if (owner instanceof Frame) {
+				dialog = new EscapableDialog((Frame) owner, titel, true) {
+				};
+			} else if (owner instanceof Dialog) {
+				dialog = new EscapableDialog((Dialog) owner, titel, true) {
+				};
+			} else {
+				dialog = new EscapableDialog((Dialog) null, titel, true) {
+				};
+			}
+	
+			dialog.getContentPane().add(this);
+			for (i = 0; i < pLabel.length; ++i) {
+				pLabel[i].setVisible(true);
+				pTextField[i].setVisible(true);
+				pButton[i].setVisible(true);
+				defaultLabel[i].setVisible(true);
+				defaultButton[i].setVisible(true);
+			}
+			detailsPanel.setVisible(true);
+			initialLabel.setVisible(false);
+			dialog.pack();
+			dialog.setSize(Math.max(dialog.getWidth(), 540), dialog.getHeight());
+			dialog.setLocation(
+					Math.max(32, owner.getLocation().x + owner.getWidth() / 2 - dialog.getWidth() / 2),
+					Math.max(32, owner.getLocation().y + owner.getHeight() / 2 - dialog.getHeight() / 2));
+			dialog.setModal(true);
+			tbs.get(0).doClick();
+			updateFields();
+			dbmsComboBox.grabFocus();
+		} finally {
+			UIUtil.resetWaitCursor(owner);
 		}
-
-		dialog.getContentPane().add(this);
-		for (int i = 0; i < pLabel.length; ++i) {
-			pLabel[i].setVisible(true);
-			pTextField[i].setVisible(true);
-			pButton[i].setVisible(true);
-			defaultLabel[i].setVisible(true);
-			defaultButton[i].setVisible(true);
-		}
-		detailsPanel.setVisible(true);
-		initialLabel.setVisible(false);
-		dialog.pack();
-		dialog.setSize(Math.max(dialog.getWidth(), 540), dialog.getHeight());
-		dialog.setLocation(
-				owner.getLocation().x + owner.getWidth() /2 - dialog.getWidth() /2,
-				owner.getLocation().y + owner.getHeight() /2 - dialog.getHeight() /2);
-		dialog.setModal(true);
-		updateFields();
-		dbmsComboBox.grabFocus();
-
 		ok = false;
 		dialog.setVisible(true);
 		if (ok && dbmses.getSelectedItem() instanceof Line) {
@@ -398,11 +440,13 @@ public class DbConnectionSettings extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel3 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         dbmsComboBox = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
         initialLabel = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jToggleButton1 = new javax.swing.JToggleButton();
         detailsPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         paramLabel1 = new javax.swing.JLabel();
@@ -434,17 +478,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
-        setLayout(new java.awt.GridBagLayout());
-
-        jPanel3.setLayout(new java.awt.GridBagLayout());
-
         jLabel5.setText("DBMS");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 4, 0, 4);
-        jPanel3.add(jLabel5, gridBagConstraints);
 
         dbmsComboBox.setMaximumRowCount(24);
         dbmsComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -452,19 +486,35 @@ public class DbConnectionSettings extends javax.swing.JPanel {
                 dbmsComboBoxActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
-        jPanel3.add(dbmsComboBox, gridBagConstraints);
 
         jLabel3.setText(" ");
+
+        initialLabel.setText("<html><i>Select DBMS</i></html>");
+
+        setLayout(new java.awt.GridBagLayout());
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("DBMS"));
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        jToggleButton1.setText("xy");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        jPanel3.add(jLabel3, gridBagConstraints);
+        jPanel2.add(jToggleButton1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel3.add(jPanel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -472,15 +522,6 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(jPanel3, gridBagConstraints);
-
-        initialLabel.setText("<html><i>Select DBMS</i></html>");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        add(initialLabel, gridBagConstraints);
 
         detailsPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -712,6 +753,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
         add(detailsPanel, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -793,9 +835,11 @@ public class DbConnectionSettings extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JToggleButton jToggleButton1;
     private javax.swing.JButton okButton;
     private javax.swing.JButton paramButton1;
     private javax.swing.JButton paramButton2;
