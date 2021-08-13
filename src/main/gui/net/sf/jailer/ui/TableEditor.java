@@ -33,6 +33,7 @@ import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Editor for single tables. Part of {@link DataModelEditor}.
@@ -143,6 +144,9 @@ public abstract class TableEditor extends javax.swing.JDialog {
 			if (name.equals("")) {
 				errorMessage.append("Name missing.");
 				return;
+			}
+			if (name.equals(Quoting.staticUnquote(name)) && name.contains(" ")) {
+				errorMessage.append("Unquoted name must not contain a space.");
 			}
 			String type = columnType.getText().trim();
 			if (type.equals("")) {
