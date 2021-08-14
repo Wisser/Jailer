@@ -144,7 +144,7 @@ public class DesktopOutline extends JPanel {
 					}
 					if (e.getButton() == MouseEvent.BUTTON3) {
 	                    showPopupMenu(desktop, e, browser);
-					} else if (e.getClickCount() > 1) {
+					} else if (e.getClickCount() > 1 && browser != null) {
 						doubleClickAction.accept(browser);
 					}
 				}
