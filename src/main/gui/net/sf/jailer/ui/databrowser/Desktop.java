@@ -2998,6 +2998,23 @@ public abstract class Desktop extends JDesktopPane {
 			rb.internalFrame.dispose();
 		}
 		updateMenu();
+		JInternalFrame first = null;
+		for (RowBrowser tb : tableBrowsers) {
+			if (first == null) {
+				first = tb.internalFrame;
+			}
+			if (tb.internalFrame != null && tb.internalFrame.isSelected()) {
+				first = null;
+				break;
+			}
+		}
+		if (first != null) {
+			try {
+				first.setSelected(true);
+			} catch (PropertyVetoException e) {
+				// ignore
+			}
+		}
 	}
 
 	private void close(final RowBrowser tableBrowser, boolean convertChildrenToRoots) {

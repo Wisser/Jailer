@@ -269,12 +269,13 @@ public class Session {
 					Long ts = lastConnectionActiviyTimeStamp.get(con);
 					if (ts != null && System.currentTimeMillis() - ts < databaseConnectionInteractiveTimeout) {
 						// prevent synchronization
-						releaseConnection(con);
+						releaseConnection(con); // that's ok
 						return con;
 					}
 				}
 				synchronized (this) {
 					con = getConnection0();
+					Long ts = lastConnectionActiviyTimeStamp.get(con);
 					releaseConnection(con);
 					boolean isInvalid = false;
 					boolean currentAutoCommit = true;
@@ -285,7 +286,6 @@ public class Session {
 					} catch (Throwable t) {
 						isInvalid = true;
 					}
-					Long ts = lastConnectionActiviyTimeStamp.get(con);
 					if (ts != null && con != null && con == connection.get() && currentAutoCommit && !Session.this.transactional && !isDown()) {
 						long idleTime = System.currentTimeMillis() - ts;
 						
@@ -1134,7 +1134,7 @@ public class Session {
 					}
 					// deadlock
 					serializeAccess = true;
-					_log.info("Deadlock! Try again...");
+					_log.info("Deadlock! Trying again...");
 					try {
 						Thread.sleep(140);
 					} catch (InterruptedException e1) {
