@@ -330,7 +330,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	        if (dbmsLogoURL == null) {
 	        	return null;
 	        } else {
-	        	return UIUtil.scaleIcon(new JLabel(), UIUtil.readImage(dbmsLogoURL, false), 1.2);
+	        	return UIUtil.scaleIcon(new JLabel(), UIUtil.readImage(dbmsLogoURL, false), 1.5);
 	        }
 		} else {
 			return null;
