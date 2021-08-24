@@ -550,7 +550,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			for (int columnIndex = 0; columnIndex < table.getColumns().size(); ++columnIndex) {
 				for (boolean noAlias: new boolean[] { false, true }) {
 					Column column = table.getColumns().get(columnIndex);
-					String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:.?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
+					String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:[^(]?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
 					String regex = "(?:(?:and\\s+)?" + "(?:\\b" + (tableAlias == null || noAlias? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
 							+ (noAlias? "(?<!\\.\\s*)" : "")
 							+ "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
@@ -1494,9 +1494,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							}
 						});
 						finalDistinctExisting.keySet().forEach(s -> {
-							defaultComboBoxModel.addElement(s);
-							renderConsumer.put(s, label -> label
-									.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
+							if (!nullPattern.matcher(s).matches()) {
+								defaultComboBoxModel.addElement(s);
+								renderConsumer.put(s, label -> label.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
+							}
 						});
 						distinctExistingModel.clear();
 						for (int i = 0; i < defaultComboBoxModel.getSize(); ++i) {
@@ -1550,9 +1551,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							fullSearchCheckbox.setEnabled(false);
 						}
 						finalDistinctExistingFull.keySet().forEach(s -> {
-							defaultComboBoxModel.addElement(s);
-							renderConsumer.put(s, label -> label
-									.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
+							if (!nullPattern.matcher(s).matches()) {
+								defaultComboBoxModel.addElement(s);
+								renderConsumer.put(s, label -> label.setIcon(UIUtil.scaleIcon(WhereConditionEditorPanel.this, emptyIcon)));
+							}
 						});
 						distinctExistingFullModel.clear();
 						if (fullSearchCheckbox.isEnabled()) {
@@ -1573,7 +1575,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							}
 						}
 						
-						distinctExistingFullModel.addAll(finalDistinctExistingFull.keySet());
+						finalDistinctExistingFull.keySet().forEach(s -> { if (!nullPattern.matcher(s).matches()) { distinctExistingFullModel.add(s); }});
 						if (fromCache[0] || fromCacheFull[0]) {
 							clearCacheButton.setVisible(true);
 						}
@@ -1773,14 +1775,26 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				Object obj = getCellContentConverter(resultSet, session, session.dbms).getObject(resultSet, 1);
+				int rc = resultSet.getInt(2);
 				if (obj == null) {
 					withNull[0] = true;
+					Integer count = result.get("is null");
+					if (count == null) {
+						result.put("is null", -rc);
+					} else {
+						result.put("is null", count - rc);
+					}
 				} else {
+					Integer count = result.get("is not null");
+					if (count == null) {
+						result.put("is not null", -rc);
+					} else {
+						result.put("is not null", count - rc);
+					}
 					if (cellEditor.isEditable(table, columnIndex, obj)) {
 						String text = cellEditor.cellContentToText(columnIndex, obj);
-						int rc = resultSet.getInt(2);
 						if (text.length() <= MAX_TEXT_LENGTH) {
-							Integer count = result.get(text);
+							count = result.get(text);
 							if (count == null) {
 								result.put(text, rc);
 							} else {

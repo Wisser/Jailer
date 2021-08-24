@@ -266,8 +266,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 *
 	 * @param extractionModelFile file containing the model
 	 * @param extractionModelFrame the enclosing frame
+	 * @param dbmsLogo 
 	 */
-	public ExtractionModelEditor(String extractionModelFile, final ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState, String connectionStateToolTip, ExecutionContext executionContext) throws IOException {
+	public ExtractionModelEditor(String extractionModelFile, final ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState, String connectionStateToolTip, ImageIcon dbmsLogo, ExecutionContext executionContext) throws IOException {
 		this.executionContext = executionContext;
 		this.extractionModelFrame = extractionModelFrame;
 		this.extractionModelFile = extractionModelFile;
@@ -873,6 +874,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		setOrientation(horizontalLayout);
 		connectivityState.setText(connectionState);
 		connectivityState.setToolTipText(connectionStateToolTip);
+		connectivityState.setIcon(dbmsLogo);
 
 		if (dataModel != null) {
 			String modelname = "Data Model \"" + dataModel.getName() + "\"";

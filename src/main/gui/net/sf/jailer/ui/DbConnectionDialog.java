@@ -28,7 +28,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -69,7 +68,6 @@ import net.sf.jailer.ui.commandline.UICommandLine;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.ClasspathUtil;
-import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.Pair;
 
@@ -175,6 +173,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
     private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
 	private Map<String, Date> aliasTimestamp = new HashMap<String, Date>();
+	private boolean ok;
 	
 	/**
 	 * Gets connection to DB.
@@ -184,6 +183,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	public boolean connect(String reason, boolean keepState) {
 		boolean oldIsConnected = isConnected;
 		ConnectionInfo oldCurrentConnection = currentConnection;
+		ok = false;
 		try {
 			if (!located) {
 				pack();
@@ -206,7 +206,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			if (currentConnection == null) {
 				isConnected = false;
 			}
-			return isConnected;
+			return isConnected && ok;
 		} finally {
 			if (keepState && !isConnected) {
 				isConnected = oldIsConnected;
@@ -321,6 +321,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						}
 						((JLabel) render).setToolTipText(String.valueOf(value));
 						render.setFont(column == 0? bold : normal);
+						((JLabel) render).setIcon(null);
+						if (value instanceof String && ((String) value).startsWith("*")) {
+							((JLabel) render).setToolTipText(null);
+							((JLabel) render).setText(null);
+							((JLabel) render).setIcon(UIUtil.scaleIcon(((JLabel) render), UIUtil.readImage(((String) value).substring(1), false), 1.5));
+						}
 						return render;
 					}
 				});
@@ -410,6 +416,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 		});
 		
+		connectionsTable.setRowHeight((int) (connectionsTable.getRowHeight() * 1.5));
 		refresh();
 	}
 
@@ -422,13 +429,15 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		int i = 0;
 		for (ConnectionInfo ci: connectionList) {
 			Pair<String, Long> modelDetails = DataModelManager.getModelDetails(ci.dataModelFolder, executionContext);
+			String dbmsLogoUrl = UIUtil.getDBMSLogoURL(ci.url);
+			String img = dbmsLogoUrl == null? "": ("*" + dbmsLogoUrl);
 			if (showOnlyRecentyUsedConnections) {
-				data[i++] = new Object[] { ci.alias, ci.user, ci.url, ci.dataModelFolder == null? "Default" : modelDetails == null? "" : modelDetails.a, UIUtil.toDateAsString(aliasTimestamp.get(ci.alias)) };
+				data[i++] = new Object[] { img, ci.alias, ci.user, ci.url, ci.dataModelFolder == null? "Default" : modelDetails == null? "" : modelDetails.a, UIUtil.toDateAsString(aliasTimestamp.get(ci.alias)) };
 			} else {
-				data[i++] = new Object[] { ci.alias, ci.user, ci.url, ci.dataModelFolder == null? "Default" : modelDetails == null? "" : modelDetails.a };
+				data[i++] = new Object[] { img, ci.alias, ci.user, ci.url, ci.dataModelFolder == null? "Default" : modelDetails == null? "" : modelDetails.a };
 			}
 		}
-		DefaultTableModel tableModel = new DefaultTableModel(data, !showOnlyRecentyUsedConnections? new String[] { "Name", "User", "URL", "Data Model" } : new String[] { "Name", "User", "URL", "Data Model", "Time" }) {
+		DefaultTableModel tableModel = new DefaultTableModel(data, !showOnlyRecentyUsedConnections? new String[] { "DBMS", "Name", "User", "URL", "Data Model" } : new String[] { "Name", "User", "URL", "Data Model", "Time" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -959,22 +968,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
 		ConnectionInfo ci = new ConnectionInfo(executionContext);
-		final String DRIVERLIST_FILE = "driverlist.csv";
-		File csvFile = Environment.newWorkingFolderFile(DRIVERLIST_FILE);
-
+		List<Line> lines = UIUtil.loadDriverList(this);
 		try {
-			// check existence of "driverlist.csv"
-			FileInputStream is = new FileInputStream(csvFile);
-			is.close();
-			
-			CsvFile drivers = new CsvFile(csvFile);
-			List<Line> lines = new ArrayList<Line>(drivers.getLines());
-
 			Component root = SwingUtilities.getWindowAncestor(mainPanel);
 			if (root == null) {
 				root = mainPanel;
 			}
 			Pair<String, String> s = new DbConnectionSettings(root).edit(lines);
+			
 			if (s == null) return;
 			for (Line line: lines) {
 				if (line.cells.get(0).equals(s.a)) {
@@ -994,42 +995,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					break;
 				}
 			}
-		} catch (FileNotFoundException e) {
-			StringBuilder info = new StringBuilder();
-			List<String> fileList = new ArrayList<String>();
-			try {
-				info.append(csvFile.getAbsolutePath() + ": ");
-				File[] files = csvFile.getAbsoluteFile().getParentFile().listFiles();
-				if (files == null) {
-					info.append("null");
-				} else {
-					for (File file: files) {
-						String ord;
-						String name = file.getName();
-						if (!file.exists()) {
-							ord = "1";
-						} else {
-							ord = "2";
-						}
-						int state = 0;
-						state += file.exists()? 1 : 0;
-						state += file.isFile()? 2 : 0;
-						state += file.isDirectory()? 4 : 0;
-						fileList.add(ord + name + "/" + Integer.toHexString(state));
-						if (DRIVERLIST_FILE.equalsIgnoreCase(name)) {
-							ord = "0";
-							fileList.add(ord + "!" + name + "/" + Integer.toHexString(state));
-						}
-					}
-				}
-				Collections.sort(fileList);
-				for (int i = 0; i < fileList.size(); ++i) {
-					fileList.set(i, fileList.get(i).substring(1));
-				}
-			} catch (Throwable t) {
-				info.append(" err: " + t.getMessage() + ": ");
-			}
-			UIUtil.showException(this, "Error", new FileNotFoundException(e.getMessage() + " / (" + info + fileList + ")"));
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -1105,6 +1070,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			UIUtil.setWaitCursor(root);
 			if (testConnection(mainPanel, currentConnection, null)) {
 				isConnected = true;
+				ok = true;
 				executionContext.setCurrentConnectionAlias(currentConnection.alias);
 				onConnect(currentConnection);
 				if (currentConnection.alias != null && !"".equals(currentConnection.alias)) {
@@ -1399,4 +1365,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     	warnIcon = UIUtil.readImage("/wanr.png");
 	}
 
+    // TODO make field "driver-class" initially empty and optional. If empty -> derive it from driver.csv (always, not only at end of dialog)
+    
+    // TODO derive (driver-class and)? libs/downloads libs from url (reuse wizzard/driver.csv knowledge)
+    
 }

@@ -663,14 +663,14 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						JLabel cl = new JLabel(stringCountLeftPad + " ");
 						cl.setForeground(new Color(255, 255, 255, 0));
 						panel.add(cl, gbc);
-						if (count > 1) {
+						if (count > 1 || count < 0) {
 							gbc = new GridBagConstraints();
 							gbc.gridx = 2;
 							gbc.gridy = 1;
 							gbc.weightx = 0;
 							gbc.fill = GridBagConstraints.NONE;
 							gbc.anchor = GridBagConstraints.EAST;
-							cl = new JLabel(" " + count + "  ");
+							cl = new JLabel(" " + Math.abs(count) + "  ");
 							cl.setForeground(new Color(0, 140, 0));
 							panel.add(cl, gbc);
 						}
@@ -1185,7 +1185,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public void setStringCount(Map<String, Integer> stringCount) {
 		this.stringCount = stringCount;
 		this.stringCountLeftPad = null;
-		stringCount.values().stream().max(Integer::compare).ifPresent(max -> {
+		stringCount.values().stream().map(Math::abs).max(Integer::compare).ifPresent(max -> {
 			if (max > 1) {
 				stringCountLeftPad = " ";
 				for (int i = String.valueOf(max).length(); i > 0; --i) {

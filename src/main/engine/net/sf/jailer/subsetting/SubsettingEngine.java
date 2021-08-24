@@ -2063,13 +2063,13 @@ public class SubsettingEngine {
 	}
 
 	// TODO "optimierung", 1. im Header "deferred collections" ausweisen + hinweis, dass am Ende die Quittung komplet steht.
-	// TODO intra database: Quittung bei optimierung am ende nochmal schreiben.
-	// TODO bei "Delete" keine "deferred collections"
-	// TODO aber: TODO weil auch bei delete optim.potential (z.b. single-table-export ohne jede assoc.)
-	// TODO cli argument "-minimize-collections-optimation on|off" (oder besseren namen)
-	// TODO API berücksichtigen
-	// TODO export mit optimierung in stats (* 128? 256?) ((`s6`) % 1000) max 180, anderes sx?
-	
-	// TODO defer working table creation too, maybe they are don't needed
+	//      intra database: Quittung bei optimierung am ende nochmal schreiben.
+	//      bei "Delete" keine "deferred collections"
+	//      aber: zutun weil auch bei delete optim.potential (z.b. single-table-export ohne jede assoc.)
+	//      cli argument "-minimize-collections-optimation on|off" (oder besseren namen)
+	//      API berücksichtigen
+	//      export mit optimierung in stats (* 128? 256?) ((`s6`) % 1000) max 180, anderes sx?
+	//
+	//      defer working table creation too, maybe they are don't needed
 
 }

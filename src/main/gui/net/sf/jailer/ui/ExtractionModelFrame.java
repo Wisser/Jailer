@@ -49,10 +49,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -202,7 +204,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			}
 		};
 
-		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext), "editor");
+		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), getDBMSLogo(), executionContext), "editor");
 		extractionModelEditor.extractionModelFile = extractionModelFile;
 		restrictedDependenciesView.refresh();
 		pack();
@@ -303,6 +305,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		connectDb.setSelected(dbConnectionDialog.isConnected);
 		extractionModelEditor.connectivityState.setText(getConnectivityState());
 		extractionModelEditor.connectivityState.setToolTipText(getConnectivityStateToolTip());
+		extractionModelEditor.connectivityState.setIcon(getDBMSLogo());
 	}
 
 	private String getConnectivityState() {
@@ -315,9 +318,22 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private String getConnectivityStateToolTip() {
 		if (dbConnectionDialog != null && dbConnectionDialog.isConnected) {
-			return (dbConnectionDialog.currentConnection.url);
+			return dbConnectionDialog.currentConnection.url;
 		} else {
 			return "offline";
+		}
+	}
+
+	private ImageIcon getDBMSLogo() {
+		if (dbConnectionDialog != null && dbConnectionDialog.isConnected) {
+			String dbmsLogoURL = UIUtil.getDBMSLogoURL(dbConnectionDialog.currentConnection.url);
+	        if (dbmsLogoURL == null) {
+	        	return null;
+	        } else {
+	        	return UIUtil.scaleIcon(new JLabel(), UIUtil.readImage(dbmsLogoURL, false), 1.2);
+	        }
+		} else {
+			return null;
 		}
 	}
 
@@ -1709,7 +1725,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				return;
 			}
 			UIUtil.setWaitCursor(this);
-			ExtractionModelEditor newModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext);
+			ExtractionModelEditor newModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), getDBMSLogo(), executionContext);
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
 			extractionModelEditor = null;
@@ -1738,7 +1754,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void reload() {
 		try {
 			UIUtil.setWaitCursor(this);
-			ExtractionModelEditor newModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), executionContext);
+			ExtractionModelEditor newModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip(), getDBMSLogo(), executionContext);
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
 			editorPanel.add(extractionModelEditor = newModelEditor, "editor");

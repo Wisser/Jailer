@@ -42,6 +42,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -60,11 +61,13 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
@@ -118,6 +121,8 @@ import net.sf.jailer.ui.util.HttpUtil;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.Pair;
@@ -1803,6 +1808,90 @@ public class UIUtil {
        } catch (Exception e) {
     	   // ignore
        }
+	}
+
+	private static List<Line> lines;
+
+	public static List<Line> loadDriverList(Window parent) {
+		if (lines != null) {
+			return lines;
+		}
+		lines = new ArrayList<Line>();
+		
+		final String DRIVERLIST_FILE = "driverlist.csv";
+		File csvFile = Environment.newWorkingFolderFile(DRIVERLIST_FILE);
+
+		try {
+			// check existence of "driverlist.csv"
+			FileInputStream is = new FileInputStream(csvFile);
+			is.close();
+			
+			CsvFile drivers = new CsvFile(csvFile);
+			lines.addAll(drivers.getLines());
+		} catch (FileNotFoundException e) {
+			StringBuilder info = new StringBuilder();
+			List<String> fileList = new ArrayList<String>();
+			try {
+				info.append(csvFile.getAbsolutePath() + ": ");
+				File[] files = csvFile.getAbsoluteFile().getParentFile().listFiles();
+				if (files == null) {
+					info.append("null");
+				} else {
+					for (File file: files) {
+						String ord;
+						String name = file.getName();
+						if (!file.exists()) {
+							ord = "1";
+						} else {
+							ord = "2";
+						}
+						int state = 0;
+						state += file.exists()? 1 : 0;
+						state += file.isFile()? 2 : 0;
+						state += file.isDirectory()? 4 : 0;
+						fileList.add(ord + name + "/" + Integer.toHexString(state));
+						if (DRIVERLIST_FILE.equalsIgnoreCase(name)) {
+							ord = "0";
+							fileList.add(ord + "!" + name + "/" + Integer.toHexString(state));
+						}
+					}
+				}
+				Collections.sort(fileList);
+				for (int i = 0; i < fileList.size(); ++i) {
+					fileList.set(i, fileList.get(i).substring(1));
+				}
+			} catch (Throwable t) {
+				info.append(" err: " + t.getMessage() + ": ");
+			}
+			if (parent != null) {
+				UIUtil.showException(parent, "Error", new FileNotFoundException(e.getMessage() + " / (" + info + fileList + ")"));
+			}
+		} catch (Exception e) {
+			if (parent != null) {
+				UIUtil.showException(parent, "Error", e);
+			}
+		}
+		return lines;
+	}
+
+	public static String getDBMSLogoURL(String url) {
+		if (!url.matches("jdbc:.+")) {
+			return null;
+		}
+		Optional<Line> result = loadDriverList(null).stream().filter(line -> {
+			String prefix = line.cells.get(1).replaceFirst("[<\\[].*$", "");
+			return !prefix.isEmpty() && url.startsWith(prefix);
+		}).findAny();
+		if (result.isPresent()) {
+			String logoUrl = "/dbmslogo/" + result.get().cells.get(6);
+			String smallLogoUrl = logoUrl.replaceFirst("^(.*)(\\.([^\\.]+))$", "$1_small$2");
+			
+			if (readImage(smallLogoUrl, false) != null) {
+				return smallLogoUrl;
+			}
+			return logoUrl;
+		}
+		return null;
 	}
 
 }
