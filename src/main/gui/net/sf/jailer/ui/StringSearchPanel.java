@@ -518,7 +518,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				} else if (e.getKeyChar() == KeyEvent.VK_DOWN) {
 					searchList.grabFocus();
 					searchList.setSelectedIndex(0);
-				} else if (e.getKeyChar() == '\n') { // TODO VK_ENTER?
+				} else if (e.getKeyChar() == '\n') {
 					result = searchList.getSelectedValue();
 			    	plainIsValid = e.getSource() == searchTextField;
 					close(true);

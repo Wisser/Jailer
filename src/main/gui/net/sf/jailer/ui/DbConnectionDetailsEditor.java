@@ -33,8 +33,10 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -225,6 +227,49 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		dbUrl.getDocument().addDocumentListener(docListener);
 		user.getDocument().addDocumentListener(docListener);
 		
+		dbUrl.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				update();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				update();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				update();
+			}
+			private String getDBMSDriver(String url) {
+				if (!url.matches("jdbc:.+")) {
+					return null;
+				}
+				Optional<Line> result = driverlist.stream().filter(line -> {
+					String prefix = line.cells.get(1).replaceFirst("[</\\[@].*$", "");
+					return !prefix.isEmpty() && url.startsWith(prefix);
+				}).findAny();
+				if (result.isPresent()) {
+					return result.get().cells.get(2);
+				}
+				return null;
+			}
+			private void update() {
+				String driver = driverClass.getText().trim();
+				if (driver.isEmpty() || driverlist.stream().filter(line -> line.cells.get(2).equals(driver)).findFirst().isPresent()) {
+					String fromUrl = getDBMSDriver(dbUrl.getText().trim());
+					if (fromUrl != null && !fromUrl.isEmpty()) {
+						driverClass.setText(fromUrl);
+					}
+				}
+				String dbmsLogoURL = UIUtil.getDBMSLogoURL(dbUrl.getText().trim());
+		        if (dbmsLogoURL == null || dbmsLogoURL.contains("other_small")) {
+		        	logoLabel.setIcon(null);
+		        } else {
+					logoLabel.setIcon(UIUtil.scaleIcon(logoLabel, UIUtil.readImage(dbmsLogoURL, false), 2));
+		        }
+			}
+		});
+		
 		driverClass.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
@@ -289,8 +334,16 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 			private void check() {
 				List<String> driverURLs = retrieveDriverURLs(driverlist);
+				Set<String> files = driverURLs == null? new HashSet<String>() : driverURLs.stream().map(url -> {
+					try {
+						return toRelFileName(new File(Environment.newFile(HttpDownload.DOWNLOADFOLDER), HttpDownload.toFileName(new URL(url))).getAbsolutePath());
+					} catch (Exception e) {
+						return toRelFileName(url.trim());
+					}
+				}).collect(Collectors.toSet());
+				Set<String> jarsContent = Arrays.asList(jar1, jar2, jar3, jar4).stream().map(f -> f.getText().trim()).filter(v -> !v.isEmpty()).collect(Collectors.toSet());
 				downloadButton.setEnabled(driverURLs != null
-						&& Arrays.asList(jar1, jar2, jar3, jar4).stream().allMatch(f -> f.getText().trim().isEmpty()));
+						&& !jarsContent.containsAll(files));
 				downloadButton.setToolTipText(driverURLs == null? null :
 					driverURLs.stream().collect(Collectors.joining("<br>", "<html>", "</html>"))
 					);
@@ -506,6 +559,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         alias = new javax.swing.JTextField();
         renameButton = new javax.swing.JButton();
         jtdsWarnLabel = new javax.swing.JLabel();
+        jSeparator3 = new javax.swing.JSeparator();
+        logoLabel = new javax.swing.JLabel();
 
         helpjdbc.setText("help");
 
@@ -546,7 +601,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jLabel6.setText(" Driver-Class");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 50;
+        gridBagConstraints.gridy = 90;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel6, gridBagConstraints);
 
@@ -584,7 +639,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jPanel1.add(jar2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 50;
+        gridBagConstraints.gridy = 90;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -855,11 +910,11 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(downloadButton, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 46;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 16, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
         jPanel1.add(jSeparator2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -880,11 +935,27 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jtdsWarnLabel.setText("<html>Due to known problems with the jTDS JDBC driver, it is strongly recommended to use the original driver for SQL Server or Sybase.<html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 54;
+        gridBagConstraints.gridy = 94;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jtdsWarnLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 85;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
+        jPanel1.add(jSeparator3, gridBagConstraints);
+
+        logoLabel.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 44;
+        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        jPanel1.add(logoLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -892,6 +963,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         getContentPane().add(jPanel1, gridBagConstraints);
 
         pack();
@@ -1057,7 +1129,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			
 			AtomicBoolean ok = new AtomicBoolean(true);
 			Function<Long, String> updateInfo = total -> {
-				String text = "<html><b>Downloading... " + (total > 0? "(" + total / 1024 + "K)" : "") + "</b><br>"
+				String text = "<html><b>Downloading... " + (total > 0? "(" + total / 1024 + "K)" : "(1.1%)") + "</b><br>"
 						+ driverURLs.stream().collect(Collectors.joining("<br>")) + "</html>";
 				return text;
 			};
@@ -1115,6 +1187,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 						public void run() {
 							if (ok.get()) {
 								synchronized (LOCK) {
+									jar1.setText("");
+									jar2.setText("");
+									jar3.setText("");
+									jar4.setText("");
 									if (files.size() > 0) {
 										jar1.setText(toRelFileName(files.get(0)));
 									}
@@ -1189,6 +1265,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JSeparator jSeparator3;
     private javax.swing.JTextField jar1;
     private javax.swing.JTextField jar2;
     private javax.swing.JTextField jar3;
@@ -1198,6 +1275,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JButton loadButton2;
     private javax.swing.JButton loadButton3;
     private javax.swing.JButton loadButton4;
+    private javax.swing.JLabel logoLabel;
     private javax.swing.JButton okButton;
     javax.swing.JPasswordField password;
     private javax.swing.JButton renameButton;

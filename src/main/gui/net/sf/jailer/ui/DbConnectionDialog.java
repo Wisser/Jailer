@@ -325,7 +325,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						if (value instanceof String && ((String) value).startsWith("*")) {
 							((JLabel) render).setToolTipText(null);
 							((JLabel) render).setText(null);
-							((JLabel) render).setIcon(UIUtil.scaleIcon(((JLabel) render), UIUtil.readImage(((String) value).substring(1), false), 1.5));
+							((JLabel) render).setIcon(UIUtil.scaleIcon(((JLabel) render), UIUtil.readImage(((String) value).substring(1), false), 1.4));
 						}
 						return render;
 					}

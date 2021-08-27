@@ -1879,7 +1879,7 @@ public class UIUtil {
 			return null;
 		}
 		Optional<Line> result = loadDriverList(null).stream().filter(line -> {
-			String prefix = line.cells.get(1).replaceFirst("[<\\[].*$", "");
+			String prefix = line.cells.get(1).replaceFirst("[</\\[@].*$", "");
 			return !prefix.isEmpty() && url.startsWith(prefix);
 		}).findAny();
 		if (result.isPresent()) {

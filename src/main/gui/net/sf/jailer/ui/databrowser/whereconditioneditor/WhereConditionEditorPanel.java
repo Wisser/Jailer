@@ -47,6 +47,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -197,9 +198,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			if (allDisabled) {
 				return;
 			}
-			comparisons.forEach(comparision -> accept(comparision, "", Operator.Equal));
-			updateSearchUI();
-			storeConfig();
+			editor.setText("");
+			parseCondition();
 		});
         clearButton.setToolTipText("Clear all Fields");
 		sortCheckBox.setVisible(false);
@@ -333,7 +333,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				@Override
 				public void focusGained(FocusEvent e) {
 					if (onFocusGained != null) {
-						onFocusGained.run();
+						onFocusGained.apply(null);
 						onFocusGained = null;
 					}
 				}
@@ -762,7 +762,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			@Override
 			public void focusGained(FocusEvent e) {
 				if (onFocusGained != null) {
-					onFocusGained.run();
+					onFocusGained.apply(null);
 					onFocusGained = null;
 				}
 			}
@@ -943,16 +943,25 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						valueTextField.grabFocus();
 						editorHadFocus = true;
 					}
+					boolean ok = true;
 					if (onFocusGained != null) {
-						onFocusGained.run();
-						onFocusGained = null;
+						ok = onFocusGained.apply(valueTextField);
+						if (ok) {
+							onFocusGained = null;
+						}
 					}
 					String currentText = valueTextField.getText();
-					onFocusGained = () -> {
-						if (allFields.contains(valueTextField) && !currentText.equals(valueTextField.getText()) && !valueTextField.hasFocus()) {
-							accept(comparison, valueTextField.getText(), comparison.operator);
-						}
-					};
+					if (ok) {
+						onFocusGained = (val) -> {
+							if (val == valueTextField) {
+								return false;
+							}
+							if (allFields.contains(valueTextField) && !currentText.equals(valueTextField.getText()) && !valueTextField.hasFocus()) {
+								accept(comparison, valueTextField.getText(), comparison.operator);
+							}
+							return true;
+						};
+					}
 					Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
 					if (pos != null) {
 						int offset = 0;
@@ -1077,7 +1086,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 	}
 	
-	private Runnable onFocusGained;
+	private Function<Object, Boolean> onFocusGained;
 	
 	/**
      * This method is called from within the constructor to initialize the form.
@@ -1679,8 +1688,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				withNull[0] = true;
 			}
 		}
+		long time = -1;
 		
 		if (result == null) {
+			long startTime = System.currentTimeMillis();
 			fromCache[0] = false;
 			result = new LinkedHashMap<String, Integer>();
 			int columnIndex = 0;
@@ -1727,16 +1738,18 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				}
 				++columnIndex;
 			}
+			time = System.currentTimeMillis() - startTime;
 		} else {
 			fromCache[0] = true;
 		}
 		Long sumLength = result.keySet().stream().collect(Collectors.summingLong(String::length));
 		if (sumLength == null || sumLength <= MAX_SIZE_DISTINCTEXISTINGVALUES) {
-			cache.put(key, result);
-			icCache.put(key, incomplete[0]);
-			wnCache.put(key, withNull[0]);
+			if (time < 0 || time > 500) {
+				cache.put(key, result);
+				icCache.put(key, incomplete[0]);
+				wnCache.put(key, withNull[0]);
+			}
 		}
-		
 		return result;
 	}
 
@@ -1888,7 +1901,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						if (sqlValue == null) {
 							comparison.valueTextField.setBackground(new Color(255, 200, 200));
 							comparison.value = oldValue;
-							return;
 						}
 						op = comparison.operator.sql + " ";
 						if (comparison.operatorField != null) {
@@ -2044,7 +2056,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	public void addExtJoin(String extJoin) {
 		extJoins.add(extJoin);
 	}
-	
+
+	public void close() {
+		onFocusGained = null;
+	}
+
 	private JButton clearButton;
 	
 	private static ImageIcon tableIcon;

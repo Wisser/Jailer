@@ -3829,6 +3829,9 @@ public class DataBrowser extends javax.swing.JFrame {
 			dialog.addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosed(WindowEvent e) {
+					if (popUpWhereConditionEditorPanel != null) {
+						popUpWhereConditionEditorPanel.close();
+					}
 					if (onClose != null) {
 						onClose.run();
 					}

@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.util;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -82,7 +83,7 @@ public class HttpDownload {
 			rc = ((HttpURLConnection) con).getResponseCode();
 			if (rc == 200) {
 				File tmpFile = new File(dir, name + "." + System.currentTimeMillis());
-				OutputStream out = new FileOutputStream(tmpFile);
+				OutputStream out = new BufferedOutputStream(new FileOutputStream(tmpFile));
 				int c;
 				long total = 0;
 				long vol = 0;
@@ -91,7 +92,7 @@ public class HttpDownload {
 					++total;
 					++vol;
 					long t1 = System.currentTimeMillis();
-					if (t1 - t0 > 1000) {
+					if (t1 - t0 > 100) {
 						t0 = t1;
 						if (volConsumer != null) {
 							volConsumer.accept(vol);

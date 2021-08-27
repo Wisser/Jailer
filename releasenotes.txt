@@ -1,3 +1,8 @@
+10.5.8
+  - The connection dialog has been improved.
+  - Database-specific logos are now displayed in the connection dialog and in the status bar.
+  - The condition editor now also displays the number of rows that are "null" or "not null".
+
 10.5.7
   - An error in the validation of database connections that have not been used for a long time has been corrected.
 

@@ -352,7 +352,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 		setLocation(70, 80);
 		pack();
-		setSize(Math.max(840, getWidth()), 490);
+		setSize(Math.max(840, getWidth()), 536);
 		refresh();
 
 		initRestoreLastSessionButton();

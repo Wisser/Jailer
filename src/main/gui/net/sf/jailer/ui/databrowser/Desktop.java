@@ -155,7 +155,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Default width of a row-browser frame.
 	 */
 	private final int BROWSERTABLE_DEFAULT_MIN_X = 0;
-	private final int BROWSERTABLE_DEFAULT_MIN_Y = 0;
+	private final int BROWSERTABLE_DEFAULT_MIN_Y = 2;
 
 	public static final int BROWSERTABLE_DEFAULT_HEIGHT = 460;
 	public static final int BROWSERTABLE_DEFAULT_WIDTH = 476;
@@ -2766,7 +2766,7 @@ public abstract class Desktop extends JDesktopPane {
 				aktMinX = Math.max(0, x);
 			}
 		}
-		int fX = (int) (0.2 * BROWSERTABLE_DEFAULT_DISTANCE * minX);
+		int fX = (int) (0.05 * BROWSERTABLE_DEFAULT_DISTANCE * minX);
 		this.minX = fX;
 		int dX = (int) (fX * layoutMode.factor) - aktMinX;
 		for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {

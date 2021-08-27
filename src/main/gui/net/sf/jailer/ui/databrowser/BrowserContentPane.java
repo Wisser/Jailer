@@ -989,6 +989,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		andCondition = new JComboBox2();
 		andCondition.setEditable(true);
+		andCondition.setMaximumRowCount(12);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
