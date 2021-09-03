@@ -1812,7 +1812,7 @@ public class UIUtil {
 
 	private static List<Line> lines;
 
-	public static List<Line> loadDriverList(Window parent) {
+	public static synchronized List<Line> loadDriverList(Window parent) {
 		if (lines != null) {
 			return lines;
 		}
