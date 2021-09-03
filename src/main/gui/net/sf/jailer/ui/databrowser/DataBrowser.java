@@ -3900,7 +3900,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				int x = location.x;
 				int y = location.y;
 				
-				if (column == 0) {
+				if (column >= 0) {
 					x += 32;
 				}
 				
