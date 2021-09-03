@@ -179,7 +179,7 @@ public class BrowserContentCellEditor {
 			@Override
 			String cellContentToText(int columnType, Object content) {
 				if (columnType == Types.DATE && (content == null || content instanceof Date)) {
-					return dateFormat.format((Date) content);
+					return dateFormatAlt1.format((Date) content);
 				}
 				return String.valueOf(/*(Timestamp)*/ content);
 			}
