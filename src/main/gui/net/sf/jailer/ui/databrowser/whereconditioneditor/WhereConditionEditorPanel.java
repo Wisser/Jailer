@@ -1038,7 +1038,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1;
         searchFieldsPanel.add(wrap.apply(sepPanel, 1), gridBagConstraints);
 		
-        clearButton.setEnabled(comparisons.stream().anyMatch(c -> c.valueTextField.getText().trim().length() > 0));
+        clearButton.setEnabled(comparisons.stream().anyMatch(c -> c.valueTextField != null && c.valueTextField.getText().trim().length() > 0));
         
 		revalidate();
 		focusedComparision.ifPresent(c -> c.valueTextField.grabFocus());
