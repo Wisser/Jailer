@@ -36,11 +36,14 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -66,6 +69,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	private boolean ok;
 	private boolean escaped;
 	private DataModelBasedSQLCompletionProvider provider;
+	private DocumentListener clearButtonDocListener;
 
 	/** Creates new form ConditionEditor */
 	public DBConditionEditor(java.awt.Frame parent, DataModel dataModel) {
@@ -100,6 +104,10 @@ public abstract class DBConditionEditor extends EscapableDialog {
 					ok = false;
 				}
 				consume(ok? UIUtil.toSingleLineSQL(editorPane.getText().replaceFirst("(?is)^\\s*where\\b\\s*", "")) : null);
+				if (clearButtonDocListener != null) {
+					editorPane.getDocument().removeDocumentListener(clearButtonDocListener);
+					clearButtonDocListener = null;
+				}
 				if (getEditorPanesCache() != null) {
 					getEditorPanesCache().add(editorPane);
 				}
@@ -108,6 +116,14 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		
 		editorPaneScrollPane = new JScrollPane();
 		
+		clearButton.setIcon(UIUtil.scaleIcon(clearButton, clearIcon));
+		clearButton.addActionListener(e -> {
+			editorPane.setText("");
+			ok = true;
+			setVisible(false);
+		});
+		
+
 		JPanel corner = new SizeGrip();
 		gripPanel.add(corner);
 
@@ -156,6 +172,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
         toSubQueryButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        clearButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         gripPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -177,7 +194,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -205,8 +222,22 @@ public abstract class DBConditionEditor extends EscapableDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel2.add(cancelButton, gridBagConstraints);
+
+        clearButton.setText("Clear");
+        clearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
+        jPanel2.add(clearButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -310,6 +341,10 @@ public abstract class DBConditionEditor extends EscapableDialog {
         setVisible(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_clearButtonActionPerformed
+
 	private Table table1, table2;
 	private String table1alias, table2alias;
 	private boolean addPseudoColumns;
@@ -387,6 +422,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
+    private javax.swing.JButton clearButton;
     private javax.swing.JPanel gripPanel;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -439,6 +475,21 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		editor.sqlAutoCompletion = sqlAutoCompletion;
 		editorPane = editor;
 		scrollPane.setViewportView(editorPane);
+		clearButtonDocListener = new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				clearButton.setEnabled(!editorPane.getText().isEmpty());
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				clearButton.setEnabled(!editorPane.getText().isEmpty());
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				clearButton.setEnabled(!editorPane.getText().isEmpty());
+			}
+		};
+		editorPane.getDocument().addDocumentListener(clearButtonDocListener);
 	}
 	
 	public static void initialObserve(final JTextField textfield, Consumer<String> open, Runnable openAndDoCompletion) {
@@ -541,5 +592,12 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	protected abstract void consume(String cond);
 
 	private static final long serialVersionUID = -5169934807182707970L;
+
+	private static ImageIcon clearIcon;
+	
+	static {
+        // load images
+        clearIcon = UIUtil.readImage("/clear.png");
+	}
 
 }

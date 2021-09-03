@@ -28,6 +28,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -1111,7 +1112,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		try {
 			urls = ClasspathUtil.toURLArray(d1, d2, d3, d4);
 		} catch (Throwable e) {
-			UIUtil.showException(parent, "Error loading driver jars", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
+			if (e instanceof FileNotFoundException) {
+				UIUtil.showException(parent, "Unable to connect", new FileNotFoundException(e.getMessage()
+						+ (downloadButton == null? "" : ".\nYou can download the driver with the button \"Download Driver\".")), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR, downloadButton);
+			} else {
+				UIUtil.showException(parent, "Error loading driver jars", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
+			}
 			return false;
 		}
 

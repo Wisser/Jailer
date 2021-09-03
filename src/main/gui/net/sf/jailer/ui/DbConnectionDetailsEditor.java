@@ -341,7 +341,11 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 						return toRelFileName(url.trim());
 					}
 				}).collect(Collectors.toSet());
-				Set<String> jarsContent = Arrays.asList(jar1, jar2, jar3, jar4).stream().map(f -> f.getText().trim()).filter(v -> !v.isEmpty()).collect(Collectors.toSet());
+				Set<String> jarsContent = Arrays.asList(jar1, jar2, jar3, jar4).stream()
+						.map(f -> f.getText().trim())
+						.filter(v -> !v.isEmpty())
+						.filter(v -> !v.contains(HttpDownload.DOWNLOADFOLDER) || new File(v).exists())
+						.collect(Collectors.toSet());
 				downloadButton.setEnabled(driverURLs != null
 						&& !jarsContent.containsAll(files));
 				downloadButton.setToolTipText(driverURLs == null? null :

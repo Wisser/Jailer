@@ -224,7 +224,7 @@ public class DataBrowser extends javax.swing.JFrame {
     
 	private class WhereConditionEditorPanelForDataBrowser extends WhereConditionEditorPanel {
 		private final RowBrowser rowBrowser;
-		private final int initialColumn;
+		private final boolean asPopup;
 
 		private WhereConditionEditorPanelForDataBrowser(Window parent, DataModel dataModel, Table table,
 				BrowserContentCellEditor cellEditor, Boolean sorted, WhereConditionEditorPanel predecessor,
@@ -234,7 +234,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					new DataModelBasedSQLCompletionProvider(session, datamodel.get()),
 					executionContext);
 			this.rowBrowser = rowBrowser;
-			this.initialColumn = initialColumn;
+			this.asPopup = asPopup;
 		}
 
 		@Override
@@ -250,7 +250,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = true;
 						rowBrowser.browserContentPane.setAndCondition(UIUtil.toSingleLineSQL(condition), true);
 						rowBrowser.browserContentPane.reloadRows();
-						if (initialColumn >= 0) {
+						if (asPopup) {
 							rowBrowser.browserContentPane.onConditionChange(rowBrowser.browserContentPane.getAndConditionText());
 						}
 						UISettings.s12 += 1000;
@@ -3899,6 +3899,10 @@ public class DataBrowser extends javax.swing.JFrame {
 				
 				int x = location.x;
 				int y = location.y;
+				
+				if (column == 0) {
+					x += 32;
+				}
 				
 				dialog.getContentPane().add(popUpWhereConditionEditorPanel);
 				

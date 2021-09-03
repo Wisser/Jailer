@@ -42,6 +42,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -52,6 +53,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -160,6 +163,27 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(editorPane);
 		
+		clearButton.setIcon(UIUtil.scaleIcon(clearButton, clearIcon));
+		editorPane.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				clearButton.setEnabled(!editorPane.getText().isEmpty());
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				clearButton.setEnabled(!editorPane.getText().isEmpty());
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				clearButton.setEnabled(!editorPane.getText().isEmpty());
+			}
+		});
+		clearButton.addActionListener(e -> {
+			editorPane.setText("");
+			ok = true;
+			setVisible(false);
+		});
+		
 		JPanel corner = new SizeGrip();
 		gripPanel.add(corner);
 
@@ -257,6 +281,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         scalarSQIconToggleButton = new javax.swing.JToggleButton();
         toSubQueryButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        clearButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         gripPanel = new javax.swing.JPanel();
@@ -336,9 +361,22 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel3.add(cancelButton, gridBagConstraints);
+
+        clearButton.setText("Clear");
+        clearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
+        jPanel3.add(clearButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -435,6 +473,10 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         	toSubQueryButton.setEnabled(false);
         }
     }//GEN-LAST:event_toSubQueryButtonActionPerformed
+
+    private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_clearButtonActionPerformed
 
 	private Table table1, table2;
 	private String table1alias, table2alias;
@@ -575,6 +617,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JPanel addOnPanel;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JButton clearButton;
     private javax.swing.JPanel gripPanel;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -662,5 +705,12 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	protected abstract void consume(String cond);
 	
 	private static final long serialVersionUID = -5169934807182707970L;
+
+	private static ImageIcon clearIcon;
+	
+	static {
+        // load images
+        clearIcon = UIUtil.readImage("/clear.png");
+	}
 
 }
