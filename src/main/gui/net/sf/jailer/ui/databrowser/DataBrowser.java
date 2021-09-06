@@ -352,7 +352,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel4.add(searchPanelContainer, gridBagConstraints);
 
-        searchBarToggleButton.setSelected(Boolean.TRUE.equals(UISettings.restore("searchBarToggleButton")));
+        searchBarToggleButton.setSelected(!Boolean.FALSE.equals(UISettings.restore("searchBarToggleButton")));
         searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
         whereConditionEditorCloseButton = new SmallButton(closeIcon, true) {
 			@Override
