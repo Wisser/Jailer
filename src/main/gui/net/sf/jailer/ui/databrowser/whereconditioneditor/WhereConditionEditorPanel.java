@@ -550,16 +550,16 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			for (int columnIndex = 0; columnIndex < table.getColumns().size(); ++columnIndex) {
 				for (boolean noAlias: new boolean[] { false, true }) {
 					Column column = table.getColumns().get(columnIndex);
-					String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:[^(]?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)?";
+					String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:[^(]?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
 					String regex = "(?:(?:and\\s+)?" + "(?:\\b" + (tableAlias == null || noAlias? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
-							+ (noAlias? "(?<!\\.\\s*)" : "")
+							+ (noAlias? "(?<!\\.\\s{0,10})" : "")
 							+ "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
-							+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(" + Pattern.quote("!=") + "|"
+							+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(?:(" + Pattern.quote("!=") + "|"
 							+ Stream.of(Operator.values()).map(o -> o.sql).sorted((a, b) -> b.length() - a.length())
 									.map(sql -> Character.isAlphabetic(sql.charAt(0)) ? "\\b" + Pattern.quote(sql) + "\\b"
 											: Pattern.quote(sql))
 									.collect(Collectors.joining("|"))
-							+ "))\\s*" + valueRegex;
+							+ ")\\s*"  + valueRegex + "))";
 					boolean found = false;
 					Matcher matcher = null;
 					try {
@@ -567,7 +567,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						matcher = identOperator.matcher(latestParsedCondition);
 						found = matcher.find();
 					} catch (Throwable t) {
-						// ignore
+						LogUtil.warn(t);
 					}
 					if (found) {
 						int start = matcher.start();
@@ -1901,6 +1901,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						if (sqlValue == null) {
 							comparison.valueTextField.setBackground(new Color(255, 200, 200));
 							comparison.value = oldValue;
+							return;
 						}
 						op = comparison.operator.sql + " ";
 						if (comparison.operatorField != null) {
