@@ -847,7 +847,10 @@ public class DataBrowser extends javax.swing.JFrame {
         	boolean inQueue = false;
         	private void update() {
         		if (!inQueue) {
-        			UIUtil.invokeLater(() -> { inQueue = false; desktop.updateMinX(); });
+					UIUtil.invokeLater(() -> {
+						inQueue = false;
+						desktop.updateMinX();
+					});
         			inQueue = true;
         		}
 			}

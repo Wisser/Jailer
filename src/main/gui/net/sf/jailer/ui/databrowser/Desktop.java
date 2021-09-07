@@ -2743,8 +2743,11 @@ public abstract class Desktop extends JDesktopPane {
 		this.minXProvider = minXProvider;
 	}
 
+	private Timer updateMinXLater = new Timer(10, e -> updateMinX());
+	
 	public void updateMinX() {
 		if (desktopAnimation.isActive()) {
+			updateMinXLater.restart();
 			return;
 		}
 		int minX = minXProvider != null? minXProvider.get() : 0;
