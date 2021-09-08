@@ -1,4 +1,4 @@
-10.5.9
+10.5.10
   - The user interface of the data browser and SQL console has been made a bit more appealing.
 
 10.5.8
