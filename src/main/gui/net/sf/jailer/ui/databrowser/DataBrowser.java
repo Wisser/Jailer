@@ -831,9 +831,11 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			protected void onContentCellEditorCreated(BrowserContentPane browserContentPane, BrowserContentCellEditor cellEditor) {
-				if (whereConditionEditorPanel != null && whereConditionEditorSubject == browserContentPane) {
-					whereConditionEditorPanel.setCellEditor(cellEditor);
-				}
+				UIUtil.invokeLater(4, () -> {
+					if (whereConditionEditorPanel != null && whereConditionEditorSubject == browserContentPane) {
+						whereConditionEditorPanel.setCellEditor(cellEditor);
+					}
+				});
 			}
 
 			@Override
