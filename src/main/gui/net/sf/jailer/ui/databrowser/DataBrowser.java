@@ -2909,6 +2909,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		        dataBrowser.toFront();
 		        if (restoreLastSession) {
 		        	dataBrowser.desktop.restoreSession(null, Environment.newFile(LAST_SESSION_FILE));
+		        	dataBrowser.autoLayoutMenuItem.setSelected(true);
 		        } else if (bmFile != null) {
 		        	dataBrowser.desktop.restoreSession(null, bmFile);
 		     		BookmarksPanel.setLastUsedBookmark(bmFile.getName(), dataBrowser.executionContext);
