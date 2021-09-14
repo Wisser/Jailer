@@ -529,7 +529,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				} catch (PropertyVetoException e) {
 					// ignore
 				}
-				arrangeLayout(true, anchor);
+				arrangeLayout(true, anchor, true);
 			}
 			@Override
 			protected boolean isApplicable(RowBrowser tableBrowser) {
@@ -1435,6 +1435,7 @@ public class DataBrowser extends javax.swing.JFrame {
         view = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
         nativeLAFCheckBoxMenuItem = new javax.swing.JCheckBoxMenuItem();
+        autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         helpMenu = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
         helpForum = new javax.swing.JMenuItem();
@@ -2351,6 +2352,10 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu3.add(nativeLAFCheckBoxMenuItem);
 
+        autoLayoutMenuItem.setSelected(true);
+        autoLayoutMenuItem.setText("Automatic Layout Arrangement");
+        jMenu3.add(autoLayoutMenuItem);
+
         menuBar.add(jMenu3);
 
         helpMenu.setText("Help");
@@ -2650,7 +2655,8 @@ public class DataBrowser extends javax.swing.JFrame {
     }// GEN-LAST:event_navigationTreeMouseClicked
 
     private void layoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_layoutMenuItemActionPerformed
-        arrangeLayout(true);
+        arrangeLayout(true, Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor? null : anchorManager.getNewestBrowser(), true);
+		anchorManager.setNewestBrowser(null);
     }// GEN-LAST:event_layoutMenuItemActionPerformed
 
     public void arrangeLayout(boolean scrollToCenter) {
@@ -2659,6 +2665,13 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     public void arrangeLayout(boolean scrollToCenter, RowBrowser anchor) {
+    	arrangeLayout(scrollToCenter, anchor, false);
+    }
+    
+    public void arrangeLayout(boolean scrollToCenter, RowBrowser anchor, boolean force) {
+    	if (!force && !autoLayoutMenuItem.isSelected()) {
+    		return;
+    	}
 		UIUtil.setWaitCursor(this);
         try {
             desktop.layoutBrowser(null, scrollToCenter, anchor);
@@ -3028,6 +3041,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem analyseMenuItem;
     private javax.swing.JMenuItem analyseSQLMenuItem1;
     private javax.swing.JLabel associatedWith;
+    javax.swing.JCheckBoxMenuItem autoLayoutMenuItem;
     private javax.swing.JMenu bookmarkMenu;
     private javax.swing.JPanel borderBrowserPanel;
     private javax.swing.JPanel borderBrowserTabPane;

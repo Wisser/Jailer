@@ -1070,6 +1070,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				lastNonEmptyI = i;
 			}
 		}
+		if (!toDelete.isEmpty()) {
+			toDelete.pop();
+		}
 		while (!toDelete.isEmpty()) {
 			closureTable.getColumnModel().removeColumn(toDelete.pop());
 		}

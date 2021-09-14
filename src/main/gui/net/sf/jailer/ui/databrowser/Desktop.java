@@ -1363,8 +1363,10 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			public void internalFrameClosing(InternalFrameEvent e) {
+				List<RowBrowser> sis = getChildBrowsers(parent, true);
+				boolean sameY = parent != null && sis.size() == 1 && parent.internalFrame != null && sis.get(0).internalFrame != null && parent.internalFrame.getY() == sis.get(0).internalFrame.getY();
 				if (tableBrowser.browserContentPane.closeWithChildren(jInternalFrame)) {
-					onLayoutChanged(false, false);
+					onLayoutChanged(parent == null || sameY, false);
 				}
 			}
 
@@ -1389,7 +1391,9 @@ public abstract class Desktop extends JDesktopPane {
 				// ignore
 			}
 			browserContentPane.andCondition.grabFocus();
-			onLayoutChanged(false, true);
+			List<RowBrowser> sis = getChildBrowsers(parent, true);
+			boolean sameY = parent != null && sis.size() == 1 && parent.internalFrame != null && sis.get(0).internalFrame != null && parent.internalFrame.getY() == sis.get(0).internalFrame.getY();
+			onLayoutChanged(parent == null || sameY, true);
 		} else {
 			lastInternalFrame = jInternalFrame;
 			lastBrowserContentPane = browserContentPane;
@@ -3282,7 +3286,7 @@ public abstract class Desktop extends JDesktopPane {
 		
 		FileWriter out = new FileWriter(new File(sFile));
 
-		out.write("Layout; " + layoutMode + LF);
+		out.write("Layout; " + layoutMode + ";" + parentFrame.autoLayoutMenuItem.isSelected() + LF);
 
 		for (RowBrowser rb : tableBrowsers) {
 			if (rb.parent == null) {
@@ -3442,6 +3446,7 @@ public abstract class Desktop extends JDesktopPane {
 							layoutMode = LayoutMode.valueOf(l.cells.get(1));
 							updateMenu(layoutMode);
 						}
+						parentFrame.autoLayoutMenuItem.setSelected(!"false".equalsIgnoreCase(l.cells.get(2)));
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

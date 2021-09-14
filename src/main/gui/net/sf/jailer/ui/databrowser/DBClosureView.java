@@ -1164,6 +1164,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 				lastNonEmptyI = i;
 			}
 		}
+		if (!toDelete.isEmpty()) {
+			toDelete.pop();
+		}
 		while (!toDelete.isEmpty()) {
 			closureTable.getColumnModel().removeColumn(toDelete.pop());
 		}
