@@ -1105,7 +1105,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         sortCheckBox = new javax.swing.JCheckBox();
         titlePanel = new javax.swing.JPanel();
         tableLabel = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         closeButtonContainerPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jPanel3 = new javax.swing.JPanel();
@@ -1171,14 +1170,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         titlePanel.add(tableLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        titlePanel.add(jSeparator1, gridBagConstraints);
 
         closeButtonContainerPanel.setOpaque(false);
         closeButtonContainerPanel.setLayout(new java.awt.GridBagLayout());
@@ -2007,7 +1998,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel popupTabNameLabel;
     private javax.swing.JPanel popupTitelPanel;
     private javax.swing.JComboBox<String> searchComboBox;

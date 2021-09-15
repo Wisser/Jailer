@@ -155,7 +155,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Default width of a row-browser frame.
 	 */
 	private final int BROWSERTABLE_DEFAULT_MIN_X = 0;
-	private final int BROWSERTABLE_DEFAULT_MIN_Y = 2;
+	private final int BROWSERTABLE_DEFAULT_MIN_Y = 1;
 
 	public static final int BROWSERTABLE_DEFAULT_HEIGHT = 460;
 	public static final int BROWSERTABLE_DEFAULT_WIDTH = 476;
@@ -2673,20 +2673,22 @@ public abstract class Desktop extends JDesktopPane {
 	private final DataBrowser parentFrame;
 
 	public static enum LayoutMode {
-		THUMBNAIL(0.22),
-		TINY(0.57), 
-		L2(0.66),
-		SMALL(0.75), 
-		L3(0.87),
-		MEDIUM(1.0), 
-		L6(1.13),
-		L7(1.26),
-		LARGE(1.4);
+		THUMBNAIL(0.22, false),
+		TINY(0.57, false), 
+		L2(0.66, true),
+		SMALL(0.75, false), 
+		L3(0.87, true),
+		MEDIUM(1.0, false), 
+		L6(1.13, true),
+		L7(1.26, true),
+		LARGE(1.4, false);
 
 		public final double factor;
+		public final boolean anonym;
 
-		private LayoutMode(double factor) {
+		private LayoutMode(double factor, boolean anonym) {
 			this.factor = factor;
+			this.anonym = anonym;
 		}
 	}
 
@@ -4032,8 +4034,13 @@ public abstract class Desktop extends JDesktopPane {
 		this.animationEnabled = animationEnabled;
 	}
 
-	public void zoom(int d) {
-		d += layoutMode.ordinal();
+	boolean strictZoom = false;
+
+	public void zoom(int dir) {
+		int d = layoutMode.ordinal();
+		do {
+			d += dir;
+		} while (strictZoom && d >= 0 && d < LayoutMode.values().length && LayoutMode.values()[d].anonym);
 		if (d >= 0 && d < LayoutMode.values().length) {
 			rescaleLayout(LayoutMode.values()[d], null);
 		}

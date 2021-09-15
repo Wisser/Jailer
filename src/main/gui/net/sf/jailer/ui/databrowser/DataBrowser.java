@@ -75,6 +75,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -325,6 +326,34 @@ public class DataBrowser extends javax.swing.JFrame {
         initComponents();
         initMenu();
 
+        tbBackButton.setText(null);
+        tbForewardButton.setText(null);
+        tbZoom0Button.setText(null);
+        tbZoom1Button.setText(null);
+        tbZoom2Button.setText(null);
+        tbZoom3Button.setText(null);
+        tbZoom4Button.setText(null);
+        tbZoomInButton.setText(null);
+        tbZoomOutButton.setText(null);
+        
+        tbBackButton.setIcon(tbBackIcon);
+        tbForewardButton.setIcon(tbForwardIcon);
+        tbZoom0Button.setIcon(tbZoom0Icon);
+        tbZoom1Button.setIcon(tbZoom1Icon);
+        tbZoom2Button.setIcon(tbZoom2Icon);
+        tbZoom3Button.setIcon(tbZoom3Icon);
+        tbZoom4Button.setIcon(tbZoom4Icon);
+        tbZoomInButton.setIcon(tbZoomInIcon);
+        tbZoomOutButton.setIcon(tbZoomOutIcon);
+        
+        linkToolbarButton(tbZoomInButton, zoomInMenuItem);
+        linkToolbarButton(tbZoomOutButton, zoomOutMenuItem);
+        linkToolbarButton(tbZoom0Button, thumbnailLayoutRadioButtonMenuItem);
+        linkToolbarButton(tbZoom1Button, tinyLayoutRadioButtonMenuItem);
+        linkToolbarButton(tbZoom2Button, smallLayoutRadioButtonMenuItem);
+        linkToolbarButton(tbZoom3Button, mediumLayoutRadioButtonMenuItem);
+        linkToolbarButton(tbZoom4Button, largeLayoutRadioButtonMenuItem);
+        
         jTabbedPane1.setTabComponentAt(0, new JLabel("Closure", closureIcon, JLabel.LEFT));
         
         searchPanelContainer.getParent().remove(searchPanelContainer);
@@ -350,6 +379,9 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        if (Environment.nimbus) {
+        	gridBagConstraints.insets = new Insets(3, 0, 0, 0);
+        }
         jPanel4.add(searchPanelContainer, gridBagConstraints);
 
         searchBarToggleButton.setSelected(!Boolean.FALSE.equals(UISettings.restore("searchBarToggleButton")));
@@ -1100,6 +1132,31 @@ public class DataBrowser extends javax.swing.JFrame {
         initDnD(this);
     }
 
+	private void linkToolbarButton(AbstractButton button, JMenuItem menuItem) {
+		String text = menuItem.getText();
+		button.setToolTipText(text);
+		menuItem.addPropertyChangeListener("enabled", e -> {
+			button.setEnabled(menuItem.isEnabled());
+		});
+		if (button instanceof JToggleButton) {
+			button.addChangeListener(e -> {
+				if (!button.isSelected()) {
+					button.setSelected(menuItem.isSelected());
+				}
+			});
+			menuItem.addChangeListener(e -> {
+				button.setSelected(menuItem.isSelected());
+			});
+		}
+		button.addActionListener(e -> {
+			if ((!(button instanceof JToggleButton)) || button.isSelected()) {
+				desktop.strictZoom = true;
+				menuItem.doClick();
+				desktop.strictZoom = false;
+			}
+		});
+	}
+
 	private Map<JRadioButtonMenuItem, Integer> rowLimitButtonToLimit = new HashMap<JRadioButtonMenuItem, Integer>();
 
 	private void initRowLimitButtons() {
@@ -1328,6 +1385,21 @@ public class DataBrowser extends javax.swing.JFrame {
         workbenchTabbedPane = new javax.swing.JTabbedPane();
         desktopSplitPane = new javax.swing.JSplitPane();
         jPanel4 = new javax.swing.JPanel();
+        jPanel8 = new javax.swing.JPanel();
+        searchBarToggleButton = new javax.swing.JToggleButton();
+        jPanel9 = new javax.swing.JPanel();
+        jPanel13 = new javax.swing.JPanel();
+        tbBackButton = new javax.swing.JButton();
+        tbForewardButton = new javax.swing.JButton();
+        jPanel10 = new javax.swing.JPanel();
+        tbZoomInButton = new javax.swing.JButton();
+        tbZoomOutButton = new javax.swing.JButton();
+        jPanel12 = new javax.swing.JPanel();
+        tbZoom0Button = new javax.swing.JToggleButton();
+        tbZoom1Button = new javax.swing.JToggleButton();
+        tbZoom2Button = new javax.swing.JToggleButton();
+        tbZoom3Button = new javax.swing.JToggleButton();
+        tbZoom4Button = new javax.swing.JToggleButton();
         jLayeredPane1 = new javax.swing.JLayeredPane();
         layeredPaneContent = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -1346,7 +1418,6 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationTree = new javax.swing.JTree();
         outLinePanel = new javax.swing.JPanel();
         openTableButton = new javax.swing.JButton();
-        searchBarToggleButton = new javax.swing.JToggleButton();
         tablesCardPanel = new javax.swing.JPanel();
         tablesPanel = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
@@ -1633,6 +1704,148 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
+        jPanel8.setLayout(new java.awt.GridBagLayout());
+
+        searchBarToggleButton.setText("search");
+        searchBarToggleButton.setToolTipText("Open Search Sidebar");
+        searchBarToggleButton.setFocusable(false);
+        searchBarToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchBarToggleButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel8.add(searchBarToggleButton, gridBagConstraints);
+
+        jPanel9.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 100;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        jPanel8.add(jPanel9, gridBagConstraints);
+
+        jPanel13.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        jPanel8.add(jPanel13, gridBagConstraints);
+
+        tbBackButton.setText("back");
+        tbBackButton.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 12;
+        gridBagConstraints.gridy = 1;
+        jPanel8.add(tbBackButton, gridBagConstraints);
+
+        tbForewardButton.setText("forward");
+        tbForewardButton.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 14;
+        gridBagConstraints.gridy = 1;
+        jPanel8.add(tbForewardButton, gridBagConstraints);
+
+        jPanel10.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        jPanel8.add(jPanel10, gridBagConstraints);
+
+        tbZoomInButton.setText("zoomin");
+        tbZoomInButton.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 22;
+        gridBagConstraints.gridy = 1;
+        jPanel8.add(tbZoomInButton, gridBagConstraints);
+
+        tbZoomOutButton.setText("zoomin");
+        tbZoomOutButton.setFocusable(false);
+        tbZoomOutButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbZoomOutButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 24;
+        gridBagConstraints.gridy = 1;
+        jPanel8.add(tbZoomOutButton, gridBagConstraints);
+
+        jPanel12.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 26;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        jPanel8.add(jPanel12, gridBagConstraints);
+
+        tbZoom0Button.setText("zoom0");
+        tbZoom0Button.setFocusable(false);
+        tbZoom0Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbZoom0ButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 30;
+        gridBagConstraints.gridy = 1;
+        jPanel8.add(tbZoom0Button, gridBagConstraints);
+
+        tbZoom1Button.setText("zoom0");
+        tbZoom1Button.setFocusable(false);
+        tbZoom1Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbZoom1ButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 32;
+        gridBagConstraints.gridy = 1;
+        jPanel8.add(tbZoom1Button, gridBagConstraints);
+
+        tbZoom2Button.setText("zoom0");
+        tbZoom2Button.setFocusable(false);
+        tbZoom2Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbZoom2ButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 34;
+        gridBagConstraints.gridy = 1;
+        jPanel8.add(tbZoom2Button, gridBagConstraints);
+
+        tbZoom3Button.setText("zoom0");
+        tbZoom3Button.setFocusable(false);
+        tbZoom3Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbZoom3ButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 36;
+        gridBagConstraints.gridy = 1;
+        jPanel8.add(tbZoom3Button, gridBagConstraints);
+
+        tbZoom4Button.setText("zoom0");
+        tbZoom4Button.setFocusable(false);
+        tbZoom4Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbZoom4ButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 38;
+        gridBagConstraints.gridy = 1;
+        jPanel8.add(tbZoom4Button, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel4.add(jPanel8, gridBagConstraints);
+
         layeredPaneContent.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setAutoscrolls(true);
@@ -1698,7 +1911,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
         jPanel5.add(workbenchTabbedPane, gridBagConstraints);
 
         jSplitPane1.setRightComponent(jPanel5);
@@ -1750,19 +1962,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         navigationPanel.add(openTableButton, gridBagConstraints);
-
-        searchBarToggleButton.setText("jToggleButton1");
-        searchBarToggleButton.setToolTipText("Open Search Sidebar");
-        searchBarToggleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchBarToggleButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        navigationPanel.add(searchBarToggleButton, gridBagConstraints);
 
         tableTreesTabbedPane.addTab("Navigation", navigationPanel);
 
@@ -3101,13 +3300,18 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -3171,6 +3375,15 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JTabbedPane tableTreesTabbedPane;
     private javax.swing.JPanel tablesCardPanel;
     private javax.swing.JPanel tablesPanel;
+    private javax.swing.JButton tbBackButton;
+    private javax.swing.JButton tbForewardButton;
+    private javax.swing.JToggleButton tbZoom0Button;
+    private javax.swing.JToggleButton tbZoom1Button;
+    private javax.swing.JToggleButton tbZoom2Button;
+    private javax.swing.JToggleButton tbZoom3Button;
+    private javax.swing.JToggleButton tbZoom4Button;
+    private javax.swing.JButton tbZoomInButton;
+    private javax.swing.JButton tbZoomOutButton;
     private javax.swing.JRadioButtonMenuItem thumbnailLayoutRadioButtonMenuItem;
     private javax.swing.JRadioButtonMenuItem tinyLayoutRadioButtonMenuItem;
     private javax.swing.JLabel titleLabel;
@@ -4622,6 +4835,30 @@ public class DataBrowser extends javax.swing.JFrame {
         searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
     }//GEN-LAST:event_searchBarToggleButtonActionPerformed
 
+    private void tbZoomOutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbZoomOutButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tbZoomOutButtonActionPerformed
+
+    private void tbZoom0ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbZoom0ButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tbZoom0ButtonActionPerformed
+
+    private void tbZoom1ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbZoom1ButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tbZoom1ButtonActionPerformed
+
+    private void tbZoom2ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbZoom2ButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tbZoom2ButtonActionPerformed
+
+    private void tbZoom3ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbZoom3ButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tbZoom3ButtonActionPerformed
+
+    private void tbZoom4ButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbZoom4ButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tbZoom4ButtonActionPerformed
+
     private String bookmarkName(String bookmarkFileName) {
 		if (bookmarkFileName.endsWith(BookmarksPanel.BOOKMARKFILE_EXTENSION)) {
 			return bookmarkFileName.substring(0, bookmarkFileName.length() - BookmarksPanel.BOOKMARKFILE_EXTENSION.length());
@@ -4831,6 +5068,15 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon desktopIcon;
 	private ImageIcon closureIcon;
 	private ImageIcon searchIcon;
+	private ImageIcon tbBackIcon;
+	private ImageIcon tbForwardIcon;
+	private ImageIcon tbZoom0Icon;
+	private ImageIcon tbZoom1Icon;
+	private ImageIcon tbZoom2Icon;
+	private ImageIcon tbZoom3Icon;
+	private ImageIcon tbZoom4Icon;
+	private ImageIcon tbZoomInIcon;
+	private ImageIcon tbZoomOutIcon;
 	{
         // load images
         tableIcon = UIUtil.readImage("/table.png");
@@ -4845,6 +5091,15 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationIcon = UIUtil.readImage("/navigation.png");
         closureIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/closure.png"));
         searchIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/search.png"));
+        tbBackIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_back.png"));
+        tbForwardIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_forward.png"));
+        tbZoom0Icon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoom0.png"));
+        tbZoom1Icon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoom1.png"));
+        tbZoom2Icon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoom2.png"));
+        tbZoom3Icon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoom3.png"));
+        tbZoom4Icon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoom4.png"));
+        tbZoomInIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoomin.png"));
+        tbZoomOutIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoomout.png"));
 	}
 
 }
