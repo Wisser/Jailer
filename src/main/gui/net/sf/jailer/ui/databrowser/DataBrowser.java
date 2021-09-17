@@ -290,7 +290,9 @@ public class DataBrowser extends javax.swing.JFrame {
 	private final SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
 	
 	private boolean initialized = false;
-
+	
+	private final DesktopUndoManager desktopUndoManager;
+	
 	/**
 	 * Allowed row limits.
 	 */
@@ -345,6 +347,8 @@ public class DataBrowser extends javax.swing.JFrame {
         tbZoom4Button.setIcon(tbZoom4Icon);
         tbZoomInButton.setIcon(tbZoomInIcon);
         tbZoomOutButton.setIcon(tbZoomOutIcon);
+        
+        desktopUndoManager = new DesktopUndoManager(tbBackButton, tbForewardButton, goBackItem, goForwardItem, this, jScrollPane1);
         
         linkToolbarButton(tbZoomInButton, zoomInMenuItem);
         linkToolbarButton(tbZoomOutButton, zoomOutMenuItem);
@@ -556,6 +560,10 @@ public class DataBrowser extends javax.swing.JFrame {
         anchorManager = new DesktopAnchorManager(anchorPanel) {
 			@Override
 			protected void layout(RowBrowser anchor) {
+				if (desktopUndoManager != null) {
+					String description = "Align Horizonally";
+					desktopUndoManager.beforeModification(description, description);
+				}
 				try {
 					anchor.internalFrame.setSelected(true);
 				} catch (PropertyVetoException e) {
@@ -877,13 +885,19 @@ public class DataBrowser extends javax.swing.JFrame {
         };
         
         desktop.setMinXProvider(() -> searchPanelContainer.isVisible()? 1 : 0);
+        desktop.setUndoManager(desktopUndoManager);
         searchPanelContainer.addComponentListener(new ComponentListener() {
         	boolean inQueue = false;
+        	Boolean wasVisible = null;
         	private void update() {
         		if (!inQueue) {
 					UIUtil.invokeLater(() -> {
 						inQueue = false;
-						desktop.updateMinX();
+						boolean vis = searchPanelContainer.isVisible();
+						if (wasVisible == null || wasVisible.booleanValue() != vis) {
+							desktop.updateMinX();
+						}
+						wasVisible = vis;
 					});
         			inQueue = true;
         		}
@@ -1477,6 +1491,9 @@ public class DataBrowser extends javax.swing.JFrame {
         consistencyCheckMenuItem1 = new javax.swing.JMenuItem();
         jviewMenu = new javax.swing.JMenu();
         rowLimitMenu = new javax.swing.JMenu();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        goBackItem = new javax.swing.JMenuItem();
+        goForwardItem = new javax.swing.JMenuItem();
         bookmarkMenu = new javax.swing.JMenu();
         addBookmarkMenuItem = new javax.swing.JMenuItem();
         editBookmarkMenuItem = new javax.swing.JMenuItem();
@@ -2371,6 +2388,15 @@ public class DataBrowser extends javax.swing.JFrame {
         rowLimitMenu.setText("Row Limit");
         rowLimitMenu.setToolTipText("Desktop Row Limit");
         jviewMenu.add(rowLimitMenu);
+        jviewMenu.add(jSeparator3);
+
+        goBackItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_LEFT, java.awt.event.InputEvent.ALT_MASK));
+        goBackItem.setText("Go Back");
+        jviewMenu.add(goBackItem);
+
+        goForwardItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.InputEvent.ALT_MASK));
+        goForwardItem.setText("Go Forward");
+        jviewMenu.add(goForwardItem);
 
         menuBar.add(jviewMenu);
 
@@ -3267,6 +3293,8 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem editBookmarkMenuItem;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem exportDataMenuItem;
+    private javax.swing.JMenuItem goBackItem;
+    private javax.swing.JMenuItem goForwardItem;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JMenuItem helpForum;
     private javax.swing.JMenu helpMenu;
@@ -3323,6 +3351,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator14;
     private javax.swing.JPopupMenu.Separator jSeparator15;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
@@ -4637,6 +4666,12 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		saveScriptMenuItem.setEnabled(sqlConsole != null && sqlConsole.isDirty());
 		saveScriptAsMenuItem.setEnabled(sqlConsole != null && !sqlConsole.isEmpty());
+		if (sqlConsole != null) {
+			goBackItem.setEnabled(false);
+			goForwardItem.setEnabled(false);
+		} else if (desktopUndoManager != null) {
+			desktopUndoManager.updateUI();
+		}
 	}
 
 	private void loadScriptMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadScriptMenuItemActionPerformed

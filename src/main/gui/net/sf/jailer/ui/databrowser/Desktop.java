@@ -203,6 +203,13 @@ public abstract class Desktop extends JDesktopPane {
 		return iFrameStateChangeRenderer;
 	}
 
+	private DesktopUndoManager desktopUndoManager;
+	
+	public void setUndoManager(DesktopUndoManager desktopUndoManager) {
+		this.desktopUndoManager = desktopUndoManager;
+	}
+
+	
 	/**
 	 * Constructor.
 	 * 
@@ -545,6 +552,10 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 			}
+		}
+
+		if (desktopUndoManager != null) {
+			desktopUndoManager.beforeModification("Remove Table \"" + title + "\"", "Add Table \"" + title + "\"");
 		}
 
 		final RowBrowser tableBrowser = new RowBrowser();
@@ -1206,6 +1217,17 @@ public abstract class Desktop extends JDesktopPane {
 					parent = this;
 				}
 				UIUtil.setWaitCursor(parent);
+				if (desktopUndoManager != null) {
+					BrowserContentPane root = this;
+					RowBrowser rootBrowser = null;
+					while (root.getParentBrowser() != null) {
+						rootBrowser = root.getParentBrowser();
+						root = rootBrowser.browserContentPane;
+					}
+					String undoDescription = "Start Navigation at \"" + (rootBrowser.internalFrame.getTitle().replaceFirst("\\(\\d+\\)$", "")) + "\" ";
+					String redoDescription = "Start Navigation at \"" + (tableBrowser.internalFrame.getTitle().replaceFirst("\\(\\d+\\)$", "")) + "\" ";
+					desktopUndoManager.beforeModification(undoDescription, redoDescription);
+				}
 				try {
 					Desktop.noArrangeLayoutOnNewTableBrowser = true;
 					Desktop.noArrangeLayoutOnNewTableBrowserWithAnchor = true;
@@ -2749,7 +2771,10 @@ public abstract class Desktop extends JDesktopPane {
 		this.minXProvider = minXProvider;
 	}
 
-	private Timer updateMinXLater = new Timer(10, e -> updateMinX());
+	private Timer updateMinXLater; {
+		updateMinXLater = new Timer(10, e -> updateMinX());
+		updateMinXLater.setRepeats(false);
+	}
 	
 	public void updateMinX() {
 		if (desktopAnimation.isActive()) {
@@ -3027,6 +3052,9 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private void close(final RowBrowser tableBrowser, boolean convertChildrenToRoots) {
+		if (desktopUndoManager != null && tableBrowsers.contains(tableBrowser)) {
+			desktopUndoManager.beforeModification("Add Table \"" + tableBrowser.internalFrame.getTitle() + "\"", "Remove Table \"" + tableBrowser.internalFrame.getTitle() + "\"");
+		}
 		List<RowBrowser> children = new ArrayList<RowBrowser>();
 		for (RowBrowser tb : tableBrowsers) {
 			if (tb.parent == tableBrowser) {
@@ -3288,7 +3316,7 @@ public abstract class Desktop extends JDesktopPane {
 		
 		FileWriter out = new FileWriter(new File(sFile));
 
-		out.write("Layout; " + layoutMode + ";" + parentFrame.autoLayoutMenuItem.isSelected() + LF);
+		out.write("Layout; " + layoutMode + "; " + parentFrame.autoLayoutMenuItem.isSelected() + LF);
 
 		for (RowBrowser rb : tableBrowsers) {
 			if (rb.parent == null) {
@@ -3418,13 +3446,22 @@ public abstract class Desktop extends JDesktopPane {
 	 * Restores browser session.
 	 */
 	private void restoreSession(RowBrowser toBeAppended, Component pFrame, String sFile) throws Exception {
-		boolean oldLayouting = layouting;
+		restoreSession(toBeAppended, pFrame, sFile, true);
+	}
+	
+	/**
+	 * Restores browser session.
+	 */
+	void restoreSession(RowBrowser toBeAppended, Component pFrame, String sFile, boolean restoreGlobalSettings) throws Exception {
 		layouting = true;
 		try {
 			UIUtil.setWaitCursor(pFrame);
 			editorPanesCache.clear();
 			iFrameStateChangeRenderer.startAtomic();
 			noArrangeLayoutOnNewTableBrowser = true;
+			if (desktopUndoManager != null) {
+				desktopUndoManager.beforeRestore();;
+			}
 			
 			String tbaPeerID = null;
 			Map<String, RowBrowser> rbByID = new HashMap<String, Desktop.RowBrowser>();
@@ -3448,7 +3485,9 @@ public abstract class Desktop extends JDesktopPane {
 							layoutMode = LayoutMode.valueOf(l.cells.get(1));
 							updateMenu(layoutMode);
 						}
-						parentFrame.autoLayoutMenuItem.setSelected(!"false".equalsIgnoreCase(l.cells.get(2)));
+						if (restoreGlobalSettings) {
+							parentFrame.autoLayoutMenuItem.setSelected(!"false".equalsIgnoreCase(l.cells.get(2)));
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -3575,10 +3614,13 @@ public abstract class Desktop extends JDesktopPane {
 				JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
 			}
 		} finally {
+			if (desktopUndoManager != null) {
+				desktopUndoManager.afterRestore();;
+			}
 			noArrangeLayoutOnNewTableBrowser = false;
 			iFrameStateChangeRenderer.rollbackAtomic();
 			updateMinX();
-			UIUtil.invokeLater(() -> { layouting = oldLayouting; });
+			UIUtil.invokeLater(() -> { layouting = false; });
 	        UIUtil.resetWaitCursor(pFrame);
 		}
 	}

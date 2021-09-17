@@ -1,3 +1,9 @@
+10.6
+  - The new "Go Back"/"Go Forward" feature allows to go back and forth 
+    to any state ever reached while navigating through the database.
+  - The layout auto-rearrangement can now be turned off.
+    See https://sourceforge.net/p/jailer/discussion/700499/thread/255ca45c7b
+
 10.5.10
   - The user interface of the data browser and SQL console has been made a bit more appealing.
 

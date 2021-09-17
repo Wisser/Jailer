@@ -276,6 +276,24 @@
                 <Property name="toolTipText" type="java.lang.String" value="Desktop Row Limit"/>
               </Properties>
             </Menu>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator3">
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="goBackItem">
+              <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Alt+LEFT"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Go Back"/>
+              </Properties>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="goForwardItem">
+              <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Alt+RIGHT"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Go Forward"/>
+              </Properties>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="bookmarkMenu">

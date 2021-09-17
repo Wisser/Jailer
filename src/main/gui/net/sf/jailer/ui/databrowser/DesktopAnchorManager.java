@@ -60,7 +60,7 @@ public abstract class DesktopAnchorManager {
 		this.anchorPanel.setVisible(false);
 		
 		anchorPanel.add(anchorButton);
-		anchorButton.setToolTipText("align horizontally with predecessors");
+		anchorButton.setToolTipText("Align horizontally with predecessors");
 		anchorButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
