@@ -555,7 +555,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 
 		if (desktopUndoManager != null) {
-			desktopUndoManager.beforeModification("Remove Table \"" + title + "\"", "Add Table \"" + title + "\"");
+			desktopUndoManager.beforeModification("Remove \"" + title.replaceFirst("\\s*\\(\\d+\\)$", "") + "\"", "Add \"" + title.replaceFirst("\\s*\\(\\d+\\)$", "") + "\"");
 		}
 
 		final RowBrowser tableBrowser = new RowBrowser();
@@ -1224,8 +1224,8 @@ public abstract class Desktop extends JDesktopPane {
 						rootBrowser = root.getParentBrowser();
 						root = rootBrowser.browserContentPane;
 					}
-					String undoDescription = "Start Navigation at \"" + (rootBrowser.internalFrame.getTitle().replaceFirst("\\(\\d+\\)$", "")) + "\" ";
-					String redoDescription = "Start Navigation at \"" + (tableBrowser.internalFrame.getTitle().replaceFirst("\\(\\d+\\)$", "")) + "\" ";
+					String undoDescription = "Start Navigation at \"" + (rootBrowser.internalFrame.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "")) + "\" ";
+					String redoDescription = "Start Navigation at \"" + (tableBrowser.internalFrame.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "")) + "\" ";
 					desktopUndoManager.beforeModification(undoDescription, redoDescription);
 				}
 				try {
@@ -3053,7 +3053,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private void close(final RowBrowser tableBrowser, boolean convertChildrenToRoots) {
 		if (desktopUndoManager != null && tableBrowsers.contains(tableBrowser)) {
-			desktopUndoManager.beforeModification("Add Table \"" + tableBrowser.internalFrame.getTitle() + "\"", "Remove Table \"" + tableBrowser.internalFrame.getTitle() + "\"");
+			desktopUndoManager.beforeModification("Add \"" + tableBrowser.internalFrame.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "") + "\"", "Remove \"" + tableBrowser.internalFrame.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "") + "\"");
 		}
 		List<RowBrowser> children = new ArrayList<RowBrowser>();
 		for (RowBrowser tb : tableBrowsers) {

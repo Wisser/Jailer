@@ -465,10 +465,12 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     	try {
-    		dataModel.columnOrderPrio.clear();
-    		dataModel.columnOrderPrio.putAll(columnOrderPrio);
-			dataModel.saveColumnOrderPrio();
-			ok = true;
+    		if (!dataModel.columnOrderPrio.equals(columnOrderPrio)) {
+	    		dataModel.columnOrderPrio.clear();
+	    		dataModel.columnOrderPrio.putAll(columnOrderPrio);
+				dataModel.saveColumnOrderPrio();
+				ok = true;
+    		}
 	    	dialog.dispose();
 		} catch (FileNotFoundException e) {
 			UIUtil.showException(this, "Error", e);

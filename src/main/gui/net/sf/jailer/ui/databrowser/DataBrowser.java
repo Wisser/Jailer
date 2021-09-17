@@ -1073,7 +1073,17 @@ public class DataBrowser extends javax.swing.JFrame {
         UIUtil.fit(this);
 
         if (root != null) {
-            final RowBrowser rb = desktop.addTableBrowser(null, null, root, null, condition, null, null, true);
+            if (desktopUndoManager != null) {
+            	desktopUndoManager.setEnabled(false);
+            }
+            RowBrowser rb;
+            try {
+            	rb = desktop.addTableBrowser(null, null, root, null, condition, null, null, true);
+            } finally {
+	            if (desktopUndoManager != null) {
+	            	desktopUndoManager.setEnabled(true);
+	            }
+            }
             if (rb != null && rb.internalFrame != null) {
                 UIUtil.invokeLater(10, new Runnable() {
                     @Override
