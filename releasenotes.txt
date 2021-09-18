@@ -1,3 +1,6 @@
+10.6.1
+  - An error in creating NVARCHAR literals for MS-SQL Server was corrected.
+
 10.6
   - The new "Go Back"/"Go Forward" feature allows to go back and forth 
     to any state ever reached while navigating through the database.
