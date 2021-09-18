@@ -729,9 +729,6 @@ public class DBMS {
 			}
 		}
 		if (!esc) {
-			if (prefix != null) {
-				return prefix + string;
-			}
 			return string;
 		}
 

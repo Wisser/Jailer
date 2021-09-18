@@ -120,7 +120,9 @@ public class BasicFormatterImpl {
 		}
 		matcher.appendTail(sb);
 		sql = sb.toString().replace("&", marker + "r");
+		sql = sql.replaceAll("\\b(\\w')", marker + "p$1"); // N'nvarchar'
 		sql = format1(sql);
+		sql = sql.replaceAll(marker + "p(\\w)\\s*'", "$1'"); // N'nvarchar'
 		
 		for (Entry<Integer, String> e: prop.entrySet()) {
 			sql = sql.replace(marker + e.getKey() + "z", "${" + e.getValue() + "}");
