@@ -36,7 +36,6 @@ import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.Expression;
@@ -55,6 +54,11 @@ import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.DeclareStatement;
 import net.sf.jsqlparser.statement.DescribeStatement;
 import net.sf.jsqlparser.statement.ExplainStatement;
+import net.sf.jsqlparser.statement.IfElseStatement;
+import net.sf.jsqlparser.statement.PurgeStatement;
+import net.sf.jsqlparser.statement.ResetStatement;
+import net.sf.jsqlparser.statement.RollbackStatement;
+import net.sf.jsqlparser.statement.SavepointStatement;
 import net.sf.jsqlparser.statement.SetStatement;
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
@@ -62,11 +66,15 @@ import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.UseStatement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterSession;
+import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
+import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.schema.CreateSchema;
 import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
+import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -96,6 +104,7 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
@@ -152,7 +161,7 @@ public class AssociationProposer {
 		sqlStatement = SqlUtil.removeNonMeaningfulFragments(sqlStatement);
 		net.sf.jsqlparser.statement.Statement st;
 		try {
-			st = JSqlParserUtil.parse(sqlStatement, timeoutSec);
+			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlStatement), timeoutSec);
 		} catch (JSQLParserException e) {
 			String prefix = "Line " + startLineNumber + ": ";
 			if (e.getCause() instanceof ParseException) {
@@ -382,8 +391,8 @@ public class AssociationProposer {
 			}
 			if (plainSelect.getJoins() != null) {
 				for (Join join: plainSelect.getJoins()) {
-					if (join.getOnExpression() != null) {
-						scopes.peek().expressions.add(join.getOnExpression());
+					if (join.getOnExpressions() != null) {
+						join.getOnExpressions().forEach(e -> scopes.peek().expressions.add(e));
 					}
 					if (join.getRightItem() != null) {
 						join.getRightItem().accept(fromItemVisitor);
@@ -433,7 +442,11 @@ public class AssociationProposer {
 					});
 				}
 			}
-			withItem.getSelectBody().accept(this);
+			if (withItem.getSubSelect() != null) {
+				if (withItem.getSubSelect().getSelectBody() != null) {
+					withItem.getSubSelect().getSelectBody().accept(this);
+				}
+			}
 		}
 
 		@Override
@@ -457,10 +470,6 @@ public class AssociationProposer {
 
 					@Override
 					public void visit(NotExpression aThis) {
-					}
-
-					@Override
-					public void visit(AllComparisonExpression allComparisonExpression) {
 					}
 
 					@Override
@@ -650,6 +659,46 @@ public class AssociationProposer {
 		@Override
 		public void visit(CreateFunctionalStatement createFunctionalStatement) {
 
+		}
+
+		@Override
+		public void visit(SavepointStatement savepointStatement) {
+		}
+
+		@Override
+		public void visit(RollbackStatement rollbackStatement) {
+		}
+
+		@Override
+		public void visit(ResetStatement reset) {
+		}
+
+		@Override
+		public void visit(ShowTablesStatement showTables) {
+		}
+
+		@Override
+		public void visit(CreateSynonym createSynonym) {
+		}
+
+		@Override
+		public void visit(AlterSession alterSession) {
+		}
+
+		@Override
+		public void visit(IfElseStatement aThis) {
+		}
+
+		@Override
+		public void visit(RenameTableStatement renameTableStatement) {
+		}
+
+		@Override
+		public void visit(PurgeStatement purgeStatement) {
+		}
+
+		@Override
+		public void visit(AlterSystemStatement alterSystemStatement) {
 		}
 	}
 

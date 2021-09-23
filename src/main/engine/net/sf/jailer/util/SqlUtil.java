@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -573,6 +574,34 @@ public class SqlUtil {
 	}
 
 	/**
+	 * Removes comments from SQL statement.
+	 *
+	 * @param statement
+	 *            the statement
+	 *
+	 * @return statement the statement without comments
+	 */
+	public static String removeComments(String statement) {
+		Pattern pattern = Pattern.compile("(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(statement);
+		boolean result = matcher.find();
+		StringBuffer sb = new StringBuffer();
+		if (result) {
+			do {
+				int l = matcher.group(0).length();
+				matcher.appendReplacement(sb, "");
+				while (l > 0) {
+					--l;
+					sb.append(' ');
+				}
+				result = matcher.find();
+			} while (result);
+		}
+		matcher.appendTail(sb);
+		return sb.toString();
+	}
+
+	/**
 	 * Removes comments and literals from SQL statement.
 	 *
 	 * @param statement
@@ -580,7 +609,7 @@ public class SqlUtil {
 	 *
 	 * @return statement the statement without comments and literals
 	 */
-	private static String removeCommentsAndLiterals(String statement) {
+	public static String removeCommentsAndLiterals(String statement) {
 		Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(?=\n|$))", Pattern.DOTALL);
 		Matcher matcher = pattern.matcher(statement);
 		boolean result = matcher.find();
@@ -626,6 +655,77 @@ public class SqlUtil {
 
 	public static boolean isLetterOrDigit(char c) {
 		return Character.isAlphabetic(c) || Character.isLetterOrDigit(c) || c == '_';
+	}
+
+	public static String createSQLFragmentSearchPattern(String sql) {
+		Pattern wordChar = Pattern.compile("\\w");
+		StringBuilder pattern = new StringBuilder();
+		Consumer<Character> append = c -> {
+			if (!Character.isWhitespace(c)) {
+				if (isLetterOrDigit(c)) {
+					pattern.append("" + c);
+				} else {
+					pattern.append(Pattern.quote("" + c));
+				}
+			}
+		};
+		boolean inLiteral = false;
+		boolean wasLetter = false;
+		boolean firstChar = true;
+		char lastC = 0;
+		for (int i = 0; i < sql.length(); ++i) {
+			char c = sql.charAt(i);
+			boolean isLetter = wordChar.matcher("" + c).matches();
+			
+			if (inLiteral) {
+				if (c == '\'') {
+					inLiteral = false;
+					append.accept(c);
+				} else {
+					append.accept(c);
+				}
+			} else {
+				if (!(c == lastC && c == ' ')) {
+					if (c == '\'' && c == lastC) {
+						inLiteral = true;
+						append.accept(c);
+					} else {
+						if (c == '\'') {
+							inLiteral = true;
+						}
+						if ((!isLetter || !wasLetter) && !firstChar) {
+							if (!isLetter && wasLetter) {
+								pattern.append("\\b");
+							}
+							if (pattern.length() >= 3 && !pattern.substring(pattern.length() - 3, pattern.length()).equals("\\s*")) {
+								pattern.append("\\s*");
+							}
+							if (c != ' ') {
+								if (isLetter && !wasLetter) {
+									pattern.append("\\b");
+								}
+								append.accept(c);
+							}
+						} else {
+							if (isLetter && !wasLetter) {
+								pattern.append("\\b");
+							}
+							append.accept(c);
+							if (!isLetter && wasLetter) {
+								pattern.append("\\b");
+							}
+						}
+					}
+				}
+			}
+			wasLetter = isLetter;
+			lastC = c;
+			firstChar = false;
+		}
+		if (wasLetter) {
+			pattern.append("\\b");
+		}
+		return pattern.toString();
 	}
 
 }

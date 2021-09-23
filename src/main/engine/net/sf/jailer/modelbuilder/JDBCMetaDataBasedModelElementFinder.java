@@ -54,34 +54,7 @@ import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.statement.Block;
-import net.sf.jsqlparser.statement.Commit;
-import net.sf.jsqlparser.statement.CreateFunctionalStatement;
-import net.sf.jsqlparser.statement.DeclareStatement;
-import net.sf.jsqlparser.statement.DescribeStatement;
-import net.sf.jsqlparser.statement.ExplainStatement;
-import net.sf.jsqlparser.statement.SetStatement;
-import net.sf.jsqlparser.statement.ShowColumnsStatement;
-import net.sf.jsqlparser.statement.ShowStatement;
-import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.statement.UseStatement;
-import net.sf.jsqlparser.statement.alter.Alter;
-import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
-import net.sf.jsqlparser.statement.comment.Comment;
-import net.sf.jsqlparser.statement.create.index.CreateIndex;
-import net.sf.jsqlparser.statement.create.schema.CreateSchema;
-import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
-import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.view.AlterView;
-import net.sf.jsqlparser.statement.create.view.CreateView;
-import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.drop.Drop;
-import net.sf.jsqlparser.statement.execute.Execute;
-import net.sf.jsqlparser.statement.grant.Grant;
-import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.merge.Merge;
-import net.sf.jsqlparser.statement.replace.Replace;
+import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
@@ -92,17 +65,14 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
-import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.statement.truncate.Truncate;
-import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
-import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
  * Finds associations and tables by analyzing the JDBC meta data.
@@ -625,13 +595,13 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			final boolean[] selectExists = new boolean[] { false };
 			final UnderlyingTableInfo underlyingTableInfo = new UnderlyingTableInfo();
 			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(viewText), 5);
-			st.accept(new StatementVisitor() {
+			st.accept(new StatementVisitorAdapter() {
 				@Override
 				public void visit(Upsert arg0) {
 				}
 				@Override
 				public void visit(Select select) {
-					select.getSelectBody().accept(new SelectVisitor() {
+					select.getSelectBody().accept(new SelectVisitorAdapter() {
 						@Override
 						public void visit(WithItem withItem) {
 							isValid[0] = false;
@@ -764,113 +734,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 								plainSelect.getFromItem().accept(fromItemVisitor);
 							}
 						}
-						@Override
-						public void visit(ValuesStatement arg0) {
-
-						}
 					});
-				}
-				@Override
-				public void visit(Merge arg0) {
-				}
-				@Override
-				public void visit(SetStatement arg0) {
-				}
-				@Override
-				public void visit(Execute arg0) {
-				}
-				@Override
-				public void visit(Statements arg0) {
-				}
-				@Override
-				public void visit(Alter arg0) {
-				}
-				@Override
-				public void visit(AlterView arg0) {
-				}
-				@Override
-				public void visit(CreateView arg0) {
-				}
-				@Override
-				public void visit(CreateTable arg0) {
-				}
-				@Override
-				public void visit(CreateIndex arg0) {
-				}
-				@Override
-				public void visit(Truncate arg0) {
-				}
-				@Override
-				public void visit(Drop arg0) {
-				}
-				@Override
-				public void visit(Replace arg0) {
-				}
-				@Override
-				public void visit(Insert arg0) {
-				}
-				@Override
-				public void visit(Update arg0) {
-				}
-				@Override
-				public void visit(Delete arg0) {
-				}
-				@Override
-				public void visit(Commit arg0) {
-				}
-				@Override
-				public void visit(UseStatement use) {
-				}
-				@Override
-				public void visit(Block arg0) {
-				}
-				@Override
-				public void visit(Comment arg0) {
-
-				}
-				@Override
-				public void visit(CreateSchema arg0) {
-
-				}
-				@Override
-				public void visit(ShowColumnsStatement arg0) {
-
-				}
-				@Override
-				public void visit(ValuesStatement arg0) {
-
-				}
-				@Override
-				public void visit(DescribeStatement arg0) {
-
-				}
-				@Override
-				public void visit(ExplainStatement arg0) {
-
-				}
-				@Override
-				public void visit(ShowStatement arg0) {
-
-				}
-				@Override
-				public void visit(DeclareStatement arg0) {
-
-				}
-				@Override
-				public void visit(Grant arg0) {
-
-				}
-				@Override
-				public void visit(CreateSequence arg0) {
-
-				}
-				@Override
-				public void visit(AlterSequence arg0) {
-
-				}
-				@Override
-				public void visit(CreateFunctionalStatement arg0) {
-
 				}
 			});
 			if (isValid[0] && selectExists[0] && underlyingTableInfo.underlyingTable != null) {

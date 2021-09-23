@@ -134,6 +134,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.metadata.ResultSetRenderer;
+import net.sf.jailer.ui.databrowser.whereconditioneditor.WCTypeAnalyser;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
@@ -788,7 +789,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             		.replaceAll("((?:(?:;(?: |\\t|\\r)*?(?:--[^\\n]*)?))) ?\\\\([ \\t\\r]*\\n)", "$1$2")
             		.replaceAll("((?:\\n(?: |\\t|\\r)*?)) ?\\\\([ \\t\\r]*)(?=\\n)", "$1");
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
-	        status.statement = sqlStatement;
+	        
+
+        	// TODO weg
+			WCTypeAnalyser.getType(sqlStatement, metaDataSource);
+			
+
+			status.statement = sqlStatement;
 	        boolean loadButtonIsVisible = true;
             boolean hasResultSet;
             boolean hasUpdateCount = true;
@@ -816,7 +823,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 	statement.close();
             	}
                 statement = connection.createStatement();
-            	hasResultSet = statement.execute(String.format(Locale.ENGLISH, session.dbms.getExplainQuery(), sqlStatement, stmtId));
+				hasResultSet = statement.execute(String.format(Locale.ENGLISH, session.dbms.getExplainQuery(), sqlStatement, stmtId));
             } else {
             	sqlPlusResultSet = sqlPlusSupport.executeSQLPLusQuery(sqlStatement);
             	if (sqlPlusResultSet != null) {
@@ -846,7 +853,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final ResultSet metaDataResultSet = theMetaDataResultSet;
                 final String finalResultSetType = resultSetType;
 				final Integer limit = (Integer) limitComboBox.getSelectedItem();
-				Map<Integer, String> sqlColumnExpression = new HashMap<Integer, String>();;
+				Map<Integer, String> sqlColumnExpression = new HashMap<Integer, String>();
+				
+				// TODO
+				WCTypeAnalyser.getType(sqlStatement, metaDataSource);
+				
 				List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, true, sqlColumnExpression, metaDataSource);
 				List<Table> nfResultTypesWOCheck = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, false, sqlColumnExpression, metaDataSource);
                 Table resultType = null;

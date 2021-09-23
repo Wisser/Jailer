@@ -48,15 +48,14 @@ public final class JSqlParserUtil {
 	 * @throws JSQLParserException if JSQLParser is not able to parse the statement
 	 */
     public static Statement parse(String sql, int timeoutSec) throws JSQLParserException {
-    	String simplifiedSql = SqlUtil.removeNonMeaningfulFragments(sql);
-        CCJSqlParser parser = new CCJSqlParser(new StringProvider(simplifiedSql)).withSquareBracketQuotation(false);;
+    	CCJSqlParser parser = new CCJSqlParser(new StringProvider(sql)).withSquareBracketQuotation(false);
 		try {
-		    return parse(parser, simplifiedSql, timeoutSec);
+		    return parse(parser, sql, timeoutSec);
 		} catch (Exception e) {
-			if (simplifiedSql.contains("[")) {
-				parser = new CCJSqlParser(new StringProvider(simplifiedSql)).withSquareBracketQuotation(true);
+			if (sql.contains("[")) {
+				parser = new CCJSqlParser(new StringProvider(sql)).withSquareBracketQuotation(true);
 				try {
-				    return parse(parser, simplifiedSql, timeoutSec);
+				    return parse(parser, sql, timeoutSec);
 				} catch (Exception e2) {
 				    // ignore
 				}

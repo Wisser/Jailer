@@ -2683,9 +2683,7 @@ public abstract class Desktop extends JDesktopPane {
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
-					synchronized (session) {
-						session.shutDown();
-					}
+					session.shutDown();
 				}
 			});
 			UIUtil.startDemon(thread);

@@ -37,13 +37,14 @@ import net.sf.jailer.util.JSqlParserUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
-import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
+import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
+import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -54,7 +55,9 @@ import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
+import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
@@ -64,16 +67,21 @@ import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
+import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.TimezoneExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
+import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
+import net.sf.jsqlparser.expression.XMLSerializeExpr;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -88,6 +96,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
@@ -107,35 +116,8 @@ import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Block;
-import net.sf.jsqlparser.statement.Commit;
-import net.sf.jsqlparser.statement.CreateFunctionalStatement;
-import net.sf.jsqlparser.statement.DeclareStatement;
-import net.sf.jsqlparser.statement.DescribeStatement;
-import net.sf.jsqlparser.statement.ExplainStatement;
-import net.sf.jsqlparser.statement.SetStatement;
-import net.sf.jsqlparser.statement.ShowColumnsStatement;
-import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.StatementVisitor;
-import net.sf.jsqlparser.statement.Statements;
-import net.sf.jsqlparser.statement.UseStatement;
-import net.sf.jsqlparser.statement.alter.Alter;
-import net.sf.jsqlparser.statement.alter.sequence.AlterSequence;
-import net.sf.jsqlparser.statement.comment.Comment;
-import net.sf.jsqlparser.statement.create.index.CreateIndex;
-import net.sf.jsqlparser.statement.create.schema.CreateSchema;
-import net.sf.jsqlparser.statement.create.sequence.CreateSequence;
-import net.sf.jsqlparser.statement.create.table.CreateTable;
-import net.sf.jsqlparser.statement.create.view.AlterView;
-import net.sf.jsqlparser.statement.create.view.CreateView;
-import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.drop.Drop;
-import net.sf.jsqlparser.statement.execute.Execute;
-import net.sf.jsqlparser.statement.grant.Grant;
-import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.merge.Merge;
-import net.sf.jsqlparser.statement.replace.Replace;
+import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
@@ -148,15 +130,13 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.select.TableFunction;
 import net.sf.jsqlparser.statement.select.ValuesList;
 import net.sf.jsqlparser.statement.select.WithItem;
-import net.sf.jsqlparser.statement.truncate.Truncate;
-import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 /**
@@ -188,10 +168,10 @@ public class QueryTypeAnalyser {
 			Map<Pair<String, String>, Collection<Pair<String, String>>> equivs = new HashMap<Pair<String,String>, Collection<Pair<String,String>>>();
 			final LinkedHashMap<String, MDTable> fromClause = analyseFromClause(st, equivs, metaDataSource);
 			final List<Pair<String, String>> selectClause = new ArrayList<Pair<String, String>>();
-			st.accept(new DefaultStatementVisitor() {
+			st.accept(new StatementVisitorAdapter() {
 				@Override
 				public void visit(Select select) {
-					select.getSelectBody().accept(new SelectVisitor() {
+					select.getSelectBody().accept(new SelectVisitorAdapter() {
 
 						@Override
 						public void visit(WithItem withItem) {
@@ -335,7 +315,7 @@ public class QueryTypeAnalyser {
 	private static LinkedHashMap<String, MDTable> analyseFromClause(Statement st, final Map<Pair<String, String>, Collection<Pair<String, String>>> equivs, final MetaDataSource metaDataSource) {
 		final LinkedHashMap<String, MDTable> result = new LinkedHashMap<String, MDTable>();
 
-		st.accept(new DefaultStatementVisitor() {
+		st.accept(new StatementVisitorAdapter() {
 			private int unknownTableCounter = 0;
 			@Override
 			public void visit(Select select) {
@@ -381,8 +361,8 @@ public class QueryTypeAnalyser {
 										}
 										for (Join join: subjoin.getJoinList()) {
 											expressionAnalyzer.setOuterJoinExpression(join.isOuter() || join.isLeft() || join.isRight());
-											if (join.getOnExpression() != null) {
-												join.getOnExpression().accept(expressionAnalyzer);
+											if (join.getOnExpressions() != null) {
+												join.getOnExpressions().forEach(e -> e.accept(expressionAnalyzer));
 											}
 										}
 									}
@@ -438,8 +418,8 @@ public class QueryTypeAnalyser {
 								}
 								for (Join join: plainSelect.getJoins()) {
 									expressionAnalyzer.setOuterJoinExpression(join.isOuter() || join.isLeft() || join.isRight());
-									if (join.getOnExpression() != null) {
-										join.getOnExpression().accept(expressionAnalyzer);
+									if (join.getOnExpressions() != null) {
+										join.getOnExpressions().forEach(e -> e.accept(expressionAnalyzer));
 									}
 								}
 							}
@@ -691,11 +671,6 @@ public class QueryTypeAnalyser {
 			}
 
 			@Override
-			public void visit(AllComparisonExpression allComparisonExpression) {
-				noSubexpression[0] = false;
-			}
-
-			@Override
 			public void visit(ExistsExpression existsExpression) {
 				noSubexpression[0] = false;
 			}
@@ -877,202 +852,69 @@ public class QueryTypeAnalyser {
 
 			@Override
 			public void visit(IntegerDivision division) {
-
+				noSubexpression[0] = false;
 			}
 
 			@Override
 			public void visit(FullTextSearch fullTextSearch) {
-
+				noSubexpression[0] = false;
 			}
 
 			@Override
 			public void visit(IsBooleanExpression isBooleanExpression) {
-
+				noSubexpression[0] = false;
 			}
 
 			@Override
 			public void visit(NextValExpression aThis) {
-
+				noSubexpression[0] = false;
 			}
 
 			@Override
 			public void visit(CollateExpression aThis) {
-
+				noSubexpression[0] = false;
 			}
 
 			@Override
 			public void visit(SimilarToExpression aThis) {
-
+				noSubexpression[0] = false;
 			}
 
 			@Override
 			public void visit(ArrayExpression aThis) {
-
+				noSubexpression[0] = false;
+			}
+			public void visit(XorExpression arg0) {
+				noSubexpression[0] = false;
+			}
+			public void visit(RowGetExpression arg0) {
+				noSubexpression[0] = false;
+			}
+			public void visit(ArrayConstructor arg0) {
+				noSubexpression[0] = false;
+			}
+			public void visit(VariableAssignment arg0) {
+				noSubexpression[0] = false;
+			}
+			public void visit(XMLSerializeExpr arg0) {
+				noSubexpression[0] = false;
+			}
+			public void visit(TimezoneExpression arg0) {
+				noSubexpression[0] = false;
+			}
+			public void visit(JsonAggregateFunction arg0) {
+				noSubexpression[0] = false;
+			}
+			public void visit(JsonFunction arg0) {
+				noSubexpression[0] = false;
+			}
+			public void visit(ConnectByRootOperator arg0) {
+				noSubexpression[0] = false;
+			}
+			public void visit(OracleNamedFunctionParameter arg0) {
+				noSubexpression[0] = false;
 			}
 		};
-	}
-
-	private static class DefaultStatementVisitor implements StatementVisitor {
-
-		@Override
-		public void visit(Commit commit) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Delete delete) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Update update) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Insert insert) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Replace replace) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Drop drop) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Truncate truncate) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(CreateIndex createIndex) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(CreateTable createTable) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(CreateView createView) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(AlterView alterView) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Alter alter) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Statements stmts) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Execute execute) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(SetStatement set) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Merge merge) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Select select) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Upsert upsert) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(UseStatement use) {
-			throw new QueryTooComplexException();
-		}
-
-		@Override
-		public void visit(Block arg0) {
-		}
-
-		@Override
-		public void visit(Comment comment) {
-
-		}
-
-		@Override
-		public void visit(CreateSchema aThis) {
-
-		}
-
-		@Override
-		public void visit(ShowColumnsStatement set) {
-
-		}
-
-		@Override
-		public void visit(ValuesStatement values) {
-
-		}
-
-		@Override
-		public void visit(DescribeStatement describe) {
-
-		}
-
-		@Override
-		public void visit(ExplainStatement aThis) {
-
-		}
-
-		@Override
-		public void visit(ShowStatement aThis) {
-
-		}
-
-		@Override
-		public void visit(DeclareStatement aThis) {
-
-		}
-
-		@Override
-		public void visit(Grant grant) {
-
-		}
-
-		@Override
-		public void visit(CreateSequence createSequence) {
-
-		}
-
-		@Override
-		public void visit(AlterSequence alterSequence) {
-
-		}
-
-		@Override
-		public void visit(CreateFunctionalStatement createFunctionalStatement) {
-
-		}
-
 	}
 
 }

@@ -26,6 +26,7 @@ import java.util.Set;
 
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.util.Pair;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -36,7 +37,7 @@ import net.sf.jsqlparser.schema.Column;
  * 
  * @author Ralf Wisser
  */
-class ExpressionAnalyzer extends AbstractExpressionVisitor {
+class ExpressionAnalyzer extends ExpressionVisitorAdapter {
 
 	private final LinkedHashMap<String, MDTable> fromClause;
 	private boolean isOuterJoinExpression;
@@ -159,7 +160,7 @@ class ExpressionAnalyzer extends AbstractExpressionVisitor {
         and.getRightExpression().accept(this);
 	}
 
-	private class ColumnAnalyzer extends AbstractExpressionVisitor {
+	private class ColumnAnalyzer extends ExpressionVisitorAdapter {
 		Pair<String, String> columnInFrom;
 		
 		@Override
