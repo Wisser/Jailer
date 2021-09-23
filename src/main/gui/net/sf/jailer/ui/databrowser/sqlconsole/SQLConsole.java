@@ -135,6 +135,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.metadata.ResultSetRenderer;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WCTypeAnalyser;
+import net.sf.jailer.ui.databrowser.whereconditioneditor.WCTypeAnalyser.Result;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
@@ -789,12 +790,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             		.replaceAll("((?:(?:;(?: |\\t|\\r)*?(?:--[^\\n]*)?))) ?\\\\([ \\t\\r]*\\n)", "$1$2")
             		.replaceAll("((?:\\n(?: |\\t|\\r)*?)) ?\\\\([ \\t\\r]*)(?=\\n)", "$1");
 			sqlStatement = sqlPlusSupport.replaceVariables(sqlStatement, positionOffsets);
-	        
-
-        	// TODO weg
-			WCTypeAnalyser.getType(sqlStatement, metaDataSource);
-			
-
 			status.statement = sqlStatement;
 	        boolean loadButtonIsVisible = true;
             boolean hasResultSet;
@@ -855,12 +850,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				final Integer limit = (Integer) limitComboBox.getSelectedItem();
 				Map<Integer, String> sqlColumnExpression = new HashMap<Integer, String>();
 				
-				// TODO
-				WCTypeAnalyser.getType(sqlStatement, metaDataSource);
-				
 				List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, true, sqlColumnExpression, metaDataSource);
 				List<Table> nfResultTypesWOCheck = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, false, sqlColumnExpression, metaDataSource);
-                Table resultType = null;
+				Result wcBaseTable = WCTypeAnalyser.getType(sqlStatement, metaDataSource);
+				Table resultType = null;
                 if (nfResultTypesWOCheck != null && !nfResultTypesWOCheck.isEmpty()) {
                 	int columnCount = metaData.getColumnCount();
                 	for (Table table: nfResultTypesWOCheck) {
@@ -1032,7 +1025,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 	TabContentPanel tabContentPanel;
                 	@Override
                     public void run() {
-                        final BrowserContentPane rb = new ResultContentPane(datamodel.get(), finalResultType, "", session, null,
+                        final BrowserContentPane rb = new ResultContentPane(datamodel.get(), wcBaseTable, finalResultType, "", session, null,
                                 null, (JFrame) SwingUtilities.getWindowAncestor(SQLConsole.this), new RowsClosure(), false, false, executionContext) {
                         	@Override
                         	public void afterReload() {
@@ -2051,16 +2044,22 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	
     class ResultContentPane extends BrowserContentPane {
     	private final Frame parentFrame;
-        public ResultContentPane(DataModel dataModel, Table table, String condition, Session session,
+    	private final WCTypeAnalyser.Result wcBaseTable;
+        public ResultContentPane(DataModel dataModel, WCTypeAnalyser.Result wcBaseTable, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
                 RowsClosure rowsClosure, Boolean selectDistinct,
                 boolean reload, ExecutionContext executionContext) {
             super(dataModel, table, condition, session, parentRows, association, parentFrame,
             		rowsClosure, selectDistinct, reload, executionContext);
             this.parentFrame = parentFrame;
+            this.wcBaseTable = wcBaseTable;
             noSingleRowDetailsView = true;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
         }
+        @Override
+    	protected Table getWhereClauseEditorBaseTable() {
+    		return wcBaseTable == null? table :  wcBaseTable.table;
+    	}
         @Override
         protected int getReloadLimit() {
         	return (Integer) limitComboBox.getSelectedItem();
@@ -2201,10 +2200,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						}
 					}
 				});
-				if (table != null) {
+				if (getWhereClauseEditorBaseTable() != null) {
 		    		BrowserContentCellEditor cellEditor = browserContentCellEditor;
 					try {
-						popUpWhereConditionEditorPanel = new WhereConditionEditorPanelConsole(dialog, datamodel.get(), table, cellEditor, null,
+						popUpWhereConditionEditorPanel = new WhereConditionEditorPanelConsole(dialog, datamodel.get(), getWhereClauseEditorBaseTable(), cellEditor, null,
 								popUpWhereConditionEditorPanel, popUpSearchBarEditor, null, true, column, session, executionContext, ResultContentPane.this) {
 							@Override
 							protected void onEscape() {
@@ -2216,7 +2215,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						return;
 					}
 					popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
-					popUpWhereConditionEditorPanel.parseCondition(statementForReloading);
+					popUpWhereConditionEditorPanel.parseCondition(""); // TODO "secodaryCond"
 					
 					dialog.setModal(false);
 					dialog.setUndecorated(true);

@@ -859,7 +859,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static final KeyStroke KS_EDIT = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
 
 	private boolean useWhereClauseEditor() {
-		return getQueryBuilderDialog() != null /* TODO */;
+		return true; // return getQueryBuilderDialog() != null /* TODO */;
 	}
 
 	/**
@@ -1166,12 +1166,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				g2d.setStroke(new BasicStroke(1));
 				Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), new Point(0, 0), this);
 
-				if (BrowserContentPane.this.table != null && browserContentCellEditor != null) {
+				if (getWhereClauseEditorBaseTable() != null && browserContentCellEditor != null) {
 					Shape clip = g2d.getClip();
 					g2d.clipRect(0, 0, getViewportBorderBounds().width, getViewportBorderBounds().height);
 					for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
-						if (BrowserContentPane.this.table != null) {
-							if (browserContentCellEditor.getColumnTypes().length > i && browserContentCellEditor.isEditable(BrowserContentPane.this.table, i, null)) {
+						if (getWhereClauseEditorBaseTable() != null) {
+							if (browserContentCellEditor.getColumnTypes().length > i && browserContentCellEditor.isEditable(getWhereClauseEditorBaseTable(), i, null)) {
 								int vi = rowsTable.convertColumnIndexToView(i);
 								if (columnHeaderColors != null && columnHeaderColors[i] != null) {
 									JTableHeader header = rowsTable.getTableHeader();
@@ -1982,7 +1982,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		        	TableColumn theColumn = header.getColumnModel().getColumn(column);
 		        	header.setToolTipText(theColumn.getHeaderValue() == null? "" : (theColumn.getHeaderValue().toString()));
 		        	currentSearchButtonColumnIndex = column;
-		        	if (table != null && browserContentCellEditor.getColumnTypes().length > modelIndex && browserContentCellEditor.isEditable(table, modelIndex, null)) {
+		        	if (getWhereClauseEditorBaseTable() != null && browserContentCellEditor.getColumnTypes().length > modelIndex && browserContentCellEditor.isEditable(getWhereClauseEditorBaseTable(), modelIndex, null)) {
 			    		currentSearchButtonLocation = calcSearchColumnPosition(column);
 						int iconWidth = ready != null? ready.getIconWidth() : 0;
 						int dx = currentSearchButtonLocation.x + iconWidth / 2 - e.getX();
@@ -2019,7 +2019,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		        if (column >= 0 && SwingUtilities.isRightMouseButton(e) && useWhereClauseEditor()) {
 					JPopupMenu menu = new JPopupMenu();
 					JMenuItem mi = new JMenuItem("Edit Condition");
-					mi.setEnabled(table != null && browserContentCellEditor.getColumnTypes().length > column && browserContentCellEditor.isEditable(table, column, null));
+					mi.setEnabled(getWhereClauseEditorBaseTable() != null && browserContentCellEditor.getColumnTypes().length > column && browserContentCellEditor.isEditable(getWhereClauseEditorBaseTable(), column, null));
 					mi.addActionListener(evt -> {
 						openConditionEditor(finalLocation, column, null);
 					});
@@ -7401,6 +7401,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		userActions.add(userAction);
 	}
 	
+	protected Table getWhereClauseEditorBaseTable() {
+		return table;
+	}
+
 	private int currentEditState;
 
 	protected Set<Integer> filteredColumns;

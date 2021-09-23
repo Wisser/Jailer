@@ -148,7 +148,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private List<Comparison> comparisons = new ArrayList<Comparison>();
 	private Set<Integer> involvedColumns = new HashSet<Integer>();
 	private Map<String, Consumer<JLabel>> columnLabelConsumers = new HashMap<String, Consumer<JLabel>>();
-	
+
     /**
      * Creates new form SearchPanel
      */
@@ -1821,6 +1821,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			try {
 				session.executeQuery(sqlQuery + " order by " + columnName, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
 			} catch (SQLException e) {
+				
+				e.printStackTrace(); // TODO
+				
+				
 				result.clear();
 				result.putAll(prev);
 				// try without ordering
