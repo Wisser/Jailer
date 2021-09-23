@@ -928,8 +928,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 Map<Table, Integer> tableOrd = new HashMap<Table, Integer>();
                 int nextOrd = 0;
                 for (int i = 0; i < metaData.getColumnCount(); ++i) {
-                	String columnLabel = metaData.getColumnLabel(i + 1);
-					if (columnLabel == null || columnLabel.matches("\\s*|\\?column\\?")) {
+                	String columnLabel = metaData.getColumnLabel(i + 1).replaceAll("\\s+", " ").replaceFirst("^(.{64}).+$", "$1...");
+					if (columnLabel == null || columnLabel.matches("(?is:\\s*|\\?column\\?|(^\\(*select\\b.*))")) {
 						if (sqlColumnExpression.containsKey(i)) {
 							columnLabel = sqlColumnExpression.get(i);
 						}
@@ -940,7 +940,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					}
             		String type = column.toSQL("").substring(column.name.length()).trim();
             		if (tabPerIndex.isEmpty()) {
-                		columnLabels[i] = "<html><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
+                		columnLabels[i] = "<html><nobr><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
                 	} else {
                 		String bgColor = "0066ff";
                 		Table table = tabPerIndex.get(i);
@@ -963,7 +963,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 		} else {
                 			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
                 		}
-                		columnLabels[i] = "<html><font color=\"#" + bgColor + "\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
+                		columnLabels[i] = "<html><nobr><font color=\"#" + bgColor + "\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
                 	}
                 }
                 final List<Table> resultTypes = nfResultTypes;

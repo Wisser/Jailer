@@ -163,7 +163,7 @@ public class WCTypeAnalyser {
 		@Override
 		public String toString() {
 			return "Result [table=" + table + ", Columns=" + table.getColumns() + ", hasCondition=" + hasCondition + ", isHaving=" + isHaving
-					+ ", conditionStart=" + conditionStart + ", conditionEnd=" + conditionEnd + "]";
+					+ ", conditionStart=" + conditionStart + ", conditionEnd=" + conditionEnd + ", Cond=" + table.getName().substring(conditionStart, conditionEnd) + ", Length=" + table.getName().length() + "]";
 		}
 	}
 	
@@ -274,6 +274,18 @@ public class WCTypeAnalyser {
 									}
 									if (pos == null) {
 										pos = findFragment(sql, topLevelSql);
+									}
+									if (pos == null) {
+										pos = findFragment((result.isHaving? "having " : "where ") + sql, topLevelSql);
+										if (pos != null) {
+											Pattern p = Pattern.compile("^(" + (result.isHaving? "having" : "where") + "\\s+)", Pattern.CASE_INSENSITIVE);
+											Matcher matcher = p.matcher(topLevelSql.substring(pos.a, pos.b));
+											if (matcher.find()) {
+												pos = new Pair<Integer, Integer>(pos.a + matcher.end(), pos.b);
+											} else {
+												pos = null;
+											}
+										}
 									}
 								}
 								if (pos != null) {
@@ -431,7 +443,7 @@ public class WCTypeAnalyser {
 	}
 
 	private static String createTopLevelSQL(String sqlSelect) {
-		StringBuilder result = new StringBuilder(SqlUtil.removeCommentsAndLiterals(sqlSelect));
+		StringBuilder result = new StringBuilder(SqlUtil.removeComments(sqlSelect));
 		
 		int level = 0;
 		for (int i = 0; i < result.length(); ++i) {
