@@ -155,15 +155,18 @@ public class WCTypeAnalyser {
 
 	public static class Result {
 		public Table table;
+		public String cte;
 		public boolean hasCondition;
 		public boolean isHaving; // having/where
 		public int conditionStart;
 		public int conditionEnd;
+		public String originalQuery;
 
 		@Override
 		public String toString() {
 			return "Result [table=" + table + ", Columns=" + table.getColumns() + ", hasCondition=" + hasCondition + ", isHaving=" + isHaving
-					+ ", conditionStart=" + conditionStart + ", conditionEnd=" + conditionEnd + ", Cond=" + table.getName().substring(conditionStart, conditionEnd) + ", Length=" + table.getName().length() + "]";
+					+ ", conditionStart=" + conditionStart + ", conditionEnd=" + conditionEnd + ", Cond=" + table.getName().substring(conditionStart, conditionEnd) + ", Length=" + table.getName().length()
+					+ ", Cte=" + cte + "]";
 		}
 	}
 	
@@ -175,12 +178,14 @@ public class WCTypeAnalyser {
 	 */
 	public static Result getType(String sqlSelect, final MetaDataSource metaDataSource) {
 		Result result = new Result();
+		result.originalQuery = sqlSelect;
 		net.sf.jsqlparser.statement.Statement st;
 		try {
 			StringBuilder woComments = new StringBuilder(SqlUtil.removeComments(sqlSelect));
 			String woCommentsAndLiterals = SqlUtil.removeCommentsAndLiterals(sqlSelect);
 			String topLevelSql = createTopLevelSQL(sqlSelect);
-
+			StringBuilder cte = new StringBuilder();
+			
 			st = JSqlParserUtil.parse(woComments.toString(), 2);
 
 			int[] unknownTableCounter = new int[1];
@@ -297,9 +302,23 @@ public class WCTypeAnalyser {
 							} else {
 								result.hasCondition = false;
 							}
-
-//							clearInStatement(plainSelect.getWhere());
-//							clearInStatement(plainSelect.getHaving());
+							
+							int selectEnd = plainSelect.getSelectItems().get(plainSelect.getSelectItems().size() - 1).getASTNode().jjtGetLastToken().absoluteEnd - 1;
+							int plainSelectStart = plainSelect.getASTNode().jjtGetFirstToken().absoluteBegin - 1;
+							
+							cte.append(woComments.toString().substring(0, plainSelectStart));
+							for (int i = 0; i < selectEnd; ++i) {
+								woComments.setCharAt(i, ' ');
+							}
+							woComments.setCharAt(selectEnd - 1, '\f');
+							Pair<Integer, Integer> pos = findFragment("\f from", woComments.toString());
+							if (pos != null) {
+								for (int i = pos.a; i < pos.b; ++i) {
+									woComments.setCharAt(i, ' ');
+								}
+							} else {
+								throw new QueryTooComplexException();
+							}
 							
 							for (SelectItem si: plainSelect.getSelectItems()) {
 								final boolean stop[] = new boolean[] { false };
@@ -415,6 +434,7 @@ public class WCTypeAnalyser {
 			Table table = new Table(woComments.toString(), pk, false, false);
 			table.setColumns(selectClause);
 			result.table = table;
+			result.cte = cte.toString();
 			
 			System.out.println(result); // TODO
 			

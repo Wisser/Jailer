@@ -1975,9 +1975,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
     
-	private class WhereConditionEditorPanelConsole extends WhereConditionEditorPanel {
-		private final ResultContentPane resultContentPane;
-		private final int initialColumn;
+	private abstract class WhereConditionEditorPanelConsole extends WhereConditionEditorPanel {
+		protected final ResultContentPane resultContentPane;
 
 		private WhereConditionEditorPanelConsole(Window parent, DataModel dataModel, Table table,
 				BrowserContentCellEditor cellEditor, Boolean sorted, WhereConditionEditorPanel predecessor,
@@ -1986,31 +1985,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			super(parent, dataModel, table, cellEditor, sorted, predecessor, editor, closeButton, asPopup, initialColumn, true, session, 
 					new MetaDataBasedSQLCompletionProvider(session, metaDataSource), executionContext);
 			this.resultContentPane = resultContentPane;
-			this.initialColumn = initialColumn;
-		}
-
-		@Override
-		protected void consume(String condition, Set<Integer> involvedColumns) {
-			if (resultContentPane != null) {
-//				String andConditionText = rowBrowser.browserContentPane.getAndConditionText();
-//				andConditionText = new BasicFormatterImpl().format(andConditionText.trim());
-//				condition = new BasicFormatterImpl().format(condition.trim());
-//				if (!andConditionText.equals(condition)) {
-//					boolean oldSuppessReloadOnAndConditionAction = rowBrowser.browserContentPane.suppessReloadOnAndConditionAction;
-//					try {
-//						rowBrowser.browserContentPane.filteredColumns = involvedColumns;
-//						rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = true;
-//						rowBrowser.browserContentPane.setAndCondition(UIUtil.toSingleLineSQL(condition), true);
-//						rowBrowser.browserContentPane.reloadRows();
-//						if (initialColumn >= 0) {
-//							rowBrowser.browserContentPane.onConditionChange(rowBrowser.browserContentPane.getAndConditionText());
-//						}
-//						UISettings.s12 += 1000;
-//					} finally {
-//						rowBrowser.browserContentPane.suppessReloadOnAndConditionAction = oldSuppessReloadOnAndConditionAction;
-//					}
-//				}
-			}
 		}
 
 		@Override
@@ -2045,6 +2019,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     class ResultContentPane extends BrowserContentPane {
     	private final Frame parentFrame;
     	private final WCTypeAnalyser.Result wcBaseTable;
+    	private String secodaryCond = "";
         public ResultContentPane(DataModel dataModel, WCTypeAnalyser.Result wcBaseTable, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
                 RowsClosure rowsClosure, Boolean selectDistinct,
@@ -2209,13 +2184,55 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							protected void onEscape() {
 								close.run();
 							}
+							
+							@Override
+							protected boolean inSQLConsole() {
+								return true;
+							}
+							
+							@Override
+							protected void consume(String condition, Set<Integer> involvedColumns) {
+								if (resultContentPane != null && !secodaryCond.equals(condition.trim())) {
+									secodaryCond = condition.trim();
+									UISettings.s12 += 100000;
+									
+									String tableWithCondition = createTableWithCondition(wcBaseTable.originalQuery, secodaryCond);
+									
+									setStatementForReloading(tableWithCondition);
+									reloadRows();
+								}
+							}
+							
+							@Override
+							protected String createTableWithCondition(String condition, String tabName, String extJoin) {
+								return createTableWithCondition(wcBaseTable.table.getName(), condition);
+							}
+
+							private String createTableWithCondition(String table, String condition) {
+								if (condition.trim().isEmpty()) {
+									return table;
+								}
+								if (wcBaseTable.hasCondition) {
+									return table.substring(0, wcBaseTable.conditionStart)
+											+ "(" + condition + ")"
+											+ table.substring(wcBaseTable.conditionEnd);
+								} else {
+									return table + (wcBaseTable.isHaving? " Having " : " Where ") + condition;
+								}
+							}
+							
+							@Override
+							protected String getCTE() {
+								return wcBaseTable.cte;
+							}
 						};
+						popUpWhereConditionEditorPanel.setTableAlias(null);
 					} catch (SQLException e1) {
 						UIUtil.showException(SQLConsole.this, "Error", e1);
 						return;
 					}
 					popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
-					popUpWhereConditionEditorPanel.parseCondition(""); // TODO "secodaryCond"
+					popUpWhereConditionEditorPanel.parseCondition(secodaryCond);
 					
 					dialog.setModal(false);
 					dialog.setUndecorated(true);

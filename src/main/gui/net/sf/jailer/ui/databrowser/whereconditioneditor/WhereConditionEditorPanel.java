@@ -1691,7 +1691,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			int columnIndex = 0;
 			while (columnIndex < table.getColumns().size()) {
 				if (comparison.column.equals(table.getColumns().get(columnIndex))) {
-					if (tableAlias == null && condition.isEmpty()) {
+					if (tableAlias == null && condition.isEmpty() && !inSQLConsole()) {
 						if (comparison.column.name.startsWith("A.")) {
 							tabName = tabName.replaceFirst("^(.* A)\\s+join(.* B)\\s+on.*$", "$1");
 						} else if (comparison.column.name.startsWith("B.")) {
@@ -1768,6 +1768,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		});
 	}
 
+	protected boolean inSQLConsole() {
+		return false;
+	}
+
 	private void loadValues(Comparison comparison, Object cancellationContext, boolean[] incomplete, boolean[] withNull, String condition,
 			final int MAX_TEXT_LENGTH, LinkedHashMap<String, Integer> result, String tabName, int columnIndex,
 			String extJoin, boolean orderBy) throws SQLException {
@@ -1776,8 +1780,17 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			columnName = tableAlias + "." + columnName;
 			tabName += " " + tableAlias;
 		}
-		String sqlQuery = "Select " + columnName + ", count(1) from " + tabName + extJoin + (condition.isEmpty()? "" : (" where " + condition))
-				+ " group by " + columnName;
+		String sqlQuery;
+		String tableWithCondition = createTableWithCondition(condition, tabName, extJoin);
+		String cte = getCTE().trim();
+		if (!cte.isEmpty()) {
+			cte = cte + " ";
+		}
+		if (inSQLConsole()) {
+			sqlQuery = cte + "Select val, count(1) from (Select " + columnName + " val From " + tableWithCondition + ") Q group by val";
+		} else {
+			sqlQuery = cte + "Select " + columnName + ", count(1) from " + tableWithCondition + " group by " + columnName;
+		}
 		AbstractResultSetReader reader = new AbstractResultSetReader() {
 			@Override
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
@@ -1819,7 +1832,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		if (orderBy) {
 			Map<String, Integer> prev = new HashMap<String, Integer>(result);
 			try {
-				session.executeQuery(sqlQuery + " order by " + columnName, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
+				session.executeQuery(sqlQuery + " order by " + (inSQLConsole()? "val" : columnName), reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
 			} catch (SQLException e) {
 				
 				e.printStackTrace(); // TODO
@@ -1834,6 +1847,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		} else {
 			session.executeQuery(sqlQuery, reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
 		}
+	}
+
+	protected String createTableWithCondition(String condition, String tabName, String extJoin) {
+		String tableWithCondition = tabName + extJoin + (condition.isEmpty()? "" : (" where " + condition));
+		return tableWithCondition;
+	}
+
+	protected String getCTE() {
+		return "";
 	}
 
     private int estimateDistinctExistingValues(Comparison comparison, String condition) {

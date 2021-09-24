@@ -661,7 +661,7 @@ public class SqlUtil {
 		Pattern wordChar = Pattern.compile("\\w");
 		StringBuilder pattern = new StringBuilder();
 		Consumer<Character> append = c -> {
-			if (!Character.isWhitespace(c)) {
+			if (!Character.isWhitespace(c) || c == '\f') {
 				if (isLetterOrDigit(c)) {
 					pattern.append("" + c);
 				} else {
