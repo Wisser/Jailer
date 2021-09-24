@@ -2033,7 +2033,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
         @Override
     	protected Table getWhereClauseEditorBaseTable() {
-    		return wcBaseTable == null? table :  wcBaseTable.table;
+    		return wcBaseTable == null? null :  wcBaseTable.table;
     	}
         @Override
         protected int getReloadLimit() {

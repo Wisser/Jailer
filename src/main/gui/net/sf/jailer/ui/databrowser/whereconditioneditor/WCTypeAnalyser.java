@@ -33,6 +33,7 @@ import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.util.JSqlParserUtil;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -436,12 +437,11 @@ public class WCTypeAnalyser {
 			result.table = table;
 			result.cte = cte.toString();
 			
-			System.out.println(result); // TODO
-			
 			return result;
-		} catch (Exception e) {
-			e.printStackTrace(); // TODO
-			// logger.info("error", e);
+		} catch (QueryTooComplexException e) {
+			// ignore
+		} catch (Throwable t) {
+			LogUtil.warn(t);
 		}
 		return null;
 	}
