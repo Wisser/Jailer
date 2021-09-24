@@ -554,9 +554,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						continue;
 					}
 					String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:[^(]?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
-					String regex = "(?:(?:and\\s+)?" + "(?:\\b" + (tableAlias == null || noAlias? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
+					String regex = "(?:(?:and\\s+)?" + "(?:" + (tableAlias == null || noAlias? "" : ("\\b" + tableAlias + "\\s*\\.")) + "\\s*))"
 							+ (noAlias? "(?<!\\.\\s{0,10})" : "")
-							+ "(" + quoteRE + "?)" + Pattern.quote(Quoting.staticUnquote(column.name)) + "(" + quoteRE
+							+ "(" + quoteRE + "?)" + columnNameToRegExp(column.name) + "(" + quoteRE
 							+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(?:(" + Pattern.quote("!=") + "|"
 							+ Stream.of(Operator.values()).map(o -> o.sql).sorted((a, b) -> b.length() - a.length())
 									.map(sql -> Character.isAlphabetic(sql.charAt(0)) ? "\\b" + Pattern.quote(sql) + "\\b"
@@ -648,6 +648,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			e.printStackTrace();
 			throw e;
 		}
+	}
+
+	protected String columnNameToRegExp(String name) {
+		return Pattern.quote(Quoting.staticUnquote(name));
 	}
     
 	private String toValue(String sqlValue, int columnIndex) {

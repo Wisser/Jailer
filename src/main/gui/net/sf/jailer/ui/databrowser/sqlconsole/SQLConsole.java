@@ -148,6 +148,7 @@ import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Pair;
+import net.sf.jailer.util.SqlUtil;
 
 
 /**
@@ -1985,6 +1986,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			super(parent, dataModel, table, cellEditor, sorted, predecessor, editor, closeButton, asPopup, initialColumn, true, session, 
 					new MetaDataBasedSQLCompletionProvider(session, metaDataSource), executionContext);
 			this.resultContentPane = resultContentPane;
+			provider.removeAliases();
 		}
 
 		@Override
@@ -2224,6 +2226,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							@Override
 							protected String getCTE() {
 								return wcBaseTable.cte;
+							}
+							
+							@Override
+							protected String columnNameToRegExp(String name) {
+								return SqlUtil.createSQLFragmentSearchPattern(name);
 							}
 						};
 						popUpWhereConditionEditorPanel.setTableAlias(null);
