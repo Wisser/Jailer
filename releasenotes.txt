@@ -1,3 +1,6 @@
+10.6.2
+  - Database-side filtering of ad hoc queries in SQL Console.
+
 10.6.1
   - An error in creating NVARCHAR literals for MS-SQL Server was corrected.
 
