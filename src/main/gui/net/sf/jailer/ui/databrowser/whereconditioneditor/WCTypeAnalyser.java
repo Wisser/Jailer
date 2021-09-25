@@ -431,6 +431,20 @@ public class WCTypeAnalyser {
 				}
 			});
 
+			for (int i1 = 0; i1 < selectClause.size(); ++i1) {
+				for (int i2 = 0; i2 < selectClause.size(); ++i2) {
+					net.sf.jailer.datamodel.Column c1 = selectClause.get(i1);
+					net.sf.jailer.datamodel.Column c2 = selectClause.get(i2);
+					if (c1 != null && c2 != null && c1 != c2 && c1.name != null && c2.name != null) {
+						if (c1.name.replaceAll("\\s+", "").toLowerCase().endsWith(c2.name.replaceAll("\\s+", "").toLowerCase())) {
+							net.sf.jailer.datamodel.Column newColumn = new net.sf.jailer.datamodel.Column("(" + c1.name + ")", c1.type, c1.length, c1.precision);
+							newColumn.isNullable = c1.isNullable;
+							selectClause.set(i1, newColumn);
+						}
+					}
+				}
+			}
+			
 			PrimaryKey pk = new PrimaryKey(new ArrayList<net.sf.jailer.datamodel.Column>(), false);
 			Table table = new Table(woComments.toString(), pk, false, false);
 			table.setColumns(selectClause);

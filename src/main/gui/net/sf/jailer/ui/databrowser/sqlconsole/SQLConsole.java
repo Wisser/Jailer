@@ -1807,7 +1807,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane2.setResizeWeight(0.55);
+        jSplitPane2.setResizeWeight(0.52);
+        jSplitPane2.setToolTipText("");
         jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
 
@@ -2255,7 +2256,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						}
 					});
 					
-					int x = location.x;
+					int x = location.x + 32;
 					int y = location.y;
 					
 					dialog.getContentPane().add(popUpWhereConditionEditorPanel);

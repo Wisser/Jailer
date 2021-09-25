@@ -28,7 +28,8 @@
         <Container class="javax.swing.JSplitPane" name="jSplitPane2">
           <Properties>
             <Property name="orientation" type="int" value="0"/>
-            <Property name="resizeWeight" type="double" value="0.55"/>
+            <Property name="resizeWeight" type="double" value="0.52"/>
+            <Property name="toolTipText" type="java.lang.String" value=""/>
             <Property name="continuousLayout" type="boolean" value="true"/>
             <Property name="oneTouchExpandable" type="boolean" value="true"/>
           </Properties>
