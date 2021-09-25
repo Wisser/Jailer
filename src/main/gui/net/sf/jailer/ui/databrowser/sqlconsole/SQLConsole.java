@@ -2217,7 +2217,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								}
 								if (wcBaseTable.hasCondition) {
 									return table.substring(0, wcBaseTable.conditionStart)
-											+ "(" + condition + ")"
+											+ "("
+											+ table.substring(wcBaseTable.conditionStart, wcBaseTable.conditionEnd)
+											+ ") and ("
+											+ condition 
+											+ ")"
 											+ table.substring(wcBaseTable.conditionEnd);
 								} else {
 									return table + (wcBaseTable.isHaving? " Having " : " Where ") + condition;
