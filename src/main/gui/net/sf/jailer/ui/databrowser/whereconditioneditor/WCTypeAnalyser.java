@@ -37,6 +37,7 @@ import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayConstructor;
@@ -454,11 +455,18 @@ public class WCTypeAnalyser {
 			return result;
 		} catch (QueryTooComplexException e) {
 			// ignore
+		} catch (JSQLParserException e) {
+			if (!warned) {
+				LogUtil.warn(e);
+				warned = true;
+			}
 		} catch (Throwable t) {
 			LogUtil.warn(t);
 		}
 		return null;
 	}
+	
+	private static boolean warned = false;
 
 	protected static Pair<Integer, Integer> findFragment(String fragment, String sql) {
 		Pair<Integer, Integer> pos = null;
