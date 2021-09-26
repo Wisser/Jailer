@@ -146,7 +146,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 	
 	private List<Comparison> comparisons = new ArrayList<Comparison>();
-	private Set<Integer> involvedColumns = new HashSet<Integer>();
+	// TODO
+	public Set<Integer> involvedColumns = new HashSet<Integer>();
 	private Map<String, Consumer<JLabel>> columnLabelConsumers = new HashMap<String, Consumer<JLabel>>();
 
     /**

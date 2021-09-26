@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -301,7 +302,7 @@ public class Environment {
 
 	public static boolean testCreateTempFile() {
 		try {
-			File tempFile = new File("tp" + new Random().nextInt(100000));
+			File tempFile = new File("tp" + ThreadLocalRandom.current().nextInt(100000));
 			FileOutputStream out = new FileOutputStream(tempFile);
 			out.write(0);
 			out.close();

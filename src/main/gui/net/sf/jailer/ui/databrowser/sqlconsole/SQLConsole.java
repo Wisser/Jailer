@@ -1026,7 +1026,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 	TabContentPanel tabContentPanel;
                 	@Override
                     public void run() {
-                        final BrowserContentPane rb = new ResultContentPane(datamodel.get(), wcBaseTable, finalResultType, "", session, null,
+                        final ResultContentPane rb = new ResultContentPane(datamodel.get(), wcBaseTable, finalResultType, "", session, null,
                                 null, (JFrame) SwingUtilities.getWindowAncestor(SQLConsole.this), new RowsClosure(), false, false, executionContext) {
                         	@Override
                         	public void afterReload() {
@@ -1053,6 +1053,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         		super.afterReload();
                         	}
                         };
+                        rb.initSecondaryCondition(""); // TODO
                         if (resultTypes != null && resultTypes.size() > 1) {
                             rb.setResultSetType(resultTypes);
                         }
@@ -2034,7 +2035,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             noSingleRowDetailsView = true;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
         }
-        @Override
+        public void initSecondaryCondition(String secodaryCond) {
+			this.secodaryCond = secodaryCond;
+			openConditionEditor(null, 0, null);
+		}
+		@Override
     	protected Table getWhereClauseEditorBaseTable() {
     		return wcBaseTable == null? null :  wcBaseTable.table;
     	}
@@ -2195,6 +2200,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							
 							@Override
 							protected void consume(String condition, Set<Integer> involvedColumns) {
+								
+								// TODO
+								involvedColumns.add(1);
+								
+								ResultContentPane.this.filteredColumns = involvedColumns;
 								if (resultContentPane != null && !secodaryCond.equals(condition.trim())) {
 									secodaryCond = condition.trim();
 									UISettings.s12 += 100000;
@@ -2203,6 +2213,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									
 									setStatementForReloading(tableWithCondition);
 									reloadRows();
+								} else {
+									repaint();
 								}
 							}
 							
@@ -2246,62 +2258,52 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
 					popUpWhereConditionEditorPanel.parseCondition(secodaryCond);
 					
-					dialog.setModal(false);
-					dialog.setUndecorated(true);
-					dialog.addWindowFocusListener(new WindowFocusListener() {
-						@Override
-						public void windowLostFocus(WindowEvent e) {
-							if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
-								close.run();
+					if (location != null) {
+						dialog.setModal(false);
+						dialog.setUndecorated(true);
+						dialog.addWindowFocusListener(new WindowFocusListener() {
+							@Override
+							public void windowLostFocus(WindowEvent e) {
+								if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
+									close.run();
+								}
 							}
+							@Override
+							public void windowGainedFocus(WindowEvent e) {
+							}
+						});
+						
+						int x = location.x + 32;
+						int y = location.y;
+						
+						dialog.getContentPane().add(popUpWhereConditionEditorPanel);
+						
+						dialog.pack();
+						double mh = column >= 0? 220 : 280;
+						int height = Math.max(dialog.getHeight(), (int) mh);
+						dialog.setLocation(x, y);
+						int minWidth = 600;
+						int wid = Math.max(minWidth, dialog.getWidth());
+						Window window = parentFrame;
+						Integer maxX = window.getX() + window.getWidth() - wid - 8;;
+						dialog.setSize(wid, Math.min(height, 600));
+						if (maxX != null) {
+							dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
 						}
-						@Override
-						public void windowGainedFocus(WindowEvent e) {
+						Integer maxY = window.getY() + window.getHeight() - dialog.getHeight() - 8;
+						if (maxY != null && maxY < dialog.getY()) {
+							int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
+							maxY += deltaH;
+							dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
+							dialog.setLocation(dialog.getX(), Math.max(0, maxY));
 						}
-					});
-					
-					int x = location.x + 32;
-					int y = location.y;
-					
-					dialog.getContentPane().add(popUpWhereConditionEditorPanel);
-					
-					dialog.pack();
-					double mh = column >= 0? 220 : 280;
-					int height = Math.max(dialog.getHeight(), (int) mh);
-					dialog.setLocation(x, y);
-					int minWidth = 600;
-					int wid = Math.max(minWidth, dialog.getWidth());
-					Window window = parentFrame;
-					Integer maxX = window.getX() + window.getWidth() - wid - 8;;
-					dialog.setSize(wid, Math.min(height, 600));
-					if (maxX != null) {
-						dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
-					}
-					Integer maxY = window.getY() + window.getHeight() - dialog.getHeight() - 8;
-					if (maxY != null && maxY < dialog.getY()) {
-						int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
-						maxY += deltaH;
-						dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
-						dialog.setLocation(dialog.getX(), Math.max(0, maxY));
-					}
-					dialog.setVisible(true);
-					UIUtil.invokeLater(4, () -> {
-						popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
-					});
-		    	}
+						dialog.setVisible(true);
+						UIUtil.invokeLater(4, () -> {
+							popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
+						});
+			    	}
+				}
 			});
-//			if (neverOpened) {
-//				neverOpened = false;
-//				UIUtil.invokeLater(8, () -> {
-//					Timer timer = new Timer(100, e -> {
-//						if (!dialog.isVisible()) {
-//							openConditionEditor(browserContentPane, location, column, onClose);
-//						}
-//					});
-//					timer.setRepeats(false);
-//					timer.start();
-//				});
-//			}
 		}
     }
 

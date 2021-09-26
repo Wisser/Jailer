@@ -1164,7 +1164,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				Graphics2D g2d = (Graphics2D) graphics;
 				g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g2d.setStroke(new BasicStroke(1));
-				Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), new Point(0, 0), this);
+				int off = 6;
+				Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), new Point(0, Math.max(rowsTable.getTableHeader().getHeight() - half.getIconHeight() - off, 0)), this);
 
 				if (getWhereClauseEditorBaseTable() != null && browserContentCellEditor != null) {
 					Shape clip = g2d.getClip();

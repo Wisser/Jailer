@@ -78,6 +78,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -3363,7 +3364,8 @@ public abstract class Desktop extends JDesktopPane {
 					// ignore
 				}
 			}
-			
+			csv += (rb.browserContentPane.filteredColumns == null? "" : rb.browserContentPane.filteredColumns.stream().map(c -> String.valueOf(c)).collect(Collectors.joining(","))) + ";";
+
 			out.append(csv).append(LF);
 			for (RowBrowser child : tableBrowsers) {
 				if (child.parent == rb) {
@@ -3559,6 +3561,16 @@ public abstract class Desktop extends JDesktopPane {
 						rb.internalFrame.setSize(size);
 						if (Boolean.parseBoolean(l.cells.get(14))) {
 							toBeMaximized = rb.internalFrame;
+						}
+					}
+					if (!l.cells.get(15).isEmpty()) {
+						rb.browserContentPane.filteredColumns = new HashSet<>();
+						for (String c: l.cells.get(15).split(",")) {
+							try {
+								rb.browserContentPane.filteredColumns.add(Integer.parseInt(c));
+							} catch (Exception e) {
+								// ignore
+							}
 						}
 					}
 					deserializedSortKey(rb.browserContentPane.rowsTable, l.cells.get(13));
