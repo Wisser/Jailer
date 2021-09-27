@@ -972,6 +972,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					}
 					Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
 					if (pos != null) {
+						if (!latestParsedCondition.equals(editor.getText())) {
+							editor.setText(latestParsedCondition);
+						}
+						
 						int offset = 0;
 						try {
 							String nameValue = editor.getText(pos.a, pos.b - pos.a);
@@ -1409,6 +1413,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			}
 		};
 		theSearchPanel.add(searchPanel);
+		
+		if (!latestParsedCondition.equals(editor.getText())) {
+			editor.setText(latestParsedCondition);
+		}
 		
 		String condition;
 		Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
