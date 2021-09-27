@@ -636,6 +636,41 @@ public class SqlUtil {
 		return sb.toString();
 	}
 
+	/**
+	 * Removes sub-queries from SQL statement.
+	 *
+	 * @param statement
+	 *            the statement
+	 *
+	 * @return statement the statement without sub-queries
+	 */
+	public static String removeSubQueries(String sqlSelect) {
+		StringBuilder result = new StringBuilder(SqlUtil.removeComments(sqlSelect));
+		
+		int level = 0;
+		int subLevel = -1;
+		for (int i = 0; i < result.length(); ++i) {
+			char c = result.charAt(i);
+			int pl = level;
+			if (c == '(') {
+				++level;
+				if (subLevel < 0 && result.substring(i + 1).matches("(?is)\\s*select\\b.*")) {
+					subLevel = level;
+				}
+			} else if (c == ')') {
+				if (level == subLevel) {
+					subLevel = -1;
+				}
+				--level;
+			}
+			if (subLevel >= 0 && (level > subLevel || level == subLevel && level == pl)) {
+				result.setCharAt(i, ' ');
+			}
+		}
+		
+		return result.toString();
+	}
+
 	public static String columnLabel(Quoting quoting, Session session, DBMS targetDBMSConfiguration, Table table, String columnLabel) {
 //		if (targetDBMSConfiguration != session.dbms) {
 			int count = 0;

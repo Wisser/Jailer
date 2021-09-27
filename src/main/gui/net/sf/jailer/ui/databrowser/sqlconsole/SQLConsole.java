@@ -1053,7 +1053,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         		super.afterReload();
                         	}
                         };
-                        rb.initSecondaryCondition(""); // TODO
+                        rb.initSecondaryCondition();
                         if (resultTypes != null && resultTypes.size() > 1) {
                             rb.setResultSetType(resultTypes);
                         }
@@ -2023,7 +2023,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     class ResultContentPane extends BrowserContentPane {
     	private final Frame parentFrame;
     	private final WCTypeAnalyser.Result wcBaseTable;
-    	private String secodaryCond = "";
+    	private String secodaryCond = null;
         public ResultContentPane(DataModel dataModel, WCTypeAnalyser.Result wcBaseTable, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
                 RowsClosure rowsClosure, Boolean selectDistinct,
@@ -2035,8 +2035,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             noSingleRowDetailsView = true;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
         }
-        public void initSecondaryCondition(String secodaryCond) {
-			this.secodaryCond = secodaryCond;
+        public void initSecondaryCondition() {
 			openConditionEditor(null, 0, null);
 		}
 		@Override
@@ -2200,10 +2199,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							
 							@Override
 							protected void consume(String condition, Set<Integer> involvedColumns) {
-								
-								// TODO
-								involvedColumns.add(1);
-								
 								ResultContentPane.this.filteredColumns = involvedColumns;
 								if (resultContentPane != null && !secodaryCond.equals(condition.trim())) {
 									secodaryCond = condition.trim();
@@ -2256,9 +2251,33 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						return;
 					}
 					popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
-					popUpWhereConditionEditorPanel.parseCondition(secodaryCond);
+					
+					if (location == null && secodaryCond == null) {
+						StringBuilder sb = new StringBuilder();
+						if (wcBaseTable.hasCondition) {
+							filteredColumns = new HashSet<Integer>();
+							String condition = wcBaseTable.originalQuery.substring(wcBaseTable.conditionStart, wcBaseTable.conditionEnd);
+							for (int i = 0; i < wcBaseTable.table.getColumns().size(); ++i) {
+								Column c = wcBaseTable.table.getColumns().get(i);
+								if (c != null && c.name != null && Boolean.TRUE.equals(WCTypeAnalyser.isPositiveExpression(c.name, condition))) {
+									Matcher matcher = popUpWhereConditionEditorPanel.createComparisionMatcher(true, c, condition);
+									if (matcher != null && matcher.find()) {
+										String comp = matcher.group().trim().replaceFirst("(?is)And\\b", "");
+										if (sb.length() > 0) {
+											sb.append(" and ");
+										}
+										sb.append(comp);
+										filteredColumns.add(i);
+									}
+								}
+							}
+						}
+						secodaryCond = sb.toString();
+					}
 					
 					if (location != null) {
+						popUpWhereConditionEditorPanel.parseCondition(secodaryCond);
+						
 						dialog.setModal(false);
 						dialog.setUndecorated(true);
 						dialog.addWindowFocusListener(new WindowFocusListener() {
