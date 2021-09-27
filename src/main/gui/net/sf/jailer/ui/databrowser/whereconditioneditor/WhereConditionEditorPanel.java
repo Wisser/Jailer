@@ -103,6 +103,7 @@ import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * SQL-Where-Condition Editor.
@@ -546,7 +547,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			involvedColumns.clear();
 			valuePositions.clear();
 			fullPositions.clear();
-			String quoteRE = "[\"\u00B4\\[\\]`]";
 			Set<Comparison> seen = new HashSet<Comparison>();
 			for (int columnIndex = 0; columnIndex < table.getColumns().size(); ++columnIndex) {
 				for (boolean noAlias: new boolean[] { false, true }) {
@@ -554,26 +554,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					if (column == null || column.name == null) {
 						continue;
 					}
-					String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:[^(]?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
-					String regex = "(?:(?:and\\s+)?" + "(?:" + (tableAlias == null || noAlias? "" : ("\\b" + tableAlias + "\\s*\\.")) + "\\s*))"
-							+ (noAlias? "(?<!\\.\\s{0,10})" : "")
-							+ "(" + quoteRE + "?)" + columnNameToRegExp(column.name) + "(" + quoteRE
-							+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(?:(" + Pattern.quote("!=") + "|"
-							+ Stream.of(Operator.values()).map(o -> o.sql).sorted((a, b) -> b.length() - a.length())
-									.map(sql -> Character.isAlphabetic(sql.charAt(0)) ? "\\b" + Pattern.quote(sql) + "\\b"
-											: Pattern.quote(sql))
-									.collect(Collectors.joining("|"))
-							+ ")\\s*"  + valueRegex + "))";
-					boolean found = false;
-					Matcher matcher = null;
-					try {
-						Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-						matcher = identOperator.matcher(latestParsedCondition);
-						found = matcher.find();
-					} catch (Throwable t) {
-						LogUtil.warn(t);
-					}
-					if (found) {
+					Matcher matcher = createComparisionMatcher(noAlias, column, latestParsedCondition);
+					if (matcher != null && matcher.find()) {
 						int start = matcher.start();
 						String q1 = matcher.group(1);
 						String q2 = matcher.group(2);
@@ -642,13 +624,38 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			comparisons.forEach(c -> {
 				if (!seen.contains(c)) {
 					c.value = "";
-					c.operator = Operator.Equal;
 				}
 			});
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}
+	}
+
+	public Matcher createComparisionMatcher(boolean noAlias, Column column, String condition) {
+		String quoteRE = "[\"\u00B4\\[\\]`]";
+		String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:[^(]?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
+		String regex = "(?:(?:and\\s+)?" + "(?:" + (tableAlias == null || noAlias? "" : ("\\b" + tableAlias + "\\s*\\.")) + "\\s*))"
+				+ (noAlias? "(?<!\\.\\s{0,10})" : "")
+				+ "(" + quoteRE + "?)" + columnNameToRegExp(column.name) + "(" + quoteRE
+				+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(?:(" + Pattern.quote("!=") + "|"
+				+ Stream.of(Operator.values()).map(o -> o.sql).sorted((a, b) -> b.length() - a.length())
+						.map(sql -> Character.isAlphabetic(sql.charAt(0)) ? "\\b" + Pattern.quote(sql) + "\\b"
+								: Pattern.quote(sql))
+						.collect(Collectors.joining("|"))
+				+ ")\\s*"  + valueRegex + "))";
+		Matcher matcher = null;
+		try {
+			Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			if (SqlUtil.removeSubQueries(column.name).equals(column.name)) {
+				matcher = identOperator.matcher(SqlUtil.removeSubQueries(condition));
+			} else {
+				matcher = identOperator.matcher(condition);
+			}
+		} catch (Throwable t) {
+			LogUtil.warn(t);
+		}
+		return matcher;
 	}
 
 	protected String columnNameToRegExp(String name) {
@@ -1419,13 +1426,16 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		
 		String condition;
-		Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
-		if (pos != null) {
-			condition = (editor.getText().substring(0, pos.a) + editor.getText().substring(pos.b)).replaceFirst("^\\s*and\\s", "").trim();
+		if (comparison.operator == Operator.Equal && !Boolean.FALSE.equals(WCTypeAnalyser.isPositiveExpression(comparison.column.name, editor.getText()))) {
+			Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
+			if (pos != null) {
+				condition = removeErasedFragment("\f", editor.getText().substring(0, pos.a) + "\f" + editor.getText().substring(pos.b)).trim();;
+			} else {
+				condition = editor.getText().trim();
+			}
 		} else {
-			condition = editor.getText().trim();
+			condition = "";
 		}
-		
 		searchPanel.setCloseOwner(asPopup);
 		JCheckBox fullSearchCheckbox = new JCheckBox("Show all values");
 		fullSearchCheckbox.setToolTipText(
@@ -1847,10 +1857,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			try {
 				session.executeQuery(sqlQuery + " order by " + (inSQLConsole()? "val" : columnName), reader, null, cancellationContext, MAX_NUM_DISTINCTEXISTINGVALUES + 2);
 			} catch (SQLException e) {
-				
-				e.printStackTrace(); // TODO
-				
-				
 				result.clear();
 				result.putAll(prev);
 				// try without ordering
@@ -1985,20 +1991,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					}
 				}
 				String text = editor.getText();
-				for (;;) {
-					String cleanText = text
-							.replaceFirst("(?is)\\(\\s*" + erased + "\\s*\\)", erased)
-							.replaceFirst("(?is)\\b(and|or|not)\\b\\s*" + erased, erased);
-					if (cleanText.equals(text)) {
-						break;
-					}
-					text = cleanText;
-				}
-				text = text
-						.replace(erased, "")
-						.replaceFirst("(?is)^\\s*(and|or)\\s", "")
-						.replaceAll("\\n\\s*\\n", "\n")
-						.trim();
+				text = removeErasedFragment(erased, text);
 				if (!text.isEmpty()) {
 					text += "\n";
 				}
@@ -2008,6 +2001,24 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				parseCondition();
 			}
 		}
+	}
+
+	protected String removeErasedFragment(String erased, String sqlCondition) {
+		for (;;) {
+			String cleanText = sqlCondition
+					.replaceFirst("(?is)\\(\\s*" + erased + "\\s*\\)", erased)
+					.replaceFirst("(?is)\\b(and|or|not)\\b\\s*" + erased, erased);
+			if (cleanText.equals(sqlCondition)) {
+				break;
+			}
+			sqlCondition = cleanText;
+		}
+		sqlCondition = sqlCondition
+				.replace(erased, "")
+				.replaceFirst("(?is)^\\s*(and|or)\\s", "")
+				.replaceAll("\\n\\s*\\n", "\n")
+				.trim();
+		return sqlCondition;
 	}
 
     private String toSqlValue(String value, Comparison comparison) {

@@ -51,6 +51,7 @@ import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.HexValue;
@@ -100,6 +101,7 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
@@ -135,6 +137,7 @@ import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
+import net.sf.jsqlparser.statement.select.SelectVisitorAdapter;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubJoin;
 import net.sf.jsqlparser.statement.select.SubSelect;
@@ -185,7 +188,7 @@ public class WCTypeAnalyser {
 		try {
 			StringBuilder woComments = new StringBuilder(SqlUtil.removeComments(sqlSelect));
 			String woCommentsAndLiterals = SqlUtil.removeCommentsAndLiterals(sqlSelect);
-			String topLevelSql = createTopLevelSQL(sqlSelect);
+			String topLevelSql = SqlUtil.removeSubQueries(sqlSelect);
 			StringBuilder cte = new StringBuilder();
 			
 			st = JSqlParserUtil.parse(woComments.toString(), 2);
@@ -284,6 +287,9 @@ public class WCTypeAnalyser {
 									}
 									if (pos == null) {
 										pos = findFragment((result.isHaving? "having " : "where ") + sql, topLevelSql);
+										if (pos == null) {
+											pos = findFragment((result.isHaving? "having " : "where ") + sql, woComments.toString());
+										}
 										if (pos != null) {
 											Pattern p = Pattern.compile("^(" + (result.isHaving? "having" : "where") + "\\s+)", Pattern.CASE_INSENSITIVE);
 											Matcher matcher = p.matcher(topLevelSql.substring(pos.a, pos.b));
@@ -482,26 +488,6 @@ public class WCTypeAnalyser {
 		}
 
 		return pos;
-	}
-
-	private static String createTopLevelSQL(String sqlSelect) {
-		StringBuilder result = new StringBuilder(SqlUtil.removeComments(sqlSelect));
-		
-		int level = 0;
-		for (int i = 0; i < result.length(); ++i) {
-			char c = result.charAt(i);
-			int pl = level;
-			if (c == '(') {
-				++level;
-			} else if (c == ')') {
-				--level;
-			}
-			if (level > 1 || level == 1 && level == pl) {
-				result.setCharAt(i, ' ');
-			}
-		}
-		
-		return result.toString();
 	}
 
 	private static LinkedHashMap<String, MDTable> analyseFromClause(Statement st, int[] unknownTableCounter, final MetaDataSource metaDataSource) {
@@ -1055,6 +1041,147 @@ public class WCTypeAnalyser {
 	}
 	
 	private static class QueryTooComplexException extends RuntimeException {
+	}
+
+	private static class PExpressionVisitorAdapter extends ExpressionVisitorAdapter {
+		
+		final String expr;
+		final List<Boolean> result;
+		final boolean positive;
+		
+		public PExpressionVisitorAdapter(String expr, boolean positive, List<Boolean> result) {
+			this.expr = expr;
+			this.positive = positive;
+			this.result = result;
+		}
+
+		@Override
+		public void visit(NotExpression aThis) {
+			check(aThis);
+			aThis.getExpression().accept(new PExpressionVisitorAdapter(expr, false, result));
+		}
+		
+		@Override
+		public void visit(NotEqualsTo notEqualsTo) {
+			check(notEqualsTo);
+		}
+		
+		@Override
+		public void visit(MinorThanEquals minorThanEquals) {
+			check(minorThanEquals);
+		}
+		
+		@Override
+		public void visit(MinorThan minorThan) {
+			check(minorThan);
+		}
+		
+		@Override
+		public void visit(LikeExpression likeExpression) {
+			check(likeExpression);
+		}
+		
+		@Override
+		public void visit(IsNullExpression isNullExpression) {
+			check(isNullExpression.getLeftExpression());
+		}
+
+		@Override
+		public void visit(GreaterThanEquals greaterThanEquals) {
+			check(greaterThanEquals);
+		}
+		
+		@Override
+		public void visit(GreaterThan greaterThan) {
+			check(greaterThan);
+		}
+		
+		@Override
+		public void visit(EqualsTo equalsTo) {
+			check(equalsTo);
+		}
+		
+		@Override
+		public void visit(XorExpression orExpression) {
+			check(orExpression);
+			orExpression.getLeftExpression().accept(new PExpressionVisitorAdapter(expr, false, result));
+			orExpression.getRightExpression().accept(new PExpressionVisitorAdapter(expr, false, result));
+		}
+		
+		@Override
+		public void visit(OrExpression orExpression) {
+			check(orExpression);
+			orExpression.getLeftExpression().accept(new PExpressionVisitorAdapter(expr, false, result));
+			orExpression.getRightExpression().accept(new PExpressionVisitorAdapter(expr, false, result));
+		}
+		
+		@Override
+		public void visit(AndExpression andExpression) {
+			check(andExpression);
+			andExpression.getLeftExpression().accept(this);
+			andExpression.getRightExpression().accept(this);
+		}
+		
+		@Override
+		public void visit(Parenthesis parenthesis) {
+			check(parenthesis);
+			parenthesis.getExpression().accept(this);
+		}
+
+		private void check(Object node) {
+			if (normalizeExpr(node.toString()).equalsIgnoreCase(expr)) {
+				result.add(positive);
+			}
+			if (node instanceof ComparisonOperator) {
+				check(((ComparisonOperator) node).getLeftExpression());
+			}
+		}
+	};
+	
+	private static String normalizeExpr(String expr) {
+		expr = expr.replaceAll("\\s+", "").trim();
+		while (expr.startsWith("(") && expr.endsWith(")")) {
+			expr = expr.substring(1, expr.length() - 1).trim();
+		}
+		return expr;
+	}
+	
+	public static Boolean isPositiveExpression(String expr, String condition) {
+		net.sf.jsqlparser.statement.Statement st;
+		try {
+			st = JSqlParserUtil.parse("Select * From T Where " + condition, 2);
+			List<Boolean> result = new ArrayList<>();
+			st.accept(new StatementVisitorAdapter() {
+				@Override
+				public void visit(Select select) {
+					select.getSelectBody().accept(new SelectVisitorAdapter() {
+						@Override
+						public void visit(PlainSelect plainSelect) {
+							plainSelect.getWhere().accept(new PExpressionVisitorAdapter(normalizeExpr(expr), true, result));
+						}
+					});
+				}
+			});
+			if (!result.isEmpty()) {
+				return result.get(0);
+			}
+			return null;
+		} catch (/*JSQLParser*/ Exception e) {
+			return null;
+		}
+	}
+	
+	public static void main(String args[]) {
+		System.out.println(isPositiveExpression("comm", "Empno=7902 and deptno=7902 and (comm is not null and boss is null)"));
+		System.out.println(isPositiveExpression("x", "x is not null"));
+		System.out.println(isPositiveExpression("x", "x=0"));
+		System.out.println(isPositiveExpression("x", "not x=0"));
+		System.out.println(isPositiveExpression("x", "x is null"));
+		System.out.println(isPositiveExpression("(x + 1)", "x+1=0"));
+		System.out.println(isPositiveExpression("(x + 1)", "x+1=0 or y=0"));
+		System.out.println(isPositiveExpression("x", "y=0"));
+		System.out.println(isPositiveExpression("x", "(x=0) and (not 2 * x = 0)"));
+		System.out.println(isPositiveExpression("x", "(x=0) or (not 2 * x = 0)"));
 	}
 
 }
