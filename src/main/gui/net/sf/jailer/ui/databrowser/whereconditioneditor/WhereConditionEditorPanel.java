@@ -1421,7 +1421,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		if (comparison.operator == Operator.Equal && !Boolean.FALSE.equals(WCTypeAnalyser.isPositiveExpression(comparison.column.name, editor.getText()))) {
 			Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
 			if (pos != null) {
-				condition = (editor.getText().substring(0, pos.a) + editor.getText().substring(pos.b)).replaceFirst("^\\s*and\\s", "").trim();
+				condition = removeErasedFragment("\f", editor.getText().substring(0, pos.a) + "\f" + editor.getText().substring(pos.b)).trim();;
 			} else {
 				condition = editor.getText().trim();
 			}
@@ -1983,20 +1983,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					}
 				}
 				String text = editor.getText();
-				for (;;) {
-					String cleanText = text
-							.replaceFirst("(?is)\\(\\s*" + erased + "\\s*\\)", erased)
-							.replaceFirst("(?is)\\b(and|or|not)\\b\\s*" + erased, erased);
-					if (cleanText.equals(text)) {
-						break;
-					}
-					text = cleanText;
-				}
-				text = text
-						.replace(erased, "")
-						.replaceFirst("(?is)^\\s*(and|or)\\s", "")
-						.replaceAll("\\n\\s*\\n", "\n")
-						.trim();
+				text = removeErasedFragment(erased, text);
 				if (!text.isEmpty()) {
 					text += "\n";
 				}
@@ -2006,6 +1993,24 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				parseCondition();
 			}
 		}
+	}
+
+	protected String removeErasedFragment(String erased, String sqlCondition) {
+		for (;;) {
+			String cleanText = sqlCondition
+					.replaceFirst("(?is)\\(\\s*" + erased + "\\s*\\)", erased)
+					.replaceFirst("(?is)\\b(and|or|not)\\b\\s*" + erased, erased);
+			if (cleanText.equals(sqlCondition)) {
+				break;
+			}
+			sqlCondition = cleanText;
+		}
+		sqlCondition = sqlCondition
+				.replace(erased, "")
+				.replaceFirst("(?is)^\\s*(and|or)\\s", "")
+				.replaceAll("\\n\\s*\\n", "\n")
+				.trim();
+		return sqlCondition;
 	}
 
     private String toSqlValue(String value, Comparison comparison) {
