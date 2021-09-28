@@ -777,7 +777,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Indexes of primary key columns.
 	 */
-	private Set<Integer> pkColumns = new HashSet<Integer>();
+	protected Set<Integer> pkColumns = new HashSet<Integer>();
 
 	/**
 	 * Indexes of foreign key columns.
@@ -7117,13 +7117,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return sb.toString();
 	}
 
-	private Reference<JTable> currentRowsTableReference = null;
+	public Reference<JTable> currentRowsTableReference = null;
 
 	public void setCurrentRowsTable(Reference<JTable> reference) {
 		currentRowsTableReference = reference;
 	}
 	
-	private Reference<Boolean> currentRowsSortedReference = null;
+	public Reference<Boolean> currentRowsSortedReference = null;
 
 	public void setCurrentRowsSorted(Reference<Boolean> reference) {
 		currentRowsSortedReference = reference;
@@ -7131,7 +7131,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	private StringSearchPanel searchPanel;
 	
-	private void findColumns(final int x, final int y, final JTable contextJTable, boolean columnsSorted, Runnable onClose) {
+	public void findColumns(final int x, final int y, final JTable contextJTable, boolean columnsSorted, Runnable onClose) {
 		TableColumnModel columnModel = rowsTable.getColumnModel();
 		List<String> columNames = new ArrayList<String>();
 		Map<String, Integer> columNamesCount = new HashMap<String, Integer>();
@@ -7363,7 +7363,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		result.x -= 2;
 		if (result.y >= 8) {
 			result.y = 2;
-		} else if (Environment.nimbus) {
+		}
+		if (Environment.nimbus) {
 			RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
 			boolean withSortIcon = false;
 			if (rowSorter != null) {

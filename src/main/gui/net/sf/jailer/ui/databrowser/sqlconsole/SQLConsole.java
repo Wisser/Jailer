@@ -1138,9 +1138,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						tabContentPanel.controlsPanel1.add(findButton);
                         tabContentPanel.controlsPanel1.add(new JLabel("    "));
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
-                        tabContentPanel.controlsPanel1.add(rb.findColumnsPanel);
+                        JToggleButton findColumnsButton = new JToggleButton(rb.findColumnsLabel.getText());
+                        findColumnsButton.setFocusable(false);
+                        findColumnsButton.setIcon(UIUtil.scaleIcon(findColumnsButton, searchCIcon));
+                        findColumnsButton.addActionListener(e -> {
+                        	if (findColumnsButton.isSelected()) {
+								Point point = new Point(0, findColumnsButton.getHeight());
+								SwingUtilities.convertPointToScreen(point, findColumnsButton);
+								rb.findColumns((int) point.getX(), (int) point.getY(), rb.currentRowsTableReference == null? rb.rowsTable : rb.currentRowsTableReference.get(), rb.currentRowsSortedReference == null? rb.sortColumnsCheckBox.isSelected() : rb.currentRowsSortedReference.get(), () -> { findColumnsButton.setSelected(false); });
+							}
+                        });
+                        tabContentPanel.controlsPanel1.add(findColumnsButton);
                         tabContentPanel.controlsPanel1.add(new JLabel("    "));
-                        rb.findColumnsLabel.setIcon(UIUtil.scaleIcon(rb.findColumnsLabel, searchCIcon));
                         rb.sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
                             @Override
 							public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1153,6 +1162,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             }
                         });
                         final JButton loadButton = new JButton(rb.loadButton.getText(), rb.loadButton.getIcon());
+                        loadButton.setFocusable(false);
                         tabContentPanel.loadButton = loadButton;
                         loadButton.addActionListener(new ActionListener() {
 							@Override
@@ -2082,7 +2092,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			openConditionEditor(null, 0, null);
 		}
     	public Set<Integer> getPkColumnsConsole() {
-    		return pkColumnsConsole;
+    		HashSet<Integer> result = new HashSet<Integer>(pkColumns);
+    		result.addAll(pkColumnsConsole);
+    		return result;
     	}
 		@Override
     	protected Table getWhereClauseEditorBaseTable() {
