@@ -322,6 +322,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		addWindowListener(new WindowListener() {
 			@Override
 			public void windowOpened(WindowEvent e) {
+				UIUtil.invokeLater(() -> restoreButton.grabFocus());
 				openWelcomeDilog();
 			}
 			@Override
@@ -1648,6 +1649,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
         restoreButton.setText("Restore");
+        restoreButton.setFocusCycleRoot(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;

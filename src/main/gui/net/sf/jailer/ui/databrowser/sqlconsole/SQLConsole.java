@@ -82,6 +82,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SwingUtilities;
@@ -106,6 +107,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
@@ -1052,6 +1054,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         		});
                         		super.afterReload();
                         	}
+                        	@Override
+							protected void updateStatementLabel(String sql) {
+								tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sql, 100));
+		                        String stmt = sql;
+		                        stmt = stmt.replaceAll("\\s+", " ");
+		                        if (stmt.length() > 200) {
+		                            stmt = stmt.substring(0, 200) + "...";
+		                        }
+		                        tabContentPanel.statementLabel.setText(stmt);
+							}
                         };
                         rb.initSecondaryCondition();
                         if (resultTypes != null && resultTypes.size() > 1) {
@@ -1059,7 +1071,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         }
                         rb.setAlternativeColumnLabels(columnLabels);
                         rb.setColumnHeaderColors(columnHeaderColors);
-                        rb.setTableFilterEnabled(metaDataDetails.getSize() > 1 && metaDataDetails.getSize() <= limit);
+                        rb.setTableFilterEnabled(wcBaseTable == null && metaDataDetails.getSize() > 1 && metaDataDetails.getSize() <= limit);
                         rb.setStatementForReloading(finalSqlStatement);
                         metaDataDetails.reset();
                         LoadJob loadJob = rb.newLoadJob(metaDataDetails, limit);
@@ -1097,8 +1109,38 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.sortColumnsPanel.setVisible(false);
                         rb.findColumnsPanel.setVisible(true);
                         rb.sortColumnsCheckBox.setText(rb.sortColumnsCheckBox.getText().trim());
+                        JToggleButton findButton = new JToggleButton((String) null);
+                        findButton.setEnabled(rb.wcBaseTable != null);
+                        findButton.setIcon(UIUtil.scaleIcon(findButton, searchIcon));
+                        findButton.setFocusable(false);
+                        findButton.addActionListener(e -> {
+                        	if (findButton.isSelected() && wcBaseTable != null) {
+                        		Set<Integer> pks = rb.getPkColumnsConsole();
+                        		if (pks != null) {
+                        			List<Column> pkList = new ArrayList<>();
+									pks.forEach(i -> {
+                        				if (i < wcBaseTable.table.getColumns().size()) {
+                        					pkList.add(wcBaseTable.table.getColumns().get(i));
+                        				}
+                        			});
+									PrimaryKey primaryKey = new PrimaryKey(pkList, false);
+									Table oTable = wcBaseTable.table;
+                        			wcBaseTable.table = new Table(oTable.getName(), primaryKey, false, false);
+                        			wcBaseTable.table.setColumns(oTable.getColumns());
+                        		}
+                        		Point p = new Point(-32, findButton.getHeight());
+                        		SwingUtilities.convertPointToScreen(p, findButton);
+                            	rb.openConditionEditor(p, -1, () -> {
+                            		findButton.setSelected(false);
+                            	});
+                        	}
+                        });
+						tabContentPanel.controlsPanel1.add(findButton);
+                        tabContentPanel.controlsPanel1.add(new JLabel("    "));
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
                         tabContentPanel.controlsPanel1.add(rb.findColumnsPanel);
+                        tabContentPanel.controlsPanel1.add(new JLabel("    "));
+                        rb.findColumnsLabel.setIcon(UIUtil.scaleIcon(rb.findColumnsLabel, searchCIcon));
                         rb.sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
                             @Override
 							public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1166,10 +1208,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         String stmt = sqlE;
 
                         tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sqlE, 100));
+                        stmt = stmt.replaceAll("\\s+", " ");
                         if (stmt.length() > 200) {
                             stmt = stmt.substring(0, 200) + "...";
                         }
-                        tabContentPanel.statementLabel.setText(stmt.replaceAll("\\s+", " "));
+                        tabContentPanel.statementLabel.setText(stmt);
                         rTabContainer = tabContentPanel.shimPanel;
                         final int MAXLENGTH = 30;
                         String title = shortSQL(sqlE, MAXLENGTH);
@@ -2020,7 +2063,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	};
 	private final SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
 	
-    class ResultContentPane extends BrowserContentPane {
+    abstract class ResultContentPane extends BrowserContentPane {
     	private final Frame parentFrame;
     	private final WCTypeAnalyser.Result wcBaseTable;
     	private String secodaryCond = null;
@@ -2038,6 +2081,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         public void initSecondaryCondition() {
 			openConditionEditor(null, 0, null);
 		}
+    	public Set<Integer> getPkColumnsConsole() {
+    		return pkColumnsConsole;
+    	}
 		@Override
     	protected Table getWhereClauseEditorBaseTable() {
     		return wcBaseTable == null? null :  wcBaseTable.table;
@@ -2166,6 +2212,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		@Override
 		protected void deselectChildrenIfNeededWithoutReload() {
 		}
+		protected abstract void updateStatementLabel(String sql);
 		@Override
 		protected void openConditionEditor(Point location, int column, Runnable onClose) {
 			JDialog dialog = new JDialog(parentFrame, "");
@@ -2207,6 +2254,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									String tableWithCondition = createTableWithCondition(wcBaseTable.originalQuery, secodaryCond);
 									
 									setStatementForReloading(tableWithCondition);
+									updateStatementLabel(tableWithCondition);
 									reloadRows();
 								} else {
 									repaint();
@@ -2913,6 +2961,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     static private ImageIcon runAllIcon;
     static private ImageIcon cancelIcon;
     static private ImageIcon explainIcon;
+    static private ImageIcon searchIcon;
+    static private ImageIcon searchCIcon;
 
     private int nextPlanID = 0;
 
@@ -2922,6 +2972,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         runAllIcon = UIUtil.readImage("/runall.png");
         cancelIcon = UIUtil.readImage("/Cancel.png");
         explainIcon = UIUtil.readImage("/explain.png");
+        searchIcon = UIUtil.readImage("/search.png");
+        searchCIcon = UIUtil.readImage("/searchc.png");
     }
 
     // TODO StringSearch component for historie (and than inc hist size a lot)

@@ -305,6 +305,10 @@ public class WCTypeAnalyser {
 									result.conditionStart = pos.a;
 									result.conditionEnd = pos.b;
 								} else {
+									if (!warned) {
+										LogUtil.warn(new RuntimeException("Cond. not found: " + cond + ":" + (woComments.toString().replaceAll("\\s+", " "))));
+										warned = true;
+									}
 									throw new QueryTooComplexException();
 								}
 							} else {
@@ -471,8 +475,6 @@ public class WCTypeAnalyser {
 		}
 		return null;
 	}
-	
-	private static boolean warned = false;
 
 	protected static Pair<Integer, Integer> findFragment(String fragment, String sql) {
 		Pair<Integer, Integer> pos = null;
@@ -1147,6 +1149,9 @@ public class WCTypeAnalyser {
 	}
 	
 	public static Boolean isPositiveExpression(String expr, String condition) {
+		if (condition.isEmpty()) {
+			return null;
+		}
 		net.sf.jsqlparser.statement.Statement st;
 		try {
 			st = JSqlParserUtil.parse("Select * From T Where " + condition, 2);
@@ -1170,6 +1175,8 @@ public class WCTypeAnalyser {
 			return null;
 		}
 	}
+	
+	private static boolean warned = false;
 	
 	public static void main(String args[]) {
 		System.out.println(isPositiveExpression("comm", "Empno=7902 and deptno=7902 and (comm is not null and boss is null)"));

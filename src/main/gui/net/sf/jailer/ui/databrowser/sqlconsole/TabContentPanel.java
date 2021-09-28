@@ -17,7 +17,6 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -77,27 +76,25 @@ public class TabContentPanel extends javax.swing.JPanel {
         this.rowColumnTypes = rowColumnTypes;
         initComponents();
         loadingPanel.setVisible(false);
-        
-        statementLabel = new JLabel() {
-        	@Override
-        	public Dimension getMinimumSize() {
-				return new Dimension(8, super.getMinimumSize().height);
-        	}
-        };
+
+        statementLabel = new JLabel();
         statementLabel.setForeground(new Color(0, 0, 180));
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new Insets(0, 0, 0, 10);
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        panel.add(rowsCount, gridBagConstraints);
+        GridBagConstraints gridBagConstraints;
         
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.weightx = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = explain? java.awt.GridBagConstraints.WEST : java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new Insets(0, explain? 8 : 16, 0, 0);
         panel.add(statementLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 20;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new Insets(0, 10, 0, 10);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        panel.add(rowsCount, gridBagConstraints);
         
         ComboBoxModel<String> sepModel = new DefaultComboBoxModel<String>(
         		new String[] {
@@ -159,7 +156,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 				metaPanel.add(metaDataDetails);
 			}
 		}
-
+  		
 		this.shimPanel.removeAll();
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -184,7 +181,7 @@ public class TabContentPanel extends javax.swing.JPanel {
             } else {
             	constraint = column.isNullable? "" : " NOT NULL";
             }
-        	columnTypes.append("     " + column + constraint);
+        	columnTypes.append("     " + (column.name == null? "" : column.name.replaceAll("\\s+",  "").replaceFirst("^(.{64})....*", "$1...")) + " " + (column.toSQL("").substring(column.name.length()).trim()) + constraint);
         }
         columnTypes.append(UIUtil.LINE_SEPARATOR + ")");
         return columnTypes.toString();
@@ -482,8 +479,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         add(panel, gridBagConstraints);
 

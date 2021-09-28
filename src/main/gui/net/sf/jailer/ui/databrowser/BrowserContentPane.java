@@ -787,7 +787,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Indexes of primary key columns (SQL console).
 	 */
-	private Set<Integer> pkColumnsConsole = new HashSet<Integer>();
+	protected Set<Integer> pkColumnsConsole = new HashSet<Integer>();
 
 	/**
 	 * Indexes of foreign key columns (SQL console).
@@ -6258,7 +6258,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JButton errorDetailsButton;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JTextArea errorMessageTextArea;
-    private javax.swing.JLabel findColumnsLabel;
+    public javax.swing.JLabel findColumnsLabel;
     public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JLabel from;
     private javax.swing.JLabel jLabel1;
@@ -7249,7 +7249,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		searchPanel.setStringCount(columNamesCount);
 		searchPanel.setOnClose(onClose);
-		searchPanel.find(owner, "Find Column", x, y - (BrowserContentPane.this.getQueryBuilderDialog() != null? 0 : findColumnsLabel.getHeight()), BrowserContentPane.this.getQueryBuilderDialog() != null);
+		searchPanel.find(owner, "Find Column", x, y, true);
 	}
 
 	private Object columnNameFromColumnModel(TableColumnModel columnModel, int i) {
