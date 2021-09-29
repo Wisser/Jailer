@@ -311,7 +311,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		if (estimatedItemsCount != null && estimatedItemsCount > 0) {
 			height = (int) ((estimatedItemsCount) * Math.max(16, cellHeight) + oHeight);
 		}
-		dialog.setSize(prefWidth != null ? prefWidth : Math.max(minWidth, dialog.getWidth()), Math.min(height, 600));
+		dialog.setSize(prefWidth != null ? prefWidth : Math.max(minWidth, dialog.getWidth()), Math.min(height, 300));
 		if (maxX != null) {
 			dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
 		}
@@ -633,7 +633,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 //						item += "&nbsp;<font color=" + (isSelected? "#66ff66" : "#006600") + ">&nbsp;&nbsp;(" + count + ")</font>";
 //					}
 //				}
-				String html = "<html><nobr>" + item + "</html>";
+				String html = "<html><nobr>" + item.replaceAll("<br>", "") + "</html>";
 				Component render = super.getListCellRendererComponent(list, html, index, false, cellHasFocus);
 				render.setBackground(bgColor);
 				render.setForeground(fgColor);
@@ -1253,3 +1253,4 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		icon2 = UIUtil.readImage("/search2.png");
 	}
 }
+

@@ -86,6 +86,7 @@ import javax.swing.JToggleButton;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
@@ -150,6 +151,7 @@ import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Pair;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 
@@ -924,12 +926,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 Map<Table, Integer> tableOrd = new HashMap<Table, Integer>();
                 int nextOrd = 0;
                 for (int i = 0; i < metaData.getColumnCount(); ++i) {
-                	String columnLabel = metaData.getColumnLabel(i + 1).replaceAll("\\s+", " ").replaceFirst("^(.{64}).+$", "$1...");
+                	String columnLabel = metaData.getColumnLabel(i + 1);
 					if (columnLabel == null || columnLabel.matches("(?is:\\s*|\\?column\\?|(^\\(*select\\b.*))")) {
 						if (sqlColumnExpression.containsKey(i)) {
 							columnLabel = sqlColumnExpression.get(i);
 						}
 					}
+					columnLabel = columnLabel.replaceAll("\\s+", " ").replaceFirst("^(.{38})...+$", "$1...");
 					Column column = JDBCMetaDataBasedModelElementFinder.toColumn(metaData, i + 1, session);
 					if (column.length >= 100000 && column.length != Integer.MAX_VALUE || column.precision > 1000) {
 						column = new Column(column.name, column.type, 0, -1);
@@ -1107,7 +1110,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
                         rb.sortColumnsCheckBox.setVisible(true);
                         rb.sortColumnsPanel.setVisible(false);
-                        rb.findColumnsPanel.setVisible(true);
+                        rb.findColumnsPanel.setVisible(false);
                         rb.sortColumnsCheckBox.setText(rb.sortColumnsCheckBox.getText().trim());
                         JToggleButton findButton = new JToggleButton((String) null);
                         findButton.setEnabled(rb.wcBaseTable != null);
@@ -1861,7 +1864,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane2.setResizeWeight(0.52);
+        jSplitPane2.setResizeWeight(0.5);
         jSplitPane2.setToolTipText("");
         jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
@@ -2077,6 +2080,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	private final Frame parentFrame;
     	private final WCTypeAnalyser.Result wcBaseTable;
     	private String secodaryCond = null;
+    	private List<Column> positives = new ArrayList<Column>();
         public ResultContentPane(DataModel dataModel, WCTypeAnalyser.Result wcBaseTable, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
                 RowsClosure rowsClosure, Boolean selectDistinct,
@@ -2225,6 +2229,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		protected void deselectChildrenIfNeededWithoutReload() {
 		}
 		protected abstract void updateStatementLabel(String sql);
+		private boolean neverOpened = true;
 		@Override
 		protected void openConditionEditor(Point location, int column, Runnable onClose) {
 			JDialog dialog = new JDialog(parentFrame, "");
@@ -2257,41 +2262,138 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							}
 							
 							@Override
+							protected String columnAlias(Column column) {
+								String value = columnLabel(column);
+								if (value != null && value.toString().startsWith("<html>")) {
+									String[] ntPair = value.toString().replaceAll("<br>", "\t").replaceAll("<[^>]*>", "").split("\t");
+									if (ntPair.length == 2) {
+										return ntPair[0];
+									}
+									if (ntPair.length == 3) {
+										return ntPair[1];
+									}
+								}
+								return super.columnAlias(column);
+							}
+							
+							@Override
+							protected String columnLabel(Column column) {
+								String[] acl = getAlternativeColumnLabels();
+								if (acl != null) {
+									for (int i = 0; i < wcBaseTable.table.getColumns().size() && i < acl.length; ++i) {
+										if (acl[i] != null && column.name.equals(wcBaseTable.table.getColumns().get(i).name)) {
+											return acl[i];
+										}
+									}
+								}
+								return super.columnLabel(column);
+							}
+
+							@Override
 							protected void consume(String condition, Set<Integer> involvedColumns) {
 								ResultContentPane.this.filteredColumns = involvedColumns;
-								if (resultContentPane != null && !secodaryCond.equals(condition.trim())) {
+								condition = condition.trim();
+								if (resultContentPane != null && !secodaryCond.matches(SqlUtil.createSQLFragmentSearchPattern(condition.trim()))) {
 									secodaryCond = condition.trim();
 									UISettings.s12 += 100000;
-									
+
 									String tableWithCondition = createTableWithCondition(wcBaseTable.originalQuery, secodaryCond);
 									
 									setStatementForReloading(tableWithCondition);
 									updateStatementLabel(tableWithCondition);
+									UIUtil.suspectQuery = tableWithCondition;
 									reloadRows();
 								} else {
 									repaint();
 								}
 							}
 							
+							private int operationStart(Matcher matcher, String condition) {
+								int p = matcher.start(3);
+								if (p < 0) {
+									p = matcher.start(4);
+									if (p < 0) {
+										p = matcher.start(5);
+									}
+								}
+								return p;
+							}
+
 							@Override
 							protected String createTableWithCondition(String condition, String tabName, String extJoin) {
 								return createTableWithCondition(wcBaseTable.table.getName(), condition);
 							}
 
 							private String createTableWithCondition(String table, String condition) {
-								if (condition.trim().isEmpty()) {
-									return table;
-								}
 								if (wcBaseTable.hasCondition) {
-									return table.substring(0, wcBaseTable.conditionStart)
-											+ "("
-											+ table.substring(wcBaseTable.conditionStart, wcBaseTable.conditionEnd)
-											+ ") and ("
-											+ condition 
-											+ ")"
-											+ table.substring(wcBaseTable.conditionEnd);
+									String mainCondition = table.substring(wcBaseTable.conditionStart, wcBaseTable.conditionEnd);
+									for (Column c: positives) {
+										Matcher matcher = createComparisionMatcher(true, c, condition);
+										if (matcher != null && matcher.find()) {
+											int opStart = operationStart(matcher, condition);
+											Matcher mainMatcher = createComparisionMatcher(true, c, mainCondition);
+											if (mainMatcher != null && mainMatcher.find()) {
+												int mainOpStart = operationStart(mainMatcher, mainCondition);
+												if (!condition.substring(opStart, matcher.end()).matches(SqlUtil.createSQLFragmentSearchPattern(mainCondition.substring(mainOpStart, mainMatcher.end())))) {
+													mainCondition = mainCondition.substring(0, mainOpStart)
+														+ (condition.length() > opStart && Character.isWhitespace(condition.charAt(opStart))? "" : " ")
+														+ condition.substring(opStart, matcher.end())
+														+ mainCondition.substring(mainMatcher.end());
+												}
+											}
+											condition = removeErasedFragment("\f", condition.substring(0, matcher.start()) + "\f" + condition.substring(matcher.end()));
+										} else {
+											Matcher mainMatcher = createComparisionMatcher(true, c, mainCondition);
+											if (mainMatcher != null && mainMatcher.find()) {
+												mainCondition = removeErasedFragment("\f", 
+														mainCondition.substring(0, mainMatcher.start())
+														+ "\f"
+														+ mainCondition.substring(mainMatcher.end()));
+											}
+										}
+									}
+									StringBuilder result = new StringBuilder();
+									result.append(table.substring(0, wcBaseTable.conditionStart));
+									if (!mainCondition.trim().isEmpty()) {
+										if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
+											result.append(" ");
+										}
+										if (!WCTypeAnalyser.isPositiveExpression(mainCondition)) {
+											result.append("(" + mainCondition + ")");
+										} else {
+											result.append(mainCondition);
+										}
+									}
+									if (!condition.trim().isEmpty()) {
+										if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
+											result.append(" ");
+										}
+										if (!mainCondition.trim().isEmpty()) {
+											result.append("and");
+										}
+										if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
+											result.append(" ");
+										}
+										result.append(condition.trim());
+									}
+									if (mainCondition.trim().isEmpty() && condition.trim().isEmpty()) {
+										result = new StringBuilder(result.toString().replaceFirst("(?is)\\s*\\b(where|having)\\s*$", ""));
+									}
+									if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
+										result.append(" ");
+									}
+									result.append(table.substring(wcBaseTable.conditionEnd));
+										
+									return result.toString();
 								} else {
-									return table + (wcBaseTable.isHaving? " Having " : " Where ") + condition;
+									if (condition.trim().isEmpty()) {
+										return table;
+									} else {
+										if (table.length() > 0 && !Character.isWhitespace(table.charAt(table.length() - 1))) {
+											table += " ";
+										}
+										return table + (wcBaseTable.isHaving? "Having " : "Where ") + condition.trim();
+									}
 								}
 							}
 							
@@ -2328,6 +2430,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										}
 										sb.append(comp);
 										filteredColumns.add(i);
+										positives.add(c);
 									}
 								}
 							}
@@ -2361,7 +2464,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						double mh = column >= 0? 220 : 280;
 						int height = Math.max(dialog.getHeight(), (int) mh);
 						dialog.setLocation(x, y);
-						int minWidth = 600;
+						int minWidth = 400;
 						int wid = Math.max(minWidth, dialog.getWidth());
 						Window window = parentFrame;
 						Integer maxX = window.getX() + window.getWidth() - wid - 8;;
@@ -2380,12 +2483,24 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						UIUtil.invokeLater(4, () -> {
 							popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
 						});
+						if (neverOpened) {
+							neverOpened = false;
+							UIUtil.invokeLater(8, () -> {
+								Timer timer = new Timer(100, e -> {
+									if (!dialog.isVisible()) {
+										openConditionEditor(location, column, onClose);
+									}
+								});
+								timer.setRepeats(false);
+								timer.start();
+							});
+						}
 			    	}
 				}
 			});
 		}
     }
-
+    
     private class TitelPanel extends JPanel {
     	public final JComponent rTabContainer;
 

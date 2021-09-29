@@ -266,6 +266,10 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 					Math.max(32, owner.getLocation().x + owner.getWidth() / 2 - dialog.getWidth() / 2),
 					Math.max(32, owner.getLocation().y + owner.getHeight() / 2 - dialog.getHeight() / 2));
 			dialog.setModal(true);
+			if (tbs.isEmpty()) {
+				ok = false;
+				return new Pair<String, String>("", "");
+			}
 			tbs.get(0).doClick();
 			updateFields();
 			dbmsComboBox.grabFocus();

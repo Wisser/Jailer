@@ -6876,6 +6876,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		this.alternativeColumnLabels = columnLabels;
 	}
 
+	public String[] getAlternativeColumnLabels() {
+		return alternativeColumnLabels;
+	}
+
 	private Color[] columnHeaderColors;
 
 	public void setColumnHeaderColors(Color[] columnHeaderColors) {

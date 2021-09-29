@@ -1865,11 +1865,17 @@ public class UIUtil {
 			}
 			if (parent != null) {
 				UIUtil.showException(parent, "Error", new FileNotFoundException(e.getMessage() + " / (" + info + fileList + ")"));
+				return lines;
 			}
+			lines = null;
+			return new ArrayList<CsvFile.Line>();
 		} catch (Exception e) {
 			if (parent != null) {
 				UIUtil.showException(parent, "Error", e);
+				return lines;
 			}
+			lines = null;
+			return new ArrayList<CsvFile.Line>();
 		}
 		return lines;
 	}

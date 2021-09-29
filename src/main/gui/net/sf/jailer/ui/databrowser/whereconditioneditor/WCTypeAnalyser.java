@@ -1176,6 +1176,38 @@ public class WCTypeAnalyser {
 		}
 	}
 	
+	public static boolean isPositiveExpression(String condition) {
+		if (condition.isEmpty()) {
+			return true;
+		}
+		net.sf.jsqlparser.statement.Statement st;
+		try {
+			st = JSqlParserUtil.parse("Select * From T Where " + condition, 2);
+			List<Boolean> result = new ArrayList<>();
+			st.accept(new StatementVisitorAdapter() {
+				@Override
+				public void visit(Select select) {
+					select.getSelectBody().accept(new SelectVisitorAdapter() {
+						@Override
+						public void visit(PlainSelect plainSelect) {
+							Expression wc = plainSelect.getWhere();
+							result.add(!(
+									wc instanceof OrExpression
+									||
+									wc instanceof XorExpression));
+						}
+					});
+				}
+			});
+			if (!result.isEmpty()) {
+				return result.get(0);
+			}
+			return false;
+		} catch (/*JSQLParser*/ Exception e) {
+			return false;
+		}
+	}
+	
 	private static boolean warned = false;
 	
 	public static void main(String args[]) {

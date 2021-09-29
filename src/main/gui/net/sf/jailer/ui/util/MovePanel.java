@@ -15,6 +15,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -66,6 +67,11 @@ public class MovePanel extends JPanel {
 	    	setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 		}
 		
+		public MovePanel(LayoutManager layoutManager) {
+			this();
+			setLayout(layoutManager);
+		}
+
 		@Override
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
@@ -80,12 +86,22 @@ public class MovePanel extends JPanel {
 		            RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
 		            RenderingHints.VALUE_RENDER_QUALITY);
-			for (int x = dim.height / 16 + 3; x < dim.width - dim.height / 16 - 1; x += 5) {
-				int h = dim.height / 2;
-				Path2D.Double path = new Path2D.Double();
-				path.moveTo(x, 1);
-				path.curveTo(x - h / 2, h, x + h / 2, dim.height - h, x, dim.height);
-				g2d.draw(path);
+			if (dim.width < dim.height) {
+				for (int y = dim.width/ 16 + 3; y < dim.height - dim.width / 16 - 1; y += 5) {
+					int h = dim.width / 2;
+					Path2D.Double path = new Path2D.Double();
+					path.moveTo(1, y);
+					path.curveTo(h, y - h / 2, dim.width - h, y + h / 2,  dim.width, y);
+					g2d.draw(path);
+				}
+			} else {
+				for (int x = dim.height / 16 + 3; x < dim.width - dim.height / 16 - 1; x += 5) {
+					int h = dim.height / 2;
+					Path2D.Double path = new Path2D.Double();
+					path.moveTo(x, 1);
+					path.curveTo(x - h / 2, h, x + h / 2, dim.height - h, x, dim.height);
+					g2d.draw(path);
+				}
 			}
 			g2d.setClip(clip);
 		}
