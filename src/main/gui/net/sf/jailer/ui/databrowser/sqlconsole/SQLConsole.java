@@ -2278,7 +2278,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		protected void deselectChildrenIfNeededWithoutReload() {
 		}
 		protected abstract void updateStatementLabel(String sql);
-		private boolean neverOpened = true;
+		
 		@Override
 		protected void openConditionEditor(Point location, int column, Runnable onClose) {
 			JDialog dialog = new JDialog(parentFrame, "");
@@ -2503,13 +2503,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					if (location != null) {
 						popUpWhereConditionEditorPanel.parseCondition(secodaryCond);
 						
+						long startTime = System.currentTimeMillis();
+						
 						dialog.setModal(false);
 						dialog.setUndecorated(true);
 						dialog.addWindowFocusListener(new WindowFocusListener() {
 							@Override
 							public void windowLostFocus(WindowEvent e) {
 								if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
-									close.run();
+									if (System.currentTimeMillis() - startTime >= 100) {
+										close.run();
+									}
 								}
 							}
 							@Override
@@ -2545,19 +2549,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						UIUtil.invokeLater(4, () -> {
 							popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
 						});
-						if (neverOpened) {
-							neverOpened = false;
-							UIUtil.invokeLater(8, () -> {
-								Timer timer = new Timer(100, e -> {
-									if (!dialog.isVisible()) {
-										openConditionEditor(location, column, onClose);
-									}
-								});
-								timer.setRepeats(false);
-								timer.start();
-							});
-						}
-			    	}
+						
+//						UIUtil.invokeLater(8, () -> {
+//							Timer timer = new Timer(100, e -> {
+//								if (!dialog.isVisible()) {
+//									openConditionEditor(location, column, onClose);
+//								}
+//							});
+//							timer.setRepeats(false);
+//							timer.start();
+//						});
+					}
 				}
 			});
 		}

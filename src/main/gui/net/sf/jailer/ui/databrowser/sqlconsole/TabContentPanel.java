@@ -251,7 +251,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         	}
         	++i;
         	try {
-        		row[i] = metaData.isCaseSensitive(col + 1);
+        		// not necessary, MySQL driver throws exception here, row[i] = metaData.isCaseSensitive(col + 1);
         	} catch (Throwable t) {
         		logger.info("error", t);
         	}
