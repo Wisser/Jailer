@@ -2129,6 +2129,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	private final Frame parentFrame;
     	private final WCTypeAnalyser.Result wcBaseTable;
     	private String secodaryCond = null;
+    	private boolean condEditorNeverOpened = true;
     	private List<Column> positives = new ArrayList<Column>();
         public ResultContentPane(DataModel dataModel, WCTypeAnalyser.Result wcBaseTable, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
@@ -2550,15 +2551,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
 						});
 						
-//						UIUtil.invokeLater(8, () -> {
-//							Timer timer = new Timer(100, e -> {
-//								if (!dialog.isVisible()) {
-//									openConditionEditor(location, column, onClose);
-//								}
-//							});
-//							timer.setRepeats(false);
-//							timer.start();
-//						});
+						if (column >= 0) {
+							if (condEditorNeverOpened) {
+								condEditorNeverOpened = false;
+								UIUtil.invokeLater(8, () -> {
+									Timer timer = new Timer(100, e -> {
+										if (!dialog.isVisible()) {
+											openConditionEditor(location, column, onClose);
+										}
+									});
+									timer.setRepeats(false);
+									timer.start();
+								});
+							}
+						}
 					}
 				}
 			});
