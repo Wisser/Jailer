@@ -5021,27 +5021,21 @@ public class DataBrowser extends javax.swing.JFrame {
 	}// GEN-LAST:event_searchBarToggleButtonActionPerformed
 
 	private void tbZoomOutButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tbZoomOutButtonActionPerformed
-		// TODO add your handling code here:
 	}// GEN-LAST:event_tbZoomOutButtonActionPerformed
 
 	private void tbZoom0ButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tbZoom0ButtonActionPerformed
-		// TODO add your handling code here:
 	}// GEN-LAST:event_tbZoom0ButtonActionPerformed
 
 	private void tbZoom1ButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tbZoom1ButtonActionPerformed
-		// TODO add your handling code here:
 	}// GEN-LAST:event_tbZoom1ButtonActionPerformed
 
 	private void tbZoom2ButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tbZoom2ButtonActionPerformed
-		// TODO add your handling code here:
 	}// GEN-LAST:event_tbZoom2ButtonActionPerformed
 
 	private void tbZoom3ButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tbZoom3ButtonActionPerformed
-		// TODO add your handling code here:
 	}// GEN-LAST:event_tbZoom3ButtonActionPerformed
 
 	private void tbZoom4ButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tbZoom4ButtonActionPerformed
-		// TODO add your handling code here:
 	}// GEN-LAST:event_tbZoom4ButtonActionPerformed
 
 	private String bookmarkName(String bookmarkFileName) {

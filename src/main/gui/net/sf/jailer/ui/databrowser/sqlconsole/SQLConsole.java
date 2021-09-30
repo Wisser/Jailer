@@ -529,6 +529,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private String prevSql = null;
     private int prevCaretPos;
 
+	protected Boolean doSync;
+
     /**
      * Update of outline of statement under caret and history after switching from another console to this.
      */
@@ -1171,6 +1173,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         	}
                         });
 						tabContentPanel.controlsPanel1.add(findButton);
+						JButton syncButton = new JButton((String) null);
+                        syncButton.setEnabled(rb.wcBaseTable != null);
+                        if (doSync == null) {
+        					doSync = file == null;
+                        }
+                        tabContentPanel.doSync = doSync;
+                		syncButton.setIcon(tabContentPanel.doSync? UIUtil.scaleIcon(syncButton, syncIcon) : UIUtil.scaleIcon(syncButton, nosyncIcon));
+                		syncButton.setFocusable(false);
+                        syncButton.addActionListener(e -> {
+                        	if (wcBaseTable != null) {
+                        		tabContentPanel.doSync = doSync = !tabContentPanel.doSync;
+                        		syncButton.setIcon(tabContentPanel.doSync? UIUtil.scaleIcon(syncButton, syncIcon) : UIUtil.scaleIcon(syncButton, nosyncIcon));
+                        	}
+                        });
+						// TODO tabContentPanel.controlsPanel1.add(syncButton);
                         tabContentPanel.controlsPanel1.add(new JLabel("    "));
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
                         JToggleButton findColumnsButton = new JToggleButton(rb.findColumnsLabel.getText());
@@ -3135,6 +3152,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     static private ImageIcon explainIcon;
     static private ImageIcon searchIcon;
     static private ImageIcon searchCIcon;
+    static private ImageIcon syncIcon;
+    static private ImageIcon nosyncIcon;
 
     private int nextPlanID = 0;
 
@@ -3146,6 +3165,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         explainIcon = UIUtil.readImage("/explain.png");
         searchIcon = UIUtil.readImage("/search.png");
         searchCIcon = UIUtil.readImage("/searchc.png");
+        syncIcon = UIUtil.readImage("/sync.png");
+        nosyncIcon = UIUtil.readImage("/nosync.png");
     }
 
     // TODO StringSearch component for historie (and than inc hist size a lot)

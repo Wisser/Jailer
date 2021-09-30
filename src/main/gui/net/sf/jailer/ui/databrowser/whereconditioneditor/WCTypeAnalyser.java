@@ -467,7 +467,7 @@ public class WCTypeAnalyser {
 			// ignore
 		} catch (JSQLParserException e) {
 			if (!warned) {
-				LogUtil.warn(e);
+				LogUtil.warn(new RuntimeException(sqlSelect + ": " + e.getMessage()));
 				warned = true;
 			}
 		} catch (Throwable t) {

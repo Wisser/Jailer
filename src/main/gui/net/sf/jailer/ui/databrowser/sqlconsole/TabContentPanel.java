@@ -737,4 +737,5 @@ public class TabContentPanel extends javax.swing.JPanel {
     public javax.swing.JLabel statementLabel;
 	public final javax.swing.JPanel shimPanel;
 	javax.swing.JButton loadButton;
+	protected boolean doSync;
 }
