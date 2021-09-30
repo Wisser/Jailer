@@ -229,7 +229,7 @@ public class QueryTypeAnalyser {
 									}
 
 									private String asSQL(SelectExpressionItem selectExpressionItem) {
-										return selectExpressionItem.toString().replaceAll("\\s+", " ").replaceFirst("^(.{64}).+$", "$1...");
+										return selectExpressionItem.toString().replaceAll("\\s+", " ").replaceFirst("^(.{128}).+$", "$1...");
 									}
 
 									@Override

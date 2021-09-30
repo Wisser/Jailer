@@ -89,6 +89,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private final boolean showSpinner;
 	private final Session session;
 	private final String[] alternativeColumnLabels;
+	private final String[] alternativeColumnLabelsFull;
 	private final BrowserContentCellEditor browserContentCellEditor;
 	private final TableModel tableModel;
 	private boolean initialized = false;
@@ -98,14 +99,16 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	 * @param rowSorter 
 	 * @param showSelectButton 
 	 * @param deselect 
+	 * @param alternativeColumnLabelsFull 
 	*/
-	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, boolean showSelectButton, RowIdSupport rowIdSupport, boolean deselect, String[] alternativeColumnLabels, Session session, BrowserContentCellEditor browserContentCellEditor, TableModel tableModel) {
+	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, boolean showSelectButton, RowIdSupport rowIdSupport, boolean deselect, String[] alternativeColumnLabels, String[] alternativeColumnLabelsFull, Session session, BrowserContentCellEditor browserContentCellEditor, TableModel tableModel) {
 		this.table = table;
 		this.rows = rows;
 		this.rowSorter = rowSorter;
 		this.rowIdSupport = rowIdSupport;
 		this.showSpinner = showSpinner;
 		this.alternativeColumnLabels = alternativeColumnLabels;
+		this.alternativeColumnLabelsFull = alternativeColumnLabelsFull;
 		this.session = session;
 		this.browserContentCellEditor = browserContentCellEditor;
 		this.tableModel = tableModel;
@@ -198,6 +201,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		this.rowSorter = null;
 		this.rowIdSupport = null;
 		this.alternativeColumnLabels = null;
+		this.alternativeColumnLabelsFull = null;
 		this.browserContentCellEditor = null;
 		this.tableModel = null;
 	}
@@ -305,7 +309,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						text = "<html>" + ntPair[1] + "</html>\t<html>" + ntPair[0] + "</html>";
 					}
 					l.setText(text);
-					l.setToolTipText(altName);
+					if (alternativeColumnLabelsFull != null && alternativeColumnLabelsFull.length > columnIndexAtI) {
+						l.setToolTipText(alternativeColumnLabelsFull[columnIndexAtI]);
+					} else {
+						l.setToolTipText(altName);
+					}
 					if (!text.equals(altName)) {
 						int pos = text.indexOf('\t');
 						if (pos >= 0) {

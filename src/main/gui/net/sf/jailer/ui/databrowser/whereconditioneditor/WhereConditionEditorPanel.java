@@ -830,7 +830,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			JLabel nameLabel = new JLabel();
 	        nameLabel.setFont(new Font(font.getName(), font.getStyle() & ~Font.BOLD, (int)(font.getSize() /* * 1.2 */)));
 			nameLabel.setText(columnLabel(comparison.column));
-			nameLabel.setToolTipText(nameLabel.getText());
+			nameLabel.setToolTipText(columnToolTip(comparison.column));
 	        
 			if (!inSQLConsole()) {
 				JLabel typeLabel = new JLabel();
@@ -1107,6 +1107,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		revalidate();
 		focusedComparision.ifPresent(c -> c.valueTextField.grabFocus());
     }
+
+	protected String columnToolTip(Column column) {
+		return columnLabel(column);
+	}
 
 	protected String columnLabel(Column column) {
 		return " " + Quoting.staticUnquote(column.name);

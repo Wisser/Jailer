@@ -858,8 +858,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static final KeyStroke KS_FILTER = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_EDIT = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
 
-	private boolean useWhereClauseEditor() {
-		return true; // return getQueryBuilderDialog() != null /* TODO */;
+	protected boolean useWhereClauseEditor() {
+		return true;
 	}
 
 	/**
@@ -1981,7 +1981,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		        		return;
 		        	}
 		        	TableColumn theColumn = header.getColumnModel().getColumn(column);
-		        	header.setToolTipText(theColumn.getHeaderValue() == null? "" : (theColumn.getHeaderValue().toString()));
+		        	if (alternativeColumnLabelsFull != null && alternativeColumnLabelsFull.length > theColumn.getModelIndex()) {
+			        	header.setToolTipText(alternativeColumnLabelsFull[theColumn.getModelIndex()]);
+		        	} else {
+		        		header.setToolTipText(theColumn.getHeaderValue() == null? "" : (theColumn.getHeaderValue().toString()));
+		        	}
 		        	currentSearchButtonColumnIndex = column;
 		        	if (getWhereClauseEditorBaseTable() != null && browserContentCellEditor.getColumnTypes().length > modelIndex && browserContentCellEditor.isEditable(getWhereClauseEditorBaseTable(), modelIndex, null)) {
 			    		currentSearchButtonLocation = calcSearchColumnPosition(column);
@@ -4976,7 +4980,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (useClassicSingleRowDetailsView) {
 				final boolean deselect = !getAndConditionText().equals("")
 						&& rows.size() == 1;
-					singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, alternativeColumnLabels, session, browserContentCellEditor, rowsTable.getModel()) {
+					singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, false, rowIdSupport, deselect, alternativeColumnLabels, alternativeColumnLabelsFull, session, browserContentCellEditor, rowsTable.getModel()) {
 						@Override
 						protected void onRowChanged(int row) {
 						}
@@ -6533,7 +6537,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				&& rows.size() == 1;
 		List<Supplier<DetailsView>> createDetailsViewF = new ArrayList<Supplier<DetailsView>>();
 		Supplier<DetailsView> createDetailsView = () -> {
-			DetailsView dv = new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, session, browserContentCellEditor, rowsTable.getModel()) {
+			DetailsView dv = new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, alternativeColumnLabelsFull, session, browserContentCellEditor, rowsTable.getModel()) {
 				@Override
 				protected void onRowChanged(int row) {
 					setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(row, false);
@@ -6878,6 +6882,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	public String[] getAlternativeColumnLabels() {
 		return alternativeColumnLabels;
+	}
+
+	private String[] alternativeColumnLabelsFull;
+
+	public void setAlternativeColumnLabelsFull(String[] columnLabelsFull) {
+		this.alternativeColumnLabelsFull = columnLabelsFull;
+	}
+
+	public String[] getAlternativeColumnLabelsFull() {
+		return alternativeColumnLabelsFull;
 	}
 
 	private Color[] columnHeaderColors;

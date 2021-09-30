@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -67,6 +68,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -78,6 +80,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.util.MovePanel;
 import net.sf.jailer.ui.util.SizeGrip;
 
 /**
@@ -477,6 +480,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	this.onSuccess = onSuccess;
     	this.renderConsumer = renderConsumer;
         initComponents();
+            
+        MovePanel comp = new MovePanel();
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        sizeGripPanel.add(comp, gridBagConstraints);
         
         bottomPanel.setVisible(false);
         setStatus(null, null);
@@ -732,7 +744,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	
 	public void withSizeGrip() {
 		JPanel corner = new SizeGrip();
-		sizeGripPanel.add(corner, java.awt.BorderLayout.EAST);
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        sizeGripPanel.add(corner, gridBagConstraints);
 		withSG = true;
 		bottomPanel.setVisible(true);
 	}
@@ -1120,18 +1136,20 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         bottomPanel.add(statusPanel, gridBagConstraints);
 
         sizeGripPanel.setOpaque(false);
-        sizeGripPanel.setLayout(new java.awt.BorderLayout());
+        sizeGripPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         bottomPanel.add(sizeGripPanel, gridBagConstraints);
 
         bottomComponentsPanel.setLayout(new java.awt.BorderLayout());

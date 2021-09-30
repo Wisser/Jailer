@@ -151,7 +151,6 @@ import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Pair;
-import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 
@@ -915,6 +914,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 	}
                 }
                 final String columnLabels[] = new String[metaData.getColumnCount()];
+                final String columnLabelsFull[] = new String[metaData.getColumnCount()];
                 final Color columnHeaderColors[] = new Color[metaData.getColumnCount()];
                 int a = 10;
                 final Color hBG[] = new Color[] {
@@ -923,48 +923,79 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                    		new Color(0, 0, 255, a + 0),
                    		new Color(255, 255, 0, a * 4 + 1),
                 };
-                Map<Table, Integer> tableOrd = new HashMap<Table, Integer>();
-                int nextOrd = 0;
-                for (int i = 0; i < metaData.getColumnCount(); ++i) {
-                	String columnLabel = metaData.getColumnLabel(i + 1);
-					if (columnLabel == null || columnLabel.matches("(?is:\\s*|\\?column\\?|(^\\(*select\\b.*))")) {
-						if (sqlColumnExpression.containsKey(i)) {
-							columnLabel = sqlColumnExpression.get(i);
+                Map<String, Integer> labelCount = new HashMap<String, Integer>();
+                Map<String, Integer> labelCounter = new HashMap<String, Integer>();
+	            for (int step = 0; step < 3; ++step) {
+	                Map<Table, Integer> tableOrd = new HashMap<Table, Integer>();
+	                int nextOrd = 0;
+	                for (int i = 0; i < metaData.getColumnCount(); ++i) {
+	                	String columnLabel = metaData.getColumnLabel(i + 1).replaceAll("\\s+", " ").replaceFirst("^(.{100})...+$", "$1...");
+						if (columnLabel == null || columnLabel.matches("(?is:\\s*|\\?column\\?|(^\\(*select\\b.*))")) {
+							if (sqlColumnExpression.containsKey(i)) {
+								columnLabel = sqlColumnExpression.get(i);
+							}
 						}
-					}
-					columnLabel = columnLabel.replaceAll("\\s+", " ").replaceFirst("^(.{38})...+$", "$1...");
-					Column column = JDBCMetaDataBasedModelElementFinder.toColumn(metaData, i + 1, session);
-					if (column.length >= 100000 && column.length != Integer.MAX_VALUE || column.precision > 1000) {
-						column = new Column(column.name, column.type, 0, -1);
-					}
-            		String type = column.toSQL("").substring(column.name.length()).trim();
-            		if (tabPerIndex.isEmpty()) {
-                		columnLabels[i] = "<html><nobr><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
-                	} else {
-                		String bgColor = "0066ff";
-                		Table table = tabPerIndex.get(i);
-                		if (table != null) {
-                			Integer ord = tableOrd.get(table);
-                			if (ord == null) {
-                				ord = nextOrd++;
-                				tableOrd.put(table, ord);
-                			}
-                			columnHeaderColors[i] = hBG[ord % hBG.length];
-                		}
-						String titel = table == null? "" : datamodel.get().getDisplayName(table);
-                		if (titel.length() == 0) {
-                			titel = "&nbsp;";
-                		} else {
-                			titel = UIUtil.toHTMLFragment(titel, 64).replaceFirst("<br>$", "");
-                		}
-                		if (columnLabel.length() == 0) {
-                			columnLabel = "&nbsp;";
-                		} else {
-                			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
-                		}
-                		columnLabels[i] = "<html><nobr><font color=\"#" + bgColor + "\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
-                	}
-                }
+						if (step > 0) {
+							columnLabel = columnLabel.replaceAll("\\s+", " ").replaceFirst("^(.{38})...+$", "$1...");
+						}
+						Integer cnt = labelCount.get(columnLabel);
+						if (step == 1) {
+							if (cnt == null) {
+								cnt = 1;
+							} else {
+								++cnt;
+							}
+							labelCount.put(columnLabel, cnt);
+						} else if (step == 2) {
+							if (cnt != null && cnt > 1) {
+								Integer cnter = labelCounter.get(columnLabel);
+								if (cnter == null) {
+									cnter = 1;
+								} else {
+									++cnter;
+								}
+								labelCounter.put(columnLabel, cnter);
+								columnLabel = "#" + cnter + ": " + columnLabel;
+							}
+						}
+						Column column = JDBCMetaDataBasedModelElementFinder.toColumn(metaData, i + 1, session);
+						if (column.length >= 100000 && column.length != Integer.MAX_VALUE || column.precision > 1000) {
+							column = new Column(column.name, column.type, 0, -1);
+						}
+	            		String type = column.toSQL("").substring(column.name.length()).trim();
+	            		if (tabPerIndex.isEmpty()) {
+	                		columnLabels[i] = "<html><nobr><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
+	                	} else {
+	                		String bgColor = "0066ff";
+	                		Table table = tabPerIndex.get(i);
+	                		if (table != null) {
+	                			Integer ord = tableOrd.get(table);
+	                			if (ord == null) {
+	                				ord = nextOrd++;
+	                				tableOrd.put(table, ord);
+	                			}
+	                			columnHeaderColors[i] = hBG[ord % hBG.length];
+	                		}
+							String titel = table == null? "" : datamodel.get().getDisplayName(table);
+	                		if (titel.length() == 0) {
+	                			titel = "&nbsp;";
+	                		} else {
+	                			titel = UIUtil.toHTMLFragment(titel, 64).replaceFirst("<br>$", "");
+	                		}
+	                		if (columnLabel.length() == 0) {
+	                			columnLabel = "&nbsp;";
+	                		} else {
+	                			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
+	                		}
+	                		columnLabels[i] = "<html><nobr><font color=\"#" + bgColor + "\">" + titel + "</font><br><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
+	                	}
+	                }
+	                if (step == 0) {
+	                	for (int i = 0; i < columnLabelsFull.length; ++i) {
+	                		columnLabelsFull[i] = columnLabels[i];
+	                	}
+	                }
+	            }
                 final List<Table> resultTypes = nfResultTypes;
                 final MemorizedResultSet metaDataDetails = new MemorizedResultSet(resultSet, limit, session, SQLConsole.this) {
             		@Override
@@ -1073,6 +1104,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             rb.setResultSetType(resultTypes);
                         }
                         rb.setAlternativeColumnLabels(columnLabels);
+                        rb.setAlternativeColumnLabelsFull(columnLabelsFull);
                         rb.setColumnHeaderColors(columnHeaderColors);
                         rb.setTableFilterEnabled(wcBaseTable == null && metaDataDetails.getSize() > 1 && metaDataDetails.getSize() <= limit);
                         rb.setStatementForReloading(finalSqlStatement);
@@ -2290,6 +2322,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							}
 
 							@Override
+							protected String columnToolTip(Column column) {
+								String[] acl = getAlternativeColumnLabelsFull();
+								if (acl != null) {
+									for (int i = 0; i < wcBaseTable.table.getColumns().size() && i < acl.length; ++i) {
+										if (acl[i] != null && column.name.equals(wcBaseTable.table.getColumns().get(i).name)) {
+											return acl[i];
+										}
+									}
+								}
+								return super.columnLabel(column);
+							}
+
+							@Override
 							protected void consume(String condition, Set<Integer> involvedColumns) {
 								ResultContentPane.this.filteredColumns = involvedColumns;
 								condition = condition.trim();
@@ -2464,7 +2509,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						double mh = column >= 0? 220 : 280;
 						int height = Math.max(dialog.getHeight(), (int) mh);
 						dialog.setLocation(x, y);
-						int minWidth = 400;
+						int minWidth = 300;
 						int wid = Math.max(minWidth, dialog.getWidth());
 						Window window = parentFrame;
 						Integer maxX = window.getX() + window.getWidth() - wid - 8;;

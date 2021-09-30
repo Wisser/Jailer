@@ -155,6 +155,10 @@ public class ResultSetRenderer extends javax.swing.JPanel {
         	return limit;
         }
 		@Override
+    	protected boolean useWhereClauseEditor() {
+    		return false;
+    	}
+		@Override
 		protected void setReloadLimit(int limit) {
 		}
         @Override
