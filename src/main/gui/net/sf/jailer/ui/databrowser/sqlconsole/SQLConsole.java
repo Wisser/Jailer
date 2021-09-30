@@ -2511,7 +2511,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							@Override
 							public void windowLostFocus(WindowEvent e) {
 								if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
-									if (System.currentTimeMillis() - startTime >= 100) {
+									if (column < 0 || System.currentTimeMillis() - startTime >= 100) {
 										close.run();
 									}
 								}
