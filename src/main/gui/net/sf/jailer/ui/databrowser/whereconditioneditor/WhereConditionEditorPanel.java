@@ -73,7 +73,6 @@ import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Highlighter.HighlightPainter;
 
 import org.fife.ui.rtextarea.SmartHighlightPainter;
 
@@ -675,9 +674,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	public Matcher createComparisionMatcher(boolean noAlias, Column column, String condition) {
+		if (!noAlias && tableAlias == null) {
+			return null;
+		}
 		String quoteRE = "[\"\u00B4\\[\\]`]";
 		String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:[^(]?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
-		String regex = "(?:(?:and\\s+)?" + "(?:" + (tableAlias == null || noAlias? "" : ("\\b" + tableAlias + "\\s*\\.")) + "\\s*))"
+		String regex = "(?:(?:and\\s+)?" + "(?:"
+				+ (inSQLConsole()? "" : !noAlias? "\\b" : "(?<!\\w)")
+				+ (tableAlias == null || noAlias? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
 				+ (noAlias? "(?<!\\.\\s{0,10})" : "")
 				+ "(" + quoteRE + "?)" + columnNameToRegExp(column.name) + "(" + quoteRE
 				+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(?:(" + Pattern.quote("!=") + "|"
@@ -1969,7 +1973,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					// field cleared
 					Pair<Integer, Integer> fullPos = fullPositions.get(comparison.column);
 					if (fullPos != null) {
-						hightlight(editor, fullPos.a, fullPos.b);
+						editor.select(fullPos.a, fullPos.b);
 						editor.replaceSelection(erased);
 						comparison.value = "";
 						if (comparison.operatorField != null) {
@@ -2020,7 +2024,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						} catch (Exception e) {
 							// ignore
 						}
-						hightlight(editor, pos.a, pos.b);
+						editor.select(pos.a, pos.b);
 						editor.replaceSelection(opSqlValue);
 						pos = new Pair<Integer, Integer>(pos.a, pos.a + opSqlValue.length());
 						valuePositions.put(comparison.column, pos);
