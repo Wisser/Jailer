@@ -73,6 +73,9 @@ import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Highlighter.HighlightPainter;
+
+import org.fife.ui.rtextarea.SmartHighlightPainter;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.InlineViewStyle;
@@ -1037,7 +1040,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						} catch (BadLocationException e1) {
 							// ignore
 						}
-						editor.select(pos.a + offset, pos.b);
+						hightlight(editor, pos.a + offset, pos.b);
 						UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(new Point(0, jScrollPane1.getViewport().getViewPosition().y)));
 					} else {
 						editor.setCaretPosition(0);
@@ -1966,7 +1969,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					// field cleared
 					Pair<Integer, Integer> fullPos = fullPositions.get(comparison.column);
 					if (fullPos != null) {
-						editor.select(fullPos.a, fullPos.b);
+						hightlight(editor, fullPos.a, fullPos.b);
 						editor.replaceSelection(erased);
 						comparison.value = "";
 						if (comparison.operatorField != null) {
@@ -2017,7 +2020,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						} catch (Exception e) {
 							// ignore
 						}
-						editor.select(pos.a, pos.b);
+						hightlight(editor, pos.a, pos.b);
 						editor.replaceSelection(opSqlValue);
 						pos = new Pair<Integer, Integer>(pos.a, pos.a + opSqlValue.length());
 						valuePositions.put(comparison.column, pos);
@@ -2025,7 +2028,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						if (fullPos != null) {
 							fullPositions.put(comparison.column, new Pair<Integer, Integer>(fullPos.a, pos.b));
 						}
-						editor.select(pos.a, pos.b);
+						hightlight(editor, pos.a, pos.b);
 					} else {
 						int start = editor.getDocument().getEndPosition().getOffset() - 1;
 						String prefix = "";
@@ -2044,7 +2047,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						pos = new Pair<Integer, Integer>(start + name.length(), start + name.length() + opSqlValue.length());
 						valuePositions.put(comparison.column, pos);
 						fullPositions.put(comparison.column, new Pair<Integer, Integer>(start, pos.b));
-						editor.select(pos.a, pos.b);
+						hightlight(editor, pos.a, pos.b);
 					}
 				}
 				String text = editor.getText();
@@ -2057,6 +2060,28 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				UIUtil.suspectQuery = text;
 				parseCondition();
 			}
+		}
+	}
+
+	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(new Color(0, 0, 255, 50));
+	{
+		highlightPainter.setPaintBorder(true);
+	}
+	private Object currentHighlightTag = null;
+	
+	private void hightlight(RSyntaxTextAreaWithSQLSyntaxStyle editor, Integer a, Integer b) {
+		try {
+			
+			// TODO 
+			 highlightPainter = new SmartHighlightPainter(new Color(0, 0, 255, 50));
+				highlightPainter.setPaintBorder(true);
+				
+				if (currentHighlightTag != null) {
+				editor.getHighlighter().removeHighlight(currentHighlightTag);
+			}
+			currentHighlightTag = editor.getHighlighter().addHighlight(a, b, highlightPainter);
+		} catch (/*BadLocation*/ Exception e) {
+			editor.select(a, b);
 		}
 	}
 
