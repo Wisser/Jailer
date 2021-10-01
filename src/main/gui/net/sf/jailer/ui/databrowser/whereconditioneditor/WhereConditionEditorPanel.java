@@ -2063,7 +2063,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 	}
 
-	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(new Color(0, 0, 255, 50));
+	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(new Color(0, 0, 255, 30));
 	{
 		highlightPainter.setPaintBorder(true);
 	}
@@ -2071,12 +2071,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
 	private void hightlight(RSyntaxTextAreaWithSQLSyntaxStyle editor, Integer a, Integer b) {
 		try {
-			
-			// TODO 
-			 highlightPainter = new SmartHighlightPainter(new Color(0, 0, 255, 50));
-				highlightPainter.setPaintBorder(true);
-				
-				if (currentHighlightTag != null) {
+			if (currentHighlightTag != null) {
 				editor.getHighlighter().removeHighlight(currentHighlightTag);
 			}
 			currentHighlightTag = editor.getHighlighter().addHighlight(a, b, highlightPainter);
