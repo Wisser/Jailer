@@ -682,7 +682,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		String regex = "(?:(?:and\\s+)?" + "(?:"
 				+ (inSQLConsole()? "" : !noAlias? "\\b" : "(?<!\\w)")
 				+ (tableAlias == null || noAlias? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
-				+ (noAlias? "(?<!\\.\\s{0,10})" : "")
+				+ (noAlias? "(?<!\\.\\s{0," + Math.max(condition.length(), 1000) + "})" : "")
 				+ "(" + quoteRE + "?)" + columnNameToRegExp(column.name) + "(" + quoteRE
 				+ "?)" + "\\s*(?:(\\bis\\s+null\\b)|(\\bis\\s+not\\s+null\\b)|(?:(" + Pattern.quote("!=") + "|"
 				+ Stream.of(Operator.values()).map(o -> o.sql).sorted((a, b) -> b.length() - a.length())
@@ -1045,6 +1045,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							// ignore
 						}
 						hightlight(editor, pos.a + offset, pos.b);
+						hightlight(comparison.column);
 						UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(new Point(0, jScrollPane1.getViewport().getViewPosition().y)));
 					} else {
 						editor.setCaretPosition(0);
@@ -1957,7 +1958,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	protected void accept(Comparison comparison, String value, Operator operator) {
 		if (value != null) {
 			value = value.trim();
-			if (!value.trim().equals(comparison.value.trim()) || operator != comparison.operator) {
+			Pair<Integer, Integer> newHighlight = null;
+			if (!value.equals(comparison.value.trim()) || operator != comparison.operator) {
 				editor.beginAtomicEdit();
 				editor.setText(latestParsedCondition);
 				String erased;
@@ -2026,6 +2028,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						}
 						editor.select(pos.a, pos.b);
 						editor.replaceSelection(opSqlValue);
+						hightlight(editor, pos.a, pos.b);
 						pos = new Pair<Integer, Integer>(pos.a, pos.a + opSqlValue.length());
 						valuePositions.put(comparison.column, pos);
 						Pair<Integer, Integer> fullPos = fullPositions.get(comparison.column);
@@ -2050,8 +2053,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						editor.append(name + opSqlValue);
 						pos = new Pair<Integer, Integer>(start + name.length(), start + name.length() + opSqlValue.length());
 						valuePositions.put(comparison.column, pos);
-						fullPositions.put(comparison.column, new Pair<Integer, Integer>(start, pos.b));
-						hightlight(editor, pos.a, pos.b);
+						Pair<Integer, Integer> fullPos = new Pair<Integer, Integer>(start, pos.b);
+						fullPositions.put(comparison.column, fullPos);
+						newHighlight = fullPos;
 					}
 				}
 				String text = editor.getText();
@@ -2061,27 +2065,37 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				}
 				editor.setText(text);
 				editor.endAtomicEdit();
+				if (newHighlight != null) {
+					hightlight(editor, newHighlight.a, newHighlight.b);
+				}
 				UIUtil.suspectQuery = text;
 				parseCondition();
+				hightlight(value.isEmpty()? null : comparison.column);
 			}
 		}
 	}
 
-	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(new Color(0, 0, 255, 30));
+	private final Color HIGHLIGHT_COLOR = new Color(0, 0, 255, 30);
+	protected SmartHighlightPainter highlightPainter = new SmartHighlightPainter(HIGHLIGHT_COLOR);
 	{
 		highlightPainter.setPaintBorder(true);
 	}
 	private Object currentHighlightTag = null;
 	
-	private void hightlight(RSyntaxTextAreaWithSQLSyntaxStyle editor, Integer a, Integer b) {
+	private void hightlight(RSyntaxTextAreaWithSQLSyntaxStyle editor, int a, int b) {
+		editor.select(a, b);
 		try {
 			if (currentHighlightTag != null) {
 				editor.getHighlighter().removeHighlight(currentHighlightTag);
 			}
 			currentHighlightTag = editor.getHighlighter().addHighlight(a, b, highlightPainter);
+			editor.select(a, a);
 		} catch (/*BadLocation*/ Exception e) {
-			editor.select(a, b);
+			return;
 		}
+	}
+	protected void hightlight(Column column) {
+		// SQL Console only
 	}
 
 	protected String removeErasedFragment(String erased, String sqlCondition) {

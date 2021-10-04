@@ -100,6 +100,7 @@ import javax.swing.text.Segment;
 
 import org.apache.log4j.Logger;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.fife.ui.rtextarea.SmartHighlightPainter;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
@@ -549,6 +550,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             if (sql.trim().isEmpty()) {
                 loc = editorPane.getCurrentStatementLocation(true, true, null, true);
                 sql = editorPane.getText(loc.a, loc.b, true);
+            }
+            if (sql.trim().isEmpty()) {
+            	hightlight(0, 0);
+            } else {
+            	try {
+					hightlight(editorPane.getLineStartOffset(loc.a), editorPane.getLineEndOffset(loc.b));
+				} catch (BadLocationException e) {
+					hightlight(0, 0);
+				}
             }
             if (checkPrevSql && sql.equals(prevSql) && editorPane.getCaretPosition() == prevCaretPos) {
                 return;
@@ -1065,7 +1075,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 	@Override
                     public void run() {
                         final ResultContentPane rb = new ResultContentPane(datamodel.get(), wcBaseTable, finalResultType, "", session, null,
-                                null, (JFrame) SwingUtilities.getWindowAncestor(SQLConsole.this), new RowsClosure(), false, false, executionContext) {
+                                null, (JFrame) SwingUtilities.getWindowAncestor(SQLConsole.this), new RowsClosure(), false, sql, statementStartOffset, false, executionContext) {
                         	@Override
                         	public void afterReload() {
                         		UIUtil.invokeLater(() -> {
@@ -1178,16 +1188,22 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         if (doSync == null) {
         					doSync = file == null;
                         }
-                        tabContentPanel.doSync = doSync;
+                        tabContentPanel.doSync = rb.doSync = doSync;
+                        
+                        // TODO
+                        // TODO Tooltips
+                        
+                        
                 		syncButton.setIcon(tabContentPanel.doSync? UIUtil.scaleIcon(syncButton, syncIcon) : UIUtil.scaleIcon(syncButton, nosyncIcon));
                 		syncButton.setFocusable(false);
                         syncButton.addActionListener(e -> {
                         	if (wcBaseTable != null) {
                         		tabContentPanel.doSync = doSync = !tabContentPanel.doSync;
+                        		rb.setSync(tabContentPanel.doSync);
                         		syncButton.setIcon(tabContentPanel.doSync? UIUtil.scaleIcon(syncButton, syncIcon) : UIUtil.scaleIcon(syncButton, nosyncIcon));
                         	}
                         });
-						// TODO tabContentPanel.controlsPanel1.add(syncButton);
+						tabContentPanel.controlsPanel1.add(syncButton);
                         tabContentPanel.controlsPanel1.add(new JLabel("    "));
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
                         JToggleButton findColumnsButton = new JToggleButton(rb.findColumnsLabel.getText());
@@ -2082,6 +2098,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
+	private Object currentHighlightTag = null;
     
 	private abstract class WhereConditionEditorPanelConsole extends WhereConditionEditorPanel {
 		protected final ResultContentPane resultContentPane;
@@ -2126,19 +2143,27 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private final SearchBarRSyntaxTextArea popUpSearchBarEditor = new SearchBarRSyntaxTextArea();
 	
     abstract class ResultContentPane extends BrowserContentPane {
-    	private final Frame parentFrame;
+    	protected boolean doSync;
+		private final Frame parentFrame;
     	private final WCTypeAnalyser.Result wcBaseTable;
     	private String secodaryCond = null;
     	private boolean condEditorNeverOpened = true;
-    	private List<Column> positives = new ArrayList<Column>();
+    	private final String origSql;
+    	private final int origStartOffset;
+        private List<Column> positives = new ArrayList<Column>();
+        private List<Column> negatives = new ArrayList<Column>();
+        
         public ResultContentPane(DataModel dataModel, WCTypeAnalyser.Result wcBaseTable, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
                 RowsClosure rowsClosure, Boolean selectDistinct,
+                String origSql, int origStartOffset,
                 boolean reload, ExecutionContext executionContext) {
             super(dataModel, table, condition, session, parentRows, association, parentFrame,
             		rowsClosure, selectDistinct, reload, executionContext);
             this.parentFrame = parentFrame;
             this.wcBaseTable = wcBaseTable;
+            this.origSql = origSql;
+            this.origStartOffset = origStartOffset;
             noSingleRowDetailsView = true;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
         }
@@ -2280,6 +2305,59 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 		protected abstract void updateStatementLabel(String sql);
 		
+		private String latestSyncStatement = null;
+		protected String getLatestSyncStatement() {
+			return latestSyncStatement != null? latestSyncStatement : origSql;
+		}
+
+		public void setSync(boolean sync) {
+			if (sync != doSync) {
+				if (doSync) {
+					syncStatement(origSql);
+				}
+				doSync = sync;
+				syncStatement(statementForReloading);
+			}
+		}
+		
+		private void syncStatement(String statement) {
+			if (doSync) {
+				Pair<Integer, Integer> pos = getCurrentStatementPos();
+				if (pos != null) {
+					editorPane.replaceRange(statement, pos.a, pos.b);
+					latestSyncStatement = statement;
+				}
+			}
+		}
+
+		private Pair<Integer, Integer> getCurrentStatementPos() {
+			String statement = getLatestSyncStatement();
+			for (int border = 1; border <= 2048; border *= 4) {
+				int min = Math.max(0, origStartOffset - border);
+				int max = Math.min(editorPane.getDocument().getLength(), origStartOffset + statement.length() + border);
+				try {
+					int index = editorPane.getDocument().getText(min, max - min).indexOf(statement);
+					if (index >= 0) {
+						return new Pair<Integer, Integer>(min + index, min + index + statement.length());
+					}
+				} catch (BadLocationException e) {
+					return null;
+				}
+			}
+			return null;
+		}
+
+		private int operationStart(Matcher matcher) {
+			int p = matcher.start(3);
+			if (p < 0) {
+				p = matcher.start(4);
+				if (p < 0) {
+					p = matcher.start(5);
+				}
+			}
+			return p;
+		}
+
 		@Override
 		protected void openConditionEditor(Point location, int column, Runnable onClose) {
 			JDialog dialog = new JDialog(parentFrame, "");
@@ -2352,6 +2430,58 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								return super.columnLabel(column);
 							}
 
+							private void hightlight(RSyntaxTextAreaWithSQLSyntaxStyle editor, int a, int b) {
+								try {
+									if (currentHighlightTag != null) {
+										editor.getHighlighter().removeHighlight(currentHighlightTag);
+									}
+									currentHighlightTag = editor.getHighlighter().addHighlight(a, b, highlightPainter);
+								} catch (/*BadLocation*/ Exception e) {
+									return;
+								}
+							}
+
+							@Override
+							protected void hightlight(Column column) {
+								if (column == null) {
+									hightlight(editorPane, 0, 0);
+								} else {
+									Pair<Integer, Integer> pos = getCurrentStatementPos();
+									if (pos != null) {
+										String statement = getLatestSyncStatement();
+										boolean ignore = false;
+										if (negatives.contains(column) && wcBaseTable.hasCondition && wcBaseTable.conditionEnd <= statement.length()) {
+											Matcher matcher = createComparisionMatcher(true, column, statement.substring(wcBaseTable.conditionEnd));
+											if (matcher != null && !matcher.find()) {
+												ignore = true;
+											}
+										}
+										boolean isPositive = positives.contains(column);
+										// TODO
+										// TODO (x=0 or y=0) and x=1 -> positivePos == 2, look for 2nd match
+										int start = -1;
+										int end = 0;
+										if (!ignore) {
+											Matcher matcher = createComparisionMatcher(true, column, statement);
+											while (matcher != null && matcher.find()) {
+												start = operationStart(matcher);
+												end = matcher.end();
+												if (isPositive) {
+													break;
+												}
+											}
+										}
+										if (start >= 0) {
+											hightlight(editorPane, pos.a + start, pos.a + end);
+										} else {
+											hightlight(editorPane, 0, 0);
+										}
+									} else {
+										hightlight(editorPane, 0, 0);
+									}
+								}
+							}
+
 							@Override
 							protected void consume(String condition, Set<Integer> involvedColumns) {
 								ResultContentPane.this.filteredColumns = involvedColumns;
@@ -2365,23 +2495,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									setStatementForReloading(tableWithCondition);
 									updateStatementLabel(tableWithCondition);
 									UIUtil.suspectQuery = tableWithCondition;
+									
+									syncStatement(statementForReloading);
+									
 									reloadRows();
 								} else {
 									repaint();
 								}
 							}
 							
-							private int operationStart(Matcher matcher, String condition) {
-								int p = matcher.start(3);
-								if (p < 0) {
-									p = matcher.start(4);
-									if (p < 0) {
-										p = matcher.start(5);
-									}
-								}
-								return p;
-							}
-
 							@Override
 							protected String createTableWithCondition(String condition, String tabName, String extJoin) {
 								return createTableWithCondition(wcBaseTable.table.getName(), condition);
@@ -2393,13 +2515,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									for (Column c: positives) {
 										Matcher matcher = createComparisionMatcher(true, c, condition);
 										if (matcher != null && matcher.find()) {
-											int opStart = operationStart(matcher, condition);
+											int opStart = operationStart(matcher);
 											Matcher mainMatcher = createComparisionMatcher(true, c, mainCondition);
 											if (mainMatcher != null && mainMatcher.find()) {
-												int mainOpStart = operationStart(mainMatcher, mainCondition);
+												int mainOpStart = operationStart(mainMatcher);
 												if (!condition.substring(opStart, matcher.end()).matches(SqlUtil.createSQLFragmentSearchPattern(mainCondition.substring(mainOpStart, mainMatcher.end())))) {
 													mainCondition = mainCondition.substring(0, mainOpStart)
-														+ (condition.length() > opStart && Character.isWhitespace(condition.charAt(opStart))? "" : " ")
+														+ (condition.length() > opStart && Character.isWhitespace(condition.charAt(opStart - 1))? "" : " ")
 														+ condition.substring(opStart, matcher.end())
 														+ mainCondition.substring(mainMatcher.end());
 												}
@@ -2437,7 +2559,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										if (result.length() > 0 && !Character.isWhitespace(result.charAt(result.length() - 1))) {
 											result.append(" ");
 										}
-										result.append(condition.trim());
+										result.append(condition.trim().replaceAll("(?is)\\n\\s*(And )", " $1"));
 									}
 									if (mainCondition.trim().isEmpty() && condition.trim().isEmpty()) {
 										result = new StringBuilder(result.toString().replaceFirst("(?is)\\s*\\b(where|having)\\s*$", ""));
@@ -2447,7 +2569,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									}
 									result.append(table.substring(wcBaseTable.conditionEnd));
 										
-									return result.toString();
+									return result.toString().trim();
 								} else {
 									if (condition.trim().isEmpty()) {
 										return table;
@@ -2455,7 +2577,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										if (table.length() > 0 && !Character.isWhitespace(table.charAt(table.length() - 1))) {
 											table += " ";
 										}
-										return table + (wcBaseTable.isHaving? "Having " : "Where ") + condition.trim();
+										return table + (wcBaseTable.isHaving? "Having " : "Where ") + condition.trim().replaceAll("(?is)\\n\\s*(And )", " $1");
 									}
 								}
 							}
@@ -2484,16 +2606,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							String condition = wcBaseTable.originalQuery.substring(wcBaseTable.conditionStart, wcBaseTable.conditionEnd);
 							for (int i = 0; i < wcBaseTable.table.getColumns().size(); ++i) {
 								Column c = wcBaseTable.table.getColumns().get(i);
-								if (c != null && c.name != null && Boolean.TRUE.equals(WCTypeAnalyser.isPositiveExpression(c.name, condition))) {
-									Matcher matcher = popUpWhereConditionEditorPanel.createComparisionMatcher(true, c, condition);
-									if (matcher != null && matcher.find()) {
-										String comp = matcher.group().trim().replaceFirst("(?is)And\\b", "");
-										if (sb.length() > 0) {
-											sb.append(" and ");
+								if (c != null && c.name != null) {
+									Boolean pe = WCTypeAnalyser.isPositiveExpression(c.name, condition);
+									if (Boolean.FALSE.equals(pe)) {
+										negatives.add(c);
+									} else if (Boolean.TRUE.equals(pe)) {
+										Matcher matcher = popUpWhereConditionEditorPanel.createComparisionMatcher(true, c, condition);
+										if (matcher != null && matcher.find()) {
+											String comp = matcher.group().trim().replaceFirst("(?is)And\\b", "");
+											if (sb.length() > 0) {
+												sb.append(" and ");
+											}
+											sb.append(comp);
+											filteredColumns.add(i);
+											positives.add(c);
 										}
-										sb.append(comp);
-										filteredColumns.add(i);
-										positives.add(c);
 									}
 								}
 							}
@@ -2514,6 +2641,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
 									if (column < 0 || System.currentTimeMillis() - startTime >= 200) {
 										close.run();
+										if (currentHighlightTag != null) {
+											editorPane.getHighlighter().removeHighlight(currentHighlightTag);
+											currentHighlightTag = null;
+										}
 									}
 								}
 							}
@@ -3151,6 +3282,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		return editorPane;
 	}
 
+    private SmartHighlightPainter currentStatementHighlightPainter = new SmartHighlightPainter(new Color(0, 0, 255, 15)); // TODO
+	private Object currentStatementHighlightTag = null;
+	
+	private void hightlight(int a, int b) {
+		try {
+			if (currentStatementHighlightTag != null) {
+				editorPane.getHighlighter().removeHighlight(currentStatementHighlightTag);
+			}
+			currentStatementHighlightTag = editorPane.getHighlighter().addHighlight(a, b, currentStatementHighlightPainter);
+		} catch (/*BadLocation*/ Exception e) {
+			return;
+		}
+	}
+	
 	protected abstract void onContentStateChange(File file, boolean dirty);
     protected abstract void setReloadLimit(int limit);
 
