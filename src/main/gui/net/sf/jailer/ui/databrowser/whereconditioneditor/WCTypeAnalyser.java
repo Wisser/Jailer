@@ -51,7 +51,6 @@ import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
-import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.HexValue;
@@ -1045,76 +1044,83 @@ public class WCTypeAnalyser {
 	private static class QueryTooComplexException extends RuntimeException {
 	}
 
-	private static class PExpressionVisitorAdapter extends ExpressionVisitorAdapter {
+	private static class PExpressionVisitorAdapter implements ExpressionVisitor {
 		
 		final String expr;
-		final List<Boolean> result;
-		final boolean positive;
+		final String sql;
+		final Integer[] result;
+		final StringBuilder left = new StringBuilder();
 		
-		public PExpressionVisitorAdapter(String expr, boolean positive, List<Boolean> result) {
+		public PExpressionVisitorAdapter(String expr, String sql, Integer[] result) {
 			this.expr = expr;
-			this.positive = positive;
+			this.sql = sql;
 			this.result = result;
 		}
 
 		@Override
 		public void visit(NotExpression aThis) {
 			check(aThis);
-			aThis.getExpression().accept(new PExpressionVisitorAdapter(expr, false, result));
+			visitAny(aThis);
 		}
 		
 		@Override
 		public void visit(NotEqualsTo notEqualsTo) {
 			check(notEqualsTo);
+			visitAny(notEqualsTo);
 		}
 		
 		@Override
 		public void visit(MinorThanEquals minorThanEquals) {
 			check(minorThanEquals);
+			visitAny(minorThanEquals);
 		}
 		
 		@Override
 		public void visit(MinorThan minorThan) {
 			check(minorThan);
+			visitAny(minorThan);
 		}
 		
 		@Override
 		public void visit(LikeExpression likeExpression) {
 			check(likeExpression);
+			visitAny(likeExpression);
 		}
 		
 		@Override
 		public void visit(IsNullExpression isNullExpression) {
 			check(isNullExpression.getLeftExpression());
+			visitAny(isNullExpression);
 		}
 
 		@Override
 		public void visit(GreaterThanEquals greaterThanEquals) {
 			check(greaterThanEquals);
+			visitAny(greaterThanEquals);
 		}
 		
 		@Override
 		public void visit(GreaterThan greaterThan) {
 			check(greaterThan);
+			visitAny(greaterThan);
 		}
 		
 		@Override
 		public void visit(EqualsTo equalsTo) {
 			check(equalsTo);
+			visitAny(equalsTo);
 		}
 		
 		@Override
 		public void visit(XorExpression orExpression) {
 			check(orExpression);
-			orExpression.getLeftExpression().accept(new PExpressionVisitorAdapter(expr, false, result));
-			orExpression.getRightExpression().accept(new PExpressionVisitorAdapter(expr, false, result));
+			visitAny(orExpression);
 		}
 		
 		@Override
 		public void visit(OrExpression orExpression) {
 			check(orExpression);
-			orExpression.getLeftExpression().accept(new PExpressionVisitorAdapter(expr, false, result));
-			orExpression.getRightExpression().accept(new PExpressionVisitorAdapter(expr, false, result));
+			visitAny(orExpression);
 		}
 		
 		@Override
@@ -1131,46 +1137,397 @@ public class WCTypeAnalyser {
 		}
 
 		private void check(Object node) {
-			if (normalizeExpr(node.toString()).equalsIgnoreCase(expr)) {
-				result.add(positive);
+			if (result[0] == null) {
+				String pattern = SqlUtil.createSQLFragmentSearchPattern(expr);
+				Pattern pat = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+				Matcher matcher = pat.matcher(node.toString());
+				if (matcher.matches()) {
+					result[0] = 1;
+					matcher = pat.matcher(left);
+					while (matcher.find()) {
+						++result[0];
+					}
+				}
+				if (node instanceof ComparisonOperator) {
+					check(((ComparisonOperator) node).getLeftExpression());
+				}
 			}
-			if (node instanceof ComparisonOperator) {
-				check(((ComparisonOperator) node).getLeftExpression());
+		}
+
+		private void visitAny(Object o) {
+			if ((o instanceof ASTNodeAccess && ((ASTNodeAccess) o).getASTNode() != null)) {
+				SimpleNode node = ((ASTNodeAccess) o).getASTNode();
+				try {
+					left.append(sql.substring(node.jjtGetFirstToken().absoluteBegin - 1, node.jjtGetLastToken().absoluteEnd - 1));
+				} catch (Exception e) {
+					left.append(o.toString());
+				}
+			} else {
+				left.append(o.toString());
 			}
+			left.append(" ");
+		}
+
+		@Override
+		public void visit(BitwiseRightShift aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(BitwiseLeftShift aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(NullValue nullValue) {
+			visitAny(nullValue);
+		}
+
+		@Override
+		public void visit(Function function) {
+			visitAny(function);
+		}
+
+		@Override
+		public void visit(SignedExpression signedExpression) {
+			visitAny(signedExpression);
+		}
+
+		@Override
+		public void visit(JdbcParameter jdbcParameter) {
+			visitAny(jdbcParameter);
+		}
+
+		@Override
+		public void visit(JdbcNamedParameter jdbcNamedParameter) {
+			visitAny(jdbcNamedParameter);
+		}
+
+		@Override
+		public void visit(DoubleValue doubleValue) {
+			visitAny(doubleValue);
+		}
+
+		@Override
+		public void visit(LongValue longValue) {
+			visitAny(longValue);
+		}
+
+		@Override
+		public void visit(HexValue hexValue) {
+			visitAny(hexValue);
+		}
+
+		@Override
+		public void visit(DateValue dateValue) {
+			visitAny(dateValue);
+		}
+
+		@Override
+		public void visit(TimeValue timeValue) {
+			visitAny(timeValue);
+		}
+
+		@Override
+		public void visit(TimestampValue timestampValue) {
+			visitAny(timestampValue);
+		}
+
+		@Override
+		public void visit(StringValue stringValue) {
+			visitAny(stringValue);
+		}
+
+		@Override
+		public void visit(Addition addition) {
+			visitAny(addition);
+		}
+
+		@Override
+		public void visit(Division division) {
+			visitAny(division);
+		}
+
+		@Override
+		public void visit(IntegerDivision division) {
+			visitAny(division);
+		}
+
+		@Override
+		public void visit(Multiplication multiplication) {
+			visitAny(multiplication);
+		}
+
+		@Override
+		public void visit(Subtraction subtraction) {
+			visitAny(subtraction);
+		}
+
+		@Override
+		public void visit(Between between) {
+			visitAny(between);
+		}
+
+		@Override
+		public void visit(InExpression inExpression) {
+			visitAny(inExpression);
+		}
+
+		@Override
+		public void visit(FullTextSearch fullTextSearch) {
+			visitAny(fullTextSearch);
+		}
+
+		@Override
+		public void visit(IsBooleanExpression isBooleanExpression) {
+			visitAny(isBooleanExpression);
+		}
+
+		@Override
+		public void visit(Column tableColumn) {
+			visitAny(tableColumn);
+		}
+
+		@Override
+		public void visit(SubSelect subSelect) {
+			visitAny(subSelect);
+		}
+
+		@Override
+		public void visit(CaseExpression caseExpression) {
+			visitAny(caseExpression);
+		}
+
+		@Override
+		public void visit(WhenClause whenClause) {
+			visitAny(whenClause);
+		}
+
+		@Override
+		public void visit(ExistsExpression existsExpression) {
+			visitAny(existsExpression);
+		}
+
+		@Override
+		public void visit(AnyComparisonExpression anyComparisonExpression) {
+			visitAny(anyComparisonExpression);
+		}
+
+		@Override
+		public void visit(Concat concat) {
+			visitAny(concat);
+		}
+
+		@Override
+		public void visit(Matches matches) {
+			visitAny(matches);
+		}
+
+		@Override
+		public void visit(BitwiseAnd bitwiseAnd) {
+			visitAny(bitwiseAnd);
+		}
+
+		@Override
+		public void visit(BitwiseOr bitwiseOr) {
+			visitAny(bitwiseOr);
+		}
+
+		@Override
+		public void visit(BitwiseXor bitwiseXor) {
+			visitAny(bitwiseXor);
+		}
+
+		@Override
+		public void visit(CastExpression cast) {
+			visitAny(cast);
+		}
+
+		@Override
+		public void visit(Modulo modulo) {
+			visitAny(modulo);
+		}
+
+		@Override
+		public void visit(AnalyticExpression aexpr) {
+			visitAny(aexpr);
+		}
+
+		@Override
+		public void visit(ExtractExpression eexpr) {
+			visitAny(eexpr);
+		}
+
+		@Override
+		public void visit(IntervalExpression iexpr) {
+			visitAny(iexpr);
+		}
+
+		@Override
+		public void visit(OracleHierarchicalExpression oexpr) {
+			visitAny(oexpr);
+		}
+
+		@Override
+		public void visit(RegExpMatchOperator rexpr) {
+			visitAny(rexpr);
+		}
+
+		@Override
+		public void visit(JsonExpression jsonExpr) {
+			visitAny(jsonExpr);
+		}
+
+		@Override
+		public void visit(JsonOperator jsonExpr) {
+			visitAny(jsonExpr);
+		}
+
+		@Override
+		public void visit(RegExpMySQLOperator regExpMySQLOperator) {
+			visitAny(regExpMySQLOperator);
+		}
+
+		@Override
+		public void visit(UserVariable var) {
+			visitAny(var);
+		}
+
+		@Override
+		public void visit(NumericBind bind) {
+			visitAny(bind);
+		}
+
+		@Override
+		public void visit(KeepExpression aexpr) {
+			visitAny(aexpr);
+		}
+
+		@Override
+		public void visit(MySQLGroupConcat groupConcat) {
+			visitAny(groupConcat);
+		}
+
+		@Override
+		public void visit(ValueListExpression valueList) {
+			visitAny(valueList);
+		}
+
+		@Override
+		public void visit(RowConstructor rowConstructor) {
+			visitAny(rowConstructor);
+		}
+
+		@Override
+		public void visit(RowGetExpression rowGetExpression) {
+			visitAny(rowGetExpression);
+		}
+
+		@Override
+		public void visit(OracleHint hint) {
+			visitAny(hint);
+		}
+
+		@Override
+		public void visit(TimeKeyExpression timeKeyExpression) {
+			visitAny(timeKeyExpression);
+		}
+
+		@Override
+		public void visit(DateTimeLiteralExpression literal) {
+			visitAny(literal);
+		}
+
+		@Override
+		public void visit(NextValExpression aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(CollateExpression aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(SimilarToExpression aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(ArrayExpression aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(ArrayConstructor aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(VariableAssignment aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(XMLSerializeExpr aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(TimezoneExpression aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(JsonAggregateFunction aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(JsonFunction aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(ConnectByRootOperator aThis) {
+			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(OracleNamedFunctionParameter aThis) {
+			visitAny(aThis);
 		}
 	};
-	
-	private static String normalizeExpr(String expr) {
-		expr = expr.replaceAll("\\s+", "").trim();
-		while (expr.startsWith("(") && expr.endsWith(")")) {
-			expr = expr.substring(1, expr.length() - 1).trim();
-		}
-		return expr;
-	}
-	
-	public static Boolean isPositiveExpression(String expr, String condition) {
+
+	public static Integer getPositivePosition(String expr, String condition) {
 		if (condition.isEmpty()) {
 			return null;
 		}
 		net.sf.jsqlparser.statement.Statement st;
 		try {
-			st = JSqlParserUtil.parse("Select * From T Where " + condition, 2);
-			List<Boolean> result = new ArrayList<>();
+			String sql = "Select * From T Where " + condition;
+			st = JSqlParserUtil.parse(sql, 2);
+			Integer[] result = new Integer[1];
 			st.accept(new StatementVisitorAdapter() {
 				@Override
 				public void visit(Select select) {
 					select.getSelectBody().accept(new SelectVisitorAdapter() {
 						@Override
 						public void visit(PlainSelect plainSelect) {
-							plainSelect.getWhere().accept(new PExpressionVisitorAdapter(normalizeExpr(expr), true, result));
+							plainSelect.getWhere().accept(new PExpressionVisitorAdapter(expr, sql, result));
 						}
 					});
 				}
 			});
-			if (!result.isEmpty()) {
-				return result.get(0);
+			if (result[0] == null) {
+				String pattern = SqlUtil.createSQLFragmentSearchPattern(expr);
+				Pattern pat = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+				Matcher matcher = pat.matcher(condition);
+				if (matcher.find()) {
+					result[0] = 0;
+				}
 			}
-			return null;
+			return result[0];
 		} catch (/*JSQLParser*/ Exception e) {
 			return null;
 		}
@@ -1211,16 +1568,16 @@ public class WCTypeAnalyser {
 	private static boolean warned = false;
 	
 	public static void main(String args[]) {
-		System.out.println(isPositiveExpression("comm", "Empno=7902 and deptno=7902 and (comm is not null and boss is null)"));
-		System.out.println(isPositiveExpression("x", "x is not null"));
-		System.out.println(isPositiveExpression("x", "x=0"));
-		System.out.println(isPositiveExpression("x", "not x=0"));
-		System.out.println(isPositiveExpression("x", "x is null"));
-		System.out.println(isPositiveExpression("(x + 1)", "x+1=0"));
-		System.out.println(isPositiveExpression("(x + 1)", "x+1=0 or y=0"));
-		System.out.println(isPositiveExpression("x", "y=0"));
-		System.out.println(isPositiveExpression("x", "(x=0) and (not 2 * x = 0)"));
-		System.out.println(isPositiveExpression("x", "(x=0) or (not 2 * x = 0)"));
+		System.out.println(getPositivePosition("comm", "comm=1 or Empno=7902 and deptno=7902 and (comm is not null and boss is null)"));
+		System.out.println(getPositivePosition("(x + 1)", "x+1=0"));
+		System.out.println(getPositivePosition("x", "not x is not null and x=0"));
+		System.out.println(getPositivePosition("x", "x=0"));
+		System.out.println(getPositivePosition("x", "not x=0"));
+		System.out.println(getPositivePosition("x", "x is null"));
+		System.out.println(getPositivePosition("(x + 1)", "x+1=0 or y=0"));
+		System.out.println(getPositivePosition("x", "y=0"));
+		System.out.println(getPositivePosition("x", "(x=0) and (not 2 * x = 0)"));
+		System.out.println(getPositivePosition("x", "(x=0) or (not 2 * x = 0)"));
 	}
 
 }

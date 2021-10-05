@@ -1491,7 +1491,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		
 		String condition;
-		if (comparison.operator == Operator.Equal && !Boolean.FALSE.equals(WCTypeAnalyser.isPositiveExpression(comparison.column.name, editor.getText()))) {
+		Integer pp = WCTypeAnalyser.getPositivePosition(comparison.column.name, editor.getText());
+		if (comparison.operator == Operator.Equal && (pp == null || pp == 0)) {
 			Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
 			if (pos != null) {
 				condition = removeErasedFragment("\f", editor.getText().substring(0, pos.a) + "\f" + editor.getText().substring(pos.b)).trim();;
@@ -2102,6 +2103,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		for (;;) {
 			String cleanText = sqlCondition
 					.replaceFirst("(?is)\\(\\s*" + erased + "\\s*\\)", erased)
+					.replaceFirst("(?is)\\b(and|or|not)\\b\\s*" + erased + "\\s*\\b(and|or|not)\\b", "$1" + erased + "$2")
 					.replaceFirst("(?is)\\b(and|or|not)\\b\\s*" + erased, erased);
 			if (cleanText.equals(sqlCondition)) {
 				break;

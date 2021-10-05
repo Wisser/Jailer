@@ -693,6 +693,9 @@ public class SqlUtil {
 	}
 
 	public static String createSQLFragmentSearchPattern(String sql) {
+		
+		// TODO ignore '(' / ')' at top level, find unqoted identifier too
+		
 		Pattern wordChar = Pattern.compile("\\w");
 		StringBuilder pattern = new StringBuilder();
 		Consumer<Character> append = c -> {
