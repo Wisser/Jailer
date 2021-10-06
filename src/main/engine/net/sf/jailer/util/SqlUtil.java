@@ -30,7 +30,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -692,14 +692,14 @@ public class SqlUtil {
 		return Character.isAlphabetic(c) || Character.isLetterOrDigit(c) || c == '_';
 	}
 
-	public static String createSQLFragmentSearchPattern(String sql) {
+	public static String createSQLFragmentSearchPattern(String sql, boolean withFlags) {
 		
 		// TODO ignore '(' / ')' at top level, find unqoted identifier too
 		
 		Pattern wordChar = Pattern.compile("\\w");
-		StringBuilder pattern = new StringBuilder();
-		Consumer<Character> append = c -> {
-			if (!Character.isWhitespace(c) || c == '\f') {
+		StringBuilder pattern = new StringBuilder(withFlags? "(?is)" : "");
+		BiConsumer<Character, Boolean> append = (c, inLit) -> {
+			if (inLit || (!Character.isWhitespace(c) || c == '\f')) {
 				if (isLetterOrDigit(c)) {
 					pattern.append("" + c);
 				} else {
@@ -718,15 +718,15 @@ public class SqlUtil {
 			if (inLiteral) {
 				if (c == '\'') {
 					inLiteral = false;
-					append.accept(c);
+					append.accept(c, inLiteral);
 				} else {
-					append.accept(c);
+					append.accept(c, inLiteral);
 				}
 			} else {
 				if (!(c == lastC && c == ' ')) {
 					if (c == '\'' && c == lastC) {
 						inLiteral = true;
-						append.accept(c);
+						append.accept(c, inLiteral);
 					} else {
 						if (c == '\'') {
 							inLiteral = true;
@@ -742,13 +742,13 @@ public class SqlUtil {
 								if (isLetter && !wasLetter) {
 									pattern.append("\\b");
 								}
-								append.accept(c);
+								append.accept(c, inLiteral);
 							}
 						} else {
 							if (isLetter && !wasLetter) {
 								pattern.append("\\b");
 							}
-							append.accept(c);
+							append.accept(c, inLiteral);
 							if (!isLetter && wasLetter) {
 								pattern.append("\\b");
 							}

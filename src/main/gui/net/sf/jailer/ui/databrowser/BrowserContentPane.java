@@ -1969,7 +1969,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				JTableHeader header = (JTableHeader) e.getSource();
-				if (!header.isEnabled() || !header.getTable().isEnabled()) {
+				if (!header.isEnabled()) {
 		            return;
 		        }
 		        int column = columnIndex(e, header);
@@ -2004,7 +2004,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			public void mouseClicked(MouseEvent e) {
 				JTableHeader header = (JTableHeader) e.getSource();
-				if (!header.isEnabled() || !header.getTable().isEnabled()) {
+				if (!header.isEnabled()) {
 		            return;
 		        }
 				JTable tableView = header.getTable();

@@ -596,6 +596,17 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						continue;
 					}
 					Matcher matcher = createComparisionMatcher(noAlias, column, latestParsedCondition);
+					if (matcher != null) {
+						Pair<Integer, Integer> pp = WCTypeAnalyser.getPositivePosition(Pattern.compile(createComparisionRE(noAlias, column, latestParsedCondition), Pattern.CASE_INSENSITIVE | Pattern.DOTALL), latestParsedCondition);
+						if (pp != null) {
+							for (int i = 1; i < pp.a; ++i) {
+								if (!matcher.find()) {
+									matcher = null;
+									break;
+								}
+							}
+						}
+					}
 					if (matcher != null && matcher.find()) {
 						int start = matcher.start();
 						String q1 = matcher.group(1);
@@ -677,6 +688,22 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		if (!noAlias && tableAlias == null) {
 			return null;
 		}
+		String regex = createComparisionRE(noAlias, column, condition);
+		Matcher matcher = null;
+		try {
+			Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+			if (SqlUtil.removeSubQueries(column.name).equals(column.name)) {
+				matcher = identOperator.matcher(SqlUtil.removeSubQueries(condition));
+			} else {
+				matcher = identOperator.matcher(condition);
+			}
+		} catch (Throwable t) {
+			LogUtil.warn(t);
+		}
+		return matcher;
+	}
+
+	protected String createComparisionRE(boolean noAlias, Column column, String condition) {
 		String quoteRE = "[\"\u00B4\\[\\]`]";
 		String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:[^(]?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
 		String regex = "(?:(?:and\\s+)?" + "(?:"
@@ -690,18 +717,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 								: Pattern.quote(sql))
 						.collect(Collectors.joining("|"))
 				+ ")\\s*"  + valueRegex + "))";
-		Matcher matcher = null;
-		try {
-			Pattern identOperator = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-			if (SqlUtil.removeSubQueries(column.name).equals(column.name)) {
-				matcher = identOperator.matcher(SqlUtil.removeSubQueries(condition));
-			} else {
-				matcher = identOperator.matcher(condition);
-			}
-		} catch (Throwable t) {
-			LogUtil.warn(t);
-		}
-		return matcher;
+		return regex;
 	}
 
 	protected String columnNameToRegExp(String name) {
@@ -1403,7 +1419,23 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	if (getParent() == null) {
     		return; // too late
     	}
-    	Window owner = SwingUtilities.getWindowAncestor(valueTextField);
+    	Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
+		if (pos != null) {
+			int offset = 0;
+			try {
+				String nameValue = editor.getText(pos.a, pos.b - pos.a);
+				String prefix = nameValue.replaceFirst("^(and\\s+).*", "$1");
+				if (!prefix.equals(nameValue)) {
+					offset = prefix.length();
+				}
+			} catch (BadLocationException e1) {
+				// ignore
+			}
+			hightlight(editor, pos.a + offset, pos.b);
+			hightlight(comparison.column);
+		}
+
+		Window owner = SwingUtilities.getWindowAncestor(valueTextField);
 		@SuppressWarnings("rawtypes")
 		JComboBox combobox = new JComboBox();
 		DefaultComboBoxModel<String> defaultComboBoxModel = new DefaultComboBoxModel<String>();
@@ -1491,9 +1523,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		
 		String condition;
-		Integer pp = WCTypeAnalyser.getPositivePosition(comparison.column.name, editor.getText());
-		if (comparison.operator == Operator.Equal && (pp == null || pp == 0)) {
-			Pair<Integer, Integer> pos = fullPositions.get(comparison.column);
+		Pair<Integer, Integer> pp = WCTypeAnalyser.getPositivePosition(comparison.column.name, editor.getText());
+		if (comparison.operator == Operator.Equal && (pp == null || pp.a == 0)) {
+			pos = fullPositions.get(comparison.column);
 			if (pos != null) {
 				condition = removeErasedFragment("\f", editor.getText().substring(0, pos.a) + "\f" + editor.getText().substring(pos.b)).trim();;
 			} else {

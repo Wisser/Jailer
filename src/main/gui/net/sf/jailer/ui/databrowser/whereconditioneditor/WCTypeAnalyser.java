@@ -165,6 +165,8 @@ public class WCTypeAnalyser {
 		public int conditionStart;
 		public int conditionEnd;
 		public String originalQuery;
+		
+		// TODO alternative column names for each column. Quoted/Unquoted, Qualified/Unqualifies, +/- '('/')'
 
 		@Override
 		public String toString() {
@@ -478,7 +480,7 @@ public class WCTypeAnalyser {
 	protected static Pair<Integer, Integer> findFragment(String fragment, String sql) {
 		Pair<Integer, Integer> pos = null;
 		
-		Pattern pattern = Pattern.compile(SqlUtil.createSQLFragmentSearchPattern(fragment), Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern.compile(SqlUtil.createSQLFragmentSearchPattern(fragment, false), Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(sql);
 		
 		if (matcher.find()) {
@@ -1046,15 +1048,14 @@ public class WCTypeAnalyser {
 
 	private static class PExpressionVisitorAdapter implements ExpressionVisitor {
 		
-		final String expr;
+		final Pattern exprPattern;
 		final String sql;
-		final Integer[] result;
+		Pair<Integer, Integer> result;
 		final StringBuilder left = new StringBuilder();
 		
-		public PExpressionVisitorAdapter(String expr, String sql, Integer[] result) {
-			this.expr = expr;
+		public PExpressionVisitorAdapter(Pattern exprPattern, String sql) {
+			this.exprPattern = exprPattern;
 			this.sql = sql;
-			this.result = result;
 		}
 
 		@Override
@@ -1089,6 +1090,7 @@ public class WCTypeAnalyser {
 		
 		@Override
 		public void visit(IsNullExpression isNullExpression) {
+			check(isNullExpression);
 			check(isNullExpression.getLeftExpression());
 			visitAny(isNullExpression);
 		}
@@ -1137,16 +1139,15 @@ public class WCTypeAnalyser {
 		}
 
 		private void check(Object node) {
-			if (result[0] == null) {
-				String pattern = SqlUtil.createSQLFragmentSearchPattern(expr);
-				Pattern pat = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
-				Matcher matcher = pat.matcher(node.toString());
+			if (result == null) {
+				Matcher matcher = exprPattern.matcher(node.toString());
 				if (matcher.matches()) {
-					result[0] = 1;
-					matcher = pat.matcher(left);
+					int cnt = 1;
+					matcher = exprPattern.matcher(left);
 					while (matcher.find()) {
-						++result[0];
+						++cnt;
 					}
+					result = new Pair<Integer, Integer>(cnt, left.length());
 				}
 				if (node instanceof ComparisonOperator) {
 					check(((ComparisonOperator) node).getLeftExpression());
@@ -1499,7 +1500,13 @@ public class WCTypeAnalyser {
 		}
 	};
 
-	public static Integer getPositivePosition(String expr, String condition) {
+	public static Pair<Integer, Integer> getPositivePosition(String expr, String condition) {
+		String pattern = SqlUtil.createSQLFragmentSearchPattern(expr, false);
+		Pattern pat = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+		return getPositivePosition(pat, condition);
+	}
+
+	public static Pair<Integer, Integer> getPositivePosition(Pattern exprPattern, String condition) {
 		if (condition.isEmpty()) {
 			return null;
 		}
@@ -1507,27 +1514,25 @@ public class WCTypeAnalyser {
 		try {
 			String sql = "Select * From T Where " + condition;
 			st = JSqlParserUtil.parse(sql, 2);
-			Integer[] result = new Integer[1];
+			PExpressionVisitorAdapter pe = new PExpressionVisitorAdapter(exprPattern, sql);
 			st.accept(new StatementVisitorAdapter() {
 				@Override
 				public void visit(Select select) {
 					select.getSelectBody().accept(new SelectVisitorAdapter() {
 						@Override
 						public void visit(PlainSelect plainSelect) {
-							plainSelect.getWhere().accept(new PExpressionVisitorAdapter(expr, sql, result));
+							plainSelect.getWhere().accept(pe);
 						}
 					});
 				}
 			});
-			if (result[0] == null) {
-				String pattern = SqlUtil.createSQLFragmentSearchPattern(expr);
-				Pattern pat = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
-				Matcher matcher = pat.matcher(condition);
+			if (pe.result == null) {
+				Matcher matcher = exprPattern.matcher(condition);
 				if (matcher.find()) {
-					result[0] = 0;
+					pe.result = new Pair<Integer, Integer>(0, 0);
 				}
 			}
-			return result[0];
+			return pe.result;
 		} catch (/*JSQLParser*/ Exception e) {
 			return null;
 		}

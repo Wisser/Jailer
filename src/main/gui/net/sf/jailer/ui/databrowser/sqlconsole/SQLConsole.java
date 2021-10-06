@@ -2148,7 +2148,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	private boolean condEditorNeverOpened = true;
     	private final String origSql;
     	private final int origStartOffset;
-        private Map<Column, Integer> positivesPos = new HashMap<Column, Integer>();
+        private Map<Column, Pair<Integer, Integer>> positivesPos = new HashMap<Column, Pair<Integer, Integer>>();
         
         public ResultContentPane(DataModel dataModel, WCTypeAnalyser.Result wcBaseTable, Table table, String condition, Session session,
                 List<Row> parentRows, Association association, Frame parentFrame,
@@ -2450,11 +2450,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									Pair<Integer, Integer> pos = getCurrentStatementPos();
 									if (pos != null) {
 										String statement = getLatestSyncStatement();
-										Integer positivePos = positivesPos.get(column);
+										Pair<Integer, Integer> positivePos = positivesPos.get(column);
 										int start = -1;
 										int end = 0;
-										if (positivePos != null && positivePos != 0) {
-											int cd = positivePos;
+										if (positivePos != null && positivePos.a != 0) {
+											int cd = positivePos.a;
 											Matcher matcher = createComparisionMatcher(true, column, statement);
 											while (matcher != null && matcher.find()) {
 												start = operationStart(matcher);
@@ -2466,6 +2466,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										}
 										if (start >= 0) {
 											hightlight(editorPane, pos.a + start, pos.a + end);
+											int dot = editorPane.getCaret().getDot();
+											int mark = editorPane.getCaret().getMark();
+											try {
+												editorPane.setCaretPosition(pos.a + start);
+												editorPane.select(Math.min(dot, mark), Math.max(dot, mark));
+											} catch (Exception e) {
+												// ignore
+											}
 										} else {
 											hightlight(editorPane, 0, 0);
 										}
@@ -2479,7 +2487,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							protected void consume(String condition, Set<Integer> involvedColumns) {
 								ResultContentPane.this.filteredColumns = involvedColumns;
 								condition = condition.trim();
-								if (resultContentPane != null && !secodaryCond.matches(SqlUtil.createSQLFragmentSearchPattern(condition.trim()))) {
+								if (resultContentPane != null && !secodaryCond.trim().matches(SqlUtil.createSQLFragmentSearchPattern(condition.trim(), true))) {
 									secodaryCond = condition.trim();
 									UISettings.s12 += 100000;
 
@@ -2514,17 +2522,30 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							private String createTableWithCondition(String table, String condition) {
 								if (wcBaseTable.hasCondition) {
 									String mainCondition = table.substring(wcBaseTable.conditionStart, wcBaseTable.conditionEnd);
-									for (Column c: positivesPos.keySet()) {
-										if (positivesPos.get(c) == 0) {
+									List<Column> pCols = new ArrayList<>(positivesPos.keySet());
+									pCols.sort((a, b) -> positivesPos.get(b).b - positivesPos.get(a).b);
+									for (Column c: pCols) {
+										if (positivesPos.get(c).a == 0) {
 											continue;
 										}
 										Matcher matcher = createComparisionMatcher(true, c, condition);
+										if (matcher != null) {
+											Pair<Integer, Integer> pp = WCTypeAnalyser.getPositivePosition(Pattern.compile(createComparisionRE(true, c, condition), Pattern.CASE_INSENSITIVE | Pattern.DOTALL), condition);
+											if (pp != null) {
+												for (int i = 1; i < pp.a; ++i) {
+													if (!matcher.find()) {
+														matcher = null;
+														break;
+													}
+												}
+											}
+										}
 										if (matcher != null && matcher.find()) {
 											int opStart = operationStart(matcher);
 											Matcher mainMatcher = createComparisionMatcher(true, c, mainCondition);
-											if (mainMatcher != null && findNth(mainMatcher, positivesPos.get(c))) {
+											if (mainMatcher != null && findNth(mainMatcher, positivesPos.get(c).a)) {
 												int mainOpStart = operationStart(mainMatcher);
-												if (!condition.substring(opStart, matcher.end()).matches(SqlUtil.createSQLFragmentSearchPattern(mainCondition.substring(mainOpStart, mainMatcher.end())))) {
+												if (!condition.substring(opStart, matcher.end()).trim().matches(SqlUtil.createSQLFragmentSearchPattern(mainCondition.substring(mainOpStart, mainMatcher.end()), true))) {
 													mainCondition = mainCondition.substring(0, mainOpStart)
 														+ (condition.length() > opStart && Character.isWhitespace(condition.charAt(opStart - 1))? "" : " ")
 														+ condition.substring(opStart, matcher.end())
@@ -2534,7 +2555,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 											condition = removeErasedFragment("\f", condition.substring(0, matcher.start()) + "\f" + condition.substring(matcher.end()));
 										} else {
 											Matcher mainMatcher = createComparisionMatcher(true, c, mainCondition);
-											if (mainMatcher != null && findNth(mainMatcher, positivesPos.get(c))) {
+											if (mainMatcher != null && findNth(mainMatcher, positivesPos.get(c).a)) {
 												int start = mainMatcher.start();
 												if (mainMatcher.group().trim().matches("(?is)^\\bAnd\\b.*")) {
 													start += 3;
@@ -2598,7 +2619,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							
 							@Override
 							protected String columnNameToRegExp(String name) {
-								return SqlUtil.createSQLFragmentSearchPattern(name);
+								return SqlUtil.createSQLFragmentSearchPattern(name, false);
 							}
 						};
 						popUpWhereConditionEditorPanel.setTableAlias(null);
@@ -2616,10 +2637,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							for (int i = 0; i < wcBaseTable.table.getColumns().size(); ++i) {
 								Column c = wcBaseTable.table.getColumns().get(i);
 								if (c != null && c.name != null) {
-									Integer pe = WCTypeAnalyser.getPositivePosition(c.name, condition);
+									Pair<Integer, Integer> pe = WCTypeAnalyser.getPositivePosition(c.name, condition);
 									if (pe != null) {
 										positivesPos.put(c, pe);
-										if (pe != 0) {
+										if (pe.a != 0) {
 											Matcher matcher = popUpWhereConditionEditorPanel.createComparisionMatcher(true, c, condition);
 											if (matcher != null && matcher.find()) {
 												String comp = matcher.group().trim().replaceFirst("(?is)^\\s*\\bAnd\\b", "");
