@@ -2127,7 +2127,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 	}
 
-	public static final Color HIGHLIGHT_COLOR = new Color(0, 0, 255, 30);
+	public static final Color HIGHLIGHT_COLOR = new Color(0, 255, 0, 50);
 	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(HIGHLIGHT_COLOR);
 	{
 		highlightPainter.setPaintBorder(true);
