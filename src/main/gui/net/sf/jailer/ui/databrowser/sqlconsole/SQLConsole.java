@@ -931,9 +931,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 int a = 10;
                 final Color hBG[] = new Color[] {
                 		new Color(0, 255, 0, a),
-                		new Color(255, 0, 0, a + 8 + 1),
+                		new Color(255, 60, 0, a + 8),
                    		new Color(0, 0, 255, a + 0),
-                   		new Color(255, 255, 0, a * 4 + 1),
+                   		new Color(255, 255, 0, a * 4),
                 };
                 Map<String, Integer> labelCount = new HashMap<String, Integer>();
                 Map<String, Integer> labelCounter = new HashMap<String, Integer>();
@@ -1190,8 +1190,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         }
                         tabContentPanel.doSync = rb.doSync = doSync;
                         
-                        // TODO
-                        // TODO Tooltips
+                        findButton.setToolTipText("Enter additional search criteria to further refine the result.");
+                        syncButton.setToolTipText("Synchronize the additional search criteria with the query in the SQL console.");
+                        
                         syncButton.setIcon(tabContentPanel.doSync? UIUtil.scaleIcon(syncButton, syncIcon) : UIUtil.scaleIcon(syncButton, nosyncIcon));
                 		syncButton.setFocusable(false);
                         syncButton.addActionListener(e -> {
@@ -2097,7 +2098,28 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 	private Object currentHighlightTag = null;
-    
+	
+	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(WhereConditionEditorPanel.HIGHLIGHT_COLOR);
+	private SmartHighlightPainter highlightPainterWOBorder = new SmartHighlightPainter(WhereConditionEditorPanel.HIGHLIGHT_COLOR);
+	{
+		highlightPainter.setPaintBorder(true);
+	}
+	
+	private void hightlight(RSyntaxTextAreaWithSQLSyntaxStyle editor, int a, int b) {
+		try {
+			if (currentHighlightTag != null) {
+				editor.getHighlighter().removeHighlight(currentHighlightTag);
+				currentHighlightTag = null;
+			}
+			if (a != b) {
+				boolean multiLine = editor.getDocument().getText(a, b - a).contains("\n");
+				currentHighlightTag = editor.getHighlighter().addHighlight(a, b, multiLine? highlightPainterWOBorder : highlightPainter);
+			}
+		} catch (/*BadLocation*/ Exception e) {
+			return;
+		}
+	}
+
 	private abstract class WhereConditionEditorPanelConsole extends WhereConditionEditorPanel {
 		protected final ResultContentPane resultContentPane;
 
@@ -2328,7 +2350,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 
 		private Pair<Integer, Integer> getCurrentStatementPos() {
-			String statement = getLatestSyncStatement();
+			String statement = getLatestSyncStatement().replaceFirst("\\s*$",  "");
 			for (int border = 1; border <= 2048; border *= 4) {
 				int min = Math.max(0, origStartOffset - border);
 				int max = Math.min(editorPane.getDocument().getLength(), origStartOffset + statement.length() + border);
@@ -2431,17 +2453,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								return super.columnLabel(column);
 							}
 
-							private void hightlight(RSyntaxTextAreaWithSQLSyntaxStyle editor, int a, int b) {
-								try {
-									if (currentHighlightTag != null) {
-										editor.getHighlighter().removeHighlight(currentHighlightTag);
-									}
-									currentHighlightTag = editor.getHighlighter().addHighlight(a, b, highlightPainter);
-								} catch (/*BadLocation*/ Exception e) {
-									return;
-								}
-							}
-
 							@Override
 							protected void hightlight(Column column) {
 								if (column == null) {
@@ -2457,15 +2468,30 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 											int cd = positivePos.a;
 											Matcher matcher = createComparisionMatcher(true, column, statement);
 											while (matcher != null && matcher.find()) {
-												start = operationStart(matcher);
+												String g = matcher.group();
+												String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
+												start = matcher.start();
+												if (!g.equals(pref)) {
+													start += pref.length();
+												}
 												end = matcher.end();
 												if (--cd <= 0) {
 													break;
 												}
 											}
+										} else if (wcBaseTable != null && wcBaseTable.hasCondition) {
+											Matcher matcher = createComparisionMatcher(true, column, statement.substring(wcBaseTable.conditionEnd));
+											if (matcher != null && matcher.find()) {
+												String g = matcher.group();
+												String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
+												start = matcher.start() + wcBaseTable.conditionEnd;
+												if (!g.equals(pref)) {
+													start += pref.length();
+												}
+												end = matcher.end() + wcBaseTable.conditionEnd;
+											}
 										}
 										if (start >= 0) {
-											hightlight(editorPane, pos.a + start, pos.a + end);
 											int dot = editorPane.getCaret().getDot();
 											int mark = editorPane.getCaret().getMark();
 											try {
@@ -2474,6 +2500,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 											} catch (Exception e) {
 												// ignore
 											}
+											hightlight(editorPane, pos.a + start, pos.a + end);
 										} else {
 											hightlight(editorPane, 0, 0);
 										}
@@ -2659,69 +2686,71 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					}
 					
 					if (location != null) {
-						popUpWhereConditionEditorPanel.parseCondition(secodaryCond);
-						
-						long startTime = System.currentTimeMillis();
-						
-						dialog.setModal(false);
-						dialog.setUndecorated(true);
-						dialog.addWindowFocusListener(new WindowFocusListener() {
-							@Override
-							public void windowLostFocus(WindowEvent e) {
-								if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
-									if (column < 0 || System.currentTimeMillis() - startTime >= 200) {
+						popUpWhereConditionEditorPanel.parseCondition(secodaryCond, () -> {
+							long startTime = System.currentTimeMillis();
+							
+							dialog.setModal(false);
+							dialog.setUndecorated(true);
+							dialog.addWindowFocusListener(new WindowFocusListener() {
+								@Override
+								public void windowLostFocus(WindowEvent e) {
+									if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
+										if (System.currentTimeMillis() < startTime + 200) {
+											dialog.requestFocus();
+											return;
+										}
 										close.run();
 									}
 								}
+								@Override
+								public void windowGainedFocus(WindowEvent e) {
+								}
+							});
+							
+							int x = location.x + 32;
+							int y = location.y;
+							
+							dialog.getContentPane().add(popUpWhereConditionEditorPanel);
+							
+							dialog.pack();
+							double mh = column >= 0? 320 : 380;
+							int height = Math.max(dialog.getHeight(), (int) mh);
+							dialog.setLocation(x, y);
+							int minWidth = 400;
+							int wid = Math.max(minWidth, dialog.getWidth());
+							Window window = parentFrame;
+							Integer maxX = window.getX() + window.getWidth() - wid - 8;;
+							dialog.setSize(wid, Math.min(height, 600));
+							if (maxX != null) {
+								dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
 							}
-							@Override
-							public void windowGainedFocus(WindowEvent e) {
+							Integer maxY = window.getY() + window.getHeight() - dialog.getHeight() - 8;
+							if (maxY != null && maxY < dialog.getY()) {
+								int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
+								maxY += deltaH;
+								dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
+								dialog.setLocation(dialog.getX(), Math.max(0, maxY));
 							}
-						});
-						
-						int x = location.x + 32;
-						int y = location.y;
-						
-						dialog.getContentPane().add(popUpWhereConditionEditorPanel);
-						
-						dialog.pack();
-						double mh = column >= 0? 220 : 280;
-						int height = Math.max(dialog.getHeight(), (int) mh);
-						dialog.setLocation(x, y);
-						int minWidth = 300;
-						int wid = Math.max(minWidth, dialog.getWidth());
-						Window window = parentFrame;
-						Integer maxX = window.getX() + window.getWidth() - wid - 8;;
-						dialog.setSize(wid, Math.min(height, 600));
-						if (maxX != null) {
-							dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
-						}
-						Integer maxY = window.getY() + window.getHeight() - dialog.getHeight() - 8;
-						if (maxY != null && maxY < dialog.getY()) {
-							int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
-							maxY += deltaH;
-							dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
-							dialog.setLocation(dialog.getX(), Math.max(0, maxY));
-						}
-						dialog.setVisible(true);
-						UIUtil.invokeLater(4, () -> {
-							popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
-						});
-						
-						if (column >= 0) {
-							if (condEditorNeverOpened) {
-								condEditorNeverOpened = false;
-								UIUtil.invokeLater(8, () -> {
-									Timer timer = new Timer(100, e -> {
-										if (!dialog.isVisible()) {
-											openConditionEditor(location, column, onClose);
-										}
+							dialog.setVisible(true);
+							UIUtil.invokeLater(4, () -> {
+								popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
+							});
+							
+							if (column >= 0) {
+								if (condEditorNeverOpened) {
+									condEditorNeverOpened = false;
+									UIUtil.invokeLater(8, () -> {
+										Timer timer = new Timer(100, e -> {
+											if (!dialog.isVisible()) {
+												openConditionEditor(location, column, onClose);
+											}
+										});
+										timer.setRepeats(false);
+										timer.start();
 									});
-									timer.setRepeats(false);
-									timer.start();
-								});
+								}
 							}
-						}
+						});
 					}
 				}
 			});
@@ -3308,20 +3337,23 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		return editorPane;
 	}
 
-    private SmartHighlightPainter currentStatementHighlightPainter = new SmartHighlightPainter(new Color(0, 0, 255, 15)); // TODO
-    // TODO
-    // green bg lighter (current statment bg)
-	private Object currentStatementHighlightTag = null;
-	
+//  private SmartHighlightPainter currentStatementHighlightPainter = new SmartHighlightPainter(new Color(0, 0, 255, 15));
+//	private Object currentStatementHighlightTag = null;
+
 	private void hightlight(int a, int b) {
-		try {
-			if (currentStatementHighlightTag != null) {
-				editorPane.getHighlighter().removeHighlight(currentStatementHighlightTag);
-			}
-			currentStatementHighlightTag = editorPane.getHighlighter().addHighlight(a, b, currentStatementHighlightPainter);
-		} catch (/*BadLocation*/ Exception e) {
-			return;
-		}
+		hightlight(editorPane, 0, 0);
+//		try {
+//			if (currentStatementHighlightTag != null) {
+//				editorPane.getHighlighter().removeHighlight(currentStatementHighlightTag);
+//			}
+//			if (a == b) {
+//				currentStatementHighlightTag = null;
+//			} else {
+//				currentStatementHighlightTag = editorPane.getHighlighter().addHighlight(a, b, currentStatementHighlightPainter);
+//			}
+//		} catch (/*BadLocation*/ Exception e) {
+//			return;
+//		}
 	}
 	
 	protected abstract void onContentStateChange(File file, boolean dirty);

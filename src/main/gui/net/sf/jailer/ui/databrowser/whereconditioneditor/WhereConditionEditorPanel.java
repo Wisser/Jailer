@@ -451,6 +451,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	 * @param condition the condition
 	 */
 	public void parseCondition(String condition) {
+		parseCondition(condition, null);
+	}
+	
+	/**
+	 * Parses a condition and updates the UI accordingly.
+	 * 
+	 * @param condition the condition
+	 */
+	public void parseCondition(String condition, Runnable afterParsing) {
 		if (latestCondition != null && latestCondition.equals(condition)) {
 			return;
 		}
@@ -464,15 +473,22 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		editor.setText(formated);
 		editor.discardAllEdits();
 		editor.setCaretPosition(0);
-		parseCondition();
+		parseCondition(afterParsing);
 	}
 	
 	private Runnable continueParsing = null;
-    
+
 	/**
 	 * Parses current condition and updates the UI accordingly.
 	 */
 	public synchronized void parseCondition() {
+		parseCondition((Runnable) null);
+	}
+
+	/**
+	 * Parses current condition and updates the UI accordingly.
+	 */
+	public synchronized void parseCondition(Runnable afterParsing) {
 		if (allDisabled) {
 			return;
 		}
@@ -501,6 +517,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						}
 						updateSearchUI();
 						historize();
+						if (afterParsing != null) {
+							afterParsing.run();
+						}
 					});
 				}
 				@Override
@@ -1524,7 +1543,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		
 		String condition;
 		Pair<Integer, Integer> pp = WCTypeAnalyser.getPositivePosition(comparison.column.name, editor.getText());
-		if (comparison.operator == Operator.Equal && (pp == null || pp.a == 0)) {
+		if (comparison.operator == Operator.Equal && (pp == null || pp.a != 0)) {
 			pos = fullPositions.get(comparison.column);
 			if (pos != null) {
 				condition = removeErasedFragment("\f", editor.getText().substring(0, pos.a) + "\f" + editor.getText().substring(pos.b)).trim();;
@@ -1545,7 +1564,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		int estDVCount = estimateDistinctExistingValues(comparison, condition);
 		Integer estimatedItemsCount = defaultComboBoxModel.getSize() + estDVCount ;
 		searchPanel.setEstimatedItemsCount(estimatedItemsCount);
-		searchPanel.find(owner, "Condition", point.x, point.y, true);
+		UIUtil.invokeLater(() -> searchPanel.find(owner, "Condition", point.x, point.y, true));
 		searchPanel.setInitialValue(valueTextField.getText());
 		searchPanel.setStatus("loading existing values...", null);
 		JPanel bottom = new JPanel(new GridBagLayout());
@@ -1601,7 +1620,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					} catch (CancellationException e) {
 						return;
 					} catch (Throwable e) {
-						// ignore
+						LogUtil.warn(e);
 					}
 				}
 				LinkedHashMap<String, Integer> finalDistinctExisting = distinctExisting;
@@ -2108,8 +2127,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 	}
 
-	private final Color HIGHLIGHT_COLOR = new Color(0, 0, 255, 30);
-	protected SmartHighlightPainter highlightPainter = new SmartHighlightPainter(HIGHLIGHT_COLOR);
+	public static final Color HIGHLIGHT_COLOR = new Color(0, 0, 255, 30);
+	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(HIGHLIGHT_COLOR);
 	{
 		highlightPainter.setPaintBorder(true);
 	}
@@ -2132,11 +2151,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	protected String removeErasedFragment(String erased, String sqlCondition) {
+		String whiteSpaceOrComment = "\\s*((?:(?:(?:/\\*.*?\\*/)|(?:\\-\\-.*?(?:\n|$))))\\s*)*\\s*";
+		
 		for (;;) {
 			String cleanText = sqlCondition
-					.replaceFirst("(?is)\\(\\s*" + erased + "\\s*\\)", erased)
-					.replaceFirst("(?is)\\b(and|or|not)\\b\\s*" + erased + "\\s*\\b(and|or|not)\\b", "$1" + erased + "$2")
-					.replaceFirst("(?is)\\b(and|or|not)\\b\\s*" + erased, erased);
+					.replaceFirst("(?is)\\(" + whiteSpaceOrComment + erased + whiteSpaceOrComment + "\\)", "$1" + erased + "$2")
+					.replaceFirst("(?is)\\b(and|or|not)\\b" + whiteSpaceOrComment + erased + whiteSpaceOrComment + "\\b(and|or|not)\\b", "$1$2" + erased + "$3$4")
+					.replaceFirst("(?is)\\b(and|or|not)\\b" + whiteSpaceOrComment + erased, "$2" + erased);
 			if (cleanText.equals(sqlCondition)) {
 				break;
 			}
@@ -2144,7 +2165,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		sqlCondition = sqlCondition
 				.replace(erased, "")
-				.replaceFirst("(?is)^\\s*(and|or)\\s", "")
+				.replaceFirst("(?is)^" + whiteSpaceOrComment + "\\b(and|or)\\b\\s*", "$1")
 				.replaceAll("\\n\\s*\\n", "\n")
 				.trim();
 		return sqlCondition;
