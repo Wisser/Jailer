@@ -2637,7 +2637,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									if (condition.trim().isEmpty()) {
 										return table;
 									} else {
-										if (table.length() > 0 && !Character.isWhitespace(table.charAt(table.length() - 1))) {
+										if (table.length() > 100 || table.contains("\n")) {
+											if (table.charAt(table.length() - 1) != '\n') {
+												table += "\n";
+											}
+										} else if (table.length() > 0 && !Character.isWhitespace(table.charAt(table.length() - 1))) {
 											table += " ";
 										}
 										return table + (wcBaseTable.isHaving? "Having " : "Where ") + condition.trim().replaceAll("(?is)\\n\\s*(And )", " $1");
