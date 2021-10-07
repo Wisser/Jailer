@@ -2456,7 +2456,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							@Override
 							protected void hightlight(Column column) {
 								if (column == null) {
-									hightlight(editorPane, 0, 0);
+									SQLConsole.this.hightlight(editorPane, 0, 0);
 								} else {
 									Pair<Integer, Integer> pos = getCurrentStatementPos();
 									if (pos != null) {
@@ -2506,12 +2506,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 											} catch (Exception e) {
 												// ignore
 											}
-											hightlight(editorPane, pos.a + start, pos.a + end);
+											SQLConsole.this.hightlight(editorPane, pos.a + start, pos.a + end);
 										} else {
-											hightlight(editorPane, 0, 0);
+											SQLConsole.this.hightlight(editorPane, 0, 0);
 										}
 									} else {
-										hightlight(editorPane, 0, 0);
+										SQLConsole.this.hightlight(editorPane, 0, 0);
 									}
 								}
 							}
