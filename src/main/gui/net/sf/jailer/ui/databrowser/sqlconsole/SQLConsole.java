@@ -2479,16 +2479,22 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 													break;
 												}
 											}
-										} else if (wcBaseTable != null && wcBaseTable.hasCondition) {
-											Matcher matcher = createComparisionMatcher(true, column, statement.substring(wcBaseTable.conditionEnd));
+										} else if (wcBaseTable != null) {
+											int off = 0;
+											if (wcBaseTable.hasCondition) {
+												off = wcBaseTable.conditionEnd;
+											} else {
+												off = wcBaseTable.table.getName().length();
+											}
+											Matcher matcher = createComparisionMatcher(true, column, statement.substring(off));
 											if (matcher != null && matcher.find()) {
 												String g = matcher.group();
 												String pref = g.replaceFirst("(?is)^((?:\\s*\\bAnd\\b)?\\s*).*$", "$1");
-												start = matcher.start() + wcBaseTable.conditionEnd;
+												start = matcher.start() + off;
 												if (!g.equals(pref)) {
 													start += pref.length();
 												}
-												end = matcher.end() + wcBaseTable.conditionEnd;
+												end = matcher.end() + off;
 											}
 										}
 										if (start >= 0) {
