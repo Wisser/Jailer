@@ -1433,6 +1433,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_applyButtonActionPerformed
 
     private Timer reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000, null);
+    private boolean opacityListenerEnabled = true;
     private boolean warned = false;
     
     private void setOpacity(float opacity) {
@@ -1470,14 +1471,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						addListener(dialog, new MouseAdapter() {
 							@Override
 							public void mouseEntered(MouseEvent e) {
-								if (!dialog.isFocused()) {
+								if (opacityListenerEnabled && !dialog.isFocused()) {
 									setOpacity(1f);
 									reduceOpacityRetentionTimer.stop();
 								}
 							}
 							@Override
 							public void mouseExited(MouseEvent e) {
-								if (!dialog.isFocused()) {
+								if (opacityListenerEnabled && !dialog.isFocused()) {
 									setOpacity(REDUCED_OPACITY);
 									reduceOpacityRetentionTimer.stop();
 								}
@@ -1577,8 +1578,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				setValueFieldText(valueTextField, theSearchPanel.get(0).getPlainValue());
 				if (theSearchPanel.get(0).isExplictlyClosed()) {
 					accept(comparison, theSearchPanel.get(0).getPlainValue(), comparison.operator);
-					if (initialColumn >= 0) {
+					if (initialColumn >= 0 && popupOnTop) {
 						setOpacity(REDUCED_OPACITY + 0.15f);
+						opacityListenerEnabled = false;
 					}
 				}
 		    	cancel(cancellationContext);
@@ -1586,18 +1588,21 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}, renderConsumer) {
 			protected void onClosing() {
 				setOpacity(1f);
+				opacityListenerEnabled = false;
 			}
 			@Override
 			protected void onClose(String text) {
 				setValueFieldText(valueTextField, text);
 		    	cancel(cancellationContext);
 				setOpacity(1f);
+				opacityListenerEnabled = false;
 			}
 			@Override
 			protected void onAbort() {
 				setValueFieldText(valueTextField, origText);
 		    	cancel(cancellationContext);
 				setOpacity(1f);
+				opacityListenerEnabled = false;
 			}
 			@Override
 			protected Integer preferredWidth() {
