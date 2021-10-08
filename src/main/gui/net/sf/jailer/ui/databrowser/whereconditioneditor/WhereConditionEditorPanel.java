@@ -1648,7 +1648,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		Point pointO = new Point(0, 0);
 		SwingUtilities.convertPointToScreen(pointO, this);
 		if (popupOnTop) {
-			point.x = pointO.x;
+			point.x = (point.x + pointO.x) / 2;
 			point.y = pointO.y;
 		}
 		searchPanel.withSizeGrip();
