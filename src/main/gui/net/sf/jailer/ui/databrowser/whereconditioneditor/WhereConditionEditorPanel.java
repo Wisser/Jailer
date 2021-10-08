@@ -1433,6 +1433,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_applyButtonActionPerformed
 
     private Timer reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000, null);
+    {
+		reduceOpacityRetentionTimer.setRepeats(false);
+    }
     private boolean opacityListenerEnabled = true;
     private boolean warned = false;
     
