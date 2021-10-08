@@ -16,6 +16,8 @@
 package net.sf.jailer.ui.databrowser.whereconditioneditor;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -30,7 +32,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -115,6 +119,12 @@ import net.sf.jailer.util.SqlUtil;
 @SuppressWarnings("serial")
 public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
+	// TODO
+	// TODO optimize following parameter:
+	private static final float REDUCED_OPACITY = 0.5f;
+	private static final float REDUCED_OPACITY_FADE_START = REDUCED_OPACITY + 0.15f;
+	private static final int REDUCED_OPACITY_RETENTION_TIME = 3;
+
 	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 100_000;
 	private final int MAX_SIZE_DISTINCTEXISTINGVALUES = 500_000;
 	private final int SIZE_DISTINCTEXISTINGVALUESCACHE = 40;
@@ -1424,16 +1434,150 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         parseCondition();
     }//GEN-LAST:event_applyButtonActionPerformed
 
-	public void openStringSearchPanelOfInitialColumn() {
-		if (initialColumn >= 0) {
-			comparisons.stream().filter(c -> table.getColumns().get(initialColumn).equals(c.column)).findAny().ifPresent(c -> {
-				openStringSearchPanel(c.valueTextField, c);
+    private Timer reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000, null);
+    {
+		reduceOpacityRetentionTimer.setRepeats(false);
+    }
+    private int fadeStep = -1;
+    private boolean opacityListenerEnabled = true;
+    private boolean warned = false;
+	private ActionListener fadeAction;
+    private boolean opacityPending = false;
+    private float nextOpacity;
+	
+//TODO
+RuntimeException xe;
+
+    private void setOpacity(float opacity) {
+		nextOpacity = opacity;
+		
+		
+		// TODO
+		xe = new RuntimeException();
+		System.out.println("222222222 " + nextOpacity);
+		xe.printStackTrace();
+		
+		if (!opacityPending) {
+			opacityPending = true;
+			UIUtil.invokeLater(16, () -> {
+				opacityPending = false;
+				setOpacityImmediatelly(nextOpacity);
+		    	if (nextOpacity >= 1f) {
+					fadeStep = -1;
+					reduceOpacityRetentionTimer.stop();
+				}
 			});
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+    // TODO
+    boolean was1 = false;
+    
+	private void setOpacityImmediatelly(float opacity) {
+    	try {
+			SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this).setOpacity(opacity);
+		
+			// TODO
+			if (was1)			xe.printStackTrace();	
+
+			if (opacity == 1f) {
+				System.out.println("11111111 " + nextOpacity + " " + opacity);
+				xe.printStackTrace();	
+				new RuntimeException().printStackTrace();
+				System.out.println("------------------------");
+				was1 = true;
+			} else was1 = false;
+			
+		} catch (Exception e) {
+			if (!warned) {
+				LogUtil.warn(e);
+				warned = true;
+			}
+		}
+	}
+
+	private void startOpacityTimer() {
+		if (fadeAction != null) {
+			fadeAction.actionPerformed(null);
+		}
+		reduceOpacityRetentionTimer.restart();
+	};
+
+	public void openStringSearchPanelOfInitialColumn(Window dialog) {
+		if (initialColumn >= 0) {
+			comparisons.stream().filter(c -> table.getColumns().get(initialColumn).equals(c.column)).findAny().ifPresent(new Consumer<Comparison>() {
+				@Override
+				public void accept(Comparison c) {
+					openStringSearchPanel(c.valueTextField, c, true);
+					setOpacity(REDUCED_OPACITY);
+					setOpacityImmediatelly(REDUCED_OPACITY);
+					fadeAction = e -> {
+						if (fadeStep >= 0) {
+							if (++fadeStep >= 100) {
+								if (dialog.getOpacity() < 1f) {
+									dialog.setVisible(false);
+									dialog.dispose();
+								}
+							} else {
+								setOpacity(REDUCED_OPACITY_FADE_START * (fadeStep < 33? 1f : (((100 - fadeStep) * 3 / 2f / 100.0f))));
+								// TODO
+								// TODO reduceOpacityRetentionTimer.restart();
+							}
+						}
+					};
+					reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000 / 100, fadeAction);
+					reduceOpacityRetentionTimer.setRepeats(false);
+					UIUtil.invokeLater(() -> {
+						setOpacity(REDUCED_OPACITY);
+						reduceOpacityRetentionTimer.stop();
+						addListener(dialog, new MouseAdapter() {
+							@Override
+							public void mouseEntered(MouseEvent e) {
+								if (opacityListenerEnabled && !dialog.isFocused()) {
+									setOpacity(1f);
+									reduceOpacityRetentionTimer.stop();
+								}
+							}
+							@Override
+							public void mouseExited(MouseEvent e) {
+								if (opacityListenerEnabled && !dialog.isFocused()) {
+									setOpacity(REDUCED_OPACITY);
+									reduceOpacityRetentionTimer.stop();
+								}
+							}
+							@Override
+							public void mousePressed(MouseEvent e) {
+								if (fadeStep <66) {
+									setOpacity(1f);
+								}
+							}
+							@Override
+							public void mouseClicked(MouseEvent e) {
+								if (fadeStep <66) {
+									setOpacity(1f);
+								}
+							}
+						});
+					});
+				}
+				private void addListener(Component comp, MouseListener listener) {
+					comp.addMouseListener(listener);
+					if (comp instanceof Container) {
+						for (Component sub: ((Container) comp).getComponents()) {
+							addListener(sub, listener);
+						}
+					}
+				}
+			});
+		}
+	}
+
 	private void openStringSearchPanel(JTextField valueTextField, Comparison comparison) {
+		openStringSearchPanel(valueTextField, comparison, false);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void openStringSearchPanel(JTextField valueTextField, Comparison comparison, boolean popupOnTop) {
     	if (getParent() == null) {
     		return; // too late
     	}
@@ -1454,6 +1598,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 
 		Window owner = SwingUtilities.getWindowAncestor(valueTextField);
+		if (!popupOnTop) {
+			setOpacity(1f);
+		}
 		@SuppressWarnings("rawtypes")
 		JComboBox combobox = new JComboBox();
 		DefaultComboBoxModel<String> defaultComboBoxModel = new DefaultComboBoxModel<String>();
@@ -1499,19 +1646,33 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				setValueFieldText(valueTextField, theSearchPanel.get(0).getPlainValue());
 				if (theSearchPanel.get(0).isExplictlyClosed()) {
 					accept(comparison, theSearchPanel.get(0).getPlainValue(), comparison.operator);
+					if (initialColumn >= 0 && popupOnTop) {
+						fadeStep = 0;
+						setOpacity(REDUCED_OPACITY_FADE_START);
+						startOpacityTimer();
+						opacityListenerEnabled = false;
+					}
 				}
 		    	cancel(cancellationContext);
 			}
 		}, renderConsumer) {
+			protected void onClosing() {
+				setOpacity(1f);
+				opacityListenerEnabled = false;
+			}
 			@Override
 			protected void onClose(String text) {
 				setValueFieldText(valueTextField, text);
 		    	cancel(cancellationContext);
+				setOpacity(1f);
+				opacityListenerEnabled = false;
 			}
 			@Override
 			protected void onAbort() {
 				setValueFieldText(valueTextField, origText);
 		    	cancel(cancellationContext);
+				setOpacity(1f);
+				opacityListenerEnabled = false;
 			}
 			@Override
 			protected Integer preferredWidth() {
@@ -1559,6 +1720,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				+ "<i>not selected</i>:<b> Show only values where a non-empty result is retrieved considering the overall condition.</b></html>");
 		Point point = new Point(0, 0);
 		SwingUtilities.convertPointToScreen(point, valueTextField);
+		Point pointO = new Point(0, 0);
+		SwingUtilities.convertPointToScreen(pointO, this);
+		if (popupOnTop) {
+			point.x = (point.x + pointO.x) / 2;
+			point.y = pointO.y;
+		}
 		searchPanel.withSizeGrip();
 		int estDVCount = estimateDistinctExistingValues(comparison, condition);
 		Integer estimatedItemsCount = defaultComboBoxModel.getSize() + estDVCount ;

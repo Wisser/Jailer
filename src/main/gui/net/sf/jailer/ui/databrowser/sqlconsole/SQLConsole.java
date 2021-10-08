@@ -2743,7 +2743,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							}
 							dialog.setVisible(true);
 							UIUtil.invokeLater(4, () -> {
-								popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
+								popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn(dialog);
 							});
 							
 							if (column >= 0) {
