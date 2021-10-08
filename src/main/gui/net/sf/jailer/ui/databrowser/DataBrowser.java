@@ -4324,10 +4324,11 @@ public class DataBrowser extends javax.swing.JFrame {
 					dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
 					dialog.setLocation(dialog.getX(), Math.max(0, maxY));
 				}
-				dialog.setVisible(true);
+				popUpWhereConditionEditorPanel.prepareStringSearchPanelOfInitialColumn(dialog);
 				UIUtil.invokeLater(4, () -> {
 					popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn(dialog);
 				});
+				dialog.setVisible(true);
 			}
 		});
 		if (neverOpened) {
