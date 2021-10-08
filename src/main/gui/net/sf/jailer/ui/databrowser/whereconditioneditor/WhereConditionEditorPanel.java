@@ -1452,19 +1452,23 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			opacityPending = true;
 			UIUtil.invokeLater(() -> {
 				opacityPending = false;
-		    	try {
-		    		SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this).setOpacity(nextOpacity);
-			    	if (nextOpacity >= 1f) {
-						fadeStep = -1;
-						reduceOpacityRetentionTimer.stop();
-					}
-		    	} catch (Exception e) {
-		    		if (!warned) {
-		    			LogUtil.warn(e);
-		    			warned = true;
-		    		}
-		    	}
+				setOpacityImmediatelly(nextOpacity);
+		    	if (nextOpacity >= 1f) {
+					fadeStep = -1;
+					reduceOpacityRetentionTimer.stop();
+				}
 			});
+		}
+	}
+
+	private void setOpacityImmediatelly(float opacity) {
+    	try {
+			SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this).setOpacity(opacity);
+		} catch (Exception e) {
+			if (!warned) {
+				LogUtil.warn(e);
+				warned = true;
+			}
 		}
 	}
 
@@ -1482,6 +1486,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				public void accept(Comparison c) {
 					openStringSearchPanel(c.valueTextField, c, true);
 					setOpacity(REDUCED_OPACITY);
+					setOpacityImmediatelly(REDUCED_OPACITY);
 					fadeAction = e -> {
 						if (fadeStep >= 0) {
 							if (++fadeStep >= 100) {
