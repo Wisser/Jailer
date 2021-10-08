@@ -120,7 +120,7 @@ import net.sf.jailer.util.SqlUtil;
 public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
 	private static final float REDUCED_OPACITY = 0.5f;
-	private static final int REDUCED_OPACITY_RETENTION_TIME = 4;
+	private static final int REDUCED_OPACITY_RETENTION_TIME = 2;
 
 	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 100_000;
 	private final int MAX_SIZE_DISTINCTEXISTINGVALUES = 500_000;
@@ -1456,7 +1456,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			comparisons.stream().filter(c -> table.getColumns().get(initialColumn).equals(c.column)).findAny().ifPresent(new Consumer<Comparison>() {
 				@Override
 				public void accept(Comparison c) {
-					openStringSearchPanel(c.valueTextField, c);
+					openStringSearchPanel(c.valueTextField, c, true);
 					reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000, e -> {
 						if (dialog.getOpacity() < 1f) {
 							dialog.setVisible(false);
@@ -1505,8 +1505,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void openStringSearchPanel(JTextField valueTextField, Comparison comparison) {
+		openStringSearchPanel(valueTextField, comparison, false);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void openStringSearchPanel(JTextField valueTextField, Comparison comparison, boolean popupOnTop) {
     	if (getParent() == null) {
     		return; // too late
     	}
@@ -1641,6 +1645,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				+ "<i>not selected</i>:<b> Show only values where a non-empty result is retrieved considering the overall condition.</b></html>");
 		Point point = new Point(0, 0);
 		SwingUtilities.convertPointToScreen(point, valueTextField);
+		Point pointO = new Point(0, 0);
+		SwingUtilities.convertPointToScreen(pointO, this);
+		if (popupOnTop) {
+			point.x = pointO.x;
+			point.y = pointO.y;
+		}
 		searchPanel.withSizeGrip();
 		int estDVCount = estimateDistinctExistingValues(comparison, condition);
 		Integer estimatedItemsCount = defaultComboBoxModel.getSize() + estDVCount ;
