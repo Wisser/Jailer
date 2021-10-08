@@ -119,6 +119,8 @@ import net.sf.jailer.util.SqlUtil;
 @SuppressWarnings("serial")
 public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
+	// TODO
+	// TODO optimize following parameter:
 	private static final float REDUCED_OPACITY = 0.5f;
 	private static final float REDUCED_OPACITY_FADE_START = REDUCED_OPACITY + 0.15f;
 	private static final int REDUCED_OPACITY_RETENTION_TIME = 3;
