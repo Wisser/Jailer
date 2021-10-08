@@ -1444,19 +1444,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private ActionListener fadeAction;
     private boolean opacityPending = false;
     private float nextOpacity;
-	
-//TODO
-RuntimeException xe;
 
     private void setOpacity(float opacity) {
 		nextOpacity = opacity;
-		
-		
-		// TODO
-		xe = new RuntimeException();
-		System.out.println("222222222 " + nextOpacity);
-		xe.printStackTrace();
-		
+
 		if (!opacityPending) {
 			opacityPending = true;
 			UIUtil.invokeLater(16, () -> {
@@ -1469,25 +1460,10 @@ RuntimeException xe;
 			});
 		}
 	}
-
-    // TODO
-    boolean was1 = false;
     
-	private void setOpacityImmediatelly(float opacity) {
+    private void setOpacityImmediatelly(float opacity) {
     	try {
 			SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this).setOpacity(opacity);
-		
-			// TODO
-			if (was1)			xe.printStackTrace();	
-
-			if (opacity == 1f) {
-				System.out.println("11111111 " + nextOpacity + " " + opacity);
-				xe.printStackTrace();	
-				new RuntimeException().printStackTrace();
-				System.out.println("------------------------");
-				was1 = true;
-			} else was1 = false;
-			
 		} catch (Exception e) {
 			if (!warned) {
 				LogUtil.warn(e);
@@ -1502,7 +1478,11 @@ RuntimeException xe;
 		}
 		reduceOpacityRetentionTimer.restart();
 	};
-
+	
+	public void prepareStringSearchPanelOfInitialColumn(Window dialog) {
+		setOpacityImmediatelly(REDUCED_OPACITY);
+	}
+	
 	public void openStringSearchPanelOfInitialColumn(Window dialog) {
 		if (initialColumn >= 0) {
 			comparisons.stream().filter(c -> table.getColumns().get(initialColumn).equals(c.column)).findAny().ifPresent(new Consumer<Comparison>() {
@@ -1520,8 +1500,7 @@ RuntimeException xe;
 								}
 							} else {
 								setOpacity(REDUCED_OPACITY_FADE_START * (fadeStep < 33? 1f : (((100 - fadeStep) * 3 / 2f / 100.0f))));
-								// TODO
-								// TODO reduceOpacityRetentionTimer.restart();
+								reduceOpacityRetentionTimer.restart();
 							}
 						}
 					};
