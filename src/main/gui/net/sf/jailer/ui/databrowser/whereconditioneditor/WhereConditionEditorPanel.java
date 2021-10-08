@@ -120,7 +120,8 @@ import net.sf.jailer.util.SqlUtil;
 public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
 	private static final float REDUCED_OPACITY = 0.5f;
-	private static final int REDUCED_OPACITY_RETENTION_TIME = 2;
+	private static final float REDUCED_OPACITY_FADE_START = REDUCED_OPACITY + 0.15f;
+	private static final int REDUCED_OPACITY_RETENTION_TIME = 3;
 
 	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 100_000;
 	private final int MAX_SIZE_DISTINCTEXISTINGVALUES = 500_000;
@@ -1436,23 +1437,40 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     {
 		reduceOpacityRetentionTimer.setRepeats(false);
     }
+    private int fadeStep = -1;
     private boolean opacityListenerEnabled = true;
     private boolean warned = false;
-    
+	private ActionListener fadeAction;
+    private boolean opacityPending = false;
+    private float nextOpacity;
+	
     private void setOpacity(float opacity) {
-    	try {
-    		SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this).setOpacity(opacity);
-	    	if (opacity < 1f) {
-				reduceOpacityRetentionTimer.restart();
-			} else {
-				reduceOpacityRetentionTimer.stop();
-			}
-    	} catch (Exception e) {
-    		if (!warned) {
-    			LogUtil.warn(e);
-    			warned = true;
-    		}
-    	}
+		nextOpacity = opacity;
+		if (!opacityPending) {
+			opacityPending = true;
+			UIUtil.invokeLater(() -> {
+				opacityPending = false;
+		    	try {
+		    		SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this).setOpacity(nextOpacity);
+			    	if (nextOpacity >= 1f) {
+						fadeStep = -1;
+						reduceOpacityRetentionTimer.stop();
+					}
+		    	} catch (Exception e) {
+		    		if (!warned) {
+		    			LogUtil.warn(e);
+		    			warned = true;
+		    		}
+		    	}
+			});
+		}
+	}
+
+	private void startOpacityTimer() {
+		if (fadeAction != null) {
+			fadeAction.actionPerformed(null);
+		}
+		reduceOpacityRetentionTimer.restart();
 	};
 
 	public void openStringSearchPanelOfInitialColumn(Window dialog) {
@@ -1461,12 +1479,21 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				@Override
 				public void accept(Comparison c) {
 					openStringSearchPanel(c.valueTextField, c, true);
-					reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000, e -> {
-						if (dialog.getOpacity() < 1f) {
-							dialog.setVisible(false);
-							dialog.dispose();
+					setOpacity(REDUCED_OPACITY);
+					fadeAction = e -> {
+						if (fadeStep >= 0) {
+							if (++fadeStep >= 100) {
+								if (dialog.getOpacity() < 1f) {
+									dialog.setVisible(false);
+									dialog.dispose();
+								}
+							} else {
+								setOpacity(REDUCED_OPACITY_FADE_START * (fadeStep < 33? 1f : (((100 - fadeStep) * 3 / 2f / 100.0f))));
+								reduceOpacityRetentionTimer.restart();
+							}
 						}
-					});
+					};
+					reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000 / 100, fadeAction);
 					reduceOpacityRetentionTimer.setRepeats(false);
 					UIUtil.invokeLater(() -> {
 						setOpacity(REDUCED_OPACITY);
@@ -1488,11 +1515,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							}
 							@Override
 							public void mousePressed(MouseEvent e) {
-								setOpacity(1f);
+								if (fadeStep <66) {
+									setOpacity(1f);
+								}
 							}
 							@Override
 							public void mouseClicked(MouseEvent e) {
-								setOpacity(1f);
+								if (fadeStep <66) {
+									setOpacity(1f);
+								}
 							}
 						});
 					});
@@ -1582,7 +1613,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				if (theSearchPanel.get(0).isExplictlyClosed()) {
 					accept(comparison, theSearchPanel.get(0).getPlainValue(), comparison.operator);
 					if (initialColumn >= 0 && popupOnTop) {
-						setOpacity(REDUCED_OPACITY + 0.15f);
+						fadeStep = 0;
+						setOpacity(REDUCED_OPACITY_FADE_START);
+						startOpacityTimer();
 						opacityListenerEnabled = false;
 					}
 				}
