@@ -1480,7 +1480,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	};
 	
 	public void prepareStringSearchPanelOfInitialColumn(Window dialog) {
-		setOpacityImmediatelly(REDUCED_OPACITY);
+		if (initialColumn >= 0) {
+			setOpacityImmediatelly(REDUCED_OPACITY);
+		}
 	}
 	
 	public void openStringSearchPanelOfInitialColumn(Window dialog) {
