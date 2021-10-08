@@ -267,6 +267,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							owner.setVisible(false);
 						}
 					}
+					onClosing();
 					dialog.dispose();
 					consumeResult();
 				}
@@ -357,6 +358,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		plainIsValid = false;
 		UIUtil.setPopupActive(true);
 		dialog.setVisible(true);
+	}
+
+	protected void onClosing() {
 	}
 
 	private int oHeight;

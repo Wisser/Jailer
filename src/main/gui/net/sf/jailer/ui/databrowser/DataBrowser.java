@@ -4326,7 +4326,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 				dialog.setVisible(true);
 				UIUtil.invokeLater(4, () -> {
-					popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn();
+					popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn(dialog);
 				});
 			}
 		});

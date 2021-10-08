@@ -16,6 +16,8 @@
 package net.sf.jailer.ui.databrowser.whereconditioneditor;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -30,7 +32,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -115,6 +119,9 @@ import net.sf.jailer.util.SqlUtil;
 @SuppressWarnings("serial")
 public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
+	private static final float REDUCED_OPACITY = 0.5f;
+	private static final int REDUCED_OPACITY_RETENTION_TIME = 4;
+
 	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 100_000;
 	private final int MAX_SIZE_DISTINCTEXISTINGVALUES = 500_000;
 	private final int SIZE_DISTINCTEXISTINGVALUESCACHE = 40;
@@ -1425,10 +1432,75 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         parseCondition();
     }//GEN-LAST:event_applyButtonActionPerformed
 
-	public void openStringSearchPanelOfInitialColumn() {
+    private Timer reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000, null);
+    private boolean warned = false;
+    
+    private void setOpacity(float opacity) {
+    	try {
+    		SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this).setOpacity(opacity);
+	    	if (opacity < 1f) {
+				reduceOpacityRetentionTimer.restart();
+			} else {
+				reduceOpacityRetentionTimer.stop();
+			}
+    	} catch (Exception e) {
+    		if (!warned) {
+    			LogUtil.warn(e);
+    			warned = true;
+    		}
+    	}
+	};
+
+	public void openStringSearchPanelOfInitialColumn(Window dialog) {
 		if (initialColumn >= 0) {
-			comparisons.stream().filter(c -> table.getColumns().get(initialColumn).equals(c.column)).findAny().ifPresent(c -> {
-				openStringSearchPanel(c.valueTextField, c);
+			comparisons.stream().filter(c -> table.getColumns().get(initialColumn).equals(c.column)).findAny().ifPresent(new Consumer<Comparison>() {
+				@Override
+				public void accept(Comparison c) {
+					openStringSearchPanel(c.valueTextField, c);
+					reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000, e -> {
+						if (dialog.getOpacity() < 1f) {
+							dialog.setVisible(false);
+							dialog.dispose();
+						}
+					});
+					reduceOpacityRetentionTimer.setRepeats(false);
+					UIUtil.invokeLater(() -> {
+						setOpacity(REDUCED_OPACITY);
+						reduceOpacityRetentionTimer.stop();
+						addListener(dialog, new MouseAdapter() {
+							@Override
+							public void mouseEntered(MouseEvent e) {
+								if (!dialog.isFocused()) {
+									setOpacity(1f);
+									reduceOpacityRetentionTimer.stop();
+								}
+							}
+							@Override
+							public void mouseExited(MouseEvent e) {
+								if (!dialog.isFocused()) {
+									setOpacity(REDUCED_OPACITY);
+									reduceOpacityRetentionTimer.stop();
+								}
+							}
+							@Override
+							public void mousePressed(MouseEvent e) {
+								setOpacity(1f);
+							}
+							@Override
+							public void mouseClicked(MouseEvent e) {
+								setOpacity(1f);
+							}
+						});
+					});
+				}
+				private void addListener(Component comp, MouseListener listener) {
+					comp.addMouseListener(listener);
+					if (comp instanceof Container) {
+						for (Component sub: ((Container) comp).getComponents()) {
+							addListener(sub, listener);
+						}
+					}
+				}
 			});
 		}
 	}
@@ -1455,6 +1527,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 
 		Window owner = SwingUtilities.getWindowAncestor(valueTextField);
+		setOpacity(1f);
 		@SuppressWarnings("rawtypes")
 		JComboBox combobox = new JComboBox();
 		DefaultComboBoxModel<String> defaultComboBoxModel = new DefaultComboBoxModel<String>();
@@ -1500,19 +1573,27 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				setValueFieldText(valueTextField, theSearchPanel.get(0).getPlainValue());
 				if (theSearchPanel.get(0).isExplictlyClosed()) {
 					accept(comparison, theSearchPanel.get(0).getPlainValue(), comparison.operator);
+					if (initialColumn >= 0) {
+						setOpacity(REDUCED_OPACITY + 0.15f);
+					}
 				}
 		    	cancel(cancellationContext);
 			}
 		}, renderConsumer) {
+			protected void onClosing() {
+				setOpacity(1f);
+			}
 			@Override
 			protected void onClose(String text) {
 				setValueFieldText(valueTextField, text);
 		    	cancel(cancellationContext);
+				setOpacity(1f);
 			}
 			@Override
 			protected void onAbort() {
 				setValueFieldText(valueTextField, origText);
 		    	cancel(cancellationContext);
+				setOpacity(1f);
 			}
 			@Override
 			protected Integer preferredWidth() {
