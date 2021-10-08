@@ -744,7 +744,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
     
 	private String toValue(String sqlValue, int columnIndex) {
-		// TODO convert a set of values with single statements
 		final String CACHE = "toValueCache";
 		@SuppressWarnings("unchecked")
 		Map<String, Map<Integer, String>> cache = (Map<String, Map<Integer, String>>) session.getSessionProperty(getClass(), CACHE);
@@ -2282,6 +2281,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
 	}
 
+	// TODO
+	// TODO auto-close on double-click in string-search-panel in popup-mode?
+	
+	// TODO
+	// TODO https://stackoverflow.com/questions/14927980/how-to-make-a-transparent-jframe-but-keep-everything-else-the-same
+	
 	// TODO support properties
 	// TODO multi-value-select? (in clause?)
 	// TODO remove empty lines before putting text back into sql console after user edit
