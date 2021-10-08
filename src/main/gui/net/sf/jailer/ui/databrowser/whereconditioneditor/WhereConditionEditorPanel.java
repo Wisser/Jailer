@@ -1446,11 +1446,21 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     private boolean opacityPending = false;
     private float nextOpacity;
 	
+//TODO
+RuntimeException xe;
+
     private void setOpacity(float opacity) {
 		nextOpacity = opacity;
+		
+		
+		// TODO
+		xe = new RuntimeException();
+		System.out.println("222222222 " + nextOpacity);
+		xe.printStackTrace();
+		
 		if (!opacityPending) {
 			opacityPending = true;
-			UIUtil.invokeLater(() -> {
+			UIUtil.invokeLater(16, () -> {
 				opacityPending = false;
 				setOpacityImmediatelly(nextOpacity);
 		    	if (nextOpacity >= 1f) {
@@ -1461,9 +1471,24 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 	}
 
+    // TODO
+    boolean was1 = false;
+    
 	private void setOpacityImmediatelly(float opacity) {
     	try {
 			SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this).setOpacity(opacity);
+		
+			// TODO
+			if (was1)			xe.printStackTrace();	
+
+			if (opacity == 1f) {
+				System.out.println("11111111 " + nextOpacity + " " + opacity);
+				xe.printStackTrace();	
+				new RuntimeException().printStackTrace();
+				System.out.println("------------------------");
+				was1 = true;
+			} else was1 = false;
+			
 		} catch (Exception e) {
 			if (!warned) {
 				LogUtil.warn(e);
@@ -1496,7 +1521,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 								}
 							} else {
 								setOpacity(REDUCED_OPACITY_FADE_START * (fadeStep < 33? 1f : (((100 - fadeStep) * 3 / 2f / 100.0f))));
-								reduceOpacityRetentionTimer.restart();
+								// TODO
+								// TODO reduceOpacityRetentionTimer.restart();
 							}
 						}
 					};
@@ -1573,7 +1599,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 
 		Window owner = SwingUtilities.getWindowAncestor(valueTextField);
-		setOpacity(1f);
+		if (!popupOnTop) {
+			setOpacity(1f);
+		}
 		@SuppressWarnings("rawtypes")
 		JComboBox combobox = new JComboBox();
 		DefaultComboBoxModel<String> defaultComboBoxModel = new DefaultComboBoxModel<String>();
