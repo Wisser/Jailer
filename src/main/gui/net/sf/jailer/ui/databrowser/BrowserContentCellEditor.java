@@ -97,7 +97,7 @@ public class BrowserContentCellEditor {
 
 			@Override
 			boolean isEditable(int columnType, Object content, BrowserContentCellEditor browserContentCellEditor) {
-				return content == null || (content instanceof String && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0)));
+				return content == null || ((content instanceof String || content instanceof CellContentConverter.NCharWrapper) && (browserContentCellEditor.isInDetailsView() || !(content.toString().indexOf('\n') >= 0 || content.toString().indexOf('\t') >= 0)));
 			}
 
 			@Override
