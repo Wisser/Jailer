@@ -64,11 +64,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
@@ -87,6 +89,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
@@ -125,6 +128,7 @@ import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 
@@ -1900,4 +1904,62 @@ public class UIUtil {
 		return null;
 	}
 
+	private static void setOpacity(Window w, float opacity) {
+    	try {
+    		w.setOpacity(opacity);
+    		opacityfailed = false;
+		} catch (Exception e) {
+			if (!warned) {
+				LogUtil.warn(e);
+				warned = true;
+			}
+			opacityfailed = true;
+		}
+	}
+
+    public static boolean opacityfailed = false;
+	private static boolean warned = false;
+	private static Map<Window, Float> hiddenWindows = new LinkedHashMap<>();
+	private static Timer dwTimer = null;
+	
+	public static void startDW() {
+		if (dwTimer == null) {
+			dwTimer = new Timer(100, e -> {
+				stopDW();
+			});
+			dwTimer.setRepeats(false);
+			dwTimer.start();
+		}
+	}
+	
+	public static void addDW(Window w) {
+		if (dwTimer != null && w != null) {
+			hiddenWindows.put(w, w.getOpacity());
+			setOpacity(w, 0f);
+		}
+	}
+
+	public static void addDW(Window w, float o) {
+		if (dwTimer != null && w != null) {
+			hiddenWindows.put(w, o);
+			setOpacity(w, 0f);
+		} else if (w != null) {
+			setOpacity(w, o);
+		}
+	}
+	
+	public static void stopDW() {
+		if (dwTimer != null) {
+			dwTimer.stop();
+		}
+		dwTimer = null;
+		Stack<Window> wStack = new Stack<>();
+		hiddenWindows.keySet().forEach(w -> wStack.push(w));
+		while (!wStack.isEmpty()) {
+			Window w = wStack.pop();
+			w.setOpacity(hiddenWindows.get(w));
+		}
+		hiddenWindows.clear();
+	}
+	
 }

@@ -357,6 +357,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		});
 		plainIsValid = false;
 		UIUtil.setPopupActive(true);
+		UIUtil.addDW(dialog);
 		dialog.setVisible(true);
 	}
 

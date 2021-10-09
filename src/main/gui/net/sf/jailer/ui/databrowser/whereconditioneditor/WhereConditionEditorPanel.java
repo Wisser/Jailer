@@ -1440,10 +1440,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     }
     private int fadeStep = -1;
     private boolean opacityListenerEnabled = true;
-    private boolean warned = false;
-	private ActionListener fadeAction;
+    private ActionListener fadeAction;
     private boolean opacityPending = false;
-    private boolean opacityfailed = false;
     private float nextOpacity;
 
     private void setOpacity(float opacity) {
@@ -1463,16 +1461,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
     
     private void setOpacityImmediatelly(float opacity) {
-    	try {
-    		opacityfailed = false;
-			SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this).setOpacity(opacity);
-		} catch (Exception e) {
-    		opacityfailed = true;
-			if (!warned) {
-				LogUtil.warn(e);
-				warned = true;
-			}
-		}
+    	UIUtil.addDW(windowAncestor(), opacity);
+	}
+
+	private Window windowAncestor() {
+		return SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this);
 	}
 
 	private void startOpacityTimer() {
@@ -1485,6 +1478,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	public void prepareStringSearchPanelOfInitialColumn(Window dialog) {
 		if (initialColumn >= 0) {
 			setOpacityImmediatelly(0f);
+			UIUtil.startDW();
+			UIUtil.addDW(windowAncestor());
 		}
 	}
 	
@@ -1499,7 +1494,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					fadeAction = e -> {
 						if (fadeStep >= 0) {
 							if (++fadeStep >= 100) {
-								if (dialog.getOpacity() < 1f && !opacityfailed) {
+								if (dialog.getOpacity() < 1f && !UIUtil.opacityfailed) {
 									dialog.setVisible(false);
 									dialog.dispose();
 								}
@@ -1716,8 +1711,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		searchPanel.setEstimatedItemsCount(estimatedItemsCount);
 		UIUtil.invokeLater(() -> {
 			if (opacityPending) {
-				setOpacityImmediatelly(nextOpacity);
+				if (initialColumn >= 0) {
+					UIUtil.addDW(windowAncestor(), nextOpacity);
+				} else {
+					setOpacityImmediatelly(nextOpacity);
+				}
 			}
+			UIUtil.startDW();
 			searchPanel.find(owner, "Condition", point.x, point.y, true);
 		});
 		searchPanel.setInitialValue(valueTextField.getText());
@@ -1807,6 +1807,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							clearCacheButton.setVisible(true);
 						}
 						searchPanel.updateList(false, true);
+						UIUtil.stopDW();
 					}
 				});
 
@@ -1835,6 +1836,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				} catch (Throwable e) {
 					UIUtil.invokeLater(() -> {
 						searchPanel.setStatus("error loading values", UIUtil.scaleIcon(searchPanel, warnIcon));
+						UIUtil.stopDW();
 					});
 					return;
 				}
@@ -1898,6 +1900,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						};
 						fullSearchCheckbox.addActionListener(action);
 						action.actionPerformed(null);
+						UIUtil.invokeLater(2, () -> UIUtil.stopDW());
 					}
 				}});
 			}
