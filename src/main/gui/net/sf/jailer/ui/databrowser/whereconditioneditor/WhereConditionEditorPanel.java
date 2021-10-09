@@ -1484,7 +1484,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
 	public void prepareStringSearchPanelOfInitialColumn(Window dialog) {
 		if (initialColumn >= 0) {
-			setOpacityImmediatelly(REDUCED_OPACITY);
+			setOpacityImmediatelly(0f);
 		}
 	}
 	
@@ -1495,7 +1495,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				public void accept(Comparison c) {
 					openStringSearchPanel(c.valueTextField, c, true);
 					setOpacity(REDUCED_OPACITY);
-					setOpacityImmediatelly(REDUCED_OPACITY);
+					setOpacityImmediatelly(0f);
 					fadeAction = e -> {
 						if (fadeStep >= 0) {
 							if (++fadeStep >= 100) {
@@ -1714,7 +1714,12 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		int estDVCount = estimateDistinctExistingValues(comparison, condition);
 		Integer estimatedItemsCount = defaultComboBoxModel.getSize() + estDVCount ;
 		searchPanel.setEstimatedItemsCount(estimatedItemsCount);
-		UIUtil.invokeLater(() -> searchPanel.find(owner, "Condition", point.x, point.y, true));
+		UIUtil.invokeLater(() -> {
+			if (opacityPending) {
+				setOpacityImmediatelly(nextOpacity);
+			}
+			searchPanel.find(owner, "Condition", point.x, point.y, true);
+		});
 		searchPanel.setInitialValue(valueTextField.getText());
 		searchPanel.setStatus("loading existing values...", null);
 		JPanel bottom = new JPanel(new GridBagLayout());
