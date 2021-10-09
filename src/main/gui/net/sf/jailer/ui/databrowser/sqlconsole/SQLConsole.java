@@ -2377,9 +2377,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			return p;
 		}
 
+		private JDialog conditionEditorDialog = null;
+		
 		@Override
 		protected void openConditionEditor(Point location, int column, Runnable onClose) {
+			if (conditionEditorDialog != null) {
+				if (conditionEditorDialog.isVisible()) {
+					conditionEditorDialog.setVisible(false);
+					conditionEditorDialog.dispose();
+				}
+			}
 			JDialog dialog = new JDialog(parentFrame, "");
+			conditionEditorDialog = dialog;
 			UIUtil.invokeLater(() -> {
 				Runnable close = () -> {
 					dialog.setVisible(false);

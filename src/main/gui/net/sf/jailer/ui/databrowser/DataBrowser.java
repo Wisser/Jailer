@@ -4201,10 +4201,18 @@ public class DataBrowser extends javax.swing.JFrame {
 	private WhereConditionEditorPanelForDataBrowser popUpWhereConditionEditorPanel;
 
 	private boolean neverOpened = true;
-
+	private JDialog conditionEditorDialog = null;
+	
 	protected void openConditionEditor(BrowserContentPane browserContentPane, Point location, int column,
 			Runnable onClose) {
+		if (conditionEditorDialog != null) {
+			if (conditionEditorDialog.isVisible()) {
+				conditionEditorDialog.setVisible(false);
+				conditionEditorDialog.dispose();
+			}
+		}
 		JDialog dialog = new JDialog(this, "");
+		conditionEditorDialog = dialog;
 		UIUtil.invokeLater(() -> {
 			Runnable close = () -> {
 				dialog.setVisible(false);

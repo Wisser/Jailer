@@ -1443,6 +1443,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     private boolean warned = false;
 	private ActionListener fadeAction;
     private boolean opacityPending = false;
+    private boolean opacityfailed = false;
     private float nextOpacity;
 
     private void setOpacity(float opacity) {
@@ -1463,8 +1464,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     
     private void setOpacityImmediatelly(float opacity) {
     	try {
+    		opacityfailed = false;
 			SwingUtilities.getWindowAncestor(WhereConditionEditorPanel.this).setOpacity(opacity);
 		} catch (Exception e) {
+    		opacityfailed = true;
 			if (!warned) {
 				LogUtil.warn(e);
 				warned = true;
@@ -1496,7 +1499,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					fadeAction = e -> {
 						if (fadeStep >= 0) {
 							if (++fadeStep >= 100) {
-								if (dialog.getOpacity() < 1f) {
+								if (dialog.getOpacity() < 1f && !opacityfailed) {
 									dialog.setVisible(false);
 									dialog.dispose();
 								}
