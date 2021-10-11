@@ -1924,12 +1924,16 @@ public class UIUtil {
 	
 	public static void startDW() {
 		if (dwTimer == null) {
-			dwTimer = new Timer(100, e -> {
+			dwTimer = new Timer(120, e -> {
 				stopDW();
 			});
 			dwTimer.setRepeats(false);
 			dwTimer.start();
 		}
+	}
+	
+	public static boolean isDWActive() {
+		return dwTimer != null;
 	}
 	
 	public static void addDW(Window w) {

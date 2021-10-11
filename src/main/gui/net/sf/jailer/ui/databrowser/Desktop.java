@@ -314,7 +314,9 @@ public abstract class Desktop extends JDesktopPane {
 													desktopAnimation.animate();
 													boolean cl = calculateLinks();
 													if (cl) {
-														repaint();
+														if (!UIUtil.isDWActive()) {
+															repaint();
+														}
 													}
 												}
 											}
