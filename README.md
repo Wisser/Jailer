@@ -10,7 +10,7 @@ Jailer is a tool for database subsetting and relational data browsing.
 
 <img src="/docs/screenshot.png" width="800" />
 
-<a href="/docs/animated/Animated.md"><img src="/docs/animated/index.png" /></a>
+[<img src="/docs/animated/index.png" />](docs/animated/Animated.md)
 
 ## Features
 
