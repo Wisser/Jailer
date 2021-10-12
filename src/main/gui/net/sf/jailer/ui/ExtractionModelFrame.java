@@ -1099,7 +1099,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void tutorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tutorialActionPerformed
 		try {
-			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/exporting-data.htm"), this);
+			BrowserLauncher.openURL(new URI("https://wisser.github.io/Jailer/exporting-data.htm"), this);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -1107,7 +1107,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void helpContentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpContentActionPerformed
 		try {
-			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/home.htm"), this);
+			BrowserLauncher.openURL(new URI("https://wisser.github.io/Jailer/home.htm"), this);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}

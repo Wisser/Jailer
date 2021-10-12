@@ -178,7 +178,7 @@ public class About extends javax.swing.JDialog {
         jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
         jTextArea1.setRows(2);
-        jTextArea1.setText("http://jailer.sourceforge.net\nhttps://github.com/Wisser/Jailer");
+        jTextArea1.setText("https://github.com/Wisser/Jailer\nhttp://jailer.sourceforge.net");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

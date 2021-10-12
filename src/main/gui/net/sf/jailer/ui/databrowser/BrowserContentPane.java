@@ -82,6 +82,7 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -6538,8 +6539,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final boolean deselect = !currentSelectedRowCondition.equals("")
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
-		List<Supplier<DetailsView>> createDetailsViewF = new ArrayList<Supplier<DetailsView>>();
-		Supplier<DetailsView> createDetailsView = () -> {
+		List<Function<DetailsView, DetailsView>> createDetailsViewF = new ArrayList<Function<DetailsView,DetailsView>>();
+		Function<DetailsView, DetailsView> createDetailsView = oldDv -> {
 			DetailsView dv = new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, alternativeColumnLabelsFull, session, browserContentCellEditor, rowsTable.getModel()) {
 				@Override
 				protected void onRowChanged(int row) {
@@ -6576,8 +6577,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							} else {
 								d.getContentPane().removeAll();
 								DetailsView v;
-								d.getContentPane().add(v = createDetailsViewF.get(0).get());
-								v.setSortColumns(sortColumnsCheckBox.isSelected());
+								d.getContentPane().add(v = createDetailsViewF.get(0).apply(this));
 								v.editModeToggleButton.setSelected(editModeToggleButton.isSelected());
 								v.currentRow = -1;
 								int newRow = Math.min(v.rows.size() - 1, currentRow);
@@ -6603,10 +6603,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				public void windowGainedFocus(WindowEvent e) {
 				}
 			});
+			dv.restoreFromOld(oldDv);
 			return dv;
 		};
 		createDetailsViewF.add(createDetailsView);
-		DetailsView detailsView = createDetailsView.get();
+		DetailsView detailsView = createDetailsView.apply(null);
 		d.getContentPane().add(detailsView );
 		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 		d.pack();

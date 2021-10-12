@@ -109,7 +109,7 @@
         <Property name="editable" type="boolean" value="false"/>
         <Property name="columns" type="int" value="20"/>
         <Property name="rows" type="int" value="2"/>
-        <Property name="text" type="java.lang.String" value="http://jailer.sourceforge.net&#xa;https://github.com/Wisser/Jailer"/>
+        <Property name="text" type="java.lang.String" value="https://github.com/Wisser/Jailer&#xa;http://jailer.sourceforge.net"/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

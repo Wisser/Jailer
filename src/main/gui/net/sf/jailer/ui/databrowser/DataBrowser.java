@@ -2857,7 +2857,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
 		try {
-			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/data-browsing.html"), this);
+			BrowserLauncher.openURL(new URI("https://wisser.github.io/Jailer/data-browsing.html"), this);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e, session);
 		}

@@ -922,6 +922,13 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		return text.replaceFirst("^(<[^>]+>)*([^<]{32}).+$", "$2...");
 	}
 	
+	public void restoreFromOld(DetailsView oldDv) {
+		if (oldDv != null) {
+			setSortColumns(oldDv.sortColumns);
+			UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(oldDv.jScrollPane1.getViewport().getViewPosition()));
+		}
+	}
+
 	private static ImageIcon editdetails;
 	static {
 		// load images
