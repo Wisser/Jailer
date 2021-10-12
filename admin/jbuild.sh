@@ -53,7 +53,7 @@ cp maven-artifacts/* ../../oss/
 
 cd admin
 ./j14pack.bat $1
-read -p "Press any key to resume ..."
+
 cd
 cp /mnt/c/tmp/*.msi .
 

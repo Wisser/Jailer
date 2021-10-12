@@ -37,11 +37,11 @@ Jailer is a tool for database subsetting and relational data browsing.
  - 2019-02-01    The new "Model Migration Tool" allows you to easily find and edit the newly added associations if the data model has been extended after the last change to this extraction model.
  - 2018-04-26    The new feature "Analyze SQL" analyzes SQL statements and proposes association definitions. This allows to reverse-engineer the data model based on existing SQL queries.
  - 2018-03-06    SQL Console with code completion, syntax highlighting and database metadata visualization.
- - 2017-05-10    New API provides programmatic access to the data export and import functionality. http://jailer.sourceforge.net/api.html
- - 2017-03-30    Improved filter management. Templates allows you to define rules for assigning filters to columns. Filters on primary key columns will automatically be propagated to the corresponding foreign key columns. http://jailer.sourceforge.net/filters.html
+ - 2017-05-10    New API provides programmatic access to the data export and import functionality. https://wisser.github.io/Jailer/api.html
+ - 2017-03-30    Improved filter management. Templates allows you to define rules for assigning filters to columns. Filters on primary key columns will automatically be propagated to the corresponding foreign key columns. https://wisser.github.io/Jailer/filters.html
  - 2015-12-04    Data can now also be exported directly to a schema of the same database. This ensures optimal performance.
  - 2015-10-23    Rows can alternatively be collected in a separate embedded database. This allows exporting data from read-only databases.
- - 2014-07-20    Implemented the "Subset by Example" feature: Use the Data Browser to collect all the rows to be extracted and let Jailer create a model for that subset. http://jailer.sourceforge.net/subset-by-example.html
+ - 2014-07-20    Implemented the "Subset by Example" feature: Use the Data Browser to collect all the rows to be extracted and let Jailer create a model for that subset. https://wisser.github.io/Jailer/subset-by-example.html
  - 2014-04-15    A Data Browser has been introduced. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
 
 
@@ -51,7 +51,7 @@ Jailer is a tool for database subsetting and relational data browsing.
 If you do not want to install Java yourself, use the installation file "Jailer-n.n.n-with-java-JRE.msi" (for Windows) or "jailer-database-tools_10.2.2-x64-with-java-JRE.deb" (for Linux).
 
 Otherwise use the installer "Jailer-Install-n.n.n.exe" or unzip the file "jailer_n.n.n.zip".
-See also <a href="http://jailer.sourceforge.net/faq.html#multiuser">http://jailer.sourceforge.net/faq.html#multiuser</a>
+See also <a href="https://wisser.github.io/Jailer/faq.html#multiuser">https://wisser.github.io/Jailer/faq.html#multiuser</a>
 
 To start the tool from the unpacked zip:
 
@@ -77,7 +77,7 @@ To build the tool you can just use ant: ( https://ant.apache.org )
 
 
 ## Contact
- - Home:    http://jailer.sourceforge.net/ or https://github.com/Wisser/Jailer
+ - Home:    https://github.com/Wisser/Jailer or http://jailer.sourceforge.net/
  - Forum:   https://sourceforge.net/p/jailer/discussion/
  - Support: rwisser@users.sourceforge.net
 
