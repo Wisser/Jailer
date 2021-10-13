@@ -119,8 +119,6 @@ import net.sf.jailer.util.SqlUtil;
 @SuppressWarnings("serial")
 public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
-	// TODO
-	// TODO optimize following parameter:
 	private static final float REDUCED_OPACITY = 0.5f;
 	private static final float REDUCED_OPACITY_FADE_START = REDUCED_OPACITY + 0.15f;
 	private static final int REDUCED_OPACITY_RETENTION_TIME = 2;
@@ -2439,15 +2437,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         closeIcon = UIUtil.readImage("/Close-16-1.png");
     	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
 	}
-
-	// TODO
-	// TODO auto-close on double-click in string-search-panel in popup-mode?
-	
-	// TODO
-	// TODO https://stackoverflow.com/questions/14927980/how-to-make-a-transparent-jframe-but-keep-everything-else-the-same
-	
 	// TODO support properties
 	// TODO multi-value-select? (in clause?)
-	// TODO remove empty lines before putting text back into sql console after user edit
 	
 }
