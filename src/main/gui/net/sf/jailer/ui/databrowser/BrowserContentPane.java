@@ -2002,8 +2002,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		        }
 		        jLayeredPane2.repaint();
 			}
-
+			
+			private long clickedTime = 0;
+			
 			public void mouseClicked(MouseEvent e) {
+				long t = System.currentTimeMillis();
+				
+				if (t - clickedTime < 300) {
+					return;
+				}
+				
+				clickedTime = t;
+				
 				JTableHeader header = (JTableHeader) e.getSource();
 				if (!header.isEnabled()) {
 		            return;
@@ -2065,14 +2075,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				int column = tableView.convertColumnIndexToModel(viewColumn);
 				return column;
 			}
+			
+			private long pressedTime = 0;
+			
 			@Override
 			public void mousePressed(MouseEvent e) {
+				pressedTime = System.currentTimeMillis();
 				mouseMoved(e);
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				long t = System.currentTimeMillis();
 				mouseMoved(e);
+				if (t - pressedTime < 200) {
+					mouseClicked(e);
+				}
 			}
 
 			@Override

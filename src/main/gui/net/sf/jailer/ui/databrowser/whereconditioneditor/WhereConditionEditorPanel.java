@@ -123,7 +123,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	// TODO optimize following parameter:
 	private static final float REDUCED_OPACITY = 0.5f;
 	private static final float REDUCED_OPACITY_FADE_START = REDUCED_OPACITY + 0.15f;
-	private static final int REDUCED_OPACITY_RETENTION_TIME = 3;
+	private static final int REDUCED_OPACITY_RETENTION_TIME = 2;
 
 	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 100_000;
 	private final int MAX_SIZE_DISTINCTEXISTINGVALUES = 500_000;
@@ -1526,13 +1526,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							}
 							@Override
 							public void mousePressed(MouseEvent e) {
-								if (fadeStep <66) {
+								if (fadeStep < 80) {
 									setOpacity(1f);
 								}
 							}
 							@Override
 							public void mouseClicked(MouseEvent e) {
-								if (fadeStep <66) {
+								if (fadeStep < 80) {
 									setOpacity(1f);
 								}
 							}
