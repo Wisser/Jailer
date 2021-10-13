@@ -941,7 +941,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                Map<Table, Integer> tableOrd = new HashMap<Table, Integer>();
 	                int nextOrd = 0;
 	                for (int i = 0; i < metaData.getColumnCount(); ++i) {
-	                	String columnLabel = metaData.getColumnLabel(i + 1).replaceAll("\\s+", " ").replaceFirst("^(.{100})...+$", "$1...");
+	                	Table table = tabPerIndex.get(i);
+                		String columnLabel = metaData.getColumnLabel(i + 1).replaceAll("\\s+", " ").replaceFirst("^(.{100})...+$", "$1...");
 						if (columnLabel == null || columnLabel.matches("(?is:\\s*|\\?column\\?|(^\\(*select\\b.*))")) {
 							if (sqlColumnExpression.containsKey(i)) {
 								columnLabel = sqlColumnExpression.get(i);
@@ -950,23 +951,24 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						if (step > 0) {
 							columnLabel = columnLabel.replaceAll("\\s+", " ").replaceFirst("^(.{38})...+$", "$1...");
 						}
-						Integer cnt = labelCount.get(columnLabel);
+						String countKey = (table == null? "" : (table.getName() + ".")) + columnLabel;
+						Integer cnt = labelCount.get(countKey);
 						if (step == 1) {
 							if (cnt == null) {
 								cnt = 1;
 							} else {
 								++cnt;
 							}
-							labelCount.put(columnLabel, cnt);
+							labelCount.put(countKey, cnt);
 						} else if (step == 2) {
 							if (cnt != null && cnt > 1) {
-								Integer cnter = labelCounter.get(columnLabel);
+								Integer cnter = labelCounter.get(countKey);
 								if (cnter == null) {
 									cnter = 1;
 								} else {
 									++cnter;
 								}
-								labelCounter.put(columnLabel, cnter);
+								labelCounter.put(countKey, cnter);
 								columnLabel = "#" + cnter + ": " + columnLabel;
 							}
 						}
@@ -979,7 +981,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                		columnLabels[i] = "<html><nobr><b>" + columnLabel + "</b><br><font color=\"#808080\">" + type + "</font></html>";
 	                	} else {
 	                		String bgColor = "0066ff";
-	                		Table table = tabPerIndex.get(i);
 	                		if (table != null) {
 	                			Integer ord = tableOrd.get(table);
 	                			if (ord == null) {
