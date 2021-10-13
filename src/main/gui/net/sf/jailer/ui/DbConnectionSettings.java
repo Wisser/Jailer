@@ -203,8 +203,12 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 				    tb.setHorizontalTextPosition(SwingConstants.CENTER);
 					tbs.add(tb);
 					tb.addActionListener(e -> {
-						tbs.forEach(t -> { if (t != tb) { t.setSelected(false); }});
-						dbmsComboBox.setSelectedItem(line);
+						if (tb.isSelected()) {
+							tbs.forEach(t -> { if (t != tb) { t.setSelected(false); }});
+							dbmsComboBox.setSelectedItem(line);
+						} else {
+							tb.setSelected(true);
+						}
 					});
 				    GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			        gridBagConstraints.gridx = i % 6;
