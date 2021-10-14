@@ -1573,6 +1573,12 @@ public class WCTypeAnalyser {
 	private static boolean warned = false;
 	
 	public static void main(String args[]) {
+		
+		System.out.println(getPositivePosition("A.rzMandant", "A.ObjectId = 'dcc9802:1211af96d82:-7d45'\r\n"
+				+ "				and A . rzMandant = 'ABIT'"));
+		System.out.println(getPositivePosition("rzMandant", "A.ObjectId = 'dcc9802:1211af96d82:-7d45'\r\n"
+				+ "				and A.rzMandant = 'ABIT'"));
+
 		System.out.println(getPositivePosition("comm", "comm=1 or Empno=7902 and deptno=7902 and (comm is not null and boss is null)"));
 		System.out.println(getPositivePosition("(x + 1)", "x+1=0"));
 		System.out.println(getPositivePosition("x", "not x is not null and x=0"));

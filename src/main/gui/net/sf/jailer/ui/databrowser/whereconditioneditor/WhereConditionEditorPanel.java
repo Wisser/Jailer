@@ -1440,26 +1440,31 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     private boolean opacityListenerEnabled = true;
     private ActionListener fadeAction;
     private boolean opacityPending = false;
+    private boolean useOpacity = false;
     private float nextOpacity;
 
     private void setOpacity(float opacity) {
-		nextOpacity = opacity;
-
-		if (!opacityPending) {
-			opacityPending = true;
-			UIUtil.invokeLater(16, () -> {
-				opacityPending = false;
-				setOpacityImmediatelly(nextOpacity);
-		    	if (nextOpacity >= 1f) {
-					fadeStep = -1;
-					reduceOpacityRetentionTimer.stop();
-				}
-			});
-		}
+    	if (useOpacity) {
+			nextOpacity = opacity;
+	
+			if (!opacityPending) {
+				opacityPending = true;
+				UIUtil.invokeLater(16, () -> {
+					opacityPending = false;
+					setOpacityImmediatelly(nextOpacity);
+			    	if (nextOpacity >= 1f) {
+						fadeStep = -1;
+						reduceOpacityRetentionTimer.stop();
+					}
+				});
+			}
+    	}
 	}
     
     private void setOpacityImmediatelly(float opacity) {
-    	UIUtil.addDW(windowAncestor(), opacity);
+    	if (useOpacity) {
+    		UIUtil.addDW(windowAncestor(), opacity);
+    	}
 	}
 
 	private Window windowAncestor() {
@@ -1475,6 +1480,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
 	public void prepareStringSearchPanelOfInitialColumn(Window dialog) {
 		if (initialColumn >= 0) {
+			useOpacity = true;
 			setOpacityImmediatelly(0f);
 			UIUtil.startDW();
 			UIUtil.addDW(windowAncestor());
@@ -1492,7 +1498,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					fadeAction = e -> {
 						if (fadeStep >= 0) {
 							if (++fadeStep >= 100) {
-								if (dialog.getOpacity() < 1f && !UIUtil.opacityfailed) {
+								if (useOpacity && dialog.getOpacity() < 1f && !UIUtil.opacityfailed) {
 									dialog.setVisible(false);
 									dialog.dispose();
 								}
@@ -1680,6 +1686,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		
 		String condition;
 		Pair<Integer, Integer> pp = WCTypeAnalyser.getPositivePosition(comparison.column.name, editor.getText());
+		if (!(pp == null || pp.a != 0)) {
+			if (tableAlias != null) {
+				pp = WCTypeAnalyser.getPositivePosition(tableAlias + "." + comparison.column.name, editor.getText());
+			}
+		}
 		if (comparison.operator == Operator.Equal && (pp == null || pp.a != 0)) {
 			pos = fullPositions.get(comparison.column);
 			if (pos != null) {
