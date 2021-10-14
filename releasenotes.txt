@@ -1,4 +1,4 @@
-11.1.2
+11.1.3
   - Database-side filtering of ad hoc queries in SQL Console.
 
 10.6.1
