@@ -334,8 +334,6 @@ public class WCTypeAnalyser {
 							}
 							
 							for (SelectItem si: plainSelect.getSelectItems()) {
-								final boolean stop[] = new boolean[] { false };
-
 								si.accept(new SelectItemVisitor() {
 									@Override
 									public void visit(SelectExpressionItem selectExpressionItem) {
@@ -377,7 +375,8 @@ public class WCTypeAnalyser {
 											col.isNullable = isNullable;
 											selectClause.add(col);
 										} catch (Exception e) {
-											selectClause.add(null);
+											LogUtil.warn(e);
+											throw new QueryTooComplexException();
 										}
 									}
 
@@ -393,7 +392,11 @@ public class WCTypeAnalyser {
 										}
 										MDTable mdTable = fromClause.get(tableAlias);
 										try {
-											for (String c: mdTable.getColumns(false)) {
+											List<String> columns = mdTable.getColumns(false);
+											if (columns.isEmpty()) {
+												LogUtil.warn(new RuntimeException("Table without columns: " + mdTable.getName() + "/" + ((mdTable.getSchema() == null? "null" : mdTable.getSchema().getName())) + " " + sqlSelect));
+											}
+											for (String c: columns) {
 												net.sf.jailer.datamodel.Column col = findColumn(tableAlias, c, fromClause, metaDataSource);
 												boolean isNullable = col == null || col.isNullable;
 												col = new net.sf.jailer.datamodel.Column((unknownTableCounter[0] != 0 || fromClause.size() != 1? tableAlias + "." : "") + c, null, -1, -1);
@@ -411,11 +414,14 @@ public class WCTypeAnalyser {
 										for (Entry<String, MDTable> e: fromClause.entrySet()) {
 											MDTable mdTable = e.getValue();
 											if (mdTable == null) {
-												stop[0] = true;
-												break;
+												throw new QueryTooComplexException();
 											}
 											try {
-												for (String c: mdTable.getColumns(false)) {
+												List<String> columns = mdTable.getColumns(false);
+												if (columns.isEmpty()) {
+													LogUtil.warn(new RuntimeException("Table without columns: " + mdTable.getName() + "/" + ((mdTable.getSchema() == null? "null" : mdTable.getSchema().getName())) + " " + sqlSelect));
+												}
+												for (String c: columns) {
 													net.sf.jailer.datamodel.Column col = findColumn(e.getKey(), c, fromClause, metaDataSource);
 													boolean isNullable = col == null || col.isNullable;
 													col = new net.sf.jailer.datamodel.Column((unknownTableCounter[0] != 0 || fromClause.size() != 1? e.getKey() + "." : "") + c, null, -1, -1);
@@ -429,9 +435,6 @@ public class WCTypeAnalyser {
 										}
 									}
 								});
-								if (stop[0]) {
-									break;
-								}
 							}
 						}
 
@@ -462,6 +465,10 @@ public class WCTypeAnalyser {
 			table.setColumns(selectClause);
 			result.table = table;
 			result.cte = cte.toString();
+			
+			if (result.table.getColumns().isEmpty()) {
+				return null;
+			}
 			
 			return result;
 		} catch (QueryTooComplexException e) {

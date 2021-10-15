@@ -1,4 +1,13 @@
+11.1.4
+  - Fixed NPE in data browser.
+
 11.1.3
+  - Minor bug fixes.
+
+11.1.2
+  - Minor bug fixes.
+
+11.1.1
   - Database-side filtering of ad hoc queries in SQL Console.
 
 10.6.1

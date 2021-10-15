@@ -2451,7 +2451,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_rowidPKActionPerformed
 
     private void resetTargetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetTargetButtonActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_resetTargetButtonActionPerformed
 
 	public boolean isOk() {

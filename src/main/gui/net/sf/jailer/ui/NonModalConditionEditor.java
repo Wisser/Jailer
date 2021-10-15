@@ -475,7 +475,6 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
     }//GEN-LAST:event_toSubQueryButtonActionPerformed
 
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_clearButtonActionPerformed
 
 	private Table table1, table2;

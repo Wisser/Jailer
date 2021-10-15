@@ -868,10 +868,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				
 				List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, true, sqlColumnExpression, metaDataSource);
 				List<Table> nfResultTypesWOCheck = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, false, sqlColumnExpression, metaDataSource);
-				Result wcBaseTable = WCTypeAnalyser.getType(sqlStatement, metaDataSource);
+				Result wcbt = WCTypeAnalyser.getType(sqlStatement, metaDataSource);
+				int columnCount = metaData.getColumnCount();
+				if (wcbt != null && wcbt.table != null && wcbt.table.getColumns().size() != columnCount) {
+					wcbt = null;
+				}
+				Result wcBaseTable = wcbt;
 				Table resultType = null;
                 if (nfResultTypesWOCheck != null && !nfResultTypesWOCheck.isEmpty()) {
-                	int columnCount = metaData.getColumnCount();
                 	for (Table table: nfResultTypesWOCheck) {
                         while (table.getColumns().size() < columnCount) {
                             table.getColumns().add(new net.sf.jailer.datamodel.Column(null, "", 0, -1));
@@ -880,7 +884,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 }
 
                 if (nfResultTypes != null && !nfResultTypes.isEmpty()) {
-                	int columnCount = metaData.getColumnCount();
                 	List<Column> columnsT0 = nfResultTypes.get(0).getColumns();
                 	boolean multiTabResult = false;
                     for (int ti = 1; ti < nfResultTypes.size() && !multiTabResult; ++ti) {
@@ -2188,7 +2191,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             rowsTableScrollPane.setWheelScrollingEnabled(true);
         }
         public void initSecondaryCondition() {
-			openConditionEditor(null, 0, null);
+			openConditionEditor(null, -1, null);
 		}
     	public Set<Integer> getPkColumnsConsole() {
     		HashSet<Integer> result = new HashSet<Integer>(pkColumns);
@@ -3376,6 +3379,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 //			return;
 //		}
 	}
+	
+	// TODO 1
+	// TODO kein auto-sync, overlay in console fuer benutzerentscheidung, ob jetzt synced wird oder nicht.
 	
 	protected abstract void onContentStateChange(File file, boolean dirty);
     protected abstract void setReloadLimit(int limit);
