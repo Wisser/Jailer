@@ -15,14 +15,14 @@ BODY
 }
 A.tlink:link
 {
-	COLOR:#000044;
+	COLOR:#1144EE;
 	TEXT-DECORATION:none;
 	FONT-WEIGHT:normal;
 	FONT-SIZE:14px;
 }
 A.tlink:visited
 {
-	COLOR:#000044;
+	COLOR:#1144EE;
 	TEXT-DECORATION:none;
 	FONT-WEIGHT:normal;
 	FONT-SIZE:14px;
@@ -58,10 +58,10 @@ A.llink:hover
 }
 .tlinkA
 {
-	COLOR:#000044;
-	TEXT-DECORATION:none;
-	FONT-WEIGHT:bold;
-	FONT-SIZE:15px;
+	COLOR:#000055;
+	TEXT-DECORATION:underline;
+	FONT-WEIGHT:normal;
+	FONT-SIZE:14px;
 }
 A.mlink:link
 {
