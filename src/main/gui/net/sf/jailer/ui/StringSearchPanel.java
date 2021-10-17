@@ -701,7 +701,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							gbc.fill = GridBagConstraints.NONE;
 							gbc.anchor = GridBagConstraints.EAST;
 							cl = new JLabel(" " + Math.abs(count) + "  ");
-							cl.setForeground(new Color(0, 140, 0));
+							cl.setForeground(lightCounters? new Color(160, 130, 100) : new Color(0, 130, 0));
 							panel.add(cl, gbc);
 						}
 						panel.setOpaque(false);
@@ -1217,7 +1217,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
     Map<String, Integer> stringCount = null;
     private String stringCountLeftPad = null;
+    private boolean lightCounters = false;
     
+	public void setLightCounters(boolean lightCounters) {
+		this.lightCounters = lightCounters;
+	}
+
 	public void setStringCount(Map<String, Integer> stringCount) {
 		this.stringCount = stringCount;
 		this.stringCountLeftPad = null;

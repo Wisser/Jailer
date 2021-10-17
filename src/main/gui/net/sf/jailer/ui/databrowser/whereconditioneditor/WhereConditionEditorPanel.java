@@ -1691,7 +1691,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				pp = WCTypeAnalyser.getPositivePosition(tableAlias + "." + comparison.column.name, editor.getText());
 			}
 		}
+		boolean positiveEquals;
 		if (comparison.operator == Operator.Equal && (pp == null || pp.a != 0)) {
+			positiveEquals = true;
 			pos = fullPositions.get(comparison.column);
 			if (pos != null) {
 				condition = removeErasedFragment("\f", editor.getText().substring(0, pos.a) + "\f" + editor.getText().substring(pos.b)).trim();;
@@ -1699,6 +1701,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				condition = editor.getText().trim();
 			}
 		} else {
+			positiveEquals = false;
 			condition = "";
 		}
 		searchPanel.setCloseOwner(asPopup);
@@ -1896,12 +1899,14 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 								});
 								setStatus(incompleteFull, finalDistinctExistingFull);
 								clearCacheButton.setVisible(fromCacheFull[0]);
+								searchPanel.setLightCounters(!positiveEquals || finalDistinctExisting != null && !finalDistinctExisting.equals(finalDistinctExistingFull));
 							} else {
 								distinctExistingModel.forEach(s -> {
 									defaultComboBoxModel.addElement(s);
 								});
 								setStatus(incomplete, finalDistinctExisting);
 								clearCacheButton.setVisible(fromCache[0]);
+								searchPanel.setLightCounters(false);
 							}
 							searchPanel.setEstimatedItemsCount(defaultComboBoxModel.getSize());
 							searchPanel.resetHeight();
