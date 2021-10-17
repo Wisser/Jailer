@@ -1,3 +1,6 @@
+11.1.5
+  - Improved user experience when browsing data.
+
 11.1.4
   - Fixed NPE in data browser.
 
