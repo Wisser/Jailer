@@ -1110,13 +1110,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					dialog.getContentPane().add(whereConditionEditorPanel);
 						
 					dialog.pack();
-					double mh = 260;
-					int height = Math.max(dialog.getHeight(), (int) mh);
 					dialog.setLocation(x, y);
 					int minWidth = 660;
 					int wid = Math.max(minWidth, dialog.getWidth());
 					Integer maxX = getX() + getWidth() - wid - 8;;
-					dialog.setSize(wid, Math.min(height, 600));
+					dialog.setSize(wid, Math.min(Math.max(dialog.getHeight(), 260), 600));
 					if (maxX != null) {
 						dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
 					}

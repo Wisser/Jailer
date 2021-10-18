@@ -2315,9 +2315,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			currentHighlightTag = editor.getHighlighter().addHighlight(a, b, highlightPainter);
 			editor.select(a, a);
 		} catch (/*BadLocation*/ Exception e) {
+			// ignore
 			return;
 		}
 	}
+
 	protected void hightlight(Column column) {
 		// SQL Console only
 	}

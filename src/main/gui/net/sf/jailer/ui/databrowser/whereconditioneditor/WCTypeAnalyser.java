@@ -1508,6 +1508,9 @@ public class WCTypeAnalyser {
 	};
 
 	public static Pair<Integer, Integer> getPositivePosition(String expr, String condition) {
+		if (expr == null) {
+			return null;
+		}
 		String pattern = SqlUtil.createSQLFragmentSearchPattern(expr, false);
 		Pattern pat = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 		return getPositivePosition(pat, condition);

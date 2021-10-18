@@ -181,7 +181,12 @@ public class TabContentPanel extends javax.swing.JPanel {
             } else {
             	constraint = column.isNullable? "" : " NOT NULL";
             }
-        	columnTypes.append("     " + (column.name == null? "" : column.name.replaceAll("\\s+",  "").replaceFirst("^(.{64})....*", "$1...")) + " " + (column.toSQL("").substring(column.name.length()).trim()) + constraint);
+			columnTypes.append("     "
+					+ (column.name == null ? ""
+							: column.name.replaceAll("\\s+", "").replaceFirst("^(.{64})....*", "$1..."))
+					+ " " 
+					+ (column.name == null ? ""
+							: column.toSQL("").substring(column.name.length()).trim()) + constraint);
         }
         columnTypes.append(UIUtil.LINE_SEPARATOR + ")");
         return columnTypes.toString();
