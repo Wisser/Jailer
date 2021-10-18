@@ -290,8 +290,10 @@ public class RemoteEntityGraph extends EntityGraph {
 
 		select =
 				"Select " + pkList(table, alias) +
-				" From " + quoting.requote(table.getName()) + " " + alias +
-				" Where (" + condition + ")";
+				" From " + quoting.requote(table.getName()) + " " + alias;
+		if (condition != null && !"1=1".equals(condition)) {
+			select += " Where (" + condition + ")";
+		}
 		if (limitDefinition.limit != null && limitDefinition.orderBy != null && limitDefinition.orderBy.length() > 0) {
 			select += " order by " + limitDefinition.orderBy;
 		}

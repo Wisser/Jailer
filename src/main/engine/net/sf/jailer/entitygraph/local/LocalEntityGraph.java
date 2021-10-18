@@ -666,7 +666,10 @@ public class LocalEntityGraph extends EntityGraph {
 	private long addEntities(final Table table, final String alias, String condition, final int today, SubjectLimitDefinition limitDefinition, final boolean joinWithEntity) throws SQLException {
 		String select =
 			"Select " + pkList(table, alias) +
-			" From " + quoting.requote(table.getName()) + " " + alias + " Where (" + condition + ")";
+			" From " + quoting.requote(table.getName()) + " " + alias;
+		if (condition != null && !"1=1".equals(condition)) {
+			select += " Where (" + condition + ")";
+		}
 		if (limitDefinition != null && limitDefinition.limit != null && limitDefinition.orderBy != null && limitDefinition.orderBy.length() > 0) {
 			select += " order by " + limitDefinition.orderBy;
 		}
