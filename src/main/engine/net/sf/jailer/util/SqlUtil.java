@@ -472,6 +472,11 @@ public class SqlUtil {
 		}
 		return 0;
 	}
+	
+	/**
+	 * Condition formulated in standard SQL that is always fulfilled.
+	 */
+	public static final String SQL_TRUE = "1=1";
 
 	/**
 	 * Maps SQL types from {@link java.sql.Types} to clear text types.

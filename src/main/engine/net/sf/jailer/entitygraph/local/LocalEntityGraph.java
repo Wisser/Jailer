@@ -667,7 +667,7 @@ public class LocalEntityGraph extends EntityGraph {
 		String select =
 			"Select " + pkList(table, alias) +
 			" From " + quoting.requote(table.getName()) + " " + alias;
-		if (condition != null && !"1=1".equals(condition)) {
+		if (condition != null && !SqlUtil.SQL_TRUE.equals(condition)) {
 			select += " Where (" + condition + ")";
 		}
 		if (limitDefinition != null && limitDefinition.limit != null && limitDefinition.orderBy != null && limitDefinition.orderBy.length() > 0) {

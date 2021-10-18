@@ -291,7 +291,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		select =
 				"Select " + pkList(table, alias) +
 				" From " + quoting.requote(table.getName()) + " " + alias;
-		if (condition != null && !"1=1".equals(condition)) {
+		if (condition != null && !SqlUtil.SQL_TRUE.equals(condition)) {
 			select += " Where (" + condition + ")";
 		}
 		if (limitDefinition.limit != null && limitDefinition.orderBy != null && limitDefinition.orderBy.length() > 0) {
@@ -569,7 +569,7 @@ public class RemoteEntityGraph extends EntityGraph {
 			select =
 					"Select " + graphID + " " + limitTransactionSize.afterSelectFragment(executionContext) + "as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
 					" From " + quoting.requote(table.getName()) + " " + alias +
-					(condition != null && !"1=1".equals(condition) ? " Where (" + condition + ") " : " ") + 
+					(condition != null && !SqlUtil.SQL_TRUE.equals(condition) ? " Where (" + condition + ") " : " ") + 
 					limitTransactionSize.additionalWhereConditionFragment(executionContext) +
 					limitTransactionSize.statementSuffixFragment(executionContext);
 		} else {

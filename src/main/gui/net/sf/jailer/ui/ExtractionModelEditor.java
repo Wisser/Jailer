@@ -815,7 +815,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		}
 		String cond = extractionModel.getCondition();
-		if (cond.equals("1=1")) {
+		if (cond.equals(SqlUtil.SQL_TRUE)) {
 			cond = "";
 		}
 		condition.setText((cond));

@@ -241,7 +241,7 @@ public class ExtractionModel {
 		}
 		String condition = subjectLine.cells.get(1);
 		if ("".equals(condition)) {
-			condition = "1=1";
+			condition = SqlUtil.SQL_TRUE;
 		}
 		subjectLimitDefinition = createLimitDefinition(subjectLine.cells.get(2), subjectLine.cells.get(3));
 		if (dataModel.getRestrictionModel() == null) {

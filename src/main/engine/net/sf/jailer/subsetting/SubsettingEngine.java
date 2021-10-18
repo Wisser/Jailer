@@ -95,6 +95,7 @@ import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.JobManager.Job;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.Quoting;
+import net.sf.jailer.util.SqlUtil;
 import net.sf.jailer.xml.XmlExportTransformer;
 import net.sf.jailer.xml.XmlUtil;
 
@@ -311,7 +312,7 @@ public class SubsettingEngine {
 			allSubjects.add(new AdditionalSubject(as.getSubject(), ParameterHandler.assignParameterValues(as.getCondition(), executionContext.getParameters()), as.getSubjectLimitDefinition()));
 			st.add(as.getSubject());
 		}
-		allSubjects.add(new AdditionalSubject(extractionModel.subject, subjectCondition.equals("1=1")? "" : subjectCondition, extractionModel.subjectLimitDefinition));
+		allSubjects.add(new AdditionalSubject(extractionModel.subject, subjectCondition.equals(SqlUtil.SQL_TRUE)? "" : subjectCondition, extractionModel.subjectLimitDefinition));
 		st.add(extractionModel.subject);
 
 		if (entityGraph.getTargetSession().dbms.getRowidName() == null || (!executionContext.getUseRowid() && !executionContext.getUseRowIdsOnlyForTablesWithoutPK())) {
@@ -371,7 +372,7 @@ public class SubsettingEngine {
 
 					// unlimited
 					if (condition != null) {
-						long rc = entityGraph.addEntities(table, condition.length() > 0? condition : "1=1", today);
+						long rc = entityGraph.addEntities(table, condition.length() > 0? condition : SqlUtil.SQL_TRUE, today);
 						sumRc += rc;
 						if (rc > 0) {
 							progress.add(table);
@@ -379,7 +380,7 @@ public class SubsettingEngine {
 						}
 						checkRowLimit(rc);
 
-						if (condition.length() == 0 || "1=1".equals(condition)) {
+						if (condition.length() == 0 || SqlUtil.SQL_TRUE.equals(condition)) {
 							// no more rows left
 							moreRows = false;
 						}
@@ -389,7 +390,7 @@ public class SubsettingEngine {
 						for (AdditionalSubject as: subjects) {
 							if (as.getSubjectLimitDefinition().limit != null && as.getSubjectLimitDefinition().limit > 0) {
 								String lCondition = as.getCondition();
-								long rc = entityGraph.addEntities(table, lCondition != null && lCondition.trim().length() > 0? lCondition : "1=1", today, as.getSubjectLimitDefinition(), joinWithEntity);
+								long rc = entityGraph.addEntities(table, lCondition != null && lCondition.trim().length() > 0? lCondition : SqlUtil.SQL_TRUE, today, as.getSubjectLimitDefinition(), joinWithEntity);
 								if (rc < 0) {
 									sumRc = -1;
 								} else if (sumRc >= 0) {
@@ -1546,7 +1547,7 @@ public class SubsettingEngine {
 			}
 
 			appendCommentHeader("");
-			String condition = (subjectCondition != null && !"1=1".equals(subjectCondition)) ? extractionModel.subject.getName() + " where " + subjectCondition
+			String condition = (subjectCondition != null && !SqlUtil.SQL_TRUE.equals(subjectCondition)) ? extractionModel.subject.getName() + " where " + subjectCondition
 					: "all rows from " + extractionModel.subject.getName();
 			appendCommentHeader("Extraction Model:  " + (condition.replaceAll("\\s+", " ")) + " (" + extractionModelURL + ")");
 			if (extractionModel.subjectLimitDefinition.limit != null) {
