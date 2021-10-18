@@ -569,7 +569,8 @@ public class RemoteEntityGraph extends EntityGraph {
 			select =
 					"Select " + graphID + " " + limitTransactionSize.afterSelectFragment(executionContext) + "as graph_id, " + pkList(table, alias) + ", " + today + " as birthday, " + typeName(table) + " as type" +
 					" From " + quoting.requote(table.getName()) + " " + alias +
-					" Where (" + condition + ") " + limitTransactionSize.additionalWhereConditionFragment(executionContext) +
+					(condition != null && !"1=1".equals(condition) ? " Where (" + condition + ") " : " ") + 
+					limitTransactionSize.additionalWhereConditionFragment(executionContext) +
 					limitTransactionSize.statementSuffixFragment(executionContext);
 		} else {
 			if (session.dbms.isAvoidLeftJoin()) {
