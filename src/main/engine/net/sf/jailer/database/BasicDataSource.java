@@ -261,7 +261,7 @@ public class BasicDataSource implements DataSource {
 		}
 		for (String rwUrl: rwUrls) {
 			for (DBMS c: cs) {
-				if (Pattern.matches(c.getUrlPattern(), rwUrl)) {
+				if (Pattern.matches(c.getUrlPattern(), rwUrl.toLowerCase())) {
 					boolean ok = true;
 					if (c.getTestQuery() != null) {
 						Connection connection = null;
@@ -321,7 +321,7 @@ public class BasicDataSource implements DataSource {
 		}
 		for (String rwUrl: rwUrls) {
 			for (DBMS c: cs) {
-				if (Pattern.matches(c.getUrlPattern(), rwUrl)) {
+				if (Pattern.matches(c.getUrlPattern(), rwUrl.toLowerCase())) {
 					if (c.getTestQuery() != null) {
 						return true;
 					}
