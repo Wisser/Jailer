@@ -1884,7 +1884,8 @@ public class UIUtil {
 		return lines;
 	}
 
-	public static String getDBMSLogoURL(String url) {
+	public static String getDBMSLogoURL(String theUrl) {
+		String url = theUrl.toLowerCase();
 		if (!url.matches("jdbc:.+")) {
 			return null;
 		}
