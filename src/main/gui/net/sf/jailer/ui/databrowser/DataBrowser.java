@@ -387,7 +387,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 		switch (UIUtil.plaf) {
-			case SYSTEM:
+			case NATIVE:
 				// nothing to do
 				break;
 			case FLAT:
@@ -692,7 +692,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					}
 					((JLabel) render).setIcon(icon);
 					switch (UIUtil.plaf) {
-						case SYSTEM:
+						case NATIVE:
 							// nothing to do
 							break;
 						case FLAT:

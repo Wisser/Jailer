@@ -2923,7 +2923,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		revArrow.setOpaque(false);
 
 		switch (UIUtil.plaf) {
-			case SYSTEM:
+			case NATIVE:
 				// nothing to do
 				break;
 			case FLAT:

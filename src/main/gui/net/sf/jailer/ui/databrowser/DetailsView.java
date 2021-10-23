@@ -443,12 +443,10 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						nextFocusComponentForLastField = f;
 					}
 					switch (UIUtil.plaf) {
-						case SYSTEM:
+						case NATIVE:
 							// nothing to do
 							break;
 						case FLAT:
-							// nothing to do
-							break;
 						case NIMBUS:
 							f.setBorder(BorderFactory.createLineBorder(isEditable? new Color(255, 242, 240) : Color.white));
 							break;

@@ -1972,7 +1972,7 @@ public class UIUtil {
 	}
 	
 	public static enum PLAF {
-		FLAT("Flat"), NIMBUS("Nimbus"), SYSTEM("System");
+		FLAT("Flat"), NIMBUS("Nimbus"), NATIVE("Native");
 		
 		PLAF(String description) {
 			this.description = description;
@@ -1980,7 +1980,7 @@ public class UIUtil {
 		public final String description;
 	};
 	
-	public static PLAF plaf = PLAF.SYSTEM;
+	public static PLAF plaf = PLAF.NATIVE;
 	
 	public static void initPLAF() {
 		Object plafSetting = UISettings.restore(UISettings.USE_NATIVE_PLAF);
@@ -1989,55 +1989,59 @@ public class UIUtil {
 			plaf = PLAF.FLAT;
 			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf);
 		} else if (Boolean.TRUE.equals(plafSetting)) {
-			plaf = PLAF.SYSTEM;
+			plaf = PLAF.NATIVE;
 			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf);
 		} else if (plafSetting instanceof PLAF) {
 			plaf = (PLAF) plafSetting;
 		}
 		switch (plaf) {
-		case SYSTEM:
-			// nothing to do
-			break;
-		case FLAT:
-			try {
-				FlatLightLaf.setup();
-				initMacKeyStrokes();
-			} catch (Exception x) {
-				UIUtil.showException(null, "Error", x);
-			}
-			break;
-		case NIMBUS:
-			try {
-				for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-					if ("Nimbus".equals(info.getName())) {
-						UIManager.put("nimbusBase", new Color(66, 118, 187)); // orig. color: 51, 98, 140
-						UIManager.setLookAndFeel(info.getClassName());
-						break;
+			case NATIVE:
+				// nothing to do
+				break;
+			case FLAT:
+				try {
+					FlatLightLaf.setup();
+					initMacKeyStrokes();
+					break;
+				} catch (Exception x) {
+					UIUtil.showException(null, "Error", x);
+					break;
+				} catch (/*NoClassDefFound*/ Error e) {
+					LogUtil.warn(e);
+					// if this happens, then FlatLaf jar is not there. Fall back to Nimbus then.
+				}
+			case NIMBUS:
+				try {
+					for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+						if ("Nimbus".equals(info.getName())) {
+							UIManager.put("nimbusBase", new Color(66, 118, 187)); // orig. color: 51, 98, 140
+							UIManager.setLookAndFeel(info.getClassName());
+							break;
+						}
 					}
-				}
-				initMacKeyStrokes();
-
-				((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"),
-						"pressed");
-				((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"),
-						"released");
-				Object dSize = UIManager.get("SplitPane.dividerSize");
-				if (Integer.valueOf(10).equals(dSize)) {
-					UIManager.put("SplitPane.dividerSize", Integer.valueOf(14));
-				}
-
-				if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
-					UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
-				}
-				UIManager.put("TitledBorder.border", new BorderUIResource((Border) UIManager.get("TitledBorder.border")) {
-					public Insets getBorderInsets(Component c)       {
-						return new Insets(4, 4, 6, 4);
+					initMacKeyStrokes();
+	
+					((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"),
+							"pressed");
+					((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"),
+							"released");
+					Object dSize = UIManager.get("SplitPane.dividerSize");
+					if (Integer.valueOf(10).equals(dSize)) {
+						UIManager.put("SplitPane.dividerSize", Integer.valueOf(14));
 					}
-				});
-			} catch (Exception x) {
-				UIUtil.showException(null, "Error", x);
-			}
-			break;
+	
+					if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
+						UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
+					}
+					UIManager.put("TitledBorder.border", new BorderUIResource((Border) UIManager.get("TitledBorder.border")) {
+						public Insets getBorderInsets(Component c)       {
+							return new Insets(4, 4, 6, 4);
+						}
+					});
+				} catch (Exception x) {
+					UIUtil.showException(null, "Error", x);
+				}
+				break;
 		}
 	}
 

@@ -7405,7 +7405,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			result.y = 2;
 		}
 		switch (UIUtil.plaf) {
-			case SYSTEM:
+			case NATIVE:
 				// nothing to do
 				break;
 			case FLAT:
