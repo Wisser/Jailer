@@ -572,14 +572,11 @@
             </Menu>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator6">
             </MenuItem>
-            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="nativeLAFCheckBoxMenuItem">
+            <Menu class="javax.swing.JMenu" name="plafMenu">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Native Look&amp;Feel"/>
+                <Property name="text" type="java.lang.String" value="Look and Feel"/>
               </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="nativeLAFCheckBoxMenuItemActionPerformed"/>
-              </Events>
-            </MenuItem>
+            </Menu>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="jMenu2">

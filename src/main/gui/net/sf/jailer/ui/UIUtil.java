@@ -35,6 +35,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -77,8 +78,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBoxMenuItem;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -86,19 +88,25 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import javax.swing.text.DefaultEditorKit;
 
 import org.apache.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+
+import com.formdev.flatlaf.FlatLightLaf;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
@@ -1531,18 +1539,26 @@ public class UIUtil {
 	/**
 	 * Initializes the "Native L&F" menu items.
 	 *
-	 * @param nativeLAFCheckBoxMenuItem the menu item
+	 * @param plafMenu the menu
 	 */
-	public static void initPLAFMenuItem(final JCheckBoxMenuItem nativeLAFCheckBoxMenuItem, final Component parentComponent) {
-		nativeLAFCheckBoxMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.USE_NATIVE_PLAF)));
-		nativeLAFCheckBoxMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				boolean nativeLF = nativeLAFCheckBoxMenuItem.isSelected();
-				UISettings.store(UISettings.USE_NATIVE_PLAF, nativeLF);
-				JOptionPane.showMessageDialog(parentComponent, "The look and feel has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
+	public static void initPLAFMenuItem(final JMenu plafMenu, final Component parentComponent) {
+		ButtonGroup buttonGroup = new ButtonGroup();
+		for (PLAF p: PLAF.values()) {
+			JRadioButtonMenuItem item = new JRadioButtonMenuItem();
+			buttonGroup.add(item);
+			if (p == plaf) {
+				item.setSelected(true);
 			}
-		});
+			item.setText(p.description);
+			item.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					UISettings.store(UISettings.USE_NATIVE_PLAF, p);
+					JOptionPane.showMessageDialog(parentComponent, "The look and feel has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
+				}
+			});
+			plafMenu.add(item);
+		}
 	}
 
 	public static String format(long number) {
@@ -1802,18 +1818,6 @@ public class UIUtil {
 		return sqlEditorFont;
 	}
 
-	public static void initNimbusTitledBorder() {
-       try {
-    	   UIManager.put("TitledBorder.border", new BorderUIResource((Border) UIManager.get("TitledBorder.border")) {
-               public Insets getBorderInsets(Component c)       {
-               	return new Insets(4, 4, 6, 4);
-               }
-           });
-       } catch (Exception e) {
-    	   // ignore
-       }
-	}
-
 	private static List<Line> lines;
 
 	public static synchronized List<Line> loadDriverList(Window parent) {
@@ -1967,4 +1971,109 @@ public class UIUtil {
 		hiddenWindows.clear();
 	}
 	
+	public static enum PLAF {
+		FLAT("Flat"), NIMBUS("Nimbus"), SYSTEM("System");
+		
+		PLAF(String description) {
+			this.description = description;
+		}
+		public final String description;
+	};
+	
+	public static PLAF plaf = PLAF.SYSTEM;
+	
+	public static void initPLAF() {
+		Object plafSetting = UISettings.restore(UISettings.USE_NATIVE_PLAF);
+		plaf = PLAF.FLAT;
+		if (Boolean.FALSE.equals(plafSetting)) {
+			plaf = PLAF.FLAT;
+			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf);
+		} else if (Boolean.TRUE.equals(plafSetting)) {
+			plaf = PLAF.SYSTEM;
+			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf);
+		} else if (plafSetting instanceof PLAF) {
+			plaf = (PLAF) plafSetting;
+		}
+		switch (plaf) {
+		case SYSTEM:
+			// nothing to do
+			break;
+		case FLAT:
+			try {
+				FlatLightLaf.setup();
+				initMacKeyStrokes();
+			} catch (Exception x) {
+				UIUtil.showException(null, "Error", x);
+			}
+			break;
+		case NIMBUS:
+			try {
+				for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+					if ("Nimbus".equals(info.getName())) {
+						UIManager.put("nimbusBase", new Color(66, 118, 187)); // orig. color: 51, 98, 140
+						UIManager.setLookAndFeel(info.getClassName());
+						Environment.nimbus = true;
+						break;
+					}
+				}
+				initMacKeyStrokes();
+
+				((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"),
+						"pressed");
+				((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"),
+						"released");
+				Object dSize = UIManager.get("SplitPane.dividerSize");
+				if (Integer.valueOf(10).equals(dSize)) {
+					UIManager.put("SplitPane.dividerSize", Integer.valueOf(14));
+				}
+
+				if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
+					UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
+				}
+				UIManager.put("TitledBorder.border", new BorderUIResource((Border) UIManager.get("TitledBorder.border")) {
+					public Insets getBorderInsets(Component c)       {
+						return new Insets(4, 4, 6, 4);
+					}
+				});
+			} catch (Exception x) {
+				UIUtil.showException(null, "Error", x);
+			}
+			break;
+		}
+	}
+
+	public static void initMacKeyStrokes() {
+		try {
+			if (System.getProperty("os.name", "").startsWith("Mac")) {
+				addOSXKeyStrokes((InputMap) UIManager.get("EditorPane.focusInputMap"));
+				addOSXKeyStrokes((InputMap) UIManager.get("FormattedTextField.focusInputMap"));
+				addOSXKeyStrokes((InputMap) UIManager.get("PasswordField.focusInputMap"));
+				addOSXKeyStrokes((InputMap) UIManager.get("TextField.focusInputMap"));
+				addOSXKeyStrokes((InputMap) UIManager.get("TextPane.focusInputMap"));
+				addOSXKeyStrokes((InputMap) UIManager.get("TextArea.focusInputMap"));
+				addOSXKeyStrokesList((InputMap) UIManager.get("Table.ancestorInputMap"));
+				addOSXKeyStrokesList((InputMap) UIManager.get("Tree.focusInputMap"));
+			}
+		} catch (Throwable t) {
+			// ignore
+		}
+	}
+
+
+	private static void addOSXKeyStrokes(InputMap inputMap) {
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK),
+				DefaultEditorKit.copyAction);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK),
+				DefaultEditorKit.cutAction);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK),
+				DefaultEditorKit.pasteAction);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK),
+				DefaultEditorKit.selectAllAction);
+	}
+
+	private static void addOSXKeyStrokesList(InputMap inputMap) {
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), "copy");
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK), "selectAll");
+	}
+
 }

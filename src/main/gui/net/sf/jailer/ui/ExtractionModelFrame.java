@@ -16,7 +16,6 @@
 package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Point;
@@ -24,7 +23,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,7 +48,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
-import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -61,10 +58,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.WindowConstants;
-import javax.swing.text.DefaultEditorKit;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
@@ -170,7 +164,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				}
 			}
 		});
-		UIUtil.initPLAFMenuItem(nativeLAFCheckBoxMenuItem, this);
+		UIUtil.initPLAFMenuItem(plafMenu, this);
         UpdateInfoManager.checkUpdateAvailability(updateInfoPanel, updateInfoLabel, downloadMenuItem, "S");
         initAnimationSteptime();
 		isHorizontalLayout = isHorizonal;
@@ -432,7 +426,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptime200 = new javax.swing.JRadioButtonMenuItem();
         steptime500 = new javax.swing.JRadioButtonMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
-        nativeLAFCheckBoxMenuItem = new javax.swing.JCheckBoxMenuItem();
+        plafMenu = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
         helpContent = new javax.swing.JMenuItem();
         tutorial = new javax.swing.JMenuItem();
@@ -993,13 +987,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu5.add(jMenu4);
         jMenu5.add(jSeparator6);
 
-        nativeLAFCheckBoxMenuItem.setText("Native Look&Feel");
-        nativeLAFCheckBoxMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nativeLAFCheckBoxMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu5.add(nativeLAFCheckBoxMenuItem);
+        plafMenu.setText("Look and Feel");
+        jMenu5.add(plafMenu);
 
         jMenuBar2.add(jMenu5);
 
@@ -2032,9 +2021,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         updateInfoPanel.setVisible(false);
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void nativeLAFCheckBoxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nativeLAFCheckBoxMenuItemActionPerformed
-    }//GEN-LAST:event_nativeLAFCheckBoxMenuItemActionPerformed
-
     private void downloadMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadMenuItemActionPerformed
     	UpdateInfoManager.download();
     }//GEN-LAST:event_downloadMenuItemActionPerformed
@@ -2246,32 +2232,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				if (!Boolean.TRUE.equals(UISettings.restore(UISettings.USE_NATIVE_PLAF))) {
-					try {
-						for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-							UIManager.put("nimbusBase", new Color(66, 118, 187)); // orig. color: 51, 98, 140
-            				if ("Nimbus".equals(info.getName())) {
-					            UIManager.setLookAndFeel(info.getClassName());
-                                Environment.nimbus = true;
-					            break;
-					        }
-					    }
-						customizeNimbus();
-						initMacKeyStrokes();
-	                    ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
-	                    ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
-	                    Object dSize = UIManager.get("SplitPane.dividerSize");
-	                    if (Integer.valueOf(10).equals(dSize)) {
-	                    	UIManager.put("SplitPane.dividerSize", Integer.valueOf(14));
-	                    }
-
-	                    if (UIManager.get("InternalFrame:InternalFrameTitlePane[Enabled].textForeground") instanceof Color) {
-	                    	UIManager.put("InternalFrame:InternalFrameTitlePane[Enabled].textForeground", Color.BLUE);
-	                    }
-	                    UIUtil.initNimbusTitledBorder();
-	                } catch (Exception x) {
-					}
-				}
+				UIUtil.initPLAF();
 
 				String file = null;
 				try {
@@ -2287,37 +2248,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					UIUtil.showException(null, "Error", e);
 					UIUtil.checkTermination();
 				}
-			}
-			private void initMacKeyStrokes() {
-				try {
-					if (System.getProperty("os.name", "").startsWith("Mac")) {
-						addOSXKeyStrokes((InputMap) UIManager.get("EditorPane.focusInputMap"));
-						addOSXKeyStrokes((InputMap) UIManager.get("FormattedTextField.focusInputMap"));
-						addOSXKeyStrokes((InputMap) UIManager.get("PasswordField.focusInputMap"));
-						addOSXKeyStrokes((InputMap) UIManager.get("TextField.focusInputMap"));
-						addOSXKeyStrokes((InputMap) UIManager.get("TextPane.focusInputMap"));
-						addOSXKeyStrokes((InputMap) UIManager.get("TextArea.focusInputMap"));
-						addOSXKeyStrokesList((InputMap) UIManager.get("Table.ancestorInputMap"));
-						addOSXKeyStrokesList((InputMap) UIManager.get("Tree.focusInputMap"));
-					}
-				} catch (Throwable t) {
-					// ignore
-				}
-			}
-
-			private void addOSXKeyStrokes(InputMap inputMap) {
-				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK),
-						DefaultEditorKit.copyAction);
-				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK),
-						DefaultEditorKit.cutAction);
-				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK),
-						DefaultEditorKit.pasteAction);
-				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK),
-						DefaultEditorKit.selectAllAction);
-			}
-			private void addOSXKeyStrokesList(InputMap inputMap) {
-				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), "copy");
-				inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK), "selectAll");
 			}
 		});
 	}
@@ -2546,10 +2476,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator8;
     private javax.swing.JMenuItem load;
     javax.swing.JMenuItem modelMigrationMenuItem;
-    private javax.swing.JCheckBoxMenuItem nativeLAFCheckBoxMenuItem;
     private javax.swing.JMenuItem newModel;
     private javax.swing.JMenuItem openDataBrowserItem;
     private javax.swing.JMenuItem openDataModelEditor;
+    private javax.swing.JMenu plafMenu;
     private javax.swing.JMenuItem queryBuilder;
     javax.swing.JMenuItem redoMenuItem;
     private javax.swing.JMenuItem refresh;

@@ -505,14 +505,6 @@
             <Property name="text" type="java.lang.String" value="Settings"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="nativeLAFCheckBoxMenuItem">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Native Look&amp;Feel"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="nativeLAFCheckBoxMenuItemActionPerformed"/>
-              </Events>
-            </MenuItem>
             <MenuItem class="javax.swing.JCheckBoxMenuItem" name="autoLayoutMenuItem">
               <Properties>
                 <Property name="selected" type="boolean" value="true"/>
@@ -522,6 +514,13 @@
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
               </AuxValues>
             </MenuItem>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator16">
+            </MenuItem>
+            <Menu class="javax.swing.JMenu" name="plafMenu">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Look and Feel"/>
+              </Properties>
+            </Menu>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="helpMenu">

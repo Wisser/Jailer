@@ -2105,4 +2105,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	private static final long serialVersionUID = -3983034803834547687L;
 	
+	// TODO
+	// TODO vereinfachen, "recent x" weg. Historie in eigenem Tab oder tabellenartig. Neue Connection erlauben oder Hinweis. Tabwahl nicht persistieren.
 }
