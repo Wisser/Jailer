@@ -7404,21 +7404,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (result.y >= 8) {
 			result.y = 2;
 		}
-		if (Environment.nimbus) {
-			RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
-			boolean withSortIcon = false;
-			if (rowSorter != null) {
-				int viewColumn = rowsTable.convertColumnIndexToModel(column);
-				List<? extends SortKey> sKeys = rowSorter.getSortKeys();
-				if (!sKeys.isEmpty()) {
-					if (sKeys.get(0).getSortOrder() != SortOrder.UNSORTED && sKeys.get(0).getColumn() == viewColumn) {
-						withSortIcon = true;
+		switch (UIUtil.plaf) {
+			case SYSTEM:
+				// nothing to do
+				break;
+			case FLAT:
+				// nothing to do
+				break;
+			case NIMBUS:
+				RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
+				boolean withSortIcon = false;
+				if (rowSorter != null) {
+					int viewColumn = rowsTable.convertColumnIndexToModel(column);
+					List<? extends SortKey> sKeys = rowSorter.getSortKeys();
+					if (!sKeys.isEmpty()) {
+						if (sKeys.get(0).getSortOrder() != SortOrder.UNSORTED && sKeys.get(0).getColumn() == viewColumn) {
+							withSortIcon = true;
+						}
 					}
 				}
-			}
-			if (withSortIcon) {
-				result.x -= 12;
-			}
+				if (withSortIcon) {
+					result.x -= 12;
+				}
+				break;
 		}
 		return result;
 	}

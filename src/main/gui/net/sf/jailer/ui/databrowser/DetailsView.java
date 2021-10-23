@@ -66,7 +66,6 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.util.MovePanel;
@@ -443,8 +442,16 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					if (i == 0) {
 						nextFocusComponentForLastField = f;
 					}
-					if (Environment.nimbus) {
-						f.setBorder(BorderFactory.createLineBorder(isEditable? new Color(255, 242, 240) : Color.white));
+					switch (UIUtil.plaf) {
+						case SYSTEM:
+							// nothing to do
+							break;
+						case FLAT:
+							// nothing to do
+							break;
+						case NIMBUS:
+							f.setBorder(BorderFactory.createLineBorder(isEditable? new Color(255, 242, 240) : Color.white));
+							break;
 					}
 					f.addKeyListener(new KeyListener() {
 						@Override

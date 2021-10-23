@@ -33,7 +33,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -314,7 +313,5 @@ public class Environment {
 	}
 
 	public static int state;
-
-	public static boolean nimbus = false;
 
 }

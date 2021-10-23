@@ -44,7 +44,6 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
@@ -80,7 +79,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -109,7 +107,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -389,8 +386,16 @@ public class DataBrowser extends javax.swing.JFrame {
 		gridBagConstraints.gridx = 1;
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		if (Environment.nimbus) {
-			gridBagConstraints.insets = new Insets(3, 0, 0, 0);
+		switch (UIUtil.plaf) {
+			case SYSTEM:
+				// nothing to do
+				break;
+			case FLAT:
+				// nothing to do
+				break;
+			case NIMBUS:
+				gridBagConstraints.insets = new Insets(3, 0, 0, 0);
+				break;
 		}
 		jPanel4.add(searchPanelContainer, gridBagConstraints);
 
@@ -686,8 +691,18 @@ public class DataBrowser extends javax.swing.JFrame {
 						}
 					}
 					((JLabel) render).setIcon(icon);
-					if (Environment.nimbus && ((JLabel) render).getText() != null) {
-						((JLabel) render).setText(UIUtil.toHTML(((JLabel) render).getText(), 100));
+					switch (UIUtil.plaf) {
+						case SYSTEM:
+							// nothing to do
+							break;
+						case FLAT:
+							// nothing to do
+							break;
+						case NIMBUS:
+							if (((JLabel) render).getText() != null) {
+								((JLabel) render).setText(UIUtil.toHTML(((JLabel) render).getText(), 100));
+							}
+							break;
 					}
 				}
 				return render;

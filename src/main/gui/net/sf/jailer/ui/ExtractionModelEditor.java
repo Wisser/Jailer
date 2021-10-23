@@ -2922,8 +2922,18 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 		revArrow.setOpaque(false);
 
-		if (Environment.nimbus && ((JLabel) component).getText() != null) {
-			((JLabel) component).setText(UIUtil.toHTML(((JLabel) component).getText(), 100));
+		switch (UIUtil.plaf) {
+			case SYSTEM:
+				// nothing to do
+				break;
+			case FLAT:
+				// nothing to do
+				break;
+			case NIMBUS:
+				if (((JLabel) component).getText() != null) {
+					((JLabel) component).setText(UIUtil.toHTML(((JLabel) component).getText(), 100));
+				}
+				break;
 		}
 		
 		panel.add(revArrow, new java.awt.GridBagConstraints());

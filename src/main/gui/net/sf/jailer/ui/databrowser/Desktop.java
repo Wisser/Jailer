@@ -118,6 +118,7 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
@@ -1563,7 +1564,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	protected Color getAssociationColor1(Association association) {
-		Color color = Environment.nimbus? new java.awt.Color(140, 150, 255) : new java.awt.Color(0, 120, 255);
+		Color color = UIUtil.plaf == PLAF.NIMBUS? new java.awt.Color(140, 150, 255) : new java.awt.Color(0, 120, 255);
 		if (association.isIgnored()) {
 			color = new java.awt.Color(153, 153, 153);
 		} else if (association.isInsertDestinationBeforeSource()) {
@@ -1575,7 +1576,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private Color getAssociationColor2(Association association) {
-		Color color = Environment.nimbus? new java.awt.Color(100, 160, 255) : new java.awt.Color(0, 60, 235);
+		Color color = UIUtil.plaf == PLAF.NIMBUS? new java.awt.Color(100, 160, 255) : new java.awt.Color(0, 60, 235);
 		if (association.isIgnored()) {
 			color = new java.awt.Color(133, 133, 153);
 		} else if (association.isInsertSourceBeforeDestination()) {
@@ -2243,7 +2244,7 @@ public abstract class Desktop extends JDesktopPane {
 									lastY = y;
 									lastInClosure = link.inClosure;
 									Color cl = pbg ? Color.white : light? link.color1 : link.color2;
-									if (!Environment.nimbus) {
+									if (UIUtil.plaf != PLAF.NIMBUS) {
 										if (cl.getGreen() > cl.getBlue() && cl.getGreen() >= cl.getRed()) {
 //											if (link.restricted) {
 												cl = new Color(
@@ -2259,7 +2260,7 @@ public abstract class Desktop extends JDesktopPane {
 													brighter(cl.getBlue(), f));
 										}
 									}
-									final Color color = link.restricted && Environment.nimbus? cl.darker() : cl;
+									final Color color = link.restricted && UIUtil.plaf == PLAF.NIMBUS? cl.darker() : cl;
 									final Point2D start = new Point2D.Double(link.x2, link.y2);
 									final Point2D end = new Point2D.Double(link.x1, link.y1);
 									final int ir = dir > 0? i : linksToRender.size() - 1 - i;
@@ -2329,7 +2330,7 @@ public abstract class Desktop extends JDesktopPane {
 			Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inTempClosure, boolean inClosureRootPath,
 			boolean isToParentLink, boolean doPaint) {
 		if (doPaint) {
-			if (Environment.nimbus) {
+			if (UIUtil.plaf == PLAF.NIMBUS) {
 				g2d.setColor(inTempClosure && !pbg? new Color(220, 220, 255) : color);
 			} else {
 				g2d.setColor(inTempClosure && pbg? new Color(200, 100, 200) : color);
