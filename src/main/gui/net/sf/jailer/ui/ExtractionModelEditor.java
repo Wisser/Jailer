@@ -1059,6 +1059,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					if (extractionModelFrame.theSession == null) {
 						BasicDataSource dataSource = new BasicDataSource(extractionModelFrame.dbConnectionDialog.currentConnection.driverClass, extractionModelFrame.dbConnectionDialog.currentConnection.url, extractionModelFrame.dbConnectionDialog.currentConnection.user, extractionModelFrame.dbConnectionDialog.getPassword(), 0, extractionModelFrame.dbConnectionDialog.currentJarURLs());
 						extractionModelFrame.theSession = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, windowAncestor);
+						if (extractionModelFrame.theSession == null) {
+							return;
+						}
 					}
 					String initialCondition = initialText.get();
 					WhereConditionEditorPanel wcep = new WhereConditionEditorPanel(windowAncestor,
