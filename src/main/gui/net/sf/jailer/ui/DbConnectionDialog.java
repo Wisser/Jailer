@@ -1331,7 +1331,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     /**
      * Try to automatically connect to the db specified via CLI.
      */
-	public void autoConnect() {
+	public void autoConnect(boolean withTest) {
 		ConnectionInfo ci = new ConnectionInfo();
 		UICommandLine cli = CommandLineInstance.getInstance();
 		
@@ -1349,7 +1349,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (ci.driverClass != null
 				&& ci.url != null
 				&& ci.user != null) {
-			if (testConnection(parent, ci, null)) {
+			if (!withTest || testConnection(parent, ci, null)) {
 				currentConnection = ci;
 				executionContext.setCurrentConnectionAlias(currentConnection.alias);
 				isConnected = true;
