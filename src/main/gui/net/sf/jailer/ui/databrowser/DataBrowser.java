@@ -3082,7 +3082,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog,
 					DataBrowserContext.getAppName(), executionContext);
 		}
-		dbConnectionDialog.autoConnect();
+		dbConnectionDialog.autoConnect(false);
 		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
 			try {
 				dataBrowser.setConnection(dbConnectionDialog);
