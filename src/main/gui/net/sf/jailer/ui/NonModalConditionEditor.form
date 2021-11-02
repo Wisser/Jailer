@@ -78,7 +78,7 @@
           <SubComponents>
             <Component class="javax.swing.JButton" name="okButton">
               <Properties>
-                <Property name="text" type="java.lang.String" value="    Ok    "/>
+                <Property name="text" type="java.lang.String" value="Ok"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="okButtonActionPerformed"/>
@@ -116,7 +116,7 @@
             </Component>
             <Component class="javax.swing.JButton" name="cancelButton">
               <Properties>
-                <Property name="text" type="java.lang.String" value=" Cancel "/>
+                <Property name="text" type="java.lang.String" value="Cancel"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
@@ -160,7 +160,7 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel2">
               <Properties>
-                <Property name="text" type="java.lang.String" value="&lt;html&gt;  &lt;i&gt;Ctrl+Space&lt;/i&gt; for code completion. &lt;i&gt;Ctrl+Enter&lt;/i&gt; for Ok.&lt;i&gt;Esc&lt;/i&gt; for Cancel.&lt;/html&gt;"/>
+                <Property name="text" type="java.lang.String" value="&lt;html&gt;  &lt;i&gt;Ctrl+Space&lt;/i&gt; for code completion. &lt;i&gt;Ctrl+Enter&lt;/i&gt; for Ok. &lt;i&gt;Esc&lt;/i&gt; for Cancel.&lt;/html&gt;"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

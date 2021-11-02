@@ -1550,6 +1550,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         editorPanel.setLayout(new java.awt.GridLayout(1, 4));
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIUtil.defaultTitleFont()));
+        jPanel3.setToolTipText("Specify here where to start collecting the rows to be exported.");
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
         jPanel9.setLayout(null);
@@ -1652,6 +1653,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         jPanel10.add(exportFormat, gridBagConstraints);
 
         exportButton.setText("Export");
@@ -1660,8 +1662,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel10.add(exportButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

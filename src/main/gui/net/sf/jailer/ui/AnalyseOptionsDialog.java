@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
@@ -100,6 +101,9 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         
         schemaComboBox.setMaximumRowCount(20);
 		AutoCompletion.enable(schemaComboBox);
+		
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		
 		List<Line> tables = new CsvFile(new File(DataModel.getTablesFile(executionContext))).getLines();
 		for (Line table: tables) {
@@ -401,7 +405,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        okButton.setText(" Ok ");
+        okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -415,7 +419,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel1.add(okButton, gridBagConstraints);
 
-        cancelButton.setText(" Cancel ");
+        cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -591,5 +595,13 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 
 	private static final long serialVersionUID = 7293743969854047598L;
-
+	
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 }

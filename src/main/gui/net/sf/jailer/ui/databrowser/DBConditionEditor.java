@@ -77,6 +77,9 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		setUndecorated(true);
 		initComponents();
 		
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		
 		addWindowFocusListener(new WindowFocusListener() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
@@ -200,7 +203,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel2.add(toSubQueryButton, gridBagConstraints);
 
-        okButton.setText("    Ok    ");
+        okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -593,10 +596,14 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	private static final long serialVersionUID = -5169934807182707970L;
 
 	private static ImageIcon clearIcon;
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
 	
 	static {
         // load images
-        clearIcon = UIUtil.readImage("/clear.png");
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	    clearIcon = UIUtil.readImage("/clear.png");
 	}
 
 }

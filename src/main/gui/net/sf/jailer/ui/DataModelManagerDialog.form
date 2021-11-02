@@ -135,7 +135,7 @@
                             </Component>
                             <Component class="javax.swing.JButton" name="okButton">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value=" OK "/>
+                                <Property name="text" type="java.lang.String" value="Ok"/>
                               </Properties>
                               <Events>
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="okButtonActionPerformed"/>
@@ -148,7 +148,7 @@
                             </Component>
                             <Component class="javax.swing.JButton" name="jButton2">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value=" Cancel "/>
+                                <Property name="text" type="java.lang.String" value="Cancel"/>
                               </Properties>
                               <Events>
                                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>

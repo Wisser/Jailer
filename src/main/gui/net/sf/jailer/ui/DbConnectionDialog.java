@@ -261,6 +261,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		this.showOnlyRecentyUsedConnections = showOnlyRecentyUsedConnections;
 		loadConnectionList(showOnlyRecentyUsedConnections);
 		initComponents();
+		jButton1.setIcon(UIUtil.scaleIcon(jButton1, okIcon));
+		closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
 		restoreLastSessionButton.setVisible(false);
 		connectionsTable.setAutoCreateRowSorter(true);
 
@@ -510,7 +512,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				warnOnConnect = false;
 				jButton1.setEnabled(false);
 			}
-			jButton1.setIcon(!warnOnConnect? null : getScaledWarnIcon());
+			jButton1.setIcon(!warnOnConnect? UIUtil.scaleIcon(jButton1, okIcon) : getScaledWarnIcon());
 		} finally {
 			inRefresh = false;
 		}
@@ -752,7 +754,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 16);
         jPanel2.add(restoreLastSessionButton, gridBagConstraints);
 
-        closeButton.setText(" Cancel ");
+        closeButton.setText("Cancel");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
@@ -765,7 +767,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
         jPanel2.add(closeButton, gridBagConstraints);
 
-        jButton1.setText(" Connect ");
+        jButton1.setText("Connect");
         jButton1.setEnabled(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1364,11 +1366,17 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
     private static ImageIcon warnIcon;
     private static ImageIcon scaledWarnIcon;
+    private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
     static {
         // load images
     	warnIcon = UIUtil.readImage("/wanr.png");
+	  	okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
 	}
-
+    
+    
     // TODO make field "driver-class" initially empty and optional. If empty -> derive it from driver.csv (always, not only at end of dialog)
     
     // TODO derive (driver-class and)? libs/downloads libs from url (reuse wizzard/driver.csv knowledge)

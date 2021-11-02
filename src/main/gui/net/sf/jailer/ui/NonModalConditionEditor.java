@@ -163,6 +163,9 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(editorPane);
 		
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		
 		clearButton.setIcon(UIUtil.scaleIcon(clearButton, clearIcon));
 		editorPane.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
@@ -318,7 +321,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        okButton.setText("    Ok    ");
+        okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -351,7 +354,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         jPanel3.add(toSubQueryButton, gridBagConstraints);
 
-        cancelButton.setText(" Cancel ");
+        cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -389,7 +392,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         jPanel4.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setText("<html>  <i>Ctrl+Space</i> for code completion. <i>Ctrl+Enter</i> for Ok.<i>Esc</i> for Cancel.</html>");
+        jLabel2.setText("<html>  <i>Ctrl+Space</i> for code completion. <i>Ctrl+Enter</i> for Ok. <i>Esc</i> for Cancel.</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -706,10 +709,14 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 	private static final long serialVersionUID = -5169934807182707970L;
 
 	private static ImageIcon clearIcon;
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
 	
 	static {
         // load images
         clearIcon = UIUtil.readImage("/clear.png");
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
 	}
 
 }

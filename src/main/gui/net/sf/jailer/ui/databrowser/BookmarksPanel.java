@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -75,6 +76,9 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		this.desktop = desktop;
 		this.executionContext = executionContext;
 		initComponents();
+		
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
 		
 		nameTextField.addKeyListener(new KeyAdapter() {
 			@Override
@@ -310,7 +314,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(jPanel1, gridBagConstraints);
 
-        okButton.setText(" Ok ");
+        okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -323,7 +327,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(8, 2, 8, 2);
         add(okButton, gridBagConstraints);
 
-        closeButton.setText(" Cancel ");
+        closeButton.setText("Cancel");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
@@ -585,5 +589,14 @@ public class BookmarksPanel extends javax.swing.JPanel {
 	}
 	
 	// TODO improve UI
+
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 
 }

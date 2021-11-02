@@ -171,6 +171,9 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		additionalSubjectListEditor.setModel(subjects);
 		initComponents();
 		
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		
 		AutoCompletion.enable(detailsComboBox);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -403,7 +406,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        okButton.setText(" Ok ");
+        okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -649,7 +652,15 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	private ImageIcon conditionEditorIcon = null;
 
 	private boolean ok;
-
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
+	
 	{
 		// load image
 		conditionEditorIcon = UIUtil.readImage("/edit.png");

@@ -84,6 +84,9 @@ public class ConditionEditor extends EscapableDialog {
 
 		addOnPanel.setVisible(false);
 
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		
 		scalarSQIconToggleButton.setIcon(dropDownIcon);
 		scalarSQIconToggleButton.addActionListener(new ActionListener() {
 			@Override
@@ -221,7 +224,7 @@ public class ConditionEditor extends EscapableDialog {
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        okButton.setText(" Ok ");
+        okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -232,7 +235,7 @@ public class ConditionEditor extends EscapableDialog {
         gridBagConstraints.gridy = 1;
         jPanel3.add(okButton, gridBagConstraints);
 
-        cancelButton.setText(" Cancel ");
+        cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -537,8 +540,13 @@ public class ConditionEditor extends EscapableDialog {
 	private static ImageIcon redDotIcon;
 	private static ImageIcon blueDotIcon;
 	private static ImageIcon greenDotIcon;
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
 	static {
-		// load images
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
 		dropDownIcon = UIUtil.readImage("/dropdown.png");
 		redDotIcon = UIUtil.readImage("/reddot.gif");
 		blueDotIcon = UIUtil.readImage("/bluedot.gif");

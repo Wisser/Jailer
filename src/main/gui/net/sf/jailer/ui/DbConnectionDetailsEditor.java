@@ -158,6 +158,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		this.parent = parent;
 		this.needsTest = needsTest;
 		initComponents();
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		renameButton.setIcon(resetIcon);
 		renameButton.setText(null);
 		feedbackTimer = new Timer(4000, e -> {
@@ -665,7 +667,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        okButton.setText("  Ok  ");
+        okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -678,7 +680,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         jPanel2.add(okButton, gridBagConstraints);
 
-        cancelButton.setText(" Cancel ");
+        cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -1348,5 +1350,15 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		resetIcon = UIUtil.readImage("/reset.png");
 		warnIcon = UIUtil.readImage("/wanr.png");
     }
+
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+    static {
+        // load images
+    	okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
+
 	private static final long serialVersionUID = -492511696901313920L;
 }

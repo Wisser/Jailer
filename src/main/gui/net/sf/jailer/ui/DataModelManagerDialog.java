@@ -175,6 +175,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a bookmark.");
 		UIUtil.replace(infoBarLabeRecUsedlBookmark, infoBarRecUsedBookmark);
 
+		restoreButton.setIcon(resetIcon);
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		jButton2.setIcon(UIUtil.scaleIcon(jButton2, cancelIcon));
+		
 		if (!withLoadJMButton) {
 			jTabbedPane1.remove(loadJMPanel);
 		} else {
@@ -1248,7 +1252,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         jPanel4.add(browseButton, gridBagConstraints);
 
-        okButton.setText(" OK ");
+        okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -1259,7 +1263,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 0;
         jPanel4.add(okButton, gridBagConstraints);
 
-        jButton2.setText(" Cancel ");
+        jButton2.setText("Cancel");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
@@ -2105,10 +2109,27 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	private static final long serialVersionUID = -3983034803834547687L;
 	
+	private static ImageIcon resetIcon;
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+	static {
+		// load images
+		resetIcon = UIUtil.readImage("/reset.png");
+	   okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
+
 	// TODO
 	// TODO vereinfachen, "recent x" weg. Historie in eigenem Tab oder tabellenartig. Neue Connection erlauben oder Hinweis. Tabwahl nicht persistieren.
 	
 	// TODO
-	// TODO ok cancel icons
+	// TODO ok cancel icons, restore icon
+	
+	// TODO
+	// TODO anchor icon deutlicher
+	
+	// TODO
+	// TODO toolbar in sql console (meta data dialog)
 	
 }

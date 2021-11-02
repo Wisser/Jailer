@@ -17,6 +17,8 @@ package net.sf.jailer.ui;
 
 import java.io.File;
 
+import javax.swing.ImageIcon;
+
 import net.sf.jailer.JailerVersion;
 
 /**
@@ -58,6 +60,7 @@ public class About extends javax.swing.JDialog {
 		}
 		jTextField8.setText(path.getAbsolutePath());
 		
+		jButton1.setIcon(UIUtil.scaleIcon(jButton1, okIcon));
 		jButton1.grabFocus();
 	}
 
@@ -162,7 +165,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         getContentPane().add(jTextField3, gridBagConstraints);
 
-        jButton1.setText(" Ok ");
+        jButton1.setText("Ok");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -171,7 +174,9 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;
-        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         getContentPane().add(jButton1, gridBagConstraints);
 
@@ -316,8 +321,15 @@ public class About extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 	
 	private static final long serialVersionUID = -6499791486275376059L;
-
+	
+	private static ImageIcon okIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+	}
+	
 	// TODO
-	// JRE Requirement, deutlich machen, dass das nur bei non-msi/deb nötig
+	// JRE Requirement, deutlich machen, dass das nur bei non-msi/deb nï¿½tig
 
 }

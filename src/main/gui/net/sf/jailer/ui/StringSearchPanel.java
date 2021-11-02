@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -68,7 +67,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
-import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -571,6 +569,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		searchTextField.addKeyListener(keyListener);
 		searchList.addKeyListener(keyListener);
 		okButton.addKeyListener(keyListener);
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		
 		searchTextField.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
@@ -1009,7 +1008,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jLayeredPane1.add(searchTextField, gridBagConstraints);
 
-        okButton.setText("  Ok  ");
+        okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -1280,10 +1279,13 @@ public class StringSearchPanel extends javax.swing.JPanel {
     
     static private ImageIcon icon;
     static private ImageIcon icon2;
-    static {
+    private static ImageIcon okIcon;
+    
+	static {
 		// load images
 		icon = UIUtil.readImage("/search.png");
 		icon2 = UIUtil.readImage("/search2.png");
-	}
+		okIcon = UIUtil.readImage("/buttonok.png");
+ 	}
 }
 
