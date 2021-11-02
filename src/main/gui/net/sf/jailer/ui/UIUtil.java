@@ -2000,7 +2000,18 @@ public class UIUtil {
 				break;
 			case FLAT:
 				try {
-					FlatLightLaf.setup();
+                    // UIManager.put("Component.arrowType", "triangle");
+                    UIManager.put("SplitPane.dividerSize", 8);
+                    UIManager.put("SplitPaneDivider.gripDotSize", 6);
+//                    UIManager.put("SplitPane.oneTouchButtonOffset", 32);
+                    UIManager.put( "SplitPane.oneTouchButtonSize", 10 );
+                    UIManager.put("TitledBorder.border", ""); // TODO "Closure" Titel weg
+                    UIManager.put( "Component.arrowType", "triangle" );
+                    UIManager.put( "ScrollBar.showButtons", true );
+                    UIManager.put( "ScrollBar.width", 14 );
+                    UIManager.put( "InternalFrame.borderMargins", new Insets(1,1,1,1));
+ 
+                    FlatLightLaf.setup();
 					initMacKeyStrokes();
 					break;
 				} catch (Exception x) {
