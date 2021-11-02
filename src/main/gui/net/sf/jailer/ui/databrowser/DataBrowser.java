@@ -146,6 +146,7 @@ import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.UIUtil.ResultConsumer;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
@@ -360,8 +361,6 @@ public class DataBrowser extends javax.swing.JFrame {
 		linkToolbarButton(tbZoom3Button, mediumLayoutRadioButtonMenuItem);
 		linkToolbarButton(tbZoom4Button, largeLayoutRadioButtonMenuItem);
 
-		jTabbedPane1.setTabComponentAt(0, new JLabel("Closure", closureIcon, JLabel.LEFT));
-
 		searchPanelContainer.getParent().remove(searchPanelContainer);
 		searchPanelContainer = new JPanel() {
 			final int WIDTH = 260;
@@ -401,7 +400,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		searchBarToggleButton.setSelected(!Boolean.FALSE.equals(UISettings.restore("searchBarToggleButton")));
 		searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
-		whereConditionEditorCloseButton = new SmallButton(closeIcon, true) {
+		whereConditionEditorCloseButton = new SmallButton(closeIcon, false) {
 			@Override
 			protected void onClick(MouseEvent e) {
 				searchBarToggleButton.doClick();
@@ -493,11 +492,12 @@ public class DataBrowser extends javax.swing.JFrame {
 				openTableButtonActionPerformed(null);
 			}
 		});
-		navigationPanel.add(searchButton, gridBagConstraints);
+		jToolBar2.add(searchButton);
 
 		tablesComboBox.setVisible(false);
 		openTableButton.setVisible(false);
 		searchButton.setText("Open Table");
+		searchButton.setIcon(tableIcon);
 
 		metaDataDetailsPanel = createMetaDataDetailsPanel(executionContext);
 		metaDataViewPanel.add(metaDataDetailsPanel);
@@ -936,7 +936,9 @@ public class DataBrowser extends javax.swing.JFrame {
 						inQueue = false;
 						boolean vis = searchPanelContainer.isVisible();
 						if (wasVisible == null || wasVisible.booleanValue() != vis) {
-							desktop.updateMinX();
+							if (UIUtil.plaf != PLAF.FLAT) {
+								desktop.updateMinX();
+							}
 						}
 						wasVisible = vis;
 					});
@@ -1488,7 +1490,6 @@ public class DataBrowser extends javax.swing.JFrame {
         tbZoom2Button = new javax.swing.JToggleButton();
         tbZoom3Button = new javax.swing.JToggleButton();
         tbZoom4Button = new javax.swing.JToggleButton();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
         closurePanel = new javax.swing.JPanel();
         consoleDummyPanel = new javax.swing.JPanel();
         addSQLConsoleTab = new javax.swing.JPanel();
@@ -1499,6 +1500,7 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationTreeScrollPane = new javax.swing.JScrollPane();
         navigationTree = new javax.swing.JTree();
         outLinePanel = new javax.swing.JPanel();
+        jToolBar2 = new javax.swing.JToolBar();
         openTableButton = new javax.swing.JButton();
         tablesCardPanel = new javax.swing.JPanel();
         tablesPanel = new javax.swing.JPanel();
@@ -1681,14 +1683,14 @@ public class DataBrowser extends javax.swing.JFrame {
 
         dependsOn.setFont(dependsOn.getFont().deriveFont(dependsOn.getFont().getSize()+1f));
         dependsOn.setForeground(new java.awt.Color(170, 0, 0));
-        dependsOn.setText(" depends on (has parent) ");
+        dependsOn.setText(" Parent (depends on) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(dependsOn, gridBagConstraints);
 
         hasDependent.setFont(hasDependent.getFont().deriveFont(hasDependent.getFont().getSize()+1f));
         hasDependent.setForeground(new java.awt.Color(0, 112, 0));
-        hasDependent.setText("  has dependent (has child) ");
+        hasDependent.setText("  Child (has dependent) ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(hasDependent, gridBagConstraints);
@@ -1770,7 +1772,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jSplitPane1.setDividerLocation(340);
         jSplitPane1.setContinuousLayout(true);
-        jSplitPane1.setOneTouchExpandable(true);
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
         jSplitPane1.setLeftComponent(jPanel3);
@@ -1949,9 +1950,7 @@ public class DataBrowser extends javax.swing.JFrame {
         desktopSplitPane.setTopComponent(jPanel4);
 
         closurePanel.setLayout(new java.awt.GridBagLayout());
-        jTabbedPane1.addTab("tab1", closurePanel);
-
-        desktopSplitPane.setRightComponent(jTabbedPane1);
+        desktopSplitPane.setBottomComponent(closurePanel);
 
         workbenchTabbedPane.addTab("Desktop", desktopSplitPane);
         workbenchTabbedPane.addTab("SQL Console", consoleDummyPanel);
@@ -2001,19 +2000,26 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         navigationPanel.add(outLinePanel, gridBagConstraints);
 
+        jToolBar2.setFloatable(false);
+        jToolBar2.setRollover(true);
+
         openTableButton.setText("Open");
         openTableButton.setToolTipText("Open table browser for the selected table");
+        openTableButton.setFocusable(false);
+        openTableButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        openTableButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         openTableButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openTableButtonActionPerformed(evt);
             }
         });
+        jToolBar2.add(openTableButton);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        navigationPanel.add(openTableButton, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        navigationPanel.add(jToolBar2, gridBagConstraints);
 
         tableTreesTabbedPane.addTab("Navigation", navigationPanel);
 
@@ -3370,9 +3376,9 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane4;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JToolBar jToolBar2;
     private javax.swing.JTree jTree1;
     private javax.swing.JMenu jviewMenu;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;

@@ -316,4 +316,8 @@ public class About extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
 	
 	private static final long serialVersionUID = -6499791486275376059L;
+
+	// TODO
+	// JRE Requirement, deutlich machen, dass das nur bei non-msi/deb nötig
+
 }

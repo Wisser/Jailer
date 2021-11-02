@@ -79,6 +79,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.StringSearchPanel.AdditionalComponentFactory;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.pathfinder.HistoryPanel;
 import net.sf.jailer.ui.pathfinder.PathFinder;
 import net.sf.jailer.ui.pathfinder.PathFinder.Result;
@@ -486,6 +487,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
 		searchComboBox.setMaximumRowCount(30);
 
+		UIUtil.invokeLater(12, () -> jSplitPane1.setDividerLocation(0.75));
+		
 		final TableCellRenderer defaultTableCellRenderer = closureTable.getDefaultRenderer(String.class);
 		closureTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 			private Font font = new JLabel("normal").getFont();
@@ -824,7 +827,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	private final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 	private final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 	private final Color BG3 = new Color(255, 255, 240);
-	private final Color BG4 = new Color(220, 220, 220);
+	private final Color BG4 = UIUtil.plaf == PLAF.FLAT? new Color(242, 242, 242) : new Color(220, 220, 220);
 	private final Color BG5 = new Color(255, 240, 240);
 
 	/**

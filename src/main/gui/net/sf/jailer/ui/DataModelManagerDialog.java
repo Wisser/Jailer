@@ -2107,4 +2107,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	
 	// TODO
 	// TODO vereinfachen, "recent x" weg. Historie in eigenem Tab oder tabellenartig. Neue Connection erlauben oder Hinweis. Tabwahl nicht persistieren.
+	
+	// TODO
+	// TODO ok cancel icons
+	
 }

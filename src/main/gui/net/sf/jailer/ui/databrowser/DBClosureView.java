@@ -77,6 +77,7 @@ import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.StringSearchPanel.AdditionalComponentFactory;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.pathfinder.HistoryPanel;
 import net.sf.jailer.ui.pathfinder.PathFinder;
@@ -945,7 +946,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
         final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
         final Color BG3 = new Color(255, 255, 240);
-        final Color BG4 = new Color(220, 220, 220);
+        final Color BG4 = UIUtil.plaf == PLAF.FLAT? new Color(242, 242, 242) : new Color(220, 220, 220);
         final Color BG5 = new Color(255, 240, 240);
         bgColor.clear();
 

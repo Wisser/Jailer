@@ -2005,11 +2005,11 @@ public class UIUtil {
                     UIManager.put("SplitPaneDivider.gripDotSize", 6);
 //                    UIManager.put("SplitPane.oneTouchButtonOffset", 32);
                     UIManager.put( "SplitPane.oneTouchButtonSize", 10 );
-                    UIManager.put("TitledBorder.border", ""); // TODO "Closure" Titel weg
+                    UIManager.put("TitledBorder.border", "");
                     UIManager.put( "Component.arrowType", "triangle" );
                     UIManager.put( "ScrollBar.showButtons", true );
                     UIManager.put( "ScrollBar.width", 14 );
-                    UIManager.put( "InternalFrame.borderMargins", new Insets(1,1,1,1));
+                    UIManager.put( "InternalFrame.borderMargins", new Insets(3,4,1,1));
  
                     FlatLightLaf.setup();
 					initMacKeyStrokes();
