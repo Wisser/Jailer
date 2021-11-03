@@ -22,6 +22,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
@@ -42,6 +43,8 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
      */
     public ConcurrentTaskControl(Window parent, String info) {
         initComponents();
+        cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		
         infoLabel.setText(info);
         if (parent != null) {
         	parent.addWindowListener(new WindowListener() {
@@ -277,5 +280,11 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 		}
 		return result.get();
 	}
-
+	
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 }

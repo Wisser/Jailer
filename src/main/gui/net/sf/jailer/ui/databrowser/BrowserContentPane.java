@@ -920,7 +920,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		initComponents();
-		conditionEditorButton.setIcon(UIUtil.scaleIcon(this, findColumnIconWhere));
+		cancelLoadButton.setIcon(UIUtil.scaleIcon(cancelLoadButton, cancelIcon));
+		
+        conditionEditorButton.setIcon(UIUtil.scaleIcon(this, findColumnIconWhere));
 		conditionEditorButton.setText(null);
 		loadButton.setIcon(runIcon);
 		try {
@@ -3039,7 +3041,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //				}
 
 				final SbEDialog sbEDialog = new SbEDialog(SwingUtilities.getWindowAncestor(this),
-						(doExport? "Export rows and related rows from \"" : "Create Extraction Model for Subject \"") + dataModel.getDisplayName(stable) + "\".", (parents.isEmpty()? "" : ("\n\n" + parents.size() + " disregarded parent tables.")));
+						(doExport? "Export rows and related rows from \"" : "Create Extraction Model for Subject \"") + dataModel.getDisplayName(stable) + "\".", (parents.isEmpty()? "" : ("\n\n" + parents.size() + " parent tables not included.")));
 				if (doExport) {
 					sbEDialog.setTitle("Export Data");
 				}
@@ -7472,10 +7474,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private static ImageIcon findColumnIcon2;
     private static ImageIcon constraintPKIcon;
     private static ImageIcon emptyIcon;
-
-    static {
+	private static ImageIcon cancelIcon;
+	
+	static {
         // load images
-    	warnIcon = UIUtil.readImage("/wanr.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        warnIcon = UIUtil.readImage("/wanr.png");
     	blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
     	findColumnIconWhereHalf = UIUtil.readImage("/findcolumnWhereHalf.png");
     	findColumnIconWhere = UIUtil.readImage("/findcolumnWhereReady.png");

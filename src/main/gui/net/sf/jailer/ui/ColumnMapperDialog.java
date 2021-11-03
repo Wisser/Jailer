@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -55,6 +56,9 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
 		initComponents();
 
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(mappingField);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -142,7 +146,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        tableCombobox = new net.sf.jailer.ui.JComboBox2();
+        tableCombobox = new JComboBox2();
         jLabel2 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         formatButton = new javax.swing.JButton();
@@ -182,10 +186,11 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel1.add(jLabel2, gridBagConstraints);
 
+        jPanel2.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 5));
+
         formatButton.setText("Format");
         formatButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 formatButtonActionPerformed(evt);
             }
         });
@@ -193,8 +198,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         resetButton.setText("Reset");
         resetButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetButtonActionPerformed(evt);
             }
         });
@@ -205,8 +209,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
@@ -214,8 +217,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
@@ -293,10 +295,19 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramPanel;
     private javax.swing.JButton resetButton;
-    private net.sf.jailer.ui.JComboBox2 tableCombobox;
+    private JComboBox2 tableCombobox;
     // End of variables declaration//GEN-END:variables
 
     private final RSyntaxTextArea mappingField;
+    
+    private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+    static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
     
 	private static final long serialVersionUID = -5437578641818236294L;
 }

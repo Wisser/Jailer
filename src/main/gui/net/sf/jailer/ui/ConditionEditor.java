@@ -233,6 +233,7 @@ public class ConditionEditor extends EscapableDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel3.add(okButton, gridBagConstraints);
 
         cancelButton.setText("Cancel");
@@ -265,6 +266,7 @@ public class ConditionEditor extends EscapableDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel3.add(scalarSQIconToggleButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -272,6 +274,7 @@ public class ConditionEditor extends EscapableDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.gridwidth = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
         jPanel1.add(jPanel3, gridBagConstraints);
 
         jLabel2.setForeground(new java.awt.Color(128, 128, 128));

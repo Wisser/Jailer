@@ -32,6 +32,7 @@ import java.util.TreeMap;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -89,6 +90,9 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         
     	initTablesCombobox();
     	
+    	okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
+		
 		columnOrderPrio = new TreeMap<String, DataModel.ColumnOrderPriority>(dataModel.columnOrderPrio);
 		
 		updateTableModel(owner, dataModel);
@@ -400,7 +404,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         jPanel1.add(closeButton, gridBagConstraints);
 
-        okButton.setText(" Ok ");
+        okButton.setText("Ok");
         okButton.setFocusCycleRoot(true);
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -412,6 +416,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 100;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel1.add(okButton, gridBagConstraints);
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
@@ -518,6 +523,14 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 	public boolean wasOk() {
 		return ok;
 	}
-
+	
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 }
 

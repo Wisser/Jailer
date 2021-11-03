@@ -26,12 +26,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.JComboBox2;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -54,6 +56,9 @@ public class AssociationPathPanel extends javax.swing.JPanel {
         initComponents();
         Font font = new JLabel("normal").getFont();
 		Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+		
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		
 		jLabel1.setFont(bold);
 		jLabel2.setFont(bold);
@@ -264,6 +269,7 @@ public class AssociationPathPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel2.add(cancelButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -271,6 +277,7 @@ public class AssociationPathPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         add(jPanel2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -289,4 +296,14 @@ public class AssociationPathPanel extends javax.swing.JPanel {
 
     protected boolean needToAsk = false;
     protected boolean ok = false;
+    
+
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 }

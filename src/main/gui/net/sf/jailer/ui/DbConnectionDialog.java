@@ -959,7 +959,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (currentConnection != null) {
 			int i = connectionList.indexOf(currentConnection);
 			if (i >= 0) {
-				if (JOptionPane.showConfirmDialog(this, "Delete '" + currentConnection.alias + "'?", "Delete", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+				if (JOptionPane.showConfirmDialog(mainPanel, "Delete '" + currentConnection.alias + "'?", "Delete", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 					connectionList.remove(i);
 					connectionsTable.getSelectionModel().clearSelection();
 					refresh();
@@ -1058,7 +1058,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		
 		if (warnOnConnect) {
-			if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(this, "Connection is not associated with " + (currentModelSubfolder == null? "any data model." : ("data model \"" + currentModelSubfolder + "\".")) + "\nDo you still want to connect?", "Connect", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE)) {
+			if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(mainPanel, "Connection is not associated with " + (currentModelSubfolder == null? "any data model." : ("data model \"" + currentModelSubfolder + "\".")) + "\nDo you still want to connect?", "Connect", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE)) {
 				return;
 			}
 		}
@@ -1375,10 +1375,5 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	  	okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
 	}
-    
-    
-    // TODO make field "driver-class" initially empty and optional. If empty -> derive it from driver.csv (always, not only at end of dialog)
-    
-    // TODO derive (driver-class and)? libs/downloads libs from url (reuse wizzard/driver.csv knowledge)
-    
+
 }

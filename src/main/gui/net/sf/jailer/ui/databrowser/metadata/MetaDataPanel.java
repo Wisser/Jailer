@@ -475,11 +475,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         this.parent = parent;
         this.executionContext = executionContext;
         initComponents();
-
+        
+        cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		
         refreshButton.setText(null);
         refreshButton.setIcon(resetIcon);
         
         hideOutline();
+        outlineScrollPane.setVisible(false);
         lastDividerLocation = -1;
 
         final ListCellRenderer olRenderer = outlineList.getCellRenderer();
@@ -623,11 +626,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 updateTablesCombobox(selectedSchemas);
             }
         }, metaDataSource, dataModel);
-        jPanel1.add(searchButton, gridBagConstraints);
+        jToolBar1.add(searchButton);
 
         tablesComboBox.setVisible(false);
         refreshButton1.setVisible(false);
-        searchButton.setText("Select Table");
+        searchButton.setText("Open Table");
+        searchButton.setIcon(tableIcon);
 
         metaDataTree.addKeyListener(new KeyListener() {
             @Override
@@ -1517,8 +1521,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         metaDataTree = new javax.swing.JTree();
-        refreshButton = new javax.swing.JButton();
         refreshButton1 = new javax.swing.JButton();
+        jToolBar1 = new javax.swing.JToolBar();
+        jToolBar2 = new javax.swing.JToolBar();
+        refreshButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         outlineScrollPane = new javax.swing.JScrollPane();
         outlineList = new javax.swing.JList();
@@ -1564,19 +1570,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(jScrollPane1, gridBagConstraints);
 
-        refreshButton.setText("Refresh");
-        refreshButton.setToolTipText("Refresh Database Meta Data Cache");
-        refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        jPanel1.add(refreshButton, gridBagConstraints);
-
         refreshButton1.setText("Select");
         refreshButton1.setToolTipText("Choose the selecetd table in the tables tree");
         refreshButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -1590,6 +1583,38 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         jPanel1.add(refreshButton1, gridBagConstraints);
+
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jToolBar1, gridBagConstraints);
+
+        jToolBar2.setFloatable(false);
+        jToolBar2.setRollover(true);
+
+        refreshButton.setText("Refresh");
+        refreshButton.setToolTipText("Refresh Database Meta Data Cache");
+        refreshButton.setFocusable(false);
+        refreshButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        refreshButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+        jToolBar2.add(refreshButton);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(jToolBar2, gridBagConstraints);
 
         splitPane.setLeftComponent(jPanel1);
 
@@ -1716,10 +1741,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private void hideOutline() {
     	if (isOutlineVisible) {
     		isOutlineVisible = false;
-    		outlineScrollPane.setVisible(false);
+//    		outlineScrollPane.setVisible(false);
     		placeholderPanel.setVisible(false);
     		lastDividerLocation = splitPane.getDividerLocation();
-    		splitPane.setDividerLocation(splitPane.getHeight() - 32);
+    		splitPane.setDividerLocation(splitPane.getHeight() - 48);
     	}
     }
 
@@ -1864,6 +1889,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JToolBar jToolBar2;
     private javax.swing.JTree metaDataTree;
     private javax.swing.JLabel outlineLabel;
     private javax.swing.JList outlineList;
@@ -1957,9 +1984,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         }
         return null;
     }
-    static {
+
+    private static ImageIcon cancelIcon;
+	
+	static {
         // load images
-        warnIcon = UIUtil.readImage("/wanr.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	    warnIcon = UIUtil.readImage("/wanr.png");
         viewIcon = UIUtil.readImage("/view.png");
         synonymIcon = UIUtil.readImage("/synonym.png");
         synonymsIcon = UIUtil.readImage("/synonyms.png");

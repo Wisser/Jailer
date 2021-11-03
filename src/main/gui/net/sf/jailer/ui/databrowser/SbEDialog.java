@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.Window;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 
 import net.sf.jailer.ui.UIUtil;
@@ -36,6 +37,8 @@ public class SbEDialog extends javax.swing.JDialog {
 	public SbEDialog(Window window, String message, String message2) {
 		super(window, ModalityType.DOCUMENT_MODAL);
 		initComponents();
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		textLabel.setText(message);
 		textLabel2.setText(message2);
 		textLabel2.setForeground(Color.red);
@@ -58,7 +61,7 @@ public class SbEDialog extends javax.swing.JDialog {
 	}
 
 	void grabFocus() {
-		jButton1.grabFocus();
+		okButton.grabFocus();
 	}
 
 	/** This method is called from within the constructor to
@@ -78,8 +81,8 @@ public class SbEDialog extends javax.swing.JDialog {
         textLabel = new javax.swing.JLabel();
         textLabel2 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        okButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
         regardButton = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -143,11 +146,10 @@ public class SbEDialog extends javax.swing.JDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jButton1.setText("  OK  ");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+        okButton.setText("Ok");
+        okButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -155,66 +157,68 @@ public class SbEDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        jPanel2.add(jButton1, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel2.add(okButton, gridBagConstraints);
 
-        jButton3.setText("  Cancel  ");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        jPanel2.add(jButton3, gridBagConstraints);
+        jPanel2.add(cancelButton, gridBagConstraints);
 
         regardButton.setSelected(true);
         regardButton.setText("Include parent tables  ");
         regardButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 regardButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel2.add(regardButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
         getContentPane().add(jPanel2, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+	private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 		ok = true;
 		setVisible(false);
-}//GEN-LAST:event_jButton1ActionPerformed
+}//GEN-LAST:event_okButtonActionPerformed
 
-	private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
 		ok = false;
 		setVisible(false);
-	}//GEN-LAST:event_jButton3ActionPerformed
+	}//GEN-LAST:event_cancelButtonActionPerformed
 
     private void regardButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regardButtonActionPerformed
     }//GEN-LAST:event_regardButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JTree browserTree;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton3;
+    private javax.swing.JButton cancelButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel messageLabel;
     private javax.swing.JPanel messagePanel;
+    private javax.swing.JButton okButton;
     javax.swing.JCheckBox regardButton;
     private javax.swing.JLabel textLabel;
     private javax.swing.JLabel textLabel2;
@@ -222,5 +226,13 @@ public class SbEDialog extends javax.swing.JDialog {
 	
 	private static final long serialVersionUID = 2348041387629826138L;
 	boolean ok = false;
+
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
 	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 }

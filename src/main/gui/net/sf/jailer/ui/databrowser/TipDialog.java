@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.ImageIcon;
+
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.InfoBar;
 import net.sf.jailer.ui.UIUtil;
@@ -40,6 +42,7 @@ public class TipDialog extends javax.swing.JDialog {
 	public TipDialog(Window parent, String tip) {
 		super(parent, ModalityType.DOCUMENT_MODAL);
 		initComponents();
+		jButton1.setIcon(UIUtil.scaleIcon(jButton1, okIcon));
 		InfoBar infoBar = new InfoBar("Did you know?", tip, null);
 		UIUtil.replace(infoBarLabel, infoBar);
 		pack();
@@ -82,7 +85,7 @@ public class TipDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(12, 32, 0, 44);
         getContentPane().add(jCheckBox1, gridBagConstraints);
 
-        jButton1.setText(" Ok ");
+        jButton1.setText("Ok");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -131,5 +134,10 @@ public class TipDialog extends javax.swing.JDialog {
 			}
 		}
 	}
-
+	private static ImageIcon okIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+	}
 }

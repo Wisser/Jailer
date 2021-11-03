@@ -50,6 +50,7 @@ import java.util.regex.Pattern;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -480,7 +481,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		this.parent = parent;
 		this.conditionEditor = createConditionEditor();
 		initComponents();
-
+		
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -1699,7 +1703,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 2);
         jPanel2.add(okButton, gridBagConstraints);
 
         cancelButton.setText(" Cancel ");
@@ -1711,6 +1715,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 11;
         gridBagConstraints.gridy = 20;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
         jPanel2.add(cancelButton, gridBagConstraints);
 
         jPanel3.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -1722,7 +1727,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 2);
         jPanel3.add(jLabel3, gridBagConstraints);
 
         jLabel4.setForeground(new java.awt.Color(0, 0, 255));
@@ -1732,7 +1737,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 2);
         jPanel3.add(jLabel4, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1751,7 +1756,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 2);
         jPanel2.add(helpButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2187,11 +2192,14 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 	private Icon conditionEditorIcon;
 	private Icon conditionEditorSelectedIcon;
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
 	{
 		// load images
 		conditionEditorIcon = UIUtil.readImage("/edit.png");
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
+		okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
 	}
-
 	private static final long serialVersionUID = 7869830170667759018L;
 }

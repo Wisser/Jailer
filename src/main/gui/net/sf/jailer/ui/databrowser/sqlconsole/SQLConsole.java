@@ -27,6 +27,8 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -80,11 +82,13 @@ import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
+import javax.swing.border.LineBorder;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
@@ -120,6 +124,7 @@ import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.associationproposer.AssociationProposerView;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
@@ -233,6 +238,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel5.add(historyComboBox, gridBagConstraints);
 
+        updateResultUI();
         
         this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(true, true) {
         	{
@@ -389,13 +395,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         runnAllButton.setAction(editorPane.runAll);
         explainButton.setAction(editorPane.explain);
 
-        runSQLButton.setText("Run");
-        runnAllButton.setText("Run all");
-
+        runSQLButton.setText(null);
+        runnAllButton.setText(null);
+        explainButton.setText(null);
+        cancelButton.setText(null);
+        explainButton.setToolTipText("Show Query Execution Plan ");
+        
         runSQLButton.setIcon(UIUtil.scaleIcon(this, runIcon));
         runnAllButton.setIcon(UIUtil.scaleIcon(this, runAllIcon));
-        runSQLButton.setToolTipText(runSQLButton.getText() + " - Ctrl-Enter");
-        runnAllButton.setToolTipText(runnAllButton.getText() + " - Alt-Enter");
+        runSQLButton.setToolTipText("Run SQL Statement - Ctrl-Enter");
+        runnAllButton.setToolTipText("Run SQL Script - Alt-Enter");
 
         scaledCancelIcon = UIUtil.scaleIcon(this, cancelIcon);
         cancelButton.setIcon(scaledCancelIcon);
@@ -449,6 +458,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }, "SQLConsole-" + (threadNum++));
         UIUtil.startDemon(thread);
     }
+
+	private void updateResultUI() {
+		if (UIUtil.plaf == PLAF.FLAT) {
+	        if (jTabbedPane1.getTabCount() > 0) {
+	        	jPanel3.setBorder(null);
+	        } else {
+	        	jPanel3.setBorder(new LineBorder(Color.lightGray));
+	        }
+        }
+	}
 
 	protected void initMenuItems() {
 		JMenuItem item = new JMenuItem("Toggle Line Continuation");
@@ -1186,7 +1205,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             	});
                         	}
                         });
-						tabContentPanel.controlsPanel1.add(findButton);
+						tabContentPanel.controlsContainer.add(findButton);
 						JButton syncButton = new JButton((String) null);
                         syncButton.setEnabled(rb.wcBaseTable != null);
                         if (doSync == null) {
@@ -1206,9 +1225,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         		syncButton.setIcon(tabContentPanel.doSync? UIUtil.scaleIcon(syncButton, syncIcon) : UIUtil.scaleIcon(syncButton, nosyncIcon));
                         	}
                         });
-						tabContentPanel.controlsPanel1.add(syncButton);
-                        tabContentPanel.controlsPanel1.add(new JLabel("    "));
-                        tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
+                        tabContentPanel.controlsContainer.add(syncButton);
+                        tabContentPanel.controlsContainer.add(new javax.swing.JToolBar.Separator());
+                        tabContentPanel.controlsContainer.add(rb.sortColumnsCheckBox);
                         JToggleButton findColumnsButton = new JToggleButton(rb.findColumnsLabel.getText());
                         findColumnsButton.setFocusable(false);
                         findColumnsButton.setIcon(UIUtil.scaleIcon(findColumnsButton, searchCIcon));
@@ -1219,8 +1238,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								rb.findColumns((int) point.getX(), (int) point.getY(), rb.currentRowsTableReference == null? rb.rowsTable : rb.currentRowsTableReference.get(), rb.currentRowsSortedReference == null? rb.sortColumnsCheckBox.isSelected() : rb.currentRowsSortedReference.get(), () -> { findColumnsButton.setSelected(false); });
 							}
                         });
-                        tabContentPanel.controlsPanel1.add(findColumnsButton);
-                        tabContentPanel.controlsPanel1.add(new JLabel("    "));
+                        tabContentPanel.controlsContainer.add(findColumnsButton);
+                        tabContentPanel.controlsContainer.add(new javax.swing.JToolBar.Separator());
                         rb.sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
                             @Override
 							public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1273,7 +1292,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								loadButton.setEnabled(true);
 							}
 						});
-						tabContentPanel.controlsPanel1.add(loadButton);
+						tabContentPanel.controlsContainer.add(loadButton);
                         loadButton.setVisible(finalLoadButtonIsVisible);
                         loadButton.setIcon(UIUtil.scaleIcon(SQLConsole.this, runIcon));
                         rb.setOnReloadAction(new Runnable() {
@@ -1285,6 +1304,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         String sqlE = sql.trim();
                         if (explain) {
                         	sqlE = "Explain Plan for " + sqlE;
+                        	tabContentPanel.controlsContainer.removeAll();
+                        	JPanel sepPanel = new JPanel(null);
+                        	sepPanel.setMinimumSize(new Dimension(1, 24));
+                        	sepPanel.setPreferredSize(sepPanel.getPreferredSize());
+							tabContentPanel.controlsContainer.add(sepPanel);
                         }
                         String stmt = sqlE;
 
@@ -1327,6 +1351,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
                         if (origTabContentPanel == null) {
 	                        jTabbedPane1.add(rTabContainer);
+	                        updateResultUI();
 	                        JPanel tp;
 							jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), tp = getTitlePanel(jTabbedPane1, rTabContainer, title));
 							rowBrowserPerRTabContainer.put(rTabContainer, rb);
@@ -1334,6 +1359,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                        
 	                        if (jTabbedPane1.getTabCount() > MAX_TAB_COUNT) {
 	                            jTabbedPane1.remove(0);
+	                            updateResultUI();
 	                        }
 	                        jTabbedPane1.setSelectedIndex(jTabbedPane1.getTabCount() - 1);
                         }
@@ -1869,10 +1895,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     	JComponent rTabContainer = new ErrorPanel(errorMessage, statement, errorPosition);
 		jTabbedPane1.add(rTabContainer);
+		updateResultUI();
         jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, "Error"));
 
         if (jTabbedPane1.getTabCount() > MAX_TAB_COUNT) {
             jTabbedPane1.remove(0);
+            updateResultUI();
         }
         jTabbedPane1.setSelectedIndex(jTabbedPane1.getTabCount() - 1);
         jTabbedPane1.repaint();
@@ -1883,6 +1911,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (jTabbedPane1.getTabComponentAt(jTabbedPane1.getTabCount() - 1) instanceof TitelPanel) {
 				if (((TitelPanel) jTabbedPane1.getTabComponentAt(jTabbedPane1.getTabCount() - 1)).rTabContainer instanceof ErrorPanel) {
 					jTabbedPane1.removeTabAt(jTabbedPane1.getTabCount() - 1);
+					updateResultUI();
 				}
 			}
 		}
@@ -1916,10 +1945,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel5 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         limitComboBox = new javax.swing.JComboBox();
-        cancelButton = new javax.swing.JButton();
+        jToolBar1 = new javax.swing.JToolBar();
         runSQLButton = new javax.swing.JButton();
         runnAllButton = new javax.swing.JButton();
         explainButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        cancelButton = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
         jPanel6 = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
         dummyLabel = new javax.swing.JLabel();
@@ -1964,35 +1996,46 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         jPanel5.add(limitComboBox, gridBagConstraints);
 
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+
+        runSQLButton.setText("Run");
+        runSQLButton.setFocusable(false);
+        runSQLButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        runSQLButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(runSQLButton);
+
+        runnAllButton.setText("Run all");
+        runnAllButton.setFocusable(false);
+        runnAllButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        runnAllButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(runnAllButton);
+
+        explainButton.setText("Explain");
+        explainButton.setToolTipText("Show Query Execution Plan ");
+        explainButton.setFocusable(false);
+        explainButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        explainButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(explainButton);
+        jToolBar1.add(jSeparator1);
+
         cancelButton.setText("Cancel");
+        cancelButton.setToolTipText("Cancel");
+        cancelButton.setFocusable(false);
+        cancelButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cancelButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 12;
-        gridBagConstraints.gridy = 2;
-        jPanel5.add(cancelButton, gridBagConstraints);
+        jToolBar1.add(cancelButton);
+        jToolBar1.add(jSeparator2);
 
-        runSQLButton.setText("Run");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        jPanel5.add(runSQLButton, gridBagConstraints);
-
-        runnAllButton.setText("Run all");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        jPanel5.add(runnAllButton, gridBagConstraints);
-
-        explainButton.setText("Explain");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
-        jPanel5.add(explainButton, gridBagConstraints);
+        jPanel5.add(jToolBar1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2094,8 +2137,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JComboBox limitComboBox;
     private javax.swing.JButton runSQLButton;
     private javax.swing.JButton runnAllButton;
@@ -2795,6 +2841,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     			@Override
     			protected void onClick(MouseEvent e) {
     				tabbedPane.remove(rTabContainer);
+    				updateResultUI();
     			}
     		};
     		add(closeButton);

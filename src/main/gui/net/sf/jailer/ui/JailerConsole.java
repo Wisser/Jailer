@@ -24,6 +24,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -59,6 +60,7 @@ public class JailerConsole {
 		this.progressPanel = progressPanel;
 		this.fullSize = fullSize;
 		initialize();
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		getJTextPane().setAutoscrolls(true);
 		Font f = getJTextPane().getFont();
 		getJTextPane().setFont(new Font(Font.MONOSPACED, f.getStyle(), f.getSize()));
@@ -320,4 +322,10 @@ public class JailerConsole {
 	public boolean hasCancelled = false;
 	boolean hasFinished = false;
 
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"

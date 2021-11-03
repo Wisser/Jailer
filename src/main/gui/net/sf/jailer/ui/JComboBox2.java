@@ -27,6 +27,7 @@ import java.util.Vector;
 public class JComboBox2<T> extends javax.swing.JComboBox<T> {
 	private static final long serialVersionUID = 1404824459186814788L;
 	private boolean layingOut = false;
+	private Integer prefWidth = null;
 
 	public JComboBox2(Vector<T> model) {
 		super(model);
@@ -51,7 +52,14 @@ public class JComboBox2<T> extends javax.swing.JComboBox<T> {
 		Dimension sz = super.getSize();
 		if (!layingOut) {
 			sz.width = Math.max(sz.width, Math.min(900, getPreferredSize().width));
+			if (prefWidth != null) {
+				sz.width = Math.max(sz.width, prefWidth);
+			}
 		}
 		return sz;
+	}
+
+	public void setPrefWidth(int prefWidth) {
+		this.prefWidth = Math.min(900, prefWidth);
 	}
 }

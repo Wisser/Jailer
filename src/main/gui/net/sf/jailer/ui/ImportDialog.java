@@ -30,6 +30,7 @@ import java.util.TreeMap;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -63,6 +64,9 @@ public class ImportDialog extends javax.swing.JDialog {
 		this.user = user;
 		this.password = password;
 		initComponents();
+
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 
 		this.importFile.setText(new File(importFile).getName());
 		this.importFile.setToolTipText(new File(importFile).getAbsolutePath());
@@ -187,7 +191,6 @@ public class ImportDialog extends javax.swing.JDialog {
         jLabel23 = new javax.swing.JLabel();
         jLabel24 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
-        copyButton = new javax.swing.JButton();
         placeholder1 = new javax.swing.JLabel();
         transactionalCheckBox = new javax.swing.JCheckBox();
         importFile = new javax.swing.JLabel();
@@ -198,9 +201,10 @@ public class ImportDialog extends javax.swing.JDialog {
         jPanel2 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        copyButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Data Export"); // NOI18N
+        setTitle("Data Import"); // NOI18N
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         jScrollPane2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -285,20 +289,6 @@ public class ImportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         commandLinePanel.add(jLabel25, gridBagConstraints);
-
-        copyButton.setText("Copy to Clipboard"); // NOI18N
-        copyButton.setToolTipText("Copy to Clipboard"); // NOI18N
-        copyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                copyButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-        commandLinePanel.add(copyButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -399,10 +389,10 @@ public class ImportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 2, 2);
         jPanel2.add(okButton, gridBagConstraints);
 
-        cancelButton.setText(" Cancel ");
+        cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -413,8 +403,21 @@ public class ImportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 2);
         jPanel2.add(cancelButton, gridBagConstraints);
+
+        copyButton.setText("Copy to Clipboard"); // NOI18N
+        copyButton.setToolTipText("Copy to Clipboard"); // NOI18N
+        copyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 2, 0);
+        jPanel2.add(copyButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -533,6 +536,14 @@ public class ImportDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox transactionalCheckBox;
     // End of variables declaration//GEN-END:variables
 
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 
 	private static final long serialVersionUID = 952553009821662964L;
 

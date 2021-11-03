@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -44,13 +43,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
-import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -192,7 +191,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 			initComponents();
 			jButton1.setIcon(runIcon);
-
+			cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+			
 			if (jScrollPane2.getHorizontalScrollBar() != null) {
 	        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
 	        }
@@ -2157,7 +2157,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 2, 2);
         jPanel2.add(jButton1, gridBagConstraints);
 
         jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() & ~java.awt.Font.BOLD));
@@ -2179,7 +2179,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 6);
         jPanel2.add(cancelButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2876,8 +2876,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private Icon conditionEditorSelectedIcon;
 	private Icon runIcon;
 	private Icon resetIcon;
+	private ImageIcon cancelIcon;
+	
 	{
-		// load images
+        // load images
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
 		loadIcon = UIUtil.readImage("/load.png");
 		conditionEditorIcon = UIUtil.readImage("/edit.png");
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");

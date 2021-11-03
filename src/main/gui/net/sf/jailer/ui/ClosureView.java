@@ -564,7 +564,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
 		neighborTable.setRowSelectionAllowed(false);
 		neighborTable.setIntercellSpacing(new Dimension(0, 0));
+		neighborTable.setShowGrid(false);
 		neighborTable.setDefaultRenderer(Object.class, closureTable.getDefaultRenderer(Object.class));
+		neighborTable.setDefaultRenderer(Integer.class, closureTable.getDefaultRenderer(Object.class));
 		neighborTable.setAutoCreateRowSorter(true);
 		neighborTable.getTableHeader().setReorderingAllowed(false);
 		neighborTable.getTableHeader().setToolTipText("<html>The degree of a table is the total number of adjacent tables<br>that can be reached directly with an enabled association.</html>");

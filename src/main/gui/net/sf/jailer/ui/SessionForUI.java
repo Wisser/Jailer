@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.sql.DataSource;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -127,7 +128,8 @@ public class SessionForUI extends Session {
         jLabel1.setText("connecting...");
         connectingPanel.add(jLabel1);
 
-        cancelConnectingButton .setText("Cancel");
+        cancelConnectingButton.setText("Cancel");
+        cancelConnectingButton.setIcon(UIUtil.scaleIcon(cancelConnectingButton, cancelIcon));
         cancelConnectingButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -171,5 +173,11 @@ public class SessionForUI extends Session {
 			thread.start();
 		}
 	}
-
+	
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 }

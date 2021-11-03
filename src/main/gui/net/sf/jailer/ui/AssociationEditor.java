@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -86,6 +87,9 @@ public class AssociationEditor extends javax.swing.JDialog {
 		initComponents();
 		AutoCompletion.enable(destination);
 		AutoCompletion.enable(source);
+		
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		
 		joinCondition = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			@Override
@@ -153,9 +157,9 @@ public class AssociationEditor extends javax.swing.JDialog {
         nameField = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
+        okButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Association");
@@ -167,7 +171,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
         getContentPane().add(source, gridBagConstraints);
 
         type.setModel(createTypeModel());
@@ -175,7 +179,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
         getContentPane().add(type, gridBagConstraints);
 
         destination.setMaximumRowCount(20);
@@ -184,7 +188,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
         getContentPane().add(destination, gridBagConstraints);
 
         cardinality.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "1:n", "n:1", "1:1", "n:m" }));
@@ -192,7 +196,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
         getContentPane().add(cardinality, gridBagConstraints);
 
         jLabel1.setText(" Name ");
@@ -236,6 +240,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         getContentPane().add(nameField, gridBagConstraints);
 
         jLabel9.setText(" Cardinality ");
@@ -247,10 +252,10 @@ public class AssociationEditor extends javax.swing.JDialog {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jButton1.setText("Ok");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        okButton.setText("Ok");
+        okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                okButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -258,8 +263,8 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPanel1.add(jButton1, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        jPanel1.add(okButton, gridBagConstraints);
 
         jLabel3.setFont(jLabel3.getFont().deriveFont(jLabel3.getFont().getSize()+1f));
         jLabel3.setText("<html>&nbsp;* <i>Ctrl+Space</i> for code completion.");
@@ -272,15 +277,15 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         jPanel1.add(jLabel3, gridBagConstraints);
 
-        jButton2.setText("Cancel");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                cancelButtonActionPerformed(evt);
             }
         });
-        jButton2.addComponentListener(new java.awt.event.ComponentAdapter() {
+        cancelButton.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
-                jButton2ComponentResized(evt);
+                cancelButtonComponentResized(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -288,29 +293,29 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPanel1.add(jButton2, gridBagConstraints);
+        jPanel1.add(cancelButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
         getContentPane().add(jPanel1, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-	private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
 		setVisible(false);
-	}//GEN-LAST:event_jButton2ActionPerformed
+	}//GEN-LAST:event_cancelButtonActionPerformed
 
 	/**
 	 * On OK.
 	 */
-	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+	private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 		onOk();
-	}//GEN-LAST:event_jButton1ActionPerformed
+	}//GEN-LAST:event_okButtonActionPerformed
 
 	private void onOk() {
 		String msg = null;
@@ -334,8 +339,8 @@ public class AssociationEditor extends javax.swing.JDialog {
 		}
 	}
 
-	private void jButton2ComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jButton2ComponentResized
-	}//GEN-LAST:event_jButton2ComponentResized
+	private void cancelButtonComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_cancelButtonComponentResized
+	}//GEN-LAST:event_cancelButtonComponentResized
 
 	/**
 	 * Creates model for {@link AssociationEditor#type}.
@@ -451,10 +456,9 @@ public class AssociationEditor extends javax.swing.JDialog {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelButton;
     private JComboBox2 cardinality;
     private JComboBox2 destination;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -464,6 +468,7 @@ public class AssociationEditor extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField nameField;
+    private javax.swing.JButton okButton;
     private JComboBox2 source;
     private JComboBox2 type;
     // End of variables declaration//GEN-END:variables
@@ -587,6 +592,15 @@ public class AssociationEditor extends javax.swing.JDialog {
 		protected boolean isInitialized() {
 			return true;
 		}
+	}
+	
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
 	}
 	
 	private static final long serialVersionUID = 603961628104674406L;

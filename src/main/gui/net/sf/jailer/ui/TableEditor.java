@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
@@ -241,6 +242,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
 		this.excludeFromDeletionList = excludeFromDeletionList;
 		this.displayNames = displayNames;
 		initComponents();
+		
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		
 		warnPanel.setVisible(false);
 		setSize(600, 500);
 		setLocation(parent.getLocation().x + parent.getSize().width/2 - getSize().width/2,
@@ -291,9 +296,9 @@ public abstract class TableEditor extends javax.swing.JDialog {
         nameField = new javax.swing.JTextField();
         upsertCheckbox = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
+        okButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
         checkPKButton = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
         excludeFromDeletion = new javax.swing.JCheckBox();
@@ -534,10 +539,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jButton1.setText("Ok");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        okButton.setText("Ok");
+        okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                okButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -546,7 +551,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPanel1.add(jButton1, gridBagConstraints);
+        jPanel1.add(okButton, gridBagConstraints);
 
         jLabel3.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -558,10 +563,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         jPanel1.add(jLabel3, gridBagConstraints);
 
-        jButton2.setText("Cancel");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                cancelButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -569,8 +574,8 @@ public abstract class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPanel1.add(jButton2, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        jPanel1.add(cancelButton, gridBagConstraints);
 
         checkPKButton.setText("Check Primary Key");
         checkPKButton.addActionListener(new java.awt.event.ActionListener() {
@@ -591,7 +596,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 40;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 0);
         getContentPane().add(jPanel1, gridBagConstraints);
 
         jLabel6.setText(" ");
@@ -713,7 +718,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
 	private void excludeFromDeletionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_excludeFromDeletionActionPerformed
 	}//GEN-LAST:event_excludeFromDeletionActionPerformed
 
-	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+	private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
 		String msg = null;
 		if (nameField.getText().trim().length() == 0) {
 			msg = "No table name";
@@ -742,11 +747,11 @@ public abstract class TableEditor extends javax.swing.JDialog {
 			isOk = true;
 			setVisible(false);
 		}
-	}//GEN-LAST:event_jButton1ActionPerformed
+	}//GEN-LAST:event_okButtonActionPerformed
 
-	private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
 		setVisible(false);
-	}//GEN-LAST:event_jButton2ActionPerformed
+	}//GEN-LAST:event_cancelButtonActionPerformed
 
 	private void columnNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnNameActionPerformed
 		
@@ -1008,6 +1013,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelButton;
     private javax.swing.JButton checkPKButton;
     private javax.swing.JPanel columnDetailsPanel;
     private javax.swing.JCheckBox columnIsIdentity;
@@ -1019,8 +1025,6 @@ public abstract class TableEditor extends javax.swing.JDialog {
     private javax.swing.JTextField columnType;
     private javax.swing.JTextField displayName;
     private javax.swing.JCheckBox excludeFromDeletion;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -1034,6 +1038,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField nameField;
+    private javax.swing.JButton okButton;
     private javax.swing.JCheckBox primaryKey1;
     private javax.swing.JPanel slotPanel;
     private javax.swing.JCheckBox upsertCheckbox;
@@ -1043,5 +1048,13 @@ public abstract class TableEditor extends javax.swing.JDialog {
     private javax.swing.JPanel warnSeparator;
     // End of variables declaration//GEN-END:variables
 	
+    private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 	private static final long serialVersionUID = -3331167410435129849L;
 }

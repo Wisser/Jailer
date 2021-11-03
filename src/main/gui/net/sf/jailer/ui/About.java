@@ -330,6 +330,6 @@ public class About extends javax.swing.JDialog {
 	}
 	
 	// TODO
-	// JRE Requirement, deutlich machen, dass das nur bei non-msi/deb n�tig
+	// JRE Requirement, deutlich machen, dass das nur bei non-msi/deb noetig
 
 }

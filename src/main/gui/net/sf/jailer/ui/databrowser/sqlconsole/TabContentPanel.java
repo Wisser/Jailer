@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -52,6 +53,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.util.Pair;
@@ -77,6 +79,8 @@ public class TabContentPanel extends javax.swing.JPanel {
         initComponents();
         loadingPanel.setVisible(false);
 
+        cancelLoadButton.setIcon(UIUtil.scaleIcon(cancelLoadButton, cancelIcon));
+		
         statementLabel = new JLabel();
         statementLabel.setForeground(new Color(0, 0, 180));
         GridBagConstraints gridBagConstraints;
@@ -149,7 +153,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 			headerCheckBox.setVisible(false);
 			copyCBButton.setVisible(false);
 			columnSeparatorComboBox.setVisible(false);
-			controlsPanel1.setVisible(false);
+			// controlsContainer.setVisible(false);
 			rowsCount.setVisible(false);
 		} else {
 			if (metaDataDetails != null) {
@@ -406,6 +410,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 		jTextArea.setText(sb.toString());
 		jTextArea.setCaretPosition(0);
 		jTextArea.setEditable(false);
+		if (UIUtil.plaf == PLAF.FLAT) {
+			jTextArea.setBackground(Color.white);
+		}
 	}
 
     private int lastLineLength(String cellContent) {
@@ -446,7 +453,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         panel = new javax.swing.JPanel();
-        controlsPanel1 = new javax.swing.JPanel();
+        controlsContainer = new javax.swing.JToolBar();
         jPanel1 = new javax.swing.JPanel();
         jLayeredPane1 = new javax.swing.JLayeredPane();
         loadingPanel = new javax.swing.JPanel();
@@ -476,11 +483,12 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         panel.setLayout(new java.awt.GridBagLayout());
 
-        controlsPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 0));
+        controlsContainer.setFloatable(false);
+        controlsContainer.setRollover(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        panel.add(controlsPanel1, gridBagConstraints);
+        panel.add(controlsContainer, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -718,7 +726,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     public javax.swing.JScrollPane columnsScrollPane;
     public javax.swing.JLabel columnsSortedStateLabel;
     public javax.swing.JPanel contentPanel;
-    public javax.swing.JPanel controlsPanel1;
+    javax.swing.JToolBar controlsContainer;
     private javax.swing.JButton copyCBButton;
     private javax.swing.JCheckBox headerCheckBox;
     private javax.swing.JLabel jLabel1;
@@ -743,4 +751,11 @@ public class TabContentPanel extends javax.swing.JPanel {
 	public final javax.swing.JPanel shimPanel;
 	javax.swing.JButton loadButton;
 	protected boolean doSync;
+	
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 }

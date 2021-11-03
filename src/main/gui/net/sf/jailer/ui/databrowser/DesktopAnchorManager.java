@@ -272,7 +272,7 @@ public abstract class DesktopAnchorManager {
 	private ImageIcon anchorIcon;
 	{
         // load images
-		anchorIcon = UIUtil.readImage("/anchor.png");
+		anchorIcon = UIUtil.scaleIcon(UIUtil.readImage("/anchor_32.png"), 0.75);
     }
 
 }

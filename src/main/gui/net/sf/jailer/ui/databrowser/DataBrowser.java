@@ -5152,7 +5152,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					executionContext.getCurrentConnectionAlias(), desktop.getRawSchemaMapping());
 			bookmark.setContent(sb.toString());
 			bookmark.setContentInfo(
-					desktop.tableBrowsers.size() + (desktop.tableBrowsers.size() == 1 ? " Table" : " Tables"));
+					desktop.tableBrowsers.size() + " Tables");
 		} catch (IOException e) {
 			bookmark = null;
 		}

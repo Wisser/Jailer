@@ -87,7 +87,9 @@ public class DbConnectionSettings extends javax.swing.JPanel {
     public DbConnectionSettings(Component root) {
     	this.owner = root;
         initComponents();
-        pTextFieldBGColor = paramField1.getBackground();
+        okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		pTextFieldBGColor = paramField1.getBackground();
         FONT_NORMAL = defaultAllLabel.getFont().deriveFont(defaultAllLabel.getFont().getStyle() & ~Font.BOLD);
         FONT_ITALICS = FONT_NORMAL.deriveFont(FONT_NORMAL.getStyle() & ~Font.BOLD | Font.ITALIC);
     	pLabel = new JLabel[] { paramLabel1, paramLabel2, paramLabel3, paramLabel4 };
@@ -766,7 +768,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        okButton.setText(" Ok ");
+        okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -865,8 +867,13 @@ public class DbConnectionSettings extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     private static Icon loadIcon;
+    private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
 	static {
-		// load images
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
 		loadIcon = UIUtil.readImage("/load2.png");
 		leftIcon = UIUtil.readImage("/left.png");
 	}

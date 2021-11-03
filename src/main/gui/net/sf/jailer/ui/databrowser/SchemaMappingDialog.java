@@ -26,6 +26,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
 import net.sf.jailer.ExecutionContext;
@@ -55,7 +56,10 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 	public SchemaMappingDialog(java.awt.Frame parent, DataModel dataModel, DbConnectionDialog connectionDialog, Session session, Map<String, String> mapping, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
 		initComponents();
-
+		
+		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		jButton2.setIcon(UIUtil.scaleIcon(jButton2, cancelIcon));
+		
 		Window windowAncestor = parent; // SwingUtilities.getWindowAncestor(parent);
 		try {
 			if (windowAncestor != null) {
@@ -307,5 +311,13 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 	private javax.swing.JPanel jPanel1;
 	private javax.swing.JButton okButton;
 	// End of variables declaration//GEN-END:variables
-
+	
+	private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+	}
 }
