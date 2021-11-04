@@ -29,7 +29,7 @@ rm -rf C:/tmp/jailer/admin
 
 sed s/%VERSION%/$1/g admin/Jailer.nsi > admin/tmp.nsi
 cd admin
-makensis tmp.nsi
+# makensis tmp.nsi
 cd ..
 rm admin/tmp.nsi
 
