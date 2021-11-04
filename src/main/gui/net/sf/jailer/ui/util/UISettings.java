@@ -71,7 +71,7 @@ public class UISettings {
 	/**
 	 * Maximum size of any "recent" list.
 	 */
-	private final static int MAX_RECENT_LIST_SIZE = 12;
+	private final static int MAX_RECENT_LIST_SIZE = 24;
 
 	/**
 	 * Persistent properties.

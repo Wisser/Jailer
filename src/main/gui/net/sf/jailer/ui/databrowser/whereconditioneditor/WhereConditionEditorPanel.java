@@ -177,6 +177,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	this.session = session;
     	this.executionContext = executionContext;
         initComponents();
+        applyButton.setIcon(UIUtil.scaleIcon(applyButton, okIcon));
+		
         if (asPopup) {
         	initPopupView();
         } else {
@@ -732,7 +734,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
 	protected String createComparisionRE(boolean noAlias, Column column, String condition) {
 		String quoteRE = "[\"\u00B4\\[\\]`]";
-		String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:[^(]?'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
+		String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
 		String regex = "(?:(?:and\\s+)?" + "(?:"
 				+ (inSQLConsole()? "" : !noAlias? "\\b" : "(?<!\\w)")
 				+ (tableAlias == null || noAlias? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
@@ -2439,8 +2441,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private static ImageIcon resetIcon;
 	private static ImageIcon closeIcon;
     private static ImageIcon constraintPKIcon;
+    private static ImageIcon okIcon;
+	static ImageIcon warnIcon;
 	
-    static ImageIcon warnIcon;
 	static {
         // load images
         tableIcon = UIUtil.readImage("/table.png");
@@ -2453,6 +2456,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         resetIcon = UIUtil.readImage("/reset.png");
         closeIcon = UIUtil.readImage("/Close-16-1.png");
     	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
+    	okIcon = UIUtil.readImage("/buttonok.png");
 	}
 	// TODO support properties
 	// TODO multi-value-select? (in clause?)

@@ -221,8 +221,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(2, 0, 2, 0);
-        jPanel10.add(resentSessionsComboBox, gridBagConstraints);
-        resentSessionsComboBox.setMaximumRowCount(12);
+        jPanel10.add(recentSessionsComboBox, gridBagConstraints);
+        recentSessionsComboBox.setMaximumRowCount(12);
 		ImageIcon imageIcon = UIUtil.jailerLogo;
 		infoBar.setIcon(imageIcon);
 		infoBarJM.setIcon(imageIcon);
@@ -494,7 +494,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	@SuppressWarnings("unchecked")
 	private void initRestoreLastSessionButton() {
 		restoreButton.setVisible(true);
-		resentSessionsComboBox.setVisible(true);
+		recentSessionsComboBox.setVisible(true);
 		dummyLabel.setVisible(false);
 		final boolean forEMEditor = "S".equals(module);
 		final List<BookmarkId> lastSessions = UISettings.restoreLastSessions(module);
@@ -576,9 +576,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			return;
 		}
 		restoreButton.addActionListener(actions.get(0));
-		resentSessionsComboBox.setModel(new DefaultComboBoxModel<String>(model.toArray(new String[0])));
-		resentSessionsComboBox.setSelectedIndex(0);
-		resentSessionsComboBox.addItemListener(new ItemListener() {
+		recentSessionsComboBox.setModel(new DefaultComboBoxModel<String>(model.toArray(new String[0])));
+		recentSessionsComboBox.setSelectedIndex(0);
+		recentSessionsComboBox.addItemListener(new ItemListener() {
 			boolean done = false;
 			@Override
 			public void itemStateChanged(ItemEvent e) {
@@ -586,9 +586,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					done = true;
 					UIUtil.setWaitCursor(DataModelManagerDialog.this);
 					restoreButton.setEnabled(false);
-					resentSessionsComboBox.setEnabled(false);
+					recentSessionsComboBox.setEnabled(false);
 					UIUtil.invokeLater(() -> {
-						actions.get(resentSessionsComboBox.getSelectedIndex()).actionPerformed(null);
+						actions.get(recentSessionsComboBox.getSelectedIndex()).actionPerformed(null);
 					});
 				}
 			}
@@ -609,9 +609,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			maxSum = Math.max(maxSum, sum);
 		}
 		if (maxSum > 0) {
-			resentSessionsComboBox.setPrefWidth(maxSum);
+			recentSessionsComboBox.setPrefWidth(maxSum);
 		}
-		resentSessionsComboBox.setRenderer(new DefaultListCellRenderer() {
+		recentSessionsComboBox.setRenderer(new DefaultListCellRenderer() {
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
@@ -660,11 +660,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				return render;
 			}
 		});
-		resentSessionsComboBox.setToolTipText(model.get(0).replace("&nbsp;-&nbsp;", "<br>"));
+		recentSessionsComboBox.setToolTipText(model.get(0).replace("&nbsp;-&nbsp;", "<br>"));
 	}
 
 	private void hideRecentSessionsPanel() {
-		resentSessionsComboBox.setVisible(false);
+		recentSessionsComboBox.setVisible(false);
 		jPanel11.setVisible(false);
 		jPanel12.setVisible(false);
 		jTabbedPane1.setBorder(null);
@@ -2181,7 +2181,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton restoreButton;
     // End of variables declaration//GEN-END:variables
     private javax.swing.JComboBox locationComboBox = new JComboBox2();
-    private JComboBox2 resentSessionsComboBox = new JComboBox2();
+    private JComboBox2 recentSessionsComboBox = new JComboBox2();
 
 	private static final long serialVersionUID = -3983034803834547687L;
 	
