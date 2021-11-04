@@ -2342,7 +2342,7 @@ public abstract class Desktop extends JDesktopPane {
 						brighter(fgColor.getRed(), f ),
 						brighter(fgColor.getGreen(), f),
 						brighter(fgColor.getBlue(), f)) : color);
-				so = inTempClosure && pbg? 8 : 0;
+				so = inTempClosure && pbg? 6 : 0;
 			} else {
 				g2d.setColor(inTempClosure && pbg? new Color(200, 100, 200) : color);
 			}
