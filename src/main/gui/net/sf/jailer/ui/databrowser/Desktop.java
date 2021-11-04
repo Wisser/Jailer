@@ -2336,7 +2336,7 @@ public abstract class Desktop extends JDesktopPane {
 			} else if (UIUtil.plaf == PLAF.FLAT) {
 				double f = 4;
 				if (fgColor.getGreen() > fgColor.getRed() + fgColor.getBlue()) {
-					f = 1.5;
+					f = 2.0;
 				}
 				g2d.setColor(inTempClosure && pbg? new Color(
 						brighter(fgColor.getRed(), f ),
