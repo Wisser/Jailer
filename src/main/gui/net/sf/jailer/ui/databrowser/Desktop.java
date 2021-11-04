@@ -1570,7 +1570,7 @@ public abstract class Desktop extends JDesktopPane {
 		} else if (association.isInsertDestinationBeforeSource()) {
 			color = new java.awt.Color(190, 30, 0);
 		} else if (association.isInsertSourceBeforeDestination()) {
-			color = new java.awt.Color(60, 132, 0);
+			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(60, 182, 0) : new java.awt.Color(60, 132, 0);
 		}
 		return color;
 	}
@@ -1580,7 +1580,7 @@ public abstract class Desktop extends JDesktopPane {
 		if (association.isIgnored()) {
 			color = new java.awt.Color(133, 133, 153);
 		} else if (association.isInsertSourceBeforeDestination()) {
-			color = new java.awt.Color(0, 180, 80);
+			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(0, 220, 80) : new java.awt.Color(0, 180, 80);
 		} else if (association.isInsertDestinationBeforeSource()) {
 			color = new java.awt.Color(230, 0, 60);
 		}
@@ -2276,7 +2276,7 @@ public abstract class Desktop extends JDesktopPane {
 									Runnable task = new Runnable() {
 										@Override
 										public void run() {
-											paintLink(start, end, color, g2d, tableBrowser, pbg, link.intersect,
+											paintLink(start, end, color, link.color2, g2d, tableBrowser, pbg, link.intersect,
 												link.dotted,
 												linksToRender.size() == 1 ? 0.5 : (ir + 1) * 1.0 / linksToRender.size(),
 												finalLight, followMe,
@@ -2325,17 +2325,28 @@ public abstract class Desktop extends JDesktopPane {
 	long lastAnimationStepTime = 0;
 	final long STEP_DELAY = 50;
 
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser,
+	private void paintLink(Point2D start, Point2D end, Color color, Color fgColor, Graphics2D g2d, RowBrowser tableBrowser,
 			boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light,
 			Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inTempClosure, boolean inClosureRootPath,
 			boolean isToParentLink, boolean doPaint) {
+		int so = 0;
 		if (doPaint) {
 			if (UIUtil.plaf == PLAF.NIMBUS) {
 				g2d.setColor(inTempClosure && !pbg? new Color(220, 220, 255) : color);
+			} else if (UIUtil.plaf == PLAF.FLAT) {
+				double f = 4;
+				if (fgColor.getGreen() > fgColor.getRed() + fgColor.getBlue()) {
+					f = 1.5;
+				}
+				g2d.setColor(inTempClosure && pbg? new Color(
+						brighter(fgColor.getRed(), f ),
+						brighter(fgColor.getGreen(), f),
+						brighter(fgColor.getBlue(), f)) : color);
+				so = inTempClosure && pbg? 8 : 0;
 			} else {
 				g2d.setColor(inTempClosure && pbg? new Color(200, 100, 200) : color);
 			}
-			BasicStroke stroke = new BasicStroke((!intersect ? (pbg ? inClosure? 3 : 2 : 1) : (pbg ? 3 : 2)));
+			BasicStroke stroke = new BasicStroke(so > 0? so : (!intersect ? (pbg ? inClosure? 3 : 2 : 1) : (pbg ? 3 : 2)));
 			if (inClosure) {
 				final int LENGTH = 16;
 				g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f },

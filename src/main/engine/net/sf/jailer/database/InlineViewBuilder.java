@@ -132,5 +132,8 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 	 * @param inlineView the inline-view
 	 */
 	protected abstract void process(String inlineView) throws SQLException;
+	
+	// TODO 1
+	// TODO casting as DMLTransformer does for "upsert" (esp. with Postgres, "interval of date? integer?" look at vissue)
 
 }

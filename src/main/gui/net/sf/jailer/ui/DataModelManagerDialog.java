@@ -546,7 +546,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					"<font color=\"#006600\">" +
 					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : ("<b>" + UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "</b>") + "&nbsp;-&nbsp;<font color=\"#000000\">" + 
 					"<font color=\"#0000ff\">" +
-					(lastSession.getContentInfo() != null? UIUtil.toHTMLFragment(lastSession.getContentInfo(), 0) + "&nbsp;-&nbsp;" : "") + 
+					(lastSession.getContentInfo() != null? UIUtil.toHTMLFragment(lastSession.getContentInfo().replaceFirst("^\\d+ Table$", "$0s"), 0) + "&nbsp;-&nbsp;" : "") + 
 					"</font>" +
 					"<font color=\"#663300\">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
@@ -2198,4 +2198,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         histIcon = UIUtil.readImage("/history.png");
 	}
 
+	// TODO 1
+	// TODO single app with module selection here?
+	
 }
