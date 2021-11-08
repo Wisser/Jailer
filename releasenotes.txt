@@ -1,4 +1,4 @@
-11.2.0
+11.2
   - New and modern user interface look and feel.
 
 11.1.5
