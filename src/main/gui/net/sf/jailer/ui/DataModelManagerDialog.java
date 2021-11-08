@@ -375,6 +375,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		setLocation(70, 80);
 		pack();
 		setSize(Math.max(840, getWidth()), 536);
+		UIUtil.fit(this);
 		refresh();
 
 		initRestoreLastSessionButton();
@@ -506,6 +507,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 		
 		List<String> model = new ArrayList<String>();
+		List<ImageIcon> logos = new ArrayList<ImageIcon>();
 		List<ActionListener> actions = new ArrayList<ActionListener>();
 		
 		for (Iterator<BookmarkId> i = lastSessions.iterator(); i.hasNext(); ) {
@@ -527,7 +529,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				continue;
 			}
 			Pair<String, Long> details = modelDetails.get(lastSession.datamodelFolder);
-			boolean needUserName = connectionInfo != null && connectionInfo.user != null && !connectionInfo.alias.startsWith(connectionInfo.user + "@");
+			String userName = connectionInfo != null && connectionInfo.user != null && connectionInfo.user.length() > 0? connectionInfo.user : " ";
+			String dbmsLogoURL = connectionInfo != null? UIUtil.getDBMSLogoURL(connectionInfo.url) : null;
+			
+			if (dbmsLogoURL == null) {
+				logos.add(null);
+			} else {
+				logos.add(UIUtil.scaleIcon(new JLabel(), UIUtil.readImage(dbmsLogoURL, false), 1.0));
+			}
+			
 			model.add("<html><nobr>" + 
 					UIUtil.toHTMLFragment(UIUtil.toDateAsString(date.getTime()), 0) + "&nbsp;-&nbsp;" +
 					(module.equals("S")?
@@ -539,7 +549,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					("<font color=\"#006600\">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
 					"</font>&nbsp;-&nbsp;<font color=\"#663300\">" +
-					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(((needUserName && connectionInfo.user != null && connectionInfo.user.trim().length() > 0? connectionInfo.user + " - " : "") + connectionInfo.url), 0) + "</font>") + 
+					(connectionInfo == null? "<i><font color=\"#888888\">offline</font></i>" : UIUtil.toHTMLFragment(connectionInfo.alias, 0) + "&nbsp;-&nbsp;<font color=\"#000000\">" + UIUtil.toHTMLFragment(((userName + " - ") + connectionInfo.url), 0, false) + "</font>") + 
 					"</font></nobr></html>")
 					:
 					(
@@ -550,7 +560,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					"</font>" +
 					"<font color=\"#663300\">" +
 					UIUtil.toHTMLFragment(((details != null? details.a : lastSession.datamodelFolder)), 0) + 
-					"</font>&nbsp;-&nbsp;" + UIUtil.toHTMLFragment(((needUserName && connectionInfo.user != null && connectionInfo.user.trim().length() > 0? connectionInfo.user + " - " : "") + connectionInfo.url), 0) + "</font>") + 
+					"</font>&nbsp;-&nbsp;" + UIUtil.toHTMLFragment(userName + " - " + connectionInfo.url, 0, false) + "</font>") + 
 					"</font>")					
 					) +
 					"</nobr></html>");
@@ -594,12 +604,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		});
 		Map<String, String[]> vals = new HashMap<String, String[]>();
+		Map<String, ImageIcon> dbLogos = new HashMap<String, ImageIcon>();
 		int[] prefWidth = new int[20];
 		int maxSum = 0;
 		for (int i = 0; i < model.size(); ++i) {
 			String[] v = model.get(i).replaceFirst("^", "").replaceFirst("</nobr></html>$", "").trim().split("&nbsp;-&nbsp;");
 			vals.put(model.get(i), v);
-			int sum = 0;
+			dbLogos.put(model.get(i), logos.get(i));
+			int sum = 16;
 			for (int j = 0; j < v.length; ++j) {
 				int pWidth = new JLabel("<html><nobr>" + v[j] + "</nobr></html>").getPreferredSize().width;
 				prefWidth[j] = Math.max(prefWidth[j], pWidth);
@@ -627,21 +639,24 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				if (val != null) {
 					JPanel panel = new JPanel(new GridBagLayout());
 					GridBagConstraints gbc = new GridBagConstraints();
-					for (int i = 0; i < val.length; ++i) {
+					for (int i = -1; i < val.length; ++i) {
 						if (index < 0 && (module.equals("S") && i >= 4 || !module.equals("S") && i >= 5)) {
 							break;
 						}
-						gbc.gridx = i;
+						gbc.gridx = i + 1;
 						gbc.gridy = 1;
 						gbc.insets = new Insets(0, 0, 0, 8);
-						JLabel label = new JLabel("<html><nobr>" + val[i] + "</nobr></html>");
+						JLabel label = new JLabel(i >= 0? "<html><nobr>" + val[i] + "</nobr></html>" : " ");
 						if (i == 2 && !module.equals("S")) {
 							label.setHorizontalAlignment(SwingConstants.RIGHT);
 						}
 						if (i < val.length - 1) {
-							label.setPreferredSize(new Dimension(prefWidth[i], label.getPreferredSize().height));
+							label.setPreferredSize(new Dimension(i >= 0? prefWidth[i] : 24, label.getPreferredSize().height));
 							label.setMinimumSize(label.getPreferredSize());
 							label.setMaximumSize(label.getPreferredSize());
+						}
+						if (i < 0) {
+							label.setIcon(dbLogos.get(value));
 						}
 						panel.add(label, gbc);
 					}
@@ -1732,7 +1747,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 7);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 7);
         jPanel10.add(restoreButton, gridBagConstraints);
 
         dummyLabel.setText(" ");

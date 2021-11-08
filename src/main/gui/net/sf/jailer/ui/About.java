@@ -328,8 +328,5 @@ public class About extends javax.swing.JDialog {
         // load images
         okIcon = UIUtil.readImage("/buttonok.png");
 	}
-	
-	// TODO
-	// JRE Requirement, deutlich machen, dass das nur bei non-msi/deb noetig
 
 }

@@ -25,14 +25,6 @@ https://user-images.githubusercontent.com/861721/137641099-eff66c8a-5cad-4ec4-a4
  - A demo database is included with which you can get a first impression without any configuration effort.
 
 
-## Prerequisites
-
- - Java JRE 8 (or above)
-    - Windows and Linux installation programs (\*.msi and \*.deb) already contain a JRE. If you use them, no further installation is needed.
-    - Important: due to HiDPI graphics support, Java JRE 11 (or above) is strongly recommended.
- - JDBC-driver for your RDBMS
-     - For most  popular database systems a driver is already included.
-
 ## News
 
  - 2021-02-04    Cycles in parent-child relationships will be detected and broken. Thus, such data can be exported by deferring the insertion of nullable foreign keys.
@@ -51,10 +43,9 @@ https://user-images.githubusercontent.com/861721/137641099-eff66c8a-5cad-4ec4-a4
 
 ## Installation
 
-If you do not want to install Java yourself, use the installation file "Jailer-n.n.n-with-java-JRE.msi" (for Windows) or "jailer-database-tools_10.2.2-x64-with-java-JRE.deb" (for Linux).
+Use the installation file "Jailer-database-tools-n.n.n.msi" (for Windows) or "jailer-database-tools_n.n.n-x64.deb" (for Linux).
 
-Otherwise use the installer "Jailer-Install-n.n.n.exe" or unzip the file "jailer_n.n.n.zip".
-See also <a href="https://wisser.github.io/Jailer/faq.html#multiuser">https://wisser.github.io/Jailer/faq.html#multiuser</a>
+Unless you want to use your own Java installation. Then unzip the file "jailer_n.n.n.zip". See also <a href="https://wisser.github.io/Jailer/faq.html#multiuser">https://wisser.github.io/Jailer/faq.html#multiuser</a>
 
 To start the tool from the unpacked zip:
 

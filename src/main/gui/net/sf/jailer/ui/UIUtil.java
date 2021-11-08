@@ -1099,9 +1099,15 @@ public class UIUtil {
     public static String toHTML(String plainText, int maxLineLength) {
     	return "<html>" + toHTMLFragment(plainText, maxLineLength);
     }
-
+    
     public static String toHTMLFragment(String plainText, int maxLineLength) {
-    	plainText = plainText.trim();
+    	return toHTMLFragment(plainText, maxLineLength, true);
+    }
+    
+    public static String toHTMLFragment(String plainText, int maxLineLength, boolean trim) {
+    	if (trim) {
+    		plainText = plainText.trim();
+    	}
         if (maxLineLength > 0) {
             StringBuilder sb = new StringBuilder();
             int MAXLINES = 50;
@@ -1911,8 +1917,10 @@ public class UIUtil {
 
 	private static void setOpacity(Window w, float opacity) {
     	try {
-    		w.setOpacity(opacity);
-    		opacityfailed = false;
+    		if (!opacityfailed) {
+    			w.setOpacity(opacity);
+    			opacityfailed = false;
+    		}
 		} catch (Exception e) {
 			if (!warned) {
 				LogUtil.warn(e);
@@ -1966,7 +1974,7 @@ public class UIUtil {
 		hiddenWindows.keySet().forEach(w -> wStack.push(w));
 		while (!wStack.isEmpty()) {
 			Window w = wStack.pop();
-			w.setOpacity(hiddenWindows.get(w));
+			setOpacity(w, hiddenWindows.get(w));
 		}
 		hiddenWindows.clear();
 	}

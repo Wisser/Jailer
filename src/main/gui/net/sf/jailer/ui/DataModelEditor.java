@@ -327,11 +327,12 @@ public class DataModelEditor extends javax.swing.JDialog {
 		setLocation(100, 32);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		if (screenSize == null || screenSize.width < 1200) {
-			setSize(1000, 700);
+			setSize(1000, 600);
 		} else {
 			setSize(Math.min(screenSize.width - 2 * getX(), 2000), Math.min(screenSize.height - 2 * getY(), 800));
 		}
-
+		UIUtil.fit(this);
+		
 		File modelFinderColumnFile = new File(ModelBuilder.getModelBuilderColumnsFilename(executionContext));
 		if (merge && modelFinderColumnFile.exists()) {
 			for (CsvFile.Line l: new CsvFile(modelFinderColumnFile).getLines()) {

@@ -343,5 +343,8 @@ public class Configuration {
 	static {
 		DBMS.values(); // trigger static init
 	}
+	
+	// TODO "java.lang.NullPointerException: Cannot invoke "java.lang.reflect.Method.invoke(Object, Object[])" because "com.sun.xml.bind.v2.runtime.reflect.opt.Injector.defineClass" is null"
+	// https://sourceforge.net/p/offroadosm/code/ci/3c27a93674dc74e0746c37472c1ce4c41f94bff5/
 
 }
