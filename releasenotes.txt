@@ -1,3 +1,7 @@
+11.2.1
+  - Improved filtering of ad-hoc queries in the SQL console.
+  - Fixed for "User-defined DataTypes (MS SQL Server)". See https://sourceforge.net/p/jailer/discussion/700498/thread/3ed408eb/
+
 11.2
   - New and modern user interface look and feel.
 
