@@ -7411,7 +7411,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				// nothing to do
 				break;
 			case FLAT:
-				// nothing to do
+				result.y = ready == null? 4 : -(rowsTable.getTableHeader().getHeight() - ready.getIconHeight()) / 2 + 6;
 				break;
 			case NIMBUS:
 				RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();

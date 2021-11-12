@@ -464,22 +464,24 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		parseCondition(condition, null);
 	}
 	
+	private boolean hasCondition = false;
+	
 	/**
 	 * Parses a condition and updates the UI accordingly.
 	 * 
 	 * @param condition the condition
 	 */
 	public void parseCondition(String condition, Runnable afterParsing) {
-		if (latestCondition != null && latestCondition.equals(condition)) {
-			return;
-		}
-		latestCondition = condition;
 		String formated = new BasicFormatterImpl().format(condition);
 		if (formated.trim().isEmpty()) {
 			formated = "";
 		} else {
 			formated += "\n";
 		}
+		if (hasCondition && editor.getText().equals(condition)) {
+			return;
+		}
+		hasCondition = true;
 		editor.setText(formated);
 		editor.discardAllEdits();
 		editor.setCaretPosition(0);
@@ -795,7 +797,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		return value;
 	}
 
-	private String latestCondition = null;
 	private String latestParsedCondition = null;
 	private Map<Column, Pair<Integer, Integer>> valuePositions = new HashMap<Column, Pair<Integer, Integer>>();
 	private Map<Column, Pair<Integer, Integer>> fullPositions = new HashMap<Column, Pair<Integer, Integer>>();
@@ -1104,12 +1105,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					} else if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
 						onEscape();
 					}
+					stopFading();
 				}
 				@Override
 				public void keyReleased(KeyEvent e) {
+					stopFading();
 				}
 				@Override
 				public void keyPressed(KeyEvent e) {
+					stopFading();
 				}
 			});
 			DBConditionEditor.initialObserve(valueTextField, x -> openStringSearchPanel(valueTextField, comparison), () -> openStringSearchPanel(valueTextField, comparison));
@@ -1479,6 +1483,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		reduceOpacityRetentionTimer.restart();
 	};
 	
+	private void stopFading() {
+		if (useOpacity) {
+	    	setOpacity(1f);
+	    	reduceOpacityRetentionTimer.stop();
+		}
+	}
+	
 	public void prepareStringSearchPanelOfInitialColumn(Window dialog) {
 		if (initialColumn >= 0) {
 			useOpacity = true;
@@ -1686,10 +1697,11 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		}
 		
 		String condition;
-		Pair<Integer, Integer> pp = WCTypeAnalyser.getPositivePosition(comparison.column.name, editor.getText());
+		Pair<Integer, Integer> pp = WCTypeAnalyser.getPositivePosition(comparison.column.name, getAlternativeNames(comparison.column.name), editor.getText());
 		if (!(pp == null || pp.a != 0)) {
 			if (tableAlias != null) {
-				pp = WCTypeAnalyser.getPositivePosition(tableAlias + "." + comparison.column.name, editor.getText());
+				String name = tableAlias + "." + comparison.column.name;
+				pp = WCTypeAnalyser.getPositivePosition(name, getAlternativeNames(comparison.column.name), editor.getText());
 			}
 		}
 		boolean positiveEquals;
@@ -1933,6 +1945,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		});
     }
     
+	protected Set<String> getAlternativeNames(String name) {
+		return null;
+	}
+
 	private boolean editorHadFocus = false;
 
 	private Object nextCancellationContext = new Object();
@@ -2189,7 +2205,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				editor.setText(latestParsedCondition);
 				String erased;
 				for (int i = 0;; ++i) {
-					erased = "e" + i;
+					erased = "%e" + i + "%";
 					if (!latestParsedCondition.contains(erased)) {
 						break;
 					}
@@ -2329,10 +2345,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		String whiteSpaceOrComment = "\\s*((?:(?:(?:/\\*.*?\\*/)|(?:\\-\\-.*?(?:\n|$))))\\s*)*\\s*";
 		
 		for (;;) {
-			String cleanText = sqlCondition
-					.replaceFirst("(?is)\\(" + whiteSpaceOrComment + erased + whiteSpaceOrComment + "\\)", "$1" + erased + "$2")
-					.replaceFirst("(?is)\\b(and|or|not)\\b" + whiteSpaceOrComment + erased + whiteSpaceOrComment + "\\b(and|or|not)\\b", "$1$2" + erased + "$3$4")
-					.replaceFirst("(?is)\\b(and|or|not)\\b" + whiteSpaceOrComment + erased, "$2" + erased);
+			String cleanText = sqlCondition;
+			cleanText = cleanText.replaceFirst("(?is)\\(" + whiteSpaceOrComment + erased + whiteSpaceOrComment + "\\)", "$1 " + erased + " $2");
+			cleanText = cleanText.replaceFirst("(?is)\\b(and|or|not)\\b" + whiteSpaceOrComment + erased + whiteSpaceOrComment + "\\b(and|or|not)\\b", "$1$2" + erased + "$3$4");
+			cleanText = cleanText.replaceFirst("(?is)\\b(and|or|not)\\b" + whiteSpaceOrComment + erased, "$2" + erased);
+			
+			cleanText = cleanText.replaceFirst("(?is)\\(" + whiteSpaceOrComment + erased + whiteSpaceOrComment + "\\b(and|or)\\b", "($1$2");
+			
 			if (cleanText.equals(sqlCondition)) {
 				break;
 			}

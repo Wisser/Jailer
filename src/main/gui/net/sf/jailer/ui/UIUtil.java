@@ -2018,6 +2018,8 @@ public class UIUtil {
                     UIManager.put( "ScrollBar.showButtons", true );
                     UIManager.put( "ScrollBar.width", 14 );
                     UIManager.put( "InternalFrame.borderMargins", new Insets(3,4,1,1));
+                    UIManager.put( "TableHeader.separatorColor", Color.lightGray);
+                    
 //                    UIManager.put( "TextArea.background", Color.white);
                      
                     FlatLightLaf.setup();

@@ -96,6 +96,9 @@ public class BasicFormatterImpl {
 	static final String initial = "\n     ";
 	
 	public String format(String sql) {
+		if (sql.length() > 100_000) {
+			return sql; // too big
+		}
 		String marker;
 		for (int i = 0; ; ++i) {
 			marker = "prop" + i + "porp";

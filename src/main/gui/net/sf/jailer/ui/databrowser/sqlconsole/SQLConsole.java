@@ -27,8 +27,6 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -67,6 +65,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -82,15 +81,14 @@ import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
-import javax.swing.border.LineBorder;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.border.LineBorder;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
@@ -157,6 +155,7 @@ import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Pair;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 
@@ -887,7 +886,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				
 				List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, true, sqlColumnExpression, metaDataSource);
 				List<Table> nfResultTypesWOCheck = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, false, sqlColumnExpression, metaDataSource);
-				Result wcbt = WCTypeAnalyser.getType(sqlStatement, metaDataSource);
+				Result wcbt = WCTypeAnalyser.getType(sqlStatement, metaDataSource, Quoting.getQuoting(session));
 				int columnCount = metaData.getColumnCount();
 				if (wcbt != null && wcbt.table != null && wcbt.table.getColumns().size() != columnCount) {
 					wcbt = null;
@@ -2715,7 +2714,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							
 							@Override
 							protected String columnNameToRegExp(String name) {
-								return SqlUtil.createSQLFragmentSearchPattern(name, false);
+								Set<String> names = wcBaseTable.getAlternativeNames(name);
+								if (names == null) {
+									return SqlUtil.createSQLFragmentSearchPattern(name, false);
+								} else {
+									return "(?:" + names.stream().map(aName -> "(?:" + SqlUtil.createSQLFragmentSearchPattern(aName, false) + ")").collect(Collectors.joining("|")) + ")";
+								}
+							}
+
+							@Override
+							protected Set<String> getAlternativeNames(String name) {
+								return wcBaseTable != null? wcBaseTable.getAlternativeNames(name) : null;
 							}
 						};
 						popUpWhereConditionEditorPanel.setTableAlias(null);
@@ -2733,7 +2742,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							for (int i = 0; i < wcBaseTable.table.getColumns().size(); ++i) {
 								Column c = wcBaseTable.table.getColumns().get(i);
 								if (c != null && c.name != null) {
-									Pair<Integer, Integer> pe = WCTypeAnalyser.getPositivePosition(c.name, condition);
+									Pair<Integer, Integer> pe = WCTypeAnalyser.getPositivePosition(c.name, wcBaseTable.getAlternativeNames(c.name), condition);
 									if (pe != null) {
 										positivesPos.put(c, pe);
 										if (pe.a != 0) {

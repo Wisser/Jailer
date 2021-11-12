@@ -238,7 +238,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		initConnectionDialog(true);
 		initConnectionDialog(false);
 		JTable bookmarkTable = initBookmarkTables();
-
+		bookmarkTable.setAutoCreateRowSorter(true);
+		
 		final TableCellRenderer defaultTableCellRenderer = dataModelsTable
 				.getDefaultRenderer(String.class);
 		dataModelsTable.setShowGrid(false);
@@ -734,6 +735,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			bookmarksListModel.clear();
 			bookmarksListModel.addAll(newBookmarksListModel);
 		}
+		bookmarksListModel.sort((a, b) ->  String.valueOf(a.bookmark).compareToIgnoreCase(String.valueOf(b.bookmark)));
 		Object[][] data = new Object[bookmarksListModel.size()][];
 		for (int i = 0; i < bookmarksListModel.size(); ++i) {
 			BookmarkId bookmark = bookmarksListModel.get(i);
@@ -769,7 +771,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		};
 
 		final JTable jTable = new JTable();
-
+		jTable.setAutoCreateRowSorter(true);
+		
 		jTable.setModel(tableModel);
 
 		final TableCellRenderer defaultTableCellRenderer = jTable.getDefaultRenderer(String.class);

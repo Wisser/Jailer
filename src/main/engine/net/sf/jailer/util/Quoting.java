@@ -226,9 +226,20 @@ public class Quoting {
 	 * @return quoted identifier
 	 */
 	public String requote(String identifier) {
+		return requote(identifier, false);
+	}
+	
+	/**
+	 * Quotes an identifier only if it is already quoted (potentially with a different quoting-string).
+	 * 
+	 * @param identifier
+	 *            the identifier
+	 * @return quoted identifier
+	 */
+	public String requote(String identifier, boolean force) {
 		if (identifier != null) {
 			identifier = identifier.trim();
-			if (isQuoted(identifier)) {
+			if (force || isQuoted(identifier)) {
 				return quote + unquote(identifier) + quote;
 			}
 		}

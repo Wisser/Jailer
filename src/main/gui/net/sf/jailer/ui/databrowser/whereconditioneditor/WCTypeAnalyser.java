@@ -17,9 +17,12 @@ package net.sf.jailer.ui.databrowser.whereconditioneditor;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -166,6 +169,113 @@ public class WCTypeAnalyser {
 		public int conditionEnd;
 		public String originalQuery;
 		
+		public Set<String> getAlternativeNames(String name) {
+			Set<String> names = alternativeNames.get(name);
+			if (names == null) {
+				names = alternativeNames.get("(" + name + ")");
+			}
+			return names;
+		}
+		
+		private Map<String, Set<String>> alternativeNames = new LinkedHashMap<String, Set<String>>();
+		
+		private void addAlternativeName(String name, String alternativeName, Quoting quoting) {
+			Set<String> names = alternativeNames.get(name);
+			if (names == null) {
+				names = new HashSet<String>();
+				alternativeNames.put(name, names);
+			}
+			names.add(alternativeName);
+			if (isValidQuoting(alternativeName)) {
+				names.add(quoting.unquote(alternativeName));
+			}
+			String quoted = quoting.requote(alternativeName, true);
+			if (isValidQuoting(quoted)) {
+				names.add(quoted);
+			}
+			if (isValidBracketing(alternativeName)) {
+				names.add(alternativeName.substring(1, alternativeName.length() - 1).trim());
+			}
+			String bracket = "(" + alternativeName + ")";
+			if (isValidBracketing(bracket)) {
+				names.add(bracket);
+			}
+		}
+		
+		private void addAlternativeName(String name, String altQuantifier, String alternativeName,
+				Quoting quoting) {
+			String uqAltQuantifier = null;
+			String qAltQuantifier = null;
+			if (quoting.isQuoted(altQuantifier) && isValidQuoting(altQuantifier)) {
+				uqAltQuantifier = quoting.unquote(altQuantifier);
+			}
+			String quoted = quoting.requote(altQuantifier, true);
+			if (isValidQuoting(quoted)) {
+				qAltQuantifier = quoted;
+			}
+			uqAltQuantifier = uqAltQuantifier == null? altQuantifier : uqAltQuantifier;
+			qAltQuantifier = qAltQuantifier == null? altQuantifier : qAltQuantifier;
+			
+			String uqAlternativeName = null;
+			String qAlternativeName = null;
+			if (quoting.isQuoted(alternativeName) && isValidQuoting(alternativeName)) {
+				uqAlternativeName = quoting.unquote(alternativeName);
+			}
+			quoted = quoting.requote(alternativeName, true);
+			if (isValidQuoting(quoted)) {
+				qAlternativeName = quoted;
+			}
+			uqAlternativeName = uqAlternativeName == null? alternativeName : uqAlternativeName;
+			qAlternativeName = qAlternativeName == null? alternativeName : qAlternativeName;
+			
+			addAlternativeName(name, qAltQuantifier + "." + qAlternativeName, quoting);
+			addAlternativeName(name, uqAltQuantifier + "." + uqAlternativeName, quoting);
+			addAlternativeName(name, uqAltQuantifier + "." + qAlternativeName, quoting);
+			addAlternativeName(name, qAltQuantifier + "." + uqAlternativeName, quoting);
+		}
+		
+		private boolean isValidQuoting(String name) {
+			if (name.length() < 3) {
+				return false;
+			}
+			if (name.charAt(0) != name.charAt(name.length() - 1)) {
+				return false;
+			}
+			String mid = name.substring(1, name.length() - 1);
+			return mid.indexOf(name.charAt(0)) < 0 && mid.indexOf('.') < 0;
+		}
+		
+		private boolean isValidBracketing(String name) {
+			if (!(name.startsWith("(") && name.endsWith(")"))) {
+				return false;
+			}
+			int level = 0;
+			for (int i = 0; i < name.length(); ++i) {
+				char c = name.charAt(i);
+				if (c == '(') {
+					++level;
+				} else if (c == ')') {
+					--level;
+					if (level < 0) {
+						return false;
+					}
+				}
+			}
+			return level == 0;
+		}
+		
+		public void addAlias(String name, String alias) {
+			Set<String> names = alternativeNames.get(name);
+			if (names == null) {
+				names = new HashSet<String>();
+				alternativeNames.put(name, names);
+			}
+			names.add(alias);
+			names.add(name);
+			alternativeNames.put(alias, names);
+		}
+
+		// TODO 0
 		// TODO alternative column names for each column. Quoted/Unquoted, Qualified/Unqualifies, +/- '('/')'
 
 		@Override
@@ -182,7 +292,7 @@ public class WCTypeAnalyser {
 	 * @param sqlSelect the query
 	 * @return the type or <code>null</code>
 	 */
-	public static Result getType(String sqlSelect, final MetaDataSource metaDataSource) {
+	public static Result getType(String sqlSelect, MetaDataSource metaDataSource, Quoting quoting) {
 		Result result = new Result();
 		result.originalQuery = sqlSelect;
 		net.sf.jsqlparser.statement.Statement st;
@@ -197,9 +307,9 @@ public class WCTypeAnalyser {
 			int[] unknownTableCounter = new int[1];
 			final LinkedHashMap<String, MDTable> fromClause = analyseFromClause(st, unknownTableCounter, metaDataSource);
 			final List<net.sf.jailer.datamodel.Column> selectClause = new ArrayList<net.sf.jailer.datamodel.Column>();
-			
+
 			st.accept(new StatementVisitorAdapter() {
-				
+
 				private void clearInStatement(Object o) {
 					if (o != null) {
 						Pair<Integer, Integer> pos = null;
@@ -369,6 +479,18 @@ public class WCTypeAnalyser {
 													} catch (SQLException e) {
 														// ignore
 													}
+													if (unknownTableCounter[0] == 0) {
+														String uniqueColumnAlias = findUniqueAliasOfTableColumn(column[0].getColumnName(), fromClause);
+														if (uniqueColumnAlias != null) {
+															if (column[0].getTable() != null) {
+																if (idEquals(column[0].getTable().getFullyQualifiedName(), uniqueColumnAlias, false)) {
+																	result.addAlternativeName(sql, column[0].getColumnName(), quoting);
+																}
+															} else {
+																result.addAlternativeName(sql, uniqueColumnAlias, column[0].getColumnName(), quoting);
+															}
+														}
+													}
 												}
 											}
 											net.sf.jailer.datamodel.Column col = new net.sf.jailer.datamodel.Column(sql, null, -1, -1);
@@ -402,6 +524,19 @@ public class WCTypeAnalyser {
 												col = new net.sf.jailer.datamodel.Column((unknownTableCounter[0] != 0 || fromClause.size() != 1? tableAlias + "." : "") + c, null, -1, -1);
 												col.isNullable = isNullable;
 												selectClause.add(col);
+												
+												if (unknownTableCounter[0] == 0) {
+													String uniqueColumnAlias = findUniqueAliasOfTableColumn(c, fromClause);
+													if (uniqueColumnAlias != null) {
+														if (idEquals(allTableColumns.getTable().getFullyQualifiedName(), uniqueColumnAlias, false)) {
+															if (fromClause.size() != 1) {
+																result.addAlternativeName(col.name, c, quoting);
+															} else {
+																result.addAlternativeName(col.name, tableAlias, c, quoting);
+															}
+														}
+													}
+												}
 											}
 										} catch (SQLException e) {
 											logger.info("error", e);
@@ -427,6 +562,19 @@ public class WCTypeAnalyser {
 													col = new net.sf.jailer.datamodel.Column((unknownTableCounter[0] != 0 || fromClause.size() != 1? e.getKey() + "." : "") + c, null, -1, -1);
 													col.isNullable = isNullable;
 													selectClause.add(col);
+
+													if (unknownTableCounter[0] == 0) {
+														String uniqueColumnAlias = findUniqueAliasOfTableColumn(c, fromClause);
+														if (uniqueColumnAlias != null) {
+															if (idEquals(e.getKey(), uniqueColumnAlias, false)) {
+																if (fromClause.size() != 1) {
+																	result.addAlternativeName(col.name, c, quoting);
+																} else {
+																	result.addAlternativeName(col.name, e.getKey(), c, quoting);
+																}
+															}
+														}
+													}
 												}
 											} catch (SQLException e2) {
 												logger.info("error", e2);
@@ -452,7 +600,9 @@ public class WCTypeAnalyser {
 					net.sf.jailer.datamodel.Column c2 = selectClause.get(i2);
 					if (c1 != null && c2 != null && c1 != c2 && c1.name != null && c2.name != null) {
 						if (c1.name.replaceAll("\\s+", "").toLowerCase().endsWith(c2.name.replaceAll("\\s+", "").toLowerCase())) {
-							net.sf.jailer.datamodel.Column newColumn = new net.sf.jailer.datamodel.Column("(" + c1.name + ")", c1.type, c1.length, c1.precision);
+							String name = "(" + c1.name + ")";
+							result.addAlias(c1.name, name);
+							net.sf.jailer.datamodel.Column newColumn = new net.sf.jailer.datamodel.Column(name, c1.type, c1.length, c1.precision);
 							newColumn.isNullable = c1.isNullable;
 							selectClause.set(i1, newColumn);
 						}
@@ -469,6 +619,8 @@ public class WCTypeAnalyser {
 			if (result.table.getColumns().isEmpty()) {
 				return null;
 			}
+			
+			selectClause.forEach(c -> result.addAlternativeName(c.name, c.name, quoting));
 			
 			return result;
 		} catch (QueryTooComplexException e) {
@@ -632,6 +784,31 @@ public class WCTypeAnalyser {
 		return null;
 	}
 
+	private static String findUniqueAliasOfTableColumn(String columnName, LinkedHashMap<String, MDTable> fromClause) throws SQLException {
+		String alias = null;
+		for (Entry<String, MDTable> e: fromClause.entrySet()) {
+			if (e.getValue() != null) {
+				try {
+					for (String column: e.getValue().getColumns()) {
+						if (idEquals(column, columnName, false)) {
+							if (alias != null) {
+								return null;
+							}
+							alias = e.getKey();
+							break;
+						}
+					}
+				} catch (SQLException ex) {
+					logger.info("error", ex);
+					throw new QueryTooComplexException();
+				}
+			} else {
+				return null;
+			}
+		}
+		return alias;
+	}
+
 	private static String findTable(String tableName, LinkedHashMap<String, MDTable> fromClause) {
 		for (boolean strict: new boolean[] { false, true }) {
 			for (Entry<String, MDTable> e: fromClause.entrySet()) {
@@ -644,6 +821,9 @@ public class WCTypeAnalyser {
 	}
 
 	private static boolean idEquals(String a, String b, boolean strict) {
+		if (a == null || b == null) {
+			return false;
+		}
 		if (strict) {
 			return a.equals(b);
 		}
@@ -1507,11 +1687,16 @@ public class WCTypeAnalyser {
 		}
 	};
 
-	public static Pair<Integer, Integer> getPositivePosition(String expr, String condition) {
+	public static Pair<Integer, Integer> getPositivePosition(String expr, Set<String> alternativeNames, String condition) {
 		if (expr == null) {
 			return null;
 		}
-		String pattern = SqlUtil.createSQLFragmentSearchPattern(expr, false);
+		String pattern;
+		if (alternativeNames == null) {
+			pattern = SqlUtil.createSQLFragmentSearchPattern(expr, false);
+		} else {
+			pattern = "(?:" + alternativeNames.stream().map(aName -> "(?:" + SqlUtil.createSQLFragmentSearchPattern(aName, false) + ")").collect(Collectors.joining("|")) + ")";
+		}
 		Pattern pat = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 		return getPositivePosition(pat, condition);
 	}
@@ -1584,21 +1769,21 @@ public class WCTypeAnalyser {
 	
 	public static void main(String args[]) {
 		
-		System.out.println(getPositivePosition("A.rzMandant", "A.ObjectId = 'dcc9802:1211af96d82:-7d45'\r\n"
+		System.out.println(getPositivePosition("A.rzMandant", null, "A.ObjectId = 'dcc9802:1211af96d82:-7d45'\r\n"
 				+ "				and A . rzMandant = 'ABIT'"));
-		System.out.println(getPositivePosition("rzMandant", "A.ObjectId = 'dcc9802:1211af96d82:-7d45'\r\n"
+		System.out.println(getPositivePosition("rzMandant", null, "A.ObjectId = 'dcc9802:1211af96d82:-7d45'\r\n"
 				+ "				and A.rzMandant = 'ABIT'"));
 
-		System.out.println(getPositivePosition("comm", "comm=1 or Empno=7902 and deptno=7902 and (comm is not null and boss is null)"));
-		System.out.println(getPositivePosition("(x + 1)", "x+1=0"));
-		System.out.println(getPositivePosition("x", "not x is not null and x=0"));
-		System.out.println(getPositivePosition("x", "x=0"));
-		System.out.println(getPositivePosition("x", "not x=0"));
-		System.out.println(getPositivePosition("x", "x is null"));
-		System.out.println(getPositivePosition("(x + 1)", "x+1=0 or y=0"));
-		System.out.println(getPositivePosition("x", "y=0"));
-		System.out.println(getPositivePosition("x", "(x=0) and (not 2 * x = 0)"));
-		System.out.println(getPositivePosition("x", "(x=0) or (not 2 * x = 0)"));
+		System.out.println(getPositivePosition("comm", null, "comm=1 or Empno=7902 and deptno=7902 and (comm is not null and boss is null)"));
+		System.out.println(getPositivePosition("(x + 1)", null, "x+1=0"));
+		System.out.println(getPositivePosition("x", null, "not x is not null and x=0"));
+		System.out.println(getPositivePosition("x", null, "x=0"));
+		System.out.println(getPositivePosition("x", null, "not x=0"));
+		System.out.println(getPositivePosition("x", null, "x is null"));
+		System.out.println(getPositivePosition("(x + 1)", null, "x+1=0 or y=0"));
+		System.out.println(getPositivePosition("x", null, "y=0"));
+		System.out.println(getPositivePosition("x", null, "(x=0) and (not 2 * x = 0)"));
+		System.out.println(getPositivePosition("x", null, "(x=0) or (not 2 * x = 0)"));
 	}
 
 }
