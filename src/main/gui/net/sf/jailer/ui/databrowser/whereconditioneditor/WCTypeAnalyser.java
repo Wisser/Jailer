@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -186,19 +187,32 @@ public class WCTypeAnalyser {
 				alternativeNames.put(name, names);
 			}
 			names.add(alternativeName);
+			
+			Set<String> finalNames = names;
+			Consumer<String> bracketing = bName -> {
+				if (isValidBracketing(bName)) {
+					finalNames.add(bName.substring(1, bName.length() - 1).trim());
+				}
+				String bracket = "(" + bName + ")";
+				if (isValidBracketing(bracket)) {
+					finalNames.add(bracket);
+				}
+			};
+			bracketing.accept(alternativeName);
+
 			if (isValidQuoting(alternativeName)) {
-				names.add(quoting.unquote(alternativeName));
+				String unquoted = quoting.unquote(alternativeName);
+				names.add(unquoted);
+				if (!alternativeName.equals(unquoted)) {
+					bracketing.accept(unquoted);
+				}
 			}
 			String quoted = quoting.requote(alternativeName, true);
 			if (isValidQuoting(quoted)) {
 				names.add(quoted);
-			}
-			if (isValidBracketing(alternativeName)) {
-				names.add(alternativeName.substring(1, alternativeName.length() - 1).trim());
-			}
-			String bracket = "(" + alternativeName + ")";
-			if (isValidBracketing(bracket)) {
-				names.add(bracket);
+				if (!alternativeName.equals(quoted)) {
+					bracketing.accept(quoted);
+				}
 			}
 		}
 		

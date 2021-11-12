@@ -822,7 +822,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     				if (cellEditor != null && cellEditor.getColumnTypes().length > 0 && !cellEditor.isEditable(table, i, null)) {
     					columnLabelConsumers.put(uqName, label -> { label.setEnabled(false); label.setIcon(emptyIcon); });
     				} else if (table.primaryKey != null && table.primaryKey.getColumns().stream().anyMatch(pk -> pk.equals(column))) {
-    					columnLabelConsumers.put(uqName, label -> { label.setForeground(Color.red); label.setIcon(constraintPKIcon); });
+    					columnLabelConsumers.put(uqName, label -> { label.setForeground(new Color(170, 0, 0)); label.setIcon(constraintPKIcon); });
     		    	} else {
     					columnLabelConsumers.put(uqName, label -> { label.setIcon(emptyIcon); });
     		    	}
@@ -914,7 +914,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
 	        searchFieldsPanel.add(wrap.apply(namePanel, y), gridBagConstraints);
 	        boolean isPk = table.primaryKey != null && table.primaryKey.getColumns().contains(comparison.column);
-			nameLabel.setForeground(isPk? Color.red : Color.black);
+			nameLabel.setForeground(isPk? new Color(170, 0, 0) : Color.black);
 			
 			SmallButton hideButton = new LightBorderSmallButton(UIUtil.scaleIcon(this, deleteIcon, 1.1)) {
 				@Override
