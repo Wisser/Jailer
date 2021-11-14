@@ -2125,7 +2125,9 @@ public abstract class Desktop extends JDesktopPane {
 										boolean intersect = link.intersect;
 										boolean dotted = link.dotted || toJoin.dotted;
 										newLinks.add(new Link(link.from, toJoin.to, link.sourceRowID, toJoin.destRowID, link.x1, link.y1, toJoin.x2, toJoin.y2,
-												Color.yellow.darker().darker(), Color.yellow.darker(), dotted, intersect, link.inClosure && toJoin.inClosure, link.inTempClosure && toJoin.inTempClosure, link.restricted || toJoin.restricted));
+												UIUtil.plaf == PLAF.FLAT? new Color(180, 200, 0) : Color.yellow.darker().darker(), 
+												UIUtil.plaf == PLAF.FLAT? new Color(180, 200, 0) : Color.yellow.darker(), 
+												dotted, intersect, link.inClosure && toJoin.inClosure, link.inTempClosure && toJoin.inTempClosure, link.restricted || toJoin.restricted));
 									}
 								}
 							}
