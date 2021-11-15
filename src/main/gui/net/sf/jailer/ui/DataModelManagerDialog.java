@@ -1750,7 +1750,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 7);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 4);
         jPanel10.add(restoreButton, gridBagConstraints);
 
         dummyLabel.setText(" ");

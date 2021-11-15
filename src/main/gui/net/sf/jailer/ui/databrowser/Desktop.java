@@ -1566,9 +1566,9 @@ public abstract class Desktop extends JDesktopPane {
 	protected Color getAssociationColor1(Association association) {
 		Color color = UIUtil.plaf == PLAF.NIMBUS? new java.awt.Color(140, 150, 255) : UIUtil.plaf == PLAF.FLAT? new java.awt.Color(0, 160, 255) : new java.awt.Color(0, 120, 255);
 		if (association.isIgnored()) {
-			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(180, 180, 180) : new java.awt.Color(153, 153, 153);
+			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(130, 130, 130) : new java.awt.Color(153, 153, 153);
 		} else if (association.isInsertDestinationBeforeSource()) {
-			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(240, 60, 60) : new java.awt.Color(190, 30, 0);
+			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(230, 80, 50) : new java.awt.Color(190, 30, 0);
 		} else if (association.isInsertSourceBeforeDestination()) {
 			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(60, 240, 60) : new java.awt.Color(60, 132, 0);
 		}
@@ -1582,7 +1582,7 @@ public abstract class Desktop extends JDesktopPane {
 		} else if (association.isInsertSourceBeforeDestination()) {
 			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(70, 255, 70) : new java.awt.Color(0, 180, 80);
 		} else if (association.isInsertDestinationBeforeSource()) {
-			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(255, 70, 70) : new java.awt.Color(230, 0, 60);
+			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(245, 90, 60) : new java.awt.Color(230, 0, 60);
 		}
 		return color;
 	}
