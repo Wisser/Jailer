@@ -2020,6 +2020,11 @@ public class UIUtil {
                     UIManager.put( "InternalFrame.borderMargins", new Insets(3,4,1,1));
                     UIManager.put( "TableHeader.separatorColor", Color.lightGray);
                     
+                    UIManager.put( "Button.arc", 8 );
+                    UIManager.put( "Component.arc", 8 );
+                    UIManager.put( "CheckBox.arc", 8 );
+                    UIManager.put( "ProgressBar.arc", 8 );
+                    
 //                    UIManager.put( "TextArea.background", Color.white);
                      
                     FlatLightLaf.setup();
