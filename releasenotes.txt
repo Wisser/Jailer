@@ -1,3 +1,6 @@
+11.2.4
+  - Fixed "Invisible combo box items." https://github.com/JFormDesigner/FlatLaf/issues/426
+
 11.2.3
   - Improved filtering of ad-hoc queries in the SQL console.
   - Fixed for "User-defined DataTypes (MS SQL Server)". See https://sourceforge.net/p/jailer/discussion/700498/thread/3ed408eb/
