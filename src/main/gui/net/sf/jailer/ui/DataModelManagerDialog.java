@@ -613,9 +613,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		int[] prefWidth = new int[20];
 		int maxSum = 0;
 		for (int i = 0; i < model.size(); ++i) {
-			String[] v = model.get(i).replaceFirst("^", "").replaceFirst("</nobr></html>$", "").trim().split("&nbsp;-&nbsp;");
+			String[] v = model.get(i).replaceFirst("^<html><nobr>", "").replaceFirst("</nobr></html>$", "").trim().split("&nbsp;-&nbsp;");
 			vals.put(model.get(i), v);
+			vals.put(model.get(i) + " ", v);
 			dbLogos.put(model.get(i), logos.get(i));
+			dbLogos.put(model.get(i) + " ", logos.get(i));
 			int sum = 16;
 			for (int j = 0; j < v.length; ++j) {
 				int pWidth = new JLabel("<html><nobr>" + v[j] + "</nobr></html>").getPreferredSize().width;
