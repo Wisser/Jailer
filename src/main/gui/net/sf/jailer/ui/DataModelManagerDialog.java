@@ -587,7 +587,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			return;
 		}
 		restoreButton.addActionListener(actions.get(0));
-		recentSessionsComboBox.setModel(new DefaultComboBoxModel<String>(model.toArray(new String[0])));
+		ArrayList<String> modModel = new ArrayList<String>(model);
+		if (!modModel.isEmpty()) {
+			modModel.add(0, modModel.get(0) + " ");
+		}
+		recentSessionsComboBox.setModel(new DefaultComboBoxModel<String>(modModel.toArray(new String[0])));
 		recentSessionsComboBox.setSelectedIndex(0);
 		recentSessionsComboBox.addItemListener(new ItemListener() {
 			boolean done = false;
@@ -599,7 +603,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					restoreButton.setEnabled(false);
 					recentSessionsComboBox.setEnabled(false);
 					UIUtil.invokeLater(() -> {
-						actions.get(recentSessionsComboBox.getSelectedIndex()).actionPerformed(null);
+						actions.get(recentSessionsComboBox.getSelectedIndex() - 1).actionPerformed(null);
 					});
 				}
 			}
@@ -625,10 +629,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			recentSessionsComboBox.setPrefWidth(maxSum);
 		}
 		recentSessionsComboBox.setRenderer(new DefaultListCellRenderer() {
-			@Override
+			ListCellRenderer renderer = recentSessionsComboBox.getRenderer();
+    		@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
-				Component render = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+    			if (index == 0) {
+    				return new JPanel(null);
+    			}
+    			--index;
+                Component render = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				String tooltip = null;
 				if (render instanceof JLabel) {
 					((JLabel) render).setToolTipText(tooltip = ((JLabel) render).getText().replace("&nbsp;-&nbsp;", "<br>"));

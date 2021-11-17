@@ -84,6 +84,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
+import javax.swing.ListCellRenderer;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SwingUtilities;
@@ -353,16 +354,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         };
 
         historyComboBox.setRenderer(new DefaultListCellRenderer() {
-             @Override
+        	ListCellRenderer renderer = historyComboBox.getRenderer();
+    		@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                  if (index == 0) {
-                     value = null;
+                	 return new JPanel(null);
                  }
                  Object shortValue = value;
                  if (value instanceof String) {
                      shortValue = shortSQL((String) value, 120);
                  }
-                 Component c = super.getListCellRendererComponent(list, shortValue, index, isSelected, cellHasFocus);
+                 Component c = renderer.getListCellRendererComponent(list, shortValue, index, isSelected, cellHasFocus);
                  if (c instanceof JLabel) {
                      if (value instanceof String && value.toString().length() > 0) {
                          ((JLabel) c).setToolTipText(UIUtil.toHTML(value.toString(), 100));

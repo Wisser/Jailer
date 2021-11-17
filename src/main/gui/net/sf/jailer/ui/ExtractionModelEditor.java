@@ -80,6 +80,7 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
@@ -268,6 +269,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * @param extractionModelFrame the enclosing frame
 	 * @param dbmsLogo 
 	 */
+	@SuppressWarnings("unchecked")
 	public ExtractionModelEditor(String extractionModelFile, final ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState, String connectionStateToolTip, ImageIcon dbmsLogo, ExecutionContext executionContext) throws IOException {
 		this.executionContext = executionContext;
 		this.extractionModelFrame = extractionModelFrame;
@@ -858,12 +860,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 		exportFormat.setModel(formatComboBoxModel);
 		exportFormat.setRenderer(new DefaultListCellRenderer() {
+			ListCellRenderer renderer = exportFormat.getRenderer();
 			@Override
-			public Component getListCellRendererComponent(JList list,
-					Object value, int index, boolean isSelected,
-					boolean cellHasFocus) {
-				return super.getListCellRendererComponent(list, ((ScriptFormat) value).getDisplayName(), index, isSelected,
-						cellHasFocus);
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+				return renderer.getListCellRendererComponent(list, ((ScriptFormat) value).getDisplayName(), index, isSelected, cellHasFocus);
 			}
 			private static final long serialVersionUID = 2393022320508863837L;
 		});
