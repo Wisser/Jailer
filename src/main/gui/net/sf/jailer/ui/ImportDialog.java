@@ -33,6 +33,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -150,11 +151,13 @@ public class ImportDialog extends javax.swing.JDialog {
 		isolationLevelComboBox.setModel(new DefaultComboBoxModel<String>(levels.keySet().toArray(new String[0])));
 		isolationLevelComboBox.setRenderer(new DefaultListCellRenderer() {
 			@SuppressWarnings("rawtypes")
+			ListCellRenderer renderer = isolationLevelComboBox.getRenderer();
+			@SuppressWarnings("rawtypes")
 			@Override
 			public Component getListCellRendererComponent(JList list,
 					Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
-				return super.getListCellRendererComponent(list, levels.get(value), index, isSelected, cellHasFocus);
+				return renderer.getListCellRendererComponent(list, levels.get(value), index, isSelected, cellHasFocus);
 			}
 		});
 		isolationLevelComboBox.setSelectedItem(String.valueOf(Connection.TRANSACTION_NONE));
