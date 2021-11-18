@@ -1750,7 +1750,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 6);
         legende2.add(connectivityState, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

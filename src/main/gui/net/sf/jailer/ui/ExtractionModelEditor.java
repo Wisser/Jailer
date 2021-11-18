@@ -1977,7 +1977,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel11.add(legende2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

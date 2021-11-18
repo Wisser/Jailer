@@ -588,7 +588,6 @@ public abstract class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel1.add(checkPKButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -617,7 +616,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 14;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         getContentPane().add(excludeFromDeletion, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
