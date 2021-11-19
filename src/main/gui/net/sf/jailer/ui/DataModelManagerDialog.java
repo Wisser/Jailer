@@ -182,7 +182,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a bookmark.");
 		UIUtil.replace(infoBarLabeRecUsedlBookmark, infoBarRecUsedBookmark);
 
-		restoreButton.setIcon(resetIcon);
+		restoreButton.setIcon(UIUtil.scaleIcon(restoreButton, histIcon));
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		jButton2.setIcon(UIUtil.scaleIcon(jButton2, cancelIcon));
 		bmOkButton.setIcon(UIUtil.scaleIcon(bmOkButton, okIcon));
@@ -218,7 +218,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(2, 0, 2, 0);
         jPanel10.add(recentSessionsComboBox, gridBagConstraints);
@@ -2214,14 +2214,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	private static final long serialVersionUID = -3983034803834547687L;
 	
-	private static ImageIcon resetIcon;
 	private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
 	private static ImageIcon histIcon;
 	
 	static {
 		// load images
-		resetIcon = UIUtil.readImage("/reset.png");
 		okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
         histIcon = UIUtil.readImage("/history.png");

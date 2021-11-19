@@ -1362,7 +1362,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
 	public void updateStatusBar() {
-		final int MAX_LENGTH = 50;
+		final int MAX_LENGTH = 40;
 		ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
 		String dburl = connection != null ? (connection.url) : " ";
 		connectivityState.setToolTipText(dburl);
@@ -1455,6 +1455,7 @@ public class DataBrowser extends javax.swing.JFrame {
         legende1 = new javax.swing.JPanel();
         modelName = new javax.swing.JLabel();
         modelPath = new javax.swing.JLabel();
+        jSeparator19 = new javax.swing.JSeparator();
         legende = new javax.swing.JPanel();
         dependsOn = new javax.swing.JLabel();
         hasDependent = new javax.swing.JLabel();
@@ -1647,7 +1648,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jPanel11.setLayout(new java.awt.GridBagLayout());
 
-        legende1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende1.setLayout(new java.awt.GridBagLayout());
 
         modelName.setFont(modelName.getFont().deriveFont(modelName.getFont().getSize()+1f));
@@ -1670,7 +1670,7 @@ public class DataBrowser extends javax.swing.JFrame {
         legende1.add(modelPath, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -1678,7 +1678,13 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel11.add(legende1, gridBagConstraints);
 
-        legende.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jSeparator19.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel11.add(jSeparator19, gridBagConstraints);
+
         legende.setLayout(new java.awt.GridBagLayout());
 
         dependsOn.setFont(dependsOn.getFont().deriveFont(dependsOn.getFont().getSize()+1f));
@@ -1717,7 +1723,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel11.add(legende, gridBagConstraints);
 
-        schemaNamePanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         schemaNamePanel.setLayout(new java.awt.GridBagLayout());
 
         schemaName.setFont(schemaName.getFont().deriveFont(schemaName.getFont().getSize()+1f));
@@ -1727,20 +1732,17 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
         schemaNamePanel.add(schemaName, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel11.add(schemaNamePanel, gridBagConstraints);
 
-        legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende2.setLayout(new java.awt.GridBagLayout());
 
         connectivityState.setFont(connectivityState.getFont().deriveFont(connectivityState.getFont().getSize()+1f));
@@ -1753,7 +1755,7 @@ public class DataBrowser extends javax.swing.JFrame {
         legende2.add(connectivityState, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 6;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -3365,6 +3367,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator16;
     private javax.swing.JToolBar.Separator jSeparator17;
     private javax.swing.JToolBar.Separator jSeparator18;
+    private javax.swing.JSeparator jSeparator19;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;

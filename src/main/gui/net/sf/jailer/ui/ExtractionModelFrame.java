@@ -297,6 +297,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	private void updateMenuItems() {
 		connectDb.setSelected(dbConnectionDialog.isConnected);
+		disconnectDb.setEnabled(dbConnectionDialog.isConnected);
 		extractionModelEditor.connectivityState.setText(getConnectivityState());
 		extractionModelEditor.connectivityState.setToolTipText(getConnectivityStateToolTip());
 		extractionModelEditor.connectivityState.setIcon(getDBMSLogo());

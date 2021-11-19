@@ -124,6 +124,7 @@ import net.sf.jailer.extractionmodel.SubjectLimitDefinition;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.whereconditioneditor.WhereConditionEditorPanel;
@@ -894,7 +895,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		modelpath += File.separator;
 		modelPath.setToolTipText(modelpath);
-		final int MAX_LENGTH = 50;
+		final int MAX_LENGTH = 40;
 		if (modelpath.length() > MAX_LENGTH + 4) {
 			modelpath = modelpath.substring(0, MAX_LENGTH/2) + "..." + modelpath.substring(modelpath.length() - MAX_LENGTH/2);
 		}
@@ -1381,14 +1382,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         mapColumns = new javax.swing.JButton();
         sketchTabbedPane = new javax.swing.JTabbedPane();
         jPanel11 = new javax.swing.JPanel();
-        legende1 = new javax.swing.JPanel();
-        modelName = new javax.swing.JLabel();
-        modelPath = new javax.swing.JLabel();
         legende = new javax.swing.JPanel();
         dependsOn = new javax.swing.JLabel();
         hasDependent = new javax.swing.JLabel();
         associatedWith = new javax.swing.JLabel();
         ignored = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        legende1 = new javax.swing.JPanel();
+        modelName = new javax.swing.JLabel();
+        modelPath = new javax.swing.JLabel();
         legende2 = new javax.swing.JPanel();
         connectivityState = new javax.swing.JLabel();
 
@@ -1888,38 +1890,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel11.setLayout(new java.awt.GridBagLayout());
 
-        legende1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        legende1.setLayout(new java.awt.GridBagLayout());
-
-        modelName.setFont(modelName.getFont().deriveFont(modelName.getFont().getSize()+1f));
-        modelName.setText("Data Model \"Demo\"");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
-        legende1.add(modelName, gridBagConstraints);
-
-        modelPath.setFont(modelPath.getFont().deriveFont(modelPath.getFont().getSize()+1f));
-        modelPath.setForeground(java.awt.Color.gray);
-        modelPath.setText("/home/jailer/datamodel/");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        legende1.add(modelPath, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-        jPanel11.add(legende1, gridBagConstraints);
-
-        legende.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende.setLayout(new java.awt.GridBagLayout());
 
         dependsOn.setFont(dependsOn.getFont().deriveFont(dependsOn.getFont().getSize()+1f));
@@ -1950,15 +1920,36 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(ignored, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-        jPanel11.add(legende, gridBagConstraints);
+        jPanel11.add(legende, new java.awt.GridBagConstraints());
 
-        legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel11.add(jSeparator1, gridBagConstraints);
+
+        legende1.setLayout(new java.awt.GridBagLayout());
+
+        modelName.setFont(modelName.getFont().deriveFont(modelName.getFont().getSize()+1f));
+        modelName.setText("Data Model \"Demo\"");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
+        legende1.add(modelName, gridBagConstraints);
+
+        modelPath.setFont(modelPath.getFont().deriveFont(modelPath.getFont().getSize()+1f));
+        modelPath.setForeground(java.awt.Color.gray);
+        modelPath.setText("/home/jailer/datamodel/");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        legende1.add(modelPath, gridBagConstraints);
+
+        jPanel11.add(legende1, new java.awt.GridBagConstraints());
+
         legende2.setLayout(new java.awt.GridBagLayout());
 
         connectivityState.setFont(connectivityState.getFont().deriveFont(connectivityState.getFont().getSize()+1f));
@@ -1972,11 +1963,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende2.add(connectivityState, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel11.add(legende2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2845,8 +2834,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
 					if (node.getUserObject() instanceof Table) {
 						text = dataModel.getDisplayName(((Table) node.getUserObject()));
-//						setTextSelectionColor(Color.BLACK);
-						setTextNonSelectionColor(Color.BLACK);
+						setTextColor(tree, Color.BLACK);
 					} else if (node.getUserObject() instanceof Association) {
 						Association association = (Association) node.getUserObject();
 						text = dataModel.getDisplayName(association.destination);
@@ -2856,22 +2844,24 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 							text += "  ";
 						}
 						if (association.isIgnored()) {
-//							setTextSelectionColor(ignored.getForeground());
-							setTextNonSelectionColor(ignored.getForeground());
+							setTextColor(tree, ignored.getForeground());
 						} else if (association.isInsertDestinationBeforeSource()) {
-//							setTextSelectionColor(dependsOn.getForeground());
-							setTextNonSelectionColor(dependsOn.getForeground());
+							setTextColor(tree, dependsOn.getForeground());
 						} else if (association.isInsertSourceBeforeDestination()) {
-//							setTextSelectionColor(hasDependent.getForeground());
-							setTextNonSelectionColor(hasDependent.getForeground());
+							setTextColor(tree, hasDependent.getForeground());
 						} else {
-//							setTextSelectionColor(associatedWith.getForeground());
-							setTextNonSelectionColor(associatedWith.getForeground());
+							setTextColor(tree, associatedWith.getForeground());
 						}
 						return wrapTreeNode(super.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus), selected, association);
 					}
 				}
 				return super.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus);
+			}
+			private void setTextColor(JTree tree, Color color) {
+				setTextNonSelectionColor(color);
+				if (UIUtil.plaf == PLAF.FLAT) {
+					setTextSelectionColor(tree.hasFocus()? Color.white : color);
+				}
 			}
 			private static final long serialVersionUID = 2657584557290860355L;
 		};
@@ -3790,6 +3780,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JPanel jpanel;

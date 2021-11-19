@@ -289,9 +289,6 @@ public class WCTypeAnalyser {
 			alternativeNames.put(alias, names);
 		}
 
-		// TODO 0
-		// TODO alternative column names for each column. Quoted/Unquoted, Qualified/Unqualifies, +/- '('/')'
-
 		@Override
 		public String toString() {
 			return "Result [table=" + table + ", Columns=" + table.getColumns() + ", hasCondition=" + hasCondition + ", isHaving=" + isHaving

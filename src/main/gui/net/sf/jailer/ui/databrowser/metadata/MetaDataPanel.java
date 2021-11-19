@@ -115,6 +115,7 @@ import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.IconWithText;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.util.Quoting;
 
@@ -1025,6 +1026,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 		}
                 	}
                 }
+                if (UIUtil.plaf == PLAF.FLAT) {
+					setTextSelectionColor(tree.hasFocus()? Color.white : null);
+				}
                 return comp;
             }
         };
