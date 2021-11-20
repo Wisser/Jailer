@@ -5548,7 +5548,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sortColumnsLabel = new javax.swing.JLabel();
         findColumnsPanel = new javax.swing.JPanel();
         findColumnsLabel = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
+        statusStrutLabel = new javax.swing.JLabel();
         loadingPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         cancelLoadButton = new javax.swing.JButton();
@@ -5694,12 +5694,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         statusPanel.add(findColumnsPanel, gridBagConstraints);
 
-        jLabel10.setText(" ");
+        statusStrutLabel.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
-        statusPanel.add(jLabel10, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        statusPanel.add(statusStrutLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6347,7 +6347,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JLabel from;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -6406,6 +6405,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel sqlLabel1;
     javax.swing.JPanel sqlPanel;
     protected javax.swing.JPanel statusPanel;
+    public javax.swing.JLabel statusStrutLabel;
     private javax.swing.JPanel tablePanel;
     private javax.swing.JLabel whereLabel;
     // End of variables declaration//GEN-END:variables

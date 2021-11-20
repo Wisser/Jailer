@@ -983,7 +983,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                  		} else {
                  			estRowCountFormatted = estRowCount.toString();
                  		}
-                 		if (fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
+                 		if (fg == null || fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
                  			((JLabel) comp).setText("<html>" + UIUtil.toHTMLFragment(text, 100) + "&nbsp;&nbsp;<font color=\"#bbbbff\">~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\"></font>");
                  		} else {
                  			((JLabel) comp).setText("<html>" + UIUtil.toHTMLFragment(text, 100) + "&nbsp;&nbsp;<font color=\"#aaaaff\">~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\"></font>");
