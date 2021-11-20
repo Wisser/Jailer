@@ -19,21 +19,40 @@ import java.awt.Color;
 
 import javax.swing.Icon;
 
+import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
+
 public abstract class LightBorderSmallButton extends SmallButton {
+	
+	private static final Color INVISIBLE = new Color(0, 0, 0, 0);
+	protected boolean freezed = false;
 	
 	public LightBorderSmallButton(Icon icon) {
 		super(icon, true);
 	}
 	
 	protected void onMouseExited() {
-		super.onMouseExited();
-		Color borderColor = new Color(0, 0, 0, 0);
-		setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED, borderColor, borderColor));
+		if (UIUtil.plaf != PLAF.FLAT) {
+			super.onMouseExited();
+			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED, INVISIBLE, INVISIBLE));
+		} else if (!freezed) {
+			entered = false;
+			setOpaque(false);
+			setBackground(null);
+			setBorder(new javax.swing.border.LineBorder(INVISIBLE, 2, true));
+		}
 	}
 
 	protected void onMouseEntered() {
-		super.onMouseEntered();
-		setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Color.LIGHT_GRAY, Color.GRAY));
+		if (UIUtil.plaf != PLAF.FLAT) {
+			super.onMouseEntered();
+			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Color.LIGHT_GRAY, Color.GRAY));
+		} else if (!freezed) {
+			entered = true;
+			setOpaque(true);
+			setBackground(UIUtil.BG_FLATMOUSEOVER);
+			setBorder(new javax.swing.border.LineBorder(UIUtil.BG_FLATMOUSEOVER, 2, true));
+		}
 	}
 	
 };

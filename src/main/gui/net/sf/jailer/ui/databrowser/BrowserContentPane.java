@@ -175,6 +175,7 @@ import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea;
 import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -925,6 +926,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         conditionEditorButton.setIcon(UIUtil.scaleIcon(this, findColumnIconWhere));
 		conditionEditorButton.setText(null);
 		loadButton.setIcon(runIcon);
+		loadButton.setText(null);
 		try {
 			Icon errorIcon = UIManager.getIcon("OptionPane.errorIcon");
 			errorLabel.setIcon(errorIcon);
@@ -944,7 +946,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		findColumnsLabel.setText(getQueryBuilderDialog() != null? null : "Find Column");
 		findColumnsLabel.setToolTipText("Find Column...");
 		findColumnsLabel.setIcon(scaledFindColumnIcon1);
-		findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+		if (UIUtil.plaf != PLAF.FLAT) {
+			findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+		}
 		
 		findColumnsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private boolean in = false;
@@ -985,7 +989,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			private void updateBorder() {
-				findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(in || active? javax.swing.border.BevelBorder.LOWERED : javax.swing.border.BevelBorder.RAISED));
+				if (UIUtil.plaf == PLAF.FLAT) {
+					findColumnsPanel.setBackground(active? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : null);
+				} else {
+					findColumnsLabel.setBorder(new javax.swing.border.SoftBevelBorder(in || active? javax.swing.border.BevelBorder.LOWERED : javax.swing.border.BevelBorder.RAISED));
+				}
 				findColumnsLabel.setIcon(in || active? scaledFindColumnIcon2 : scaledFindColumnIcon1);
 			}
 		});
@@ -1862,6 +1870,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (selectDistinct != null) {
 			selectDistinctCheckBox.setSelected(selectDistinct);
 		}
+		if (UIUtil.plaf == PLAF.FLAT) {
+			sortColumnsPanel.setBorder(null);
+		}
 		sortColumnsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private JPopupMenu popup;
 			private boolean in = false;
@@ -1912,6 +1923,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						});
 						popup.add(changeOrder);
+						updateBorder();
 						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 							@Override
 							public void propertyChange(PropertyChangeEvent evt) {
@@ -1939,8 +1951,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			private void updateBorder() {
-				sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
+				if (UIUtil.plaf == PLAF.FLAT) {
+					sortColumnsPanel.setBackground(popup != null? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : null);
+				} else {
+					sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
 						: javax.swing.border.BevelBorder.RAISED));
+				}
 			}
 		});
 		updateTableModel(0, false, false);
@@ -5292,7 +5308,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		allowNewLimit = limitExceeded && !moreLimits.isEmpty();
 		if (allowNewLimit) {
-			rowsCount.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+			if (UIUtil.plaf != PLAF.FLAT) {
+				rowsCount.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+			}
 			rowsCount.setIcon(dropDownIcon);
 			if (!rowsCountHasListener) {
 				rowsCountHasListener = true;
@@ -5340,6 +5358,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 										toAddTo.add(item);
 									}
 								}
+								updateBorder();
 								popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 									@Override
 									public void propertyChange(PropertyChangeEvent evt) {
@@ -5373,8 +5392,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 	
 					private void updateBorder() {
-						rowsCount.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
+						if (UIUtil.plaf == PLAF.FLAT) {
+							rowsCount.setBackground(popup != null? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : null);
+						} else {
+							rowsCount.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
 								: javax.swing.border.BevelBorder.RAISED));
+						}
 					}
 				});
 			}
@@ -5525,6 +5548,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sortColumnsLabel = new javax.swing.JLabel();
         findColumnsPanel = new javax.swing.JPanel();
         findColumnsLabel = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
         loadingPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         cancelLoadButton = new javax.swing.JButton();
@@ -5558,9 +5582,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel8 = new javax.swing.JPanel();
         jLabel11 = new javax.swing.JLabel();
         menuPanel = new javax.swing.JPanel();
-        jPanel7 = new javax.swing.JPanel();
-        loadButton = new javax.swing.JButton();
+        jToolBar1 = new javax.swing.JToolBar();
         conditionEditorButton = new javax.swing.JToggleButton();
+        jPanel7 = new javax.swing.JPanel();
+        jToolBar2 = new javax.swing.JToolBar();
+        loadButton = new javax.swing.JButton();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -5608,17 +5634,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         statusPanel.add(sortColumnsCheckBox, gridBagConstraints);
 
         rowsCount.setText("jLabel3");
+        rowsCount.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         statusPanel.add(rowsCount, gridBagConstraints);
 
         selectDistinctCheckBox.setSelected(true);
@@ -5631,18 +5660,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         statusPanel.add(selectDistinctCheckBox, gridBagConstraints);
 
         sortColumnsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        sortColumnsPanel.setLayout(new javax.swing.BoxLayout(sortColumnsPanel, javax.swing.BoxLayout.LINE_AXIS));
+        sortColumnsPanel.setLayout(new java.awt.GridBagLayout());
 
         sortColumnsLabel.setText("natural ");
-        sortColumnsPanel.add(sortColumnsLabel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        sortColumnsPanel.add(sortColumnsLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridx = 6;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         statusPanel.add(sortColumnsPanel, gridBagConstraints);
@@ -5655,12 +5687,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         findColumnsPanel.add(findColumnsLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         statusPanel.add(findColumnsPanel, gridBagConstraints);
+
+        jLabel10.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
+        statusPanel.add(jLabel10, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6005,34 +6044,52 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         menuPanel.setLayout(new java.awt.GridBagLayout());
 
-        jPanel7.setLayout(new java.awt.GridBagLayout());
-
-        loadButton.setText("Reload");
-        loadButton.setToolTipText("Reload Rows");
-        loadButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        jPanel7.add(loadButton, gridBagConstraints);
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
 
         conditionEditorButton.setText("jToggleButton1");
         conditionEditorButton.setToolTipText("Open Condition Editor");
+        conditionEditorButton.setFocusable(false);
+        conditionEditorButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        conditionEditorButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         conditionEditorButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 conditionEditorButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        jPanel7.add(conditionEditorButton, gridBagConstraints);
+        jToolBar1.add(conditionEditorButton);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        menuPanel.add(jToolBar1, gridBagConstraints);
+
+        jPanel7.setLayout(new java.awt.GridBagLayout());
+
+        jToolBar2.setFloatable(false);
+        jToolBar2.setRollover(true);
+
+        loadButton.setText("Reload");
+        loadButton.setToolTipText("Reload Rows");
+        loadButton.setFocusable(false);
+        loadButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        loadButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        loadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadButtonActionPerformed(evt);
+            }
+        });
+        jToolBar2.add(loadButton);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel7.add(jToolBar2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -6202,7 +6259,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel14.setLayout(new java.awt.GridBagLayout());
 
-        whereLabel.setText(" Where ");
+        whereLabel.setText(" Where");
         jPanel14.add(whereLabel, new java.awt.GridBagConstraints());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -6290,6 +6347,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JLabel from;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -6314,6 +6372,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JToolBar jToolBar2;
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
     public javax.swing.JButton loadButton;

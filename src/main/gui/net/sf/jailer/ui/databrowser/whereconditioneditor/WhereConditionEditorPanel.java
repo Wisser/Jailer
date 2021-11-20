@@ -35,6 +35,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -73,6 +75,8 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -89,6 +93,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentCellEditor;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.DBConditionEditor;
@@ -1024,6 +1029,20 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						});
 						popup.add(item);
 					}
+					if (UIUtil.plaf == PLAF.FLAT) {
+						setBackground(UIUtil.BG_FLATSELECTED);
+						setBorder(new LineBorder(UIUtil.BG_FLATSELECTED, 2, true));
+						freezed = true;
+						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+							@Override
+							public void propertyChange(PropertyChangeEvent evt) {
+								if (Boolean.FALSE.equals(evt.getNewValue())) {
+									freezed = false;
+									onMouseExited();
+								}
+							}
+						});
+					}
 					UIUtil.showPopup(this, 0, getHeight(), popup);
 				}
 				@Override
@@ -1408,6 +1427,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel4.add(applyButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

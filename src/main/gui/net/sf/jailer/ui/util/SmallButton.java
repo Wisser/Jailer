@@ -30,7 +30,7 @@ public abstract class SmallButton extends JLabel {
 	private final boolean borderStyle;
 	private static final Color BORDER_LIGHT = Color.lightGray;
 	private static final Color BORDER_SHADOW = Color.gray;
-	private boolean entered = false;
+	protected boolean entered = false;
 	
 	public SmallButton(Icon icon) {
 		this(icon, false);

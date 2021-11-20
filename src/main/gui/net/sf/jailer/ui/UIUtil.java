@@ -1768,7 +1768,9 @@ public class UIUtil {
 
 	public static final Color FG_PK = new Color(170, 0, 0);
 	public static final Color FG_FK = new Color(0, 0, 220);
-
+	public static final Color BG_FLATMOUSEOVER = new Color(224, 224, 224);
+	public static final Color BG_FLATSELECTED = new Color(204, 204, 204);
+	
 	private static final String[] INVALID_FILENAME_CHARACTERS = new String[] {"\\", "/", ":", ";", "*", "?", "\"", "<", ">", "|"};
 	private static final String[][] INVALID_FILENAME_CHARACTERS_TO_REPLACEMENT = new String[INVALID_FILENAME_CHARACTERS.length][];
 	static {
