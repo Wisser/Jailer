@@ -8,7 +8,7 @@ Jailer is a tool for database subsetting and relational data browsing.
    by following foreign-key-based or user-defined relationships.
 
 
-<img src="/docs/screenshot.png" width="800" />
+<img src="/docs/screenshot.png" width="500" />
 
 https://user-images.githubusercontent.com/861721/137641099-eff66c8a-5cad-4ec4-a4c2-06c38fdbdb43.mp4
 
