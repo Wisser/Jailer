@@ -703,7 +703,11 @@ public class SqlUtil {
 		BiConsumer<Character, Boolean> append = (c, inLit) -> {
 			if (inLit || (!Character.isWhitespace(c) || c == '\f')) {
 				if (isLetterOrDigit(c)) {
-					pattern.append("" + c);
+					if (inLit && Character.isLetter(c)) {
+						pattern.append("(?-i:" + c + ")");
+					} else {
+						pattern.append("" + c);
+					}
 				} else {
 					pattern.append(Pattern.quote("" + c));
 				}
