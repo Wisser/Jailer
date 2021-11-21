@@ -1254,6 +1254,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             }
                         });
                         final JButton loadButton = new JButton(rb.loadButton.getText(), rb.loadButton.getIcon());
+                        loadButton.setText("Reload");
                         loadButton.setFocusable(false);
                         tabContentPanel.loadButton = loadButton;
                         loadButton.addActionListener(new ActionListener() {
