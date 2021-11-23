@@ -1,3 +1,7 @@
+11.2.5
+  - The SQL filter editor of the data browser had problems with complex RHS expressions. This has been corrected.
+  - Minor cosmetics to the UI.
+
 11.2.4
   - Fixed "Invisible combo box items." https://github.com/JFormDesigner/FlatLaf/issues/426
 
