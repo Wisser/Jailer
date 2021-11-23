@@ -125,7 +125,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
 	private static final float REDUCED_OPACITY = 0.5f;
 	private static final float REDUCED_OPACITY_FADE_START = REDUCED_OPACITY + 0.15f;
-	private static final float REDUCED_OPACITY_RETENTION_TIME = 1f;
+	private static final float REDUCED_OPACITY_RETENTION_TIME = 1.5f;
 
 	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 100_000;
 	private final int MAX_SIZE_DISTINCTEXISTINGVALUES = 500_000;
@@ -435,7 +435,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.EAST;
-        popupTitelPanel.add(new SmallButton(closeIcon, true) {
+        popupTitelPanel.add(new SmallButton(closeIcon, closeOverIcon, true) {
 			@Override
 			protected void onClick(MouseEvent e) {
 				Window window = SwingUtilities.getWindowAncestor(this);
@@ -2484,7 +2484,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	private static ImageIcon nullIcon;
 	private static ImageIcon resetIcon;
 	private static ImageIcon closeIcon;
-    private static ImageIcon constraintPKIcon;
+	private static ImageIcon closeOverIcon;
+	private static ImageIcon constraintPKIcon;
     private static ImageIcon okIcon;
 	static ImageIcon warnIcon;
 	
@@ -2498,7 +2499,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         emptyIcon = UIUtil.readImage("/empty.png");
         warnIcon = UIUtil.readImage("/wanr.png");
         resetIcon = UIUtil.readImage("/reset.png");
-        closeIcon = UIUtil.readImage("/Close-16-1.png");
+        closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.4);
+        closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.4);
     	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
     	okIcon = UIUtil.readImage("/buttonok.png");
 	}

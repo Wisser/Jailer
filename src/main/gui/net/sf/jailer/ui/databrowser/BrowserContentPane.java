@@ -6680,8 +6680,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			d.addWindowFocusListener(new WindowFocusListener() {
 				@Override
 				public void windowLostFocus(WindowEvent e) {
-					d.setVisible(false);
-					d.dispose();
+					if (!dv.isPinned()) {
+						d.setVisible(false);
+						d.dispose();
+					}
 				}
 				@Override
 				public void windowGainedFocus(WindowEvent e) {

@@ -23,6 +23,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -54,6 +55,7 @@ import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
@@ -70,6 +72,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.util.MovePanel;
 import net.sf.jailer.ui.util.SizeGrip;
+import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.util.CellContentConverter.PObjectWrapper;
 import net.sf.jailer.util.Quoting;
 
@@ -116,6 +119,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		editModeToggleButton.setBackground(new Color(255, 206, 206));
 		editModeToggleButton.setForeground(Color.black);
 		editModeToggleButton.setIcon(editdetails);
+		pinToggleButton.setIcon(pinIcon);
+		pinToggleButton.setText(null);
+		pinToggleButton.setToolTipText("Pin Window");
 		FocusListener editCancelListener = new FocusListener() {
 			@Override
 			public void focusLost(FocusEvent e) {
@@ -150,7 +156,10 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		rowSpinner.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				setCurrentRow((Integer) model.getValue() - 1, true);
+				int row = (Integer) model.getValue() - 1;
+				if (row >= 0) {
+					setCurrentRow(row, true);
+				}
 			}
 		});
 		if (!showSelectButton) {
@@ -235,6 +244,13 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
 	protected void setCurrentRow(int row, boolean selectableFields) {
 		try {
+			if (row >= rows.size()) {
+				row = rows.size() - 1;
+				if (row < 0) {
+					rowSpinner.setValue(0);
+					return;
+				}
+			}
 			browserContentCellEditor.setInDetailsView(true);
 			boolean changed = currentRow != row;
 			currentRow = row;
@@ -738,10 +754,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
         rowSpinner = new javax.swing.JSpinner();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
-        sortCheckBox = new javax.swing.JCheckBox();
         closeButton = new javax.swing.JButton();
         selectButton = new javax.swing.JButton();
+        jToolBar1 = new javax.swing.JToolBar();
+        sortCheckBox = new javax.swing.JCheckBox();
         editModeToggleButton = new javax.swing.JToggleButton();
+        pinToggleButton = new javax.swing.JToggleButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -765,24 +783,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 6;
+        gridBagConstraints.gridwidth = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints);
-
-        sortCheckBox.setText("Sort Columns");
-        sortCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sortCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(sortCheckBox, gridBagConstraints);
 
         closeButton.setText("CLose");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -793,7 +799,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         add(closeButton, gridBagConstraints);
 
@@ -810,17 +816,46 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         add(selectButton, gridBagConstraints);
 
-        editModeToggleButton.setText("Edit Mode");
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+
+        sortCheckBox.setText("Sort Columns ");
+        sortCheckBox.setFocusable(false);
+        sortCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        sortCheckBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        sortCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortCheckBoxActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(sortCheckBox);
+
+        editModeToggleButton.setText(" Edit Mode ");
+        editModeToggleButton.setFocusable(false);
+        editModeToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        editModeToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         editModeToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editModeToggleButtonActionPerformed(evt);
             }
         });
+        jToolBar1.add(editModeToggleButton);
+
+        pinToggleButton.setText("jToggleButton1");
+        pinToggleButton.setFocusable(false);
+        pinToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        pinToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        pinToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pinToggleButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(pinToggleButton);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 6;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        add(editModeToggleButton, gridBagConstraints);
+        add(jToolBar1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private boolean programChangedSortCheckBox = false;
@@ -850,6 +885,19 @@ public abstract class DetailsView extends javax.swing.JPanel {
         setCurrentRow(currentRow, showSpinner);
     }//GEN-LAST:event_editModeToggleButtonActionPerformed
 
+    private void pinToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pinToggleButtonActionPerformed
+    	if (editModeToggleButton.isSelected()) {
+    		editModeToggleButton.doClick();
+    	}
+        editModeToggleButton.setSelected(false);
+        editModeToggleButton.setEnabled(false);
+        selectButton.setEnabled(false);
+    }//GEN-LAST:event_pinToggleButtonActionPerformed
+
+    public boolean isPinned() {
+    	return pinToggleButton.isSelected();
+    }
+    
 	public void updateInClosureState(boolean inClosure) {
 		if (inClosure) {
 			int r = 0;
@@ -873,6 +921,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JToggleButton pinToggleButton;
     protected javax.swing.JSpinner rowSpinner;
     private javax.swing.JButton selectButton;
     private javax.swing.JCheckBox sortCheckBox;
@@ -909,8 +959,24 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.weightx = 1.0;
         add(movePanel, gridBagConstraints);
+        
+        SmallButton closeButton = new SmallButton(closeIcon, closeOverIcon, false) {
+			@Override
+			protected void onClick(MouseEvent e) {
+				Window windowAncestor = SwingUtilities.getWindowAncestor(DetailsView.this);
+				windowAncestor.setVisible(false);
+				windowAncestor.dispose();
+			}
+		};
+		gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.gridheight = 2;
+        add(closeButton, gridBagConstraints);
  	}
-
+ 
 	private void resetScrollPane() {
 		jScrollPane1.getVerticalScrollBar().setValue(jScrollPane1.getVerticalScrollBar().getMinimum());					
 		jScrollPane1.getHorizontalScrollBar().setValue(jScrollPane1.getHorizontalScrollBar().getMinimum());
@@ -935,8 +1001,14 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	}
 
 	private static ImageIcon editdetails;
+	private static ImageIcon pinIcon;
+	private static ImageIcon closeIcon;
+	private static ImageIcon closeOverIcon;
 	static {
 		// load images
 		editdetails = UIUtil.readImage("/editdetails.png");
+		pinIcon = UIUtil.readImage("/pin.png");
+        closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.4);
+        closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.4);
 	}
 }

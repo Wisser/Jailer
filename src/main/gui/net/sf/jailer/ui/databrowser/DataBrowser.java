@@ -400,7 +400,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		searchBarToggleButton.setSelected(!Boolean.FALSE.equals(UISettings.restore("searchBarToggleButton")));
 		searchPanelContainer.setVisible(searchBarToggleButton.isSelected());
-		whereConditionEditorCloseButton = new SmallButton(closeIcon, false) {
+		whereConditionEditorCloseButton = new SmallButton(closeIcon, closeOverIcon, false) {
 			@Override
 			protected void onClick(MouseEvent e) {
 				searchBarToggleButton.doClick();
@@ -5173,6 +5173,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon blueIcon;
 	private ImageIcon greenIcon;
 	private Icon closeIcon;
+	private Icon closeOverIcon;
 	private ImageIcon sqlConsoleIcon;
 	private ImageIcon addSqlConsoleIcon;
 	private ImageIcon navigationIcon;
@@ -5195,8 +5196,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		redIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reddot.gif"));
 		blueIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/bluedot.gif"));
 		greenIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/greendot.gif"));
-		closeIcon = UIUtil.readImage("/Close-16-1.png");
-		sqlConsoleIcon = UIUtil.readImage("/runall.png");
+        closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.4);
+        closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.4);
+        sqlConsoleIcon = UIUtil.readImage("/runall.png");
 		desktopIcon = UIUtil.readImage("/navigation.png");
 		addSqlConsoleIcon = UIUtil.readImage("/add.png");
 		navigationIcon = UIUtil.readImage("/navigation.png");

@@ -20,6 +20,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
@@ -30,6 +31,8 @@ public abstract class SmallButton extends JLabel {
 	private final boolean borderStyle;
 	private static final Color BORDER_LIGHT = Color.lightGray;
 	private static final Color BORDER_SHADOW = Color.gray;
+	private final Icon icon;
+	private final Icon iconOver;
 	protected boolean entered = false;
 	
 	public SmallButton(Icon icon) {
@@ -37,7 +40,13 @@ public abstract class SmallButton extends JLabel {
 	}
 	
 	public SmallButton(Icon icon, boolean borderStyle) {
+		this(icon, null, borderStyle);
+	}
+	
+	public SmallButton(Icon icon, Icon iconOver, boolean borderStyle) {
 		super(icon);
+		this.icon = icon;
+		this.iconOver = iconOver;
 		this.borderStyle = borderStyle;
 		onMouseExited();
 		addMouseListener(new MouseListener() {
@@ -82,7 +91,9 @@ public abstract class SmallButton extends JLabel {
 
 	protected void onMouseExited() {
 		entered = false;
-		if (borderStyle) {
+		if (iconOver != null) {
+			setIcon(icon);
+		} else if (borderStyle) {
 			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED, BORDER_LIGHT, BORDER_SHADOW));
 		} else {
 			setEnabled(false);
@@ -91,7 +102,9 @@ public abstract class SmallButton extends JLabel {
 
 	protected void onMouseEntered() {
 		entered = true;
-		if (borderStyle) {
+		if (iconOver != null) {
+			setIcon(iconOver);
+		} else if (borderStyle) {
 			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, BORDER_LIGHT, BORDER_SHADOW));
 		} else {
 			setEnabled(true);
