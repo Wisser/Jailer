@@ -1,4 +1,5 @@
 11.2.5
+  - Button to toggle Link on Hover/Link on Select for Details Panel #66. https://github.com/Wisser/Jailer/issues/66
   - The SQL filter editor of the data browser had problems with complex RHS expressions. This has been corrected.
   - Minor cosmetics to the UI.
 
