@@ -75,7 +75,6 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.DocumentEvent;
@@ -126,7 +125,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
 	private static final float REDUCED_OPACITY = 0.5f;
 	private static final float REDUCED_OPACITY_FADE_START = REDUCED_OPACITY + 0.15f;
-	private static final int REDUCED_OPACITY_RETENTION_TIME = 2;
+	private static final float REDUCED_OPACITY_RETENTION_TIME = 1f;
 
 	private final int MAX_NUM_DISTINCTEXISTINGVALUES = 100_000;
 	private final int MAX_SIZE_DISTINCTEXISTINGVALUES = 500_000;
@@ -739,9 +738,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		return matcher;
 	}
 
+	public static final String VALUE_REGEX = "((?:(?:0x(?:\\d|[a-f])+)|(?:'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)\\(]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
+	
 	protected String createComparisionRE(boolean noAlias, Column column, String condition) {
 		String quoteRE = "[\"\u00B4\\[\\]`]";
-		String valueRegex = "((?:(?:0x(?:\\d|[a-f])+)|(?:'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
 		String regex = "(?:(?:and\\s+)?" + "(?:"
 				+ (inSQLConsole()? "" : !noAlias? "\\b" : "(?<!\\w)")
 				+ (tableAlias == null || noAlias? "" : (tableAlias + "\\s*\\.")) + "\\s*))"
@@ -752,7 +752,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						.map(sql -> Character.isAlphabetic(sql.charAt(0)) ? "\\b" + Pattern.quote(sql) + "\\b"
 								: Pattern.quote(sql))
 						.collect(Collectors.joining("|"))
-				+ ")\\s*"  + valueRegex + "))";
+				+ ")\\s*"  + VALUE_REGEX + "))";
 		return regex;
 	}
 
@@ -1101,7 +1101,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						int offset = 0;
 						try {
 							String nameValue = editor.getText(pos.a, pos.b - pos.a);
-							String prefix = nameValue.replaceFirst("^(and\\s+).*", "$1");
+							String prefix = nameValue.replaceFirst("(?is)^(and\\s+).*", "$1");
 							if (!prefix.equals(nameValue)) {
 								offset = prefix.length();
 							}
@@ -1457,7 +1457,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         parseCondition();
     }//GEN-LAST:event_applyButtonActionPerformed
 
-    private Timer reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000, null);
+    private Timer reduceOpacityRetentionTimer = new Timer((int) (REDUCED_OPACITY_RETENTION_TIME * 1000), null);
     {
 		reduceOpacityRetentionTimer.setRepeats(false);
     }
@@ -1529,18 +1529,19 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					setOpacityImmediatelly(0f);
 					fadeAction = e -> {
 						if (fadeStep >= 0) {
-							if (++fadeStep >= 100) {
+							fadeStep += 4;
+							if (fadeStep >= 100) {
 								if (useOpacity && dialog.getOpacity() < 1f && !UIUtil.opacityfailed) {
 									dialog.setVisible(false);
 									dialog.dispose();
 								}
 							} else {
-								setOpacity(REDUCED_OPACITY_FADE_START * (fadeStep < 33? 1f : (((100 - fadeStep) * 3 / 2f / 100.0f))));
+								setOpacity(REDUCED_OPACITY_FADE_START * (fadeStep < 66? 1f : (((100 - fadeStep) * 3f / 100.0f))));
 								reduceOpacityRetentionTimer.restart();
 							}
 						}
 					};
-					reduceOpacityRetentionTimer = new Timer(REDUCED_OPACITY_RETENTION_TIME * 1000 / 100, fadeAction);
+					reduceOpacityRetentionTimer = new Timer((int) (REDUCED_OPACITY_RETENTION_TIME * 1000 / 100 * 4), fadeAction);
 					reduceOpacityRetentionTimer.setRepeats(false);
 					UIUtil.invokeLater(() -> {
 						setOpacity(REDUCED_OPACITY);
@@ -1562,13 +1563,13 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							}
 							@Override
 							public void mousePressed(MouseEvent e) {
-								if (fadeStep < 80) {
+								if (fadeStep < 95) {
 									setOpacity(1f);
 								}
 							}
 							@Override
 							public void mouseClicked(MouseEvent e) {
-								if (fadeStep < 80) {
+								if (fadeStep < 95) {
 									setOpacity(1f);
 								}
 							}
@@ -1601,7 +1602,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			int offset = 0;
 			try {
 				String nameValue = editor.getText(pos.a, pos.b - pos.a);
-				String prefix = nameValue.replaceFirst("^(and\\s+).*", "$1");
+				String prefix = nameValue.replaceFirst("(?is)^(and\\s+).*", "$1");
 				if (!prefix.equals(nameValue)) {
 					offset = prefix.length();
 				}
@@ -2337,6 +2338,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	}
 
 	public static final Color HIGHLIGHT_COLOR = new Color(0, 255, 0, 50);
+	private SmartHighlightPainter highlightPainterWOBorder = new SmartHighlightPainter(WhereConditionEditorPanel.HIGHLIGHT_COLOR);
 	private SmartHighlightPainter highlightPainter = new SmartHighlightPainter(HIGHLIGHT_COLOR);
 	{
 		highlightPainter.setPaintBorder(true);
@@ -2349,7 +2351,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			if (currentHighlightTag != null) {
 				editor.getHighlighter().removeHighlight(currentHighlightTag);
 			}
-			currentHighlightTag = editor.getHighlighter().addHighlight(a, b, highlightPainter);
+			if (a != b) {
+				boolean multiLine = editor.getDocument().getText(a, b - a).contains("\n");
+				currentHighlightTag = editor.getHighlighter().addHighlight(a, b, multiLine? highlightPainterWOBorder : highlightPainter);
+			}
 			editor.select(a, a);
 		} catch (/*BadLocation*/ Exception e) {
 			// ignore

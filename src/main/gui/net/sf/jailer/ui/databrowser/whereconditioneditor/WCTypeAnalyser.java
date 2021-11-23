@@ -325,7 +325,7 @@ public class WCTypeAnalyser {
 					if (o != null) {
 						Pair<Integer, Integer> pos = null;
 						
-						if ((o instanceof ASTNodeAccess && ((ASTNodeAccess) o).getASTNode() != null)) {
+						if (!(o instanceof LikeExpression) && (o instanceof ASTNodeAccess && ((ASTNodeAccess) o).getASTNode() != null)) {
 							SimpleNode node = ((ASTNodeAccess) o).getASTNode();
 							pos = new Pair<Integer, Integer>(node.jjtGetFirstToken().absoluteBegin - 1, node.jjtGetLastToken().absoluteEnd - 1);
 						} else {
@@ -395,7 +395,7 @@ public class WCTypeAnalyser {
 							if (cond != null) {
 								result.hasCondition = true;
 								Pair<Integer, Integer> pos = null;
-								if ((cond instanceof ASTNodeAccess && ((ASTNodeAccess) cond).getASTNode() != null)) {
+								if (!(cond instanceof LikeExpression) && (cond instanceof ASTNodeAccess && ((ASTNodeAccess) cond).getASTNode() != null)) {
 									SimpleNode node = ((ASTNodeAccess) cond).getASTNode();
 									pos = new Pair<Integer, Integer>(node.jjtGetFirstToken().absoluteBegin - 1, node.jjtGetLastToken().absoluteEnd - 1);
 								} else {
@@ -1247,6 +1247,7 @@ public class WCTypeAnalyser {
 	private static class PExpressionVisitorAdapter implements ExpressionVisitor {
 		
 		final Pattern exprPattern;
+		final Pattern valuePattern;
 		final String sql;
 		Pair<Integer, Integer> result;
 		final StringBuilder left = new StringBuilder();
@@ -1254,6 +1255,7 @@ public class WCTypeAnalyser {
 		public PExpressionVisitorAdapter(Pattern exprPattern, String sql) {
 			this.exprPattern = exprPattern;
 			this.sql = sql;
+			valuePattern = Pattern.compile(WhereConditionEditorPanel.VALUE_REGEX, Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 		}
 
 		@Override
@@ -1348,13 +1350,31 @@ public class WCTypeAnalyser {
 					result = new Pair<Integer, Integer>(cnt, left.length());
 				}
 				if (node instanceof ComparisonOperator) {
-					check(((ComparisonOperator) node).getLeftExpression());
+					Expression rightExpression = ((ComparisonOperator) node).getRightExpression();
+					if (rightExpression != null && !valuePattern.matcher(rightExpression.toString()).matches()) {
+						invalidComparisons.add(node);
+						result = null;
+					} else {
+						check(((ComparisonOperator) node).getLeftExpression());
+					}
+				} else if (node instanceof LikeExpression) {
+					Expression rightExpression = ((LikeExpression) node).getRightExpression();
+					if (rightExpression != null && !valuePattern.matcher(rightExpression.toString()).matches()) {
+						invalidComparisons.add(node);
+						result = null;
+					} else {
+						check(((LikeExpression) node).getLeftExpression());
+					}
 				}
 			}
 		}
+		
+		private Set<Object> invalidComparisons = new HashSet<Object>();
 
 		private void visitAny(Object o) {
-			if ((o instanceof ASTNodeAccess && ((ASTNodeAccess) o).getASTNode() != null)) {
+			if (invalidComparisons.contains(o)) {
+				left.append("1=1");
+			} else if (!(o instanceof LikeExpression) && (o instanceof ASTNodeAccess && ((ASTNodeAccess) o).getASTNode() != null)) {
 				SimpleNode node = ((ASTNodeAccess) o).getASTNode();
 				try {
 					left.append(sql.substring(node.jjtGetFirstToken().absoluteBegin - 1, node.jjtGetLastToken().absoluteEnd - 1));

@@ -1011,7 +1011,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		setPendingState(false, false);
 
 		sqlLabel1.setIcon(dropDownIcon);
-		sortColumnsLabel.setIcon(dropDownIcon);
+		sortColumnsLabel.setIcon(sort123Icon);
+		sortColumnsLabel.setText(null);
+		sortColumnsPanel.setToolTipText("Sort Columns");
 
 		final ListCellRenderer acRenderer = andCondition.getRenderer();
 		andCondition.setRenderer(new ListCellRenderer() {
@@ -1885,24 +1887,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					public void run() {
 						popup = new JPopupMenu();
 						JCheckBoxMenuItem natural = new JCheckBoxMenuItem("Natural column order ");
+						natural.setIcon(sort123Icon);
 						natural.setSelected(!sortColumnsCheckBox.isSelected());
 						natural.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
 								sortColumnsCheckBox.setSelected(false);
 								sortColumnsCheckBoxActionPerformed(null);
-								sortColumnsLabel.setText("natural ");
+								sortColumnsLabel.setIcon(sort123Icon);
 							}
 						});
 						popup.add(natural);
 						JCheckBoxMenuItem sorted = new JCheckBoxMenuItem("Alphabetical column order ");
+						sorted.setIcon(sortABCIcon);
 						sorted.setSelected(sortColumnsCheckBox.isSelected());
 						sorted.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
 								sortColumnsCheckBox.setSelected(true);
 								sortColumnsCheckBoxActionPerformed(null);
-								sortColumnsLabel.setText("a-z ");
+								sortColumnsLabel.setIcon(sortABCIcon);
 							}
 						});
 						popup.add(sorted);
@@ -1913,7 +1917,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							public void actionPerformed(ActionEvent e) {
 								sortColumnsCheckBox.setSelected(false);
 								sortColumnsCheckBoxActionPerformed(null);
-								sortColumnsLabel.setText("natural ");
+								sortColumnsLabel.setIcon(sort123Icon);
 								UIUtil.invokeLater(new Runnable() {
 									@Override
 									public void run() {
@@ -7535,6 +7539,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private static ImageIcon constraintPKIcon;
     private static ImageIcon emptyIcon;
 	private static ImageIcon cancelIcon;
+	private static ImageIcon sort123Icon;
+	private static ImageIcon sortABCIcon;
 	
 	static {
         // load images
@@ -7551,7 +7557,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     	findColumnIcon2 = UIUtil.readImage("/findcolumn2.png");
     	runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
     	constraintPKIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/constraint_pk.png"));
-    	emptyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"));
-    }
+       	emptyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"));
+       	sort123Icon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sort123.png"));
+       	sortABCIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sortabc.png"));
+	}
 
 }
