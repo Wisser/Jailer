@@ -85,7 +85,7 @@ public class ImportDialog extends javax.swing.JDialog {
 		}
 
 		setModal(true);
-		setLocation(100, 150);
+		UIUtil.setInitialWindowLocation(this, parent, 100, 150);
 
 		threadComboBox.setSelectedItem(Integer.toString(numThreads));
 		DocumentListener dl = new DocumentListener() {

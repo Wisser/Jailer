@@ -117,7 +117,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 			}
 		}
 		pack();
-		setLocation(300, 100);
+		UIUtil.setInitialWindowLocation(this, parent, 300, 100);
 		setVisible(true);
 	}
 

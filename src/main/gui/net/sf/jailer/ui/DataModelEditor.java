@@ -324,12 +324,12 @@ public class DataModelEditor extends javax.swing.JDialog {
 			}
 		});
 
-		setLocation(100, 32);
+		UIUtil.setInitialWindowLocation(this, parent, 100, 32);
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		if (screenSize == null || screenSize.width < 1200) {
 			setSize(1000, 600);
 		} else {
-			setSize(Math.min(screenSize.width - 2 * getX(), 2000), Math.min(screenSize.height - 2 * getY(), 800));
+			setSize(Math.min(screenSize.width - 2 * 100, 1600), Math.min(screenSize.height - 2 * 32, 800));
 		}
 		UIUtil.fit(this);
 		

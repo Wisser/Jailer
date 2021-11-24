@@ -28,6 +28,7 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -268,9 +269,10 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			initialLabel.setVisible(false);
 			dialog.pack();
 			dialog.setSize(Math.max(dialog.getWidth(), 540), dialog.getHeight());
+			Rectangle2D screenBounds = UIUtil.getScreenBounds();
 			dialog.setLocation(
-					Math.max(32, owner.getLocation().x + owner.getWidth() / 2 - dialog.getWidth() / 2),
-					Math.max(32, owner.getLocation().y + owner.getHeight() / 2 - dialog.getHeight() / 2));
+					Math.max((int) screenBounds.getX() + 32, owner.getLocation().x + owner.getWidth() / 2 - dialog.getWidth() / 2),
+					Math.max((int) screenBounds.getY() + 32, owner.getLocation().y + owner.getHeight() / 2 - dialog.getHeight() / 2));
 			dialog.setModal(true);
 			if (tbs.isEmpty()) {
 				ok = false;

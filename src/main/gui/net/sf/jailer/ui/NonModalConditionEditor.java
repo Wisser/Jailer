@@ -30,6 +30,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -606,10 +607,10 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		UIUtil.fit(this);
         try {
             // Get the size of the screen
-            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-            int hd = getY() - (dim.height - 80);
+            Rectangle2D dim = UIUtil.getScreenBounds();
+            int hd = (int) (getY() - (dim.getHeight() - 80));
             if (hd > 0) {
-                setLocation(getX(), Math.max(getY() - hd, 0));
+                setLocation(getX(), Math.max(getY() - hd, (int) dim.getY()));
             }
         } catch (Throwable t) {
             // ignore

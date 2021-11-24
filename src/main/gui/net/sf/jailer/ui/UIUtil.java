@@ -25,10 +25,14 @@ import java.awt.FileDialog;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -38,6 +42,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -943,16 +948,47 @@ public class UIUtil {
     public static void fit(Window d) {
         try {
             // Get the size of the screen
-            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-            int hd = d.getY() + d.getHeight() - (dim.height - 60);
+            Rectangle2D dim = getScreenBounds();
+            
+            int hd = (int) (d.getY() + d.getHeight() - (dim.getHeight() - 60));
             if (hd > 0) {
                 d.setSize(d.getWidth(), Math.max(d.getHeight() - hd, 150));
             }
-            d.setLocation(Math.max(0, d.getX()), Math.max(0, d.getY()));
+            d.setLocation((int) Math.min(d.getX(), dim.getX() + dim.getWidth() - 100), (int) Math.min(d.getY(), dim.getY() + dim.getHeight() - 150));
+            d.setLocation((int) Math.max(dim.getX(), d.getX()), (int) Math.max(dim.getY(), d.getY()));
         } catch (Throwable t) {
             // ignore
         }
     }
+
+    public static void setInitialWindowLocation(Window window, Window owner, int x, int y) {
+		Point p = new Point(x, y);
+		if (owner != null) {
+			SwingUtilities.convertPointToScreen(p, owner);
+		}
+		window.setLocation(p);
+		fit(window);
+	}
+
+	public static Rectangle2D getScreenBounds() {
+		Rectangle2D dim = new Rectangle2D.Double();
+		try {
+		    GraphicsEnvironment localGE = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		    for (GraphicsDevice gd : localGE.getScreenDevices()) {
+		      for (GraphicsConfiguration graphicsConfiguration : gd.getConfigurations()) {
+		        Rectangle2D.union(dim, graphicsConfiguration.getBounds(), dim);
+		      }
+		    }
+		} catch (Throwable t) {
+			LogUtil.warn(t);
+			dim = new Rectangle2D.Double();
+		}
+		if (dim.getWidth() == 0.0) {
+			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+			dim = new Rectangle2D.Double(0, 0, screenSize.getWidth(), screenSize.getHeight());
+		}
+		return dim;
+	}
 
     public static boolean disableWarnings = false;
 
@@ -2019,7 +2055,7 @@ public class UIUtil {
                     UIManager.put( "Component.arrowType", "triangle" );
                     UIManager.put( "ScrollBar.showButtons", true );
                     UIManager.put( "ScrollBar.width", 14 );
-                    UIManager.put( "InternalFrame.borderMargins", new Insets(3,4,1,1));
+                    UIManager.put( "InternalFrame.borderMargins", new Insets(2,2,1,1));
                     UIManager.put( "TableHeader.separatorColor", Color.lightGray);
                     
                     UIManager.put( "Button.arc", 8 );

@@ -36,6 +36,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -305,8 +306,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			mh = Math.max(240, mh * f + 16);
 		}
 		int height = Math.max(dialog.getHeight(), (int) mh);
+		Rectangle2D screenBounds = UIUtil.getScreenBounds();
 		if (!locateUnderButton) {
-			y = Math.max(1, y - height);
+			y = Math.max((int) screenBounds.getY(), y - height);
 		}
 		dialog.setLocation(x, y);
 		int minWidth = metaDataSource == null? 300 : 500;
@@ -319,15 +321,18 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			height = (int) ((estimatedItemsCount) * Math.max(16, cellHeight) + oHeight);
 		}
 		dialog.setSize(prefWidth != null ? prefWidth : Math.max(minWidth, dialog.getWidth()), Math.min(height, 300));
+		if (!locateUnderButton) {
+			dialog.setLocation(dialog.getX(), dialog.getY() + height - dialog.getHeight());
+		}
 		if (maxX != null) {
-			dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+			dialog.setLocation(Math.max((int) screenBounds.getX(), Math.min(maxX, dialog.getX())), dialog.getY());
 		}
 		Integer maxY = maxY(dialog.getHeight());
 		if (maxY != null && maxY < dialog.getY()) {
 			int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
 			maxY += deltaH;
 			dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
-			dialog.setLocation(dialog.getX(), Math.max(0, maxY));
+			dialog.setLocation(dialog.getX(), Math.max((int) screenBounds.getY(), maxY));
 		}
 		plugInPanel.setVisible(pv);
 
@@ -367,18 +372,19 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public void resetHeight() {
 		Integer maxX = maxX();
 		int y = dialog.getY();
+		Rectangle2D screenBounds = UIUtil.getScreenBounds();
 		if (estimatedItemsCount != null && estimatedItemsCount >= 0) {
 			int height = (int) ((Math.max(2, estimatedItemsCount)) * Math.max(16, cellHeight) + oHeight);
 			dialog.setSize(dialog.getWidth(), Math.min(height, 600));
 			if (maxX != null) {
-				dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+				dialog.setLocation(Math.max((int) screenBounds.getX(), Math.min(maxX, dialog.getX())), dialog.getY());
 			}
 			Integer maxY = maxY(dialog.getHeight());
 			if (maxY != null && maxY < dialog.getY()) {
 				int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
 				maxY += deltaH;
 				dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
-				dialog.setLocation(dialog.getX(), Math.max(0, maxY));
+				dialog.setLocation(dialog.getX(), Math.max((int) screenBounds.getY(), maxY));
 			}
 			if (dialog.getY() < y) {
 				int diff = y - dialog.getY();

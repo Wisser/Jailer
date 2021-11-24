@@ -45,6 +45,7 @@ public class JailerConsole {
 
 	private final ProgressPanel progressPanel;
 	public final Window dialog;
+	public final Window owner;
 	private final boolean fullSize;
 
 	/**
@@ -57,6 +58,7 @@ public class JailerConsole {
 	 */
 	public JailerConsole(Window owner, Window dialog, boolean showLogfileButton, ProgressPanel progressPanel, boolean fullSize) {
 		this.dialog = dialog;
+		this.owner = owner;
 		this.progressPanel = progressPanel;
 		this.fullSize = fullSize;
 		initialize();
@@ -101,10 +103,10 @@ public class JailerConsole {
 		}
 		if (fullSize) {
 			dialog.setSize(new Dimension(1110, 740));
-			   dialog.setLocation(10, 50);
+			UIUtil.setInitialWindowLocation(dialog, owner, 10, 50);
 		} else {
 			dialog.setSize(new Dimension(600, 400));
-			dialog.setLocation(200, 250);
+			UIUtil.setInitialWindowLocation(dialog, owner, 10, 50);
 		}
 		if (dialog instanceof JDialog) {
 			((JDialog) dialog).setContentPane(jPanel);

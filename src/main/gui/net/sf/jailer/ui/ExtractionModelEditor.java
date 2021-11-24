@@ -485,11 +485,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			Boolean docked = null;
 			boolean observed = false;
 			boolean first = true;
+			boolean locate = true;
 			@Override
 			protected void toggleDockingState() {
 				if (!Boolean.FALSE.equals(docked)) {
 					ExtractionModelEditor.this.extractionModelFrame.pendingDecisionsDialog.getContentPane().removeAll();
 					ExtractionModelEditor.this.extractionModelFrame.pendingDecisionsDialog.getContentPane().add(pendingDecisionsPanel);
+					if (locate) {
+						UIUtil.setInitialWindowLocation(ExtractionModelEditor.this.extractionModelFrame.pendingDecisionsDialog, ExtractionModelEditor.this.extractionModelFrame, 30, 130);
+						locate = false;
+					}
 					ExtractionModelEditor.this.extractionModelFrame.pendingDecisionsDialog.setVisible(true);
 					if (!observed) {
 						ExtractionModelEditor.this.extractionModelFrame.pendingDecisionsDialog.addWindowListener(new WindowListener() {

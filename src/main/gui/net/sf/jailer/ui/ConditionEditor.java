@@ -16,12 +16,11 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -37,12 +36,14 @@ import java.util.regex.Pattern;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -70,8 +71,9 @@ public class ConditionEditor extends EscapableDialog {
 	private ParameterSelector parameterSelector;
 	private DataModelBasedSQLCompletionProvider provider;
 
-	/** Creates new form ConditionEditor */
-	public ConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel, String altTitel) {
+	/** Creates new form ConditionEditor 
+	 */
+	public ConditionEditor(JComponent anchor, java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel, String altTitel) {
 		super(parent, true);
 		initComponents();
 		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
@@ -133,9 +135,16 @@ public class ConditionEditor extends EscapableDialog {
 			new SQLAutoCompletion(provider, editorPane);
 		}
 
-		setLocation(400, 150);
+		if (anchor != null) {
+			Point p = new Point(0, 0);
+			SwingUtilities.convertPointToScreen(p, anchor);
+			setLocation((int) p.getX(), (int) p.getY());
+		} else {
+			setLocation(400, 150);
+		}
 		setSize(660, 400);
-
+		UIUtil.fit(this);
+		
 		if (parametersGetter != null) {
 			paramsPanel.add(parameterSelector = new ParameterSelector(this, editorPane, parametersGetter));
 		} else {
@@ -356,7 +365,7 @@ public class ConditionEditor extends EscapableDialog {
 	 * @param condition the condition
 	 * @return new condition or <code>null</code>, if user canceled the editor
 	 */
-	public String edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
+	public String edit(JComponent anchor, String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton) {
 		if (Pattern.compile("\\bselect\\b", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
 			condition = new BasicFormatterImpl().format(condition);
 		}
@@ -405,6 +414,13 @@ public class ConditionEditor extends EscapableDialog {
 				editorPane.grabFocus();
 			}
 		});
+		if (anchor != null) {
+			Point p = new Point(0, 0);
+			SwingUtilities.convertPointToScreen(p, anchor);
+			setLocation((int) p.getX(), (int) p.getY());
+			setSize(660, 400);
+			UIUtil.fit(this);
+		}
 		setVisible(true);
 		if (ok && condition.equals(editorPane.getText())) {
 			ok = false;
@@ -457,10 +473,10 @@ public class ConditionEditor extends EscapableDialog {
 //		UIUtil.fit(this);
         try {
             // Get the size of the screen
-            Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-            int hd = getY() - (dim.height - 80);
+            Rectangle2D dim = UIUtil.getScreenBounds();
+            int hd = (int) (getY() - (dim.getHeight() - 80));
             if (hd > 0) {
-                setLocation(getX(), Math.max(getY() - hd, 0));
+                setLocation(getX(), Math.max(getY() - hd, (int) dim.getY()));
             }
         } catch (Throwable t) {
             // ignore

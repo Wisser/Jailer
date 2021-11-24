@@ -264,8 +264,8 @@ public class CyclesView extends javax.swing.JDialog {
 			public void valueChanged(ListSelectionEvent evt) {
 			}
 		});
-		setLocation(400, 150);
 		setSize(700, 500);
+		UIUtil.setInitialWindowLocation(this, extractionModelFrame, 400, 150);
 //        setAlwaysOnTop(true);
 	}
 
@@ -348,6 +348,8 @@ public class CyclesView extends javax.swing.JDialog {
 
 	public void findCycles() {
 		final FindCyclesDialog findCyclesDialog = new FindCyclesDialog();
+		setSize(700, 500);
+		UIUtil.setInitialWindowLocation(this, extractionModelFrame, 400, 150);
 		findCyclesDialog.setLocation(getLocation().x + getSize().width / 2 - findCyclesDialog.getSize().width / 2,
 				getLocation().y + getSize().height / 2 - findCyclesDialog.getSize().height / 2);
 		CancellationHandler.reset(null);

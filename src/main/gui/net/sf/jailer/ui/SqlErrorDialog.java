@@ -275,6 +275,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel2.add(sendButton, gridBagConstraints);
 
         jButton1.setText(" Close ");

@@ -3470,7 +3470,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			d.pack();
 			d.setLocation(x - 50, y - 100);
 			d.setSize(700, Math.max(d.getHeight() + 20, 400));
-			d.setLocation(getOwner().getX() + (getOwner().getWidth() - d.getWidth()) / 2, Math.max(0, getOwner().getY() + (getOwner().getHeight() - d.getHeight()) / 2));
+			d.setLocation(getOwner().getX() + (getOwner().getWidth() - d.getWidth()) / 2, Math.max((int) UIUtil.getScreenBounds().getY(), getOwner().getY() + (getOwner().getHeight() - d.getHeight()) / 2));
 			UIUtil.fit(d);
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e);

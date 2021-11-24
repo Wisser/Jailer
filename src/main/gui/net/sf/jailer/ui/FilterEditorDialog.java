@@ -30,6 +30,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -114,11 +115,11 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		private static final long serialVersionUID = -958818889236629658L;
 		JCheckBox checkBox;
 
-		private FilterConditionEditor(Frame parent, ParametersGetter parametersGetter) {
-			super(parent, parametersGetter, getDataModel(), "Filter Expression");
+		private FilterConditionEditor(JComponent anchor, Frame parent, ParametersGetter parametersGetter) {
+			super(anchor, parent, parametersGetter, getDataModel(), "Filter Expression");
 		}
 
-		public String edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean withColumnsDropDown) {
+		public String edit(JComponent anchor, String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean withColumnsDropDown) {
 			if (checkBox == null) {
 				 checkBox = new JCheckBox("literal filter");
 				 checkBox.addItemListener(new ItemListener() {
@@ -140,9 +141,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			}
 			checkBox.setSelected(condition.trim().startsWith(Filter.LITERAL_PREFIX));
 			if (!withColumnsDropDown) {
-				return super.edit(condition, null, null, null, table2label, table2alias, table2, addPseudoColumns, false);
+				return super.edit(anchor, condition, null, null, null, table2label, table2alias, table2, addPseudoColumns, false);
 			}
-			return super.edit(condition, table1label, table1alias, table1, table2label, table2alias, table2, addPseudoColumns, false);
+			return super.edit(anchor, condition, table1label, table1alias, table1, table2label, table2alias, table2, addPseudoColumns, false);
 		}
 	}
 
@@ -460,7 +461,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	}
 
 	private FilterConditionEditor createConditionEditor() {
-		return new FilterConditionEditor(parent, new ParameterSelector.ParametersGetter() {
+		return new FilterConditionEditor(null, parent, new ParameterSelector.ParametersGetter() {
 			@Override
 			public Set<String> getParameters() {
 				Set<String> pSet = new TreeSet<String>(parametersGetter.getParameters());
@@ -557,7 +558,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				if (isActive()) {
 					mouseExited(evt);
 					conditionEditor.setTitle(templateDetailsNameField.getText().trim());
-					String cond = conditionEditor.edit(templateDetailsNewValueField.getText(), null, null, null, null, null, null, false, templatesDetailsApplyAtComboBox.getSelectedIndex() == 0);
+					String cond = conditionEditor.edit(templateDetailsNewValueField, templateDetailsNewValueField.getText(), null, null, null, null, null, null, false, templatesDetailsApplyAtComboBox.getSelectedIndex() == 0);
 					if (cond != null) {
 						if (!templateDetailsNewValueField.getText().equals((cond))) {
 							templateDetailsNewValueField.setText((cond));
@@ -614,8 +615,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		if (!isInitialized) {
 			int w = 1100, h = 600;
 			setSize(w, h);
-			setLocation(Math.max(0, parent.getX() + parent.getWidth() / 2 - w / 2),
-						Math.max(0, parent.getY() + parent.getHeight() / 2 - h / 2));
+			Rectangle2D screenBounds = UIUtil.getScreenBounds();
+			setLocation(Math.max((int) screenBounds.getX(), parent.getX() + parent.getWidth() / 2 - w / 2),
+						Math.max((int) screenBounds.getY(), parent.getY() + parent.getHeight() / 2 - h / 2));
 			isInitialized = true;
 		}
 
@@ -1144,7 +1146,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 						if (isActive()) {
 							mouseExited(evt);
 							conditionEditor.setTitle(columnName.trim());
-							String cond = conditionEditor.edit(textField.getText(), "Table", "T", table, null, null, null, false, applyAtCB.getSelectedIndex() == 0);
+							String cond = conditionEditor.edit(textField, textField.getText(), "Table", "T", table, null, null, null, false, applyAtCB.getSelectedIndex() == 0);
 							if (cond != null) {
 								if (!textField.getText().equals((cond))) {
 									textField.setText((cond));

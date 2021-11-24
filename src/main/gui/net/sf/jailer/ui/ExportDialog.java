@@ -314,7 +314,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			toLabel.setText(scriptFormat.getDisplayName());
 
 			setModal(true);
-			setLocation(100, 60);
+			UIUtil.setInitialWindowLocation(this, parent, 100, 60);
 			Map<String, JComponent> fields = new HashMap<String, JComponent>();
 			fields.put("insert" + scriptFormat.name(), insert);
 			fields.put("threads", threads);
@@ -538,7 +538,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			preferredSize.width = 10;
 			where.setPreferredSize(preferredSize);
 
-			final ConditionEditor subjectConditionEditor = new ConditionEditor(null, null, dataModel, null);
+			final ConditionEditor subjectConditionEditor = new ConditionEditor(null, null, null, dataModel, null);
 			subjectConditionEditor.setTitle("Subject condition");
 			openWhereEditor.setIcon(conditionEditorIcon);
 			openWhereEditor.setText(null);
@@ -549,7 +549,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				}
 				@Override
 				public void mouseClicked(java.awt.event.MouseEvent evt) {
-					String cond = subjectConditionEditor.edit(where.getText(), "Subject", "T", subject, null, null, null, false, true);
+					String cond = subjectConditionEditor.edit(where, where.getText(), "Subject", "T", subject, null, null, null, false, true);
 					if (cond != null) {
 						if (!where.getText().equals((cond))) {
 							where.setText((cond));

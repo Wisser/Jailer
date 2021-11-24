@@ -30,6 +30,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.StringSearchPanel;
+import net.sf.jailer.ui.UIUtil;
 
 /**
  * Dialog for selecting the table for a new table browser.
@@ -103,6 +104,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 		} else {
 			setLocation(300, 100);
 		}
+		UIUtil.fit(this);
 		
 		tableComboBox.grabFocus();
 		

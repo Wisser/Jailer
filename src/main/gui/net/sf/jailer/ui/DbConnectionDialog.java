@@ -186,17 +186,17 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		ConnectionInfo oldCurrentConnection = currentConnection;
 		ok = false;
 		try {
-			if (!located) {
+//			if (!located) {
 				pack();
 				setSize(Math.max(710, getWidth()), 450);
 				if (parent != null && parent.isVisible()) {
 					int os = parent.getWidth() > 800? 0 : 80;
-					setLocation(os + parent.getX() + (parent.getWidth() - getWidth()) / 2, Math.max(0, os + parent.getY() + (parent.getHeight() - getHeight()) / 2));			
+					setLocation(os + parent.getX() + (parent.getWidth() - getWidth()) / 2, Math.max((int) UIUtil.getScreenBounds().getY(), os + parent.getY() + (parent.getHeight() - getHeight()) / 2));			
 				} else {
 					setLocation(100, 150);
 				}
-				located = true;
-			}
+//				located = true;
+//			}
 			setTitle((reason == null ? "" : (reason + " - ")) + "Connect.");
 			sortConnectionList();
 			refresh();

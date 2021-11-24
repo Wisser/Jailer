@@ -80,7 +80,7 @@ public class FileView extends javax.swing.JDialog {
 		this.setSize(new Dimension(700, 600));
 		this.setContentPane(getJScrollPane());
 		this.setTitle("Jailer");
-		setLocation(100, 100);
+		UIUtil.setInitialWindowLocation(this, getOwner(), 100, 100);
 		getJTextPane().setFont(new Font("Monospaced", Font.PLAIN, 12));
 	}
 

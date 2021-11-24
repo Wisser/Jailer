@@ -38,7 +38,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
 		super(parent, true);
 		initComponents();
 		setModal(true);
-		setLocation(100, 150);
+		UIUtil.setInitialWindowLocation(this, parent, 100, 150);
 		Ok.setIcon(UIUtil.scaleIcon(Ok, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		datePattern.getEditor().addActionListener(new ActionListener() {

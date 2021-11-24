@@ -216,7 +216,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			}
 		};
 		detailsButton.addActionListener(e -> {
-			ConditionEditor conditionEditor = new ConditionEditor(AdditionalSubjectsDialog.this.parent,
+			ConditionEditor conditionEditor = new ConditionEditor(detailsButton, AdditionalSubjectsDialog.this.parent,
 					parametersGetter, AdditionalSubjectsDialog.this.extractionModel.dataModel, null);
 			Object item = detailsComboBox.getSelectedItem();
 			conditionEditor.setTitle("");
@@ -225,7 +225,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 				table = extractionModel.dataModel.getTableByDisplayName(item.toString());
 				conditionEditor.setTitle(item.toString());
 			}
-			String cond = conditionEditor.edit(detailsCondtition.getText(), "Subject", "T", table, null, null, null,
+			String cond = conditionEditor.edit(detailsCondtition, detailsCondtition.getText(), "Subject", "T", table, null, null, null,
 					false, true);
 			if (cond != null) {
 				if (!detailsCondtition.getText().equals((cond))) {
