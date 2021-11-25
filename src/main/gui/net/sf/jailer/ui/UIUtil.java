@@ -2111,7 +2111,7 @@ public class UIUtil {
 
 	public static void initMacKeyStrokes() {
 		try {
-			if (System.getProperty("os.name", "").startsWith("Mac")) {
+			if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("mac")) {
 				addOSXKeyStrokes((InputMap) UIManager.get("EditorPane.focusInputMap"));
 				addOSXKeyStrokes((InputMap) UIManager.get("FormattedTextField.focusInputMap"));
 				addOSXKeyStrokes((InputMap) UIManager.get("PasswordField.focusInputMap"));

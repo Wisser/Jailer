@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -64,12 +65,12 @@ public class UndoManager {
 		this.undoViewHolder = undoViewHolder;
 		
 		int mask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
-		if (mask == InputEvent.CTRL_MASK) {
-			undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK));
-			redoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_MASK));
+		if (!System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("mac")) {
+			undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, mask));
+			redoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, mask));
 		} else {
 			undoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, mask));
-			redoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.SHIFT_MASK | mask));
+			redoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.SHIFT_MASK | mask));
 		}
 		updateView();
 	}

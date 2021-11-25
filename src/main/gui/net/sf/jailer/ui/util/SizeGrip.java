@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -187,7 +188,7 @@ public class SizeGrip extends JPanel {
 	@Override
 	public void updateUI() {
 		super.updateUI();
-		if (System.getProperty("os.name").contains("OS X")) {
+		if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("mac")) {
 			if (osxSizeGrip==null) {
 				osxSizeGrip = createOSXSizeGrip();
 			}
