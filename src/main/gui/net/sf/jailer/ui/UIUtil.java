@@ -2066,7 +2066,6 @@ public class UIUtil {
 //                    UIManager.put( "TextArea.background", Color.white);
                      
                     FlatLightLaf.setup();
-					initMacKeyStrokes();
 					break;
 				} catch (Exception x) {
 					UIUtil.showException(null, "Error", x);

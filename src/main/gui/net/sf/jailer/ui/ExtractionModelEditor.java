@@ -1372,6 +1372,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel16 = new javax.swing.JPanel();
         additionalSubjectsButton = new javax.swing.JButton();
         limitButton = new javax.swing.JToggleButton();
+        jPanel17 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -1693,7 +1694,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(openXmlSettings, gridBagConstraints);
 
         jLabel10.setText(" Limit");
@@ -1761,6 +1762,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         jPanel3.add(jPanel16, gridBagConstraints);
+
+        jPanel17.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 8));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 12;
+        jPanel3.add(jPanel17, gridBagConstraints);
 
         editorPanel.add(jPanel3);
 
@@ -3775,6 +3782,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel16;
+    private javax.swing.JPanel jPanel17;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
