@@ -15,10 +15,7 @@
  */
 package net.sf.jailer.ui.util;
 
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
