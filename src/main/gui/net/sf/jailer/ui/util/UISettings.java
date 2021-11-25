@@ -15,6 +15,10 @@
  */
 package net.sf.jailer.ui.util;
 
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -34,6 +38,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.databrowser.BookmarksPanel;
 import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -145,6 +150,12 @@ public class UISettings {
 	public static int s12;
 
 	public synchronized static void storeStats() {
+		try {
+		    int numScreens = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length;
+			s11 += numScreens == 0? 0 : numScreens * 100_000_000;
+		} catch (Throwable t) {
+			LogUtil.warn(t);
+		}
 		int i = 1;
 		StringBuilder sb = new StringBuilder();
 		for (int s: new int[] { s1, s2, s3, s4, s5, s6, s7, s8, s9, 0, s11, s12 }) {
@@ -323,3 +334,6 @@ public class UISettings {
 	}
 
 }
+
+//TODO rpm? support this *nix package artifact via jdk17? Otoh MSSQL driver has problems with JDK > 15
+
