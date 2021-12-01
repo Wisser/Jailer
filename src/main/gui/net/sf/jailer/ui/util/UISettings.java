@@ -149,7 +149,7 @@ public class UISettings {
 	public synchronized static void storeStats() {
 		try {
 		    int numScreens = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices().length;
-			s11 += numScreens == 0? 0 : numScreens * 100_000_000;
+			s11 += numScreens <= 1? 0 : numScreens * 100_000_000;
 		} catch (Throwable t) {
 			LogUtil.warn(t);
 		}

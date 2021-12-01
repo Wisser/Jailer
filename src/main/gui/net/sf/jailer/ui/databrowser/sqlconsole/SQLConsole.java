@@ -36,9 +36,13 @@ import java.awt.event.WindowFocusListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Blob;
@@ -230,7 +234,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         initMenuItems();
         historyComboBox.setMaximumRowCount(25);
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -352,6 +356,25 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         	}
 
         };
+
+        clearButton.setText(null);
+        clearButton.setToolTipText("Clear Console");
+        clearButton.setIcon(UIUtil.scaleIcon(clearButton, clearIcon));
+        clearButton.setEnabled(editorPane.getDocument().getLength() > 0);
+        editorPane.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				clearButton.setEnabled(editorPane.getDocument().getLength() > 0);
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				clearButton.setEnabled(editorPane.getDocument().getLength() > 0);
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				clearButton.setEnabled(editorPane.getDocument().getLength() > 0);
+			}
+		});
 
         historyComboBox.setRenderer(new DefaultListCellRenderer() {
         	ListCellRenderer renderer = historyComboBox.getRenderer();
@@ -1946,6 +1969,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         consoleContainerPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
+        jToolBar2 = new javax.swing.JToolBar();
+        clearButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         limitComboBox = new javax.swing.JComboBox();
         jToolBar1 = new javax.swing.JToolBar();
@@ -1985,6 +2010,26 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel2.add(consoleContainerPanel, gridBagConstraints);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        jToolBar2.setFloatable(false);
+        jToolBar2.setRollover(true);
+
+        clearButton.setText("clear");
+        clearButton.setFocusable(false);
+        clearButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        clearButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        clearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearButtonActionPerformed(evt);
+            }
+        });
+        jToolBar2.add(clearButton);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 6);
+        jPanel5.add(jToolBar2, gridBagConstraints);
 
         jLabel1.setText("Row limit ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2036,7 +2081,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jToolBar1.add(jSeparator2);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         jPanel5.add(jToolBar1, gridBagConstraints);
 
@@ -2128,8 +2173,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	cancelButton.setEnabled(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
+        editorPane.setText("");
+        editorPane.grabFocus();
+    }//GEN-LAST:event_clearButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
+    private javax.swing.JButton clearButton;
     private javax.swing.JPanel consoleContainerPanel;
     private javax.swing.JLabel dummyLabel;
     private javax.swing.JButton explainButton;
@@ -2145,6 +2196,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JToolBar jToolBar2;
     private javax.swing.JComboBox limitComboBox;
     private javax.swing.JButton runSQLButton;
     private javax.swing.JButton runnAllButton;
@@ -2871,9 +2923,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
     private Icon closeIcon;
+    private ImageIcon clearIcon;
     {
         // load images
     	closeIcon = UIUtil.readImage("/Close-16-1.png");
+    	clearIcon = UIUtil.readImage("/clear.png");
     }
 
     /**
@@ -3469,6 +3523,45 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         nosyncIcon = UIUtil.readImage("/nosync.png");
     }
 
+    private File contentFile() {
+    	File file = new File(Environment.newFile("scratch"), new File(executionContext.getQualifiedDatamodelFolder()).getName());
+    	return file;
+    }
+    
+	public void loadContent() {
+		try {
+			if (file == null) {
+				File contentFile = contentFile();
+				if (contentFile.exists()) {
+					ObjectInputStream in = new ObjectInputStream(new FileInputStream(contentFile));
+					String content = in.readObject().toString();
+					editorPane.setText(content);
+					editorPane.discardAllEdits();
+					setCaretPosition(content.length());
+					in.close();
+				}
+			}
+		} catch (Throwable t) {
+			// ignore
+		}
+	}
+
+	public void saveContent() {
+		try {
+			if (file == null) {
+				File contentFile = contentFile();
+				contentFile.getParentFile().mkdirs();
+				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(contentFile));
+				out.writeObject(editorPane.getText());
+				out.close();
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
+			// ignore
+		}
+	}
+
+    
     // TODO StringSearch component for historie (and than inc hist size a lot)
     
     // TODO automatically generated SQL statements from Desktop like:

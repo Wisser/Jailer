@@ -1029,6 +1029,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
+				if (!sqlConsoles.isEmpty()) {
+					sqlConsoles.get(0).saveContent();
+				}
 				if (closeAllSQLConsoles()) {
 					DataBrowser.this.dispose();
 				}
@@ -4686,6 +4689,9 @@ public class DataBrowser extends javax.swing.JFrame {
 			ignoreTabChangeEvent = false;
 		}
 		workbenchTabbedPane.setSelectedComponent(sqlConsole);
+		if (sqlConsoles.size() == 1) {
+			sqlConsoles.get(0).loadContent();
+		}
 		return sqlConsole;
 	}
 
