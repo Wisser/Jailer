@@ -2245,7 +2245,7 @@ public abstract class Desktop extends JDesktopPane {
 									lastLastY = lastY;
 									lastY = y;
 									lastInClosure = link.inClosure;
-									Color cl = pbg ? Color.white : light? link.color1 : link.color2;
+									Color cl = pbg ? Color.white : link.color1; // light? link.color1 : link.color2;
 									if (UIUtil.plaf != PLAF.NIMBUS) {
 										if (cl.getGreen() > cl.getBlue() && cl.getGreen() >= cl.getRed()) {
 //											if (link.restricted) {
@@ -2255,7 +2255,7 @@ public abstract class Desktop extends JDesktopPane {
 														(0));
 //											}
 										} else {
-											double f = link.restricted? 1.7 : 1.1;
+											double f = 1.1; // link.restricted? 1.7 : 1.1;
 											cl = new Color(
 													brighter(cl.getRed(), f),
 													brighter(cl.getGreen(), f),
@@ -2279,7 +2279,7 @@ public abstract class Desktop extends JDesktopPane {
 										@Override
 										public void run() {
 											paintLink(start, end, color, link.color2, g2d, tableBrowser, pbg, link.intersect,
-												link.dotted,
+													link.dotted, link.restricted,
 												linksToRender.size() == 1 ? 0.5 : (ir + 1) * 1.0 / linksToRender.size(),
 												finalLight, followMe,
 												link.sourceRowID, link.inClosure, link.inTempClosure, inClosureRootPath,
@@ -2328,7 +2328,7 @@ public abstract class Desktop extends JDesktopPane {
 	final long STEP_DELAY = 50;
 
 	private void paintLink(Point2D start, Point2D end, Color color, Color fgColor, Graphics2D g2d, RowBrowser tableBrowser,
-			boolean pbg, boolean intersect, boolean dotted, double midPos, boolean light,
+			boolean pbg, boolean intersect, boolean dotted, boolean restricted, double midPos, boolean light,
 			Map<String, Point2D.Double> followMe, String sourceRowID, boolean inClosure, boolean inTempClosure, boolean inClosureRootPath,
 			boolean isToParentLink, boolean doPaint) {
 		int so = 0;
@@ -2362,7 +2362,9 @@ public abstract class Desktop extends JDesktopPane {
 						(float) ((inClosureRootPath ^ isToParentLink)? animationStep % LENGTH : (LENGTH - animationStep % LENGTH))));
 			} else {
 				g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
-						1.0f) : stroke);
+						1.0f) : restricted? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 22f, 4f },
+								1.0f) 
+						: stroke);
 			}
 		}
 

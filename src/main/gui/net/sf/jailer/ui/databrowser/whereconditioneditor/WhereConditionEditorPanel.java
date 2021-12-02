@@ -2068,7 +2068,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 								}
 								needsSort = true;
 							}
-						} catch (Exception e) {
+						} catch (SQLException e) {
 							LogUtil.warn(e);
 							incomplete[0] = false;
 							withNull[0] = false;
