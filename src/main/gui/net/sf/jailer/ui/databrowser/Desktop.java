@@ -2362,7 +2362,7 @@ public abstract class Desktop extends JDesktopPane {
 						(float) ((inClosureRootPath ^ isToParentLink)? animationStep % LENGTH : (LENGTH - animationStep % LENGTH))));
 			} else {
 				g2d.setStroke(dotted ? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
-						1.0f) : restricted? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 22f, 4f },
+						1.0f) : restricted? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 22f, 2.5f },
 								1.0f) 
 						: stroke);
 			}
