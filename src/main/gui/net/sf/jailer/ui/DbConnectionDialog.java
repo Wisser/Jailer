@@ -67,6 +67,7 @@ import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.commandline.UICommandLine;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
+import net.sf.jailer.ui.util.StringObfuscator;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile.Line;
@@ -93,11 +94,16 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * Holds connection information.
 	 */
 	public static class ConnectionInfo implements Serializable, Cloneable {
+		
+		// TODO Implement true encryption. The credentials are currently only obfuscated. This protects the data from being stolen too easily, but of course it is not secure.
+		private static StringObfuscator stringObfuscator = new StringObfuscator();
+		
 		@Override
 		protected Object clone() throws CloneNotSupportedException {
 			return super.clone();
 		}
 		private static final long serialVersionUID = -8034755966212631808L;
+		private boolean encrypted = false;
 		public String alias = "";
 		public String driverClass = "";
 		public String url = "";
@@ -123,6 +129,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		
 		public void assign(ConnectionInfo ci) {
+			encrypted = ci.encrypted;
 			alias = ci.alias;
 			driverClass = ci.driverClass;
 			url = ci.url;
@@ -132,6 +139,30 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			jar2 = ci.jar2;
 			jar3 = ci.jar3;
 			jar4 = ci.jar4;
+		}
+		
+		public boolean encrypt() {
+			if (!encrypted) {
+				url = stringObfuscator.encrypt(url);
+				user = stringObfuscator.encrypt(user);
+				password = stringObfuscator.encrypt(password);
+				encrypted = true;
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		public boolean decrypt() {
+			if (encrypted) {
+				url = stringObfuscator.decrypt(url);
+				user = stringObfuscator.decrypt(user);
+				password = stringObfuscator.decrypt(password);
+				encrypted = false;
+				return true;
+			} else {
+				return false;
+			}
 		}
 	}
 
@@ -535,6 +566,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			return;
 		}
 		try {
+			for (ConnectionInfo ci: connectionList) {
+				ci.encrypt();
+			}
+			
 			File file = Environment.newFile(CONNECTIONS_FILE);
 			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
 			out.writeObject(connectionList);
@@ -547,6 +582,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			out.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			for (ConnectionInfo ci: connectionList) {
+				ci.decrypt();
+			}
 		}
 	}
 	
@@ -567,10 +606,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
 				List<ConnectionInfo> cis = (List<ConnectionInfo>) in.readObject();
 				int i = in.readInt();
+				boolean isEncrypted = true;
 				try {
 					List<String> dma = (List<String>) in.readObject();
 					for (int n = 0; n < dma.size(); ++n) {
 						ConnectionInfo connectionInfo = cis.get(n);
+						if (!connectionInfo.decrypt()) {
+							isEncrypted = false;
+						}
 						connectionInfo.dataModelFolder = dma.get(n);
 						if (connectionInfo.jar1 == null) {
 							connectionInfo.jar1 = "";
@@ -595,8 +638,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				}
 				in.close();
 				connectionList = cis;
-				if (i >= 0 && i < connectionList.size()) {
-//                	currentConnection = connectionList.get(i);
+				if (!isEncrypted) {
+					// The access data is not yet encrypted. Save it in encrypted form.
+					store();
 				}
 				ok = true;
 			}
