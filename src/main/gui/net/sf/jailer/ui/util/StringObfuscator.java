@@ -14,6 +14,9 @@ public class StringObfuscator {
 
 	public String encrypt(final String text) {
 		try {
+			if (text == null) {
+				return null;
+			}
 			return Base64.encodeBytes(this.xor(text.getBytes("UTF-8")));
 		} catch (java.io.UnsupportedEncodingException ex) {
 			throw new IllegalStateException(ex);
@@ -22,6 +25,9 @@ public class StringObfuscator {
 
 	public String decrypt(final String text) {
 		try {
+			if (text == null) {
+				return null;
+			}
 			return new String(this.xor(Base64.decode(text)), "UTF-8");
 		} catch (java.io.UnsupportedEncodingException ex) {
 			throw new IllegalStateException(ex);
