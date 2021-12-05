@@ -1,7 +1,7 @@
 .spacer
 {
-	HEIGHT:2px;
-	BACKGROUND-COLOR:#FFCC00;
+	HEIGHT:1px;
+	BACKGROUND-COLOR:rgb(187, 187, 255);
 }
 .lmenu
 {
@@ -30,6 +30,7 @@ A.tlink:visited
 A.tlink:hover
 {
 	TEXT-DECORATION:underline;
+	BACKGROUND-COLOR: #DDDDDD;
 }
 A.llink:link
 {
@@ -121,7 +122,6 @@ A.mlink:hover
 }
 .nav1background
 {
-	background-image:url(./bg1.JPG);
 }
 .slogan
 {
