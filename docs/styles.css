@@ -2,6 +2,7 @@
 {
 	HEIGHT:1px;
 	BACKGROUND-COLOR:rgb(215, 225, 255);
+	background-image: linear-gradient(to right, rgb(215, 225, 255), white);
 }
 .lmenu
 {
