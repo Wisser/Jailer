@@ -1,7 +1,7 @@
 .spacer
 {
 	HEIGHT:1px;
-	BACKGROUND-COLOR:rgb(187, 187, 255);
+	BACKGROUND-COLOR:rgb(215, 225, 255);
 }
 .lmenu
 {
@@ -29,8 +29,8 @@ A.tlink:visited
 }
 A.tlink:hover
 {
-	TEXT-DECORATION:underline;
-	BACKGROUND-COLOR: #DDDDDD;
+	TEXT-DECORATION:none;
+	BACKGROUND-COLOR: #E0E0E0;
 }
 A.llink:link
 {
@@ -60,7 +60,8 @@ A.llink:hover
 .tlinkA
 {
 	COLOR:#000055;
-	TEXT-DECORATION:underline;
+	TEXT-DECORATION:none;
+	BACKGROUND-COLOR: #D8DFFF;
 	FONT-WEIGHT:normal;
 	FONT-SIZE:14px;
 }
