@@ -19,14 +19,14 @@ A.tlink:link
 	COLOR:#0033CC;
 	TEXT-DECORATION:none;
 	FONT-WEIGHT:normal;
-	FONT-SIZE:14px;
+	FONT-SIZE:16px;
 }
 A.tlink:visited
 {
 	COLOR:#0033CC;
 	TEXT-DECORATION:none;
 	FONT-WEIGHT:normal;
-	FONT-SIZE:14px;
+	FONT-SIZE:16px;
 }
 A.tlink:hover
 {
@@ -49,13 +49,13 @@ A.llink:visited
 }
 A.llink:hover
 {
-	TEXT-DECORATION:underline;
+	BACKGROUND-COLOR: #E0E0E0;
 }
 .llinkA
 {
 	COLOR:#003399;
 	TEXT-DECORATION:none;
-	FONT-WEIGHT:bold;
+	BACKGROUND-COLOR: #D8DFFF;
 	FONT-SIZE:14px;
 }
 .tlinkA
@@ -64,7 +64,7 @@ A.llink:hover
 	TEXT-DECORATION:none;
 	BACKGROUND-COLOR: #D8DFFF;
 	FONT-WEIGHT:normal;
-	FONT-SIZE:14px;
+	FONT-SIZE:16px;
 }
 A.mlink:link
 {
@@ -80,19 +80,19 @@ A.mlink:visited
 }
 A.mlink:hover
 {
-	TEXT-DECORATION:underline;
+	BACKGROUND-COLOR: #E0E0E0;
 }
 .mlinkA
 {
 	COLOR:#003399;
 	TEXT-DECORATION:none;
-	FONT-WEIGHT:bold;
+	BACKGROUND-COLOR: #D8DFFF;
 }
 .mlinkA
 {
 	COLOR:#000044;
 	TEXT-DECORATION:none;
-	FONT-WEIGHT:bold;
+	BACKGROUND-COLOR: #D8DFFF;
 }
 .content
 {
