@@ -142,7 +142,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		
 		public boolean encrypt() {
-			if (!encrypted) {
+			if (!encrypted && System.getProperty("unencrypted-credentials") == null) {
 				url = stringObfuscator.encrypt(url);
 				user = stringObfuscator.encrypt(user);
 				password = stringObfuscator.encrypt(password);
@@ -228,7 +228,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				}
 //				located = true;
 //			}
-			setTitle((reason == null ? "" : (reason + " - ")) + "Connect.");
+			setTitle((reason == null ? "" : (reason + " - ")) + "Connect");
 			sortConnectionList();
 			refresh();
 			if (connectionsTable.getModel().getRowCount() > 0) {
