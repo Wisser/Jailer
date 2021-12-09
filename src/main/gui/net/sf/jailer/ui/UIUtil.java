@@ -1595,7 +1595,7 @@ public class UIUtil {
 			item.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					UISettings.store(UISettings.USE_NATIVE_PLAF, p);
+					UISettings.store(UISettings.USE_NATIVE_PLAF, p.name());
 					JOptionPane.showMessageDialog(parentComponent, "The look and feel has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
 				}
 			});
@@ -2033,12 +2033,19 @@ public class UIUtil {
 		plaf = PLAF.FLAT;
 		if (Boolean.FALSE.equals(plafSetting)) {
 			plaf = PLAF.FLAT;
-			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf);
+			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf.name());
 		} else if (Boolean.TRUE.equals(plafSetting)) {
 			plaf = PLAF.NATIVE;
-			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf);
+			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf.name());
 		} else if (plafSetting instanceof PLAF) {
 			plaf = (PLAF) plafSetting;
+			UISettings.store(UISettings.USE_NATIVE_PLAF, plaf.name());
+		} else if (plafSetting instanceof String) {
+			try {
+				plaf = PLAF.valueOf((String) plafSetting);
+			} catch (Exception e) {
+				// ignore
+			}
 		}
 		switch (plaf) {
 			case NATIVE:
