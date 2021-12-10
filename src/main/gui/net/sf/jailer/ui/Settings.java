@@ -22,6 +22,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
@@ -38,7 +39,7 @@ import net.sf.jailer.configuration.DBMS;
  * 
  * @author Ralf Wisser
  */
-public class Settings  {
+public abstract class Settings  {
 
 	/**
 	 * The formular fields.
@@ -61,6 +62,8 @@ public class Settings  {
 	private Map<String, Map<String, String>> settings = new TreeMap<String, Map<String,String>>();
 	
 	public String currentSetting = null;
+	
+	private static Map<String, String> userModified = new HashMap<String, String>();
 	
 	/**
 	 * Constructor.
@@ -107,19 +110,19 @@ public class Settings  {
 			Map<String, String> setting = new HashMap<String, String>();
 			for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
 				if (entry.getValue() instanceof JTextField) {
-					setting.put(entry.getKey(), ((JTextField) entry.getValue()).getText());
+					putValue(setting, name, entry.getKey(), ((JTextField) entry.getValue()).getText());
 				} else if (entry.getValue() instanceof JCheckBox) {
 					if (((JCheckBox) entry.getValue()).isEnabled()) {
-						setting.put(entry.getKey(), Boolean.valueOf(((JCheckBox) entry.getValue()).isSelected()).toString());
+						putValue(setting, name, entry.getKey(), Boolean.valueOf(((JCheckBox) entry.getValue()).isSelected()).toString());
 					}
 				} else if (entry.getValue() instanceof JRadioButton) {
 					if (((JRadioButton) entry.getValue()).isEnabled()) {
-						setting.put(entry.getKey(), Boolean.valueOf(((JRadioButton) entry.getValue()).isSelected()).toString());
+						putValue(setting, name, entry.getKey(), Boolean.valueOf(((JRadioButton) entry.getValue()).isSelected()).toString());
 					}
 				} else if (entry.getValue() instanceof JComboBox) {
 					Object sItem = ((JComboBox) entry.getValue()).getSelectedItem();
 					if (sItem != null) {
-						setting.put(entry.getKey(), sItem instanceof DBMS? ((DBMS) sItem).getId() : sItem.toString());
+						putValue(setting, name, entry.getKey(), sItem instanceof DBMS? ((DBMS) sItem).getId() : sItem.toString());
 					}
 				}
 			}
@@ -143,6 +146,15 @@ public class Settings  {
 		}
 	}
 
+	private void putValue(Map<String, String> setting, String name, String key, String value) {
+		setting.put(key, value);
+		userModified.put(name + ":" + key, value);
+	}
+
+	public void putValue(Map<String, String> setting, Map.Entry<String, JComponent> entry) {
+		setting.put(entry.getKey(), ((JTextField) entry.getValue()).getText());
+	}
+
 	/**
 	 * Restores a setting.
 	 * 
@@ -161,7 +173,12 @@ public class Settings  {
 						((JTextField) entry.getValue()).setText(setting.get(entry.getKey()));
 					} else if (entry.getValue() instanceof JCheckBox && setting.containsKey(entry.getKey())) {
 						if (((JCheckBox) entry.getValue()).isEnabled()) {
-							((JCheckBox) entry.getValue()).setSelected(Boolean.valueOf(setting.get(entry.getKey())));
+							String newValue = setting.get(entry.getKey());
+							((JCheckBox) entry.getValue()).setSelected(Boolean.valueOf(newValue));
+							String umValue = userModified.get(name.trim() + ":" + settingsContextSecondaryKey + ":" + entry.getKey());
+							if (!Objects.equals(newValue, umValue)) {
+								onModification(entry.getValue());
+							}
 						}
 					} else if (entry.getValue() instanceof JRadioButton && setting.containsKey(entry.getKey())) {
 						if (((JRadioButton) entry.getValue()).isEnabled()) {
@@ -183,5 +200,7 @@ public class Settings  {
 			}
 		}
 	}
+
+	protected abstract void onModification(JComponent component);
 	
 }

@@ -120,7 +120,6 @@ import net.sf.jailer.util.SqlUtil;
  *
  * @author Ralf Wisser
  */
-@SuppressWarnings("serial")
 public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	
 	private static final float REDUCED_OPACITY = 0.5f;
@@ -1128,7 +1127,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				}
 				@Override
 				public void keyReleased(KeyEvent e) {
-					stopFading();
 				}
 				@Override
 				public void keyPressed(KeyEvent e) {
@@ -1472,7 +1470,8 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     private void setOpacity(float opacity) {
     	if (useOpacity) {
 			nextOpacity = opacity;
-	
+			if (opacity == 1) new RuntimeException().printStackTrace();
+				
 			if (!opacityPending) {
 				opacityPending = true;
 				UIUtil.invokeLater(16, () -> {

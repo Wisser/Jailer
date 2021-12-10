@@ -44,6 +44,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -79,7 +80,6 @@ import net.sf.jailer.util.Quoting;
  *
  * @author Ralf Wisser
  */
-@SuppressWarnings("serial")
 public abstract class ExportDialog extends javax.swing.JDialog {
 
 	/**
@@ -412,7 +412,28 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				rowidBoth.setText(rowidBoth.getText().replaceFirst("(<i>).*(</i>)", "$1" + session.dbms.getRowidName() + "$2"));
 			}
 
-			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
+			theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields) {
+				@Override
+				protected void onModification(JComponent component) {
+					boolean defaultValue = component == sortedCheckBox;
+					Color fg = new Color(110, 90, 0);
+					for (JCheckBox comp: new JCheckBox[] {
+							unicode,
+							sortedCheckBox,
+							insertIncrementally,
+							independentWorkingTables,
+							upsertCheckbox,
+							orderByPKCheckbox,
+							transactional
+					}) {
+						if (component == comp) {
+							if (comp.isSelected() != defaultValue) {
+								comp.setForeground(fg);
+							}
+						}
+					}
+				}
+			};
 
 			theSettings.restore(settingsContext, settingsContextSecondaryKey);
 			
@@ -2897,6 +2918,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
 	}
 	
-	// TODO store target-db setting persistently, with "reset"-Button or another way to show that this should be an exception
+	// TODO 1 "open (with system editor|in sql console) button in progress dialog
 
 }
