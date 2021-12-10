@@ -5219,7 +5219,5 @@ public class DataBrowser extends javax.swing.JFrame {
 		tbZoomInIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoomin.png"));
 		tbZoomOutIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/tb_zoomout.png"));
 	}
-	
-	// TODO 1 tool menu items -> into tool bar too
 
 }
