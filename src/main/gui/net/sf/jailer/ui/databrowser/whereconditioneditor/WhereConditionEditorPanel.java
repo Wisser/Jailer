@@ -809,8 +809,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	Optional<Comparison> focusedComparision = comparisons.stream().filter(c -> c.valueTextField != null && c.valueTextField.hasFocus()).findAny();
     	
     	allFields.clear();
-    	allFields.add(searchButton);
-    	allFields.add(applyButton);
+    	if (searchButton != null) {
+    		allFields.add(searchButton);
+    	}
+		allFields.add(applyButton);
     	allFields.add(sortCheckBox);
     	allFields.add(editor);
     	
@@ -837,7 +839,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     	if (sortCheckBox.isSelected()) {
     		colNames.sort(String::compareToIgnoreCase);
     	}
-    	searchButton.setEnabled(!colNames.isEmpty());
+    	if (searchButton != null) {
+        	searchButton.setEnabled(!colNames.isEmpty());
+    	}
 		searchComboBox.setModel(new DefaultComboBoxModel<String>(colNames.toArray(new String[0])));
 		
 		List<Comparison> sortedSearchComparison = new ArrayList<Comparison>(comparisons);
@@ -1470,8 +1474,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     private void setOpacity(float opacity) {
     	if (useOpacity) {
 			nextOpacity = opacity;
-			if (opacity == 1) new RuntimeException().printStackTrace();
-				
 			if (!opacityPending) {
 				opacityPending = true;
 				UIUtil.invokeLater(16, () -> {
