@@ -2057,7 +2057,7 @@ public class UIUtil {
                     UIManager.put("SplitPane.dividerSize", 8);
                     UIManager.put("SplitPaneDivider.gripDotSize", 6);
 //                    UIManager.put("SplitPane.oneTouchButtonOffset", 32);
-                    UIManager.put( "SplitPane.oneTouchButtonSize", 10 );
+                    UIManager.put("SplitPane.oneTouchButtonSize", 5);
                     UIManager.put("TitledBorder.border", "");
                     UIManager.put( "Component.arrowType", "triangle" );
                     UIManager.put( "ScrollBar.showButtons", true );

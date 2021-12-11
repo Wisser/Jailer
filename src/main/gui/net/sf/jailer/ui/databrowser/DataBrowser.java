@@ -1775,6 +1775,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jSplitPane1.setDividerLocation(340);
         jSplitPane1.setContinuousLayout(true);
+        jSplitPane1.setOneTouchExpandable(true);
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
         jSplitPane1.setLeftComponent(jPanel3);

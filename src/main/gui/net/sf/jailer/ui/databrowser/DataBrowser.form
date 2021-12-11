@@ -821,6 +821,7 @@
                   <Properties>
                     <Property name="dividerLocation" type="int" value="340"/>
                     <Property name="continuousLayout" type="boolean" value="true"/>
+                    <Property name="oneTouchExpandable" type="boolean" value="true"/>
                   </Properties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
