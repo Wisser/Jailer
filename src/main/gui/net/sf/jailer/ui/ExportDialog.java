@@ -416,7 +416,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 				@Override
 				protected void onModification(JComponent component) {
 					boolean defaultValue = component == sortedCheckBox;
-					Color fg = new Color(110, 90, 0);
+					Color bg = new Color(255, 255, 210);
 					for (JCheckBox comp: new JCheckBox[] {
 							unicode,
 							sortedCheckBox,
@@ -428,7 +428,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 					}) {
 						if (component == comp) {
 							if (comp.isSelected() != defaultValue) {
-								comp.setForeground(fg);
+								comp.setBackground(bg);
 							}
 						}
 					}
