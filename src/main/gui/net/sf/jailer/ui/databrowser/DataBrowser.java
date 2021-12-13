@@ -2711,7 +2711,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							}
 						};
 						UIUtil.runJailer(this, args, false, true, false, null, dcd.getUser(), dcd.getPassword(), null,
-								null, false, true, false, false, false, consumer, executionContext);
+								null, false, true, false, false, false, consumer, null, executionContext);
 					}
 				}
 			}
@@ -3252,7 +3252,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				analyseOptionsDialog.appendAnalyseCLIOptions(args);
 				ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
 				if (UIUtil.runJailer(this, args, false, true, true, null, dbConnectionDialog.getUser(),
-						dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
+						dbConnectionDialog.getPassword(), null, null, false, true, false, null, executionContext)) {
 					ModelBuilder.assocFilter = null;
 					String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME
 							: datamodel.get().getName();
@@ -4715,11 +4715,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		return true;
 	}
 
-	private boolean closeSQLConsole(SQLConsoleWithTitle sqlConsole, boolean ask) {
+	private boolean closeSQLConsole(SQLConsole sqlConsole, boolean ask) {
 		if (ask) {
 			if (!sqlConsole.isEmpty() && !(sqlConsole.getFile() != null && !sqlConsole.isDirty())) {
 				if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(DataBrowser.this,
-						"Close \"" + sqlConsole.getTitle() + "\""
+						"Close \"" + (sqlConsole instanceof SQLConsoleWithTitle? ((SQLConsoleWithTitle) sqlConsole).getTitle() : "SQL Console") + "\""
 								+ (sqlConsole.getFile() == null ? "?" : " without saving?"),
 						"Close Console", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
 					return false;
@@ -4763,9 +4763,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void loadSQLScriptFile(File file) {
 		for (SQLConsole sqlConsole : sqlConsoles) {
-			if (file.equals(sqlConsole.getFile())) {
-				workbenchTabbedPane.setSelectedComponent(sqlConsole);
-				return;
+			if (file.equals(sqlConsole.getFile()) && !sqlConsole.isDirty()) {
+				closeSQLConsole(sqlConsole, false);
 			}
 		}
 		try {
@@ -4940,7 +4939,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			args.add("render-datamodel");
 			if (UIUtil.canRunJailer()) {
 				UIUtil.runJailer(this, args, false, true, true, null, null, null /* dbConnectionDialog.getPassword() */,
-						null, null, false, true, false, executionContext);
+						null, null, false, true, false, null, executionContext);
 				HtmlDataModelRenderer renderer = Configuration.getInstance().getRenderer();
 				String of = renderer.outputFolderOf(datamodel.get());
 				BrowserLauncher.openURL(Environment.newFile(of + "/index.html").toURI(), this);

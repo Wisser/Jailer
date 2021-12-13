@@ -15,15 +15,31 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.util.PrintUtil;
 
 /**
@@ -31,7 +47,7 @@ import net.sf.jailer.util.PrintUtil;
  * 
  * @author Ralf Wisser
  */
-public class FileView extends javax.swing.JDialog {
+public class FileView extends javax.swing.JFrame {
 
 	/**
 	 * Component for rendering the file content.
@@ -49,9 +65,9 @@ public class FileView extends javax.swing.JDialog {
 	 * @param owner the enclosing component.
 	 */
 	public FileView(Window owner) {
-		super(owner);
+		this.owner = owner;
+		this.isSQL = false;
 		initialize();
-		setModal(true);
 	}
 
 	/**
@@ -60,9 +76,18 @@ public class FileView extends javax.swing.JDialog {
 	 * @param owner the enclosing component.
 	 * @param file the file to render
 	 */
-	public FileView(Window owner, String file) throws FileNotFoundException, IOException {
-		super(owner);
-		setModal(true);
+	public FileView(Window owner, Window window, String file, boolean isSQL) throws FileNotFoundException, IOException {
+		this.owner = owner;
+		this.isSQL = isSQL;
+		
+		File f = new File(file);
+		if (f.exists() && f.length() > 21L*1024L*1024L) {
+			int o = JOptionPane.showOptionDialog(window, "File " + f.getAbsolutePath() + "\nis large (" + (f.length() / 1024 / 1024) + " MB)", "File is large", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Open", "Cancel" }, "Open");
+			if (o != 0) {
+				dispose();
+				return;
+			}
+		}
 		try {
 			initialize();
 			setTitle(file);
@@ -73,15 +98,84 @@ public class FileView extends javax.swing.JDialog {
 		}
 	}
 
+	private final boolean isSQL;
+	private final Window owner;
+	private static int gCount = 0;
+	
 	/**
 	 * Creates components.
 	 */
 	private void initialize() {
-		this.setSize(new Dimension(700, 600));
-		this.setContentPane(getJScrollPane());
+		this.setSize(new Dimension(800, 1000));
+		
+		JLabel info = new JLabel("");
+		
+		JPanel panel = new JPanel(new GridBagLayout());
+		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridwidth = 3;
+		gridBagConstraints.weightx = 1;
+		gridBagConstraints.weighty = 1;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		panel.add(getJScrollPane(), gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.insets = new Insets(4, 2, 4, 8);
+		JButton copy = new JButton("Copy to Clipboard");
+		copy.addActionListener(e -> {
+			StringSelection selection = new StringSelection(getJTextPane().getText());
+			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			clipboard.setContents(selection, selection);
+			info.setText("Copied");
+		});
+		panel.add(copy, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1;
+		gridBagConstraints.insets = new Insets(4, 2, 4, 8);
+		panel.add(info, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.insets = new Insets(4, 2, 4, 2);
+		JButton close = new JButton("Close");
+		close.addActionListener(e -> { setVisible(false); dispose(); });
+		close.setIcon(UIUtil.scaleIcon(close, cancelIcon));
+		panel.add(close, gridBagConstraints);
+		
+		this.setContentPane(panel);
 		this.setTitle("Jailer");
-		UIUtil.setInitialWindowLocation(this, getOwner(), 100, 100);
-		getJTextPane().setFont(new Font("Monospaced", Font.PLAIN, 12));
+		int offset = (++gCount % 6) * 32;
+		UIUtil.setInitialWindowLocation(this, owner, 32 + offset, 32 + offset);
+		try {
+			setIconImage(UIUtil.readImage("/jailer.png").getImage());
+		} catch (Throwable t) {
+			// ignore
+		}
+		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				setVisible(false);
+				dispose();
+			}
+			@Override
+			public void windowClosed(WindowEvent e) {
+				getJTextPane().setText("");
+				UIUtil.checkTermination();
+				Container parent = getJTextPane().getParent();
+				if (parent != null) {
+					parent.remove(getJTextPane());
+				}
+			}
+		});
 	}
 
 	/**
@@ -104,10 +198,24 @@ public class FileView extends javax.swing.JDialog {
 	 */
 	private JTextArea getJTextPane() {
 		if (jTextPane == null) {
-			jTextPane = new JTextArea();
-			jTextPane.setLineWrap(false);
+			if (isSQL) {
+				RSyntaxTextAreaWithSQLSyntaxStyle rSyntaxTextAreaWithSQLSyntaxStyle = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
+				jTextPane = rSyntaxTextAreaWithSQLSyntaxStyle;
+			} else {
+				jTextPane = new JTextArea();
+				jTextPane.setLineWrap(false);
+				jTextPane.setFont(new Font("Monospaced", Font.PLAIN, 12));
+			}
+			jTextPane.setEditable(false);
 		}
 		return jTextPane;
+	}
+
+	private static ImageIcon cancelIcon;
+	
+	static {
+        // load images
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
 	}
 	
 	private static final long serialVersionUID = -8991473715127153931L;

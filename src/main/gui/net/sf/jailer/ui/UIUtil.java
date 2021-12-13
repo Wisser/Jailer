@@ -79,6 +79,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -363,16 +364,17 @@ public class UIUtil {
      *            to ask when call fails
      * @param password
      *            CLI argument to print as "*****"
+     * @param openResult 
      * @return <code>true</code> iff call succeeded
      */
     public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, boolean showLogfileButton,
             final boolean printCommandLine, final boolean closeOutputWindow,
             String continueOnErrorQuestion, String user, String password, final ProgressListener progressListener,
             final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
-            boolean returnFalseOnError, ExecutionContext executionContext) {
+            boolean returnFalseOnError, Consumer<Window> openResult, ExecutionContext executionContext) {
         return runJailer(ownerOfConsole, cliArgs, showLogfileButton, printCommandLine,
                 closeOutputWindow, continueOnErrorQuestion, user, password, progressListener, progressPanel, showExeptions,
-                fullSize, false, returnFalseOnError, false, null, executionContext);
+                fullSize, false, returnFalseOnError, false, null, openResult, executionContext);
     }
 
 	public static boolean canRunJailer() {
@@ -411,13 +413,14 @@ public class UIUtil {
      *            to ask when call fails
      * @param password
      *            CLI argument to print as "*****"
+     * @param openResult 
      * @return <code>true</code> iff call succeeded
      */
     public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, boolean showLogfileButton,
             final boolean printCommandLine, final boolean closeOutputWindow,
             final String continueOnErrorQuestion, String user, String password, final ProgressListener progressListener,
             final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
-            final boolean closeOutputWindowOnError, final boolean returnFalseOnError, boolean throwException, final ResultConsumer resultConsumer, ExecutionContext executionContext) {
+            final boolean closeOutputWindowOnError, final boolean returnFalseOnError, boolean throwException, final ResultConsumer resultConsumer, Consumer<Window> openResult, ExecutionContext executionContext) {
 		if (!UIUtil.canRunJailer()) {
 			return false;
 		}
@@ -438,6 +441,9 @@ public class UIUtil {
     		} catch (Throwable t) {
     			// ignore
     		}
+        }
+        if (openResult != null) {
+        	JailerConsole.openResultActions.put(dialog, openResult);
         }
         List<String> args = new ArrayList<String>(cliArgs);
         final StringBuffer arglist = createCLIArgumentString(user, password, args, executionContext);

@@ -20,6 +20,7 @@ import java.awt.Container;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -43,6 +44,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -1142,7 +1144,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						};
 						UIUtil.runJailer(this, args, false, true,
 						false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false,
-						true, false, false, false, consumer, executionContext);
+						true, false, false, false, consumer, null, executionContext);
 					}
 				}
 			}
@@ -1251,7 +1253,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							}
 							analyseOptionsDialog.appendAnalyseCLIOptions(args);
 							ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-							if (UIUtil.runJailer(ExtractionModelFrame.this, args, false, true, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
+							if (UIUtil.runJailer(ExtractionModelFrame.this, args, false, true, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, null, executionContext)) {
 								ModelBuilder.assocFilter = null;
 								String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
 								DataModelEditor dataModelEditor = new DataModelEditor(ExtractionModelFrame.this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, dbConnectionDialog, executionContext);
@@ -1455,12 +1457,33 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
 									JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 								} else {
+									Consumer<Window> openResult = new Consumer<Window>() {
+										@Override
+										public void accept(Window window) {
+											String file = exportDialog.getInsertFileName();
+											if (file != null) {
+												try {
+													new FileView(ExtractionModelFrame.this, window, file, true);
+												} catch (Exception e) {
+													UIUtil.showException(window, "Error", e);
+												}
+											}
+											String delFile = exportDialog.getDeleteFileName();
+											if (delFile != null) {
+												try {
+													new FileView(ExtractionModelFrame.this, window, delFile, true);
+												} catch (Exception e) {
+													UIUtil.showException(window, "Error", e);
+												}
+											}
+										}
+									};
 									if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || UIUtil.isDDLUptodate(ddlCreator, ExtractionModelFrame.this, dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.isUseRowIdsOnlyForTablesWithoutPK(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, true,
 										"Automatic creation of working-tables failed!\n" +
 										"Please execute the Jailer-DDL manually (jailer_ddl.sql),\n" +
 										"try another \"Working table schema\"," +
 										"or use the Working table scope \"local database\"\n\n" +
-										"Continue Data Export?", dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, true, false, true, executionContext)) {
+										"Continue Data Export?", dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, true, false, true, null, executionContext)) {
 										ProgressTable progressTable = new ProgressTable();
 										ProgressTable progressTableForDelete = new ProgressTable();
 										final ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript());
@@ -1492,7 +1515,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 											}										};
 										UIUtil.runJailer(this, args, true, true,
 											false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), progressListener, progressPanel, true,
-											true, false, false, false, consumer, executionContext);
+											true, false, false, false, consumer, openResult, executionContext);
 										isRunning = true;
 									}
 								}
@@ -1574,7 +1597,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			File file = saveRestrictions();
 			args.add(file.getAbsolutePath());
 			if (UIUtil.canRunJailer()) {
-				UIUtil.runJailer(this, args, false, true, true, null, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, executionContext);
+				UIUtil.runJailer(this, args, false, true, true, null, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, null, executionContext);
 				HtmlDataModelRenderer renderer = Configuration.getInstance().getRenderer();
 				String of = renderer.outputFolderOf(extractionModelEditor.dataModel);
 				BrowserLauncher.openURL(Environment.newFile(table == null? (of + "/index.html") : (of + "/" + HtmlDataModelRenderer.CONTENT_FOLDER_NAME + "/" + HtmlDataModelRenderer.toFileName(table))).toURI(), this);
@@ -1596,7 +1619,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				args.add(to.getName());
 				File file = saveRestrictions();
 				args.add(file.getAbsolutePath());
-				UIUtil.runJailer(this, args, false, false, false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext);
+				UIUtil.runJailer(this, args, false, false, false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, null, executionContext);
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
 			}

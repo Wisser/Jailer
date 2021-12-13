@@ -2357,7 +2357,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 						boolean result = UIUtil.runJailer(this, ddlArgs, false,
 							false, true,
 							null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null,
-							null, false, false, true, false, true, null, executionContext);
+							null, false, false, true, false, true, null, null, executionContext);
 						if (DDLCreator.uPKWasTooLong) {
 							JOptionPane.showMessageDialog(
 									this,
@@ -2503,6 +2503,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	public boolean insertScripFileNameFieldIsEmpty() {
 		return insert.getText().trim().length() == 0;
+	}
+
+	public String getInsertFileName() {
+		return insert.getText().trim().length() == 0 ? null : insert.getText().trim();
 	}
 
 	/**
@@ -2917,7 +2921,5 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         runIcon = UIUtil.readImage("/run.png");
         resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
 	}
-	
-	// TODO 1 "open (with system editor|in sql console) button in progress dialog
 
 }

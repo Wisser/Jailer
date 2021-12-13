@@ -1884,7 +1884,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					}
 					analyseOptionsDialog.appendAnalyseCLIOptions(args);
 					ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-					if (UIUtil.runJailer(this, args, false, true, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
+					if (UIUtil.runJailer(this, args, false, true, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, null, executionContext)) {
 						ModelBuilder.assocFilter = null;
 						String modelname = dataModel.getName();
 						DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, dbConnectionDialog, executionContext);

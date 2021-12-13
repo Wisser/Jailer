@@ -23,11 +23,14 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.WeakHashMap;
+import java.util.function.Consumer;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -73,11 +76,13 @@ public class JailerConsole {
 		} else {
 			((JFrame) dialog).setDefaultCloseOperation(0);
 		}
+		getOpenResultButton();
 		getLoadSqlLog().setEnabled(false);
 		getLoadExportLog().setVisible(false);
 		if (!showLogfileButton) {
 			// getLoadExportLog().setVisible(false);
 			getLoadSqlLog().setVisible(false);
+			getOpenResultButton().setVisible(false);
 		}
 	}
 
@@ -97,7 +102,7 @@ public class JailerConsole {
 			gridBagConstraints.weightx = 1.0;
 			gridBagConstraints.weighty = 1.0;
 			gridBagConstraints.gridx = 0;
-			gridBagConstraints.gridwidth = 6;
+			gridBagConstraints.gridwidth = 7;
 			gridBagConstraints.insets = new Insets(0, 0, 0, 0);
 			jPanel.add(contentPane, gridBagConstraints);
 		}
@@ -121,7 +126,7 @@ public class JailerConsole {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					new FileView(dialog, "export.log");
+					new FileView(dialog, dialog, "export.log", false);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -131,7 +136,7 @@ public class JailerConsole {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					new FileView(dialog, "sql.log");
+					new FileView(dialog, dialog, "sql.log", false);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -215,6 +220,7 @@ public class JailerConsole {
 		getLoadSqlLog().setEnabled(true);
 		getCancelButton().setText("Close");
 		getCancelButton().setEnabled(true);
+		getOpenResultButton().setEnabled(true);
 		String title = "Jailer Console - " + (ok? "finished" : "failed!");
 		if (dialog instanceof JDialog) {
 			((JDialog) dialog).setTitle(title);
@@ -233,14 +239,14 @@ public class JailerConsole {
 		if (jPanel == null) {
 			GridBagConstraints gridBagConstraints29 = new GridBagConstraints();
 			gridBagConstraints29.anchor = GridBagConstraints.EAST;
-			gridBagConstraints29.gridx = 5;
+			gridBagConstraints29.gridx = 6;
 			gridBagConstraints29.gridy = 1;
 			gridBagConstraints29.weightx = 0.0;
-			gridBagConstraints29.insets = new Insets(0, 4, 2, 2);
+			gridBagConstraints29.insets = new Insets(4, 4, 4, 2);
 			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
 			gridBagConstraints2.gridx = 3;
 			gridBagConstraints2.gridy = 1;
-			gridBagConstraints2.insets = new Insets(0, 4, 2, 0);
+			gridBagConstraints2.insets = new Insets(4, 4, 4, 0);
 			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
 			gridBagConstraints1.gridx = 1;
 			gridBagConstraints1.weightx = 1.0;
@@ -252,13 +258,28 @@ public class JailerConsole {
 			gridBagConstraints.weightx = 1.0;
 			gridBagConstraints.weighty = 1.0;
 			gridBagConstraints.gridx = 0;
-			gridBagConstraints.gridwidth = 6;
+			gridBagConstraints.gridwidth = 7;
 			jPanel = new JPanel();
 			jPanel.setLayout(new GridBagLayout());
 			jPanel.add(getJScrollPane(), gridBagConstraints);
 			jPanel.add(getLoadExportLog(), gridBagConstraints1);
 			jPanel.add(getLoadSqlLog(), gridBagConstraints2);
 			jPanel.add(getCancelButton(), gridBagConstraints29);
+			
+			gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints29.anchor = GridBagConstraints.EAST;
+			gridBagConstraints.gridy = 1;
+			gridBagConstraints.gridx = 4;
+			gridBagConstraints.insets = new Insets(4, 4, 4, 2);
+			gridBagConstraints.weightx = 1.0;
+			jPanel.add(new JLabel(" "), gridBagConstraints);
+			
+			gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints29.anchor = GridBagConstraints.EAST;
+			gridBagConstraints.gridy = 1;
+			gridBagConstraints.gridx = 5;
+			gridBagConstraints.insets = new Insets(4, 4, 4, 0);
+			jPanel.add(getOpenResultButton(), gridBagConstraints);
 		}
 		return jPanel;
 	}
@@ -315,19 +336,36 @@ public class JailerConsole {
 		return cancelButton;
 	}
 
+	private JButton getOpenResultButton() {
+		if (openResultButton == null) {
+			openResultButton = new JButton();
+			openResultButton.setEnabled(false);
+			openResultButton.setText("Open Result");
+			openResultButton.setIcon(UIUtil.scaleIcon(openResultButton, editIcon));
+			openResultButton.setVisible(openResultActions.containsKey(dialog));
+			openResultButton.addActionListener(e -> openResultActions.get(dialog).accept(dialog));
+		}
+		return openResultButton;
+	}
+
 	private JTextArea jTextArea = null;
 	private JPanel jPanel = null;
 	private JScrollPane jScrollPane = null;
 	private JButton loadExportLog = null;
 	private JButton loadSqlLog = null;
 	private JButton cancelButton = null;
+	private JButton openResultButton = null;
 	public boolean hasCancelled = false;
 	boolean hasFinished = false;
+	
+	public static WeakHashMap<Window, Consumer<Window>> openResultActions = new WeakHashMap<Window, Consumer<Window>>();
 
 	private static ImageIcon cancelIcon;
+	private static ImageIcon editIcon;
 	
 	static {
         // load images
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        editIcon = UIUtil.readImage("/edit.png");
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"
