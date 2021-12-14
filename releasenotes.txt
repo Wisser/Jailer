@@ -1,4 +1,4 @@
-unreleased
+11.2.7
   - Fix for "Lack of navigation arrows #74".
     https://github.com/Wisser/Jailer/issues/74
   - The subsetting results can now be opened directly
