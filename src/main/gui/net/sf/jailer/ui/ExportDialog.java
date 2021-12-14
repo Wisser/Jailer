@@ -160,6 +160,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private final String jmFile;
 	private final String tmpFileName;
 	private final ExecutionContext executionContext;
+	private final StringBuilder defaultExportFileName;
 
 	private static final Object NO_SCHEMA_INFO = new String("");
 	private static final String NO_SCHEMA_INFO_LABEL = "<html><i>no further schema information</i></html>";
@@ -168,8 +169,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	 * @param showCmd
 	 * @param jmFile
 	 * @param tmpFileName
+	 * @param defaultExportFileName 
 	 * @param args */
-	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, final Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, ExecutionContext executionContext) {
+	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, final Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, StringBuilder defaultExportFileName, ExecutionContext executionContext) {
 		super(parent, true);
 		this.executionContext = executionContext;
 		this.extractionModelFileName = extractionModelFileName;
@@ -186,6 +188,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		this.sourceDBMS = session.dbms;
 		this.dbConnectionDialog = dbConnectionDialog;
 		this.additionalSubjects = additionalSubjects;
+		this.defaultExportFileName = defaultExportFileName;
 
 		try {
 			UIUtil.setWaitCursor(parent);
@@ -316,7 +319,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			setModal(true);
 			UIUtil.setInitialWindowLocation(this, parent, 100, 60);
 			Map<String, JComponent> fields = new HashMap<String, JComponent>();
-			fields.put("insert" + scriptFormat.name(), insert);
+			if (defaultExportFileName == null) {
+				fields.put("insert" + scriptFormat.name(), insert);
+			} else {
+				insert.setText(defaultExportFileName.toString());
+			}
 			fields.put("threads", threads);
 			fields.put("rowsPerThread", rowsPerThread);
 			fields.put("rowLimit", rowLimit);
@@ -2273,6 +2280,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		if (err) {
 			JOptionPane.showMessageDialog(this, "Unfilled mandatory fields", "Error", JOptionPane.ERROR_MESSAGE);
 		} else {
+			if (defaultExportFileName != null) {
+				defaultExportFileName.setLength(0);
+				defaultExportFileName.append(insert.getText().trim());
+			}
 			if (rowidPK.isVisible() && rowidPK.isSelected()) {
  				if (!checkForPKs(rowidBoth.isEnabled() && !upsertCheckbox.isSelected() && getDeleteFileName() == null? rowidBoth : null, () -> theSettings.save(settingsContext, settingsContextSecondaryKey))) {
 					return;

@@ -921,6 +921,11 @@ public class DataBrowser extends javax.swing.JFrame {
 					Runnable onClose) {
 				DataBrowser.this.openConditionEditor(browserContentPane, location, column, onClose);
 			}
+
+			@Override
+			protected void loadScriptFile(String fileName) {
+				loadSQLScriptFile(new File(fileName));
+			}
 		};
 
 		desktop.setMinXProvider(() -> searchPanelContainer.isVisible() ? 1 : 0);
@@ -4765,6 +4770,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		for (SQLConsole sqlConsole : sqlConsoles) {
 			if (file.equals(sqlConsole.getFile()) && !sqlConsole.isDirty()) {
 				closeSQLConsole(sqlConsole, false);
+				break;
 			}
 		}
 		try {

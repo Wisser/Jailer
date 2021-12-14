@@ -108,6 +108,10 @@ public abstract class Settings  {
 		if (name != null && name.trim().length() > 0) {
 			name = name.trim() + ":" + settingsContextSecondaryKey;
 			Map<String, String> setting = new HashMap<String, String>();
+			Map<String, String> oldSetting = settings.get(name.trim());
+			if (oldSetting != null) {
+				setting.putAll(oldSetting);
+			}
 			for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
 				if (entry.getValue() instanceof JTextField) {
 					putValue(setting, name, entry.getKey(), ((JTextField) entry.getValue()).getText());

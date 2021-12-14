@@ -39,6 +39,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.util.PrintUtil;
 
@@ -81,7 +84,7 @@ public class FileView extends javax.swing.JFrame {
 		this.isSQL = isSQL;
 		
 		File f = new File(file);
-		if (f.exists() && f.length() > 21L*1024L*1024L) {
+		if (f.exists() && f.length() > 65L*1024L*1024L) {
 			int o = JOptionPane.showOptionDialog(window, "File " + f.getAbsolutePath() + "\nis large (" + (f.length() / 1024 / 1024) + " MB)", "File is large", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Open", "Cancel" }, "Open");
 			if (o != 0) {
 				dispose();
@@ -92,6 +95,7 @@ public class FileView extends javax.swing.JFrame {
 			initialize();
 			setTitle(file);
 			getJTextPane().setText(new PrintUtil().loadFile(Environment.newFile(file).getPath()));
+			getJTextPane().setCaretPosition(0);
 			setVisible(true);
 		} catch (Throwable t) {
 			UIUtil.showException(owner, "Error", t);
@@ -168,11 +172,17 @@ public class FileView extends javax.swing.JFrame {
 			}
 			@Override
 			public void windowClosed(WindowEvent e) {
-				getJTextPane().setText("");
+				JTextArea textPane = getJTextPane();
+				textPane.setText("");
+				if (textPane instanceof RSyntaxTextAreaWithSQLSyntaxStyle) {
+					((RSyntaxTextAreaWithSQLSyntaxStyle) textPane).discardAllEdits();
+					((RSyntaxTextAreaWithSQLSyntaxStyle) textPane).setDocument(new RSyntaxDocument(null, SyntaxConstants.SYNTAX_STYLE_NONE)); // prevent memory leak
+				}
+				
 				UIUtil.checkTermination();
-				Container parent = getJTextPane().getParent();
+				Container parent = textPane.getParent();
 				if (parent != null) {
-					parent.remove(getJTextPane());
+					parent.remove(textPane);
 				}
 			}
 		});

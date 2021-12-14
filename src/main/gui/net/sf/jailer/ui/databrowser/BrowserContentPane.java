@@ -3191,6 +3191,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			dataModel.save(file, stable, new SubjectLimitDefinition(null, null), subjectCondition, ScriptFormat.SQL, restrictionDefinitions, positions, new ArrayList<ExtractionModel.AdditionalSubject>(), currentModelSubfolder);
 
 			final ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false, !doExport, null, executionContext);
+			extractionModelFrame.setDefaultExportFileName("by-example" + File.separator + UIUtil.toValidFileName(stable.getName() + ".sql"));
+			extractionModelFrame.setResultFileLoader(fileName -> {
+				Window w = SwingUtilities.getWindowAncestor(this);
+				if (!w.isVisible()) {
+					return false;
+				}
+				loadScriptFile(fileName);
+				return true;
+			});
 			extractionModelFrame.setDbConnectionDialogClone(getDbConnectionDialog());
 			if (doExport) {
 				extractionModelFrame.openExportDialog(false,
@@ -6569,6 +6578,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void appendLayout();
 	protected abstract void adjustClosure(BrowserContentPane tabu, BrowserContentPane thisOne);
 	protected abstract void reloadDataModel() throws Exception;
+	protected void loadScriptFile(String fileName) {
+	}
 	protected abstract MetaDataSource getMetaDataSource();
 	protected abstract void deselectChildrenIfNeededWithoutReload();
 	protected abstract int getReloadLimit();

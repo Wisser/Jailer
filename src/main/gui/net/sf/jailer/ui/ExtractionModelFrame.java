@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -1375,7 +1376,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 								jmFile = extractionModelEditor.extractionModelFile != null? extractionModelEditor.extractionModelFile : tmpFileName;
 
-								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, executionContext) {
+								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, defaultExportFileName, executionContext) {
 									@Override
 									protected boolean checkForPKs(JRadioButton rowidButton, Runnable saveSettings) {
 										try {
@@ -1460,20 +1461,30 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									Consumer<Window> openResult = new Consumer<Window>() {
 										@Override
 										public void accept(Window window) {
-											String file = exportDialog.getInsertFileName();
-											if (file != null) {
-												try {
-													new FileView(ExtractionModelFrame.this, window, file, true);
-												} catch (Exception e) {
-													UIUtil.showException(window, "Error", e);
-												}
-											}
 											String delFile = exportDialog.getDeleteFileName();
 											if (delFile != null) {
 												try {
-													new FileView(ExtractionModelFrame.this, window, delFile, true);
+													UIUtil.setWaitCursor(window);
+													if (resultFileLoader == null || !resultFileLoader.apply(delFile)) {
+														new FileView(ExtractionModelFrame.this, window, delFile, true);
+													}
 												} catch (Exception e) {
 													UIUtil.showException(window, "Error", e);
+												} finally {
+													UIUtil.resetWaitCursor(window);
+												}
+											}
+											String file = exportDialog.getInsertFileName();
+											if (file != null) {
+												try {
+													UIUtil.setWaitCursor(window);
+													if (resultFileLoader == null || !resultFileLoader.apply(file)) {
+														new FileView(ExtractionModelFrame.this, window, file, true);
+													}
+												} catch (Exception e) {
+													UIUtil.showException(window, "Error", e);
+												} finally {
+													UIUtil.resetWaitCursor(window);
 												}
 											}
 										}
@@ -1543,6 +1554,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				UIUtil.showException(this, "Error", e);
 			}
 		}
+	}
+
+	private StringBuilder defaultExportFileName;
+	
+	public void setDefaultExportFileName(String defaultExportFileName) {
+		this.defaultExportFileName = new StringBuilder(defaultExportFileName);
+	}
+
+	private Function<String, Boolean> resultFileLoader;
+	
+	public void setResultFileLoader(Function<String, Boolean> resultFileLoader) {
+		this.resultFileLoader = resultFileLoader;
 	}
 
 	/**

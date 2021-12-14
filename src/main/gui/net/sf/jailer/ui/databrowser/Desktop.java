@@ -1326,6 +1326,11 @@ public abstract class Desktop extends JDesktopPane {
 			protected void openConditionEditor(Point location, int column, Runnable onClose) {
 				Desktop.this.openConditionEditor(this, location, column, onClose);
 			}
+
+			@Override
+			protected void loadScriptFile(String fileName) {
+				Desktop.this.loadScriptFile(fileName);
+			}
 		};
 		browserContentPane.addUserAction(new UserAction(
 				"Align Horizontally",
@@ -3970,6 +3975,7 @@ public abstract class Desktop extends JDesktopPane {
 	protected abstract void onRowSelect(Table table, Row row);
 	protected abstract void onConditionChange(BrowserContentPane browserContentPane, String cond);
 	protected abstract void onContentCellEditorCreated(BrowserContentPane browserContentPane, BrowserContentCellEditor cellEditor);
+	protected abstract void loadScriptFile(String fileName);
 	
 	/**
 	 * Scrolls an iFrame to the center of the desktop.

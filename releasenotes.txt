@@ -1,3 +1,9 @@
+unreleased
+  - Fix for "Lack of navigation arrows #74".
+    https://github.com/Wisser/Jailer/issues/74
+  - The subsetting results can now be opened directly
+    in the SQL console of the data browser or as a separate window.
+
 11.2.6
   - Automatic and transparent persistence of SQL console content.
   - Obfuscation of database credentials.

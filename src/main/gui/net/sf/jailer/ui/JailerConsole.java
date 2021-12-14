@@ -64,6 +64,7 @@ public class JailerConsole {
 		this.owner = owner;
 		this.progressPanel = progressPanel;
 		this.fullSize = fullSize;
+		closeFinishedPredecessors();
 		initialize();
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		getJTextPane().setAutoscrolls(true);
@@ -347,6 +348,22 @@ public class JailerConsole {
 		}
 		return openResultButton;
 	}
+	
+	private void closeFinishedPredecessors() {
+		if (openResultActions.containsKey(dialog)) {
+			openResultActions.forEach((d, a) -> {
+				if (d.isVisible() && d != dialog) {
+					JailerConsole jc = jConsoles.get(d);
+					if (jc != null && (jc.hasCancelled || jc.hasFinished)) {
+						jConsoles.remove(jc.dialog);
+						d.setVisible(false);
+						d.dispose();
+					}
+				}
+			});
+			jConsoles.put(dialog, this);
+		}
+	}
 
 	private JTextArea jTextArea = null;
 	private JPanel jPanel = null;
@@ -359,6 +376,7 @@ public class JailerConsole {
 	boolean hasFinished = false;
 	
 	public static WeakHashMap<Window, Consumer<Window>> openResultActions = new WeakHashMap<Window, Consumer<Window>>();
+	public static WeakHashMap<Window, JailerConsole> jConsoles = new WeakHashMap<Window, JailerConsole>();
 
 	private static ImageIcon cancelIcon;
 	private static ImageIcon editIcon;

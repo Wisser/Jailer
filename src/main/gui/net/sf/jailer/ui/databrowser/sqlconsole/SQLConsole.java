@@ -106,6 +106,8 @@ import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
 import org.apache.log4j.Logger;
+import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
 
@@ -3464,6 +3466,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	public void close() {
     	CancellationHandler.cancel(this);
     	queue.add(STOP);
+    	editorPane.setText("");
+    	editorPane.discardAllEdits();
+    	editorPane.setDocument(new RSyntaxDocument(null, SyntaxConstants.SYNTAX_STYLE_NONE)); // prevent memory leak
 	}
 
 	/**
@@ -3561,7 +3566,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
-    
     // TODO StringSearch component for historie (and than inc hist size a lot)
     
     // TODO automatically generated SQL statements from Desktop like:
