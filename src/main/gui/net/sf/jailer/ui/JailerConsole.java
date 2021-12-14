@@ -352,7 +352,7 @@ public class JailerConsole {
 	private void closeFinishedPredecessors() {
 		if (openResultActions.containsKey(dialog)) {
 			openResultActions.forEach((d, a) -> {
-				if (d.isVisible() && d != dialog) {
+				if (d != null && d.isVisible() && d != dialog) {
 					JailerConsole jc = jConsoles.get(d);
 					if (jc != null && (jc.hasCancelled || jc.hasFinished)) {
 						jConsoles.remove(jc.dialog);
