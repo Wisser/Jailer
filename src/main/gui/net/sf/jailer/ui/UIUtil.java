@@ -2058,8 +2058,10 @@ public class UIUtil {
 		// TODO remove this when https://github.com/JFormDesigner/FlatLaf/issues/443 is fixed
 		String osArch = System.getProperty("os.arch");
 		if ("aarch64".equals(osArch)) {
-			if (plaf == PLAF.FLAT) {
-				plaf = PLAF.NIMBUS;
+			 if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
+				 if (plaf == PLAF.FLAT) {
+					 plaf = PLAF.NIMBUS;
+				 }
 			}
 		}
 		
