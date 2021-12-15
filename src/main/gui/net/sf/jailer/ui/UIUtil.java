@@ -2053,6 +2053,16 @@ public class UIUtil {
 				// ignore
 			}
 		}
+		
+		// TODO
+		// TODO remove this when https://github.com/JFormDesigner/FlatLaf/issues/443 is fixed
+		String osArch = System.getProperty("os.arch");
+		if ("aarch64".equals(osArch)) {
+			if (plaf == PLAF.FLAT) {
+				plaf = PLAF.NIMBUS;
+			}
+		}
+		
 		switch (plaf) {
 			case NATIVE:
 				// nothing to do

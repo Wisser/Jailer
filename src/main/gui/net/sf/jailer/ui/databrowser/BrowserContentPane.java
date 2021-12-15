@@ -1776,6 +1776,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		relatedRowsLabel.setIcon(blueIcon);
 		relatedRowsLabel.setFont(relatedRowsLabel.getFont().deriveFont(relatedRowsLabel.getFont().getSize() * 1.1f));
+		relatedRowsPanel.setToolTipText("Navigate to a neighbor table.");
+		Color rRowsBGColor = relatedRowsPanel.getBackground();
+		if (UIUtil.plaf == PLAF.FLAT) {
+			relatedRowsPanel.setBorder(BorderFactory.createLineBorder(rRowsBGColor, 1, true));
+		}
 		if (createPopupMenu(null, -1, 0, 0, false, false).getComponentCount() == 0) {
 			relatedRowsLabel.setEnabled(false);
 		} else {
@@ -1802,6 +1807,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							});
 							UIUtil.showPopup(relatedRowsPanel, 0, relatedRowsPanel.getHeight(), popup);
+							updateBorder();
 						}
 					});
 				}
@@ -1819,10 +1825,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 
 				private void updateBorder() {
-					relatedRowsPanel.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
+					if (UIUtil.plaf == PLAF.FLAT) {
+						Color bg = popup != null? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : rRowsBGColor;
+						relatedRowsPanel.setBackground(bg);
+						relatedRowsLabel.setBackground(bg);
+						relatedRowsPanel.setBorder(BorderFactory.createLineBorder(bg, 1, true));
+					} else {
+						relatedRowsPanel.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
 							: javax.swing.border.BevelBorder.RAISED));
+					}
 				}
 			});
+		}
+		sqlPanel.setToolTipText("Open Menu");
+		Color sqlPBGColor = sqlPanel.getBackground();
+		if (UIUtil.plaf == PLAF.FLAT) {
+			sqlPanel.setBorder(BorderFactory.createLineBorder(sqlPBGColor, 1, true));
 		}
 		sqlPanel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private JPopupMenu popup;
@@ -1848,6 +1866,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						});
 						UIUtil.showPopup(sqlPanel, 0, sqlPanel.getHeight(), popup);
+						updateBorder();
 					}
 				});
 			}
@@ -1865,8 +1884,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 
 			private void updateBorder() {
-				sqlPanel.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
+				if (UIUtil.plaf == PLAF.FLAT) {
+					Color bg = popup != null? UIUtil.BG_FLATSELECTED : in? UIUtil.BG_FLATMOUSEOVER : sqlPBGColor;
+					sqlPanel.setBackground(bg);
+					sqlLabel1.setBackground(bg);
+					sqlPanel.setBorder(BorderFactory.createLineBorder(bg, 1, true));
+				} else {
+					sqlPanel.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
 						: javax.swing.border.BevelBorder.RAISED));
+				}
 			}
 		});
 		if (selectDistinct != null) {
@@ -2803,7 +2829,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		delete.setEnabled(hasPK && rows.size() > 0);
 
 		popup.add(new JSeparator());
-		JMenuItem exportData = new JMenuItem("Export Data");
+		JMenuItem exportData = new JMenuItem("Export Data from here");
 		popup.add(exportData);
 		exportData.addActionListener(new ActionListener() {
 			@Override
