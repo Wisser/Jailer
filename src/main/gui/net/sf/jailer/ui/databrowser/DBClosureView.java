@@ -65,6 +65,7 @@ import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -600,6 +601,14 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         closureTable.setShowGrid(false);
         closureTable.setSurrendersFocusOnKeystroke(true);
         closureTable.getTableHeader().setReorderingAllowed(false);
+        if (UIUtil.plaf == PLAF.FLAT) {
+			closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
+			try {
+				((DefaultTableCellRenderer) closureTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+			} catch (Exception e) {
+				// ignore
+			}
+		}
         jScrollPane1.setViewportView(closureTable);
 
         closureTable.addMouseListener(tableMouseListener = new TableMouseListener());

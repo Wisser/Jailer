@@ -70,6 +70,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -301,6 +302,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				}
 			}
 		});
+		
+		try {
+			((DefaultTableCellRenderer) dataModelsTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+		} catch (Exception e) {
+			// ignore
+		}
 
 		initJMTable();
 
@@ -866,7 +873,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 			column.setPreferredWidth(width);
 		}
-
+		
+		try {
+			((DefaultTableCellRenderer) jTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+		} catch (Exception e) {
+			// ignore
+		}
+		
 		return jTable;
 	}
 
@@ -1004,6 +1017,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			dbConnectionDialog = dialog;
 			connectionDialogPanel.removeAll();
 			connectionDialogPanel.add(dialog.mainPanel);
+			dialog.borderPanel.setBorder(null);
 		} else {
 			recUsedConnectionDialog = dialog;
 			recUsedConnectionDialogPanel.removeAll();
@@ -1372,7 +1386,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
         jPanel2.add(jPanel4, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1481,7 +1495,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 8, 0);
         jPanel1.add(jPanel6, gridBagConstraints);
 
         jTabbedPane1.addTab("Data Model", jPanel1);
@@ -1600,7 +1614,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         bookmarkPanel.setLayout(new java.awt.GridBagLayout());
 
-        borderPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Bookmarks"));
         borderPanel.setLayout(new java.awt.GridBagLayout());
 
         bookmarkDialogPanel.setLayout(new java.awt.BorderLayout());
@@ -1774,6 +1787,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel11.add(jPanel12, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

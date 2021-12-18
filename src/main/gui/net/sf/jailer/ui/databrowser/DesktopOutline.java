@@ -47,6 +47,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 
 /**
@@ -262,7 +263,9 @@ public class DesktopOutline extends JPanel {
 			g2d.setStroke(stroke);
 			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
 			g2d.setColor(borderColor);
-			g2d.drawRoundRect(gx, gy, gw, gh, 2, 2);
+			if (UIUtil.plaf != PLAF.FLAT) {
+				g2d.drawRoundRect(gx, gy, gw, gh, 2, 2);
+			}
 			
 			g2d.setStroke(new BasicStroke(1));
 			for (RowBrowser browser: getBrowsers()) {

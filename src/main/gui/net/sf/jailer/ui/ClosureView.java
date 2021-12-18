@@ -331,6 +331,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		closureTable.setShowGrid(false);
 		closureTable.setSurrendersFocusOnKeystroke(true);
 		closureTable.getTableHeader().setReorderingAllowed(false);
+		if (UIUtil.plaf == PLAF.FLAT) {
+			closureTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
+			try {
+				((DefaultTableCellRenderer) closureTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+			} catch (Exception e) {
+				// ignore
+			}
+		}
 		jScrollPane1.setViewportView(closureTable);
 
 		MouseListener ml = new MouseListener() {
@@ -572,6 +580,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		neighborTable.setAutoCreateRowSorter(true);
 		neighborTable.getTableHeader().setReorderingAllowed(false);
 		neighborTable.getTableHeader().setToolTipText("<html>The degree of a table is the total number of adjacent tables<br>that can be reached directly with an enabled association.</html>");
+		if (UIUtil.plaf == PLAF.FLAT) {
+			neighborTable.getTableHeader().putClientProperty( "FlatLaf.style", "separatorColor: #fff; bottomSeparatorColor: #ccc" );
+			try {
+				((DefaultTableCellRenderer) neighborTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+			} catch (Exception e) {
+				// ignore
+			}
+		}
 		try {
 			List<SortKey> keys = new ArrayList<SortKey>();
 			keys.add(new SortKey(1, SortOrder.DESCENDING));
@@ -1147,7 +1163,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
 		createAssociationClosure(selectedTable);
 
-		int y = 3;
+		int y = 5;
 		int surplus = 0;
 
 		GridBagConstraints gridBagConstraints;
@@ -1532,6 +1548,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
         showOnlyEnabledCheckBox = new javax.swing.JCheckBox();
         tableAssociationPane = new javax.swing.JPanel();
         tabAssPanel = new javax.swing.JPanel();
@@ -1697,52 +1715,82 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
         associationPanel.setLayout(new java.awt.GridBagLayout());
 
-        jScrollPane2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
         assocViewPanel.setLayout(new java.awt.GridBagLayout());
 
+        jLabel2.setBackground(java.awt.Color.white);
         jLabel2.setText(" Distance  ");
+        jLabel2.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         assocViewPanel.add(jLabel2, gridBagConstraints);
 
+        jLabel3.setBackground(java.awt.Color.white);
         jLabel3.setText(" to ");
+        jLabel3.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         assocViewPanel.add(jLabel3, gridBagConstraints);
 
+        jLabel4.setBackground(java.awt.Color.white);
         jLabel4.setText("         ");
+        jLabel4.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         assocViewPanel.add(jLabel4, gridBagConstraints);
 
+        jLabel5.setBackground(java.awt.Color.white);
         jLabel5.setText(" on");
+        jLabel5.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         assocViewPanel.add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText(" from ");
+        jLabel6.setBackground(java.awt.Color.white);
+        jLabel6.setText(" from     ");
+        jLabel6.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         assocViewPanel.add(jLabel6, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        assocViewPanel.add(jSeparator1, gridBagConstraints);
+
+        jPanel3.setBackground(java.awt.Color.white);
+        jPanel3.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        assocViewPanel.add(jSeparator1, gridBagConstraints);
+        assocViewPanel.add(jPanel3, gridBagConstraints);
+
+        jPanel2.setBackground(java.awt.Color.white);
+        jPanel2.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        assocViewPanel.add(jPanel2, gridBagConstraints);
 
         jScrollPane2.setViewportView(assocViewPanel);
 
@@ -1966,6 +2014,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;

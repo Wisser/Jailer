@@ -53,6 +53,7 @@ import javax.swing.RowSorter.SortKey;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -364,6 +365,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						return render;
 					}
 				});
+		
+		try {
+			((DefaultTableCellRenderer) connectionsTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+		} catch (Exception e) {
+			// ignore
+		}
 		
 		KeyListener keyListener = new KeyListener() {
             @Override
@@ -771,7 +778,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         deleteButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         infoBarLabel = new javax.swing.JLabel();
-        jPanel4 = new javax.swing.JPanel();
+        borderPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         connectionsTable = new javax.swing.JTable();
 
@@ -913,8 +920,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         mainPanel.add(infoBarLabel, gridBagConstraints);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Connections"));
-        jPanel4.setLayout(new java.awt.GridBagLayout());
+        borderPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Connections"));
+        borderPanel.setLayout(new java.awt.GridBagLayout());
 
         connectionsTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -935,7 +942,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel4.add(jScrollPane2, gridBagConstraints);
+        borderPanel.add(jScrollPane2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -943,7 +950,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        mainPanel.add(jPanel4, gridBagConstraints);
+        mainPanel.add(borderPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1311,6 +1318,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    javax.swing.JPanel borderPanel;
     javax.swing.JButton closeButton;
     private javax.swing.JTable connectionsTable;
     private javax.swing.JButton copy;
@@ -1323,7 +1331,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane2;
     public javax.swing.JPanel mainPanel;
     private javax.swing.JButton newButton;

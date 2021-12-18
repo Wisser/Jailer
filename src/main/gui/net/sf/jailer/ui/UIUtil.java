@@ -84,6 +84,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -1277,12 +1278,12 @@ public class UIUtil {
 	/**
 	 * Background color of even table rows.
 	 */
-	public static final Color TABLE_BACKGROUND_COLOR_1 = new Color(255, 255, 255);
+	public static final Color TABLE_BACKGROUND_COLOR_1 = new Color(242, 255, 242);
 
 	/**
 	 * Background color of odd table rows.
 	 */
-	public static final Color TABLE_BACKGROUND_COLOR_2 = new Color(242, 255, 242);
+	public static final Color TABLE_BACKGROUND_COLOR_2 = new Color(255, 255, 255);
 
 	public static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 
@@ -2060,6 +2061,7 @@ public class UIUtil {
 				break;
 			case FLAT:
 				try {
+					UIManager.put("ScrollPane.border", BorderFactory.createEmptyBorder());
                     // UIManager.put("Component.arrowType", "triangle");
                     UIManager.put("SplitPane.dividerSize", 8);
                     UIManager.put("SplitPaneDivider.gripDotSize", 6);

@@ -957,8 +957,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
         searchTextField = new javax.swing.JTextField();
         okButton = new javax.swing.JButton();
         infoLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        searchList = new javax.swing.JList<>();
         schemaPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -967,11 +965,14 @@ public class StringSearchPanel extends javax.swing.JPanel {
         visPanel = new javax.swing.JPanel();
         selectAllButton = new javax.swing.JButton();
         plugInPanel = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
         bottomPanel = new javax.swing.JPanel();
         statusPanel = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
         sizeGripPanel = new javax.swing.JPanel();
         bottomComponentsPanel = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        searchList = new javax.swing.JList<>();
 
         loadingPanel.setBackground(java.awt.Color.white);
 
@@ -1023,6 +1024,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jLayeredPane1.add(okButton, gridBagConstraints);
 
         infoLabel.setFont(infoLabel.getFont().deriveFont((infoLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
@@ -1051,18 +1053,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(jPanel4, gridBagConstraints);
-
-        searchList.setVisibleRowCount(1);
-        jScrollPane1.setViewportView(searchList);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jScrollPane1, gridBagConstraints);
 
         schemaPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -1131,7 +1121,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 0.1;
         add(plugInPanel, gridBagConstraints);
 
-        bottomPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel5.setBorder(new javax.swing.border.LineBorder(java.awt.Color.lightGray, 1, true));
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
         bottomPanel.setLayout(new java.awt.GridBagLayout());
 
         statusPanel.setBackground(new java.awt.Color(255, 255, 204));
@@ -1181,7 +1173,28 @@ public class StringSearchPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        add(bottomPanel, gridBagConstraints);
+        jPanel5.add(bottomPanel, gridBagConstraints);
+
+        searchList.setVisibleRowCount(1);
+        jScrollPane1.setViewportView(searchList);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel5.add(jScrollPane1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel5, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -1268,6 +1281,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel loadingPanel;
