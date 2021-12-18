@@ -79,6 +79,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
@@ -330,6 +331,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         }, true, "T", null);
 		jPanel3.add(button, gridBagConstraints);
 		
+		condition.putClientProperty("JTextField.leadingComponent", button); // TODO
+		
 		button.setEnabled(subjectTable.getSelectedIndex() >= 0);
 		subjectTable.getModel().addListDataListener(new ListDataListener() {
 			@Override
@@ -378,13 +381,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        jPanel3.add(StringSearchPanel.createSearchButton(extractionModelFrame, subjectTable, "Find Table", null), gridBagConstraints);
-
+        JToggleButton sb;
+		jPanel3.add(sb = StringSearchPanel.createSearchButton(extractionModelFrame, subjectTable, "Find Table", null), gridBagConstraints);
+		((JComponent) subjectTable.getEditor().getEditorComponent()).putClientProperty("JTextField.leadingComponent", sb); // TODO
+		
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        focusPanel.add(StringSearchPanel.createSearchButton(extractionModelFrame, rootTable, "Focus on Table", null), gridBagConstraints);
-
+        focusPanel.add(sb = StringSearchPanel.createSearchButton(extractionModelFrame, rootTable, "Focus on Table", null), gridBagConstraints);
+        ((JComponent) rootTable.getEditor().getEditorComponent()).putClientProperty("JTextField.leadingComponent", sb); // TODO
+		
 		ItemListener aListener = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent arg0) {
@@ -1228,7 +1234,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			panel.setLayout(new GridLayout(1, 1, 0, 0));
 			panel.add(editorPanel);
 			scrollPanel.setViewportView(panel);
-			jSplitPane1.setLeftComponent(scrollPanel);
+			jSplitPane1.setLeftComponent(panel);
 
 			JPanel panel2 = new JPanel();
 			panel2.setLayout(new GridBagLayout());
@@ -1343,6 +1349,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         resetFocus = new javax.swing.JButton();
         leftButton = new javax.swing.JButton();
         activateDesictionPendingButton = new javax.swing.JButton();
+        jPanel19 = new javax.swing.JPanel();
         rightBorderPanel = new javax.swing.JPanel();
         messagePanel = new javax.swing.JPanel();
         neighborHolderPanel = new javax.swing.JPanel();
@@ -1373,10 +1380,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         additionalSubjectsButton = new javax.swing.JButton();
         limitButton = new javax.swing.JToggleButton();
         jPanel17 = new javax.swing.JPanel();
+        jPanel18 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tree = new javax.swing.JTree();
+        jLabel11 = new javax.swing.JLabel();
         xmlMappingPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -1387,6 +1396,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         xmlTagApply = new javax.swing.JButton();
         mapColumns = new javax.swing.JButton();
         sketchTabbedPane = new javax.swing.JTabbedPane();
+        jLabel12 = new javax.swing.JLabel();
         jPanel11 = new javax.swing.JPanel();
         legende = new javax.swing.JPanel();
         dependsOn = new javax.swing.JLabel();
@@ -1410,6 +1420,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setContinuousLayout(true);
+        jSplitPane1.setOneTouchExpandable(true);
 
         jpanel.setLayout(new java.awt.BorderLayout());
 
@@ -1505,9 +1516,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
         focusPanel.add(activateDesictionPendingButton, gridBagConstraints);
 
+        jPanel19.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        focusPanel.add(jPanel19, gridBagConstraints);
+
         layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(focusPanel);
-        focusPanel.setBounds(0, 0, 291, 29);
+        focusPanel.setBounds(0, 0, 287, 33);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -1557,7 +1575,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.setLayout(new java.awt.GridLayout(1, 4));
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIUtil.defaultTitleFont()));
         jPanel3.setToolTipText("Specify here where to start collecting the rows to be exported.");
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
@@ -1568,14 +1585,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(jPanel9, gridBagConstraints);
 
-        jLabel6.setText(" Export from ");
+        jLabel6.setText("  Export from  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(jLabel6, gridBagConstraints);
 
-        jLabel4.setText(" To");
+        jLabel4.setText("  To");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -1586,6 +1603,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         jPanel3.add(jLabel5, gridBagConstraints);
 
         jPanel15.setLayout(null);
@@ -1614,6 +1632,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         jPanel7.add(condition, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1626,7 +1645,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel8.setLayout(new java.awt.BorderLayout());
 
-        jLabel7.setText(" Where ");
+        jLabel7.setText("  Where ");
         jPanel8.add(jLabel7, java.awt.BorderLayout.WEST);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1672,7 +1691,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
         jPanel10.add(exportButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1697,7 +1716,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(openXmlSettings, gridBagConstraints);
 
-        jLabel10.setText(" Limit");
+        jLabel10.setText("  Limit");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -1767,13 +1786,21 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridwidth = 4;
         jPanel3.add(jPanel17, gridBagConstraints);
+
+        jPanel18.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel3.add(jPanel18, gridBagConstraints);
 
         editorPanel.add(jPanel3);
 
-        jPanel4.setLayout(new java.awt.BorderLayout(0, 4));
+        jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jPanel14.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIUtil.defaultTitleFont()));
         jPanel14.setLayout(new java.awt.BorderLayout());
 
         jScrollPane1.setAutoscrolls(true);
@@ -1795,11 +1822,27 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel14.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
-        jPanel4.add(jPanel14, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        jPanel4.add(jPanel14, gridBagConstraints);
+
+        jLabel11.setFont(jLabel11.getFont().deriveFont(jLabel11.getFont().getStyle() | java.awt.Font.BOLD));
+        jLabel11.setText(" Association");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel4.add(jLabel11, gridBagConstraints);
 
         editorPanel.add(jPanel4);
 
-        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, UIUtil.defaultTitleFont()));
         xmlMappingPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText(" Aggregation ");
@@ -1807,6 +1850,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         xmlMappingPanel.add(jLabel1, gridBagConstraints);
 
         jLabel2.setText(" Tag ");
@@ -1814,7 +1858,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 0);
         xmlMappingPanel.add(jLabel2, gridBagConstraints);
 
         jLabel3.setText(" Sketch ");
@@ -1822,6 +1866,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         xmlMappingPanel.add(jLabel3, gridBagConstraints);
 
         aggregationCombobox.setModel(getAggregationModel());
@@ -1877,7 +1922,18 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         xmlMappingPanel.add(sketchTabbedPane, gridBagConstraints);
+
+        jLabel12.setFont(jLabel12.getFont().deriveFont(jLabel12.getFont().getStyle() | java.awt.Font.BOLD));
+        jLabel12.setText(" XML Mapping");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
+        xmlMappingPanel.add(jLabel12, gridBagConstraints);
 
         editorPanel.add(xmlMappingPanel);
 
@@ -3767,6 +3823,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     javax.swing.JPanel inspectorHolder;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -3783,6 +3841,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel16;
     private javax.swing.JPanel jPanel17;
+    private javax.swing.JPanel jPanel18;
+    private javax.swing.JPanel jPanel19;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;

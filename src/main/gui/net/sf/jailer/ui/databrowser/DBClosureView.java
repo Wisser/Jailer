@@ -23,6 +23,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -443,7 +444,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 20;
-		final JComboBox2 comboBox = searchComboBox;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 2);
+        final JComboBox2 comboBox = searchComboBox;
         JToggleButton searchButton = StringSearchPanel.createSearchButton(this.parent, comboBox, "Find Table", new Runnable() {
 		    @Override
 		    public void run() {
@@ -1256,6 +1258,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         tablePanel.add(jScrollPane1, gridBagConstraints);
 
         searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
