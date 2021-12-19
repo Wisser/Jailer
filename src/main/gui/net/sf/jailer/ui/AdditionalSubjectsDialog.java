@@ -62,7 +62,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	private class AdditionalSubjectListEditor extends ListEditor<AdditionalSubject> {
 
 		public AdditionalSubjectListEditor() {
-			super(new String[] { "Table", "Condition", "limit" }, "Additional Subject", true, false, false);
+			super(new String[] { "Table", "Condition", "Limit" }, "Additional Subject", true, false, false);
 			hideUpAndDownButton();
 		}
 
@@ -494,6 +494,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         getContentPane().add(jPanel3, gridBagConstraints);
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -517,6 +518,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         getContentPane().add(jScrollPane1, gridBagConstraints);
 
         pack();

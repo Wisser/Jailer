@@ -238,6 +238,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 2);
         getContentPane().add(copyButton, gridBagConstraints);
 
         messagePanel.setLayout(new java.awt.GridBagLayout());
@@ -275,7 +276,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 2);
         jPanel2.add(sendButton, gridBagConstraints);
 
         jButton1.setText(" Close ");
@@ -287,6 +288,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         jPanel2.add(jButton1, gridBagConstraints);
 
         updateInfoPanel.setBackground(new java.awt.Color(255, 255, 236));
@@ -316,7 +318,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 8);
         jPanel2.add(updateInfoPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

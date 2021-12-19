@@ -94,6 +94,12 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		
 		initComponents();
 		
+		try {
+			((DefaultTableCellRenderer) columnsTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+		} catch (Exception e) {
+			// ignore
+		}
+		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		
@@ -322,7 +328,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 4, 4);
         detailsPanel.add(cancelButton, gridBagConstraints);
 
         okButton.setText("Ok");
@@ -336,7 +342,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 4, 2);
         detailsPanel.add(okButton, gridBagConstraints);
 
         setLayout(new java.awt.GridBagLayout());
@@ -402,7 +408,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 0);
         jPanel2.add(addButton, gridBagConstraints);
 
         updateButton.setText("Edit");
@@ -415,7 +421,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 0);
         jPanel2.add(updateButton, gridBagConstraints);
 
         deleteButton.setText("Delete");
@@ -430,7 +436,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 0);
         jPanel2.add(deleteButton, gridBagConstraints);
 
         copyButton.setText("Copy");
@@ -444,7 +450,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 0);
         jPanel2.add(copyButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

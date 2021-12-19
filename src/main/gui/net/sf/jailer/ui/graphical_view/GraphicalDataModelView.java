@@ -922,9 +922,6 @@ public class GraphicalDataModelView extends JPanel {
 		if (findPathMenuItem != null) {
 			popup.add(findPathMenuItem);
 		}
-		if (withModifications){
-			popup.add(dataBrowser);
-		}
 //		popup.add(findTable);
 //		popup.add(select);
 		if (withModifications){
@@ -941,6 +938,9 @@ public class GraphicalDataModelView extends JPanel {
 			popup.add(new JSeparator());
 			popup.add(queryBuilder);
 			popup.add(htmlRender);
+
+			popup.add(new JSeparator());
+			popup.add(dataBrowser);
 
 			popup.add(new JSeparator());
 			JMenu insertModeMenu = new JMenu("Export Mode");

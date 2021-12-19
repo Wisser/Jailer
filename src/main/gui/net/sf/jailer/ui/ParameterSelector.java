@@ -18,6 +18,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.JTextComponent;
@@ -51,6 +52,11 @@ public class ParameterSelector extends javax.swing.JPanel {
 		parameters = new ArrayList<String>();
 		
 		initComponents();
+		try {
+			((DefaultTableCellRenderer) paramTable.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+		} catch (Exception e) {
+			// ignore
+		}
 		final TableCellRenderer defaultTableCellRenderer = paramTable.getDefaultRenderer(String.class);
 		paramTable.setShowGrid(false);
 		paramTable.setDefaultRenderer(Object.class,

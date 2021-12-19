@@ -255,6 +255,7 @@ public class ImportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         commandLinePanel.add(jLabel22, gridBagConstraints);
 
+        jScrollPane1.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray, 1, true));
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         cliArea.setEditable(false);
@@ -419,7 +420,7 @@ public class ImportDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 2, 0);
         jPanel2.add(copyButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

@@ -331,7 +331,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         }, true, "T", null);
 		jPanel3.add(button, gridBagConstraints);
 		
-		condition.putClientProperty("JTextField.leadingComponent", button); // TODO
+		UIUtil.setLeadingComponent(condition, button);
 		
 		button.setEnabled(subjectTable.getSelectedIndex() >= 0);
 		subjectTable.getModel().addListDataListener(new ListDataListener() {
@@ -383,14 +383,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         JToggleButton sb;
 		jPanel3.add(sb = StringSearchPanel.createSearchButton(extractionModelFrame, subjectTable, "Find Table", null), gridBagConstraints);
-		((JComponent) subjectTable.getEditor().getEditorComponent()).putClientProperty("JTextField.leadingComponent", sb); // TODO
+		UIUtil.setLeadingComponent(subjectTable, sb);
 		
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         focusPanel.add(sb = StringSearchPanel.createSearchButton(extractionModelFrame, rootTable, "Focus on Table", null), gridBagConstraints);
-        ((JComponent) rootTable.getEditor().getEditorComponent()).putClientProperty("JTextField.leadingComponent", sb); // TODO
-		
+        UIUtil.setLeadingComponent(rootTable, sb);
+        
 		ItemListener aListener = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent arg0) {
@@ -648,6 +648,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionEditor.restriction.addPropertyChangeListener("enabled", e -> sm.setVisible(restrictionEditor.restriction.isEnabled()));
 		// condition.setFont(UIUtil.getSQLEditorFont());
 		restrictionEditor.restriction.setFont(UIUtil.getSQLEditorFont());
+		
+		if (UIUtil.plaf == PLAF.FLAT) {
+			sm.setVisible(false);
+			whereConEditorButton.setVisible(true);
+			UIUtil.setLeadingComponent(restrictionEditor.restriction, whereConEditorButton);
+		}
 		
 		if (isHorizontalLayout ) {
 			graphView = new GraphicalDataModelView(dataModel, this, subject, true, 948, 379, executionContext);
@@ -1035,7 +1041,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		updateLeftButton();
 		updateAdditionalSubjectsButton();
 	}
-	
+
 	private WhereConditionEditorPanel whereConditionEditorPanel;
 	RSyntaxTextAreaWithSQLSyntaxStyle whereConditionEditorEditor;
 	

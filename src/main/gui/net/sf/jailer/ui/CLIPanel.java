@@ -116,12 +116,13 @@ public class CLIPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 0);
         jPanel1.add(jinfoLabe, gridBagConstraints);
 
         commandLinePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Command line"));
         commandLinePanel.setLayout(new java.awt.GridBagLayout());
 
+        jScrollPane1.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray, 1, true));
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         cliArea.setEditable(false);
@@ -151,6 +152,7 @@ public class CLIPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         commandLinePanel.add(copyButton, gridBagConstraints);
 
         closeButton.setText(" Close ");
@@ -163,6 +165,7 @@ public class CLIPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         commandLinePanel.add(closeButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -198,7 +201,7 @@ public class CLIPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 8, 0);
         jPanel1.add(bookmarkPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -207,7 +210,7 @@ public class CLIPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 2);
         add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 

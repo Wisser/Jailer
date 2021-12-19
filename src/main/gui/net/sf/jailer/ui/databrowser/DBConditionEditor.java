@@ -15,10 +15,8 @@
  */
 package net.sf.jailer.ui.databrowser;
 
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -119,7 +117,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		});
 		
 		editorPaneScrollPane = new JScrollPane();
-		
+
 		clearButton.setIcon(UIUtil.scaleIcon(clearButton, clearIcon));
 		clearButton.addActionListener(e -> {
 			editorPane.setText("");
@@ -186,6 +184,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
+        jPanel1.setBorder(new javax.swing.border.LineBorder(java.awt.Color.lightGray, 1, true));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -214,6 +213,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel2.add(okButton, gridBagConstraints);
 
         cancelButton.setText("Cancel");
@@ -250,7 +250,6 @@ public abstract class DBConditionEditor extends EscapableDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel1.add(jPanel2, gridBagConstraints);
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
         gripPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));

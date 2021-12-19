@@ -390,6 +390,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 2.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jPanel2, gridBagConstraints);
 
         closeButton.setText("Cancel");
@@ -500,6 +501,12 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
 	}
 
 	public void adjustTableColumnsWidth(JTable table, boolean fixFirstColumn) {
+		try {
+			((DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+		} catch (Exception e) {
+			// ignore
+		}
+		
 		DefaultTableModel dtm = (DefaultTableModel) table.getModel();
 		DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
 		for (int i = 0; i < table.getColumnCount(); i++) {

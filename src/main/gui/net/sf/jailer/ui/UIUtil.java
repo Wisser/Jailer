@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Button;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -86,8 +87,11 @@ import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
+import javax.swing.ComboBoxEditor;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -2157,6 +2161,33 @@ public class UIUtil {
 	private static void addOSXKeyStrokesList(InputMap inputMap) {
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), "copy");
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.META_DOWN_MASK), "selectAll");
+	}
+	
+	public static void setLeadingComponent(JComponent component, JComponent leadingComponent) {
+		setLeadingOrTrailingComponent("JTextField.leadingComponent", component, leadingComponent);
+	}
+	
+	public static void setTrailingComponent(JComponent component, JComponent leadingComponent) {
+		setLeadingOrTrailingComponent("JTextField.trailingComponent", component, leadingComponent);
+	}
+
+	private static void setLeadingOrTrailingComponent(String propertyName, JComponent component, JComponent leadingComponent) {
+		if (plaf == PLAF.FLAT && component != null) {
+			if (leadingComponent instanceof JButton) {
+				((JButton) leadingComponent).setText(null);
+			}
+			if (component instanceof JComboBox) {
+				ComboBoxEditor editor = ((JComboBox) component).getEditor();
+				if (editor != null) {
+					Component editorComponent = editor.getEditorComponent();
+					if (editorComponent instanceof JComponent) {
+						((JComponent) editorComponent).putClientProperty(propertyName, leadingComponent);
+					}
+				}
+			} else {
+				component.putClientProperty(propertyName, leadingComponent);
+			}
+		}
 	}
 
 }

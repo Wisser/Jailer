@@ -577,6 +577,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		okButton.addKeyListener(keyListener);
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		
+		UIUtil.setTrailingComponent(searchTextField, okButton);
+		
 		searchTextField.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {

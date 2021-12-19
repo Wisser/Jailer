@@ -496,7 +496,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
         jPanel3.add(analyseSynonyms, gridBagConstraints);
 
         analyseViews.setText("Views");
@@ -511,7 +511,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
         jPanel3.add(analyseViews, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

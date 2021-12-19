@@ -53,7 +53,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
@@ -483,13 +482,15 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		this.conditionEditor = createConditionEditor();
 		initComponents();
 		
+		UIUtil.setLeadingComponent(templateDetailsNewValueField, templatesDetailsMulitlineLabel);
+		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-		final JComboBox comboBox = clauseDetailsObjectTextField;
+		final JComboBox2 comboBox = clauseDetailsObjectTextField;
         jPanel14.add(StringSearchPanel.createSearchButton(null, comboBox, "Value", null, null, null, null, false, null, true, true, null, false), gridBagConstraints);
 
 		ActionListener l = new ActionListener() {
@@ -1087,6 +1088,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				gridBagConstraints.weightx = 1.0;
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				p2.add(textField, gridBagConstraints);
+				
+				UIUtil.setLeadingComponent(textField, label);
 
 				final JCheckBox excluded = new JCheckBox("");
 				gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1705,7 +1708,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 4, 2);
         jPanel2.add(okButton, gridBagConstraints);
 
         cancelButton.setText(" Cancel ");
@@ -1717,10 +1720,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 11;
         gridBagConstraints.gridy = 20;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 4);
         jPanel2.add(cancelButton, gridBagConstraints);
 
-        jPanel3.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
         jLabel3.setForeground(new java.awt.Color(255, 0, 0));
@@ -1758,7 +1760,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 4, 2);
         jPanel2.add(helpButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

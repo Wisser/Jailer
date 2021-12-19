@@ -517,7 +517,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 			browseInsertButton.setIcon(loadIcon);
 			browseDeleteButton.setIcon(loadIcon);
-
+			
+			UIUtil.setTrailingComponent(insert, browseInsertButton);
+			UIUtil.setTrailingComponent(delete, browseDeleteButton);
+			
 			DocumentListener dl = new DocumentListener() {
 				@Override
 				public void removeUpdate(DocumentEvent e) {
@@ -595,6 +598,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 					openWhereEditor.setIcon(conditionEditorIcon);
 			   }
 			});
+			
+			UIUtil.setLeadingComponent(where, openWhereEditor);
 
 			workingTableSchemaComboBox.setEnabled(!scopeLocal.isSelected());
 			
@@ -1681,6 +1686,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         commandLinePanel.add(jLabel22, gridBagConstraints);
 
+        jScrollPane1.setBackground(java.awt.Color.gray);
+        jScrollPane1.setBorder(new javax.swing.border.LineBorder(java.awt.Color.lightGray, 1, true));
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         cliArea.setEditable(false);
@@ -2926,7 +2933,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	{
         // load images
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
-		loadIcon = UIUtil.readImage("/load.png");
+		loadIcon = UIUtil.readImage("/load2.png");
 		conditionEditorIcon = UIUtil.readImage("/edit.png");
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
         runIcon = UIUtil.readImage("/run.png");
