@@ -185,7 +185,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         if (asPopup) {
         	initPopupView();
         } else {
-        	setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
+        	setBorder(UIUtil.plaf == PLAF.FLAT? null : BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
     		statusPanel.setVisible(false);
         	popupTitelPanel.setVisible(false);
         }
@@ -1270,6 +1270,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         syntaxPanePanel = new javax.swing.JPanel();
         applyButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -1308,7 +1309,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
         jPanel5.add(jPanel6, gridBagConstraints);
 
         titlePanel.setBackground(java.awt.Color.white);
@@ -1373,7 +1374,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         statusPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel2.add(statusPanel, gridBagConstraints);
 
@@ -1405,7 +1406,6 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(popupTitelPanel, gridBagConstraints);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Condition"));
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
         syntaxPanePanel.setLayout(new java.awt.BorderLayout());
@@ -1434,12 +1434,20 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel2.add(jPanel4, gridBagConstraints);
+
+        jLabel1.setText("Condition");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel2.add(jLabel1, gridBagConstraints);
 
         splitPane.setBottomComponent(jPanel2);
 
@@ -2413,6 +2421,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton applyButton;
     private javax.swing.JPanel closeButtonContainerPanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

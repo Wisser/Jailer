@@ -476,7 +476,11 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         this.parent = parent;
         this.executionContext = executionContext;
         initComponents();
-        
+
+		if (UIUtil.plaf == PLAF.FLAT) {
+			splitPane.setDividerSize(16);
+		}
+		
         cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		
         refreshButton.setText(null);

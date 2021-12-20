@@ -329,6 +329,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		initComponents();
 		initMenu();
 
+		if (UIUtil.plaf == PLAF.FLAT) {
+			jSplitPane4.setDividerSize(16);
+		}
+		
 		tbBackButton.setText(null);
 		tbForewardButton.setText(null);
 		tbZoom0Button.setText(null);

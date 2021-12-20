@@ -3536,6 +3536,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	return file;
     }
     
+    private boolean contentLoaded = false;
+    private boolean contentModified = false;
+    
 	public void loadContent() {
 		try {
 			UIUtil.setWaitCursor(SQLConsole.this);
@@ -3555,11 +3558,26 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		} finally {
 			UIUtil.resetWaitCursor(SQLConsole.this);
 		}
+		contentLoaded = true;
+		editorPane.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				contentModified = true;
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				contentModified = true;
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				contentModified = true;
+			}
+		});
 	}
 
 	public void saveContent() {
 		try {
-			if (file == null) {
+			if (contentLoaded && contentModified && file == null) {
 				File contentFile = contentFile();
 				contentFile.getParentFile().mkdirs();
 				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(contentFile));
@@ -3571,7 +3589,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			// ignore
 		}
 	}
-
+	
     // TODO StringSearch component for historie (and than inc hist size a lot)
     
     // TODO automatically generated SQL statements from Desktop like:
