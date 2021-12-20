@@ -956,7 +956,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         final Color BG5 = new Color(255, 240, 240);
         bgColor.clear();
 
-        TreeSet<String> nonIsolated = new TreeSet<String>();
+        TreeSet<String> nonIsolated = new TreeSet<String>(String::compareToIgnoreCase);
 
         while (!currentLine.isEmpty()) {
             // add current line to table model
@@ -1084,7 +1084,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                 if (nextLine.isEmpty()) {
                     if (!isolated) {
                         isolated = true;
-                        nonIsolated = new TreeSet<String>(visited);
+                        nonIsolated = new TreeSet<String>(String::compareToIgnoreCase);
+                        nonIsolated.addAll(visited);
                     }
                     for (Table table: getDataModel().getTables()) {
                         String displayName = getDataModel().getDisplayName(table);

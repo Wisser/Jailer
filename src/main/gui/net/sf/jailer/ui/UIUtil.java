@@ -1289,6 +1289,11 @@ public class UIUtil {
 	 */
 	public static final Color TABLE_BACKGROUND_COLOR_2 = new Color(255, 255, 255);
 
+	/**
+	 * Color of FLAT borders.
+	 */
+	public static final Color FLAT_BORDER_COLOR =  new Color(220, 220, 220);
+	
 	public static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 
 	/**
@@ -2065,7 +2070,7 @@ public class UIUtil {
 				break;
 			case FLAT:
 				try {
-					UIManager.put("ScrollPane.border", BorderFactory.createEmptyBorder());
+					UIManager.put("ScrollPane.border", BorderFactory.createLineBorder(FLAT_BORDER_COLOR));
                     // UIManager.put("Component.arrowType", "triangle");
                     UIManager.put("SplitPane.dividerSize", 8);
                     UIManager.put("SplitPaneDivider.gripDotSize", 6);

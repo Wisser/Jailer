@@ -236,7 +236,6 @@ public class DesktopOutline extends JPanel {
 			double y = -border;
 			double width = desktop.getWidth() + 2 * border;
 			double height = desktop.getHeight() + 2 * border;
-			Color borderColor = Color.GRAY;
 			Color backgroundColor = new Color(232, 232, 255);
 			g2d.setColor(backgroundColor);
 			int gx = (int) (offX + scale * x + 0.5);
@@ -262,10 +261,8 @@ public class DesktopOutline extends JPanel {
 			g2d.setPaint(paint);
 			g2d.setStroke(stroke);
 			g2d.fillRoundRect(sx, sy, sw, sh, 8, 8);
-			g2d.setColor(borderColor);
-			if (UIUtil.plaf != PLAF.FLAT) {
-				g2d.drawRoundRect(gx, gy, gw, gh, 2, 2);
-			}
+			g2d.setColor(UIUtil.plaf == PLAF.FLAT? UIUtil.FLAT_BORDER_COLOR : Color.LIGHT_GRAY);
+			g2d.drawRoundRect(gx, gy, gw + 1, gh, 2, 2);
 			
 			g2d.setStroke(new BasicStroke(1));
 			for (RowBrowser browser: getBrowsers()) {

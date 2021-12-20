@@ -519,7 +519,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 								border.paintBorder(c, g, x, y, width, height);
 								if (g instanceof Graphics2D) {
 									Graphics2D g2d = (Graphics2D) g;
-									Color color = new Color(100, 100, 255);
+									Color color = new Color(140, 158, 255);
 									int ofs = 50;
 									GradientPaint paint = new GradientPaint(
 										x + ind - 20, 0, bg==null ? Color.WHITE : bg,

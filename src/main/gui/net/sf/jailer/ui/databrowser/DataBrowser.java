@@ -1287,7 +1287,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		for (Table table : datamodel.get().getTables()) {
 			tables.add(datamodel.get().getDisplayName(table));
 		}
-		Collections.sort(tables);
+		Collections.sort(tables, String::compareToIgnoreCase);
 		@SuppressWarnings({ "rawtypes" })
 		ComboBoxModel model = new DefaultComboBoxModel(new Vector(tables));
 
@@ -4695,7 +4695,16 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		workbenchTabbedPane.setSelectedComponent(sqlConsole);
 		if (sqlConsoles.size() == 1) {
-			sqlConsoles.get(0).loadContent();
+			SQLConsoleWithTitle console0 = sqlConsoles.get(0);
+			workbenchTabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
+				boolean loaded = false;
+	            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+	                if (!loaded && workbenchTabbedPane.getSelectedComponent() == console0) {
+	                	loaded = true;
+	                	UIUtil.invokeLater(4, () -> console0.loadContent());
+	                }
+	            }
+	        });
 		}
 		return sqlConsole;
 	}

@@ -262,7 +262,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		for (Table table: extractionModel.dataModel.getTables()) {
 			tableNames.add(extractionModel.dataModel.getDisplayName(table));
 		}
-		Collections.sort(tableNames);
+		Collections.sort(tableNames, String::compareToIgnoreCase);
 		if (withNull) {
 			tableNames.add(0, "");
 		}

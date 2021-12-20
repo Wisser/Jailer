@@ -92,7 +92,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 		for (Table table: datamodel.getTables()) {
 			tables.add(datamodel.getDisplayName(table));
 		}
-		Collections.sort(tables);
+		Collections.sort(tables, String::compareToIgnoreCase);
 		ComboBoxModel model = new DefaultComboBoxModel(new Vector(tables));
 			
 		tableComboBox.setModel(model);

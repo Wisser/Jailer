@@ -390,6 +390,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         focusPanel.add(sb = StringSearchPanel.createSearchButton(extractionModelFrame, rootTable, "Focus on Table", null), gridBagConstraints);
         UIUtil.setLeadingComponent(rootTable, sb);
+        resetFocus.setIcon(UIUtil.scaleIcon(resetFocus, resetIcon));
+        UIUtil.setTrailingComponent(rootTable, resetFocus);
+        rootTable.setPreferredSize(new Dimension(rootTable.getPreferredSize().width + 40, rootTable.getPreferredSize().height));
+        rootTable.setMinimumSize(rootTable.getPreferredSize());
         
 		ItemListener aListener = new ItemListener() {
 			@Override
@@ -3896,6 +3900,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 	private Icon dropDownIcon;
 	private Icon conditionEditorIcon;
+	private ImageIcon resetIcon;
 	private Icon conditionEditorSelectedIcon;
 	private ImageIcon leftIcon;
 	private ImageIcon leftIconP;
@@ -3904,6 +3909,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	{
 		// load images
 		dropDownIcon = UIUtil.readImage("/dropdown.png");
+		resetIcon = UIUtil.readImage("/reset.png");
 		conditionEditorIcon = UIUtil.readImage("/edit.png");
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
 		leftIconP = UIUtil.readImage("/leftp.png");

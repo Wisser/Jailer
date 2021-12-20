@@ -672,7 +672,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		for (Table table: getDataModel().getTables()) {
 			tableNames.add(getDataModel().getDisplayName(table));
 		}
-		Collections.sort(tableNames);
+		Collections.sort(tableNames, String::compareToIgnoreCase);
 		DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
 		tableBox.setModel(model);
 		if (tableToSelect == null && tableNames.size() > 0) {

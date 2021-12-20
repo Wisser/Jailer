@@ -277,6 +277,7 @@ public class ColumnsTable extends JTable {
 						String tabName = useTableName? tableName.get(row) : null;
 						if (tabName != null) {
 							JLabel tab = new JLabel("<html>&nbsp;" + tabName + "&nbsp;</html>");
+							tab.setForeground(new Color(0, 0, 180));
 							tab.setBackground(render.getBackground());
 							tab.setOpaque(render.isOpaque());
 							JPanel panel = new JPanel(new GridBagLayout());
@@ -285,15 +286,17 @@ public class ColumnsTable extends JTable {
 							gridBagConstraints = new java.awt.GridBagConstraints();
 					        gridBagConstraints.gridx = 1;
 					        gridBagConstraints.gridy = 1;
-					        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+					        gridBagConstraints.fill = GridBagConstraints.BOTH;
 					        gridBagConstraints.weightx = 1;
+					        gridBagConstraints.weighty = 1;
 					        gridBagConstraints.anchor = GridBagConstraints.WEST;
 					        panel.add(tab, gridBagConstraints);
 					        gridBagConstraints = new java.awt.GridBagConstraints();
 					        gridBagConstraints.gridx = 3;
 					        gridBagConstraints.gridy = 1;
 					        gridBagConstraints.anchor = GridBagConstraints.EAST;
-					        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+					        gridBagConstraints.fill = GridBagConstraints.BOTH;
+					        gridBagConstraints.weighty = 1;
 					        panel.add(render, gridBagConstraints);
 					        ((JLabel) render).setText(text + "  ");
 							return panel;

@@ -412,6 +412,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         RTextScrollPane jScrollPane = new RTextScrollPane();
         jScrollPane.setViewportView(editorPane);
+        if (jScrollPane.getGutter() != null) {
+        	jScrollPane.getGutter().setIconRowHeaderInheritsGutterBackground(true);
+        }
         editorPane.setGutter(jScrollPane.getGutter());
         consoleContainerPanel.add(jScrollPane);
         jScrollPane.setLineNumbersEnabled(true);
@@ -490,7 +493,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	        if (jTabbedPane1.getTabCount() > 0) {
 	        	jPanel3.setBorder(null);
 	        } else {
-	        	jPanel3.setBorder(new LineBorder(Color.lightGray));
+	        	jPanel3.setBorder(new LineBorder(UIUtil.FLAT_BORDER_COLOR));
 	        }
         }
 	}
@@ -3535,6 +3538,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     
 	public void loadContent() {
 		try {
+			UIUtil.setWaitCursor(SQLConsole.this);
 			if (file == null) {
 				File contentFile = contentFile();
 				if (contentFile.exists()) {
@@ -3548,6 +3552,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 		} catch (Throwable t) {
 			// ignore
+		} finally {
+			UIUtil.resetWaitCursor(SQLConsole.this);
 		}
 	}
 

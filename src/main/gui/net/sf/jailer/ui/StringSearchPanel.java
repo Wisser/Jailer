@@ -533,7 +533,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	        Collections.sort(vis, new Comparator<MDSchema>() {
 				@Override
 				public int compare(MDSchema o1, MDSchema o2) {
-					return o1.getName().compareTo(o2.getName());
+					return o1.getName().compareToIgnoreCase(o2.getName());
 				}
 			});
 	        MDSchema defaultSchema = metaDataSource.getDefaultSchema();

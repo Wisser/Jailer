@@ -488,8 +488,6 @@ public class TableDetailsView extends javax.swing.JPanel {
         setBackground(java.awt.Color.white);
         setLayout(new java.awt.GridBagLayout());
 
-        jScrollPane1.setBorder(null);
-
         jPanel1.setBackground(java.awt.Color.white);
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -574,6 +572,7 @@ public class TableDetailsView extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(jScrollPane1, gridBagConstraints);
 
         sortColumnsCheckBox.setText("Sort Columns      ");

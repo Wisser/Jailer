@@ -894,7 +894,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
 		bgColor.clear();
 
-		TreeSet<String> nonIsolated = new TreeSet<String>();
+		TreeSet<String> nonIsolated = new TreeSet<String>(String::compareToIgnoreCase);
 
 		while (!currentLine.isEmpty()) {
 
@@ -1024,7 +1024,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				if (nextLine.isEmpty()) {
 					if (!isolated) {
 						isolated = true;
-						nonIsolated = new TreeSet<String>(visited);
+                        nonIsolated = new TreeSet<String>(String::compareToIgnoreCase);
+                        nonIsolated.addAll(visited);
 					}
 					for (Table table: getDataModel().getTables()) {
 						String displayName = getDataModel().getDisplayName(table);

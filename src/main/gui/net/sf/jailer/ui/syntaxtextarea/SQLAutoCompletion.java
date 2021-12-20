@@ -17,10 +17,14 @@ package net.sf.jailer.ui.syntaxtextarea;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JViewport;
 
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.AutoCompletionEvent;
@@ -29,9 +33,11 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.Completion;
 import org.fife.ui.autocomplete.CompletionCellRenderer;
 import org.fife.ui.autocomplete.CompletionProvider;
-import org.fife.ui.autocomplete.CompletionProviderBase;
 import org.fife.ui.autocomplete.Util;
 import org.fife.ui.rtextarea.RTextArea;
+
+import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 
 
 /**
@@ -51,12 +57,25 @@ public class SQLAutoCompletion extends AutoCompletion {
 		setAutoCompleteSingleChoices(false);
 		install(editorPane);
 		setListCellRenderer(new CompletionCellRenderer() {
+			boolean initialized;
+			
 			@Override
 			public Component getListCellRendererComponent(JList list, Object value, int index, boolean selected,
 					boolean hasFocus) {
 				Component c = super.getListCellRendererComponent(list, value, index, selected, hasFocus);
 				if (c instanceof JLabel && value instanceof SQLCompletionProvider.SQLCompletion) {
 					((JLabel) c).setToolTipText(((SQLCompletionProvider.SQLCompletion) value).tooltip);
+				}
+				if (!initialized && UIUtil.plaf == PLAF.FLAT) {
+					initialized = true;
+					JComponent comp = list;
+					Container parent = comp.getParent();
+					if (parent != null && parent instanceof JViewport) {
+						comp = ((JViewport) parent).getRootPane();
+					}
+					if (comp != null) {
+						comp.setBorder(BorderFactory.createLineBorder(UIUtil.FLAT_BORDER_COLOR));
+					}
 				}
 				return c;
 			}
