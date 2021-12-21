@@ -3577,7 +3577,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	public void saveContent() {
 		try {
-			if (contentLoaded && contentModified && file == null) {
+			final int MAX_DOC_LENGTH = 1024 * 1024;
+			if (contentLoaded && contentModified && file == null && editorPane.getDocument().getLength() < MAX_DOC_LENGTH) {
 				File contentFile = contentFile();
 				contentFile.getParentFile().mkdirs();
 				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(contentFile));

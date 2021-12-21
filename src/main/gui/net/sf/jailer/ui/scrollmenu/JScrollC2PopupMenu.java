@@ -241,15 +241,17 @@ public class JScrollC2PopupMenu extends JPopupMenu {
 			y -= position;
 			Component pre = null;
 			int l = 0;
+			int prefHeight = 22;
 			for (Component comp : parent.getComponents()) {
 				++l;
 				if (!(comp instanceof JScrollBar) && comp.isVisible()) {
 					Dimension pref = comp.getPreferredSize();
 					if (l % 2 == 0 && pre != null) {
-						comp.setBounds(x, y, width - C2WIDTH, pref.height);
+						prefHeight = pref.height;
+						comp.setBounds(x, y, width - C2WIDTH, prefHeight);
 					} else {
-						comp.setBounds(x + width - pref.width - 12, y, pref.width, pref.height);
-						y += pref.height + 2;
+						comp.setBounds(x + width - pref.width - 12, y, pref.width, prefHeight);
+						y += prefHeight;
 					}
 				}
 				pre = comp;

@@ -2082,6 +2082,7 @@ public class UIUtil {
                     UIManager.put( "ScrollBar.width", 14 );
                     UIManager.put( "InternalFrame.borderMargins", new Insets(2,2,1,1));
                     UIManager.put( "TableHeader.separatorColor", Color.lightGray);
+                    UIManager.put( "PasswordField.showRevealButton", true);
                     
                     UIManager.put( "Button.arc", 8 );
                     UIManager.put( "Component.arc", 8 );

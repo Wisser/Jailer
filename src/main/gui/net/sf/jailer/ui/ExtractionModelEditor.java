@@ -1386,9 +1386,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel10 = new javax.swing.JLabel();
         jPanel13 = new javax.swing.JPanel();
         limitLabel = new javax.swing.JLabel();
+        limitButton = new javax.swing.JToggleButton();
         jPanel16 = new javax.swing.JPanel();
         additionalSubjectsButton = new javax.swing.JButton();
-        limitButton = new javax.swing.JToggleButton();
         jPanel17 = new javax.swing.JPanel();
         jPanel18 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
@@ -1535,7 +1535,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(focusPanel);
-        focusPanel.setBounds(0, 0, 287, 33);
+        focusPanel.setBounds(0, 0, 291, 33);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -1746,6 +1746,18 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel13.add(limitLabel, gridBagConstraints);
 
+        limitButton.setText("Edit Limit");
+        limitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                limitButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        jPanel13.add(limitButton, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -1770,19 +1782,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel16.add(additionalSubjectsButton, gridBagConstraints);
-
-        limitButton.setText("Edit Limit");
-        limitButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                limitButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        jPanel16.add(limitButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

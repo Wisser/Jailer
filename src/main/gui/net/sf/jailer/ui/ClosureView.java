@@ -1607,7 +1607,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
         closureTablePanel.add(jScrollPane1, gridBagConstraints);
 
         searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
