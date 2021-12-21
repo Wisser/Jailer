@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -255,7 +256,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * @return closure of the table (all tables associated (in-)direct with table)
 	 */
 	public Set<Table> closure() {
-		return closure(new HashSet<Table>(), new HashSet<Table>());
+		return closure(new HashSet<Table>());
 	}
 
 	/**
@@ -267,52 +268,51 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * @return closure of the table (all tables associated (in-)direct with table)
 	 */
 	public Set<Table> closure(Set<Table> tablesToIgnore) {
-		return closure(new HashSet<Table>(), tablesToIgnore);
-	}
-
-	/**
-	 * Gets the closure of the table.
-	 * 
-	 * @param tables tables known in closure
-	 * @param directed consider associations as directed?
-	 * @param tablesToIgnore ignore this tables
-	 * 
-	 * @return closure of the table (all tables associated (in-)directly with table)
-	 */
-	private Set<Table> closure(Set<Table> tables, Set<Table> tablesToIgnore) {
 		Set<Table> closure = new HashSet<Table>();
-		if (!tables.contains(this) && !tablesToIgnore.contains(this)) {
-			closure.add(this);
-			tables.add(this);
-			for (Association association: associations) {
-				if (!tables.contains(association.destination)) {
-					if (association.getJoinCondition() != null) {
-						closure.addAll(association.destination.closure(tables, tablesToIgnore));
+		List<Table> toCheck = new LinkedList<Table>();
+		Set<Table> checked = new HashSet<Table>(tablesToIgnore);
+		toCheck.add(this);
+		while (!toCheck.isEmpty()) {
+			Table table = toCheck.remove(0);
+			if (!checked.contains(table)) {
+				closure.add(table);
+				checked.add(table);
+				for (Association association: table.associations) {
+					if (!checked.contains(association.destination)) {
+						if (association.getJoinCondition() != null) {
+							toCheck.add(association.destination);
+						}
 					}
 				}
 			}
 		}
+		
 		return closure;
 	}
 
 	/**
 	 * Gets the closure of the table, ignoring restrictions.
 	 * 
-	 * @param tables tables known in closure
-	 * 
 	 * @return closure of the table (all tables associated (in-)directly with table)
 	 */
-	public Set<Table> unrestrictedClosure(Set<Table> tables) {
+	public Set<Table> unrestrictedClosure() {
 		Set<Table> closure = new HashSet<Table>();
-		if (!tables.contains(this)) {
-			closure.add(this);
-			tables.add(this);
-			for (Association association: associations) {
-				if (!tables.contains(association.destination)) {
-					closure.addAll(association.destination.unrestrictedClosure(tables));
+		List<Table> toCheck = new LinkedList<Table>();
+		Set<Table> checked = new HashSet<Table>();
+		toCheck.add(this);
+		while (!toCheck.isEmpty()) {
+			Table table = toCheck.remove(0);
+			if (!checked.contains(table)) {
+				closure.add(table);
+				checked.add(table);
+				for (Association association: table.associations) {
+					if (!checked.contains(association.destination)) {
+						toCheck.add(association.destination);
+					}
 				}
 			}
 		}
+		
 		return closure;
 	}
 	
