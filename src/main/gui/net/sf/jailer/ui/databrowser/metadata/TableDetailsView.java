@@ -90,11 +90,11 @@ public class TableDetailsView extends javax.swing.JPanel {
 				}
 			});
 	   	}
-    	if (jScrollPane1.getHorizontalScrollBar() != null) {
-        	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
+    	if (jScrollPane2.getHorizontalScrollBar() != null) {
+        	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
         }
-        if (jScrollPane1.getVerticalScrollBar() != null) {
-        	jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
+        if (jScrollPane2.getVerticalScrollBar() != null) {
+        	jScrollPane2.getVerticalScrollBar().setUnitIncrement(16);
         }
         if (currentView != null) {
         	sortColumnsCheckBox.setSelected(currentView.sortColumnsCheckBox.isSelected());
@@ -470,17 +470,17 @@ public class TableDetailsView extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         tableNameLabel = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
-        columnsPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
         warnPanel = new javax.swing.JPanel();
         warnLabel = new javax.swing.JLabel();
         analyseButton = new javax.swing.JButton();
         warnLabel1 = new javax.swing.JLabel();
         warnLabel2 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jPanel2 = new javax.swing.JPanel();
+        columnsPanel = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
         sortColumnsCheckBox = new javax.swing.JCheckBox();
         findColumnsPanel = new javax.swing.JPanel();
         findColumnsLabel = new javax.swing.JLabel();
@@ -498,32 +498,6 @@ public class TableDetailsView extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         jPanel1.add(tableNameLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jSeparator1, gridBagConstraints);
-
-        columnsPanel.setOpaque(false);
-        columnsPanel.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
-        jPanel1.add(columnsPanel, gridBagConstraints);
-
-        jLabel1.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jLabel1, gridBagConstraints);
 
         warnPanel.setOpaque(false);
         warnPanel.setLayout(new java.awt.GridBagLayout());
@@ -563,7 +537,35 @@ public class TableDetailsView extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 12, 2, 0);
         jPanel1.add(warnPanel, gridBagConstraints);
 
-        jScrollPane1.setViewportView(jPanel1);
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        columnsPanel.setOpaque(false);
+        columnsPanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel2.add(columnsPanel, gridBagConstraints);
+
+        jPanel3.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(jPanel3, gridBagConstraints);
+
+        jScrollPane2.setViewportView(jPanel2);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        jPanel1.add(jScrollPane2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -573,7 +575,7 @@ public class TableDetailsView extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        add(jScrollPane1, gridBagConstraints);
+        add(jPanel1, gridBagConstraints);
 
         sortColumnsCheckBox.setText("Sort Columns      ");
         sortColumnsCheckBox.setOpaque(false);
@@ -615,10 +617,10 @@ public class TableDetailsView extends javax.swing.JPanel {
     private javax.swing.JPanel columnsPanel;
     private javax.swing.JLabel findColumnsLabel;
     public javax.swing.JPanel findColumnsPanel;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JCheckBox sortColumnsCheckBox;
     private javax.swing.JLabel tableNameLabel;
     private javax.swing.JLabel warnLabel;
