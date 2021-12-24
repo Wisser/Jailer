@@ -1008,6 +1008,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel7.add(andCondition, gridBagConstraints);
 
+		UIUtil.setLeadingComponent(andCondition, conditionEditorButton);
+		
 		setPendingState(false, false);
 
 		sqlLabel1.setIcon(dropDownIcon);
