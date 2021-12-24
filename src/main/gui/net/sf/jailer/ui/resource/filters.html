@@ -6,38 +6,48 @@
 
 <tr>
 <td class="content" height="520" valign="top" width="100%">
-A filter assigns
-a SQL expression to a table column.
+A filter assigns an SQL expression to a table column.
 
 <h3>Export filter</h3>
 
-An export filter is evaluated during the export phase. The column values will be replaced by the result of the expression when the export file is written.  ${old-value} is a synonym for the filtered column.
-
+An export filter is evaluated during the export phase. <br>
+The column values are replaced by the result of the expression when the export file is written.<br>
+${old-value} is a synonym for the filtered column.<br>
 <br><br>With the filter
 
 EMPLOYEE.NAME := lower(${old-value})
 
 <br><br>
 <img src="filterimg/image001.png"/>
-<br><br>The employee names will be exported with all letters lowercase:<br><br>
+<br><br> ... the names of the employees are exported with lowercase letters:
+<br><br>
 <img src="filterimg/image002.png"/>
 <h3>Literal filter</h3>
 
-A literal filter is also evaluated during the export phase. The result will be written literally into the export file.  During the import phase, it will be evaluated as a SQL expression. To define a literal filter, add the prefix "literal:" to the filter expression. The filter:<br><br>
+A literal filter is also evaluated during the export phase.<br>
+The result is written literally to the export file.<br>
+In the import phase, it is evaluated as an SQL expression.<br>
+To define a literal filter, add the prefix "literal:" to the filter expression.<br><br>
+The filter:<br />
 <img src="filterimg/image003.png"/>
 <br><br>replaces employee names with numbers from a sequence in the target database.<br><br>
 <img src="filterimg/image004.png"/>
 <br><br><h3>Import filter</h3>
 
-An import filter is evaluated during the import phase. Import filters are especially useful for filtering primary key columns. Filters on primary key columns are automatically applied to the corresponding foreign key columns. With an import filter, it’s guaranteed  that a “null”-value remains null and that a foreign key value is mapped to the same value as the primary key even if the filter expression is not a deterministic function.
-
+An import filter is evaluated during the import phase.<br>
+Import filters are especially useful for filtering primary key columns. <br> <br>
+Filters on primary key columns are automatically applied to the corresponding foreign key columns. <br>
+An import filter ensures that a "null" value remains null and that a foreign key value maps to the same <br>
+value as the primary key, even if the filter expression is not a deterministic function. <br>
+(More precisely, if the filter expressions and types of any two filters are exactly the same for two different columns, <br>
+then both filters will map each value to exactly the same target value.)
 
 <br><br>This filter uses a sequence to generate new EMPNOs during the import phase:
 
 <br><br><img src="filterimg/image005.png"/>
 <br><br><br>
 <h3>Filter templates</h3>
-Templates allow defining filters based on a condition on a column.
+Templates allow defining filters of the same kind for a set of columns that satisfy a given condition.
 <br><br><img src="filterimg/image007.png"/>
 </td>
 

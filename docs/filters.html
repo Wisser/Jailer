@@ -123,27 +123,25 @@
                       <br />
                       A filter assigns an SQL expression to a table column.
 					  <br /><br />
-                      <h3>Export filter</h3>An export filter is evaluated during the
-                      export phase. The column values will be replaced by the result of
-                      the expression when the export file is written. ${old-value} is a
-                      synonym for the filtered column.<br />
+                      <h3>Export filter</h3>An export filter is evaluated during the export phase. <br>
+                      The column values are replaced by the result of the expression when the export file is written.<br>
+                      ${old-value} is a synonym for the filtered column.<br />
                       <br />
                       With the filter EMPLOYEE.NAME := lower(${old-value})<br />
                       <br />
-                      <img width="472" height="300" src="filterimg/image001.png" /><br />
+                      <img src="filterimg/image001.png" /><br />
                       <br />
-                      The employee names will be exported with all letters
-                      lowercase:<br />
+                      ... the names of the employees are exported with lowercase letters:<br />
                       <br />
                       <img src="filterimg/image002.png" />
 
-                      <h4>Literal filter</h4>A literal filter is also evaluated during
-                      the export phase. The result will be written literally into the
-                      export file. During the import phase, it will be evaluated as a SQL
-                      expression. To define a literal filter, add the prefix "literal:"
-                      to the filter expression. The filter:<br />
+                      <h4>Literal filter</h4>A literal filter is also evaluated during the export phase.<br>
+                      The result is written literally to the export file.<br>
+                      In the import phase, it is evaluated as an SQL expression.<br>
+                      To define a literal filter, add the prefix "literal:" to the filter expression.<br><br>
+                      The filter:<br />
                       <br />
-                      <img width="564" height="242" src="filterimg/image003.png" /><br />
+                      <img src="filterimg/image003.png" /><br />
                       <br />
                       replaces employee names with numbers from a sequence in the target
                       database.<br />
@@ -151,36 +149,35 @@
                       <img src="filterimg/image004.png" /><br />
                       <br />
 
-                      <h3>Import filter</h3>An import filter is evaluated during the
-                      import phase. Import filters are especially useful for filtering
-                      primary key columns. Filters on primary key columns are
-                      automatically applied to the corresponding foreign key columns.
-                      With an import filter, it's guaranteed that a 'null'-value remains
-                      null and that a foreign key value is mapped to the same value as
-                      the primary key even if the filter expression is not a
-                      deterministic function.<br />
-                      (More precisely, if the filter expressions and the types of any two filters on two different columns are exactly the same, then both filters will map same values to exactly the same target values.)<br><br />
-                      This filter uses a sequence to generate new EMPNOs during the
+                      <h3>Import filter</h3>An import filter is evaluated during the import phase.<br>
+                      Import filters are especially useful for filtering primary key columns. <br> <br>
+                      Filters on primary key columns are automatically applied to the corresponding foreign key columns. <br>
+                      An import filter ensures that a "null" value remains null and that a foreign key value maps to the same <br>
+                      value as the primary key, even if the filter expression is not a deterministic function. <br>
+                      (More precisely, if the filter expressions and types of any two filters are exactly the same for two different columns, <br>
+                      then both filters will map each value to exactly the same target value.)
+						<br><br />
+                      This filter on <i>EMPNO</i> uses a sequence to generate new EMPNOs during the
                       import phase:<br />
                       <br />
-                      <img width="1023" height="402" src="filterimg/image005.png" /><br />
+                      <img src="filterimg/image005.png" /><br />
                       <br />
                       <br />
 
-                      <h3>Filter templates</h3>Templates allow defining filters based on
-                      a condition on a column.<br />
+                      <h3>Filter templates</h3>Templates allow defining filters of the same kind for a set of columns that satisfy a given condition.<br />
                       <br />
-                      <img width="1066" height="550" src="filterimg/image007.png" />
+                      <img src="filterimg/image007.png" />
                       <br />
                       <br /><br />
 
                       <h3 id="nullfilter">"<i>null</i>" filter on foreign key columns</h3>
-                      If a foreign key of a table is nullable, a "<i>null</i>" filter on it (resp. on all columns of a composite foreign key) causes only the foreign key columns of those rows to be filled with "<i>null</i>", whose parent row is not exported as well.<br>
-                      In the same way, only the foreign key columns of those rows are set to "<i>null</i>" when deleting, which are not deleted themselves but their parent.
-                      <br /><br />
+                      If a foreign key of a table is nullable, a "null" filter on it (resp. on all columns of a compound foreign key) <br>
+                      causes the foreign key columns of exactly those rows, whose parent rows are not exported as well, to be populated with <i>null</i>. <br><br>
+                      Likewise, when deleting, only the foreign key columns of those rows are set to <i>null</i> that are not deleted themselves, but their parent rows are.
+					  <br /><br />
                       The extraction model editor offers the corresponding checkbox "Set foreign key to null ...".
                       <br /><br/>
-                      <img width="1227" height="359" src="nullfilter.png" />
+                      <img src="nullfilter.png" />
                     </td>
                   </tr>
                 </tbody>

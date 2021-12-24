@@ -62,6 +62,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -510,7 +511,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
-        jPanel5.add(StringSearchPanel.createSearchButton(this, tableBox, "Find Table", null), gridBagConstraints);
+        JToggleButton sb;
+		jPanel5.add(sb = StringSearchPanel.createSearchButton(this, tableBox, "Find Table", null), gridBagConstraints);
+		UIUtil.setLeadingComponent(tableBox, sb);
 
 		final ListCellRenderer tableBoxRenderer = tableBox.getRenderer();
 		tableBox.setRenderer(new ListCellRenderer() {
@@ -1876,6 +1879,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         jPanel5.add(jLabel2, gridBagConstraints);
 
         jTabbedPane1.addTab("Filters per Table", jPanel5);
