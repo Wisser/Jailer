@@ -1569,7 +1569,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	protected Color getAssociationColor1(Association association) {
-		Color color = UIUtil.plaf == PLAF.NIMBUS? new java.awt.Color(140, 150, 255) : UIUtil.plaf == PLAF.FLAT? new java.awt.Color(0, 160, 255) : new java.awt.Color(0, 120, 255);
+		Color color = UIUtil.plaf == PLAF.NIMBUS? new java.awt.Color(140, 150, 255) : UIUtil.plaf == PLAF.FLAT? new java.awt.Color(0, 140, 255) : new java.awt.Color(0, 120, 255);
 		if (association.isIgnored()) {
 			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(130, 130, 130) : new java.awt.Color(153, 153, 153);
 		} else if (association.isInsertDestinationBeforeSource()) {

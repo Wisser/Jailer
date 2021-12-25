@@ -1392,7 +1392,7 @@ public class UIUtil {
 	}
 
     public static void showPopup(final Component invoker, final int x, final int y, final JPopupMenu popup) {
-    	if (popup.getComponentCount() > 0 && popup.getComponent(popup.getComponentCount() - 1) instanceof JSeparator) {
+    	while (popup.getComponentCount() > 0 && popup.getComponent(popup.getComponentCount() - 1) instanceof JSeparator) {
     		popup.remove(popup.getComponentCount() - 1);
     	}
     	popup.addPropertyChangeListener("visible", new PropertyChangeListener() {

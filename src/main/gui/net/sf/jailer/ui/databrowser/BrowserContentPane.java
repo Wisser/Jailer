@@ -2526,7 +2526,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 
-		if (!isPending && !rows.isEmpty()) {
+		if (!isPending && !rows.isEmpty() && row == null) {
 			popup.add(allNonEmpty);
 			allNonEmpty.setInitialText();
 		}
@@ -3642,6 +3642,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String title, String prefix, final boolean navigateFromAllRows, final int rowCountPriority, final AllNonEmptyItem allNonEmptyItem, final Object context) {
 		JScrollC2Menu nav = new JScrollC2Menu(title);
 
+		if (row != null) {
+			// doesn't make much sense to navigate from single rows.
+			return popup;
+		}
+		
 		if (prefix.equals("1")) {
 			nav.setIcon(UIUtil.scaleIcon(this, redDotIcon));
 		}
