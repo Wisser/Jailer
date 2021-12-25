@@ -362,7 +362,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			menu.add(new JSeparator(), 3);
 		}
 
-		menu.addSeparator();
+		menu.add(new JSeparator());
 		menu.add(zoomIn);
 		menu.add(zoomOut);
 		menu.add(zoomReset);

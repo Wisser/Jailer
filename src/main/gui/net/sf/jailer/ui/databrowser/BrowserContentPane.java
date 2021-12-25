@@ -1938,7 +1938,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						});
 						popup.add(sorted);
-						popup.addSeparator();
+						popup.add(new JSeparator());
 						JMenuItem changeOrder = new JMenuItem("Change natural column order ");
 						changeOrder.addActionListener(new ActionListener() {
 							@Override
@@ -2444,10 +2444,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			JMenu script = new JMenu("Create SQL");
 			script.setEnabled(false);
 			jPopupMenu.add(script);
-			jPopupMenu.addSeparator();
+			jPopupMenu.add(new JSeparator());
 			if (copyTCB != null) {
 				jPopupMenu.add(copyTCB);
-				jPopupMenu.addSeparator();
+				jPopupMenu.add(new JSeparator());
 			}
 			jPopupMenu.add(tableFilter);
 			JMenuItem editMode = new JMenuItem("Edit Mode");
@@ -2548,25 +2548,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					popup.add(new JSeparator());
 				}
 
-				JMenuItem qb = new JMenuItem("Query Builder");
-				qb.setAccelerator(KS_QUERYBUILDER);
-				popup.add(qb);
-				qb.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						openQueryBuilder(false, row == null? null : SqlUtil.replaceAliases(row.rowId, "A", "A"));
-					}
-				});
-
-				JMenuItem sqlConsole = new JMenuItem("SQL Console");
-				sqlConsole.setAccelerator(KS_SQLCONSOLE);
-				popup.add(sqlConsole);
-				sqlConsole.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						openQueryBuilder(true, row == null? null : SqlUtil.replaceAliases(row.rowId, "A", "A"));
-					}
-				});
+//				JMenuItem qb = new JMenuItem("Query Builder");
+//				qb.setAccelerator(KS_QUERYBUILDER);
+//				popup.add(qb);
+//				qb.addActionListener(new ActionListener() {
+//					@Override
+//					public void actionPerformed(ActionEvent e) {
+//						openQueryBuilder(false, row == null? null : SqlUtil.replaceAliases(row.rowId, "A", "A"));
+//					}
+//				});
+//
+//				JMenuItem sqlConsole = new JMenuItem("SQL Console");
+//				sqlConsole.setAccelerator(KS_SQLCONSOLE);
+//				popup.add(sqlConsole);
+//				sqlConsole.addActionListener(new ActionListener() {
+//					@Override
+//					public void actionPerformed(ActionEvent e) {
+//						openQueryBuilder(true, row == null? null : SqlUtil.replaceAliases(row.rowId, "A", "A"));
+//					}
+//				});
 
 				final List<Row> toSelect = new ArrayList<Row>();
 				if (row != null && !row.nonEmptyRowId.isEmpty()) {
@@ -2639,7 +2639,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (getQueryBuilderDialog() == null) {
 						popup.removeAll();
 						popup.add(det);
-						popup.addSeparator();
+						popup.add(new JSeparator());
 						script = new JMenu("Create SQL");
 						popup.add(script);
 					} else {
@@ -2656,7 +2656,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							script.add(insert);
 							script.add(insertNewRow);
 							script.add(delete);
-							script.addSeparator();
+							script.add(new JSeparator());
 						}
 						JMenuItem updates = new JMenuItem("Updates (all rows)");
 						script.add(updates);
@@ -2695,40 +2695,47 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						deletes.setEnabled(hasPK && rows.size() > 0);
 					}
 				} else {
-					popup.add(sql);
-				}
-			}
-			popup.addSeparator();
-			if (copyTCB != null) {
-				popup.add(copyTCB);
-				popup.addSeparator();
-			}
-			popup.add(createFindColumnMenuItem(x, y, contextJTable));
-			popup.add(new JSeparator());
-			popup.add(tableFilter);
-			JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
-			editMode.setEnabled(isTableEditable(table));
-			if (withKeyStroke) {
-				editMode.setAccelerator(KS_EDIT);
-			}
-			editMode.setSelected(isEditMode);
-			editMode.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
-					try {
-						Desktop.forceAdjustRows = null;
-						setEditMode(!isEditMode);
-						updateTableModel();
-						if (repaint != null) {
-							UIUtil.invokeLater(repaint);
-						}
-					} finally {
-						Desktop.forceAdjustRows = oldForceAdjustRows;
+					if (!withSingleRow) {
+						popup.add(sql);
+					} else {
+						popup.add(new JSeparator(), 2);
+						popup.add(sql, 3);
 					}
 				}
-			});
-			popup.add(editMode);
+			}
+			if (copyTCB != null) {
+				popup.add(new JSeparator());
+				popup.add(copyTCB);
+				popup.add(new JSeparator());
+			}
+			if (!withSingleRow) {
+				popup.add(tableFilter);
+				JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
+				editMode.setEnabled(isTableEditable(table));
+				if (withKeyStroke) {
+					editMode.setAccelerator(KS_EDIT);
+				}
+				editMode.setSelected(isEditMode);
+				editMode.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
+						try {
+							Desktop.forceAdjustRows = null;
+							setEditMode(!isEditMode);
+							updateTableModel();
+							if (repaint != null) {
+								UIUtil.invokeLater(repaint);
+							}
+						} finally {
+							Desktop.forceAdjustRows = oldForceAdjustRows;
+						}
+					}
+				});
+				popup.add(editMode);
+				popup.add(new JSeparator());
+				popup.add(createFindColumnMenuItem(x, y, contextJTable));
+			}
 		}
 
 		return popup;
@@ -2774,7 +2781,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			});
 		});
-		popup.addSeparator();
+		popup.add(new JSeparator());
 		JMenuItem qb = new JMenuItem("Query Builder");
 		qb.setAccelerator(KS_QUERYBUILDER);
 		popup.add(qb);
@@ -2879,53 +2886,53 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		popup.add(new JSeparator());
 		if (!forNavTree) {
-			popup.add(createFindColumnMenuItem(x, y, rowsTable));
+			JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
+			tableFilter.setAccelerator(KS_FILTER);
+			tableFilter.setSelected(isTableFilterEnabled);
+			if (isLimitExceeded) {
+				tableFilter.setForeground(new Color(220, 20, 20));
+				tableFilter.setIcon(getScaledWarnIcon());
+				tableFilter.setToolTipText("Row limit exceeded. Filtering may be incomplete.");
+			}
+			tableFilter.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Component parent = null;
+					Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
+					try {
+						Desktop.forceAdjustRows = null;
+						parent = SwingUtilities.getWindowAncestor(parentComponent);
+						UIUtil.setWaitCursor(parent);
+						isTableFilterEnabled = !isTableFilterEnabled;
+						updateTableModel();
+					} finally {
+						UIUtil.resetWaitCursor(parent);
+						Desktop.forceAdjustRows = oldForceAdjustRows;
+					}
+				}
+			});
+			popup.add(tableFilter);
+			JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
+			editMode.setEnabled(isTableEditable(table));
+			editMode.setAccelerator(KS_EDIT);
+			editMode.setSelected(isEditMode);
+			editMode.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
+					try {
+						Desktop.forceAdjustRows = null;
+						setEditMode(!isEditMode);
+						updateTableModel();
+					} finally {
+						Desktop.forceAdjustRows = oldForceAdjustRows;
+					}
+				}
+			});
+			popup.add(editMode);
 			popup.add(new JSeparator());
+			popup.add(createFindColumnMenuItem(x, y, rowsTable));
 		}
-		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
-		tableFilter.setAccelerator(KS_FILTER);
-		tableFilter.setSelected(isTableFilterEnabled);
-		if (isLimitExceeded) {
-			tableFilter.setForeground(new Color(220, 20, 20));
-			tableFilter.setIcon(getScaledWarnIcon());
-			tableFilter.setToolTipText("Row limit exceeded. Filtering may be incomplete.");
-		}
-		tableFilter.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Component parent = null;
-				Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
-				try {
-					Desktop.forceAdjustRows = null;
-					parent = SwingUtilities.getWindowAncestor(parentComponent);
-					UIUtil.setWaitCursor(parent);
-					isTableFilterEnabled = !isTableFilterEnabled;
-					updateTableModel();
-				} finally {
-					UIUtil.resetWaitCursor(parent);
-					Desktop.forceAdjustRows = oldForceAdjustRows;
-				}
-			}
-		});
-		popup.add(tableFilter);
-		JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
-		editMode.setEnabled(isTableEditable(table));
-		editMode.setAccelerator(KS_EDIT);
-		editMode.setSelected(isEditMode);
-		editMode.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Boolean oldForceAdjustRows = Desktop.forceAdjustRows;
-				try {
-					Desktop.forceAdjustRows = null;
-					setEditMode(!isEditMode);
-					updateTableModel();
-				} finally {
-					Desktop.forceAdjustRows = oldForceAdjustRows;
-				}
-			}
-		});
-		popup.add(editMode);
 		return popup;
 	}
 
@@ -5372,7 +5379,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								JMenuItem title = new JMenuItem("new limit");
 								title.setEnabled(false);
 								popup.add(title);
-								popup.addSeparator();
+								popup.add(new JSeparator());
 								JMenu toAddTo = null;
 								int nr = 0;
 								for (Integer l: moreLimits) {

@@ -292,10 +292,10 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		                    }
 		                });
 		                menu.add(select);
-//                            menu.addSeparator();
+//                            menu.add(new JSeparator());
 //                            menu.add(exclude);
 //                            menu.add(excludeAll);
-		                menu.addSeparator();
+		                menu.add(new JSeparator());
 		                JPopupMenu popup = rb.browserContentPane.createPopupMenu(null, -1, 0, 0, false, false);
 		                JPopupMenu popup2 = rb.browserContentPane.createSqlPopupMenu(-1, 0, 0, true, closureTable);
 		                popup.add(new JSeparator());
@@ -306,9 +306,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		                    menu.add(c);
 		                }
 		                if (!mainPath.isEmpty()) {
-//		                	menu.addSeparator();
+//		                	menu.add(new JSeparator());
 //		                	menu.add(deselect);
-		                	menu.addSeparator();
+		                	menu.add(new JSeparator());
 		                	menu.add(openPath);
 		                    menu.add(pathFinder);
 		                }

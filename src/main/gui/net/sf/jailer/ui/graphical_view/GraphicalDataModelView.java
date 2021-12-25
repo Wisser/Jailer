@@ -1043,7 +1043,7 @@ public class GraphicalDataModelView extends JPanel {
 		}
 
 		if (!modelEditor.getAdditionalPopupMenuItems().isEmpty()) {
-			popup.addSeparator();
+			popup.add(new JSeparator());
 			for (JMenuItem item: modelEditor.getAdditionalPopupMenuItems()) {
 				popup.add(item);
 			}

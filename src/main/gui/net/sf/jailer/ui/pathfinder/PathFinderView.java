@@ -624,7 +624,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
 					TitledBorder labelBorder = BorderFactory.createTitledBorder(
 							titleUnderline, "Successor of " + dataModel.getDisplayName(node.table), TitledBorder.LEFT, TitledBorder.ABOVE_TOP, popupMenu.getFont(), popupMenu.getForeground());
 					popupMenu.setBorder(BorderFactory.createCompoundBorder(popupMenu.getBorder(), labelBorder));
-					popupMenu.addSeparator();
+					popupMenu.add(new JSeparator());
 					
 					for (Entry<String, EdgeType> e: following.entrySet()) {
 						JMenuItem item = new JMenuItem(e.getKey() + "              ");

@@ -74,6 +74,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
@@ -702,7 +703,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                         if (mdTable != null && MetaDataPanel.this.metaDataSource.toTable(mdTable) == null) {
                             if (itemCount > 0) {
-                            	popup.addSeparator();
+                            	popup.add(new JSeparator());
                             }
                             JMenuItem analyse = new JMenuItem("Analyse schema \""+ mdTable.getSchema().getUnquotedName() + "\"");
                             popup.add(analyse);
@@ -716,7 +717,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                         if (!mdTables.isEmpty()) {
                             if (itemCount > 0) {
-                            	popup.addSeparator();
+                            	popup.add(new JSeparator());
                             }
                             JMenu menu = new JMenu("Create Script");
                             popup.add(menu);
@@ -726,7 +727,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                             menu.add(createScriptMenuItem("Delete Script", "Delete from %1$s;", "", mdTables, false, pos));
                             menu.add(createScriptMenuItem("Create Table Script", "DDL", "", mdTables, false, pos));
                             menu.add(createScriptMenuItem("Drop Table Script", "Drop %2$s %1$s;", "", mdTables, false, pos));
-                            menu.addSeparator();
+                            menu.add(new JSeparator());
                             menu.add(createScriptMenuItem("Count Rows Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true, pos));
                         }
                         popup.show(evt.getComponent(), evt.getX(), evt.getY());

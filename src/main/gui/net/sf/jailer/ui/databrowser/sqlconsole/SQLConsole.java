@@ -85,6 +85,7 @@ import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
@@ -349,11 +350,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         	@Override
         	protected void appendPopupMenu(JPopupMenu menu) {
-        		menu.addSeparator();
+        		menu.add(new JSeparator());
         		menu.add(menuItemToSingleLine);
         		menu.add(menuItemToggle);
         		menu.add(menuItemSubstituteVariables);
-        		menu.addSeparator();
+        		menu.add(new JSeparator());
         		menu.add(menuItemAnalyse);
         	}
 

@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.Button;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -100,6 +99,7 @@ import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.RowSorter;
@@ -1392,6 +1392,9 @@ public class UIUtil {
 	}
 
     public static void showPopup(final Component invoker, final int x, final int y, final JPopupMenu popup) {
+    	if (popup.getComponentCount() > 0 && popup.getComponent(popup.getComponentCount() - 1) instanceof JSeparator) {
+    		popup.remove(popup.getComponentCount() - 1);
+    	}
     	popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
     		@Override
 			public void propertyChange(PropertyChangeEvent evt) {
