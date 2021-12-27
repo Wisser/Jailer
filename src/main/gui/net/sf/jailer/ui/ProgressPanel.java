@@ -466,8 +466,8 @@ public class ProgressPanel extends javax.swing.JPanel {
 		}
 		Window owner = SwingUtilities.getWindowAncestor(this);
 		if (JailerConsole.openResultActions.get(owner) != null) {
-			if (JOptionPane.showOptionDialog(this, message, "Finished", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,
-					null, new Object[] { "Open Result", "OK" }, null) == 0) {
+			if (JOptionPane.showOptionDialog(this, message, "Finished", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+					null, new Object[] { "OK", "Open Result" }, null) == 1) {
 				JailerConsole.openResultActions.get(owner).accept(owner);
 			}
 		} else {

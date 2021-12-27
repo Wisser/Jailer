@@ -69,7 +69,8 @@ public class FileView extends javax.swing.JFrame {
 	 */
 	public FileView(Window owner) {
 		this.owner = owner;
-		this.isSQL = false;
+		this.withSyntaxHighlighting = false;
+		this.isXml = false;
 		initialize();
 	}
 
@@ -79,9 +80,10 @@ public class FileView extends javax.swing.JFrame {
 	 * @param owner the enclosing component.
 	 * @param file the file to render
 	 */
-	public FileView(Window owner, Window window, String file, boolean isSQL) throws FileNotFoundException, IOException {
+	public FileView(Window owner, Window window, String file, boolean withSyntaxHighlighting) throws FileNotFoundException, IOException {
 		this.owner = owner;
-		this.isSQL = isSQL;
+		this.withSyntaxHighlighting = withSyntaxHighlighting;
+		this.isXml = file.toLowerCase().endsWith(".xml");
 		
 		File f = new File(file);
 		if (f.exists() && f.length() > 65L*1024L*1024L) {
@@ -93,8 +95,11 @@ public class FileView extends javax.swing.JFrame {
 		}
 		try {
 			initialize();
-			setTitle(file);
+			setTitle(new File(file).getAbsolutePath());
 			getJTextPane().setText(new PrintUtil().loadFile(Environment.newFile(file).getPath()));
+			if (getJTextPane() instanceof RSyntaxTextAreaWithSQLSyntaxStyle) {
+				((RSyntaxTextAreaWithSQLSyntaxStyle) getJTextPane()).discardAllEdits();
+			}
 			getJTextPane().setCaretPosition(0);
 			setVisible(true);
 		} catch (Throwable t) {
@@ -102,7 +107,8 @@ public class FileView extends javax.swing.JFrame {
 		}
 	}
 
-	private final boolean isSQL;
+	private final boolean withSyntaxHighlighting;
+	private final boolean isXml;
 	private final Window owner;
 	private static int gCount = 0;
 	
@@ -208,8 +214,15 @@ public class FileView extends javax.swing.JFrame {
 	 */
 	private JTextArea getJTextPane() {
 		if (jTextPane == null) {
-			if (isSQL) {
-				RSyntaxTextAreaWithSQLSyntaxStyle rSyntaxTextAreaWithSQLSyntaxStyle = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
+			if (withSyntaxHighlighting) {
+				RSyntaxTextAreaWithSQLSyntaxStyle rSyntaxTextAreaWithSQLSyntaxStyle = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
+					protected boolean withModifingMenuItems() {
+						return false;
+					}
+				};
+				if (isXml) {
+					rSyntaxTextAreaWithSQLSyntaxStyle.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
+				}
 				jTextPane = rSyntaxTextAreaWithSQLSyntaxStyle;
 			} else {
 				jTextPane = new JTextArea();

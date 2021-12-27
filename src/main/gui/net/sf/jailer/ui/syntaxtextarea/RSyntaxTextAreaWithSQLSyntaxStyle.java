@@ -331,14 +331,16 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	protected JPopupMenu createPopupMenu() {
 		JPopupMenu menu = super.createPopupMenu();
 
-		JMenuItem item = new JMenuItem(formatSQL);
-		item.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				formatSQL();
-			}
-		});
-		menu.add(item, 0);
+		if (withModifingMenuItems()) {
+			JMenuItem item = new JMenuItem(formatSQL);
+			item.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					formatSQL();
+				}
+			});
+			menu.add(item, 0);
+		}
 		if (selectTableAction != null) {
 			menu.add(new JMenuItem(selectTableAction), 1);
 			menu.add(new JSeparator(), 2);
@@ -348,12 +350,16 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 		if (withFindAndReplace()) {
 			menu.add(new JMenuItem(new ShowFindDialogAction()), 0);
-			menu.add(new JMenuItem(new ShowReplaceDialogAction()), 1);
-			menu.add(new JSeparator(), 2);
+			if (withModifingMenuItems()) {
+				menu.add(new JMenuItem(new ShowReplaceDialogAction()), 1);
+				menu.add(new JSeparator(), 2);
+			} else {
+				menu.add(new JSeparator(), 1);
+			}
 		}
 
 		if (withExecuteActions) {
-			item = new JMenuItem(runBlock);
+			JMenuItem item = new JMenuItem(runBlock);
 			menu.add(item, 0);
 			item = new JMenuItem(runAll);
 			menu.add(item, 1);
@@ -373,6 +379,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	}
 
 	protected boolean withFindAndReplace() {
+		return true;
+	}
+
+	protected boolean withModifingMenuItems() {
 		return true;
 	}
 

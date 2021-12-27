@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -24,6 +25,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
@@ -31,6 +33,8 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -45,6 +49,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -61,6 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.swing.BoxLayout;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -73,6 +79,7 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
@@ -478,6 +485,54 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         this.executionContext = executionContext;
         initComponents();
 
+        addComponentListener(new ComponentListener() {
+			
+        	int width = -1;
+			
+			@Override
+			public void componentShown(ComponentEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void componentResized(ComponentEvent e) {
+				if (getWidth() != width) {
+					width = getWidth();
+					DefaultTreeModel m = (DefaultTreeModel) metaDataTree.getModel();
+					TreeNode root2 = (TreeNode) m.getRoot();
+					trav(m, root2);
+				}
+			}
+			
+			private void trav(DefaultTreeModel m, TreeNode n) {
+				
+				// TODO 
+				// TODO performance, test mit vielen tabellen (100k+)
+				
+				
+				if (n.isLeaf()) {
+					m.nodeChanged(n);
+				}
+				Enumeration<? extends TreeNode> e = n.children();
+				while (e != null && e.hasMoreElements()) {
+					trav(m, e.nextElement());
+				}
+			}
+
+			@Override
+			public void componentMoved(ComponentEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void componentHidden(ComponentEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+        
 		if (UIUtil.plaf == PLAF.FLAT) {
 			splitPane.setDividerSize(16);
 		}
@@ -1034,7 +1089,45 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 if (UIUtil.plaf == PLAF.FLAT) {
 					setTextSelectionColor(tree.hasFocus()? Color.white : null);
 				}
-                return comp;
+                
+                // TODO
+                JPanel p = new JPanel(new GridBagLayout()) {
+                	public void setSize(Dimension s) {
+                		super.setSize(s);
+                	}
+//                	public Dimension getMinimumSize() {
+//                		return new Dimension( MetaDataPanel.this.getWidth(), comp.getPreferredSize().height);
+//                	}
+//                	public Dimension getMaximumSize() {
+//                		return new Dimension(MetaDataPanel.this.getWidth() , comp.getPreferredSize().height);
+//                	}
+                	public Dimension getPreferredSize() {
+                		return new Dimension( MetaDataPanel.this.getWidth() , comp.getPreferredSize().height);
+                	}
+                };
+                
+                p.setOpaque(false);
+                
+                GridBagConstraints gridBagConstraints = new GridBagConstraints();
+                gridBagConstraints.gridx = 1;
+                gridBagConstraints.gridy = 1;
+                
+                p.add(comp, gridBagConstraints);
+                gridBagConstraints = new GridBagConstraints();
+                gridBagConstraints.gridx = 2;
+                gridBagConstraints.gridy = 1;
+                gridBagConstraints.weightx = 1;
+                p.add(new JLabel("xy"), gridBagConstraints);
+                gridBagConstraints = new GridBagConstraints();
+                gridBagConstraints.gridx = 3;
+                gridBagConstraints.gridy = 1;
+                p.add(new JLabel("z"), gridBagConstraints);
+                p.setSize(new Dimension(300 /* MetaDataPanel.this.getWidth() */, comp.getPreferredSize().height));
+                
+                
+                return p;
+                
+//                return comp;
             }
         };
         renderer.setOpenIcon(null);
@@ -1567,7 +1660,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setViewportView(metaDataTree);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

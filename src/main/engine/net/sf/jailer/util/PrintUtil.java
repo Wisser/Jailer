@@ -249,8 +249,8 @@ public class PrintUtil {
 	 * @throws IOException
 	 */
 	public String loadFile(String file, boolean ignoreComments) throws FileNotFoundException, IOException {
-		StringBuffer sb;
-		sb = new StringBuffer();
+		StringBuilder sb;
+		sb = new StringBuilder(65536);
 		BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
 		String line = null;
 		while ((line = reader.readLine()) != null) {

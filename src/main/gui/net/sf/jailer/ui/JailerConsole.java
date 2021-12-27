@@ -221,7 +221,7 @@ public class JailerConsole {
 		getLoadSqlLog().setEnabled(true);
 		getCancelButton().setText("Close");
 		getCancelButton().setEnabled(true);
-		getOpenResultButton().setEnabled(true);
+		getOpenResultButton().setEnabled(ok);
 		String title = "Jailer Console - " + (ok? "finished" : "failed!");
 		if (dialog instanceof JDialog) {
 			((JDialog) dialog).setTitle(title);
