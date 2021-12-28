@@ -56,6 +56,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1695,6 +1696,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	private void adjustLevels(List<OutlineInfo> outlineInfos) {
+		for (Iterator<OutlineInfo> i = outlineInfos.iterator(); i.hasNext(); ) {
+			if ("from duaL".equals(i.next().scopeDescriptor)) {
+	    		i.remove();
+	    	}
+		}
     	if (outlineInfos.size() > 0) {
     		int lastLevel = outlineInfos.get(outlineInfos.size() - 1).level;
     		for (int level = lastLevel - 1; level >= 0; --level) {

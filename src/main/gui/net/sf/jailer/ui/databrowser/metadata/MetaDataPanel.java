@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -66,7 +65,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.swing.BoxLayout;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -1860,12 +1858,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	}
 
     private String outlineTableRender(OutlineInfo info, boolean selected) {
-        String KEYWORD_ATTRIBUTES = "color=\"#0000cc\"";
+    	String KEYWORD_ATTRIBUTES = "color=\"#0000cc\"";
 		String face = fontName != null? "face=\"" + fontName + "\" " : "";
         String render = "<font " + face + "color=\"#000000\">";
 		String KEYWORD_PREFIX = (fontName != null? "<font " + face + "" + face + ">" : "") + "<b>";
 		String KEYWORD_SUFFIX = "</b>" + (fontName != null? "</font>" : "");
-		String scopeDescriptor = info.scopeDescriptor;
+		String scopeDescriptor = "selecT froM duaL".equalsIgnoreCase(info.scopeDescriptor) && info.scopeDescriptor.substring(7).equals("from duaL")? info.scopeDescriptor.substring(0, 6) : info.scopeDescriptor;
 		if (scopeDescriptor != null) {
 			scopeDescriptor = scopeDescriptor.replace(" ", "&nbsp;");
 		}
@@ -1906,7 +1904,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         if (info.context != null) {
         	render += "<font " + face + "color=\"#dd8888\">&nbsp;" + info.context + "</font>";
         }
-        render = "<html>" + render;
+        render = "<html>" + render + "<html>";
         return render;
     }
 

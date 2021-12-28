@@ -47,6 +47,7 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.util.Pair;
@@ -842,6 +843,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         scopeDescriptionPerLastKeyword.put("delete", "Delete");
         scopeDescriptionPerLastKeyword.put("insert", "Insert");
         scopeDescriptionPerLastKeyword.put("union", "Union");
+        scopeDescriptionPerLastKeyword.put("intersect", "Intersect");
+        scopeDescriptionPerLastKeyword.put("except", "Except");
         scopeDescriptionPerLastKeyword.put("values", "Values");
         scopeDescriptionPerLastKeyword.put("merge", "Merge");
         
@@ -1213,16 +1216,49 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	}
 
 	public void mergeOutlineInfos(List<OutlineInfo> outlineInfos, int endIndex) {
+        
+        // merge "select !from"
+        if (outlineInfos != null && endIndex >= 2 
+                && "select".equalsIgnoreCase(outlineInfos.get(endIndex - 2).scopeDescriptor) 
+                && !"from".equalsIgnoreCase(outlineInfos.get(endIndex - 1).scopeDescriptor)
+        		&& !"from dual".equalsIgnoreCase(outlineInfos.get(endIndex - 1).scopeDescriptor)) {
+                   int infoLevel = outlineInfos.get(endIndex - 1).level;
+            if (infoLevel == outlineInfos.get(endIndex - 2).level) {
+            	try {
+	                int pos;
+	                String description;
+	                pos = outlineInfos.get(endIndex - 1).position;
+	                description = "from";
+	                OutlineInfo info1 = new OutlineInfo(null, null, infoLevel, pos, description);
+	                OutlineInfo info2 = new OutlineInfo(new MDTable("duaL", (MDSchema) getDefaultSchema(metaDataSource), false, false), null, infoLevel, pos, null);
+	                OutlineInfo oldInfo = outlineInfos.get(endIndex - 1);
+	                outlineInfos.set(endIndex - 1, info1);
+	                outlineInfos.add(endIndex++, info2);
+	                doMergeOutlineInfos(outlineInfos, endIndex);
+	                endIndex = outlineInfos.size();
+	                outlineInfos.add(endIndex++, oldInfo);
+            	} catch (Exception e) {
+            		// ignore
+            	}
+            }
+        }
+        
+        doMergeOutlineInfos(outlineInfos, endIndex);
+	}
+
+	private void doMergeOutlineInfos(List<OutlineInfo> outlineInfos, int endIndex) {
+            
         // merge "select from dual"
         if (outlineInfos != null && endIndex >= 2 
                 && "from".equalsIgnoreCase(outlineInfos.get(endIndex - 2).scopeDescriptor) 
-                && "dual".equalsIgnoreCase(outlineInfos.get(endIndex - 1).scopeDescriptor)) {
+                && 
+                (outlineInfos.get(endIndex - 1).mdTable != null && "dual".equalsIgnoreCase(outlineInfos.get(endIndex - 1).mdTable.getName()))) {
             int infoLevel = outlineInfos.get(endIndex - 1).level;
             if (infoLevel == outlineInfos.get(endIndex - 2).level) {
                 int pos;
                 String description;
                 pos = outlineInfos.get(endIndex - 2).position;
-                description = "from " + outlineInfos.get(endIndex - 1).scopeDescriptor;
+                description = "from " + outlineInfos.get(endIndex - 1).mdTable.getName();
                 outlineInfos.remove(endIndex - 1);
                 --endIndex;
                 outlineInfos.remove(endIndex - 1);
@@ -1247,7 +1283,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 int pos;
                 String description;
                 pos = outlineInfos.get(endIndex - 5).position;
-                description = "Select " + outlineInfos.get(endIndex - 1).scopeDescriptor;
+                description = outlineInfos.get(endIndex - 5).scopeDescriptor + " " + outlineInfos.get(endIndex - 1).scopeDescriptor;
                 OutlineInfo info = new OutlineInfo(null, null, infoLevel, pos, description);
                 info.rowCount = 2;
                 info.contextPosition = outlineInfos.get(endIndex - 5).contextPosition;
@@ -1351,7 +1387,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
     private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
     private static String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
-    private static String reClauseKW = "\\b(?:select|from|update|where|(?:group\\s+by)|having|with|in|exists|into|delete|insert|(?:order\\s+by)|union|values|merge)\\b";
+    private static String reClauseKW = "\\b(?:select|from|update|where|(?:group\\s+by)|having|with|in|exists|into|delete|insert|(?:order\\s+by)|union|intersect|except|values|merge)\\b";
     private static String reIdentWSWordPattern = ".*?(" + reIdentifier + ")\\s+\\w*$";
     
     private static Pattern identDotOnlyPattern = Pattern.compile(reIdentDotOnly, Pattern.DOTALL);
