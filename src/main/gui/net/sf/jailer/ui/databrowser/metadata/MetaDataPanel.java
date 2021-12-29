@@ -2036,7 +2036,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		g.clipRect(1, 1, visibleRect.width + 1, visibleRect.height);
 		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, rc) -> {
 			String value;
-			if (rc >= 1000000) {
+			if (rc == 0) {
+				value = " ";
+			} else if (rc >= 1000000) {
 				value = String.format("%,1.1f M", (double) rc / 1000000.0);
      		} else if (rc >= 1000) {
      			value = String.format("%,1.1f K", (double) rc / 1000.0);
