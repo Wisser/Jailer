@@ -136,7 +136,7 @@ public class DisplayExporter {
 			GraphicsLib.expand(bounds, 10 + (1 /* / display.getScale() */));
 			
 			// Get a buffered image to draw into
-			BufferedImage img = getNewOffscreenBuffer(display, (int) (bounds.getWidth() * display.getScale()), (int) (bounds.getHeight() * display.getScale()));
+			BufferedImage img = getNewOffscreenBuffer(display, Math.max(1, (int) (bounds.getWidth() * display.getScale())), Math.max(1, (int) (bounds.getHeight() * display.getScale())));
 			Graphics2D g = (Graphics2D)img.getGraphics();
 
 			/*

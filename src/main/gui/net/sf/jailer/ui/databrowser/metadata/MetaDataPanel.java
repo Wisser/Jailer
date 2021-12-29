@@ -962,7 +962,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         final ImageIcon finalScaledWarnIcon = getScaledIcon(this, warnIcon, true);
 
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
-        	Pattern htmlRE = Pattern.compile("\s*<\s*html\s*>.*", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+        	Pattern htmlRE = Pattern.compile("\\s*<\\s*html\\s*>.*", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
             Map<MDTable, Boolean> dirtyTables = new HashMap<MDTable, Boolean>();
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,

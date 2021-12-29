@@ -452,6 +452,9 @@ public class GraphicalDataModelView extends JPanel {
 		});
 		display.addControlListener(zoomBoxControl);
 		display.addControlListener(new WheelZoomControl() {
+			{
+				setMinScale(0.05);
+			}
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				resetScrollTimer();

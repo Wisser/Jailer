@@ -40,6 +40,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
 import net.sf.jailer.util.JobManager;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 
@@ -330,8 +331,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			try {
 				// try upsert
 				return upsertRows(table, sqlSelect, true);
-			} catch (SQLException uEx) {
+			} catch (Exception uEx) {
 				Session._log.warn(uEx);
+				LogUtil.warn(uEx);
 				// throw original exception
 				throw e;
 			}
