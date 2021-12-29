@@ -15,10 +15,12 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Frame;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -58,7 +60,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -90,6 +94,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
@@ -482,52 +487,56 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         this.parent = parent;
         this.executionContext = executionContext;
         initComponents();
-
-        addComponentListener(new ComponentListener() {
-			
-        	int width = -1;
-			
+        
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        JPanel p;
+		jLayeredPane1.add(p = new JPanel(new BorderLayout()) {
+        	{
+        		setOpaque(false);
+        	}
 			@Override
-			public void componentShown(ComponentEvent e) {
-				// TODO Auto-generated method stub
-				
+			public void paint(Graphics g) {
+				super.paint(g);
+				if (g instanceof Graphics2D) {
+					paintRowCounters((Graphics2D) g, getBounds());
+				}
 			}
-			
+        	
+        }, gridBagConstraints);
+		jLayeredPane1.setLayer(p, javax.swing.JLayeredPane.POPUP_LAYER);
+        addComponentListener(new ComponentListener() {
+        	int width = -1;
 			@Override
 			public void componentResized(ComponentEvent e) {
 				if (getWidth() != width) {
 					width = getWidth();
-					DefaultTreeModel m = (DefaultTreeModel) metaDataTree.getModel();
-					TreeNode root2 = (TreeNode) m.getRoot();
-					trav(m, root2);
+					updateRowCounters();
 				}
 			}
-			
-			private void trav(DefaultTreeModel m, TreeNode n) {
-				
-				// TODO 
-				// TODO performance, test mit vielen tabellen (100k+)
-				
-				
-				if (n.isLeaf()) {
-					m.nodeChanged(n);
-				}
-				Enumeration<? extends TreeNode> e = n.children();
-				while (e != null && e.hasMoreElements()) {
-					trav(m, e.nextElement());
-				}
+			@Override
+			public void componentShown(ComponentEvent e) {
 			}
-
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
-			
 			@Override
 			public void componentHidden(ComponentEvent e) {
-				// TODO Auto-generated method stub
-				
+			}
+		});
+        
+        metaDataTree.addTreeExpansionListener(new TreeExpansionListener() {
+			@Override
+			public void treeExpanded(TreeExpansionEvent event) {
+				updateRowCounters();
+			}
+			@Override
+			public void treeCollapsed(TreeExpansionEvent event) {
+				updateRowCounters();
 			}
 		});
         
@@ -662,7 +671,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
         tablesComboBox.grabFocus();
 
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -963,7 +972,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 boolean isSynonym = false;
                 Boolean isDirty = false;
                 ImageIcon image = null;
-        		Long estRowCount = null;
         		boolean hugeSchema = false;
                 if (value instanceof DefaultMutableTreeNode) {
                     Object uo = ((DefaultMutableTreeNode) value).getUserObject();
@@ -1006,9 +1014,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                         isView = ((MDTable) uo).isView();
                         isSynonym = ((MDTable) uo).isSynonym();
-                        if (!isView) {
-                        	estRowCount = ((MDTable) uo).getEstimatedRowCount();
-                        }
                         hugeSchema = ((MDTable) uo).getSchema().isLoaded() && ((MDTable) uo).getSchema().getTables().size() > 10000;
                         if (isView) {
                         	image = viewIcon;
@@ -1025,28 +1030,11 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 Component comp = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             	if (comp instanceof JLabel) {
             		String text = ((JLabel) comp).getText();
-            		Color fg = ((JLabel) comp).getForeground();
-            		String estRowCountFormatted;
-            		if (estRowCount == null) {
-            			if (hugeSchema) {
-            				((JLabel) comp).setText(text + "                                ");
-            			} else {
-            				((JLabel) comp).setText("<html>" + UIUtil.toHTMLFragment(text, 100) + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</html>");
-            			}
+            		if (hugeSchema) {
+            			((JLabel) comp).setText(text + "                                ");
             		} else {
-                 		if (estRowCount >= 1000000) {
-                 			estRowCountFormatted = String.format("%,1.1f M", (double) estRowCount / 1000000.0);
-                 		} else if (estRowCount >= 1000) {
-                 			estRowCountFormatted = String.format("%,1.1f K", (double) estRowCount / 1000.0);
-                 		} else {
-                 			estRowCountFormatted = estRowCount.toString();
-                 		}
-                 		if (fg == null || fg.getRed() + fg.getGreen() + fg.getBlue() < 255 * 3 / 2) {
-                 			((JLabel) comp).setText("<html>" + UIUtil.toHTMLFragment(text, 100) + "&nbsp;&nbsp;<font color=\"#bbbbff\">~</font><font color=\"#3333ff\">" + estRowCountFormatted + "</font><font color=\"#7777ff\"></font>");
-                 		} else {
-                 			((JLabel) comp).setText("<html>" + UIUtil.toHTMLFragment(text, 100) + "&nbsp;&nbsp;<font color=\"#aaaaff\">~</font><font color=\"#eeeeff\">" + estRowCountFormatted + "</font><font color=\"#aaaaff\"></font>");
-                 		}
-                 	}
+            			((JLabel) comp).setText("<html>" + UIUtil.toHTMLFragment(text, 100) + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</html>");
+            		}
             	}
                 if (isJailerTable && !sel) {
                 	if (comp instanceof JLabel) {
@@ -1088,44 +1076,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					setTextSelectionColor(tree.hasFocus()? Color.white : null);
 				}
                 
-                // TODO
-                JPanel p = new JPanel(new GridBagLayout()) {
-                	public void setSize(Dimension s) {
-                		super.setSize(s);
-                	}
-//                	public Dimension getMinimumSize() {
-//                		return new Dimension( MetaDataPanel.this.getWidth(), comp.getPreferredSize().height);
-//                	}
-//                	public Dimension getMaximumSize() {
-//                		return new Dimension(MetaDataPanel.this.getWidth() , comp.getPreferredSize().height);
-//                	}
-                	public Dimension getPreferredSize() {
-                		return new Dimension( MetaDataPanel.this.getWidth() , comp.getPreferredSize().height);
-                	}
-                };
-                
-                p.setOpaque(false);
-                
-                GridBagConstraints gridBagConstraints = new GridBagConstraints();
-                gridBagConstraints.gridx = 1;
-                gridBagConstraints.gridy = 1;
-                
-                p.add(comp, gridBagConstraints);
-                gridBagConstraints = new GridBagConstraints();
-                gridBagConstraints.gridx = 2;
-                gridBagConstraints.gridy = 1;
-                gridBagConstraints.weightx = 1;
-                p.add(new JLabel("xy"), gridBagConstraints);
-                gridBagConstraints = new GridBagConstraints();
-                gridBagConstraints.gridx = 3;
-                gridBagConstraints.gridy = 1;
-                p.add(new JLabel("z"), gridBagConstraints);
-                p.setSize(new Dimension(300 /* MetaDataPanel.this.getWidth() */, comp.getPreferredSize().height));
-                
-                
-                return p;
-                
-//                return comp;
+                return comp;
             }
         };
         renderer.setOpenIcon(null);
@@ -1203,7 +1154,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         }
     }
 
-    private Map<String, MDTable> tablesComboboxMDTablePerName = new HashMap<String, MDTable>();
+	private Map<String, MDTable> tablesComboboxMDTablePerName = new HashMap<String, MDTable>();
 
     private void updateTablesCombobox(Set<MDSchema> selectedSchemas) {
         Set<String> tableSet = new HashSet<String>();
@@ -1381,6 +1332,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             if (path != null) {
                 selectSchema(mdTable.getSchema(), false);
                 metaDataTree.expandPath(path);
+                UIUtil.invokeLater(12,() -> updateRowCounters());
                 metaDataTree.getSelectionModel().setSelectionPath(path);
                 scrollToNode(path);
             } else {
@@ -1506,6 +1458,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         metaDataTree.setModel(treeModel);
 		metaDataTree.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
         selectSchema(metaDataSource.getDefaultSchema());
+        UIUtil.invokeLater(12, () -> {
+        	updateRowCounters();
+            jScrollPane1.repaint();	
+        });
     }
 
 	public DefaultMutableTreeNode createCategoryNode(final DefaultMutableTreeNode schemaChild, final Iterable<Object> finalLeafs,
@@ -1592,6 +1548,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             if (node != null) {
             	final TreePath path = new TreePath(node.getPath());
                 metaDataTree.expandPath(path);
+                UIUtil.invokeLater(12,() -> updateRowCounters());
                 metaDataTree.getSelectionModel().setSelectionPath(path);
                 if (scrollToNode) {
                 	UIUtil.invokeLater(new Runnable() {
@@ -1619,12 +1576,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         cancelButton = new javax.swing.JButton();
         splitPane = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        metaDataTree = new javax.swing.JTree();
         refreshButton1 = new javax.swing.JButton();
         jToolBar1 = new javax.swing.JToolBar();
         jToolBar2 = new javax.swing.JToolBar();
         refreshButton = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        metaDataTree = new javax.swing.JTree();
         jPanel2 = new javax.swing.JPanel();
         outlineScrollPane = new javax.swing.JScrollPane();
         outlineList = new javax.swing.JList();
@@ -1657,17 +1616,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         splitPane.setOneTouchExpandable(true);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        jScrollPane1.setViewportView(metaDataTree);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jScrollPane1, gridBagConstraints);
 
         refreshButton1.setText("Select");
         refreshButton1.setToolTipText("Choose the selecetd table in the tables tree");
@@ -1714,6 +1662,38 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jToolBar2, gridBagConstraints);
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jLayeredPane1.setLayout(new java.awt.GridBagLayout());
+
+        jScrollPane1.setViewportView(metaDataTree);
+
+        jLayeredPane1.setLayer(jScrollPane1, javax.swing.JLayeredPane.PALETTE_LAYER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jLayeredPane1.add(jScrollPane1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel3.add(jLayeredPane1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jPanel3, gridBagConstraints);
 
         splitPane.setLeftComponent(jPanel1);
 
@@ -1985,8 +1965,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToolBar jToolBar2;
@@ -2046,8 +2028,65 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			});
     	}
     }
+    
+    private NavigableMap<Integer, Long> rowCounters = new TreeMap<Integer, Long>();
+	
+    private void paintRowCounters(Graphics2D g, Rectangle bounds) {
+		Rectangle visibleRect = metaDataTree.getVisibleRect();
+		g.clipRect(1, 1, visibleRect.width + 1, visibleRect.height);
+		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, rc) -> {
+			String value;
+			if (rc >= 1000000) {
+				value = String.format("%,1.1f M", (double) rc / 1000000.0);
+     		} else if (rc >= 1000) {
+     			value = String.format("%,1.1f K", (double) rc / 1000.0);
+     		} else {
+     			value = rc.toString();
+     		}
+     		FontMetrics fontMetrics = getFontMetrics(getFont());
+			int x = visibleRect.width - fontMetrics.stringWidth(value) - 8;
+			int y = ry - visibleRect.y + fontMetrics.getHeight() - 1;
+			g.setColor(new Color(255, 255, 255));
+			g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 16, fontMetrics.getHeight() + 2);
+			g.setColor(new Color(0, 0, 255));
+			g.drawString(value, x, y);
+		});
+	}
 
-    static ImageIcon warnIcon;
+    private void updateRowCounters() {
+		DefaultTreeModel m = (DefaultTreeModel) metaDataTree.getModel();
+		TreeNode root2 = (TreeNode) m.getRoot();
+		List<TreeNode> path = new ArrayList<TreeNode>();
+		path.add(root2);
+		rowCounters = new TreeMap<Integer, Long>();
+		trav(m, root2, new TreePath(root2), rowCounters);
+		rowCounters.size();
+	}
+	
+	private void trav(DefaultTreeModel m, TreeNode n, TreePath path, Map<Integer, Long> rowCounters) {
+		if (n.isLeaf()) {
+			Rectangle b = metaDataTree.getPathBounds(path);
+			if (b != null) {
+				Object uo = ((DefaultMutableTreeNode) n).getUserObject();
+				if (uo instanceof MDTable) {
+					boolean isView = ((MDTable) uo).isView();
+                    if (!isView) {
+                    	Long estRowCount = ((MDTable) uo).getEstimatedRowCount();
+                    	if (estRowCount != null) {
+    						rowCounters.put(b.y, estRowCount);
+                    	}
+                    }
+				}
+			}
+		}
+		Enumeration<? extends TreeNode> e = n.children();
+		while (e != null && e.hasMoreElements()) {
+			TreeNode nextElement = e.nextElement();
+			trav(m, nextElement, path.pathByAddingChild(nextElement), rowCounters);
+		}
+	}
+	
+	static ImageIcon warnIcon;
     static ImageIcon viewIcon;
     static ImageIcon viewsIcon;
     static ImageIcon tableIcon;

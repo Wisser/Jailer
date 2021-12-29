@@ -218,7 +218,7 @@ public class MDSchema extends MDObject {
 			if (estimatedRowCounts == null) {
 				estimatedRowCounts = readEstimatedRowCounts();
 				
-				if (estimatedRowCounts.size() > 10000) {
+				if (estimatedRowCounts.size() > 20000) {
 					// rendering many ERCs is too expensive
 					estimatedRowCounts.clear();
 				}
