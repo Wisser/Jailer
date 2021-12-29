@@ -26,7 +26,6 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
@@ -68,6 +67,7 @@ import java.util.Vector;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -962,6 +962,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         final ImageIcon finalScaledWarnIcon = getScaledIcon(this, warnIcon, true);
 
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
+        	Pattern htmlRE = Pattern.compile("\s*<\s*html\s*>.*", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
             Map<MDTable, Boolean> dirtyTables = new HashMap<MDTable, Boolean>();
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
@@ -972,7 +973,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 boolean isSynonym = false;
                 Boolean isDirty = false;
                 ImageIcon image = null;
-        		boolean hugeSchema = false;
                 if (value instanceof DefaultMutableTreeNode) {
                     Object uo = ((DefaultMutableTreeNode) value).getUserObject();
                     if (uo instanceof JLabel) {
@@ -1014,7 +1014,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                         }
                         isView = ((MDTable) uo).isView();
                         isSynonym = ((MDTable) uo).isSynonym();
-                        hugeSchema = ((MDTable) uo).getSchema().isLoaded() && ((MDTable) uo).getSchema().getTables().size() > 10000;
                         if (isView) {
                         	image = viewIcon;
                         } else if (isSynonym) {
@@ -1030,9 +1029,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 Component comp = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
             	if (comp instanceof JLabel) {
             		String text = ((JLabel) comp).getText();
-            		if (hugeSchema) {
-            			((JLabel) comp).setText(text + "                                ");
-            		} else {
+            		if (htmlRE.matcher(text).matches()) {
             			((JLabel) comp).setText("<html>" + UIUtil.toHTMLFragment(text, 100) + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</html>");
             		}
             	}
@@ -2029,29 +2026,32 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     	}
     }
     
-    private NavigableMap<Integer, Long> rowCounters = new TreeMap<Integer, Long>();
+    private NavigableMap<Integer, MDTable> rowCounters = new TreeMap<Integer, MDTable>();
 	
     private void paintRowCounters(Graphics2D g, Rectangle bounds) {
 		Rectangle visibleRect = metaDataTree.getVisibleRect();
 		g.clipRect(1, 1, visibleRect.width + 1, visibleRect.height);
-		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, rc) -> {
-			String value;
-			if (rc == 0) {
-				value = " ";
-			} else if (rc >= 1000000) {
-				value = String.format("%,1.1f M", (double) rc / 1000000.0);
-     		} else if (rc >= 1000) {
-     			value = String.format("%,1.1f K", (double) rc / 1000.0);
-     		} else {
-     			value = rc.toString();
-     		}
-     		FontMetrics fontMetrics = getFontMetrics(getFont());
-			int x = visibleRect.width - fontMetrics.stringWidth(value) - 8;
-			int y = ry - visibleRect.y + fontMetrics.getHeight() - 1;
-			g.setColor(new Color(255, 255, 255));
-			g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 16, fontMetrics.getHeight() + 2);
-			g.setColor(new Color(0, 0, 255));
-			g.drawString(value, x, y);
+		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, mdTable) -> {
+			Long rc = mdTable.getEstimatedRowCount();
+			if (rc != null) {
+				String value;
+				if (rc == 0) {
+					value = " ";
+				} else if (rc >= 1000000) {
+					value = String.format("%,1.1f M", (double) rc / 1000000.0);
+	     		} else if (rc >= 1000) {
+	     			value = String.format("%,1.1f K", (double) rc / 1000.0);
+	     		} else {
+	     			value = rc.toString();
+	     		}
+	     		FontMetrics fontMetrics = getFontMetrics(getFont());
+				int x = visibleRect.width - fontMetrics.stringWidth(value) - 8;
+				int y = ry - visibleRect.y + fontMetrics.getHeight() - 1;
+				g.setColor(new Color(255, 255, 255));
+				g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 16, fontMetrics.getHeight() + 2);
+				g.setColor(new Color(0, 0, 255));
+				g.drawString(value, x, y);
+			}
 		});
 	}
 
@@ -2060,12 +2060,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		TreeNode root2 = (TreeNode) m.getRoot();
 		List<TreeNode> path = new ArrayList<TreeNode>();
 		path.add(root2);
-		rowCounters = new TreeMap<Integer, Long>();
+		rowCounters = new TreeMap<Integer, MDTable>();
 		trav(m, root2, new TreePath(root2), rowCounters);
 		rowCounters.size();
 	}
 	
-	private void trav(DefaultTreeModel m, TreeNode n, TreePath path, Map<Integer, Long> rowCounters) {
+	private void trav(DefaultTreeModel m, TreeNode n, TreePath path, Map<Integer, MDTable> rowCounters) {
 		if (n.isLeaf()) {
 			Rectangle b = metaDataTree.getPathBounds(path);
 			if (b != null) {
@@ -2073,12 +2073,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				if (uo instanceof MDTable) {
 					boolean isView = ((MDTable) uo).isView();
                     if (!isView) {
-                    	Long estRowCount = ((MDTable) uo).getEstimatedRowCount();
-                    	if (estRowCount != null) {
-    						rowCounters.put(b.y, estRowCount);
-                    	}
+                    	rowCounters.put(b.y, (MDTable) uo);
                     }
-				}
+        		}
 			}
 		}
 		Enumeration<? extends TreeNode> e = n.children();

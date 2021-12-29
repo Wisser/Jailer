@@ -217,11 +217,6 @@ public class MDSchema extends MDObject {
 		synchronized (estimatedRowCountsLock) {
 			if (estimatedRowCounts == null) {
 				estimatedRowCounts = readEstimatedRowCounts();
-				
-				if (estimatedRowCounts.size() > 20000) {
-					// rendering many ERCs is too expensive
-					estimatedRowCounts.clear();
-				}
 			}
 			UIUtil.invokeLater(new Runnable() {
 				@Override
