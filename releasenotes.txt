@@ -1,3 +1,7 @@
+12.0
+  - Comprehensive redesign and modernization of the entire user interface. 
+  - "FlatLaf" Look&Feel is now the default. https://github.com/JFormDesigner/FlatLaf
+
 11.2.7
   - Fix for "Lack of navigation arrows #74".
     https://github.com/Wisser/Jailer/issues/74
