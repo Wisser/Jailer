@@ -1922,7 +1922,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void onExit() {
 		if (extractionModelEditor.needsSave) {
 			if ((getExtendedState() & JFrame.ICONIFIED) != 0) {
-				setExtendedState(JFrame.NORMAL);
+				setExtendedState(getExtendedState() & ~JFrame.ICONIFIED);
 			}
 			Object[] options = { "Yes", "No" };
 			if (0 == JOptionPane.showOptionDialog(
