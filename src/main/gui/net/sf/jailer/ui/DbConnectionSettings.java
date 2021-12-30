@@ -1,6 +1,6 @@
 /*
 /*
- * Copyright 2007 - 2021 Ralf Wisser.
+ * Copyright 2007 - 2022 Ralf Wisser.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
