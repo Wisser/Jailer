@@ -322,6 +322,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		boolean saveNeedsSave = needsSave;
 		initComponents();
 
+		assocStatsLabel.setText("");
+		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -1395,6 +1397,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel14 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tree = new javax.swing.JTree();
+        assocStatsLabel = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         xmlMappingPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -1811,7 +1814,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jPanel14.setLayout(new java.awt.BorderLayout());
+        jPanel14.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setAutoscrolls(true);
 
@@ -1830,7 +1833,21 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         });
         jScrollPane1.setViewportView(tree);
 
-        jPanel14.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel14.add(jScrollPane1, gridBagConstraints);
+
+        assocStatsLabel.setText("jLabel8");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
+        jPanel14.add(assocStatsLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2577,6 +2594,31 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (extractionModelFrame.hasFocus()) {
 			tree.grabFocus();
 		}
+		
+		updateAssocStats();
+	}
+
+	private void updateAssocStats() {
+		int total = 0;
+		int restricted = 0;
+		int ignored = 0;
+		
+		for (Table table: getCurrentSubjectClosure()) {
+			for (Association association: table.associations) {
+				++total;
+				if (association.isIgnored()) {
+					++ignored;
+				} else if (association.isRestricted()) {
+					++restricted;
+				}
+			}
+		}
+		String iCol = "<font color=\"#0000B0\">";
+		String rCol = "<font color=\"#006000\">";
+		String ef = "</font>";
+//		assocStatsLabel.setForeground(Color.gray);
+		assocStatsLabel.setText("<html>" + iCol + ignored + ef + (restricted != 0? " + " + rCol + restricted + ef : "") + " / " + total +"<html>");
+		assocStatsLabel.setToolTipText("<html>" + iCol + ignored + ef +" disabled and " + rCol + restricted + ef +" restricted associations out of a total of " + total +" associations in the closure.<html>");
 	}
 
 	public void removeRestrictions(Collection<Association> associations) {
@@ -2822,6 +2864,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		rootTable.setModel(getTableListModel());
 		rootTable.setSelectedItem(null);
 		rootTable.setSelectedItem(subjectTable.getSelectedItem());
+		updateAssocStats();
 	}
 
 	private void changeSubjectLimitDefinition(SubjectLimitDefinition newSubjectLimitDefinition) {
@@ -3818,6 +3861,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JButton activateDesictionPendingButton;
     private javax.swing.JButton additionalSubjectsButton;
     private JComboBox2 aggregationCombobox;
+    private javax.swing.JLabel assocStatsLabel;
     private javax.swing.JLabel associatedWith;
     javax.swing.JTextField condition;
     public javax.swing.JLabel connectivityState;
