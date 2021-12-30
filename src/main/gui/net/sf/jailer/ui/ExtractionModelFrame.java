@@ -1921,12 +1921,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	private void onExit() {
 		if (extractionModelEditor.needsSave) {
-			if (0 == JOptionPane.showConfirmDialog(
+			if ((getExtendedState() & JFrame.ICONIFIED) != 0) {
+				setExtendedState(JFrame.NORMAL);
+			}
+			Object[] options = { "Yes", "No" };
+			if (0 == JOptionPane.showOptionDialog(
 					this,
 					"Close without saving?",
-					"",
-					JOptionPane.YES_NO_OPTION,
-					JOptionPane.QUESTION_MESSAGE)) {
+					"Closing",
+					JOptionPane.YES_NO_OPTION, 
+					JOptionPane.WARNING_MESSAGE, 
+					null, options, options[1])) {
 				storeLastSession();
 				dispose();
 				UIUtil.checkTermination();
