@@ -3598,6 +3598,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 	
+	// TODO
+	// TODO ? Tab.Zugeh.Anzeige in ResultTab: auch wenn exakt 1 Tab.Column involviert? What if Subquery?
+	
     // TODO StringSearch component for historie (and than inc hist size a lot)
     
     // TODO automatically generated SQL statements from Desktop like:

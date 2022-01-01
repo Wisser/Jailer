@@ -27,8 +27,9 @@ https://user-images.githubusercontent.com/861721/142761281-299bddc4-eea7-4f26-8c
 
 ## News
 
+ - 2022-01-01    Comprehensive redesign and modernization of the entire user interface. New Look & Feel [FlatLaf](https://github.com/JFormDesigner/FlatLaf). 
  - 2021-02-04    Cycles in parent-child relationships will be detected and broken. Thus, such data can be exported by deferring the insertion of nullable foreign keys.
- - 2020-01-01    The Jailer engine is published in Maven repository. https://mvnrepository.com/artifact/io.github.wisser/jailer-engine
+ - 2020-02-04    The Jailer engine is published in Maven repository. https://mvnrepository.com/artifact/io.github.wisser/jailer-engine
  - 2019-02-01    The new "Model Migration Tool" allows you to easily find and edit the newly added associations if the data model has been extended after the last change to this extraction model.
  - 2018-04-26    The new feature "Analyze SQL" analyzes SQL statements and proposes association definitions. This allows to reverse-engineer the data model based on existing SQL queries.
  - 2018-03-06    SQL Console with code completion, syntax highlighting and database metadata visualization.
