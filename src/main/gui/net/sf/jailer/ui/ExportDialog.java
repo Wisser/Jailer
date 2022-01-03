@@ -2940,4 +2940,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
 	}
 
+	// TODO
+	// TODO don't allow relative file path in ".multiuser" mode
+	
 }
