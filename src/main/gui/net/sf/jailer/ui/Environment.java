@@ -93,6 +93,7 @@ public class Environment {
 		}
 
 		initUI();
+		
 		try {
 			File app;
 			// app = new File("lib", "app"); // Linux
@@ -114,6 +115,8 @@ public class Environment {
 		} catch (Throwable t) {
 			// ignore
 		}
+
+		Throwable toBeLogged = null;
 
 		if (new File(".singleuser").exists() // legacy
 				|| new File(".multiuser").exists()
@@ -157,7 +160,43 @@ public class Environment {
 					}
 				}
 
-				configuration.setTempFileFolder(newFile("tmp").getPath());
+				try {
+					Path tempFileFolder = Files.createTempDirectory("jailer");
+					configuration.setTempFileFolder(tempFileFolder.toString());
+					
+					Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								Files.walkFileTree(tempFileFolder, new SimpleFileVisitor<Path>() {
+									@Override
+									public FileVisitResult visitFile(Path file,
+											@SuppressWarnings("unused") BasicFileAttributes attrs) throws IOException {
+										Files.delete(file);
+										return FileVisitResult.CONTINUE;
+									}
+
+									@Override
+									public FileVisitResult postVisitDirectory(Path dir, IOException e)
+											throws IOException {
+										if (e == null) {
+											Files.delete(dir);
+											return FileVisitResult.CONTINUE;
+										}
+										// directory iteration failed
+										throw e;
+									}
+								});
+							} catch (IOException e) {
+								throw new RuntimeException("Failed to delete " + tempFileFolder, e);
+							}
+						}
+					}));
+				} catch (Throwable t) {
+					toBeLogged = t;
+					configuration.setTempFileFolder(newFile("tmp").getPath());
+				}
+				
 				HtmlDataModelRenderer renderer = configuration.getRenderer();
 				if (renderer != null) {
 					renderer.setOutputFolder(newFile(renderer.getOutputFolder()).getAbsolutePath());
@@ -196,6 +235,9 @@ public class Environment {
 		        }
 			}
 		});
+		if (toBeLogged != null) {
+			LogUtil.warn(toBeLogged);
+		}
 
 		return args;
 	}

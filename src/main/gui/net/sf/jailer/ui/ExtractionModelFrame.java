@@ -1284,7 +1284,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		String ts = new SimpleDateFormat("HH-mm-ss-SSS", Locale.ENGLISH).format(new Date());
 		File newFile;
 		for (int i = 1; ; ++i) {
-			file = Environment.newFile("tmp").getPath();
+			file = Configuration.getInstance().getTempFileFolder();
 			newFile = new File(file);
 			newFile.mkdirs();
 			file += File.separator + "em" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".jm";
