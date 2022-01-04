@@ -116,7 +116,7 @@ public class AssociationEditor extends javax.swing.JDialog {
 		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 1.0;
-		getContentPane().add(jScrollPane, gridBagConstraints);
+		mainPanel.add(jScrollPane, gridBagConstraints);
 
 		ItemListener itemListener = new ItemListener() {
 			@Override
@@ -145,6 +145,7 @@ public class AssociationEditor extends javax.swing.JDialog {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        mainPanel = new javax.swing.JPanel();
         source = new JComboBox2();
         type = new JComboBox2();
         destination = new JComboBox2();
@@ -165,6 +166,8 @@ public class AssociationEditor extends javax.swing.JDialog {
         setTitle("Association");
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
+        mainPanel.setLayout(new java.awt.GridBagLayout());
+
         source.setMaximumRowCount(20);
         source.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -172,7 +175,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
-        getContentPane().add(source, gridBagConstraints);
+        mainPanel.add(source, gridBagConstraints);
 
         type.setModel(createTypeModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -180,7 +183,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
-        getContentPane().add(type, gridBagConstraints);
+        mainPanel.add(type, gridBagConstraints);
 
         destination.setMaximumRowCount(20);
         destination.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -189,50 +192,50 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
-        getContentPane().add(destination, gridBagConstraints);
+        mainPanel.add(destination, gridBagConstraints);
 
         cardinality.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "", "1:n", "n:1", "1:1", "n:m" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
-        getContentPane().add(cardinality, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
+        mainPanel.add(cardinality, gridBagConstraints);
 
         jLabel1.setText(" Name ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        getContentPane().add(jLabel1, gridBagConstraints);
+        mainPanel.add(jLabel1, gridBagConstraints);
 
         jLabel2.setText(" Join condition* ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        getContentPane().add(jLabel2, gridBagConstraints);
+        mainPanel.add(jLabel2, gridBagConstraints);
 
         jLabel6.setText(" From A");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        getContentPane().add(jLabel6, gridBagConstraints);
+        mainPanel.add(jLabel6, gridBagConstraints);
 
         jLabel7.setText(" To B");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        getContentPane().add(jLabel7, gridBagConstraints);
+        mainPanel.add(jLabel7, gridBagConstraints);
 
         jLabel8.setText(" Type");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        getContentPane().add(jLabel8, gridBagConstraints);
+        mainPanel.add(jLabel8, gridBagConstraints);
 
         nameField.setText("jTextField1");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -241,14 +244,15 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-        getContentPane().add(nameField, gridBagConstraints);
+        mainPanel.add(nameField, gridBagConstraints);
 
         jLabel9.setText(" Cardinality ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        getContentPane().add(jLabel9, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        mainPanel.add(jLabel9, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -293,6 +297,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel1.add(cancelButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -301,7 +306,14 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
-        getContentPane().add(jPanel1, gridBagConstraints);
+        mainPanel.add(jPanel1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 2, 2);
+        getContentPane().add(mainPanel, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -467,6 +479,7 @@ public class AssociationEditor extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel mainPanel;
     private javax.swing.JTextField nameField;
     private javax.swing.JButton okButton;
     private JComboBox2 source;

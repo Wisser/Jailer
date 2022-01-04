@@ -330,10 +330,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
             }
         });
         columnName.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 columnNameInputMethodTextChanged(evt);
-            }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         columnName.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -386,10 +386,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
             }
         });
         columnType.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 columnTypeInputMethodTextChanged(evt);
-            }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         columnType.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -415,10 +415,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
             }
         });
         columnLength.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 columnLengthInputMethodTextChanged(evt);
-            }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         columnLength.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -444,10 +444,10 @@ public abstract class TableEditor extends javax.swing.JDialog {
             }
         });
         columnPrec.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 columnPrecInputMethodTextChanged(evt);
-            }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
         columnPrec.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -595,7 +595,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 40;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         getContentPane().add(jPanel1, gridBagConstraints);
 
         jLabel6.setText(" ");

@@ -701,7 +701,7 @@ public class DataModelEditor extends javax.swing.JDialog {
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tables"));
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2));
+        jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 0));
 
         newTable.setText("Add");
         newTable.addActionListener(new java.awt.event.ActionListener() {
@@ -752,6 +752,7 @@ public class DataModelEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         jPanel2.add(jScrollPane3, gridBagConstraints);
 
         jSplitPane1.setLeftComponent(jPanel2);
@@ -759,7 +760,7 @@ public class DataModelEditor extends javax.swing.JDialog {
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Associations"));
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 2));
+        jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 0));
 
         newAssociation.setText("Add");
         newAssociation.addActionListener(new java.awt.event.ActionListener() {
@@ -811,9 +812,10 @@ public class DataModelEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         jPanel3.add(jScrollPane1, gridBagConstraints);
 
-        jPanel6.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 1, 2));
+        jPanel6.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 0));
 
         okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
