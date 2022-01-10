@@ -53,7 +53,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -64,7 +63,6 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
-import javax.swing.border.BevelBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
