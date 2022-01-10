@@ -1812,7 +1812,7 @@ public class UIUtil {
 			} catch (Throwable t) {
 				if (!errorSeen && showError) {
 					errorSeen = true;
-					invokeLater(8, () -> showException(null, "Error", new IOException("unable to load image " + name + ": " + t.getMessage(), t), EXCEPTION_CONTEXT_MB_USER_ERROR));
+					invokeLater(8, () -> showException(null, "Error", new IOException("unable to load image " + name + ": " + t.getMessage(), t)));
 				}
 				result = null;
 			}
@@ -1864,7 +1864,7 @@ public class UIUtil {
 			jailerLogo = UIUtil.scaleIcon(jailerLogo, 1.0 / 3.0);
 			jailerLogo16 = UIUtil.scaleIcon(jailerLogo16, 16, 16);
 		} catch (Throwable t1) {
-			UIUtil.invokeLater(8, () -> UIUtil.showException(null, "Error", new IOException("unable to load image " + name + ": " + t1.getMessage(), t1), UIUtil.EXCEPTION_CONTEXT_MB_USER_ERROR));
+			UIUtil.invokeLater(8, () -> UIUtil.showException(null, "Error", new IOException("unable to load image " + name + ": " + t1.getMessage(), t1)));
 			jailerLogo = null;
 		}
     }

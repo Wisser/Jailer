@@ -269,15 +269,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		if (table == null) {
 	    	setVisible(false);
 		} else {
-			inlineViewStyle = (InlineViewStyle) session.getSessionProperty(getClass(), "inlineViewStyle");
+			inlineViewStyle = session.getInlineViewStyle();
 			if (inlineViewStyle == null) {
-				try {
-					inlineViewStyle = InlineViewStyle.forSession(session);
-					session.setSessionProperty(getClass(), "inlineViewStyle", inlineViewStyle);
-				} catch (Exception e) {
-					setVisible(false);
-					return;
-				}
+				setVisible(false);
+				return;
 			}
 			List<String> config;
 			if (initialColumn >= 0) {

@@ -1414,19 +1414,22 @@ public class Session {
 
 	private InlineViewStyle inlineViewStyle;
 	private boolean noInlineViewStyleFound = false;
+	private final Object IVS_LOCK = new Object();
 
 	/**
 	 * Returns a suitable {@link InlineViewStyle} for this session.
 	 *
 	 * @return a suitable {@link InlineViewStyle} for this session or <code>null</code>, if no style is found
 	 */
-	public synchronized InlineViewStyle getInlineViewStyle() {
-		if (inlineViewStyle == null && !noInlineViewStyleFound) {
-			try {
-				inlineViewStyle = InlineViewStyle.forSession(this);
-			} catch (Exception e) {
-				// no suitable style found
-				noInlineViewStyleFound = true;
+	public InlineViewStyle getInlineViewStyle() {
+		synchronized (IVS_LOCK) {
+			if (inlineViewStyle == null && !noInlineViewStyleFound) {
+				try {
+					inlineViewStyle = InlineViewStyle.forSession(this);
+				} catch (Exception e) {
+					// no suitable style found
+					noInlineViewStyleFound = true;
+				}
 			}
 		}
 		return inlineViewStyle;

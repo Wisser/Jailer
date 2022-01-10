@@ -45,7 +45,7 @@ public class SessionForUI extends Session {
 	 * @param dataSource the data source
 	 * @param dbms the DBMS
 	 */
-	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, final Window w) throws SQLException {
+	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean initInlineViewStyle, final Window w) throws SQLException {
 		Session.setThreadSharesConnection();
 		final SessionForUI session = new SessionForUI(dataSource, dbms, isolationLevel, shutDownImmediatelly);
 		final AtomicReference<Connection> con = new AtomicReference<Connection>();
@@ -58,6 +58,9 @@ public class SessionForUI extends Session {
 				Session.setThreadSharesConnection();
 				try {
 					Connection newCon = session.connectionFactory.getConnection();
+					if (initInlineViewStyle && !session.cancelled.get()) {
+						session.getInlineViewStyle();
+					}
 					if (session.cancelled.get()) {
 						try {
 							newCon.close();

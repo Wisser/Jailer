@@ -1324,7 +1324,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		BasicDataSource dataSource = UIUtil.createBasicDataSource(this, connection.driverClass, connection.url,
 				connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
 		SessionForUI newSession = SessionForUI.createSession(dataSource, dataSource.dbms,
-				executionContext.getIsolationLevel(), false, this);
+				executionContext.getIsolationLevel(), false, true, this);
 		if (newSession != null) {
 			if (session != null) {
 				try {

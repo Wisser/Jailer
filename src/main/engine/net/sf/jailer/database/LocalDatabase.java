@@ -47,7 +47,7 @@ public class LocalDatabase {
 	 * Creates a local database.
 	 */
 	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws ClassNotFoundException, FileNotFoundException, SQLException {
-		this.databaseFolder = new File(Configuration.getInstance().getTempFileFolder() + File.separator + UUID.randomUUID().toString()).getAbsolutePath();
+		this.databaseFolder = new File(Configuration.getInstance().getTempFileFolder().replace(";", "-") + File.separator + UUID.randomUUID().toString()).getAbsolutePath();
 		new File(databaseFolder).mkdirs();
 		BasicDataSource dataSource;
 		URL[] urlArray;
@@ -60,12 +60,12 @@ public class LocalDatabase {
 		}
 		if (urlException != null) {
 			try {
-				dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, 0, urlArray);
+				dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", new File(databaseFolder, "local").getAbsolutePath()), user, password, 0, urlArray);
 			} catch (Exception e) {
 				throw urlException;
 			}
 		} else {
-			dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, 0, urlArray);
+			dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", new File(databaseFolder, "local").getAbsolutePath()), user, password, 0, urlArray);
 		}
 		session = new Session(dataSource, dataSource.dbms, Connection.TRANSACTION_READ_UNCOMMITTED, null, false, true);
 	}

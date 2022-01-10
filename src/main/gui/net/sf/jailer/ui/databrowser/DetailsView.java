@@ -972,8 +972,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         add(closeButton, gridBagConstraints);
  	}
  
@@ -1008,7 +1008,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		// load images
 		editdetails = UIUtil.readImage("/editdetails.png");
 		pinIcon = UIUtil.readImage("/pin.png");
-        closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.4);
-        closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.4);
+        closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.55);
+        closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.55);
 	}
 }

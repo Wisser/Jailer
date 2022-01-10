@@ -1354,7 +1354,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							theSession.shutDown();
 							theSession = null;
 						}
-			    		Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, this);
+			    		Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), true, false, this);
 
 						final Set<Table> toCheck = new HashSet<Table>();
 						if (session != null) {
@@ -2153,7 +2153,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					theSession.shutDown();
 					theSession = null;
 				}
-	    		Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), false, this);
+	    		Session session = SessionForUI.createSession(dataSource, dataSource.dbms, executionContext.getIsolationLevel(), false, false, this);
 				if (session != null) {
 					try {
 						new ConstraintChecker(this, extractionModelEditor.dataModel, false, session) {
