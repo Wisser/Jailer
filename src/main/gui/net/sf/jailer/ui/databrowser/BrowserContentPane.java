@@ -4407,7 +4407,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				@Override
 				public void init(ResultSet resultSet) throws SQLException {
 					ResultSetMetaData metaData = getMetaData(resultSet);
-					int columnCount = metaData.getColumnCount();
+					int columnCount = Math.max(0, metaData.getColumnCount());
 					if (table instanceof SqlStatementTable) {
 						for (int ci = 1; ci <= columnCount; ++ci) {
 							table.getColumns().add(new Column(metaData.getColumnLabel(ci), metaData.getColumnTypeName(ci), -1, -1));

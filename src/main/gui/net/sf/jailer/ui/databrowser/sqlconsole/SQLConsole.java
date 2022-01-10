@@ -919,7 +919,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, true, sqlColumnExpression, metaDataSource);
 				List<Table> nfResultTypesWOCheck = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, false, sqlColumnExpression, metaDataSource);
 				Result wcbt = WCTypeAnalyser.getType(sqlStatement, metaDataSource, Quoting.getQuoting(session));
-				int columnCount = metaData.getColumnCount();
+				int columnCount = Math.max(0, metaData.getColumnCount());
 				if (wcbt != null && wcbt.table != null && wcbt.table.getColumns().size() != columnCount) {
 					wcbt = null;
 				}
@@ -957,7 +957,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     }
                 }
                 if (resultType != null) {
-                	if (resultType.getColumns().size() > metaData.getColumnCount()) {
+                	if (resultType.getColumns().size() > columnCount) {
                 		// stale meta data
                 		resultType = null;
                 		nfResultTypes = null;
@@ -978,9 +978,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 		}
                 	}
                 }
-                final String columnLabels[] = new String[metaData.getColumnCount()];
-                final String columnLabelsFull[] = new String[metaData.getColumnCount()];
-                final Color columnHeaderColors[] = new Color[metaData.getColumnCount()];
+                final String columnLabels[] = new String[columnCount];
+                final String columnLabelsFull[] = new String[columnCount];
+                final Color columnHeaderColors[] = new Color[columnCount];
                 int a = 10;
                 final Color hBG[] = new Color[] {
                 		new Color(0, 255, 0, a),
@@ -993,7 +993,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	            for (int step = 0; step < 3; ++step) {
 	                Map<Table, Integer> tableOrd = new HashMap<Table, Integer>();
 	                int nextOrd = 0;
-	                for (int i = 0; i < metaData.getColumnCount(); ++i) {
+	                for (int i = 0; i < columnCount; ++i) {
 	                	Table table = tabPerIndex.get(i);
                 		String columnLabel = metaData.getColumnLabel(i + 1).replaceAll("\\s+", " ").replaceFirst("^(.{100})...+$", "$1...");
 						if (columnLabel == null || columnLabel.matches("(?is:\\s*|\\?column\\?|(^\\(*select\\b.*))")) {

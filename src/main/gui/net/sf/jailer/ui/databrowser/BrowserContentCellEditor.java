@@ -519,7 +519,7 @@ public class BrowserContentCellEditor {
 				@Override
 				public void init(ResultSet resultSet) throws SQLException {
 					ResultSetMetaData metaData = getMetaData(resultSet);
-					int columnCount = metaData.getColumnCount();
+					int columnCount = Math.max(0, metaData.getColumnCount());
 					int[] columnTypes = new int[columnCount];
 					String[] columnTypeNames = new String[columnCount];
 					for (int ci = 1; ci <= columnCount; ++ci) {
