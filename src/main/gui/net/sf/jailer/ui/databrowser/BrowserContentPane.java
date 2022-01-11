@@ -2708,7 +2708,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				popup.add(copyTCB);
 				popup.add(new JSeparator());
 			}
-			if (!withSingleRow) {
+			if (!withSingleRow || 
+					BrowserContentPane.this.getQueryBuilderDialog() == null // SQL Console
+					) {
+				if (BrowserContentPane.this.getQueryBuilderDialog() == null // SQL Console
+						) {
+					popup.add(new JSeparator());
+				}
 				popup.add(tableFilter);
 				JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
 				editMode.setEnabled(isTableEditable(table));
@@ -6718,6 +6724,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								int newRow = Math.min(v.rows.size() - 1, currentRow);
 								v.setCurrentRow(newRow, true);
 								v.rowSpinner.setValue(newRow + 1);
+								v.revalidate();
+								d.repaint();
 							}
 							timer.stop();
 						} else {
