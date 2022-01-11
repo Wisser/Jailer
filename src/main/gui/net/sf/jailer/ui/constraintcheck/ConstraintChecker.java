@@ -362,6 +362,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 		    	checksPane.append(checkQuery + ";\n");
 		    	if (numErrors == 1) {
 		    		tabbedPane.setSelectedComponent(problemsTabPanel);
+		    		problemsTable.getSelectionModel().setSelectionInterval(0, 0);
 		    	}
 			}
 		});
@@ -412,6 +413,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         jPanel1.add(jProgressBar1, gridBagConstraints);
 
         progressLabel.setText("0");
@@ -488,7 +490,6 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Details"));
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
         jPanel6.setLayout(new java.awt.GridBagLayout());
@@ -498,6 +499,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(jLabel1, gridBagConstraints);
 
         jLabel2.setText("Parent");
@@ -505,6 +507,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(jLabel2, gridBagConstraints);
 
         jLabel3.setText("Condition");
@@ -512,6 +515,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(jLabel3, gridBagConstraints);
 
         jLabel4.setText("Problem");
@@ -519,9 +523,10 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel6.add(jLabel4, gridBagConstraints);
 
-        viewButton.setText("View");
+        viewButton.setText("Select invalid Rows");
         viewButton.setEnabled(false);
         viewButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -531,7 +536,9 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 0);
         jPanel6.add(viewButton, gridBagConstraints);
 
         childLabel.setForeground(new java.awt.Color(0, 100, 0));

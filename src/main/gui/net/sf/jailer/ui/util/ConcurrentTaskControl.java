@@ -107,7 +107,7 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 4);
         add(cancelButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 

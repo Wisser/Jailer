@@ -118,6 +118,9 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		} else {
 			if (title != null) {
 				setTitle(title);
+				if (title.equals("Invalid Primary Key")) {
+					sendButton.setVisible(false);
+				}
 			}
 		}
 

@@ -1393,6 +1393,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         additionalSubjectsButton = new javax.swing.JButton();
         jPanel17 = new javax.swing.JPanel();
         jPanel18 = new javax.swing.JPanel();
+        jPanel20 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -1538,7 +1539,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(focusPanel);
-        focusPanel.setBounds(0, 0, 291, 33);
+        focusPanel.setBounds(0, 0, 287, 33);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -1809,6 +1810,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel3.add(jPanel18, gridBagConstraints);
+
+        jPanel20.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.weighty = 1.0;
+        jPanel3.add(jPanel20, gridBagConstraints);
 
         editorPanel.add(jPanel3);
 
@@ -2617,7 +2625,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		String rCol = "<font color=\"#006000\">";
 		String ef = "</font>";
 //		assocStatsLabel.setForeground(Color.gray);
-		assocStatsLabel.setText("<html>" + iCol + ignored + ef + (restricted != 0? " + " + rCol + restricted + ef : "") + " / " + total +"<html>");
+		assocStatsLabel.setText("<html><nobr>" + iCol + ignored + ef + (restricted != 0? " + " + rCol + restricted + ef : "") + " / " + total +"<html>");
 		assocStatsLabel.setToolTipText("<html>" + iCol + ignored + ef +" disabled and " + rCol + restricted + ef +" restricted associations out of a total of " + total +" associations in the closure.<html>");
 	}
 
@@ -3898,6 +3906,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel18;
     private javax.swing.JPanel jPanel19;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel20;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;

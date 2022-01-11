@@ -370,10 +370,8 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
         associationsTable = new javax.swing.JTable();
         jPanel2 = new javax.swing.JPanel();
         dockButton = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
         checkAllButton = new javax.swing.JButton();
         uncheckAllButton = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JSeparator();
         clearButton = new javax.swing.JButton();
         infoPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -419,12 +417,6 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         jPanel2.add(dockButton, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        jPanel2.add(jSeparator1, gridBagConstraints);
 
         checkAllButton.setText("Check all");
         checkAllButton.addActionListener(new java.awt.event.ActionListener() {
@@ -438,6 +430,7 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel2.add(checkAllButton, gridBagConstraints);
 
         uncheckAllButton.setText("Uncheck all");
@@ -452,12 +445,8 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel2.add(uncheckAllButton, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        jPanel2.add(jSeparator2, gridBagConstraints);
 
         clearButton.setText("Clear");
         clearButton.addActionListener(new java.awt.event.ActionListener() {
@@ -472,16 +461,17 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel2.add(clearButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel1.add(jPanel2, gridBagConstraints);
 
         infoPanel.setBackground(new java.awt.Color(250, 255, 255));
-        infoPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         infoPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setForeground(new java.awt.Color(0, 0, 62));
@@ -566,8 +556,6 @@ public abstract class PendingDecisionsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
     protected javax.swing.JButton uncheckAllButton;
     // End of variables declaration//GEN-END:variables
 
