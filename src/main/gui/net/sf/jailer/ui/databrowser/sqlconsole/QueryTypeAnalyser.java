@@ -19,10 +19,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -34,6 +36,7 @@ import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.util.JSqlParserUtil;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -41,6 +44,7 @@ import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.ArrayExpression;
+import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
@@ -48,6 +52,7 @@ import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.ExtractExpression;
 import net.sf.jsqlparser.expression.Function;
@@ -100,6 +105,7 @@ import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
@@ -164,7 +170,11 @@ public class QueryTypeAnalyser {
 	public static List<Table> getType(String sqlSelect, boolean checkPKs, Map<Integer, String> columnExpression, final MetaDataSource metaDataSource) {
 		net.sf.jsqlparser.statement.Statement st;
 		try {
-			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlSelect), 2);
+			try {
+				st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlSelect), 2);
+			} catch (Exception e) {
+				return null;
+			}
 			Map<Pair<String, String>, Collection<Pair<String, String>>> equivs = new HashMap<Pair<String,String>, Collection<Pair<String,String>>>();
 			final LinkedHashMap<String, MDTable> fromClause = analyseFromClause(st, equivs, metaDataSource);
 			final List<Pair<String, String>> selectClause = new ArrayList<Pair<String, String>>();
@@ -194,8 +204,11 @@ public class QueryTypeAnalyser {
 										final boolean noSubexpression[] = new boolean[] { true };
 										final Column column[] = new Column[1];
 
-										selectExpressionItem.getExpression().accept(createExpressionVisitor(noSubexpression, column));
+										selectExpressionItem.getExpression().accept(createExpressionVisitor(noSubexpression, column, fromClause));
 
+										if (!noSubexpression[0] && checkPKs) {
+											column[0] = null;
+										}
 										if (column[0] != null) {
 											String alias = null;
 											if (column[0].getTable() != null) {
@@ -205,7 +218,7 @@ public class QueryTypeAnalyser {
 													alias = column[0].getTable().getName();
 												}
 											}
-											if (noSubexpression[0]) {
+											if (noSubexpression[0] || !checkPKs) {
 												Pair<String, String> col;
 												try {
 													col = findColumn(alias, column[0].getColumnName(), fromClause);
@@ -218,7 +231,7 @@ public class QueryTypeAnalyser {
 												if (columnExpression != null) {
 													columnExpression.put(selectClause.size(), asSQL(selectExpressionItem));
 												}
-												selectClause.add(new Pair<String, String>(null, alias));
+												selectClause.add(null);
 											}
 										} else {
 											if (columnExpression != null) {
@@ -307,7 +320,7 @@ public class QueryTypeAnalyser {
 			}
 			return result;
 		} catch (Exception e) {
-			// logger.info("error", e);
+			LogUtil.warn(e);
 		}
 		return null;
 	}
@@ -537,17 +550,58 @@ public class QueryTypeAnalyser {
 		return Quoting.normalizeIdentifier(a).equals(Quoting.normalizeIdentifier(b));
 	}
 
-	private static ExpressionVisitor createExpressionVisitor(final boolean[] noSubexpression, final Column[] column) {
+	private static ExpressionVisitor createExpressionVisitor(final boolean[] noSubexpression, final Column[] column, LinkedHashMap<String, MDTable> fromClause) {
 		return new ExpressionVisitor() {
-
+			Set<String> cols = new HashSet<String>();
+			
 			@Override
 			public void visit(Column tableColumn) {
-				column[0] = tableColumn;
+				String alias = null;
+				if (tableColumn.getTable() != null) {
+					if (tableColumn.getTable().getAlias() != null) {
+						alias = tableColumn.getTable().getAlias().getName();
+					} else {
+						alias = tableColumn.getTable().getName();
+					}
+				}
+				Pair<String, String> col;
+				try {
+					col = findColumn(alias, tableColumn.getColumnName(), fromClause);
+				} catch (SQLException e) {
+					logger.info("error", e);
+					throw new QueryTooComplexException();
+				}
+				if (col != null) {
+					cols.add(col.a);
+					column[0] = cols.size() == 1? tableColumn : null;
+				}
 			}
 
+			private void visitSubExpression(Expression expression) {
+				if (expression != null) {
+					expression.accept(this);
+				}
+			}
+			private void visitSubExpression(ExpressionList expressionList) {
+				if (expressionList != null && expressionList.getExpressions() != null) {
+					expressionList.getExpressions().forEach(e -> e.accept(this));
+				}
+			}
+
+			private void visitBinaryExpression(BinaryExpression binaryExpression) {
+				visitSubExpression(binaryExpression.getLeftExpression());
+				visitSubExpression(binaryExpression.getRightExpression());
+			}
+
+			private void rejectColumn() {
+				cols.add("?");
+				column[0] = null;
+			}
+			
 			@Override
 			public void visit(NotExpression aThis) {
 				noSubexpression[0] = false;
+				visitSubExpression(aThis.getExpression());
 			}
 
 			@Override
@@ -573,6 +627,7 @@ public class QueryTypeAnalyser {
 			@Override
 			public void visit(MySQLGroupConcat groupConcat) {
 				noSubexpression[0] = false;
+				visitSubExpression(groupConcat.getExpressionList());
 			}
 
 			@Override
@@ -593,21 +648,26 @@ public class QueryTypeAnalyser {
 			@Override
 			public void visit(RegExpMySQLOperator regExpMySQLOperator) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(regExpMySQLOperator);
 			}
 
 			@Override
 			public void visit(JsonOperator jsonExpr) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(jsonExpr);
 			}
 
 			@Override
 			public void visit(JsonExpression jsonExpr) {
 				noSubexpression[0] = false;
+				visitSubExpression(jsonExpr.getExpression());
 			}
 
 			@Override
 			public void visit(RegExpMatchOperator rexpr) {
 				noSubexpression[0] = false;
+				visitSubExpression(rexpr.getLeftExpression());
+				visitSubExpression(rexpr.getRightExpression());
 			}
 
 			@Override
@@ -618,156 +678,196 @@ public class QueryTypeAnalyser {
 			@Override
 			public void visit(IntervalExpression iexpr) {
 				noSubexpression[0] = false;
+				visitSubExpression(iexpr.getExpression());
 			}
 
 			@Override
 			public void visit(ExtractExpression eexpr) {
 				noSubexpression[0] = false;
+				visitSubExpression(eexpr.getExpression());
 			}
 
 			@Override
 			public void visit(AnalyticExpression aexpr) {
 				noSubexpression[0] = false;
+				visitSubExpression(aexpr.getPartitionExpressionList());
+				visitSubExpression(aexpr.getExpression());
 			}
 
 			@Override
 			public void visit(Modulo modulo) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(modulo);
 			}
 
 			@Override
 			public void visit(CastExpression cast) {
 				noSubexpression[0] = false;
+				visitSubExpression(cast.getLeftExpression());
 			}
 
 			@Override
 			public void visit(BitwiseXor bitwiseXor) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(bitwiseXor);
 			}
 
 			@Override
 			public void visit(BitwiseOr bitwiseOr) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(bitwiseOr);
 			}
 
 			@Override
 			public void visit(BitwiseAnd bitwiseAnd) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(bitwiseAnd);
 			}
 
 			@Override
 			public void visit(Matches matches) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(matches);
 			}
 
 			@Override
 			public void visit(Concat concat) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(concat);
 			}
 
 			@Override
 			public void visit(AnyComparisonExpression anyComparisonExpression) {
 				noSubexpression[0] = false;
+				rejectColumn();
 			}
 
 			@Override
 			public void visit(ExistsExpression existsExpression) {
 				noSubexpression[0] = false;
+				visitSubExpression(existsExpression.getRightExpression());
 			}
 
 			@Override
 			public void visit(WhenClause whenClause) {
 				noSubexpression[0] = false;
+				visitSubExpression(whenClause.getWhenExpression());
+				visitSubExpression(whenClause.getThenExpression());
 			}
 
 			@Override
 			public void visit(CaseExpression caseExpression) {
 				noSubexpression[0] = false;
+				visitSubExpression(caseExpression.getSwitchExpression());
+				visitSubExpression(caseExpression.getElseExpression());
+				if (caseExpression.getWhenClauses() != null) {
+					caseExpression.getWhenClauses().forEach(wc -> wc.accept(this));
+				}
 			}
 
 			@Override
 			public void visit(SubSelect subSelect) {
 				noSubexpression[0] = false;
+				rejectColumn();
 			}
 
 			@Override
 			public void visit(NotEqualsTo notEqualsTo) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(notEqualsTo);
 			}
 
 			@Override
 			public void visit(MinorThanEquals minorThanEquals) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(minorThanEquals);
 			}
 
 			@Override
 			public void visit(MinorThan minorThan) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(minorThan);
 			}
 
 			@Override
 			public void visit(LikeExpression likeExpression) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(likeExpression);
 			}
 
 			@Override
 			public void visit(IsNullExpression isNullExpression) {
 				noSubexpression[0] = false;
+				visitSubExpression(isNullExpression.getLeftExpression());
 			}
 
 			@Override
 			public void visit(InExpression inExpression) {
 				noSubexpression[0] = false;
+				visitSubExpression(inExpression.getLeftExpression());
+				visitSubExpression(inExpression.getRightExpression());
 			}
 
 			@Override
 			public void visit(GreaterThanEquals greaterThanEquals) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(greaterThanEquals);
 			}
 
 			@Override
 			public void visit(GreaterThan greaterThan) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(greaterThan);
 			}
 
 			@Override
 			public void visit(EqualsTo equalsTo) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(equalsTo);
 			}
 
 			@Override
 			public void visit(Between between) {
 				noSubexpression[0] = false;
+				visitSubExpression(between.getLeftExpression());
+				visitSubExpression(between.getBetweenExpressionStart());
+				visitSubExpression(between.getBetweenExpressionEnd());
 			}
 
 			@Override
 			public void visit(OrExpression orExpression) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(orExpression);
 			}
 
 			@Override
 			public void visit(AndExpression andExpression) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(andExpression);
 			}
 
 			@Override
 			public void visit(Subtraction subtraction) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(subtraction);
 			}
 
 			@Override
 			public void visit(Multiplication multiplication) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(multiplication);
 			}
 
 			@Override
 			public void visit(Division division) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(division);
 			}
 
 			@Override
 			public void visit(Addition addition) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(addition);
 			}
 
 			@Override
@@ -778,6 +878,7 @@ public class QueryTypeAnalyser {
 			@Override
 			public void visit(Parenthesis parenthesis) {
 				noSubexpression[0] = false;
+				visitSubExpression(parenthesis.getExpression());
 			}
 
 			@Override
@@ -823,11 +924,19 @@ public class QueryTypeAnalyser {
 			@Override
 			public void visit(SignedExpression signedExpression) {
 				noSubexpression[0] = false;
+				visitSubExpression(signedExpression);
 			}
 
 			@Override
 			public void visit(Function function) {
 				noSubexpression[0] = false;
+				visitSubExpression(function.getAttribute());
+				if (function.getParameters() != null && function.getParameters().getExpressions() != null) {
+					function.getParameters().getExpressions().forEach(e -> e.accept(this));
+				}
+				if (function.getNamedParameters() != null && function.getNamedParameters().getExpressions() != null) {
+					function.getNamedParameters().getExpressions().forEach(e -> e.accept(this));
+				}
 			}
 
 			@Override
@@ -838,31 +947,40 @@ public class QueryTypeAnalyser {
 			@Override
 			public void visit(BitwiseRightShift aThis) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(aThis);
 			}
 
 			@Override
 			public void visit(BitwiseLeftShift aThis) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(aThis);
 			}
 
 			@Override
 			public void visit(ValueListExpression valueList) {
 				noSubexpression[0] = false;
+				visitSubExpression(valueList);
 			}
 
 			@Override
 			public void visit(IntegerDivision division) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(division);
 			}
 
 			@Override
 			public void visit(FullTextSearch fullTextSearch) {
 				noSubexpression[0] = false;
+				visitSubExpression(fullTextSearch.getAgainstValue());
+				if (fullTextSearch.getMatchColumns() != null) {
+					fullTextSearch.getMatchColumns().forEach(e -> visit(e));
+				}
 			}
 
 			@Override
 			public void visit(IsBooleanExpression isBooleanExpression) {
 				noSubexpression[0] = false;
+				visitSubExpression(isBooleanExpression.getLeftExpression());
 			}
 
 			@Override
@@ -878,41 +996,61 @@ public class QueryTypeAnalyser {
 			@Override
 			public void visit(SimilarToExpression aThis) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(aThis);
 			}
 
 			@Override
 			public void visit(ArrayExpression aThis) {
 				noSubexpression[0] = false;
+				visitSubExpression(aThis.getIndexExpression());
+				visitSubExpression(aThis.getObjExpression());
+				visitSubExpression(aThis.getStartIndexExpression());
+				visitSubExpression(aThis.getStopIndexExpression());
 			}
 			public void visit(XorExpression arg0) {
 				noSubexpression[0] = false;
+				visitBinaryExpression(arg0);
 			}
 			public void visit(RowGetExpression arg0) {
 				noSubexpression[0] = false;
+				visitSubExpression(arg0.getExpression());
 			}
 			public void visit(ArrayConstructor arg0) {
 				noSubexpression[0] = false;
+				if (arg0.getExpressions() != null) {
+					arg0.getExpressions().forEach(e -> e.accept(this));
+				}
 			}
 			public void visit(VariableAssignment arg0) {
 				noSubexpression[0] = false;
 			}
 			public void visit(XMLSerializeExpr arg0) {
 				noSubexpression[0] = false;
+				visitSubExpression(arg0.getExpression());
 			}
 			public void visit(TimezoneExpression arg0) {
 				noSubexpression[0] = false;
 			}
 			public void visit(JsonAggregateFunction arg0) {
 				noSubexpression[0] = false;
+				visitSubExpression(arg0.getExpression());
+				visitSubExpression(arg0.getFilterExpression());
 			}
 			public void visit(JsonFunction arg0) {
 				noSubexpression[0] = false;
+				if (arg0.getExpressions() != null) {
+					arg0.getExpressions().forEach(e -> visitSubExpression(e.getExpression()));
+				}
 			}
 			public void visit(ConnectByRootOperator arg0) {
 				noSubexpression[0] = false;
+				if (arg0.getColumn() != null) {
+					visit(arg0.getColumn());
+				}
 			}
 			public void visit(OracleNamedFunctionParameter arg0) {
 				noSubexpression[0] = false;
+				visitSubExpression(arg0.getExpression());
 			}
 		};
 	}

@@ -128,7 +128,7 @@ public class UpdateInfoManager {
 											public void actionPerformed(ActionEvent e) {
 												++t;
 												Color destColor = new Color(255, 210, 180);
-												double f = 0.5 * (1 + Math.sin(2 * Math.PI * t / 30.0));
+												double f = 0.5 * (1 + Math.sin(2 * Math.PI * t / 20.0));
 												ui.setBackground(new Color(mid(f, startColor.getRed(), destColor.getRed()), mid(f, startColor.getGreen(), destColor.getGreen()), mid(f, startColor.getBlue(), destColor.getBlue())));
 												
 												if (ui.isVisible()) {

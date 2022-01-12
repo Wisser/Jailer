@@ -22,6 +22,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -443,6 +445,22 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			};
 
 			theSettings.restore(settingsContext, settingsContextSecondaryKey);
+			
+			FocusListener fl = new FocusListener() {
+				@Override
+				public void focusLost(FocusEvent e) {
+					if (e.getComponent() == insert || e.getComponent() == delete) {
+						if (!((JTextField) e.getComponent()).getText().trim().isEmpty()) {
+							((JTextField) e.getComponent()).setText(toFileName(((JTextField) e.getComponent()).getText().trim()));
+						}
+					}
+				}
+				@Override
+				public void focusGained(FocusEvent e) {
+				}
+			};
+			insert.addFocusListener(fl);
+			delete.addFocusListener(fl);
 			
 			try {
 				JTextField c;
@@ -2941,7 +2959,4 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
 	}
 
-	// TODO
-	// TODO don't allow relative file path in ".multiuser" mode
-	
 }
