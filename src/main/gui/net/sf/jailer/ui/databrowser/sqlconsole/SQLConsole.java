@@ -704,7 +704,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     status.location = location;
                     status.linesExecuted = 0;
                     status.linesExecuting = 0;
-                    status.running = true;
+                    status.setRunning(true);
                     int lineStartOffset = finalLineStartOffset;
                     try {
                         Pattern pattern;
@@ -786,7 +786,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             restoreHistory();
                         }
                     } finally {
-                        status.running = false;
+                        status.setRunning(false);
                         running.set(false);
                         status.updateView(true);
                         UIUtil.invokeLater(new Runnable() {
@@ -1806,6 +1806,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         Throwable error;
         String statement;
         Pair<Integer, Integer> location;
+        Color failedColor = new Color(255, 210, 210);
+        Color okColor = new Color(220, 255, 220);
+        Color pendingColor = new Color(235, 235, 255);
+        Color runningColor = new Color(255, 249, 200);
+        Color runningStatusLabelColor = new Color(0, 100, 0);
 
         private synchronized void updateView(boolean force) {
             if (force || !updatingStatus.get()) {
@@ -1823,7 +1828,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 if (!failed) {
                                     cancelButton.setEnabled(running);
                                     statusLabel.setVisible(true);
-                                    statusLabel.setForeground(running? new Color(0, 100, 0) : Color.BLACK);
+                                    statusLabel.setForeground(running? runningStatusLabelColor : Color.BLACK);
                                     statusLabel.setText(getText());
                                 } else {
                                 	statusLabel.setVisible(true);
@@ -1856,10 +1861,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                     }
                                 }
                             }
-                            Color failedColor = new Color(255, 210, 210);
-                            Color okColor = new Color(220, 255, 220);
-                            Color pendingColor = new Color(235, 235, 255);
-                            Color runningColor = new Color(255, 249, 200);
                             if (location != null) {
                                 editorPane.removeAllLineHighlights();
                                 editorPane.setHighlightCurrentLine(false);
@@ -1873,7 +1874,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                         } else {
                                             if (failed) {
                                                 hl = failedColor;
-                                            } else if (running){
+                                            } else if (running) {
                                                 hl = runningColor;
                                             } else {
                                                 hl = pendingColor;
@@ -1897,6 +1898,45 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     }
                 });
             }
+        }
+        
+        Timer timer = null;
+        int time;
+        
+        private void setRunning(boolean r) {
+        	if (r && !running) {
+        		if (timer != null) {
+        			timer.stop();
+        		}
+        		time = 0;
+        		timer = new Timer(50, new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if (running) {
+	        				++time;
+	        				Color startColor = runningStatusLabelColor;
+	        				double x = Math.sin(2 * Math.PI * time / 50.0);
+							double f = Math.pow(Math.abs(x), 6);
+	        				Color c = new Color(startColor.getRed(), mid(f, startColor.getGreen(), 245), startColor.getBlue());
+	        				statusLabel.setForeground(c);
+						} else {
+							timer.stop();
+						}
+					}
+					private int mid(double f, int s, int d) {
+						return (int) (s + f * (d - s));
+					}
+        		});
+				timer.setInitialDelay(1000);
+        		timer.setRepeats(true);
+        		timer.start();
+        	} else if (!r && running) {
+        		if (timer != null) {
+        			timer.stop();
+        		}
+        		timer = null;
+        	}
+        	running = r;
         }
 
 		private String getText() {
@@ -3490,27 +3530,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		return editorPane;
 	}
 
-//  private SmartHighlightPainter currentStatementHighlightPainter = new SmartHighlightPainter(new Color(0, 0, 255, 15));
-//	private Object currentStatementHighlightTag = null;
-
 	private void hightlight(int a, int b) {
 		hightlight(editorPane, 0, 0);
-//		try {
-//			if (currentStatementHighlightTag != null) {
-//				editorPane.getHighlighter().removeHighlight(currentStatementHighlightTag);
-//			}
-//			if (a == b) {
-//				currentStatementHighlightTag = null;
-//			} else {
-//				currentStatementHighlightTag = editorPane.getHighlighter().addHighlight(a, b, currentStatementHighlightPainter);
-//			}
-//		} catch (/*BadLocation*/ Exception e) {
-//			return;
-//		}
 	}
-	
-	// TODO 1
-	// TODO kein auto-sync, overlay in console fuer benutzerentscheidung, ob jetzt synced wird oder nicht.
 	
 	protected abstract void onContentStateChange(File file, boolean dirty);
     protected abstract void setReloadLimit(int limit);

@@ -1342,7 +1342,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jLabel2.setText(" Base Folder  ");
         jPanel4.add(jLabel2, new java.awt.GridBagConstraints());
 
-        browseButton.setText("Browse..");
+        browseButton.setText("Change..");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);

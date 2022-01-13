@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -79,6 +80,8 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
     public ConstraintChecker(JFrame owner, DataModel dataModel, boolean withViewButton, final Session session) {
         initComponents();
         
+    	closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
+
         viewButton.setVisible(withViewButton);
         
         checksPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
@@ -441,6 +444,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 100;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel1.add(closeButton, gridBagConstraints);
 
         checksTabPanel.setLayout(new java.awt.BorderLayout());
@@ -711,6 +715,12 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 	}
 
 	protected abstract void openTableBrowser(Table source, String where);
+	
+	private ImageIcon cancelIcon;
+	{
+		// load images
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+    }
 
 }
 

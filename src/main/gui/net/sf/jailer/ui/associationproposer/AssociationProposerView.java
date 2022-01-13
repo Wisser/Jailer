@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.DefaultCellEditor;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -106,6 +107,9 @@ public class AssociationProposerView extends javax.swing.JPanel {
     	this.executionContext = executionContext;
     	
     	initComponents();
+    	
+    	loadButton.setIcon(UIUtil.scaleIcon(loadButton, loadIcon));
+    	closeButton.setIcon(UIUtil.scaleIcon(closeButton, cancelIcon));
         
         editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			@Override
@@ -663,6 +667,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         panel8.add(applyButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -966,7 +971,15 @@ public class AssociationProposerView extends javax.swing.JPanel {
     		UIUtil.showException(this, "Error", t);
     	}
 	}
-	
+
+	private ImageIcon loadIcon;
+	private ImageIcon cancelIcon;
+	{
+		// load images
+		loadIcon = UIUtil.readImage("/load2.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+    }
+
 	// TODO warning if one of the two PKs is only partially covered.
 }
 

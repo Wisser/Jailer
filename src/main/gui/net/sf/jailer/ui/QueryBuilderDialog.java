@@ -16,10 +16,13 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
@@ -41,6 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -54,6 +58,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
@@ -81,6 +86,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			}
 		};
 		initComponents();
+		
+		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
+		sqlEditButton.setIcon(UIUtil.scaleIcon(sqlEditButton, sqlConsoleIcon));
 		
 		if (jScrollPane1.getHorizontalScrollBar() != null) {
         	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
@@ -276,7 +284,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 8;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 4);
         jPanel2.add(cancelButton, gridBagConstraints);
 
         jLabel4.setText(" ");
@@ -289,6 +297,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 30;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         getContentPane().add(jPanel2, gridBagConstraints);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
@@ -345,6 +354,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel6.add(relationshipsPanel, gridBagConstraints);
 
         jScrollPane1.setViewportView(jPanel6);
@@ -709,17 +719,30 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				gridBagConstraints.insets = new Insets(0, 4, 0, 0);
 
-				minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
+				if (UIUtil.plaf != PLAF.FLAT) {
+					minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
+				} else {
+					minusLabel.setOpaque(true);
+				}
 				final JComboBox2 combobox = tableCB;
+				Color bg = minusLabel.getBackground();
 				minusLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 					@Override
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
+						if (UIUtil.plaf == PLAF.FLAT) {
+							minusLabel.setBackground(UIUtil.BG_FLATMOUSEOVER);
+						} else {
+							minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
+						}
 					}
 
 					@Override
 					public void mouseExited(java.awt.event.MouseEvent evt) {
-						minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
+						if (UIUtil.plaf == PLAF.FLAT) {
+							minusLabel.setBackground(bg);
+						} else {
+							minusLabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
+						}
 					}
 
 					@Override
@@ -756,17 +779,30 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 				final JComponent finalTCB = tableCB;
 				finalTCB.setVisible(false);
-				jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
-
+				if (UIUtil.plaf != PLAF.FLAT) {
+					jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
+				} else {
+					jlabel.setOpaque(true);
+				}
+				Color bg = jlabel.getBackground();
+				
 				jlabel.addMouseListener(new java.awt.event.MouseAdapter() {
 					@Override
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
+						if (UIUtil.plaf == PLAF.FLAT) {
+							jlabel.setBackground(UIUtil.BG_FLATMOUSEOVER);
+						} else {
+							jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
+						}
 					}
 
 					@Override
 					public void mouseExited(java.awt.event.MouseEvent evt) {
-						jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.RAISED));
+						if (UIUtil.plaf == PLAF.FLAT) {
+							jlabel.setBackground(bg);
+						} else {
+							jlabel.setBorder(BorderFactory.createSoftBevelBorder(BevelBorder.LOWERED));
+						}
 					}
 
 					@Override
@@ -865,7 +901,11 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 		checkAliases();
 		updateSQL();
-		validate();
+		Rectangle r = getBounds();
+		r.width--;
+		setBounds(r); // force relayouting
+		r.width++;
+		setBounds(r);
 	}
 
 	/**
@@ -1463,11 +1503,18 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     
 	private ImageIcon joinImage = null;
 	private ImageIcon minusImage = null;
+	private ImageIcon sqlConsoleIcon = null;
 	{
 		// load image
-		joinImage = UIUtil.scaleIcon(UIUtil.readImage("/collapsed.png"), 22, 18);
-		minusImage = UIUtil.scaleIcon(UIUtil.readImage("/minus.png"), 22, 18);
+		joinImage = UIUtil.scaleIcon(UIUtil.readImage("/collapsed.png"), 20, 16);
+		minusImage = UIUtil.scaleIcon(UIUtil.readImage("/minus.png"), 20, 16);
 	}
 
+	private ImageIcon cancelIcon;
+	{
+		// load images
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        sqlConsoleIcon = UIUtil.readImage("/runall.png");
+    }
 	private static final long serialVersionUID = -2801831496446636545L;
 }

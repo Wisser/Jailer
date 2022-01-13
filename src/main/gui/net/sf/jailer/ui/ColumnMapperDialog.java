@@ -151,7 +151,6 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         jPanel2 = new javax.swing.JPanel();
         formatButton = new javax.swing.JButton();
         resetButton = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         paramPanel = new javax.swing.JPanel();
@@ -186,7 +185,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel1.add(jLabel2, gridBagConstraints);
 
-        jPanel2.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 5));
+        jPanel2.setLayout(new java.awt.GridBagLayout());
 
         formatButton.setText("Format");
         formatButton.addActionListener(new java.awt.event.ActionListener() {
@@ -194,7 +193,9 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
                 formatButtonActionPerformed(evt);
             }
         });
-        jPanel2.add(formatButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel2.add(formatButton, gridBagConstraints);
 
         resetButton.setText("Reset");
         resetButton.addActionListener(new java.awt.event.ActionListener() {
@@ -202,10 +203,11 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
                 resetButtonActionPerformed(evt);
             }
         });
-        jPanel2.add(resetButton);
-
-        jLabel3.setText("  ");
-        jPanel2.add(jLabel3);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel2.add(resetButton, gridBagConstraints);
 
         okButton.setText("Ok");
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -213,7 +215,9 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
                 okButtonActionPerformed(evt);
             }
         });
-        jPanel2.add(okButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel2.add(okButton, gridBagConstraints);
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -221,13 +225,15 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
                 cancelButtonActionPerformed(evt);
             }
         });
-        jPanel2.add(cancelButton);
+        jPanel2.add(cancelButton, new java.awt.GridBagConstraints());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 30;
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(jPanel2, gridBagConstraints);
 
         paramPanel.setMinimumSize(new java.awt.Dimension(150, 0));
@@ -289,7 +295,6 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     private javax.swing.JButton formatButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JButton okButton;
