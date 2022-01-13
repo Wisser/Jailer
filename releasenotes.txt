@@ -1,3 +1,6 @@
+12.1
+  - Minor user interface improvements and bug fixes.
+
 12.0
   - Comprehensive redesign and modernization of the entire user interface. 
   - "FlatLaf" Look&Feel is now the default. https://github.com/JFormDesigner/FlatLaf
