@@ -307,6 +307,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		UIUtil.replace(infoBarLabel, infoBar);
 		
 		newButton.setVisible(dataModelAware);
+		jLabel1.setVisible(dataModelAware);
 		copy.setVisible(dataModelAware);
 		
 		if (showOnlyRecentyUsedConnections) {

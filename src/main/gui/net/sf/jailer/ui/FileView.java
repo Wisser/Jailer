@@ -87,7 +87,7 @@ public class FileView extends javax.swing.JFrame {
 		
 		File f = new File(file);
 		if (f.exists() && f.length() > 65L*1024L*1024L) {
-			int o = JOptionPane.showOptionDialog(window, "File " + f.getAbsolutePath() + "\nis large (" + (f.length() / 1024 / 1024) + " MB)", "File is large", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Open", "Cancel" }, "Open");
+			int o = JOptionPane.showOptionDialog(window, "File " + f.getAbsolutePath() + "\nis large (" + (f.length() / 1024 / 1024) + " MB). Loading might fail.", "File is large", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[] { "Open", "Cancel" }, "Open");
 			if (o != 0) {
 				dispose();
 				return;
@@ -102,6 +102,9 @@ public class FileView extends javax.swing.JFrame {
 			}
 			getJTextPane().setCaretPosition(0);
 			setVisible(true);
+		} catch (OutOfMemoryError oome) {
+			JOptionPane.showMessageDialog(window, "File " + f.getAbsolutePath() + "\nis too large to load.", "File too large", JOptionPane.ERROR_MESSAGE);
+			dispose();
 		} catch (Throwable t) {
 			UIUtil.showException(owner, "Error", t);
 		}
