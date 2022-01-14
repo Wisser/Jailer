@@ -983,10 +983,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 final Color columnHeaderColors[] = new Color[columnCount];
                 int a = 10;
                 final Color hBG[] = new Color[] {
-                   		new Color(255, 255, 0, a * 4),
-                		new Color(255, 60, 0, a + 8),
-                		new Color(0, 255, 0, a),
                    		new Color(0, 0, 255, a + 0),
+                   		new Color(255, 60, 0, a + 8),
+                		new Color(255, 255, 0, a * 4),
+                		new Color(0, 255, 0, a),
                 };
                 Map<String, Integer> labelCount = new HashMap<String, Integer>();
                 Map<String, Integer> labelCounter = new HashMap<String, Integer>();

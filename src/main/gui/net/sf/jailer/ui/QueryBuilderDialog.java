@@ -208,7 +208,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 2, 2);
         jPanel2.add(saveButton, gridBagConstraints);
 
         clipboardSingleLineButton.setText(" Copy as Single Line ");
@@ -222,7 +222,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 4);
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 2, 4);
         jPanel2.add(clipboardSingleLineButton, gridBagConstraints);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
@@ -258,7 +258,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 2, 2);
         jPanel2.add(clipboardButton, gridBagConstraints);
 
         sqlEditButton.setText("SQL Console");
@@ -271,7 +271,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 7;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 2, 2);
         jPanel2.add(sqlEditButton, gridBagConstraints);
 
         cancelButton.setText("Close");
@@ -284,7 +284,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 8;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 4);
+        gridBagConstraints.insets = new java.awt.Insets(4, 2, 2, 4);
         jPanel2.add(cancelButton, gridBagConstraints);
 
         jLabel4.setText(" ");
@@ -297,7 +297,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 30;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
         getContentPane().add(jPanel2, gridBagConstraints);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
