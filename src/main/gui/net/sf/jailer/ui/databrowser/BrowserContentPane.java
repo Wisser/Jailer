@@ -6304,7 +6304,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
         menuPanel.add(rrPanel, gridBagConstraints);
 
         jPanel9.setLayout(new java.awt.GridBagLayout());
