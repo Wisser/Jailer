@@ -259,6 +259,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
             @Override
             protected void runBlock() {
+            	if (hasFocus()) {
+            		jTabbedPane1.grabFocus();
+            		grabFocus();
+            	}
                 executeSelectedStatements(false, null, true);
             }
             @Override
