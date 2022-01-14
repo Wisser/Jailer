@@ -103,7 +103,7 @@ public class FileView extends javax.swing.JFrame {
 			getJTextPane().setCaretPosition(0);
 			setVisible(true);
 		} catch (OutOfMemoryError oome) {
-			JOptionPane.showMessageDialog(window, "File " + f.getAbsolutePath() + "\nis too large to load.", "File too large", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(window, "File " + f.getAbsolutePath() + "\nis too large to load.", "Out of Memory", JOptionPane.ERROR_MESSAGE);
 			dispose();
 		} catch (Throwable t) {
 			UIUtil.showException(owner, "Error", t);
