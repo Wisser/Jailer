@@ -1187,22 +1187,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					g2d.clipRect(0, 0, getViewportBorderBounds().width, getViewportBorderBounds().height);
 					for (int i = 0; i < rowsTable.getColumnCount(); ++i) {
 						if (getWhereClauseEditorBaseTable() != null) {
+							if (columnHeaderColors != null && columnHeaderColors.length > i && columnHeaderColors[i] != null) {
+								int vi = rowsTable.convertColumnIndexToView(i);
+								JTableHeader header = rowsTable.getTableHeader();
+								Rectangle hr = header.getHeaderRect(vi);
+								Color c = columnHeaderColors[i];
+								Color c1 = new Color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha() * 2);
+								Color c2 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 0);
+								if (c.getAlpha() % 2 == 0) {
+									c = c1;
+									c1 = c2;
+									c2 = c;
+								}
+								g2d.setPaint(new GradientPaint(0, 0, c1, 1, hr.height, c2));
+								g2d.fillRect(hr.x + 1 + loc.x, hr.y + 6, hr.width - 2, hr.height - 6);
+							}
 							if (browserContentCellEditor.getColumnTypes().length > i && browserContentCellEditor.isEditable(getWhereClauseEditorBaseTable(), i, null)) {
 								int vi = rowsTable.convertColumnIndexToView(i);
-								if (columnHeaderColors != null && columnHeaderColors[i] != null) {
-									JTableHeader header = rowsTable.getTableHeader();
-									Rectangle hr = header.getHeaderRect(vi);
-									Color c = columnHeaderColors[i];
-									Color c1 = new Color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha() * 2);
-									Color c2 = new Color(c.getRed(), c.getGreen(), c.getBlue(), 0);
-									if (c.getAlpha() % 2 == 0) {
-										c = c1;
-										c1 = c2;
-										c2 = c;
-									}
-									g2d.setPaint(new GradientPaint(0, 0, c1, 1, hr.height, c2));
-									g2d.fillRect(hr.x + 1 + loc.x, hr.y + 6, hr.width - 2, hr.height - 6);
-								}
 								if (useWhereClauseEditor() && vi >= 0 && vi != currentSearchButtonColumnIndex) {
 									Point location = calcSearchColumnPosition(vi);
 									if (filteredColumns != null && filteredColumns.contains(i)) {
