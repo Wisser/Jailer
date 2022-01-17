@@ -73,7 +73,8 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 			for (Table table: new DataModel(executionContext).getTables()) {
 				modelSchemas.add(table.getSchema(defaultSchemaName));
 			}
-			SortedSet<String> dbSchemas = new TreeSet<String>(connectionDialog.getDBSchemas(new String[1]));
+			SortedSet<String> dbSchemas = new TreeSet<String>(JDBCMetaDataBasedModelElementFinder.getSchemas(
+					session, connectionDialog.currentConnection.user));
 			dbSchemas.add(defaultSchemaName);
 			int y = 1;
 			for (String schema: modelSchemas) {

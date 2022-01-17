@@ -17,12 +17,21 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
@@ -34,6 +43,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -88,11 +98,39 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1;
         gridBagConstraints.anchor = explain? java.awt.GridBagConstraints.WEST : java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new Insets(0, explain? 8 : 16, 0, 0);
-        panel.add(statementLabel, gridBagConstraints);
-
+		//        panel.add(statementLabel, gridBagConstraints);
+        panel.add(new JPanel() {
+	        	{
+	        		setLayout(null);
+	        		setOpaque(false);
+	        		addComponentListener(new ComponentListener() {
+						@Override
+						public void componentShown(ComponentEvent e) {
+						}
+						@Override
+						public void componentResized(ComponentEvent e) {
+							Rectangle visibleRect = getBounds();
+							String value = statementLabel.getText();
+							FontMetrics fontMetrics = getFontMetrics(getFont());
+							int x = Math.max(32, visibleRect.width - fontMetrics.stringWidth(value));
+							int y = (visibleRect.height - fontMetrics.getHeight() / 2) + fontMetrics.getAscent();
+							statementLabel.setBounds(x, 0, visibleRect.width - x, visibleRect.height);
+						}
+						@Override
+						public void componentMoved(ComponentEvent e) {
+						}
+						@Override
+						public void componentHidden(ComponentEvent e) {
+						}
+					});
+		        	add(statementLabel);
+	        	}
+        	}
+        	, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 20;
         gridBagConstraints.gridy = 1;

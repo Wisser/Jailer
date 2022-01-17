@@ -30,6 +30,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -2031,6 +2032,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private void paintRowCounters(Graphics2D g, Rectangle bounds) {
 		Rectangle visibleRect = metaDataTree.getVisibleRect();
 		g.clipRect(1, 1, visibleRect.width + 1, visibleRect.height);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
 		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, mdTable) -> {
 			Long rc = mdTable.getEstimatedRowCount();
 			if (rc != null) {
@@ -2047,6 +2052,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	     		FontMetrics fontMetrics = getFontMetrics(getFont());
 				int x = visibleRect.width - fontMetrics.stringWidth(value) - 8;
 				int y = ry - visibleRect.y + fontMetrics.getHeight() - 1;
+				g.setFont(getFont());
 				g.setColor(new Color(255, 255, 255));
 				g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 16, fontMetrics.getHeight() + 2);
 				g.setColor(new Color(0, 0, 255));

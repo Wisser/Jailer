@@ -2640,6 +2640,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 
 	public void afterAddRestriction() {
+		updateAssocStats();
 		markDirty();
 		initRestrictionEditor(currentAssociation, currentNode);
 		graphView.resetExpandedState();

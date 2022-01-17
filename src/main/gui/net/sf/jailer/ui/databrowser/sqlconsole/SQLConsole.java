@@ -167,7 +167,6 @@ import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
-
 /**
  * SQL Console.
  *
@@ -1163,8 +1162,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sql, 100));
 		                        String stmt = sql;
 		                        stmt = stmt.replaceAll("\\s+", " ");
-		                        if (stmt.length() > 200) {
-		                            stmt = stmt.substring(0, 200) + "...";
+		                        if (stmt.length() > 300) {
+		                            stmt = stmt.substring(0, 300) + "...";
 		                        }
 		                        tabContentPanel.statementLabel.setText(stmt);
 							}
@@ -1351,8 +1350,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
                         tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sqlE, 100));
                         stmt = stmt.replaceAll("\\s+", " ");
-                        if (stmt.length() > 200) {
-                            stmt = stmt.substring(0, 200) + "...";
+                        if (stmt.length() > 300) {
+                            stmt = stmt.substring(0, 300) + "...";
                         }
                         tabContentPanel.statementLabel.setText(stmt);
                         rTabContainer = tabContentPanel.shimPanel;

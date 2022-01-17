@@ -1299,7 +1299,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTable.setAutoscrolls(false);
 
 		setAndCondition((condition), true);
-		from.setText(table == null? "" : this.dataModel.getDisplayName(table));
+		from.setText(table == null? " " : this.dataModel.getDisplayName(table));
 		adjustGui();
 		rowsTable.setShowGrid(false);
 		final TableCellRenderer defaultTableCellRenderer = rowsTable.getDefaultRenderer(String.class);
@@ -2275,8 +2275,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void adjustGui() {
 		if (this.association == null) {
-			joinPanel.setVisible(false);
-			onPanel.setVisible(false);
+			join.setText(" ");
+			on.setText(" ");
 
 			jLabel1.setText(" ");
 			jLabel4.setText(" ");
@@ -6305,7 +6305,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         menuPanel.add(rrPanel, gridBagConstraints);
 
         jPanel9.setLayout(new java.awt.GridBagLayout());

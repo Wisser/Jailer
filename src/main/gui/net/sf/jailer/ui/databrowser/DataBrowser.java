@@ -1314,6 +1314,9 @@ public class DataBrowser extends javax.swing.JFrame {
 				updateDataModelView(null);
 				showDataModelMenuItem
 						.setSelected(metaDataDetailsPanel.tabbedPane.getSelectedComponent() == dataModelPanel);
+				if (dataModelPanel.getComponentCount() > 0) {
+					dataModelPanel.getComponent(0).setVisible(metaDataDetailsPanel.tabbedPane.getSelectedComponent() == dataModelPanel);
+				}
 			}
 		});
 		return panel;
