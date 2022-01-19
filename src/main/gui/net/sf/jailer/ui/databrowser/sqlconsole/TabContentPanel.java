@@ -92,7 +92,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         cancelLoadButton.setIcon(UIUtil.scaleIcon(cancelLoadButton, cancelIcon));
 		
         statementLabel = new JLabel();
-        statementLabel.setForeground(new Color(0, 0, 180));
+        statementLabel.setForeground(new Color(100, 110, 210));
         GridBagConstraints gridBagConstraints;
         
         gridBagConstraints = new java.awt.GridBagConstraints();
