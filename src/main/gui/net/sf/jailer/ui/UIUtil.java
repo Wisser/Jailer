@@ -1979,16 +1979,11 @@ public class UIUtil {
     			opacityfailed = false;
     		}
 		} catch (Exception e) {
-			if (!warned) {
-				LogUtil.warn(e);
-				warned = true;
-			}
 			opacityfailed = true;
 		}
 	}
 
     public static boolean opacityfailed = false;
-	private static boolean warned = false;
 	private static Map<Window, Float> hiddenWindows = new LinkedHashMap<>();
 	private static Timer dwTimer = null;
 	
