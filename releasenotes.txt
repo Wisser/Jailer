@@ -1,4 +1,4 @@
-12.2
+12.1.2
   - Moving the split-pane in the data browser and SQL console was not possible in rare cases. This has been corrected.
 
 12.1.1
