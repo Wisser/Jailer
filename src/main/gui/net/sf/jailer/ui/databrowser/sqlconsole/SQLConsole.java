@@ -1296,7 +1296,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								tabContentPanel.loadingPanel.setVisible(true);
 								tabContentPanel.repaint();
 								loadButton.setEnabled(false);
-								initialSortKeysSql = sql;
+								initialSortKeysSql = rb.getStatementForReloading();
 								try {
 									initialSortKeys = rb.rowsTable.getRowSorter().getSortKeys();
 									initialColumnsTablesPos = null;
@@ -1316,7 +1316,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								} catch (Exception e2) {
 									initialSortKeys = null;
 								}
-								reload(tabContentPanel, sql);
+								reload(tabContentPanel, rb.getStatementForReloading());
 							}
 						});
                         tabContentPanel.cancelLoadButton.addActionListener(new ActionListener() {
@@ -2473,7 +2473,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         }
         @Override
         protected MetaDataSource getMetaDataSource() {
-            return null;
+            return metaDataSource;
         }
         @Override
         protected SQLConsole getSqlConsole(boolean switchToConsole) {
@@ -2487,6 +2487,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		private String latestSyncStatement = null;
 		protected String getLatestSyncStatement() {
 			return latestSyncStatement != null? latestSyncStatement : origSql;
+		}
+		protected String getStatementForReloading() {
+			return statementForReloading != null? statementForReloading : origSql;
 		}
 
 		public void setSync(boolean sync) {

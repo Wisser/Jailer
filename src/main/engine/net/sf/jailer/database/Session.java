@@ -48,7 +48,7 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
-import net.sf.jailer.util.LogUtil;
+
 
 /**
  * Manages database sessions on a 'per thread' basis.
