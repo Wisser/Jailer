@@ -2713,6 +2713,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					BrowserContentPane.this.getQueryBuilderDialog() == null // SQL Console
 					) {
 				if (BrowserContentPane.this.getQueryBuilderDialog() == null // SQL Console
+					&& copyTCB == null
 						) {
 					popup.add(new JSeparator());
 				}
