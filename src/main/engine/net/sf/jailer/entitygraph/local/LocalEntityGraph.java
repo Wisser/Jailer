@@ -1227,6 +1227,10 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	@Override
 	public long removeAssociatedDestinations(final Association association, final boolean deletedEntitiesAreMarked, Set<Table> allTables) throws SQLException {
+		
+		// TODO for "$is_subject" and "$distance", jc had to be modified like this:
+		// jc = SqlUtil.resolvePseudoColumns(jc, association.reversed? "EB" : "EA", association.reversed? "EA" : "EB", 0, birthdayOfSubject, "orig_birthday", inDeleteMode);
+
 		String jc = association.getJoinCondition();
 		checkPseudoColumns(association.source, jc);
 		if (jc != null) {
