@@ -649,10 +649,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					hlColor = "#ff9999";
 				}
 				String search = searchTextField.getText().trim().toUpperCase(Locale.ENGLISH);
-				int i = value.toString().trim().toUpperCase(Locale.ENGLISH).indexOf(search);
-				String item = value.toString();
+				String item = value.toString().trim();
+				int i = item.toUpperCase(Locale.ENGLISH).indexOf(search);
 				if (i >= 0) {
-					item = UIUtil.toHTMLFragment(item.substring(0, i), 0) + "<b><font color=\"" + hlColor + "\">" + UIUtil.toHTMLFragment(item.substring(i, i + search.length()), 0) + "</font></b>" + UIUtil.toHTMLFragment(item.substring(i + search.length()), 0);
+					i = Math.min(i, item.length());
+					if (i + search.length() <= item.length()) {
+						item = UIUtil.toHTMLFragment(item.substring(0, i), 0, false) + "<b><font color=\"" + hlColor + "\">" + UIUtil.toHTMLFragment(item.substring(i, i + search.length()), 0, false) + "</font></b>" + UIUtil.toHTMLFragment(item.substring(i + search.length()), 0, false);
+					} else {
+						item = UIUtil.toHTMLFragment(item, 0);
+					}
 				} else {
 					item = UIUtil.toHTMLFragment(item, 0);
 				}
