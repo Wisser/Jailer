@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
@@ -121,6 +123,8 @@ import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
 import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.expression.operators.relational.SimilarToExpression;
+import net.sf.jsqlparser.parser.ASTNodeAccess;
+import net.sf.jsqlparser.parser.SimpleNode;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
@@ -169,9 +173,11 @@ public class QueryTypeAnalyser {
 	 */
 	public static List<Table> getType(String sqlSelect, boolean checkPKs, Map<Integer, String> columnExpression, final MetaDataSource metaDataSource) {
 		net.sf.jsqlparser.statement.Statement st;
+		String simplifiedSQL;
 		try {
 			try {
-				st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlSelect), 2);
+				simplifiedSQL = SqlUtil.removeNonMeaningfulFragments(sqlSelect);
+				st = JSqlParserUtil.parse(simplifiedSQL, 2);
 			} catch (Exception e) {
 				return null;
 			}
@@ -242,7 +248,32 @@ public class QueryTypeAnalyser {
 									}
 
 									private String asSQL(SelectExpressionItem selectExpressionItem) {
-										return selectExpressionItem.toString().replaceAll("\\s+", " ").replaceFirst("^(.{128}).+$", "$1...");
+										String fragment = selectExpressionItem.toString();
+										try {
+											Pair<Integer, Integer> pos = null;
+												
+											Pattern pattern = Pattern.compile(SqlUtil.createSQLFragmentSearchPattern(fragment, false), Pattern.CASE_INSENSITIVE);
+											Matcher matcher = pattern.matcher(simplifiedSQL);
+												
+											if (matcher.find()) {
+												pos = new Pair<Integer, Integer>(matcher.start(), matcher.end());
+												if (matcher.find()) { // not unique
+													pos = null;
+												}
+											}
+											if (pos != null) {
+												fragment = sqlSelect.substring(pos.a, pos.b);
+											} else {
+												Expression o = selectExpressionItem.getExpression();
+												if (o != null && !(o instanceof LikeExpression) && (selectExpressionItem instanceof ASTNodeAccess && ((ASTNodeAccess) selectExpressionItem).getASTNode() != null)) {
+													SimpleNode node = ((ASTNodeAccess) selectExpressionItem).getASTNode();
+													fragment = sqlSelect.substring(node.jjtGetFirstToken().absoluteBegin - 1, node.jjtGetLastToken().absoluteEnd - 1);
+												}
+											}
+										} catch (Exception e) {
+											LogUtil.warn(e);
+										}
+										return fragment.replaceAll("\\s+", " ").replaceFirst("^(.{128}).+$", "$1...");
 									}
 
 									@Override
