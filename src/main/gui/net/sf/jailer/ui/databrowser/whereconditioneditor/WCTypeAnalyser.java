@@ -610,7 +610,11 @@ public class WCTypeAnalyser {
 					net.sf.jailer.datamodel.Column c1 = selectClause.get(i1);
 					net.sf.jailer.datamodel.Column c2 = selectClause.get(i2);
 					if (c1 != null && c2 != null && c1 != c2 && c1.name != null && c2.name != null) {
-						if (c1.name.replaceAll("\\s+", "").toLowerCase().endsWith(c2.name.replaceAll("\\s+", "").toLowerCase())) {
+						String total = c1.name.replaceAll("\\s+", "").toLowerCase();
+						String suffix = c2.name.replaceAll("\\s+", "").toLowerCase();
+						if (total.endsWith(suffix) && !total.isEmpty() && !suffix.isEmpty() &&
+								!total.substring(total.length() - suffix.length() - 1, total.length() - suffix.length() + 1).matches("\\w\\w")
+								) {
 							String name = "(" + c1.name + ")";
 							result.addAlias(c1.name, name);
 							net.sf.jailer.datamodel.Column newColumn = new net.sf.jailer.datamodel.Column(name, c1.type, c1.length, c1.precision);
