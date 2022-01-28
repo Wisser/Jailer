@@ -172,6 +172,7 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.QueryBuilderDialog;
+import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
@@ -1182,7 +1183,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				int off = 6;
 				Point loc = SwingUtilities.convertPoint(rowsTable.getTableHeader(), new Point(0, Math.max(rowsTable.getTableHeader().getHeight() - half.getIconHeight() - off, 0)), this);
 
-				if (getWhereClauseEditorBaseTable() != null && browserContentCellEditor != null) {
+				if (getWhereClauseEditorBaseTable() != null && browserContentCellEditor != null && SessionForUI.isWCEditorSupported(BrowserContentPane.this.session)) {
 					Shape clip = g2d.getClip();
 					g2d.clipRect(0, 0, getViewportBorderBounds().width, getViewportBorderBounds().height);
 					for (int i = 0; i < rowsTable.getColumnCount(); ++i) {

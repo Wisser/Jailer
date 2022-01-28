@@ -48,6 +48,7 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.LogUtil;
 
 
 /**
@@ -1426,6 +1427,7 @@ public class Session {
 				try {
 					inlineViewStyle = InlineViewStyle.forSession(this);
 				} catch (Exception e) {
+					LogUtil.warn(e);
 					// no suitable style found
 					noInlineViewStyleFound = true;
 				}

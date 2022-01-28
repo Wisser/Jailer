@@ -788,7 +788,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				});
 				value = result.toString();
 			} catch (Throwable t) {
-				LogUtil.warn(t);
+				if (!(t instanceof CancellationException)) {
+					LogUtil.warn(t);
+				}
 				value = null;
 			}
 			perType.put(cellEditor.getColumnTypes()[columnIndex], value);

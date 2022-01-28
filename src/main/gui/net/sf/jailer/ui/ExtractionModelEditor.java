@@ -61,6 +61,7 @@ import java.util.Vector;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -1087,6 +1088,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 							return;
 						}
 					}
+					
 					String initialCondition = initialText.get();
 					WhereConditionEditorPanel wcep = new WhereConditionEditorPanel(windowAncestor,
 						dataModel, getSubject.get(), BrowserContentCellEditor.forTable(getSubject.get(), extractionModelFrame.theSession),
@@ -1106,6 +1108,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 							consumer.accept(condition);
 						}
 					};
+					
 					whereConditionEditorPanel = wcep;
 					whereConditionEditorPanel.setTableAlias(tableAlias);
 					if (providerConsumer != null) {
@@ -1133,15 +1136,26 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 							
 					int x = location.x;
 					int y = location.y;
-						
-					dialog.getContentPane().add(whereConditionEditorPanel);
-						
+					
+					if (!wcep.isVisible()) {
+						dialog.getContentPane().add(new JLabel("Condition editor not supported for DBMS \"" + (extractionModelFrame.theSession.dbms == null? null : extractionModelFrame.theSession.dbms.getId()) + "\"\n") {
+							{
+								setBorder(BorderFactory.createLineBorder(Color.red));
+							}
+						});
+						whereConditionEditorPanel = null;
+					} else {
+						dialog.getContentPane().add(whereConditionEditorPanel);
+					}
+					
 					dialog.pack();
 					dialog.setLocation(x, y);
 					int minWidth = 660;
 					int wid = Math.max(minWidth, dialog.getWidth());
 					Integer maxX = getX() + getWidth() - wid - 8;;
-					dialog.setSize(wid, Math.min(Math.max(dialog.getHeight(), 260), 600));
+					if (whereConditionEditorPanel != null) {
+						dialog.setSize(wid, Math.min(Math.max(dialog.getHeight(), 260), 600));
+					}
 					if (maxX != null) {
 						dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
 					}
@@ -1149,7 +1163,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					if (maxY != null && maxY < dialog.getY()) {
 						int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
 						maxY += deltaH;
-						dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
+						if (whereConditionEditorPanel != null) {
+							dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
+						}
 						dialog.setLocation(dialog.getX(), Math.max(0, maxY));
 					}
 					UIUtil.invokeLater(() -> dialog.setVisible(true));

@@ -59,7 +59,9 @@ public class SessionForUI extends Session {
 				try {
 					Connection newCon = session.connectionFactory.getConnection();
 					if (initInlineViewStyle && !session.cancelled.get()) {
-						session.getInlineViewStyle();
+						if (session.getInlineViewStyle() == null) {
+							session.setSessionProperty(SessionForUI.class, SUPPORT_WC_EDITOR, false);
+						}
 					}
 					if (session.cancelled.get()) {
 						try {
@@ -176,6 +178,12 @@ public class SessionForUI extends Session {
 			thread.start();
 		}
 	}
+	
+	private static final String SUPPORT_WC_EDITOR = "supportWCEditor";
+
+    public static boolean isWCEditorSupported(Session session) {
+    	return !Boolean.FALSE.equals(session.getSessionProperty(SessionForUI.class, SUPPORT_WC_EDITOR));
+    }
 	
 	private static ImageIcon cancelIcon;
 	

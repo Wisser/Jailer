@@ -129,6 +129,7 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
+import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel.StringSearchDialog;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
@@ -1215,7 +1216,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.statusStrutLabel.setVisible(false);
                         rb.sortColumnsCheckBox.setText(rb.sortColumnsCheckBox.getText().trim());
                         JToggleButton findButton = new JToggleButton((String) null);
-                        findButton.setEnabled(rb.wcBaseTable != null);
+                        findButton.setEnabled(rb.wcBaseTable != null && SessionForUI.isWCEditorSupported(session));
                         findButton.setIcon(UIUtil.scaleIcon(findButton, searchIcon));
                         findButton.setFocusable(false);
                         findButton.addActionListener(e -> {

@@ -3921,7 +3921,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				: null;
 		searchPanelContainer.removeAll();
 		searchPanelContainer.setVisible(table != null && searchBarToggleButton.isSelected());
-		searchBarToggleButton.setEnabled(rowBrowser != null);
+		searchBarToggleButton.setEnabled(rowBrowser != null && SessionForUI.isWCEditorSupported(session));
 		if (table != null) {
 			BrowserContentCellEditor cellEditor = rowBrowser != null && rowBrowser.browserContentPane != null
 					? rowBrowser.browserContentPane.browserContentCellEditor
@@ -4302,6 +4302,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		CancellationHandler.reset(null);
 		try {
 			updateNavigationCombobox();
+
+			if (!SessionForUI.isWCEditorSupported(session)) {
+				searchBarToggleButton.setEnabled(false);
+				searchBarToggleButton.setSelected(false);
+			}
 
 			tablesPanel.removeAll();
 			metaDataPanel = (MetaDataPanel) session.getSessionProperty(getClass(), "metaDataPanel");
