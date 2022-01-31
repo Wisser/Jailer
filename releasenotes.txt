@@ -1,3 +1,9 @@
+12.2.3
+  - Bug fixes:
+    - The condition editor had problems with string literals containing non-ascii characters.
+    - In the SQL console, the filter conditions set by the user were lost after a "reload" in the results panel.
+    - The pseudo variables "$DISTANCE" and "$IS_SUBJECT" were not taken into account by the SQL formatter.
+
 12.1.2
   - Moving the split-pane in the data browser and SQL console was not possible in rare cases. This has been corrected.
 

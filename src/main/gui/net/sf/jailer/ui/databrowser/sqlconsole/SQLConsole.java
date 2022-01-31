@@ -1216,7 +1216,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.statusStrutLabel.setVisible(false);
                         rb.sortColumnsCheckBox.setText(rb.sortColumnsCheckBox.getText().trim());
                         JToggleButton findButton = new JToggleButton((String) null);
-                        findButton.setEnabled(rb.wcBaseTable != null && SessionForUI.isWCEditorSupported(session));
+                        findButton.setToolTipText("Enter additional search criteria to further refine the result.");
+                        findButton.setEnabled(rb.wcBaseTable != null);
+                        if (!SessionForUI.isWCEditorSupported(session)) {
+                        	findButton.setToolTipText("<html>" + findButton.getToolTipText() + "<br>"
+                					+ "<b>Condition editor not supported for DBMS \"" + (session.dbms == null? null : session.dbms.getId()) + "\"</b></html>");
+                        	findButton.setEnabled(false);
+                        }
                         findButton.setIcon(UIUtil.scaleIcon(findButton, searchIcon));
                         findButton.setFocusable(false);
                         findButton.addActionListener(e -> {
@@ -1249,7 +1255,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         }
                         tabContentPanel.doSync = rb.doSync = doSync;
                         
-                        findButton.setToolTipText("Enter additional search criteria to further refine the result.");
                         syncButton.setToolTipText("Synchronize the additional search criteria with the query in the SQL console.");
                         
                         syncButton.setIcon(tabContentPanel.doSync? UIUtil.scaleIcon(syncButton, syncIcon) : UIUtil.scaleIcon(syncButton, nosyncIcon));

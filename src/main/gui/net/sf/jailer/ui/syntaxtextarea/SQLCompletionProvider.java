@@ -1435,8 +1435,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return text.matches("(?is).*(\\w|((,|join|on|select|where|from|into)\\s?)|\\*|\\.)");
 	}
 
-	// TODO improve "join" auto completion
-	
     protected abstract List<String> getColumns(TABLE table, long timeOut, JComponent waitCursorSubject);
     protected abstract SCHEMA getDefaultSchema(SOURCE metaDataSource);
     protected abstract SCHEMA findSchema(SOURCE metaDataSource, String name);

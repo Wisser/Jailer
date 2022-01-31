@@ -4303,9 +4303,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		try {
 			updateNavigationCombobox();
 
-			if (!SessionForUI.isWCEditorSupported(session)) {
+			if (!SessionForUI.isWCEditorSupported(newSession)) {
 				searchBarToggleButton.setEnabled(false);
 				searchBarToggleButton.setSelected(false);
+				searchBarToggleButton.setToolTipText("<html>Open Search Sidebar<br>"
+					+ "<b>Condition editor not supported for DBMS \"" + (newSession.dbms == null? null : newSession.dbms.getId()) + "\"</b></html>");
 			}
 
 			tablesPanel.removeAll();
