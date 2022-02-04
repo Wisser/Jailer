@@ -1395,11 +1395,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                        jTabbedPane1.add(rTabContainer);
 	                        updateResultUI();
 	                        JPanel tp;
-							jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), tp = getTitlePanel(jTabbedPane1, rTabContainer, title));
+							jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), tp = getTitlePanel(jTabbedPane1, rTabContainer, tabContentPanel, title));
 							rowBrowserPerRTabContainer.put(rTabContainer, rb);
 							rowBrowserPerRTabContainer.put(tp, rb);
 	                        
 	                        if (jTabbedPane1.getTabCount() > MAX_TAB_COUNT) {
+	                        	Component tab0 = jTabbedPane1.getTabComponentAt(0);
+	                			if (tab0 instanceof TitelPanel) {
+	                				if (((TitelPanel) tab0).tabContentPanel != null) {
+	                					((TitelPanel) tab0).tabContentPanel.destroy();
+	                				}
+	                        	}
 	                            jTabbedPane1.remove(0);
 	                            updateResultUI();
 	                        }
@@ -1983,9 +1989,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     	JComponent rTabContainer = new ErrorPanel(errorMessage, statement, errorPosition);
 		jTabbedPane1.add(rTabContainer);
 		updateResultUI();
-        jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, "Error"));
+        jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, null, "Error"));
 
         if (jTabbedPane1.getTabCount() > MAX_TAB_COUNT) {
+        	Component tab0 = jTabbedPane1.getTabComponentAt(0);
+        	if (((TitelPanel) tab0).tabContentPanel != null) {
+				((TitelPanel) tab0).tabContentPanel.destroy();
+			}
             jTabbedPane1.remove(0);
             updateResultUI();
         }
@@ -2958,10 +2968,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     
     private class TitelPanel extends JPanel {
     	public final JComponent rTabContainer;
+    	public final TabContentPanel tabContentPanel;
 
-    	public TitelPanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, String title) {
+    	public TitelPanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title) {
     		super(new FlowLayout(FlowLayout.LEFT, 0, 0));
     		this.rTabContainer = rTabContainer;
+    		this.tabContentPanel = tabContentPanel;
     		setOpaque(false);
     		JLabel titleLbl = new JLabel(title);
     		titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
@@ -2970,15 +2982,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     			@Override
     			protected void onClick(MouseEvent e) {
     				tabbedPane.remove(rTabContainer);
-    				updateResultUI();
+    				if (tabContentPanel != null) {
+    					tabContentPanel.destroy();
+    	        	}
+    	            updateResultUI();
     			}
     		};
     		add(closeButton);
     	}
     }
-
-    private JPanel getTitlePanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, String title) {
-        return new TitelPanel(tabbedPane, rTabContainer, title);
+    
+    private JPanel getTitlePanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, TabContentPanel tabContentPanel, String title) {
+        return new TitelPanel(tabbedPane, rTabContainer, tabContentPanel, title);
     }
 
     @Override

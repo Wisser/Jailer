@@ -156,7 +156,7 @@ public class DesktopOutline extends JPanel {
 					desktop.openGlobalPopup(e);
 					return;
 				}
-				JPopupMenu popup = browser.browserContentPane.createPopupMenu(null, -1, 0, 0, false, false);
+				JPopupMenu popup = browser.browserContentPane.createPopupMenu(null, -1, 0, 0, false, false, false);
 				if (popup != null) {
 				    JPopupMenu popup2 = browser.browserContentPane.createSqlPopupMenu(-1, 0, 0, true, DesktopOutline.this);
 				    if (popup2.getComponentCount() > 0 && popup.getComponentCount() > 0) {

@@ -59,6 +59,8 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -70,6 +72,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -1395,6 +1398,13 @@ public class UIUtil {
     	while (popup.getComponentCount() > 0 && popup.getComponent(popup.getComponentCount() - 1) instanceof JSeparator) {
     		popup.remove(popup.getComponentCount() - 1);
     	}
+    	for (int i = 1; i < popup.getComponentCount();) {
+    		if (popup.getComponent(i) instanceof JSeparator && popup.getComponent(i - 1) instanceof JSeparator) {
+    			popup.remove(i);
+    		} else {
+    			++i;
+    		}
+    	}
     	popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
     		@Override
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -2171,8 +2181,8 @@ public class UIUtil {
 		setLeadingOrTrailingComponent("JTextField.leadingComponent", component, leadingComponent);
 	}
 	
-	public static void setTrailingComponent(JComponent component, JComponent leadingComponent) {
-		setLeadingOrTrailingComponent("JTextField.trailingComponent", component, leadingComponent);
+	public static void setTrailingComponent(JComponent component, JComponent trailingComponent) {
+		setLeadingOrTrailingComponent("JTextField.trailingComponent", component, trailingComponent);
 	}
 
 	private static void setLeadingOrTrailingComponent(String propertyName, JComponent component, JComponent leadingComponent) {
@@ -2192,6 +2202,42 @@ public class UIUtil {
 				component.putClientProperty(propertyName, leadingComponent);
 			}
 		}
+	}
+
+	private static ReferenceQueue<Object> refQueue = new ReferenceQueue<Object>();
+	private static Map<Object, Object> refs = new IdentityHashMap<Object, Object>();
+
+	public static class ReferenceWithCleanup extends WeakReference<Object> {
+		private final Runnable cleanup;
+
+		public ReferenceWithCleanup(Object object, Runnable cleanup) {
+			super(object, refQueue);
+			this.cleanup = cleanup;
+			refs.put(this, this);
+		}
+
+		public void cleanUp() {
+			cleanup.run();
+		}
+	}
+
+	static {
+		Thread cleanupThread = new Thread() {
+			public void run() {
+				while (true) {
+					ReferenceWithCleanup ref;
+					try {
+						ref = (ReferenceWithCleanup) refQueue.remove();
+						refs.remove(this);
+					} catch (InterruptedException e) {
+						return;
+					}
+					ref.cleanUp();
+				}
+			}
+		};
+		cleanupThread.setDaemon(true);
+		cleanupThread.start();
 	}
 
 }

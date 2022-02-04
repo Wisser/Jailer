@@ -1523,7 +1523,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getButton() != MouseEvent.BUTTON1 && !(browserContentPane.table instanceof SqlStatementTable)) {
-					JPopupMenu popup = browserContentPane.createPopupMenu(null, -1, 0, 0, false, false);
+					JPopupMenu popup = browserContentPane.createPopupMenu(null, -1, 0, 0, false, false, false);
 					JPopupMenu popup2 = browserContentPane.createSqlPopupMenu(-1, 0, 0, true, jInternalFrame);
 					popup.add(new JSeparator());
 					for (Component c : popup2.getComponents()) {

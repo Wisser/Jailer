@@ -172,8 +172,8 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.QueryBuilderDialog;
-import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
+import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
@@ -830,6 +830,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private int initialRowHeight;
 	private boolean useInheritedBlockNumbers;
 	boolean ignoreSortKey = false;
+	private final FullTextSearchPanel fullTextSearchPanel;
 
 	public static class RowsClosure {
 		Set<Pair<BrowserContentPane, Row>> currentClosure = Collections.synchronizedSet(new HashSet<Pair<BrowserContentPane, Row>>());
@@ -858,7 +859,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_SQLCONSOLE = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_QUERYBUILDER = KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK);
-	private static final KeyStroke KS_FILTER = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_FILTER = KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_FIND = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_EDIT = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
 
 	protected boolean useWhereClauseEditor() {
@@ -922,6 +924,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		initComponents();
+		
 		cancelLoadButton.setIcon(UIUtil.scaleIcon(cancelLoadButton, cancelIcon));
 		
         conditionEditorButton.setIcon(UIUtil.scaleIcon(this, findColumnIconWhere));
@@ -1169,6 +1172,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		};
+
+		this.fullTextSearchPanel = new FullTextSearchPanel(rowsTable);
+		fullTextSearchContainerPanel.add(fullTextSearchPanel);
+		
 		jLayeredPane2.remove(rowsTableScrollPane);
 		rowsTableScrollPane = new JScrollPane() {
 			@Override
@@ -1255,6 +1262,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		};
 		am.put(key, a);
 
+		rowsTableScrollPane.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				rowsTable.grabFocus();
+			}
+		});
+		
 		registerAccelerator(KS_SQLCONSOLE, new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1284,6 +1298,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public void actionPerformed(ActionEvent e) {
 				isTableFilterEnabled = !isTableFilterEnabled;
 				updateTableModel();
+			}
+		});
+		registerAccelerator(KS_FIND, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fullTextSearchPanel.open();
 			}
 		});
 		registerAccelerator(KS_EDIT, new AbstractAction() {
@@ -1488,6 +1508,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						// ignore
 					}
 				}
+				if (render instanceof JLabel) {
+					String marked = fullTextSearchPanel.markOccurrence(((JLabel) render).getText());
+					if (marked != null) {
+						((JLabel) render).setText(marked);
+					}
+				}
 				return render;
 			}
 
@@ -1553,7 +1579,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						} else if (e.getButton() != MouseEvent.BUTTON1) {
 							JPopupMenu popup;
-							popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1, true);
+							popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1, true, source != rowsTable && source != rowsTableScrollPane);
 							if (popup != null) {
 								if (row != null && !row.nonEmptyRowId.isEmpty()) {
 									for (Row r: rows) {
@@ -1785,7 +1811,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (UIUtil.plaf == PLAF.FLAT) {
 			relatedRowsPanel.setBorder(BorderFactory.createLineBorder(rRowsBGColor, 1, true));
 		}
-		if (createPopupMenu(null, -1, 0, 0, false, false).getComponentCount() == 0) {
+		if (createPopupMenu(null, -1, 0, 0, false, false, false).getComponentCount() == 0) {
 			relatedRowsLabel.setEnabled(false);
 		} else {
 			relatedRowsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1798,7 +1824,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					UIUtil.invokeLater(new Runnable() {
 						@Override
 						public void run() {
-							popup = createPopupMenu(null, -1, 0, 0, false, false);
+							popup = createPopupMenu(null, -1, 0, 0, false, false, false);
 							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-2, false);
 							popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 								@Override
@@ -2375,8 +2401,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param runnable
 	 * @param runnable
 	 */
-	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, boolean withSingleRow) {
-		return createPopupMenu(row, rowIndex, x, y, navigateFromAllRows, null, null, withSingleRow);
+	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, boolean withSingleRow, boolean forColumnsTable) {
+		return createPopupMenu(row, rowIndex, x, y, navigateFromAllRows, null, null, withSingleRow, forColumnsTable);
 	}
 
 	/**
@@ -2384,8 +2410,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param navigateFromAllRows
 	 * @param runnable
 	 */
-	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, boolean withSingleRow) {
-		return createPopupMenu(rowsTable, row, rowIndex, x, y, navigateFromAllRows, altCopyTCB, repaint, true, withSingleRow);
+	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, boolean withSingleRow, boolean forColumnsTable) {
+		return createPopupMenu(rowsTable, row, rowIndex, x, y, navigateFromAllRows, altCopyTCB, repaint, true, withSingleRow, forColumnsTable);
 	}
 
 	/**
@@ -2393,7 +2419,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param navigateFromAllRows
 	 * @param runnable
 	 */
-	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow) {
+	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow, boolean forColumnsTable) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 		if (withKeyStroke) {
 			tableFilter.setAccelerator(KS_FILTER);
@@ -2428,37 +2454,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			copyTCB = altCopyTCB;
 		} else {
 			copyTCB = null;
-		}
-
-		if (table instanceof SqlStatementTable && resultSetType == null) {
-			JPopupMenu jPopupMenu = new JPopupMenu();
-			if (row != null) {
-				JMenuItem det = new JMenuItem("Details");
-				jPopupMenu.add(det);
-				jPopupMenu.add(new JSeparator());
-				det.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						openDetails(rowIndex, x, y);
-					}
-				});
-			}
-			JMenu script = new JMenu("Create SQL");
-			script.setEnabled(false);
-			jPopupMenu.add(script);
-			jPopupMenu.add(new JSeparator());
-			if (copyTCB != null) {
-				jPopupMenu.add(copyTCB);
-				jPopupMenu.add(new JSeparator());
-			}
-			jPopupMenu.add(tableFilter);
-			JMenuItem editMode = new JMenuItem("Edit Mode");
-			if (withKeyStroke) {
-				editMode.setAccelerator(KS_EDIT);
-			}
-			jPopupMenu.add(editMode);
-			editMode.setEnabled(false);
-			return jPopupMenu;
 		}
 
 		List<String> assList = new ArrayList<String>();
@@ -2513,18 +2508,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			private void cancel() {
 				CancellationHandler.cancelSilently(context);
-				getRunnableQueue().add(new RunnableWithPriority() {
-
-					@Override
-					public void run() {
-						CancellationHandler.reset(context);
-					}
-
-					@Override
-					public int getPriority() {
-						return 0;
-					}
-				});
+				PriorityBlockingQueue<RunnableWithPriority> runnableQueue = getRunnableQueue();
+				if (runnableQueue == null) {
+					CancellationHandler.reset(context);
+				} else {
+					runnableQueue.add(new RunnableWithPriority() {
+	
+						@Override
+						public void run() {
+							CancellationHandler.reset(context);
+						}
+	
+						@Override
+						public int getPriority() {
+							return 0;
+						}
+					});
+				}
 			}
 		});
 
@@ -2549,26 +2549,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (popup.getComponentCount() > 0) {
 					popup.add(new JSeparator());
 				}
-
-//				JMenuItem qb = new JMenuItem("Query Builder");
-//				qb.setAccelerator(KS_QUERYBUILDER);
-//				popup.add(qb);
-//				qb.addActionListener(new ActionListener() {
-//					@Override
-//					public void actionPerformed(ActionEvent e) {
-//						openQueryBuilder(false, row == null? null : SqlUtil.replaceAliases(row.rowId, "A", "A"));
-//					}
-//				});
-//
-//				JMenuItem sqlConsole = new JMenuItem("SQL Console");
-//				sqlConsole.setAccelerator(KS_SQLCONSOLE);
-//				popup.add(sqlConsole);
-//				sqlConsole.addActionListener(new ActionListener() {
-//					@Override
-//					public void actionPerformed(ActionEvent e) {
-//						openQueryBuilder(true, row == null? null : SqlUtil.replaceAliases(row.rowId, "A", "A"));
-//					}
-//				});
 
 				final List<Row> toSelect = new ArrayList<Row>();
 				if (row != null && !row.nonEmptyRowId.isEmpty()) {
@@ -2716,6 +2696,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (BrowserContentPane.this.getQueryBuilderDialog() == null // SQL Console
 					&& copyTCB == null
 						) {
+					popup.add(new JSeparator());
+				}
+				if (!forColumnsTable) {
+					JMenuItem findItem = new JMenuItem("Find...");
+					findItem.addActionListener(e -> fullTextSearchPanel.open());
+					findItem.setAccelerator(KS_FIND);
+					popup.add(findItem);
 					popup.add(new JSeparator());
 				}
 				popup.add(tableFilter);
@@ -2895,6 +2882,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		popup.add(new JSeparator());
 		if (!forNavTree) {
+			JMenuItem findItem = new JMenuItem("Find...");
+			findItem.addActionListener(e -> fullTextSearchPanel.open());
+			findItem.setAccelerator(KS_FIND);
+			findItem.setEnabled(singleRowDetailsView == null);
+			popup.add(findItem);
+			popup.add(new JSeparator());
 			JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 			tableFilter.setAccelerator(KS_FILTER);
 			tableFilter.setSelected(isTableFilterEnabled);
@@ -5626,6 +5619,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         noRowsFoundPanel = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
         removeConditionButton = new javax.swing.JButton();
+        fullTextSearchContainerPanel = new javax.swing.JPanel();
         singleRowViewScrollPaneContainer = new javax.swing.JPanel();
         singleRowViewScrollPane = new javax.swing.JScrollPane();
         singleRowViewScrollContentPanel = new javax.swing.JPanel();
@@ -5910,6 +5904,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jLayeredPane2.add(noRowsFoundPanel, gridBagConstraints);
+
+        fullTextSearchContainerPanel.setLayout(new javax.swing.BoxLayout(fullTextSearchContainerPanel, javax.swing.BoxLayout.LINE_AXIS));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jLayeredPane2.add(fullTextSearchContainerPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6408,6 +6411,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     public javax.swing.JLabel findColumnsLabel;
     public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JLabel from;
+    private javax.swing.JPanel fullTextSearchContainerPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;

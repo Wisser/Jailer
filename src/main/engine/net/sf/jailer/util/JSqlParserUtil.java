@@ -61,6 +61,16 @@ public final class JSqlParserUtil {
 				}
 			}
 		    throw new JSQLParserException(e);
+		} catch (Throwable t) {
+			LogUtil.warn(t); // TODO 
+			// Select PAYMENT_ID, 
+//		       CUSTOMER_ID, 
+//		       STAFF_ID, 
+//		       RENTAL_ID,  0 -( - AMOUNT), 
+//		       PAYMENT_DATE, 
+//		       LAST_UPDATE
+//		       From PAYMENT;
+			throw new RuntimeException("ParseErr:" + sql + " " + t.getMessage(), t);
 		}
     }
 

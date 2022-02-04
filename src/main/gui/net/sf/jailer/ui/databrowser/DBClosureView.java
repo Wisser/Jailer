@@ -182,71 +182,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		                    selectTableCell(column, row);
 		                }
 		            }
-//                        int tableLevel = -1;
-//                        if (cellInfo.containsKey(value)) {
-//                        	tableLevel = cellInfo.get(value).level;
-//                        }
-//                        JCheckBoxMenuItem exclude = new JCheckBoxMenuItem("Exclude " + getDataModel().getDisplayName(table) + " from Path");
-//                        exclude.setSelected(excludedFromPath.contains(table));
-//                        exclude.setEnabled(mainPath.contains(cellInfo.get(value)) || excludedFromPath.contains(table));
-//                        exclude.addActionListener(new ActionListener() {
-//                            @Override
-//                            public void actionPerformed(ActionEvent e) {
-//                                if (!excludedFromPath.contains(table)) {
-//                                    excludedFromPath.add(table);
-//                                } else {
-//                                    excludedFromPath.remove(table);
-//                                }
-//                                mainPath.clear();
-//                                mainPathAsSet.clear();
-//                                refresh();
-//                                CellInfo ci = cellInfo.get(selectedTable);
-//                                if (ci != null) {
-//                                    String st = selectedTable;
-//                                    selectedTable = null;
-//                                    select(st, ci);
-//                                }
-//                            }
-//                        });
-//
-//                        final Set<Table> toExclude = new HashSet<Table>();
-//                        for (Entry<String, CellInfo> ciE: cellInfo.entrySet()) {
-//                            if (ciE.getValue().selected && ciE.getValue().level == tableLevel) {
-//                            	Table tableByDisplayName = getDataModel().getTableByDisplayName(ciE.getKey());
-//								if (tableByDisplayName != null) {
-//									toExclude.add(tableByDisplayName);
-//								}
-//                            }
-//                        }
-//                        JCheckBoxMenuItem excludeAll = new JCheckBoxMenuItem("Exclude all with Distance " + (tableLevel  + 1) + " from Path");
-//                        excludeAll.setEnabled(toExclude.size() > 1);
-//                        excludeAll.addActionListener(new ActionListener() {
-//                            @Override
-//                            public void actionPerformed(ActionEvent e) {
-//                            	excludedFromPath.addAll(toExclude);
-//                                mainPath.clear();
-//                                mainPathAsSet.clear();
-//                                refresh();
-//                                CellInfo ci = cellInfo.get(selectedTable);
-//                                if (ci != null) {
-//                                    String st = selectedTable;
-//                                    selectedTable = null;
-//                                    select(st, ci);
-//                                }
-//                            }
-//                        });
-//		            JMenuItem deselect = new JMenuItem("Deselect path");
-//		            deselect.addActionListener(new ActionListener() {
-//		                @Override
-//		                public void actionPerformed(ActionEvent e) {
-//		                	mainPath.clear();
-//		                    mainPathAsSet.clear();
-//		                    excludedFromPath.clear();
-//		                    refreshTableModel();
-//		                    selectedTable = null;
-//		                    refresh();
-//		                }
-//		            });
+
 		            JMenuItem pathFinder = new JMenuItem("Find more complex path to " + getDataModel().getDisplayName(table));
 		            Table rt = getRootTable();
 		            if (rt == null || !ClosureView.getBiDirClosure(rt).contains(table)) {
@@ -290,23 +226,24 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		                    }
 		                });
 		                menu.add(select);
-//                            menu.add(new JSeparator());
-//                            menu.add(exclude);
-//                            menu.add(excludeAll);
 		                menu.add(new JSeparator());
-		                JPopupMenu popup = rb.browserContentPane.createPopupMenu(null, -1, 0, 0, false, false);
+		                JPopupMenu popup = rb.browserContentPane.createPopupMenu(null, -1, 0, 0, false, false, false);
 		                JPopupMenu popup2 = rb.browserContentPane.createSqlPopupMenu(-1, 0, 0, true, closureTable);
 		                popup.add(new JSeparator());
-		                for (Component c : popup.getComponents()) {
+			            for (Component c : popup.getComponents()) {
 		                    menu.add(c);
 		                }
 		                for (Component c : popup2.getComponents()) {
 		                    menu.add(c);
 		                }
 		                if (!mainPath.isEmpty()) {
-//		                	menu.add(new JSeparator());
-//		                	menu.add(deselect);
-		                	menu.add(new JSeparator());
+		                	try {
+				                if (!((popup.getComponent(popup.getComponentCount() - 1)) instanceof JSeparator)) {
+				                	 popup.add(new JSeparator());
+				                }
+			                } catch (Exception ex) {
+			                	// ignore
+			                }
 		                	menu.add(openPath);
 		                    menu.add(pathFinder);
 		                }

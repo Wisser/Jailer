@@ -217,21 +217,20 @@ public class FileView extends javax.swing.JFrame {
 	 */
 	private JTextArea getJTextPane() {
 		if (jTextPane == null) {
+			RSyntaxTextAreaWithSQLSyntaxStyle rSyntaxTextAreaWithSQLSyntaxStyle = new RSyntaxTextAreaWithSQLSyntaxStyle(
+					false, false) {
+				protected boolean withModifingMenuItems() {
+					return false;
+				}
+			};
 			if (withSyntaxHighlighting) {
-				RSyntaxTextAreaWithSQLSyntaxStyle rSyntaxTextAreaWithSQLSyntaxStyle = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
-					protected boolean withModifingMenuItems() {
-						return false;
-					}
-				};
 				if (isXml) {
 					rSyntaxTextAreaWithSQLSyntaxStyle.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
 				}
-				jTextPane = rSyntaxTextAreaWithSQLSyntaxStyle;
 			} else {
-				jTextPane = new JTextArea();
-				jTextPane.setLineWrap(false);
-				jTextPane.setFont(new Font("Monospaced", Font.PLAIN, 12));
+				rSyntaxTextAreaWithSQLSyntaxStyle.setSyntaxEditingStyle(null);
 			}
+			jTextPane = rSyntaxTextAreaWithSQLSyntaxStyle;
 			jTextPane.setEditable(false);
 		}
 		return jTextPane;

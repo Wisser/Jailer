@@ -16,9 +16,11 @@
 package net.sf.jailer.ui.syntaxtextarea;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,6 +43,7 @@ import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -893,6 +896,16 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			// regex, etc.).
 			SearchContext context = findDialog.getSearchContext();
 			replaceDialog.setSearchContext(context);
+			
+			for (Container scrollPane = getParent(); scrollPane != null; scrollPane = scrollPane.getParent()) {
+				if (scrollPane instanceof JScrollPane) {
+					Point p = new Point(scrollPane.getWidth() / 2, scrollPane.getHeight() / 2);
+					SwingUtilities.convertPointToScreen(p, scrollPane);
+					findDialog.setLocation(p.x - findDialog.getWidth() / 2, p.y - findDialog.getHeight() / 2);
+					replaceDialog.setLocation(p.x - replaceDialog.getWidth() / 2, p.y - replaceDialog.getHeight() / 2);
+					break;
+				}
+			}
 		}
 	}
 

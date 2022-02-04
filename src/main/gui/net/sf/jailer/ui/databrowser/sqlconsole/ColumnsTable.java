@@ -382,7 +382,7 @@ public class ColumnsTable extends JTable {
 					}
 				}
 			}
-		}, false, true);
+		}, false, true, true);
 	}
 
 	private void adjustTableColumnsWidth() {

@@ -17,16 +17,11 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -50,10 +45,12 @@ import javax.swing.JTextField;
 import javax.swing.RowSorter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
+import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
@@ -66,6 +63,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.util.Pair;
 
 public class TabContentPanel extends javax.swing.JPanel {
@@ -88,7 +86,18 @@ public class TabContentPanel extends javax.swing.JPanel {
         this.rowColumnTypes = rowColumnTypes;
         initComponents();
         loadingPanel.setVisible(false);
-
+        
+        textArea = new RSyntaxTextAreaWithSQLSyntaxStyle(
+				false, false) {
+			protected boolean withModifingMenuItems() {
+				return false;
+			}
+		};
+		textArea.setSyntaxEditingStyle(null);
+		textArea.setEditable(false);
+		
+        textViewScrollPane.setViewportView(textArea);
+        
         cancelLoadButton.setIcon(UIUtil.scaleIcon(cancelLoadButton, cancelIcon));
 		
         statementLabel = new JLabel();
@@ -445,11 +454,12 @@ public class TabContentPanel extends javax.swing.JPanel {
 			}
 		}
 
-		jTextArea.setText(sb.toString());
-		jTextArea.setCaretPosition(0);
-		jTextArea.setEditable(false);
+		textArea.setText(sb.toString());
+		textArea.setCaretPosition(0);
+		textArea.setEditable(false);
+		textArea.discardAllEdits();
 		if (UIUtil.plaf == PLAF.FLAT) {
-			jTextArea.setBackground(Color.white);
+			textArea.setBackground(Color.white);
 		}
 	}
 
@@ -739,7 +749,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void copyCBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyCBButtonActionPerformed
-    	StringSelection selection = new StringSelection(jTextArea.getText());
+    	StringSelection selection = new StringSelection(textArea.getText());
 	    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 	    clipboard.setContents(selection, selection);
     }//GEN-LAST:event_copyCBButtonActionPerformed
@@ -753,6 +763,16 @@ public class TabContentPanel extends javax.swing.JPanel {
     private void cancelLoadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelLoadButtonActionPerformed
     }//GEN-LAST:event_cancelLoadButtonActionPerformed
 
+    public void destroy() {
+    	if (theRowsTable != null) {
+    		theRowsTable.setModel(new DefaultTableModel());
+    	}
+    	
+    	textArea.discardAllEdits();
+    	textArea.setDocument(new RSyntaxDocument(null, SyntaxConstants.SYNTAX_STYLE_NONE)); // prevent memory leak
+    }
+    
+    private final RSyntaxTextAreaWithSQLSyntaxStyle textArea;
     final Pair<Integer, Integer> caretDotMark;
     private final List<Integer> rowColumnTypes;
 
