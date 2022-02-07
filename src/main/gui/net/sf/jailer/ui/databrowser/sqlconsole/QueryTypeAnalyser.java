@@ -350,7 +350,7 @@ public class QueryTypeAnalyser {
 				}
 			}
 			return result;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			LogUtil.warn(e);
 		}
 		return null;
@@ -955,7 +955,7 @@ public class QueryTypeAnalyser {
 			@Override
 			public void visit(SignedExpression signedExpression) {
 				noSubexpression[0] = false;
-				visitSubExpression(signedExpression);
+				visitSubExpression(signedExpression.getExpression());
 			}
 
 			@Override

@@ -44,9 +44,6 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	// TODO
 	// in-place editing robustness
 	
-	// TODO
-	// StackOverflowError -- x
-	
 	
 	private final JTable table;
 	
@@ -145,6 +142,10 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	}
 	
 	public String markOccurrence(String text) {
+		if (!isVisible()) {
+			return null;
+		}
+		
 		// TODO
 		
 		return null;
