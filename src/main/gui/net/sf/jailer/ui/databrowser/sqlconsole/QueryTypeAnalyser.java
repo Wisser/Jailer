@@ -350,6 +350,8 @@ public class QueryTypeAnalyser {
 				}
 			}
 			return result;
+		} catch (QueryTooComplexException e) {
+			// ignore
 		} catch (Throwable e) {
 			LogUtil.warn(e);
 		}
