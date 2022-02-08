@@ -1543,11 +1543,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				} else {
 					ri = 0;
 				}
-				if (ri >= 0 && !rows.isEmpty() && rowsTable.getRowSorter().getViewRowCount() > 0) {
+				
+				/* if (ri >= 0) */ {
 					int i = 0;
 					boolean noRow = false;
 					if (source == rowsTable) {
-						i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
+						i = ri >= 0? rowsTable.getRowSorter().convertRowIndexToModel(ri) : -1;
 					} else if (source == rowsTableScrollPane || source == singleRowViewContainterPanel || source == singleRowDetailsView) {
 						ri = 0;
 						i = 0;
@@ -1557,7 +1558,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							i = -1;
 						}
 					}
-					Row row = noRow? null : rows.get(i);
+					Row row = noRow? null : i < 0? null : rows.get(i);
 
 					if (getQueryBuilderDialog() == null // SQL Console
 							|| ((e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 1) && (lastMenu == null || !lastMenu.isVisible()))) {
@@ -2053,10 +2054,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			};
 			menuPanel.addMouseListener(showPopupMenu);
 			
-			Stack<JPanel> panels = new Stack<JPanel>();
+			Stack<JComponent> panels = new Stack<JComponent>();
+			panels.add(fullTextSearchContainerPanel);
+			while (!panels.isEmpty()) {
+				JComponent panel = panels.pop();
+				synchronized (panel.getTreeLock()) {
+					for (Component comp: panel.getComponents()) {
+						if (comp instanceof JComponent) {
+							panels.push((JComponent) comp);
+							comp.addMouseListener(showPopupMenu);
+						}
+					}
+				}
+			}
+			
+			panels = new Stack<JComponent>();
 			panels.add(menuPanel);
 			while (!panels.isEmpty()) {
-				JPanel panel = panels.pop();
+				JComponent panel = panels.pop();
 				synchronized (panel.getTreeLock()) {
 					for (Component comp: panel.getComponents()) {
 						if (comp instanceof JPanel) {
@@ -2607,7 +2622,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 
-		if (!isPending && !rows.isEmpty() && row == null) {
+		if (getQueryBuilderDialog() != null && /* SQL Console */
+			!isPending && !rows.isEmpty() && row == null) {
 			popup.add(allNonEmpty);
 			allNonEmpty.setInitialText();
 		}
