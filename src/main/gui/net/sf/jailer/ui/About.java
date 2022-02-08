@@ -15,11 +15,15 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.util.stream.Stream;
 
 import javax.swing.ImageIcon;
 
 import net.sf.jailer.JailerVersion;
+import net.sf.jailer.ui.UIUtil.PLAF;
 
 /**
  * The "About" dialog.
@@ -59,6 +63,22 @@ public class About extends javax.swing.JDialog {
 			path = path.getParentFile();
 		}
 		jTextField8.setText(path.getAbsolutePath());
+		jTextField9.setText(props("", "java.library.path"));
+		
+		Stream.of(forumTextField, forumTextField1, jTextField3, jTextField4, jTextField5, jTextField6, jTextField7, jTextField8, jTextField9).forEach(
+				tf -> {
+					tf.setToolTipText(UIUtil.toHTML(tf.getText().replace(";", "\n"), 0));
+					tf.setCaretPosition(0);
+					if (UIUtil.plaf == PLAF.FLAT) {
+						tf.setBorder(null);
+					}
+					tf.addMouseListener(new MouseAdapter() {
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							tf.selectAll();
+						}
+					});
+				});
 		
 		jButton1.setIcon(UIUtil.scaleIcon(jButton1, okIcon));
 		jButton1.grabFocus();
@@ -110,32 +130,37 @@ public class About extends javax.swing.JDialog {
         jTextField8 = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
         forumTextField1 = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
+        jTextField9 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
+        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel1.setText("Home");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 8, 0);
         getContentPane().add(jLabel1, gridBagConstraints);
 
+        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel2.setText("Forum");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 8, 0);
         getContentPane().add(jLabel2, gridBagConstraints);
 
+        jLabel3.setFont(jLabel3.getFont().deriveFont(jLabel3.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel3.setText("Support  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 8, 0);
         getContentPane().add(jLabel3, gridBagConstraints);
 
         nameLabel.setText("Database Subsetting and Relational Data Browsing Tool");
@@ -154,7 +179,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         getContentPane().add(forumTextField, gridBagConstraints);
 
         jTextField3.setEditable(false);
@@ -164,7 +189,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         getContentPane().add(jTextField3, gridBagConstraints);
 
         jButton1.setText("Ok");
@@ -189,12 +214,13 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
         getContentPane().add(jSeparator1, gridBagConstraints);
 
+        jLabel4.setFont(jLabel4.getFont().deriveFont(jLabel4.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel4.setText("Version  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 8, 0);
         getContentPane().add(jLabel4, gridBagConstraints);
 
         jTextField4.setEditable(false);
@@ -203,7 +229,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridy = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         getContentPane().add(jTextField4, gridBagConstraints);
 
         jTextField5.setEditable(false);
@@ -212,23 +238,25 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridy = 13;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         getContentPane().add(jTextField5, gridBagConstraints);
 
+        jLabel5.setFont(jLabel5.getFont().deriveFont(jLabel5.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel5.setText("Java  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 13;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 8, 0);
         getContentPane().add(jLabel5, gridBagConstraints);
 
+        jLabel6.setFont(jLabel6.getFont().deriveFont(jLabel6.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel6.setText("System  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 14;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 8, 0);
         getContentPane().add(jLabel6, gridBagConstraints);
 
         jTextField6.setEditable(false);
@@ -242,15 +270,16 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridy = 14;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         getContentPane().add(jTextField6, gridBagConstraints);
 
-        jLabel7.setText("Program folder  ");
+        jLabel7.setFont(jLabel7.getFont().deriveFont(jLabel7.getFont().getStyle() | java.awt.Font.BOLD));
+        jLabel7.setText("Program folder      ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 8, 0);
         getContentPane().add(jLabel7, gridBagConstraints);
 
         jTextField7.setEditable(false);
@@ -259,15 +288,16 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridy = 15;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         getContentPane().add(jTextField7, gridBagConstraints);
 
+        jLabel8.setFont(jLabel8.getFont().deriveFont(jLabel8.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel8.setText("Working folder  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 16;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 16, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 8, 0);
         getContentPane().add(jLabel8, gridBagConstraints);
 
         jTextField8.setEditable(false);
@@ -276,7 +306,7 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridy = 16;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         getContentPane().add(jTextField8, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -291,8 +321,26 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         getContentPane().add(forumTextField1, gridBagConstraints);
+
+        jLabel10.setFont(jLabel10.getFont().deriveFont(jLabel10.getFont().getStyle() | java.awt.Font.BOLD));
+        jLabel10.setText("Library path ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 17;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 8, 0);
+        getContentPane().add(jLabel10, gridBagConstraints);
+
+        jTextField9.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 17;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        getContentPane().add(jTextField9, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -309,6 +357,7 @@ public class About extends javax.swing.JDialog {
     public javax.swing.JTextField forumTextField1;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -324,6 +373,7 @@ public class About extends javax.swing.JDialog {
     private javax.swing.JTextField jTextField6;
     private javax.swing.JTextField jTextField7;
     private javax.swing.JTextField jTextField8;
+    private javax.swing.JTextField jTextField9;
     public javax.swing.JLabel nameLabel;
     // End of variables declaration//GEN-END:variables
 	

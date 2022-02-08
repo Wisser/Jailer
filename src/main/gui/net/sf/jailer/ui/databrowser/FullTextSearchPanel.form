@@ -30,6 +30,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout"/>
       <SubComponents>
         <Component class="javax.swing.JTextField" name="searchField">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Search criteria.&lt;br&gt;&lt;br&gt; Search for items that contain the search criteria as:&lt;br&gt; &lt;table&gt; &lt;tr&gt;&lt;td&gt;&lt;b&gt;Prefix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it starts with a space&lt;/td&gt;&lt;/tr&gt; &lt;tr&gt;&lt;td&gt;&lt;b&gt;Suffix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it ends with a space&lt;/td&gt;&lt;/tr&gt; &lt;tr&gt;&lt;td&gt;&lt;b&gt;Substring&lt;/b&gt;&lt;/td&gt;&lt;td&gt;else&lt;/td&gt;&lt;/tr&gt; &lt;/table&gt; &lt;/html&gt;  "/>
+          </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
           <Properties>
@@ -64,6 +67,16 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="closeButtonActionPerformed"/>
           </Events>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel3">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="    "/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="counterLabel">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="counter"/>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>

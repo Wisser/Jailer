@@ -77,6 +77,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
@@ -107,6 +108,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
@@ -133,6 +135,7 @@ import javax.swing.event.RowSorterEvent;
 import javax.swing.event.RowSorterListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.plaf.basic.BasicInternalFrameUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -830,7 +833,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private int initialRowHeight;
 	private boolean useInheritedBlockNumbers;
 	boolean ignoreSortKey = false;
-	private final FullTextSearchPanel fullTextSearchPanel;
+	public final FullTextSearchPanel fullTextSearchPanel;
 
 	public static class RowsClosure {
 		Set<Pair<BrowserContentPane, Row>> currentClosure = Collections.synchronizedSet(new HashSet<Pair<BrowserContentPane, Row>>());
@@ -1509,10 +1512,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 				if (render instanceof JLabel) {
-					String marked = fullTextSearchPanel.markOccurrence(((JLabel) render).getText());
-					if (marked != null) {
-						((JLabel) render).setText(marked);
-					}
+					fullTextSearchPanel.markOccurrence((JLabel) render, column, row);
 				}
 				return render;
 			}
@@ -1578,31 +1578,45 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								openDetails(i, p.x + getOwner().getX(), p.y + getOwner().getY());
 							}
 						} else if (e.getButton() != MouseEvent.BUTTON1) {
-							JPopupMenu popup;
-							popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1, true, source != rowsTable && source != rowsTableScrollPane);
-							if (popup != null) {
-								if (row != null && !row.nonEmptyRowId.isEmpty()) {
-									for (Row r: rows) {
-										if (r.nonEmptyRowId.equals(row.nonEmptyRowId) && BrowserContentPane.this.rowsClosure.currentClosureRootID.contains(r.nonEmptyRowId) && getQueryBuilderDialog() != null) {
-											currentRowSelection = -1;
-											onRedraw();
-											break;
-										}
-									}
+							if (getQueryBuilderDialog() != null && // !SQL Console
+								row == null && !(source != rowsTable && source != rowsTableScrollPane)) {
+								Point loc = e.getLocationOnScreen();
+								JPopupMenu popup = createPopupMenu(null, -1, 0, 0, false, false, false);
+								JPopupMenu popup2 = createSqlPopupMenu(0, (int) loc.getX(), (int) loc.getY(), false, BrowserContentPane.this);
+								popup.add(new JSeparator());
+								for (Component c : popup2.getComponents()) {
+									popup.add(c);
 								}
-								UIUtil.showPopup(source, x, y, popup);
-								popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
-
-									@Override
-									public void propertyChange(PropertyChangeEvent evt) {
-										if (Boolean.FALSE.equals(evt.getNewValue())) {
-											currentRowSelection = -1;
-											onRedraw();
+								UIUtil.fit(popup);
+								UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
+							} else {
+								JPopupMenu popup;
+								popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1, true, source != rowsTable && source != rowsTableScrollPane);
+								
+								if (popup != null) {
+									if (row != null && !row.nonEmptyRowId.isEmpty()) {
+										for (Row r: rows) {
+											if (r.nonEmptyRowId.equals(row.nonEmptyRowId) && BrowserContentPane.this.rowsClosure.currentClosureRootID.contains(r.nonEmptyRowId) && getQueryBuilderDialog() != null) {
+												currentRowSelection = -1;
+												onRedraw();
+												break;
+											}
 										}
 									}
-								});
+									UIUtil.showPopup(source, x, y, popup);
+									popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+
+										@Override
+										public void propertyChange(PropertyChangeEvent evt) {
+											if (Boolean.FALSE.equals(evt.getNewValue())) {
+												currentRowSelection = -1;
+												onRedraw();
+											}
+										}
+									});
+								}
+								lastMenu = popup;
 							}
-							lastMenu = popup;
 						} else {
 							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(ri, false);
 						}
@@ -2019,6 +2033,71 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		});
+		
+		if (getQueryBuilderDialog() != null) { // SQL Console
+			MouseListener showPopupMenu = new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (SwingUtilities.isRightMouseButton(e)) {
+						Point loc = e.getLocationOnScreen();
+						JPopupMenu popup = createPopupMenu(null, -1, 0, 0, false, false, false);
+						JPopupMenu popup2 = createSqlPopupMenu(0, (int) loc.getX(), (int) loc.getY(), false, BrowserContentPane.this);
+						popup.add(new JSeparator());
+						for (Component c : popup2.getComponents()) {
+							popup.add(c);
+						}
+						UIUtil.fit(popup);
+						UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
+					}
+				}
+			};
+			menuPanel.addMouseListener(showPopupMenu);
+			
+			Stack<JPanel> panels = new Stack<JPanel>();
+			panels.add(menuPanel);
+			while (!panels.isEmpty()) {
+				JPanel panel = panels.pop();
+				synchronized (panel.getTreeLock()) {
+					for (Component comp: panel.getComponents()) {
+						if (comp instanceof JPanel) {
+							if (comp != sqlPanel) {
+								if (comp != relatedRowsPanel) {
+									panels.push((JPanel) comp);
+								}
+							}
+						} else if (comp instanceof JLabel) {
+							comp.addMouseListener(showPopupMenu);
+						}
+					}
+				}
+			}
+	
+			addMouseListener(showPopupMenu);
+			JScrollBar scrollBar = rowsTableScrollPane.getHorizontalScrollBar();
+			if (scrollBar != null) {
+				scrollBar.addMouseListener(showPopupMenu);
+			}
+			scrollBar = rowsTableScrollPane.getVerticalScrollBar();
+			if (scrollBar != null) {
+				scrollBar.addMouseListener(showPopupMenu);
+			}
+			loadButton.addMouseListener(showPopupMenu);
+			if (thumbnail != null) {
+				thumbnail.addMouseListener(showPopupMenu);
+			}
+			UIUtil.invokeLater(() -> {
+				if (getRowBrowser() != null && getRowBrowser().internalFrame != null) {
+					Object bi = getRowBrowser().internalFrame.getUI();
+					if (bi instanceof BasicInternalFrameUI) {
+						JComponent northPane = ((BasicInternalFrameUI) bi).getNorthPane();
+						if (northPane != null) {
+							northPane.addMouseListener(showPopupMenu);
+						}
+					}
+				}
+			});
+		}
+		
 		updateTableModel(0, false, false);
 
 		suppressReload = false;
@@ -2700,6 +2779,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				if (!forColumnsTable) {
 					JMenuItem findItem = new JMenuItem("Find...");
+					findItem.setToolTipText("Full test search across all columns.");
 					findItem.addActionListener(e -> fullTextSearchPanel.open());
 					findItem.setAccelerator(KS_FIND);
 					popup.add(findItem);
@@ -2883,6 +2963,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		popup.add(new JSeparator());
 		if (!forNavTree) {
 			JMenuItem findItem = new JMenuItem("Find...");
+			findItem.setToolTipText("Full test search across all columns.");
 			findItem.addActionListener(e -> fullTextSearchPanel.open());
 			findItem.setAccelerator(KS_FIND);
 			findItem.setEnabled(singleRowDetailsView == null);

@@ -140,6 +140,7 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.databrowser.Desktop;
+import net.sf.jailer.ui.databrowser.FullTextSearchPanel;
 import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Reference;
@@ -204,6 +205,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private JMenuItem menuItemAnalyse;
 	private int initialTabbedPaneSelection = 0;
 	private List<? extends SortKey> initialSortKeys = null;
+	private FullTextSearchPanel fullTextSearchPanel = null;
 	private Point initialRowsTablesPos;
 	private Point initialTextTablesPos;
 	private Point initialColumnsTablesPos;
@@ -1304,6 +1306,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								loadButton.setEnabled(false);
 								initialSortKeysSql = rb.getStatementForReloading();
 								try {
+									fullTextSearchPanel = rb.fullTextSearchPanel;
 									initialSortKeys = rb.rowsTable.getRowSorter().getSortKeys();
 									initialColumnsTablesPos = null;
 									if (tabContentPanel.columnsScrollPane.getViewport() != null) {
@@ -1321,6 +1324,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									}
 								} catch (Exception e2) {
 									initialSortKeys = null;
+									fullTextSearchPanel = null;
 								}
 								reload(tabContentPanel, rb.getStatementForReloading());
 							}
@@ -1375,6 +1379,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							if (initialSortKeys != null && initialSortKeysSql != null && initialSortKeysSql.equals(sql)) {
                     			rb.getRowsTable().getRowSorter().setSortKeys(initialSortKeys);
                     		}
+							if (fullTextSearchPanel != null && rb.fullTextSearchPanel != null) {
+								UIUtil.invokeLater(12, () -> rb.fullTextSearchPanel.updateFromPredecessor(fullTextSearchPanel));
+							}
                 		} catch (Exception e) {
                 			// ignore
                 		}

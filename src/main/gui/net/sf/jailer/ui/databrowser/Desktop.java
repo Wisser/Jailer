@@ -79,6 +79,7 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -476,6 +477,16 @@ public abstract class Desktop extends JDesktopPane {
 			rbSourceToLinks = null;
 			if (hidden) {
 				internalFrame.setVisible(false);
+				JInternalFrame[] allFramesFromTableBrowsers = getAllFramesFromTableBrowsers();
+				if (!Stream.of(allFramesFromTableBrowsers).anyMatch(i -> i.isVisible() && i.isSelected())) {
+					Stream.of(allFramesFromTableBrowsers).filter(i -> i.isVisible()).findFirst().ifPresent(i -> {
+						try {
+							i.setSelected(true);
+						} catch (PropertyVetoException e) {
+							// ignore
+						}
+					});
+				}
 			} else {
 				internalFrame.setVisible(true);
 				Rectangle r = layout(parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
@@ -1530,7 +1541,7 @@ public abstract class Desktop extends JDesktopPane {
 						popup.add(c);
 					}
 					UIUtil.fit(popup);
-					popup.show(e.getComponent(), e.getX(), e.getY());
+					UIUtil.showPopup(e.getComponent(), e.getX(), e.getY(), popup);
 				}
 			}
 		});

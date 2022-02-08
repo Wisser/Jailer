@@ -650,7 +650,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				}
 				String search = searchTextField.getText().trim().toUpperCase(Locale.ENGLISH);
 				String item = value.toString().trim();
-				int i = item.toUpperCase(Locale.ENGLISH).indexOf(search);
+				int i = searchTextField.getText().endsWith(" ")? item.toUpperCase(Locale.ENGLISH).lastIndexOf(search) : item.toUpperCase(Locale.ENGLISH).indexOf(search);
 				if (i >= 0) {
 					i = Math.min(i, item.length());
 					if (i + search.length() <= item.length()) {

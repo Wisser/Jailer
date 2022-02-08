@@ -286,8 +286,10 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				}
 			}
 			if (config.isEmpty()) {
-				if (table.primaryKey != null) {
+				if (table.primaryKey != null && !table.primaryKey.getColumns().isEmpty()) {
 					comparisons.addAll(table.primaryKey.getColumns().stream().map(c -> new Comparison(Operator.Equal, c)).collect(Collectors.toList()));
+				} else {
+					comparisons.addAll(table.getColumns().stream().map(c -> new Comparison(Operator.Equal, c)).collect(Collectors.toList()));
 				}
 			} else {
 				comparisons.addAll(table.getColumns().stream().filter(c -> config.contains(c.name)).map(c -> new Comparison(Operator.Equal, c)).collect(Collectors.toList()));

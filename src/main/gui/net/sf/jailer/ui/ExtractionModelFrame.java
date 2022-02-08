@@ -1744,7 +1744,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		About about = new About(this, true);
 		about.setTitle("Jailer " + JailerVersion.VERSION);
 		about.pack();
-		about.setLocation(getLocation().x + (getSize().width - about.getPreferredSize().width) / 2, getLocation().y + (getSize().height - about.getPreferredSize().height) / 2);
+		about.setSize(Math.min(about.getWidth(), 600), about.getHeight());
+		about.setLocation(getLocation().x + (getSize().width - about.getSize().width) / 2, getLocation().y + (getSize().height - about.getSize().height) / 2);
 		about.setVisible(true);
 	}//GEN-LAST:event_jMenuItem1ActionPerformed
 
