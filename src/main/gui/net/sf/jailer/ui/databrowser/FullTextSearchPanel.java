@@ -60,7 +60,7 @@ import net.sf.jailer.util.LogUtil;
 public class FullTextSearchPanel extends javax.swing.JPanel {
 
 	private final static int MAX_OCCURRENCES = 100_000; // TODO
-	private final static String HL_COLOR = "#0000D0"; // TODO
+	private final static String HL_COLOR = "#0000D0";
 
 	private final JTable table;
 	
@@ -351,8 +351,8 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 					ordinalPerViewPosition.put(e.getKey(), ord++);
 				}
 			}
+			updateErrorState();
 			if (setCurrentPosition) {
-				updateErrorState();
 				if (!searchTextTrim.isEmpty() && markedValuePerPosition.isEmpty() && wasOk) {
 					beep();
 				}
@@ -409,6 +409,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		if (marked != null) {
 			render.setText(marked);
 			render.setBackground((new Color(200, 255, 200))); // TODO
+															  // TODO color blending
 			if (currentPosition != null && currentPosition == x + y * table.getColumnCount()) {
 				render.setBorder(BorderFactory.createLineBorder(new Color(0, 11 * 16, 0)));
 			}
