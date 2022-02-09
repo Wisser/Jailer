@@ -35,7 +35,6 @@ import net.sf.jailer.util.JSqlParserUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.Expression;
@@ -162,7 +161,7 @@ public class AssociationProposer {
 		net.sf.jsqlparser.statement.Statement st;
 		try {
 			st = JSqlParserUtil.parse(SqlUtil.removeNonMeaningfulFragments(sqlStatement), timeoutSec);
-		} catch (JSQLParserException e) {
+		} catch (/* JSQLParserException */ Throwable e) {
 			String prefix = "Line " + startLineNumber + ": ";
 			if (e.getCause() instanceof ParseException) {
 				ParseException pe = (ParseException) e.getCause();

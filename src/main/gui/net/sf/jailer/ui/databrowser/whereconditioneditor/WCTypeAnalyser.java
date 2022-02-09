@@ -645,6 +645,8 @@ public class WCTypeAnalyser {
 				LogUtil.warn(new RuntimeException(sqlSelect + ": " + e.getMessage()));
 				warned = true;
 			}
+		} catch (StackOverflowError e) {
+			LogUtil.warn(new StackOverflowError(WCTypeAnalyser.class.getName() + ": " + sqlSelect.length()));
 		} catch (Throwable t) {
 			LogUtil.warn(t);
 		}

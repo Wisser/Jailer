@@ -52,53 +52,6 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.LogUtil;
 
 
-// TODO
-// TODO see bookmark: global wceditor...
-
-// TODO
-// TODO kein rclick auf andcondition wirksam, stattdessen BrCoPane popup oeffnen (komplett auf JCombox mit button li + re)
-// TODO auch sql+related-pseudobuttons
-
-// TODO
-// TODO tooltip auf sqlconsole tab titel im desktop mit file pfad
-
-// TODO
-// TODO "Create script" menu item: + "DDL"
-
-// TODO
-// TODO frage bei leerem Datanmodel in Browser -> auch "SQL Console" anbieten?
-
-// TODO
-// TODO Full Text Search in DataModelEditor ?
-
-//TODO
-// warn
-//1zcom.ibm.db2.jcc.am.SqlException: [jcc][t4][1065][12306][4.12.55] Caught java.io.CharConversionException.  See attached Throwable for details. ERRORCODE=-4220, SQLSTATE=null
-//hd.a(hd.java:660)
-//hd.a(hd.java:60)
-//hd.a(hd.java:112)
-//kc.a(kc.java:2265)
-//kc.p(kc.java:520)
-//kc.N(kc.java:1524)
-//bn.e(bn.java:1147)
-//bn.getString(bn.java:1122)
-//MetaDataCache.readColumns(MetaDataCache.java:186)
-//JDBCMetaDataBasedModelElementFinder.getColumns(JDBCMetaDataBasedModelElementFinder.java:926)
-//JDBCMetaDataBasedModelElementFinder.findUniqueIndexBasedKey(JDBCMetaDataBasedModelElementFinder.java:798)
-//JDBCMetaDataBasedModelElementFinder.findTables(JDBCMetaDataBasedModelElementFinder.java:432)
-//JDBCMetaDataBasedModelElementFinder.findTables(JDBCMetaDataBasedModelElementFinder.java:354)
-//JDBCMetaDataBasedModelElementFinder.findTables(JDBCMetaDataBasedModelElementFinder.java:82)
-//ModelBuilder.build(ModelBuilder.java:200)
-//ModelBuilder.build(ModelBuilder.java:178)
-//Jailer.jailerMain(Jailer.java:315)
-//UIUtil$6.run(UIUtil.java:614)
-//Thread.run(Thread.java:832)
-//Caused by: java.nio.charset.MalformedInputException: Input length = 1
-//CoderResult.throwException(CoderResult.java:274)
-//t.a(t.java:44)
-
-
-
 /**
  * Full Text Search Panel.
  * 

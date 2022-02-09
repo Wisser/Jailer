@@ -45,6 +45,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -620,10 +621,18 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			valuePositions.clear();
 			fullPositions.clear();
 			Set<Comparison> seen = new HashSet<Comparison>();
+			String latestParsedConditionUC = latestParsedCondition.toUpperCase(Locale.ENGLISH);
 			for (int columnIndex = 0; columnIndex < table.getColumns().size(); ++columnIndex) {
 				for (boolean noAlias: new boolean[] { false, true }) {
 					Column column = table.getColumns().get(columnIndex);
 					if (column == null || column.name == null) {
+						continue;
+					}
+					if (noAlias && latestParsedCondition.length() > 400) {
+						continue;
+					}
+					String uqName = Quoting.staticUnquote(column.name);
+					if (uqName.matches("\\w+") && !latestParsedConditionUC.contains(uqName.toUpperCase(Locale.ENGLISH))) {
 						continue;
 					}
 					Matcher matcher = createComparisionMatcher(noAlias, column, latestParsedCondition);

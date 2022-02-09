@@ -1835,26 +1835,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 				@Override
 				public void mousePressed(MouseEvent e) {
-					loadButton.grabFocus();
-					UIUtil.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							popup = createPopupMenu(null, -1, 0, 0, false, false, false);
-							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-2, false);
-							popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
-								@Override
-								public void propertyChange(PropertyChangeEvent evt) {
-									if (Boolean.FALSE.equals(evt.getNewValue())) {
-										popup = null;
-										updateBorder();
-										setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
+					if (e.getButton() == MouseEvent.BUTTON1) {
+						loadButton.grabFocus();
+						UIUtil.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								popup = createPopupMenu(null, -1, 0, 0, false, false, false);
+								setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-2, false);
+								popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+									@Override
+									public void propertyChange(PropertyChangeEvent evt) {
+										if (Boolean.FALSE.equals(evt.getNewValue())) {
+											popup = null;
+											updateBorder();
+											setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
+										}
 									}
-								}
-							});
-							UIUtil.showPopup(relatedRowsPanel, 0, relatedRowsPanel.getHeight(), popup);
-							updateBorder();
-						}
-					});
+								});
+								UIUtil.showPopup(relatedRowsPanel, 0, relatedRowsPanel.getHeight(), popup);
+								updateBorder();
+							}
+						});
+					}
 				}
 
 				@Override
@@ -1893,27 +1895,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				loadButton.grabFocus();
-				UIUtil.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						Point loc = sqlPanel.getLocationOnScreen();
-						popup = createSqlPopupMenu(0, (int) loc.getX(), (int) loc.getY(), false, BrowserContentPane.this);
-						setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-2, false);
-						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
-							@Override
-							public void propertyChange(PropertyChangeEvent evt) {
-								if (Boolean.FALSE.equals(evt.getNewValue())) {
-									popup = null;
-									updateBorder();
-									setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					loadButton.grabFocus();
+					UIUtil.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							Point loc = sqlPanel.getLocationOnScreen();
+							popup = createSqlPopupMenu(0, (int) loc.getX(), (int) loc.getY(), false, BrowserContentPane.this);
+							setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-2, false);
+							popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+								@Override
+								public void propertyChange(PropertyChangeEvent evt) {
+									if (Boolean.FALSE.equals(evt.getNewValue())) {
+										popup = null;
+										updateBorder();
+										setCurrentRowSelectionAndReloadChildrenIfLimitIsExceeded(-1, false);
+									}
 								}
-							}
-						});
-						UIUtil.showPopup(sqlPanel, 0, sqlPanel.getHeight(), popup);
-						updateBorder();
-					}
-				});
+							});
+							UIUtil.showPopup(sqlPanel, 0, sqlPanel.getHeight(), popup);
+							updateBorder();
+						}
+					});
+				}
 			}
 
 			@Override
@@ -2053,6 +2057,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			};
 			menuPanel.addMouseListener(showPopupMenu);
+			andCondition.addMouseListener(showPopupMenu);
+			andCondition.getEditor().getEditorComponent().addMouseListener(showPopupMenu);
+			conditionEditorButton.addMouseListener(showPopupMenu);
+			sqlPanel.addMouseListener(showPopupMenu);
+			relatedRowsPanel.addMouseListener(showPopupMenu);
+			deselectButton.addMouseListener(showPopupMenu);
 			
 			Stack<JComponent> panels = new Stack<JComponent>();
 			panels.add(fullTextSearchContainerPanel);

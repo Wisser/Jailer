@@ -3496,23 +3496,15 @@ public class DataBrowser extends javax.swing.JFrame {
 										DataModelManager.getCurrentModelSubfolder(executionContext), executionContext).a
 								+ "\" is empty.",
 						DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,
-						null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
+						null, new Object[] { "Analyze Database", "Data Model Editor", "SQL Console" }, null)) {
 				case 0:
 					updateDataModel();
 					break;
 				case 1:
 					openDataModelEditor(false);
 					break;
-				}
-			} else if (!new File(DataModel.getColumnsFile(executionContext)).exists()) {
-				switch (JOptionPane.showOptionDialog(this, "No column definition found.",
-						DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE,
-						null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
-				case 0:
-					updateDataModel();
-					break;
-				case 1:
-					openDataModelEditor(false);
+				case 2:
+					workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
 					break;
 				}
 			}
@@ -4633,8 +4625,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		protected void onContentStateChange(File file, boolean dirty) {
 			if (file == null) {
 				title = initialTitle;
+				titleLbl.setToolTipText(null);
 			} else {
 				title = file.getName();
+				titleLbl.setToolTipText(file.getAbsolutePath());
 			}
 			if (dirty && file != null) {
 				titleLbl.setText("* " + title);

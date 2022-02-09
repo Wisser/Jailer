@@ -62,21 +62,18 @@ public final class JSqlParserUtil {
 			}
 		    throw new JSQLParserException(e);
 		} catch (Throwable t) {
-			LogUtil.warn(t); // TODO 
-			// Select PAYMENT_ID, 
-//		       CUSTOMER_ID, 
-//		       STAFF_ID, 
-//		       RENTAL_ID,  0 -( - AMOUNT), 
-//		       PAYMENT_DATE, 
-//		       LAST_UPDATE
-//		       From PAYMENT;
+			if (t instanceof StackOverflowError) {
+				LogUtil.warn(new StackOverflowError(JSqlParserUtil.class.getName() + ": " + sql.length()));
+			} else {
+				LogUtil.warn(t);
+			}
 			throw new RuntimeException("ParseErr:" + sql + " " + t.getMessage(), t);
 		}
     }
 
-    private static final int MAX_ENTRIES = 10000;
+    private static final int MAX_ENTRIES = 1000;
     @SuppressWarnings("serial")
-	private static Map<String, String> timedOut = new LinkedHashMap<String, String>(MAX_ENTRIES+1, .75F, true) {
+	private static Map<String, String> timedOut = new LinkedHashMap<String, String>(MAX_ENTRIES + 1, .75F, true) {
         // This method is called just after a new entry has been added
         public boolean removeEldestEntry(Map.Entry<String, String> eldest) {
             return size() > MAX_ENTRIES;
@@ -115,12 +112,25 @@ public final class JSqlParserUtil {
     	}
     }
 
+    private static final int MAX_CACHEDENTRIES = 20;
+    @SuppressWarnings("serial")
+	private static Map<String, Statement> cache = new LinkedHashMap<String, Statement>(MAX_CACHEDENTRIES + 1, .75F, true) {
+        // This method is called just after a new entry has been added
+        public boolean removeEldestEntry(Map.Entry<String, Statement> eldest) {
+            return size() > MAX_CACHEDENTRIES;
+        }
+    };
+    
     /**
      * Workaround for https://github.com/JSQLParser/JSqlParser/issues/1013
      *
 	 * @see https://github.com/JSQLParser/JSqlParser/issues/1013
      */
     private static synchronized Statement parse(CCJSqlParser parser, String sql, int timeoutSec) throws ParseException {
+    	Statement cachedStatement = cache.get(sql);
+    	if (cachedStatement != null) {
+    		return cachedStatement;
+    	}
 		if (stop == null) {
 			return parser.Statement();
 		}
@@ -173,6 +183,7 @@ public final class JSqlParserUtil {
 		} else if (r instanceof Throwable) {
 			throw new RuntimeException((Throwable) r);
 		} else if (r instanceof Statement) {
+			cache.put(sql, (Statement) r);
 			return (Statement) r;
 		} else {
 			statementQueue.add(nullParser);

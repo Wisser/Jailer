@@ -501,17 +501,23 @@ public abstract class DBConditionEditor extends EscapableDialog {
 			boolean inProgress = false;
 			@Override
 			public void mousePressed(MouseEvent e) {
-				pTime = System.currentTimeMillis();
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					pTime = System.currentTimeMillis();
+				}
 			}
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				if (pTime != null && System.currentTimeMillis() - pTime <= MAX_PTIME_DIFF && e.getX() < textfield.getWidth() - 10) {
-					openSQLEditor(textfield, open);
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					if (pTime != null && System.currentTimeMillis() - pTime <= MAX_PTIME_DIFF && e.getX() < textfield.getWidth() - 10) {
+						openSQLEditor(textfield, open);
+					}
 				}
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				openSQLEditor(textfield, open);
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					openSQLEditor(textfield, open);
+				}
 			}
 			private void openSQLEditor(final JTextField textfield, Consumer<String> open) {
 				if (!inProgress && textfield.isEnabled()) {

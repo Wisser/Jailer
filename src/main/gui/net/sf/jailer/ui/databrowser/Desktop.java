@@ -3933,19 +3933,25 @@ public abstract class Desktop extends JDesktopPane {
 
 			StringBuilder cond = new StringBuilder();
 			Set<String> known = new HashSet<String>();
+			boolean needsParen = false;
 			synchronized (this) {
-				for (Row r : tableBrowser.browserContentPane.rows) {
-					if (!known.contains(r.rowId)) {
-						known.add(r.rowId);
-						if (cond.length() > 0) {
-							cond.append(" or \n");
+				if (tableBrowser.browserContentPane.getParentBrowser() != null) {
+					for (Row r : tableBrowser.browserContentPane.rows) {
+						if (!known.contains(r.rowId)) {
+							known.add(r.rowId);
+							if (cond.length() > 0) {
+								cond.append(" or \n");
+								needsParen = true;
+							}
+							cond.append("(" + SqlUtil.replaceAliases(r.rowId, "A", "A") + ")");
 						}
-						cond.append("(" + SqlUtil.replaceAliases(r.rowId, "A", "A") + ")");
 					}
+				} else {
+					cond.append(tableBrowser.browserContentPane.getAndConditionText());
 				}
 			}
 
-			RowBrowser root = addTableBrowserSubTree(newDataBrowser, tableBrowser, null, null, cond.length() > 0? cond.toString() : null);
+			RowBrowser root = addTableBrowserSubTree(newDataBrowser, tableBrowser, null, null, cond.length() > 0? needsParen? "(" + cond + ")" : cond.toString() : null);
 			root.browserContentPane.reloadRows();
 			newDataBrowser.arrangeLayout(true);
 			try {
