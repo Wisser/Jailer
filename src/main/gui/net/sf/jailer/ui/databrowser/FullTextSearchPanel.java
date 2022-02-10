@@ -409,7 +409,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		if (marked != null) {
 			render.setText(marked);
 			
-			render.setBackground(new Color(200, 255, 200));
+			render.setBackground(new Color(190, 255, 180));
 			
 			if (currentPosition != null && currentPosition == x + y * table.getColumnCount()) {
 				render.setBorder(BorderFactory.createLineBorder(new Color(0, 11 * 16, 0)));
