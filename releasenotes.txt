@@ -1,4 +1,7 @@
-12.2.3
+12.2
+  - Full text search over the whole content in the display of a query result.
+
+12.1.3
   - Bug fixes:
     - The condition editor had problems with string literals containing non-ascii characters.
     - In the SQL console, the filter conditions set by the user were lost after a "reload" in the results panel.
