@@ -627,7 +627,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			dbLogos.put(model.get(i) + " ", logos.get(i));
 			int sum = 16;
 			for (int j = 0; j < v.length; ++j) {
-				int pWidth = new JLabel("<html><nobr>" + v[j] + "</nobr></html>").getPreferredSize().width;
+				int pWidth = new JLabel("<html><nobr>" + v[j] + "&nbsp;&nbsp;</nobr></html>").getPreferredSize().width;
 				prefWidth[j] = Math.max(prefWidth[j], pWidth);
 				prefWidth[j] = Math.min(prefWidth[j], module.equals("S")? j == 1? 200 : 140 : 160);
 				sum += 16 + (j < v.length - 1? prefWidth[j] : pWidth);

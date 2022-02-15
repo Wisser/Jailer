@@ -314,7 +314,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
 
         columnDetailsPanel.setLayout(new java.awt.GridBagLayout());
 
-        primaryKey1.setText(" primary key");
+        primaryKey1.setText("primary key  (or part of composite PK)");
         primaryKey1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

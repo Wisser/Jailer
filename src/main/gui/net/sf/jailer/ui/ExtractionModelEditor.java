@@ -2879,7 +2879,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					markDirty();
 				}
 			});
-			currentSubjectClosure = null; // force re-calculation
+			synchronized (this) {
+				currentSubjectClosure = null; // force re-calculation
+			}
 			subject = newSubject;
 			pendingDecisionsPanel.updateView();
 			extractionModel.subjectLimitDefinition = new SubjectLimitDefinition(null, null);
@@ -2950,7 +2952,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private void changeAdditionalSubjects(List<AdditionalSubject> newSubjects) {
     	final ArrayList<AdditionalSubject> oldSubjects = new ArrayList<ExtractionModel.AdditionalSubject>(extractionModel.additionalSubjects);
 		extractionModel.additionalSubjects = new ArrayList<>(newSubjects);
-		currentSubjectClosure = null; // force re-calculation
+		synchronized (this) {
+			currentSubjectClosure = null; // force re-calculation
+		}
 		markDirty();
 		updateAdditionalSubjectsButton();
 		pendingDecisionsPanel.updateView();
@@ -3692,7 +3696,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 *
 	 * @return closure of current subject table
 	 */
-	public Set<Table> getCurrentSubjectClosure() {
+	public synchronized Set<Table> getCurrentSubjectClosure() {
 		if (dataModel == null || subject == null) {
 			return Collections.emptySet();
 		}
