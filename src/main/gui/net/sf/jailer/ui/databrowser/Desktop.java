@@ -3005,7 +3005,7 @@ public abstract class Desktop extends JDesktopPane {
 				int direction = 0;
 
 				// find which scrollbar to scroll, or return if none
-				if ((toScroll == null) || !toScroll.isVisible() || ((e.getModifiers() & InputEvent.ALT_MASK) != 0)) {
+				if ((toScroll == null) || !toScroll.isVisible() || ((e.getModifiers() & InputEvent.ALT_MASK) != 0) || ((e.getModifiers() & InputEvent.SHIFT_MASK) != 0)) {
 					toScroll = scrollPane.getHorizontalScrollBar();
 
 					if ((toScroll == null) || !toScroll.isVisible()) {
