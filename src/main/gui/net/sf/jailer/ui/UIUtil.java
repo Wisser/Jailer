@@ -2170,9 +2170,15 @@ public class UIUtil {
 		}
 	}
 
+	private static boolean isMacOS = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("mac");
+	
+	public static boolean isMacOS() {
+		return isMacOS;
+	}
+
 	public static void initMacKeyStrokes() {
 		try {
-			if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("mac")) {
+			if (isMacOS()) {
 				addOSXKeyStrokes((InputMap) UIManager.get("EditorPane.focusInputMap"));
 				addOSXKeyStrokes((InputMap) UIManager.get("FormattedTextField.focusInputMap"));
 				addOSXKeyStrokes((InputMap) UIManager.get("PasswordField.focusInputMap"));
@@ -2186,7 +2192,6 @@ public class UIUtil {
 			// ignore
 		}
 	}
-
 
 	private static void addOSXKeyStrokes(InputMap inputMap) {
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK),

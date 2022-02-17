@@ -4124,7 +4124,7 @@ public abstract class Desktop extends JDesktopPane {
 	protected abstract boolean isZoomWithMouseWheel();
 	
 	private boolean inRescaleMode(long currentTime, MouseWheelEvent e) {
-		return (isZoomWithMouseWheel() || e == null || e.isControlDown()) && rescaleModeEnd != null && currentTime < rescaleModeEnd;
+		return (isZoomWithMouseWheel() || e == null || (UIUtil.isMacOS()? e.isMetaDown() : e.isControlDown())) && rescaleModeEnd != null && currentTime < rescaleModeEnd;
 	}
 
 	private void deferRescaleMode(long startTime) {
