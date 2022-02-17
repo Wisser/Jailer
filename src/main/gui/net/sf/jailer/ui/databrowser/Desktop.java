@@ -2993,7 +2993,11 @@ public abstract class Desktop extends JDesktopPane {
 	
 	void onMouseWheelMoved(java.awt.event.MouseWheelEvent e, JScrollPane scrollPane, long currentTime) {
 		if (!inRescaleMode(currentTime, e)) {
-			if (prevScrollPane != null && currentTime - prevScrollTime < 350) {
+			Container parentScrollPane = getParent();
+			while (parentScrollPane != null && !(parentScrollPane instanceof JScrollPane)) {
+				parentScrollPane = parentScrollPane.getParent();
+			}
+			if (prevScrollPane != null && prevScrollPane == parentScrollPane && currentTime - prevScrollTime < 350) {
 				scrollPane = prevScrollPane;
 			}
 			if ((e.getScrollAmount() != 0) && (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL)) {
