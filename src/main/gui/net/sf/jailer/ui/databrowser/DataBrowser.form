@@ -404,7 +404,7 @@
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
                   <KeyStroke key="Ctrl+PLUS"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Zoom In (Mouse Wheel Up)"/>
+                <Property name="text" type="java.lang.String" value="Zoom In (%Mouse Wheel Up)"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="zoomInMenuItemActionPerformed"/>
@@ -415,7 +415,7 @@
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
                   <KeyStroke key="Ctrl+MINUS"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Zoom Out (Mouse Wheel Down)"/>
+                <Property name="text" type="java.lang.String" value="Zoom Out (%Mouse Wheel Down)"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="zoomOutMenuItemActionPerformed"/>
@@ -513,6 +513,16 @@
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
               </AuxValues>
+            </MenuItem>
+            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="zoomWithMouseWheelMenuItem">
+              <Properties>
+                <Property name="selected" type="boolean" value="true"/>
+                <Property name="text" type="java.lang.String" value="Zoom with Mouse Wheel"/>
+                <Property name="toolTipText" type="java.lang.String" value="Zooming instead of scrolling when the mouse wheel is rolled without control key."/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="zoomWithMouseWheelMenuItemActionPerformed"/>
+              </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator16">
             </MenuItem>

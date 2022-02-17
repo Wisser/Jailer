@@ -329,6 +329,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		initComponents();
 		initMenu();
 
+		boolean zoom = Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL));
+		zoomWithMouseWheelMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL)));
+		setZoomWithMouseWheel(zoom);
+
 		if (UIUtil.plaf == PLAF.FLAT) {
 			jSplitPane4.setDividerSize(16);
 		}
@@ -615,7 +619,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		};
 
 		if (jScrollPane1.getVerticalScrollBar() != null) {
-			jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
+			jScrollPane1.getVerticalScrollBar().setUnitIncrement(32);
 			jScrollPane1.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 				@Override
 				public void adjustmentValueChanged(AdjustmentEvent e) {
@@ -624,7 +628,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			});
 		}
 		if (jScrollPane1.getHorizontalScrollBar() != null) {
-			jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
+			jScrollPane1.getHorizontalScrollBar().setUnitIncrement(32);
 			jScrollPane1.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 				@Override
 				public void adjustmentValueChanged(AdjustmentEvent e) {
@@ -929,6 +933,11 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected void loadScriptFile(String fileName) {
 				loadSQLScriptFile(new File(fileName));
+			}
+
+			@Override
+			protected boolean isZoomWithMouseWheel() {
+				return DataBrowser.this.isZoomWithMouseWheel();
 			}
 		};
 
@@ -1608,6 +1617,7 @@ public class DataBrowser extends javax.swing.JFrame {
         view = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
         autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
+        zoomWithMouseWheelMenuItem = new javax.swing.JCheckBoxMenuItem();
         jSeparator16 = new javax.swing.JPopupMenu.Separator();
         plafMenu = new javax.swing.JMenu();
         helpMenu = new javax.swing.JMenu();
@@ -2545,7 +2555,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(jSeparator5);
 
         zoomInMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_PLUS, java.awt.event.InputEvent.CTRL_MASK));
-        zoomInMenuItem.setText("Zoom In (Mouse Wheel Up)");
+        zoomInMenuItem.setText("Zoom In (%Mouse Wheel Up)");
         zoomInMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 zoomInMenuItemActionPerformed(evt);
@@ -2554,7 +2564,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(zoomInMenuItem);
 
         zoomOutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_MINUS, java.awt.event.InputEvent.CTRL_MASK));
-        zoomOutMenuItem.setText("Zoom Out (Mouse Wheel Down)");
+        zoomOutMenuItem.setText("Zoom Out (%Mouse Wheel Down)");
         zoomOutMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 zoomOutMenuItemActionPerformed(evt);
@@ -2629,6 +2639,16 @@ public class DataBrowser extends javax.swing.JFrame {
         autoLayoutMenuItem.setSelected(true);
         autoLayoutMenuItem.setText("Automatic Layout Arrangement");
         jMenu3.add(autoLayoutMenuItem);
+
+        zoomWithMouseWheelMenuItem.setSelected(true);
+        zoomWithMouseWheelMenuItem.setText("Zoom with Mouse Wheel");
+        zoomWithMouseWheelMenuItem.setToolTipText("Zooming instead of scrolling when the mouse wheel is rolled without control key.");
+        zoomWithMouseWheelMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                zoomWithMouseWheelMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu3.add(zoomWithMouseWheelMenuItem);
         jMenu3.add(jSeparator16);
 
         plafMenu.setText("Look and Feel");
@@ -2677,6 +2697,12 @@ public class DataBrowser extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void zoomWithMouseWheelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomWithMouseWheelMenuItemActionPerformed
+    	boolean zoom = zoomWithMouseWheelMenuItem.isSelected();
+    	setZoomWithMouseWheel(zoom);
+    	UISettings.store(UISettings.ZOOM_WITH_MOUSE_WHEEL, zoomWithMouseWheel = zoomWithMouseWheelMenuItem.isSelected());
+    }//GEN-LAST:event_zoomWithMouseWheelMenuItemActionPerformed
 
 	private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_exportDataMenuItemActionPerformed
 		desktop.createExtractionModel(true);
@@ -2824,7 +2850,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void thumbnailLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
 		desktop.rescaleLayout(Desktop.LayoutMode.THUMBNAIL, null);
-		wheelzoomTip();
 	}// GEN-LAST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
 
 	private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem1ActionPerformed
@@ -2862,26 +2887,18 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void tinyLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tinyLayoutRadioButtonMenuItemActionPerformed
 		desktop.rescaleLayout(Desktop.LayoutMode.TINY, null);
-		wheelzoomTip();
 	}// GEN-LAST:event_tinyLayoutRadioButtonMenuItemActionPerformed
-
-	private void wheelzoomTip() {
-		TipDialog.showTip(this, "WHEELZOOM", "You can use the mouse-wheel to zoom in or out.");
-	}
 
 	private void smallLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_smallLayoutRadioButtonMenuItemActionPerformed
 		desktop.rescaleLayout(Desktop.LayoutMode.SMALL, null);
-		wheelzoomTip();
 	}// GEN-LAST:event_smallLayoutRadioButtonMenuItemActionPerformed
 
 	private void mediumLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_mediumLayoutRadioButtonMenuItemActionPerformed
 		desktop.rescaleLayout(Desktop.LayoutMode.MEDIUM, null);
-		wheelzoomTip();
 	}// GEN-LAST:event_mediumLayoutRadioButtonMenuItemActionPerformed
 
 	private void largeLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_largeLayoutRadioButtonMenuItemActionPerformed
 		desktop.rescaleLayout(Desktop.LayoutMode.LARGE, null);
-		wheelzoomTip();
 	}// GEN-LAST:event_largeLayoutRadioButtonMenuItemActionPerformed
 
 	private void navigationTreeMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_navigationTreeMouseClicked
@@ -2968,7 +2985,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void jScrollPane1MouseWheelMoved(java.awt.event.MouseWheelEvent evt) {// GEN-FIRST:event_jScrollPane1MouseWheelMoved
 		long currentTime = System.currentTimeMillis();
 		desktop.startRescaleMode(currentTime, evt.getX(), evt.getY(), evt.getComponent());
-		desktop.onMouseWheelMoved(evt.getX(), evt.getY(), evt.getWheelRotation(), evt.getComponent(), currentTime);
+		desktop.onMouseWheelMoved(evt.getX(), evt.getY(), evt.getWheelRotation(), evt.getComponent(), currentTime, evt);
 		desktop.onMouseWheelMoved(evt, jScrollPane1, currentTime);
 	}// GEN-LAST:event_jScrollPane1MouseWheelMoved
 
@@ -3018,6 +3035,29 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void dataModelEditorjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_dataModelEditorjMenuItemActionPerformed
 		openDataModelEditor(false);
 	}// GEN-LAST:event_dataModelEditorjMenuItemActionPerformed
+
+	private boolean zoomWithMouseWheel;
+	private String zoomInMenuText = null;
+	private String zoomOutMenuText = null;
+	
+	public boolean isZoomWithMouseWheel() {
+		return zoomWithMouseWheel;
+	}
+
+	public void setZoomWithMouseWheel(boolean zoomWithMouseWheel) {
+		this.zoomWithMouseWheel = zoomWithMouseWheel;
+		
+		if (zoomInMenuText == null) {
+			zoomInMenuText = zoomInMenuItem.getText();
+		}
+		if (zoomOutMenuText == null) {
+			zoomOutMenuText = zoomOutMenuItem.getText();
+		}
+		
+		String mask = this.zoomWithMouseWheel? "" : (InputEvent.getModifiersExText(InputEvent.CTRL_DOWN_MASK) + "+");
+		zoomInMenuItem.setText(zoomInMenuText.replace("%", mask));
+		zoomOutMenuItem.setText(zoomOutMenuText.replace("%", mask));
+	}
 
 	/**
 	 * File in which plaf-setting is stored.
@@ -3457,6 +3497,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JTabbedPane workbenchTabbedPane;
     private javax.swing.JMenuItem zoomInMenuItem;
     private javax.swing.JMenuItem zoomOutMenuItem;
+    private javax.swing.JCheckBoxMenuItem zoomWithMouseWheelMenuItem;
     // End of variables declaration//GEN-END:variables
 
 	private JToggleButton searchButton;

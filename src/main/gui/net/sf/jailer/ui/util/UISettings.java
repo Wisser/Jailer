@@ -51,6 +51,11 @@ public class UISettings {
 	public static final String USE_NATIVE_PLAF = "USE_NATIVE_PLAF";
 
 	/**
+	 * Name of property (boolean) holding the "Zoom with mouse wheel" setting.
+	 */
+	public static final String ZOOM_WITH_MOUSE_WHEEL = "ZOOM_WITH_MOUSE_WHEEL";
+
+	/**
 	 * Name of property holding the "recent files".
 	 */
 	public static final String RECENT_FILES = "RECENT_FILES";

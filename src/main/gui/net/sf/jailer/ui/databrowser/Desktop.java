@@ -707,7 +707,7 @@ public abstract class Desktop extends JDesktopPane {
 			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
 				long currentTime = System.currentTimeMillis();
 				startRescaleMode(currentTime, evt.getX(), evt.getY(), evt.getComponent());
-				onMouseWheelMoved(evt.getX(), evt.getY(), evt.getWheelRotation(), evt.getComponent(), currentTime);
+				onMouseWheelMoved(evt.getX(), evt.getY(), evt.getWheelRotation(), evt.getComponent(), currentTime, evt);
 				onMouseWheelMoved(evt, parentFrame.getDesktopScrollPane(), currentTime);
 			}
 		});
@@ -1356,7 +1356,7 @@ public abstract class Desktop extends JDesktopPane {
 			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
 				long currentTime = System.currentTimeMillis();
 				checkRescaleMode(evt, currentTime);
-				onMouseWheelMoved(evt.getX(), evt.getY(), evt.getWheelRotation(), evt.getComponent(), currentTime);
+				onMouseWheelMoved(evt.getX(), evt.getY(), evt.getWheelRotation(), evt.getComponent(), currentTime, evt);
 				if (evt.getSource() instanceof JScrollPane) {
 					onMouseWheelMoved(evt, (JScrollPane) evt.getSource(), currentTime);
 				}
@@ -2988,8 +2988,16 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	private JScrollPane prevScrollPane = null;
+	private long prevScrollTime = 0;
+	
 	void onMouseWheelMoved(java.awt.event.MouseWheelEvent e, JScrollPane scrollPane, long currentTime) {
-		if (!inRescaleMode(currentTime)) {
+		if (!inRescaleMode(currentTime, e)) {
+			if (prevScrollPane != null && currentTime - prevScrollTime < RESCALE_DURATION) {
+				scrollPane = prevScrollPane;
+			}
+			prevScrollPane = scrollPane;
+			prevScrollTime = currentTime;
 			if ((e.getScrollAmount() != 0) && (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL)) {
 				JScrollBar toScroll = scrollPane.getVerticalScrollBar();
 				int direction = 0;
@@ -3036,8 +3044,8 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	void onMouseWheelMoved(int x, int y, int wheelRotation, Component component, long currentTime) {
-		if (inRescaleMode(currentTime)) {
+	void onMouseWheelMoved(int x, int y, int wheelRotation, Component component, long currentTime, MouseWheelEvent evt) {
+		if (inRescaleMode(currentTime, evt)) {
 			int d = 0;
 			if (wheelRotation < 0) {
 				d = 1;
@@ -4112,12 +4120,14 @@ public abstract class Desktop extends JDesktopPane {
 //		}
 	}
 
-	private boolean inRescaleMode(long currentTime) {
-		return rescaleModeEnd != null && currentTime < rescaleModeEnd;
+	protected abstract boolean isZoomWithMouseWheel();
+	
+	private boolean inRescaleMode(long currentTime, MouseWheelEvent e) {
+		return (isZoomWithMouseWheel() || e == null || e.isControlDown()) && rescaleModeEnd != null && currentTime < rescaleModeEnd;
 	}
 
 	private void deferRescaleMode(long startTime) {
-		if (inRescaleMode(startTime) && rescaleFactorHasChanged) {
+		if (rescaleModeEnd != null && rescaleFactorHasChanged) {
 			long duration = System.currentTimeMillis() - startTime;
 			rescaleModeEnd += duration;
 		}

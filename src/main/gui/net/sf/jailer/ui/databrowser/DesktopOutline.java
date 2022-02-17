@@ -179,7 +179,7 @@ public class DesktopOutline extends JPanel {
 					int x = (int) (((e.getX() - offX) / scale) + 0.5);
 					int y = (int) (((e.getY() - offY) / scale) + 0.5);
 					desktop.startRescaleMode(currentTime, x, y, desktop);
-					desktop.onMouseWheelMoved(x, y, e.getWheelRotation(), desktop, currentTime);
+					desktop.onMouseWheelMoved(x, y, e.getWheelRotation(), desktop, currentTime, null);
 				}
 			}
 		});
