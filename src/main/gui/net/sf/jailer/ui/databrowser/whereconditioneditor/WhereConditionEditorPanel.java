@@ -743,7 +743,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		return matcher;
 	}
 
-	public static final String VALUE_REGEX = "((?:(?:0x(?:\\d|[a-f])+)|(?:'(?:[^']|'')*')|(?:\\d|[\\.\\-\\+])+|(?:true|false)|(?:\\w+\\s*\\([^\\)\\(]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
+	public static final String VALUE_REGEX = "((?:(?:0x(?:\\d|[a-f])+)|(?:'(?:[^']|'')*')|(?:(?:[\\+\\-]\\s*)?(:?\\.|\\d)+)|(?:true|false)|(?:\\w+\\s*\\([^\\)\\(]*\\)))(?:\\s*\\:\\:\\s*(?:\\w+))?)";
 	
 	protected String createComparisionRE(boolean noAlias, Column column, String condition) {
 		String quoteRE = "[\"\u00B4\\[\\]`]";

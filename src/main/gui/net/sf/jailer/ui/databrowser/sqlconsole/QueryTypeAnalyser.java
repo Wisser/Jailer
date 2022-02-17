@@ -310,7 +310,7 @@ public class QueryTypeAnalyser {
 													selectClause.add(new Pair<String, String>(e.getKey(), col));
 												}
 											} catch (SQLException e2) {
-												logger.info("error", e2);
+												LogUtil.warn(e2);
 												throw new QueryTooComplexException();
 											}
 										}
