@@ -5637,7 +5637,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //			if (pw < 100) {
 //				pw = (pw * 110) / 100 + 2;
 //			}
-			width = Math.min(Math.max(width, pw), 150);
+			width = Math.min(Math.max(width, pw), 160);
 
 			int line = 0;
 			for (; line < rowsTable.getRowCount(); ++line) {
