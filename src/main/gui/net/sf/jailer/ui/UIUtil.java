@@ -2102,30 +2102,6 @@ public class UIUtil {
                     
 //                    UIManager.put( "TextArea.background", Color.white);
                     
-                    int DELAY = 200;
-					Timer timer = new Timer(DELAY, new ActionListener() {
-                    	// workaround for https://github.com/JFormDesigner/FlatLaf/issues/477
-                    	Window lastActive;
-                    	Point lastLoc;
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							for (Window w : Window.getWindows()) {
-					            if (w.isShowing() && w.isActive()) {
-					                Point loc = w.getLocationOnScreen();
-					                if (lastLoc == null || !lastLoc.equals(loc) || lastActive != w) {
-					                	lastLoc = loc;
-					                	lastActive = w;
-					                	w.repaint();
-					                }
-					            	break;
-					            }
-					        }
-						}
-					});
-                    timer.setDelay(DELAY);
-                    timer.setRepeats(true);
-                    timer.start();
-                    
                     FlatLightLaf.setup();
 					break;
 				} catch (Exception x) {
