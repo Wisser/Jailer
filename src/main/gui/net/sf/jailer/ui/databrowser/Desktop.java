@@ -1586,7 +1586,7 @@ public abstract class Desktop extends JDesktopPane {
 		} else if (association.isInsertDestinationBeforeSource()) {
 			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(230, 80, 50) : new java.awt.Color(190, 30, 0);
 		} else if (association.isInsertSourceBeforeDestination()) {
-			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(60, 240, 60) : new java.awt.Color(60, 132, 0);
+			color = UIUtil.plaf == PLAF.FLAT? new java.awt.Color(0, 230, 0) : new java.awt.Color(60, 132, 0);
 		}
 		return color;
 	}
