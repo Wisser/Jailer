@@ -619,7 +619,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		};
 
 		if (jScrollPane1.getVerticalScrollBar() != null) {
-			jScrollPane1.getVerticalScrollBar().setUnitIncrement(32);
+			jScrollPane1.getVerticalScrollBar().setUnitIncrement(48);
 			jScrollPane1.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 				@Override
 				public void adjustmentValueChanged(AdjustmentEvent e) {
@@ -628,7 +628,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			});
 		}
 		if (jScrollPane1.getHorizontalScrollBar() != null) {
-			jScrollPane1.getHorizontalScrollBar().setUnitIncrement(32);
+			jScrollPane1.getHorizontalScrollBar().setUnitIncrement(48);
 			jScrollPane1.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 				@Override
 				public void adjustmentValueChanged(AdjustmentEvent e) {

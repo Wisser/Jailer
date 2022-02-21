@@ -57,7 +57,7 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
  */
 @SuppressWarnings("serial")
 public class DesktopOutline extends JPanel {
-	
+
 	private final JComponent sameWidthFriend;
 	private final JPanel controlPanel;
 	private final Desktop desktop;
@@ -179,7 +179,8 @@ public class DesktopOutline extends JPanel {
 					int x = (int) (((e.getX() - offX) / scale) + 0.5);
 					int y = (int) (((e.getY() - offY) / scale) + 0.5);
 					desktop.startRescaleMode(currentTime, x, y, desktop);
-					desktop.onMouseWheelMoved(x, y, e.getWheelRotation(), desktop, currentTime, null);
+					desktop.onMouseWheelMoved(e, scrollPane, currentTime);
+					desktop.onMouseWheelMoved(x, y, e.getWheelRotation(), desktop, currentTime, e);
 				}
 			}
 		});
