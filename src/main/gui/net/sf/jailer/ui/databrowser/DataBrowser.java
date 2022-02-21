@@ -3054,7 +3054,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			zoomOutMenuText = zoomOutMenuItem.getText();
 		}
 		
-		String mask = this.zoomWithMouseWheel? "" : (InputEvent.getModifiersExText(UIUtil.isMacOS()? InputEvent.META_DOWN_MASK : InputEvent.CTRL_DOWN_MASK) + "+");
+		String mask = this.zoomWithMouseWheel? "" : ((UIUtil.isMacOS()? "Command" : InputEvent.getModifiersExText(InputEvent.CTRL_DOWN_MASK)) + "+");
 		zoomInMenuItem.setText(zoomInMenuText.replace("%", mask));
 		zoomOutMenuItem.setText(zoomOutMenuText.replace("%", mask));
 	}
