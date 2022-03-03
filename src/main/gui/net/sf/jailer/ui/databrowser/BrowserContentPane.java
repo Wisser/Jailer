@@ -1558,7 +1558,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							i = -1;
 						}
 					}
-					Row row = noRow? null : i < 0? null : rows.get(i);
+					Row row = noRow? null : i < 0 || i >= rows.size()? null : rows.get(i);
 
 					if (getQueryBuilderDialog() == null // SQL Console
 							|| ((e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 1) && (lastMenu == null || !lastMenu.isVisible()))) {

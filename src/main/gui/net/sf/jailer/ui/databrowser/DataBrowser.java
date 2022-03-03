@@ -2993,9 +2993,12 @@ public class DataBrowser extends javax.swing.JFrame {
 		new NewTableBrowser(this, datamodel.get(), offerAlternatives) {
 			@Override
 			void openTableBrowser(String tableName) {
-				desktop.addTableBrowser(null, null, datamodel.get().getTableByDisplayName(tableName), null, "", null,
+				Table tableByDisplayName = datamodel.get().getTableByDisplayName(tableName);
+				if (tableByDisplayName != null) {
+					desktop.addTableBrowser(null, null, tableByDisplayName, null, "", null,
 						null, true);
-				switchToDesktop();
+					switchToDesktop();
+				}
 			}
 
 			@Override

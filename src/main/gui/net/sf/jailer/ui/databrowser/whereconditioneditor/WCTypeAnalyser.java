@@ -612,8 +612,8 @@ public class WCTypeAnalyser {
 					if (c1 != null && c2 != null && c1 != c2 && c1.name != null && c2.name != null) {
 						String total = c1.name.replaceAll("\\s+", "").toLowerCase();
 						String suffix = c2.name.replaceAll("\\s+", "").toLowerCase();
-						if (total.endsWith(suffix) && !total.isEmpty() && !suffix.isEmpty() &&
-								!total.substring(total.length() - suffix.length() - 1, total.length() - suffix.length() + 1).matches("\\w\\w")
+						if (total.endsWith(suffix) && !total.isEmpty() && !suffix.isEmpty() && total.length() > suffix.length() && !c1.name.equals(c2.name) &&
+								!(total.substring(total.length() - suffix.length() - 1, total.length() - suffix.length() + 1).matches("\\w\\w"))
 								) {
 							String name = "(" + c1.name + ")";
 							result.addAlias(c1.name, name);

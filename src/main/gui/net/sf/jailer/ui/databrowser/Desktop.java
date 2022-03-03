@@ -568,7 +568,10 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 		}
-
+		if (title == null) {
+			title = "?";
+		}
+		
 		if (desktopUndoManager != null) {
 			desktopUndoManager.beforeModification("Remove \"" + title.replaceFirst("\\s*\\(\\d+\\)$", "") + "\"", "Add \"" + title.replaceFirst("\\s*\\(\\d+\\)$", "") + "\"");
 		}

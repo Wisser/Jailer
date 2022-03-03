@@ -229,7 +229,7 @@ public enum InlineViewStyle {
 		}
 	},
 	INFORMIX3("(Select 1 A, '2' B, 3 C from systables WHERE tabid=1 Union all " + 
-			   "Select 4, '5', 6 from systables WHERE tabid=1") {
+			   "Select 4, '5', 6 from systables WHERE tabid=1) %s") {
 		@Override
 		public String head(String[] columnNames) throws SQLException {
 			return "(Select ";
@@ -257,7 +257,7 @@ public enum InlineViewStyle {
 
 		@Override
 		public String terminator(String name, String[] columnNames) throws SQLException {
-			StringBuilder sb = new StringBuilder(" from systables WHERE tabid=1 " + name);
+			StringBuilder sb = new StringBuilder(" from systables WHERE tabid=1) " + name);
 			return sb.toString();
 		}
 	},
