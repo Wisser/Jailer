@@ -4273,9 +4273,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						if (a != null && a.values != null && a.values.length > col) {
 							va = a.values[col];
 						}
+						if (va instanceof PObjectWrapper) {
+							va = ((PObjectWrapper) va).getValue();
+						}
 						Object vb = null;
 						if (b != null && b.values != null && b.values.length > col) {
 							vb = b.values[col];
+						}
+						if (vb instanceof PObjectWrapper) {
+							vb = ((PObjectWrapper) vb).getValue();
 						}
 						if (va == null && vb == null) {
 							return 0;
