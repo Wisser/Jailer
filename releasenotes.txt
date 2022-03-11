@@ -1,3 +1,6 @@
+12.2.2
+  - This release includes some minor fixes and improvements.
+
 12.2.1
   - Issue "Desktop window scroll/zoom behaviour", https://github.com/Wisser/Jailer/issues/86
   - Issue "Rendering artifacts on native decorated windows on HiDPI", https://github.com/JFormDesigner/FlatLaf/issues/477
