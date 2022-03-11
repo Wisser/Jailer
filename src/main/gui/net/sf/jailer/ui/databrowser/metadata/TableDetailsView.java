@@ -24,6 +24,8 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -90,16 +92,25 @@ public class TableDetailsView extends javax.swing.JPanel {
 				}
 			});
 	   	}
+    	AdjustmentListener al = new AdjustmentListener() {
+			@Override
+			public void adjustmentValueChanged(AdjustmentEvent e) {
+				lastKnownVPos = jScrollPane2.getViewport().getViewPosition();
+			}
+		};
     	if (jScrollPane2.getHorizontalScrollBar() != null) {
         	jScrollPane2.getHorizontalScrollBar().setUnitIncrement(16);
+        	jScrollPane2.getHorizontalScrollBar().addAdjustmentListener(al);
         }
         if (jScrollPane2.getVerticalScrollBar() != null) {
         	jScrollPane2.getVerticalScrollBar().setUnitIncrement(16);
+        	jScrollPane2.getVerticalScrollBar().addAdjustmentListener(al);
         }
         if (currentView != null) {
         	sortColumnsCheckBox.setSelected(currentView.sortColumnsCheckBox.isSelected());
         	foundColumn = currentView.foundColumn;
         }
+        
 		ImageIcon scaledFindColumnIcon1 = UIUtil.scaleIcon(this, findColumnIcon1);
 		ImageIcon scaledFindColumnIcon2 = UIUtil.scaleIcon(this, findColumnIcon2);
 
@@ -628,6 +639,18 @@ public class TableDetailsView extends javax.swing.JPanel {
     private javax.swing.JLabel warnLabel2;
     private javax.swing.JPanel warnPanel;
     // End of variables declaration//GEN-END:variables
+    
+    private Point lastKnownVPos = null;
+    
+    public Point getViewPosition() {
+    	return lastKnownVPos == null? jScrollPane2.getViewport().getLocation() : lastKnownVPos;
+    }
+    
+    public void setViewPosition(Point vpos) {
+    	if (vpos != null) {
+    		jScrollPane2.getViewport().setViewPosition(vpos);
+    	}
+    }
     
     private static ImageIcon findColumnIcon1;
     private static ImageIcon findColumnIcon2;

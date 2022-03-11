@@ -19,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
@@ -90,6 +91,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	private final JPanel constraintsPanel;
 	private final Map<Pair<MetaDataDetails, MDTable>, JComponent> detailsViews = new HashMap<Pair<MetaDataDetails, MDTable>, JComponent>();
 	private final Map<Table, TableDetailsView> tableDetailsViews = new HashMap<Table, TableDetailsView>();
+	private final Map<Table, TableDetailsView> tableDetailsViewsAll = new HashMap<Table, TableDetailsView>();
 
     /**
      * Creates new form MetaDataDetailsPanell 
@@ -151,6 +153,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	public void reset() {
 		detailsViews.clear();
 		tableDetailsViews.clear();
+		tableDetailsViewsAll.clear();
 	}
 
 	public void showMetaDataDetails(MDGeneric mdOther, ExecutionContext executionContext) {
@@ -164,7 +167,10 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	}
 
     public void showMetaDataDetails(final MDTable mdTable, Table table, Row row, boolean onlyTable, DataModel dataModel) {
-    	setVisible(true);
+    	TableDetailsView v = table == null? null : tableDetailsViewsAll.get(table);
+    	Point vpos = v == null? null : v.getViewPosition();
+    	System.out.println(vpos +  " " + (v==null?null:v.hashCode()));
+		setVisible(true);
         ((CardLayout) getLayout()).show(this, "table");
     	tableDetailsPanel.removeAll();
     	if (table != null) {
@@ -176,6 +182,12 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     				tableDetailsViews.put(table, view);
     			}
     		}
+    		if (vpos != null) {
+    			view.setViewPosition(vpos);
+    		}
+    		tableDetailsViewsAll.put(table, view);
+    		System.out.println((view.hashCode()));
+    		
     		tableDetailsPanel.add(view);
     	} else if (mdTable != null) {
     		if (!ModelBuilder.isJailerTable(mdTable.getUnquotedName())) {
