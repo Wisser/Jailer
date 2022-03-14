@@ -169,8 +169,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     public void showMetaDataDetails(final MDTable mdTable, Table table, Row row, boolean onlyTable, DataModel dataModel) {
     	TableDetailsView v = table == null? null : tableDetailsViewsAll.get(table);
     	Point vpos = v == null? null : v.getViewPosition();
-    	System.out.println(vpos +  " " + (v==null?null:v.hashCode()));
-		setVisible(true);
+    	setVisible(true);
         ((CardLayout) getLayout()).show(this, "table");
     	tableDetailsPanel.removeAll();
     	if (table != null) {
@@ -186,7 +185,6 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     			view.setViewPosition(vpos);
     		}
     		tableDetailsViewsAll.put(table, view);
-    		System.out.println((view.hashCode()));
     		
     		tableDetailsPanel.add(view);
     	} else if (mdTable != null) {
