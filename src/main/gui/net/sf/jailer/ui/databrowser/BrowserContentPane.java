@@ -2803,14 +2803,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						) {
 					popup.add(new JSeparator());
 				}
-//				if (!forColumnsTable) {
+				if (BrowserContentPane.this.getQueryBuilderDialog() != null) {
 					JMenuItem findItem = new JMenuItem("Find...");
 					findItem.setToolTipText("Full test search across all columns.");
 					findItem.addActionListener(e -> fullTextSearchPanel.open());
 					findItem.setAccelerator(KS_FIND);
 					popup.add(findItem);
 					popup.add(new JSeparator());
-//				}
+				}
 				popup.add(tableFilter);
 				JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
 				editMode.setEnabled(isTableEditable(table));

@@ -2036,6 +2036,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                 RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
+		int oh = UIUtil.plaf == PLAF.NIMBUS? 3 : 0;
+		int ow = UIUtil.plaf == PLAF.NIMBUS? 1 : 0;
 		rowCounters.subMap(visibleRect.y - 16, visibleRect.y + visibleRect.height + 16).forEach((ry, mdTable) -> {
 			Long rc = mdTable.getEstimatedRowCount();
 			if (rc != null) {
@@ -2054,7 +2056,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				int y = ry - visibleRect.y + fontMetrics.getHeight() - 1;
 				g.setFont(getFont());
 				g.setColor(new Color(255, 255, 255));
-				g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 16, fontMetrics.getHeight() + 2);
+				g.fillRect(x - 8, y - fontMetrics.getHeight() + 2, visibleRect.width - x + 16 + ow, fontMetrics.getHeight() + 2 + oh);
 				g.setColor(new Color(0, 0, 255));
 				g.drawString(value, x, y);
 			}

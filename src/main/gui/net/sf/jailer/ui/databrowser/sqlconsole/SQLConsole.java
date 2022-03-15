@@ -209,7 +209,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private JMenuItem menuItemAnalyse;
 	private int initialTabbedPaneSelection = 0;
 	private List<? extends SortKey> initialSortKeys = null;
-	private FullTextSearchPanel fullTextSearchPanel = null;
+	private Map<String, FullTextSearchPanel> fullTextSearchPanel = new WeakHashMap<String, FullTextSearchPanel>();
 	private Point initialRowsTablesPos;
 	private Point initialTextTablesPos;
 	private Point initialColumnsTablesPos;
@@ -1310,7 +1310,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								loadButton.setEnabled(false);
 								initialSortKeysSql = rb.getStatementForReloading();
 								try {
-									fullTextSearchPanel = rb.fullTextSearchPanel;
+									fullTextSearchPanel.put(rb.getStatementForReloading(), rb.fullTextSearchPanel);
 									initialSortKeys = rb.rowsTable.getRowSorter().getSortKeys();
 									initialColumnsTablesPos = null;
 									if (tabContentPanel.columnsScrollPane.getViewport() != null) {
@@ -1328,7 +1328,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									}
 								} catch (Exception e2) {
 									initialSortKeys = null;
-									fullTextSearchPanel = null;
+									fullTextSearchPanel.remove(rb.getStatementForReloading());
 								}
 								reload(tabContentPanel, rb.getStatementForReloading());
 							}
@@ -1383,8 +1383,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							if (initialSortKeys != null && initialSortKeysSql != null && initialSortKeysSql.equals(sql)) {
                     			rb.getRowsTable().getRowSorter().setSortKeys(initialSortKeys);
                     		}
-							if (fullTextSearchPanel != null && rb.fullTextSearchPanel != null) {
-								UIUtil.invokeLater(12, () -> rb.fullTextSearchPanel.updateFromPredecessor(fullTextSearchPanel));
+							FullTextSearchPanel ftsp = fullTextSearchPanel.get(rb.getStatementForReloading());
+							if (ftsp != null) {
+								UIUtil.invokeLater(12, () -> rb.fullTextSearchPanel.updateFromPredecessor(ftsp));
 							}
                 		} catch (Exception e) {
                 			// ignore
@@ -1484,6 +1485,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							}
 							columnsTable = new ColumnsTable(rb, false);
 							rb.fullTextSearchPanel.setTransposedTable(columnsTable);
+							rb.fullTextSearchPanel.openPermanently();
 							tabContentPanel.columnsScrollPane.setViewportView(columnsTable);
 							FixedColumnTable fixedColumnTable = new FixedColumnTable(1, tabContentPanel.columnsScrollPane);
 							columnsTable.initFixedTable(fixedColumnTable.fixed);

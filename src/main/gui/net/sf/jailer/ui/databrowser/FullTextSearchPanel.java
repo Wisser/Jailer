@@ -222,6 +222,23 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		searchField.grabFocus();
 	}
 
+	public void openPermanently() {
+		if (!isVisible()) {
+			setVisible(true);
+			update(searchField.getText(), false);
+		}
+		closeButton.setVisible(false);
+	}
+
+	private void close() {
+		if (closeButton.isVisible()) {
+			setVisible(false);
+			update();
+		} else {
+			searchField.setText("");
+		}
+	}
+
 	public void updateFromPredecessor(FullTextSearchPanel predecessor) {
 		try {
 			inUpdate = true;
@@ -239,11 +256,6 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			update(searchField.getText(), false);
 		}
 		updateErrorState();
-	}
-
-	private void close() {
-		setVisible(false);
-		update();
 	}
 
 	private void update(String searchText, boolean setCurrentPosition) {
@@ -615,5 +627,5 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		prevIcon = UIUtil.readImage("/prev.png");
 		nextIcon = UIUtil.readImage("/next.png");
 	}
-
+	
 }
