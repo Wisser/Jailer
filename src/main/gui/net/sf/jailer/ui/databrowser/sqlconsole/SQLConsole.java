@@ -17,6 +17,7 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -72,11 +73,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -176,7 +180,7 @@ import net.sf.jailer.util.SqlUtil;
  */
 @SuppressWarnings("serial")
 public abstract class SQLConsole extends javax.swing.JPanel {
-
+	
 	/**
 	 * The logger.
 	 */
@@ -1386,13 +1390,30 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 			// ignore
                 		}
                 		tabContentPanel.tabbedPane.addChangeListener(new ChangeListener() {
-							@Override
+                			Container fullTextSearchPanelParent;
+                			@Override
 							public void stateChanged(ChangeEvent e) {
 								initialTabbedPaneSelection = tabContentPanel.tabbedPane.getSelectedIndex();
 								initialTabbedPaneSelectionLoc = loc;
 								updateColumnsAndTextView(rb, tabContentPanel);
 								if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel) {
 									columnsTable.scrollToCurrentRow();
+									if (fullTextSearchPanelParent == null) {
+										fullTextSearchPanelParent = rb.fullTextSearchPanel.getParent();
+										AbstractAction fa = new AbstractAction() {
+											@Override
+											public void actionPerformed(ActionEvent e) {
+												rb.fullTextSearchPanel.open();
+											}
+										};
+										InputMap im = columnsTable.getInputMap();
+										im.put(BrowserContentPane.KS_FIND, fa);
+										ActionMap am = columnsTable.getActionMap();
+										am.put(fa, fa);
+									}
+									tabContentPanel.fullTSearchPanel.add(rb.fullTextSearchPanel);
+								} else if (fullTextSearchPanelParent != null) {
+									fullTextSearchPanelParent.add(rb.fullTextSearchPanel);
 								}
 							}
 						});
@@ -1462,6 +1483,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								}
 							}
 							columnsTable = new ColumnsTable(rb, false);
+							rb.fullTextSearchPanel.setTransposedTable(columnsTable);
 							tabContentPanel.columnsScrollPane.setViewportView(columnsTable);
 							FixedColumnTable fixedColumnTable = new FixedColumnTable(1, tabContentPanel.columnsScrollPane);
 							columnsTable.initFixedTable(fixedColumnTable.fixed);

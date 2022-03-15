@@ -863,7 +863,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static final KeyStroke KS_SQLCONSOLE = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_QUERYBUILDER = KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_FILTER = KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
-	private static final KeyStroke KS_FIND = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK);
+	public static final KeyStroke KS_FIND = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_EDIT = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
 
 	protected boolean useWhereClauseEditor() {
@@ -2803,14 +2803,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						) {
 					popup.add(new JSeparator());
 				}
-				if (!forColumnsTable) {
+//				if (!forColumnsTable) {
 					JMenuItem findItem = new JMenuItem("Find...");
 					findItem.setToolTipText("Full test search across all columns.");
 					findItem.addActionListener(e -> fullTextSearchPanel.open());
 					findItem.setAccelerator(KS_FIND);
 					popup.add(findItem);
 					popup.add(new JSeparator());
-				}
+//				}
 				popup.add(tableFilter);
 				JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
 				editMode.setEnabled(isTableEditable(table));
@@ -2840,6 +2840,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 
+		if (row != null && getQueryBuilderDialog() != null /* SQL Console */) {
+			popup.add(new JSeparator());
+			JMenu window = new JMenu("Window");
+			popup.add(window);
+			for (Component comp: createPopupMenu(null, -1, 0, 0, false, false, false).getComponents()) {
+				window.add(comp);
+			}
+			popup.add(new JSeparator());
+			for (Component comp: createSqlPopupMenu(0, x, y, false, BrowserContentPane.this).getComponents()) {
+				window.add(comp);
+			}
+		}
+		
 		return popup;
 	}
 

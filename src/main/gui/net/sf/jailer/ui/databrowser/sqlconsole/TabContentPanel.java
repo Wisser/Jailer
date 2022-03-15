@@ -515,6 +515,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         columnsPanel = new javax.swing.JPanel();
         columnsScrollPane = new javax.swing.JScrollPane();
         columnsSortedStateLabel = new javax.swing.JLabel();
+        fullTSearchPanel = new javax.swing.JPanel();
         textTabPanel = new javax.swing.JPanel();
         textViewScrollPane = new javax.swing.JScrollPane();
         jTextArea = new javax.swing.JTextArea();
@@ -627,6 +628,9 @@ public class TabContentPanel extends javax.swing.JPanel {
         columnsSortedStateLabel.setForeground(java.awt.Color.blue);
         columnsSortedStateLabel.setText(" ");
         columnsPanel.add(columnsSortedStateLabel, java.awt.BorderLayout.NORTH);
+
+        fullTSearchPanel.setLayout(new javax.swing.BoxLayout(fullTSearchPanel, javax.swing.BoxLayout.LINE_AXIS));
+        columnsPanel.add(fullTSearchPanel, java.awt.BorderLayout.PAGE_END);
 
         tabbedPane.addTab("Columns", columnsPanel);
 
@@ -785,6 +789,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     public javax.swing.JPanel contentPanel;
     javax.swing.JToolBar controlsContainer;
     private javax.swing.JButton copyCBButton;
+    public javax.swing.JPanel fullTSearchPanel;
     private javax.swing.JCheckBox headerCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

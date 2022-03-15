@@ -361,15 +361,15 @@ public class ColumnsTable extends JTable {
 		} else {
 			return null;
 		}
-		JMenuItem copyTCB = new JMenuItem("Copy to Clipboard");
-		// copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
-		copyTCB.setEnabled(getSelectedColumnCount() > 0);
-		copyTCB.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				UIUtil.copyToClipboard(ColumnsTable.this, false);
-			}
-		});
+		JMenuItem copyTCB = null; // new JMenuItem("Copy to Clipboard");
+//		// copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
+//		copyTCB.setEnabled(getSelectedColumnCount() > 0);
+//		copyTCB.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				UIUtil.copyToClipboard(ColumnsTable.this, false);
+//			}
+//		});
 		Point p = new Point(e.getX(), e.getY());
 		SwingUtilities.convertPointToScreen(p, this);
 		return rb.createPopupMenu(this, row, i, (int) p.getX(), (int) p.getY(), false, copyTCB, new Runnable() {

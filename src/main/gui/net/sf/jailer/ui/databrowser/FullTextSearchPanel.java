@@ -49,6 +49,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
 import net.sf.jailer.util.LogUtil;
 
 
@@ -454,7 +455,14 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 			Rectangle cr = table.getCellRect(y, x, true);
 			if (cr != null) {
 				int border = table.getRowHeight();
-				table.scrollRectToVisible(new Rectangle(cr.x - border , cr.y - border, cr.width + 2 * border, cr.height + 2 * border));
+				table.scrollRectToVisible(new Rectangle(cr.x - border , cr.y - border, cr.width + 2 * border, cr.height + 3 * border));
+			}
+			if (transposedTable != null) {
+				cr = transposedTable.getCellRect(x, y + 1, true);
+				if (cr != null) {
+					int border = transposedTable.getRowHeight();
+					transposedTable.scrollRectToVisible(new Rectangle(cr.x - border , cr.y - border, cr.width + 2 * border, cr.height + 3 * border));
+				}
 			}
 		}
 		update();
@@ -578,7 +586,13 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
         update();
     }//GEN-LAST:event_closeButtonActionPerformed
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+	private JTable transposedTable;
+	
+	public void setTransposedTable(ColumnsTable transposedTable) {
+		this.transposedTable = transposedTable;
+	}
+
+	// Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
     private javax.swing.JLabel counterLabel;
     private javax.swing.JLabel jLabel1;
