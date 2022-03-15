@@ -2879,7 +2879,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					markDirty();
 				}
 			});
-			synchronized (this) {
+			synchronized (currentSubjectClosureLock) {
 				currentSubjectClosure = null; // force re-calculation
 			}
 			subject = newSubject;
@@ -2952,7 +2952,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private void changeAdditionalSubjects(List<AdditionalSubject> newSubjects) {
     	final ArrayList<AdditionalSubject> oldSubjects = new ArrayList<ExtractionModel.AdditionalSubject>(extractionModel.additionalSubjects);
 		extractionModel.additionalSubjects = new ArrayList<>(newSubjects);
-		synchronized (this) {
+		synchronized (currentSubjectClosureLock) {
 			currentSubjectClosure = null; // force re-calculation
 		}
 		markDirty();
@@ -3690,34 +3690,38 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			extractionModelFrame.updateTitle(needsSave);
 		}
 	}
+	
+	private Object currentSubjectClosureLock = new Object();
 
 	/**
 	 * Gets closure of current subject table.
 	 *
 	 * @return closure of current subject table
 	 */
-	public synchronized Set<Table> getCurrentSubjectClosure() {
-		if (dataModel == null || subject == null) {
-			return Collections.emptySet();
-		}
-		if (currentSubjectClosure == null || dataModel.getVersion() != closureVersion) {
-			Set<Table> subjects = new HashSet<Table>();
-			if (extractionModel.additionalSubjects != null) {
-				for (AdditionalSubject as: extractionModel.additionalSubjects) {
-					subjects.add(as.getSubject());
-				}
+	public Set<Table> getCurrentSubjectClosure() {
+		synchronized (currentSubjectClosureLock) {
+			if (dataModel == null || subject == null) {
+				return Collections.emptySet();
 			}
-			subjects.add(subject);
-
-			currentSubjectClosure = new HashSet<Table>();
-			for (Table subject: subjects) {
-				for (Table table: subject.closure(currentSubjectClosure)) {
-					currentSubjectClosure.add(table);
+			if (currentSubjectClosure == null || dataModel.getVersion() != closureVersion) {
+				Set<Table> subjects = new HashSet<Table>();
+				if (extractionModel.additionalSubjects != null) {
+					for (AdditionalSubject as: extractionModel.additionalSubjects) {
+						subjects.add(as.getSubject());
+					}
 				}
+				subjects.add(subject);
+	
+				currentSubjectClosure = new HashSet<Table>();
+				for (Table subject: subjects) {
+					for (Table table: subject.closure(currentSubjectClosure)) {
+						currentSubjectClosure.add(table);
+					}
+				}
+				closureVersion = dataModel.getVersion();
 			}
-			closureVersion = dataModel.getVersion();
+			return currentSubjectClosure;
 		}
-		return currentSubjectClosure;
 	}
 
 	private static final int MAX_NAVIGATIONSTACKSIZE = 20;
