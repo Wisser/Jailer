@@ -1,3 +1,6 @@
+12.2.3
+  - With release 12.2.1 and 12.2.2, deadlocks may occur when using the extraction model editor. This has been corrected.
+
 12.2.2
   - This release includes some minor fixes and improvements.
 
