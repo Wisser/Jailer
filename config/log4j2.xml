@@ -4,7 +4,7 @@
         <Console name="A1" target="SYSTEM_OUT">
             <PatternLayout pattern="%d [%t] %-5p - %m%n" />
         </Console>
-        <RollingFile name="A2" fileName="export.log" immediateFlush="false"
+        <RollingFile name="A2" fileName="export.log"
                     filePattern="export-%i.log">
 	        <PatternLayout>
 	            <Pattern>%d [%t] %-5p - %m%n</Pattern>
@@ -24,7 +24,7 @@
 	        </Policies>
 	        <DefaultRolloverStrategy max="10"/>
    		</RollingFile>
-        <RollingFile name="A4" fileName="jailer.log" immediateFlush="false"
+        <RollingFile name="A4" fileName="jailer.log"
                     filePattern="jailer-%i.log">
 	        <PatternLayout>
 	            <Pattern>%d [%t] %-5p - %m%n</Pattern>
@@ -40,15 +40,15 @@
         <Root level="error">
             <AppenderRef ref="A1" />
         </Root>
-        <Logger name="net.sf.jailer" level="info" additivity="false">
+        <asyncLogger  name="net.sf.jailer" level="info" additivity="false">
             <AppenderRef ref="A1" />
             <AppenderRef ref="A2"/>
             <AppenderRef ref="A3"/>
             <AppenderRef ref="A4"/>
-        </Logger>
-        <Logger name="sql" level="debug" additivity="false">
+        </asyncLogger >
+        <asyncLogger  name="sql" level="debug" additivity="false">
             <AppenderRef ref="A3"/>
             <AppenderRef ref="A4"/>
-        </Logger>
+        </asyncLogger >
     </Loggers>
 </Configuration>
