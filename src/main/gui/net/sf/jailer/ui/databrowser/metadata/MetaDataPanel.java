@@ -109,9 +109,10 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.apache.log4j.Logger;
 import org.fife.rsta.ui.EscapableDialog;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
@@ -142,7 +143,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(MetaDataPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(MetaDataPanel.class);
 
     private final MetaDataSource metaDataSource;
     private final JComboBox2<String> tablesComboBox;

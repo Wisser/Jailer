@@ -40,9 +40,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
-import org.apache.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
@@ -63,7 +64,7 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(MetaDataDetailsPanel.class);
 
 	protected final DatabaseObjectRenderingDescription databaseObjectRenderingDescription;
 	protected final MDSchema schema;

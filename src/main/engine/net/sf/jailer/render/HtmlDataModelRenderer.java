@@ -29,7 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -64,7 +65,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(HtmlDataModelRenderer.class);
+	private static final Logger _log = LoggerFactory.getLogger(HtmlDataModelRenderer.class);
 
 	public static final String CONTENT_FOLDER_NAME = "tables";
 

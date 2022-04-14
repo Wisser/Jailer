@@ -35,7 +35,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
@@ -84,7 +85,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(JDBCMetaDataBasedModelElementFinder.class);
+	private static final Logger _log = LoggerFactory.getLogger(JDBCMetaDataBasedModelElementFinder.class);
 
 	/**
 	 * Set of sql types (uppercase) not listed in {@link Types} which needs a length argument.

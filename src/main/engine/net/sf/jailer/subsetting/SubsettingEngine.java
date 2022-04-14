@@ -54,7 +54,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -158,7 +159,7 @@ public class SubsettingEngine {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(SubsettingEngine.class);
+	private static final Logger _log = LoggerFactory.getLogger(SubsettingEngine.class);
 
 	/**
 	 * Comment header of the export-script.
@@ -1510,7 +1511,7 @@ public class SubsettingEngine {
 				}
 			}
 
-			_log.info(session.dbms.getSqlDialect());
+			_log.info("" + session.dbms.getSqlDialect());
 
 			Runnable updateStatistics = new Runnable() {
 				@Override

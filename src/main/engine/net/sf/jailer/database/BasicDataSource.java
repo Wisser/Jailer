@@ -32,7 +32,8 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.Configuration.UrlRewriteRule;
@@ -48,7 +49,7 @@ public class BasicDataSource implements DataSource {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(BasicDataSource.class);
+	private static final Logger _log = LoggerFactory.getLogger(BasicDataSource.class);
 	
 	/**
 	 * Name of JDBC-driver class.

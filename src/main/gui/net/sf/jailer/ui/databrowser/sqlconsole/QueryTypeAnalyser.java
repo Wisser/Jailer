@@ -28,7 +28,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
@@ -159,7 +160,7 @@ public class QueryTypeAnalyser {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(MetaDataDetailsPanel.class);
 
 	@SuppressWarnings("serial")
 	private static class QueryTooComplexException extends RuntimeException {

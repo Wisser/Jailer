@@ -19,7 +19,8 @@ package net.sf.jailer.database;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 
@@ -39,7 +40,7 @@ public class ShellScriptBasedStatisticRenovator implements StatisticRenovator {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(ShellScriptBasedStatisticRenovator.class);
+	private static final Logger _log = LoggerFactory.getLogger(ShellScriptBasedStatisticRenovator.class);
 	
 	/**
 	 * Constructor.

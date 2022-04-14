@@ -58,7 +58,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
@@ -84,7 +85,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(MetaDataPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(MetaDataPanel.class);
 
 	/**
 	 * <code>true</code> if valid connection is available.

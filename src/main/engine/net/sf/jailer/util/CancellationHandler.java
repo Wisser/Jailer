@@ -20,7 +20,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles cancellation request of the user and cancels database requests.
@@ -42,7 +43,7 @@ public class CancellationHandler {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(JobManager.class);
+	private static final Logger _log = LoggerFactory.getLogger(JobManager.class);
 
 	/**
 	 * Default context

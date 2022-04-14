@@ -117,8 +117,9 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.DefaultEditorKit;
 
-import org.apache.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
@@ -164,7 +165,7 @@ public class UIUtil {
     /**
      * The logger.
      */
-    private static final Logger _log = Logger.getLogger(UIUtil.class);
+    private static final Logger _log = LoggerFactory.getLogger(UIUtil.class);
 
     /**
      * Opens file chooser.

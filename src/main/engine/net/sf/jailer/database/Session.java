@@ -41,7 +41,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
@@ -183,7 +184,7 @@ public class Session {
 	/**
 	 * The logger.
 	 */
-	public static final Logger _log  = Logger.getLogger("sql");
+	public static final Logger _log  = LoggerFactory.getLogger("sql");
 
 	/**
 	 * Connection factory.

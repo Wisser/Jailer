@@ -42,7 +42,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
@@ -228,7 +229,7 @@ public class DataModel {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(DataModel.class);
+	private static final Logger _log = LoggerFactory.getLogger(DataModel.class);
 
 	/**
 	 * Gets a table by name.
@@ -415,7 +416,7 @@ public class DataModel {
 					try {
 						pk.add(Column.parse(newName, col));
 					} catch (Exception e) {
-						_log.warn(e);
+						_log.warn("", e);
 						// ignore, was throw new RuntimeException("unable to load table '" + line.cells.get(0) + "'. " + line.location, e);
 					}
 				}

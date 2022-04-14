@@ -6,7 +6,10 @@ import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
 
 public class LogUtil {
 
@@ -32,7 +35,17 @@ public class LogUtil {
 					}
 				}
 			}
-			PropertyConfigurator.configure(props);
+			
+			LoggerContext context = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
+			File file = new File("path/to/a/different/log4j2.xml");
+
+			// this will force a reconfiguration
+//			Configuration c = context.getConfiguration();
+//			c.getAppenders().values().forEach(a -> {
+//				if (a instanceof Appender)
+//			});
+			
+//			PropertyConfigurator.configure(props);
 		} catch (Exception e) {
 			System.setErr(oldErr);
 			e.printStackTrace();

@@ -49,10 +49,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-import org.apache.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
@@ -74,7 +75,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(MetaDataDetailsPanel.class);
 	
 	/**
      * Creates new form TabContentPanel

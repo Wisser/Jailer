@@ -34,7 +34,8 @@ import java.util.TreeMap;
 
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
@@ -70,7 +71,7 @@ public class ModelBuilder {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(ModelBuilder.class);
+	private static final Logger _log = LoggerFactory.getLogger(ModelBuilder.class);
 
 	/**
 	 * The statement executor for executing SQL statements.

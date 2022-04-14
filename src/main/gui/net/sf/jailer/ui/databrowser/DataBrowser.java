@@ -69,8 +69,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
@@ -3093,7 +3091,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		// turn off logging for prefuse library
 		try {
-			Logger.getLogger("prefuse").setLevel(Level.OFF);
+//			LoggerFactory.getLogger("prefuse").setLevel(Level.OFF);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}

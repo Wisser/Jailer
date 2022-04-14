@@ -31,7 +31,8 @@ import java.util.logging.LogManager;
 
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
@@ -87,7 +88,7 @@ public class Jailer {
 	 */
 	private static synchronized Logger getLogger() {
 		if (logger == null) {
-			logger = Logger.getLogger(Jailer.class);
+			logger = LoggerFactory.getLogger(Jailer.class);
 		}
 		return logger;
 	}

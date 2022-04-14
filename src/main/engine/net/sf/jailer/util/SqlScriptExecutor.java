@@ -41,7 +41,8 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.Session;
@@ -67,7 +68,7 @@ public class SqlScriptExecutor {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(SqlScriptExecutor.class);
+	private static final Logger _log = LoggerFactory.getLogger(SqlScriptExecutor.class);
 
 	/**
 	 * The session.

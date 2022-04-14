@@ -21,7 +21,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Executes a job-list in a concurrent way.
@@ -44,7 +45,7 @@ public abstract class JobManager {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(JobManager.class);
+	private static final Logger _log = LoggerFactory.getLogger(JobManager.class);
 
 	/**
 	 * The runners list.

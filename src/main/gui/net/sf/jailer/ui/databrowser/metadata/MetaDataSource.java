@@ -24,7 +24,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
@@ -43,7 +44,7 @@ public class MetaDataSource {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(MetaDataDetailsPanel.class);
 
 	/**
 	 * The database session.

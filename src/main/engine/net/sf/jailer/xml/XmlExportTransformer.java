@@ -29,7 +29,8 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -91,7 +92,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(XmlExportTransformer.class);
+	private static final Logger _log = LoggerFactory.getLogger(XmlExportTransformer.class);
 
 	/**
 	 * Maps clear text SQL-types to {@link java.sql.Types}.

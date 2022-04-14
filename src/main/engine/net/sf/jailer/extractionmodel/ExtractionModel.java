@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -58,7 +59,7 @@ public class ExtractionModel {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(ExtractionModel.class);
+	private static final Logger _log = LoggerFactory.getLogger(ExtractionModel.class);
 
 	/**
 	 * The table to read from.

@@ -38,7 +38,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JComponent;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
@@ -62,7 +63,7 @@ public class MDTable extends MDObject {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(MDObject.class);
+	private static final Logger logger = LoggerFactory.getLogger(MDObject.class);
 
 	private final MDSchema schema;
     private List<String> primaryKey;

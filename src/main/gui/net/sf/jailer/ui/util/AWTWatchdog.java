@@ -168,7 +168,7 @@ public class AWTWatchdog {
 				}
 				sb.append('\n');
 
-				Session._log.error(sb);
+				Session._log.error(sb.toString());
 
 				String dump = Pattern.compile(mrk + "(?d)([^\\n]*\\n[^\\n]*\\n)(.*?)\\b" + pckPtrn, Pattern.DOTALL).matcher(sb.toString()).replaceFirst("..$1at " + pck);
 				dump = dump

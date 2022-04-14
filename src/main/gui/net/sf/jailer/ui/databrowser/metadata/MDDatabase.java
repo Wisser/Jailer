@@ -25,7 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JComponent;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
@@ -42,7 +43,7 @@ public class MDDatabase extends MDGeneric {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(MDDatabase.class);
+	private static final Logger logger = LoggerFactory.getLogger(MDDatabase.class);
 
 	private final DataModel dataModel;
 

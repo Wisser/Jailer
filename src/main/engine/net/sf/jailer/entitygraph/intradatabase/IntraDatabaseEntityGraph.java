@@ -332,7 +332,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				// try upsert
 				return upsertRows(table, sqlSelect, true);
 			} catch (Exception uEx) {
-				Session._log.warn(uEx);
+				Session._log.warn("", uEx);
 				LogUtil.warn(uEx);
 				// throw original exception
 				throw e;

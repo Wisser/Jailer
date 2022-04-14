@@ -111,11 +111,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
-import org.apache.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
@@ -144,9 +145,9 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.databrowser.Desktop;
-import net.sf.jailer.ui.databrowser.FullTextSearchPanel;
 import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.databrowser.FullTextSearchPanel;
 import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.SQLValue;
@@ -184,7 +185,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(MetaDataDetailsPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(MetaDataDetailsPanel.class);
 
     private static final int MAX_TAB_COUNT = 8;
     private static final int MAX_HISTORY_SIZE = 100;

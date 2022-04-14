@@ -31,7 +31,8 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 
@@ -45,7 +46,7 @@ public class SQLPlusSupport {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = Logger.getLogger(SQLPlusSupport.class);
+	private static final Logger logger = LoggerFactory.getLogger(SQLPlusSupport.class);
 	
 	/**
 	 * The variables.

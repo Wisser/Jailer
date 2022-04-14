@@ -21,7 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
@@ -61,7 +62,7 @@ public class RestrictionModel {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(RestrictionModel.class);
+	private static final Logger _log = LoggerFactory.getLogger(RestrictionModel.class);
 
 	/**
 	 * Constructor.

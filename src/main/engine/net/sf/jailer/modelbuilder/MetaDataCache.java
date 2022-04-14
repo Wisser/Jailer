@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
@@ -44,7 +45,7 @@ public class MetaDataCache {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(MetaDataCache.class);
+	private static final Logger _log = LoggerFactory.getLogger(MetaDataCache.class);
 
 	/**
 	 * The cached rows.
