@@ -1,20 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO">
     <Appenders>
-        <Console name="A1" target="SYSTEM_OUT">
+        <Console name="A1" target="SYSTEM_OUT" direct="false" follow="true">
             <PatternLayout pattern="%d [%t] %-5p - %m%n" />
         </Console>
-        <RollingFile name="A2" fileName="export.log"
-                    filePattern="export-%i.log">
-	        <PatternLayout>
-	            <Pattern>%d [%t] %-5p - %m%n</Pattern>
-	        </PatternLayout>
-	        <Policies>
-			     <SizeBasedTriggeringPolicy size="20 MB"/>
-	        </Policies>
-	        <DefaultRolloverStrategy max="10"/>
-   		</RollingFile>
-        <RollingFile name="A3" fileName="sql.log"
+        <RollingFile name="A3" fileName="${sys:logdir}sql.log"
                     filePattern="sql-%i.log">
 	        <PatternLayout>
 	            <Pattern>%d [%t] %-5p - %m%n</Pattern>
@@ -24,7 +14,7 @@
 	        </Policies>
 	        <DefaultRolloverStrategy max="10"/>
    		</RollingFile>
-        <RollingFile name="A4" fileName="jailer.log"
+        <RollingFile name="A4" fileName="${sys:logdir}jailer.log"
                     filePattern="jailer-%i.log">
 	        <PatternLayout>
 	            <Pattern>%d [%t] %-5p - %m%n</Pattern>
@@ -40,15 +30,14 @@
         <Root level="error">
             <AppenderRef ref="A1" />
         </Root>
-        <asyncLogger  name="net.sf.jailer" level="info" additivity="false">
+        <Logger  name="net.sf.jailer" level="info" additivity="false">
             <AppenderRef ref="A1" />
-            <AppenderRef ref="A2"/>
             <AppenderRef ref="A3"/>
             <AppenderRef ref="A4"/>
-        </asyncLogger >
-        <asyncLogger  name="sql" level="debug" additivity="false">
+        </Logger >
+        <Logger  name="sql" level="debug" additivity="false">
             <AppenderRef ref="A3"/>
             <AppenderRef ref="A4"/>
-        </asyncLogger >
+        </Logger >
     </Loggers>
 </Configuration>

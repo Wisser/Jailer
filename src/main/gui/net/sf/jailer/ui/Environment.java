@@ -111,7 +111,6 @@ public class Environment {
 //					}
 				}
 			}
-			Configuration.applicationBase = applicationBase;
 		} catch (Throwable t) {
 			// ignore
 		}
@@ -123,7 +122,8 @@ public class Environment {
 				|| isJPacked()) {
 			home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
-			LogUtil.reloadLog4jConfig(home);
+			LogUtil.initLog4jConfig(home);
+			Configuration.applicationBase = applicationBase;
 			Configuration configuration = Configuration.getInstance();
 			try {
 				copyIfNotExists("datamodel");
@@ -206,6 +206,8 @@ public class Environment {
 				throw new RuntimeException(e);
 			}
 		} else {
+			LogUtil.initLog4jConfig(home);
+			Configuration.applicationBase = applicationBase;
 			if (!testCreateTempFile()) {
 				UIUtil.showException(null, "Error", new IllegalStateException("No write permission on "
 						+ new File(".").getAbsolutePath() + " \n"

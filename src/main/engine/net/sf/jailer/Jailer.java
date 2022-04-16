@@ -129,7 +129,7 @@ public class Jailer {
 				|| new File(".multiuser").exists()) {
 			File home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
-			LogUtil.reloadLog4jConfig(home);
+			LogUtil.initLog4jConfig(home);
 			Configuration configuration = Configuration.getInstance();
 			configuration.setTempFileFolder(new File(home, "tmp").getPath());
 			try {

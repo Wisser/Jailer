@@ -521,15 +521,15 @@ public class UIUtil {
                 }
             }
         }));
-        final boolean[] exceptionShown = new boolean[1];
+		final boolean[] exceptionShown = new boolean[1];
         try {
             try {
-                File exportLog = Environment.newFile("export.log");
+//    			File exportLog = Environment.newFile("export.log");
                 File sqlLog = Environment.newFile("sql.log");
-                if (exportLog.exists()) {
-                    FileOutputStream out = new FileOutputStream(exportLog);
-                    out.close();
-                }
+//                if (exportLog.exists()) {
+//                    FileOutputStream out = new FileOutputStream(exportLog);
+//                    out.close();
+//                }
                 if (sqlLog.exists()) {
                     FileOutputStream out = new FileOutputStream(sqlLog);
                     out.close();
@@ -684,7 +684,7 @@ public class UIUtil {
                 outputView.dialog.addWindowListener(new WindowAdapter() {
                     public void windowClosed(WindowEvent ev) {
 		            	System.setOut(originalOut);
-		            	Throwable e = null;
+                    	Throwable e = null;
 						synchronized (UIUtil.class) {
 			                if (exp[0] != null) {
 			                    if (returnFalseOnError) {

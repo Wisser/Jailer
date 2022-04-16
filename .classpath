@@ -8,11 +8,18 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/log4j-api-2.17.2.jar">
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/log4j-core-2.17.2.jar">
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/log4j-slf4j-impl-2.17.2.jar">
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.25.jar">
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/dbunit-2.4.4.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.4.jar"/>
-	<classpathentry kind="lib" path="lib/log4j.jar"/>
 	<classpathentry kind="lib" path="lib/prefuse.jar"/>
-	<classpathentry kind="lib" path="lib/sdoc-0.5.0-beta.jar"/>
+	<classpathentry kind="lib" path="lib/sdoc-0.5.0-beta.jar" sourcepath="C:/Users/User/Downloads/FlatLaf-main.zip"/>
 	<classpathentry kind="lib" path="lib/args4j.jar"/>
 	<classpathentry kind="lib" path="config"/>
 	<classpathentry kind="lib" path="lib/tablefilter-swing-5.3.1.jar"/>
@@ -21,5 +28,6 @@
 	<classpathentry kind="lib" path="lib/jaxb-impl-2.3.0-b170127.1453.jar"/>
 	<classpathentry kind="lib" path="lib/activation-1.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jsqlparser-3.2.jar"/>
+	<classpathentry kind="lib" path="lib/flatlaf-1.6-20210804.135156-1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
