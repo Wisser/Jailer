@@ -44,6 +44,7 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
@@ -4670,7 +4671,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				titleLbl.setToolTipText(null);
 			} else {
 				title = file.getName();
-//	TODO			titleLbl.setToolTipText(file.getAbsolutePath());
+				titleLbl.setToolTipText(file.getAbsolutePath());
 			}
 			if (dirty && file != null) {
 				titleLbl.setText("* " + title);
@@ -4710,6 +4711,16 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		final SQLConsoleWithTitle sqlConsole = new SQLConsoleWithTitle(session, metaDataSource, datamodel,
 				executionContext, title, titleLbl);
+		titleLbl.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				workbenchTabbedPane.setSelectedComponent(sqlConsole);
+			}
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				workbenchTabbedPane.setSelectedComponent(sqlConsole);
+			}
+		});;
 		initDnD(sqlConsole.getEditorPane());
 		sqlConsoles.add(sqlConsole);
 
