@@ -3349,9 +3349,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			final ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false, !doExport, null, executionContext);
 			extractionModelFrame.setDefaultExportFileName("by-example" + File.separator + UIUtil.toValidFileName(stable.getName() + ".sql"));
+			Window w = SwingUtilities.getWindowAncestor(this);
 			extractionModelFrame.setResultFileLoader(fileName -> {
-				Window w = SwingUtilities.getWindowAncestor(this);
-				if (!w.isVisible()) {
+				if (w == null || !w.isVisible()) {
 					return false;
 				}
 				loadScriptFile(fileName);

@@ -5,7 +5,7 @@ import java.io.File;
 public class LogUtil {
 
 	public static void initLog4jConfig(File baseDir) {
-		System.setProperty("logdir", baseDir.getAbsolutePath() + File.separator);
+		System.setProperty("logdir", baseDir != null? baseDir.getAbsolutePath() + File.separator : "");
 	}
 
 	public interface Warn {

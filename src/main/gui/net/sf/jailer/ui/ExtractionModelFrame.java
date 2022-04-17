@@ -1511,6 +1511,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 												}
 											}
 											String file = exportDialog.getInsertFileName();
+											file = Environment.newFile(file).getPath();
 											if (file != null) {
 												try {
 													UIUtil.setWaitCursor(window);

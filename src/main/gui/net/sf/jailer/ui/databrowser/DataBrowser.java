@@ -4670,7 +4670,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				titleLbl.setToolTipText(null);
 			} else {
 				title = file.getName();
-				titleLbl.setToolTipText(file.getAbsolutePath());
+//	TODO			titleLbl.setToolTipText(file.getAbsolutePath());
 			}
 			if (dirty && file != null) {
 				titleLbl.setText("* " + title);
