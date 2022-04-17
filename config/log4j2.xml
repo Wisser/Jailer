@@ -5,7 +5,7 @@
             <PatternLayout pattern="%d [%t] %-5p - %m%n" />
         </Console>
         <RollingFile name="A3" fileName="${sys:logdir}sql.log"
-                    filePattern="sql-%i.log">
+                    filePattern="${sys:logdir}sql-%i.log">
 	        <PatternLayout>
 	            <Pattern>%d [%t] %-5p - %m%n</Pattern>
 	        </PatternLayout>
@@ -15,7 +15,7 @@
 	        <DefaultRolloverStrategy max="10"/>
    		</RollingFile>
         <RollingFile name="A4" fileName="${sys:logdir}jailer.log"
-                    filePattern="jailer-%i.log">
+                    filePattern="${sys:logdir}jailer-%i.log">
 	        <PatternLayout>
 	            <Pattern>%d [%t] %-5p - %m%n</Pattern>
 	        </PatternLayout>
