@@ -14,7 +14,11 @@ CP=$CP:config
 # the libraries
 CP=$CP:$LIB/junit.jar
 CP=$CP:$LIB/commons-logging.jar
-CP=$CP:$LIB/log4j.jar
+CP=$CP;$LIB/log4j-api-2.17.2.jar
+CP=$CP;$LIB/log4j-core-2.17.2.jar
+CP=$CP;$LIB/log4j-slf4j-impl-2.17.2.jar
+CP=$CP;$LIB/slf4j-api-1.7.25.jar
+CP=$CP;$LIB/flatlaf-2.2.jar
 CP=$CP:$LIB/args4j.jar
 CP=$CP:$LIB/spring.jar
 CP=$CP:$LIB/prefuse.jar

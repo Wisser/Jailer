@@ -48,7 +48,11 @@ move c:\tmp\_\jdbc_lib\jaxb-api-2.3.0-b170201.1204.jar c:\tmp\_\lib\jaxb-api-2.3
 move c:\tmp\_\jdbc_lib\jaxb-core-2.3.0-b170127.1453.jar c:\tmp\_\lib\jaxb-core-2.3.0-b170127.1453.jar
 move c:\tmp\_\jdbc_lib\jaxb-impl-2.3.0-b170127.1453.jar c:\tmp\_\lib\jaxb-impl-2.3.0-b170127.1453.jar
 move c:\tmp\_\jdbc_lib\jsqlparser-3.2.jar c:\tmp\_\lib\jsqlparser-3.2.jar
-move c:\tmp\_\jdbc_lib\log4j.jar c:\tmp\_\lib\log4j.jar
+move c:\tmp\_\jdbc_lib\log4j-api-2.17.2.jar c:\tmp\_\lib\log4j-api-2.17.2.jar
+move c:\tmp\_\jdbc_lib\log4j-core-2.17.2.jar c:\tmp\_\lib\log4j-core-2.17.2.jar
+move c:\tmp\_\jdbc_lib\log4j-slf4j-impl-2.17.2.jar c:\tmp\_\lib\log4j-slf4j-impl-2.17.2.jar
+move c:\tmp\_\jdbc_lib\slf4j-api-1.7.25.jar c:\tmp\_\lib\slf4j-api-1.7.25.jar
+move c:\tmp\_\jdbc_lib\flatlaf-2.2.jar c:\tmp\_\lib\flatlaf-2.2.jar
 move c:\tmp\_\jdbc_lib\prefuse.jar c:\tmp\_\lib\prefuse.jar
 move c:\tmp\_\jdbc_lib\sdoc-0.5.0-beta.jar c:\tmp\_\lib\sdoc-0.5.0-beta.jar
 move c:\tmp\_\jdbc_lib\tablefilter-swing-5.3.1.jar c:\tmp\_\lib\tablefilter-swing-5.3.1.jar

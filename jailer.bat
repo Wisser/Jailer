@@ -9,7 +9,11 @@ set CP=%CP%;config
 
 rem the libraries
 set CP=%CP%;%LIB%\junit.jar
-set CP=%CP%;%LIB%\log4j.jar
+set CP=%CP%;%LIB%\log4j-api-2.17.2.jar
+set CP=%CP%;%LIB%\log4j-core-2.17.2.jar
+set CP=%CP%;%LIB%\log4j-slf4j-impl-2.17.2.jar
+set CP=%CP%;%LIB%\slf4j-api-1.7.25.jar
+set CP=%CP%;%LIB%\flatlaf-2.2.jar
 set CP=%CP%;%LIB%\args4j.jar
 set CP=%CP%;%LIB%\sdoc-0.5.0-beta.jar
 set CP=%CP%;%LIB%\activation-1.0.2.jar

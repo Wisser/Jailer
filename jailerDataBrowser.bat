@@ -10,7 +10,11 @@ set CP=%CP%;config
 rem the libraries
 set CP=%CP%;%LIB%\junit.jar
 set CP=%CP%;%LIB%\commons-logging.jar
-set CP=%CP%;%LIB%\log4j.jar
+set CP=%CP%;%LIB%\log4j-api-2.17.2.jar
+set CP=%CP%;%LIB%\log4j-core-2.17.2.jar
+set CP=%CP%;%LIB%\log4j-slf4j-impl-2.17.2.jar
+set CP=%CP%;%LIB%\slf4j-api-1.7.25.jar
+set CP=%CP%;%LIB%\flatlaf-2.2.jar
 set CP=%CP%;%LIB%\args4j.jar
 set CP=%CP%;%LIB%\spring.jar
 set CP=%CP%;%LIB%\prefuse.jar

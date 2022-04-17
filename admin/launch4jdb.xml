@@ -22,7 +22,11 @@
     <cp>lib/jaxb-api-2.3.0-b170201.1204.jar</cp>
     <cp>lib/prefuse.jar</cp>
     <cp>config/</cp>
-    <cp>lib/log4j.jar</cp>
+    <cp>lib/log4j-api-2.17.2.jar</cp>
+    <cp>lib/log4j-core-2.17.2.jar</cp>
+    <cp>lib/log4j-slf4j-impl-2.17.2.jar</cp>
+    <cp>lib/slf4j-api-1.7.25.jar</cp>
+    <cp>lib/flatlaf-2.2.jar</cp>
     <cp>lib/args4j.jar</cp>
     <cp>lib/sdoc-0.5.0-beta.jar</cp>
     <cp>lib/jsqlparser-3.2jar</cp>
