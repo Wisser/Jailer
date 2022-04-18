@@ -116,11 +116,6 @@ public class Jailer {
 		});
 
 		try {
-			java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
-			rootLogger.setLevel(Level.OFF);
-			for (Handler h : rootLogger.getHandlers()) {
-			    h.setLevel(Level.OFF);
-			}
 			System.setProperty("com.sun.xml.bind.v2.bytecode.ClassTailor.noOptimize", "true");
 		} catch (Exception e) {
 		}
@@ -139,6 +134,8 @@ public class Jailer {
 				}
 			} catch (Exception e) {
 			}
+		} else {
+			LogUtil.initLog4jConfig(null);
 		}
 		getLogger();
 		try {
@@ -208,6 +205,7 @@ public class Jailer {
 					renderDataModel(commandLine.arguments, commandLine.schema, executionContext);
 				}
 			} else if ("import".equalsIgnoreCase(command)) {
+				checkPW(commandLine, 6);
 				if (commandLine.arguments.size() != 6) {
 					CommandLineParser.printUsage(args);
 				} else {
@@ -225,6 +223,7 @@ public class Jailer {
 					}
 				}
 			} else if ("export".equalsIgnoreCase(command)) {
+				checkPW(commandLine, 6);
 				if (commandLine.arguments.size() != 6) {
 					CommandLineParser.printUsage(args);
 				} else {
@@ -247,6 +246,7 @@ public class Jailer {
 					}
 				}
 			} else if ("delete".equalsIgnoreCase(command)) {
+				checkPW(commandLine, 6);
 				if (commandLine.arguments.size() != 6) {
 					CommandLineParser.printUsage(args);
 				} else {
@@ -276,10 +276,11 @@ public class Jailer {
 					printClosure(commandLine.arguments.get(1), commandLine.arguments.size() > 2? commandLine.arguments.get(2) : null, executionContext);
 				}
 			} else if ("create-ddl".equalsIgnoreCase(command)) {
+				checkPW(commandLine, 5);
 				String extractionModelFileName = null;
 				if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 5) {
 					extractionModelFileName = commandLine.arguments.get(5);
-				} else if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 1) {
+				} else if (!commandLine.independentWorkingTables && commandLine.independentWorkingTables && commandLine.arguments.size() != 5 && commandLine.arguments.size() > 1) {
 					extractionModelFileName = commandLine.arguments.get(1);
 				}
 				updateDataModelFolder(commandLine, extractionModelFileName, executionContext);
@@ -307,6 +308,7 @@ public class Jailer {
 				}
 				return new DDLCreator(executionContext).createDDL((DataSource) null, null, executionContext.getScope(), commandLine.workingTableSchema);
 			} else if ("build-model-wo-merge".equalsIgnoreCase(command)) {
+				checkPW(commandLine, 5);
 				if (commandLine.arguments.size() != 5) {
 					CommandLineParser.printUsage(args);
 				} else {
@@ -316,6 +318,7 @@ public class Jailer {
 					ModelBuilder.build(dataSource, dataSource.dbms, commandLine.schema, warnings, executionContext);
 				}
 			} else if ("build-model".equalsIgnoreCase(command)) {
+				checkPW(commandLine, 5);
 				if (commandLine.arguments.size() != 5) {
 					CommandLineParser.printUsage(args);
 				} else {
@@ -340,6 +343,12 @@ public class Jailer {
 			String workingDirectory = System.getProperty("user.dir");
 			getLogger().error("working directory is " + workingDirectory);
 			throw t;
+		}
+	}
+
+	private static void checkPW(CommandLine commandLine, int i) {
+		if (commandLine.arguments.size() == i - 1) {
+			commandLine.arguments.add("");
 		}
 	}
 
