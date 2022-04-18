@@ -10,7 +10,7 @@
 	            <Pattern>%d [%t] %-5p - %m%n</Pattern>
 	        </PatternLayout>
 	        <Policies>
-				<SizeBasedTriggeringPolicy size="200"/>
+				<SizeBasedTriggeringPolicy size="20 MB"/>
 	        </Policies>
 	        <DefaultRolloverStrategy max="10"/>
    		</RollingFile>
@@ -21,7 +21,7 @@
 	        </PatternLayout>
 	        <Policies>
 				<OnStartupTriggeringPolicy />
-	            <SizeBasedTriggeringPolicy size="200"/>
+	            <SizeBasedTriggeringPolicy size="2 MB"/>
 	        </Policies>
 	        <DefaultRolloverStrategy max="10"/>
    		</RollingFile>
