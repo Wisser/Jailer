@@ -1596,8 +1596,14 @@ public class UIUtil {
 						@Override
 						public void run() {
 							if (concurrentTaskControl.master.isShowing()) {
-								JOptionPane.showMessageDialog(windowAncestor, tables.size() == 1? "The primary key definition is valid." : "All primary key definitions are valid.");
+								Object message = tables.size() == 1? "The primary key definition is valid." : "All primary key definitions are valid.";
+								JOptionPane.showMessageDialog(windowAncestor, message);
 								concurrentTaskControl.closeWindow();
+								if (validatePrimaryKeysPending) {
+									validatePrimaryKeysPending = false;
+									LogUtil.warn(new RuntimeException("Checking PK (>= 12.3): " +  message));
+								}
+								
 							}
 						}
 					});
@@ -1610,6 +1616,8 @@ public class UIUtil {
 			}
 		});
 	}
+	
+	public static boolean validatePrimaryKeysPending = false;
 
 	/**
 	 * Initializes the "Native L&F" menu items.

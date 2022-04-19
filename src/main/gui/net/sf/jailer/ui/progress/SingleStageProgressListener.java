@@ -434,6 +434,7 @@ public abstract class SingleStageProgressListener implements ProgressListener {
 								}
 							});
 
+							UIUtil.validatePrimaryKeysPending = true;
 							UIUtil.showException(progressTable, "Warning", new RuntimeException(message), UIUtil.EXCEPTION_CONTEXT_USER_WARNING, button);
 						}
 					}
