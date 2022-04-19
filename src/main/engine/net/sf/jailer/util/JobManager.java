@@ -125,7 +125,7 @@ public abstract class JobManager {
 			while (runnersList.size() < Math.min(capacity, threads)) {
 				JobRunner jobRunner = new JobRunner();
 				runnersList.add(jobRunner);
-				String threadName = "job-runner " + runnersList.size();
+				String threadName = "job- " + runnersList.size();
 				_log.debug("starting " + threadName);
 				Thread thread = new Thread(jobRunner, threadName);
 				thread.setDaemon(true);
@@ -186,7 +186,7 @@ public abstract class JobManager {
 	 */
 	public void shutdown() {
 		for (int i = 0; i < runnersList.size(); ++i) {
-			String threadName = "job-runner " + (i + 1);
+			String threadName = "job- " + (i + 1);
 			_log.debug("shutting down " + threadName);
 			runnersList.get(i).shutdown();
 		}
