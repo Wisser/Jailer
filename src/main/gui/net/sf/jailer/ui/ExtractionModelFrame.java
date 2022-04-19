@@ -1345,7 +1345,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				if (tmpFileName != null || (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data"))) {
 					if (connectToDBIfNeeded("Export data")) {
 						List<String> args = new ArrayList<String>();
-						args.add(tmpFileName != null? tmpFileName : extractionModelEditor.extractionModelFile);
+						args.add(tmpFileName != null? tmpFileName : extractionModelEditor.extractionModelFile != null? new File(extractionModelEditor.extractionModelFile).getAbsolutePath() : null);
 						dbConnectionDialog.addDbArgs(args);
 						BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs());
 						if (theSession != null) {
