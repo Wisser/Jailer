@@ -841,7 +841,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		List<String> args = new ArrayList<String>(initialArgs);
 		if (args.size() > 0) {
 			if (extractionModelFileName != null) {
-				args.set(0, extractionModelFileName);
+				args.set(0, new File(extractionModelFileName).getAbsolutePath());
 			} else {
 				args.set(0, "<extraction model>");
 			}
