@@ -84,7 +84,7 @@ public class FileView extends javax.swing.JFrame {
 		this.withSyntaxHighlighting = withSyntaxHighlighting;
 		this.isXml = file.toLowerCase().endsWith(".xml");
 		
-		File f = new File(file);
+		File f = Environment.newFile(file);
 		if (f.exists() && f.length() > 65L*1024L*1024L) {
 			int o = JOptionPane.showOptionDialog(window, "File " + f.getAbsolutePath() + "\nis large (" + (f.length() / 1024 / 1024) + " MB). Loading might fail.", "File is large", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[] { "Open", "Cancel" }, "Open");
 			if (o != 0) {
@@ -94,8 +94,8 @@ public class FileView extends javax.swing.JFrame {
 		}
 		try {
 			initialize();
-			setTitle(new File(file).getAbsolutePath());
-			getJTextPane().setText(new PrintUtil().loadFile(Environment.newFile(file).getPath()));
+			setTitle(f.getAbsolutePath());
+			getJTextPane().setText(new PrintUtil().loadFile(f.getPath()));
 			if (getJTextPane() instanceof RSyntaxTextAreaWithSQLSyntaxStyle) {
 				((RSyntaxTextAreaWithSQLSyntaxStyle) getJTextPane()).discardAllEdits();
 			}
