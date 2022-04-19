@@ -319,7 +319,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			toLabel.setText(scriptFormat.getDisplayName());
 
 			setModal(true);
-			UIUtil.setInitialWindowLocation(this, parent, 100, 60);
+			UIUtil.setInitialWindowLocation(this, parent, 100, 50);
 			Map<String, JComponent> fields = new HashMap<String, JComponent>();
 			if (defaultExportFileName == null) {
 				fields.put("insert" + scriptFormat.name(), insert);
@@ -2346,7 +2346,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		List<String> ddlArgs = new ArrayList<String>();
 		ddlArgs.add("create-ddl");
 		dbConnectionDialog.addDbArgs(ddlArgs);
-		ddlArgs.add(tmpFileName != null? tmpFileName : jmFile);
+		ddlArgs.add(tmpFileName != null? tmpFileName : new File(jmFile).getAbsolutePath());
 		if (isIndependentWorkingTablesSelected()) {
 			ddlArgs.add("-independent-working-tables");
 			String delFile = getDeleteFileName();
