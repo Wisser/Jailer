@@ -68,7 +68,7 @@ public class About extends javax.swing.JDialog {
 
 		Stream.of(forumTextField, forumTextField1, jTextField3, jTextField4, jTextField5, jTextField6, jTextField7, jTextField8, jTextField9, jTextField10).forEach(
 				tf -> {
-					tf.setToolTipText(UIUtil.toHTML(tf.getText().replace(";", "\n"), 0));
+					tf.setToolTipText(UIUtil.toHTML(tf.getText().replace(File.pathSeparator, "\n"), 0));
 					tf.setCaretPosition(0);
 					if (UIUtil.plaf == PLAF.FLAT) {
 						tf.setBorder(null);
