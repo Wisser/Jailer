@@ -1320,6 +1320,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 82;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         jPanel1.add(sourceSchemaMappingPanel, gridBagConstraints);
 
         sourceSchemaMappingLabelPanel.setLayout(new java.awt.GridBagLayout());
@@ -1373,6 +1374,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 84;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         jPanel1.add(schemaMappingPanel, gridBagConstraints);
 
         schemaMappingLabelPanel.setLayout(new java.awt.GridBagLayout());
@@ -1419,6 +1421,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 86;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         jPanel1.add(deleteSchemaMappingPanel, gridBagConstraints);
 
         deleteSchemaMappingLabelPanel.setLayout(new java.awt.GridBagLayout());
@@ -1520,12 +1523,14 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 53;
         gridBagConstraints.ipadx = 30;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
         jPanel1.add(threads, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 54;
         gridBagConstraints.ipadx = 30;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
         jPanel1.add(rowsPerThread, gridBagConstraints);
 
         placeholder.setText(" "); // NOI18N
@@ -2346,7 +2351,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		List<String> ddlArgs = new ArrayList<String>();
 		ddlArgs.add("create-ddl");
 		dbConnectionDialog.addDbArgs(ddlArgs);
-		ddlArgs.add(tmpFileName != null? tmpFileName : new File(jmFile).getAbsolutePath());
+		ddlArgs.add(tmpFileName != null? tmpFileName : jmFile);
 		if (isIndependentWorkingTablesSelected()) {
 			ddlArgs.add("-independent-working-tables");
 			String delFile = getDeleteFileName();
@@ -2749,7 +2754,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 	private String toFileName(String f) {
 		if (!new File(f).isAbsolute()) {
-			return Environment.newFile(f).getPath();
+			return Environment.newFile(f).getAbsolutePath();
 		}
 		return f;
 	}
