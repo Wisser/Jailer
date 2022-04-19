@@ -127,7 +127,7 @@ public class JailerConsole {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					new FileView(dialog, dialog, "export.log", false);
+					new FileView(dialog, dialog, Environment.newFile("export.log").getAbsolutePath(), false);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
@@ -137,7 +137,7 @@ public class JailerConsole {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					new FileView(dialog, dialog, "sql.log", false);
+					new FileView(dialog, dialog, Environment.newFile("sql.log").getAbsolutePath(), false);
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
