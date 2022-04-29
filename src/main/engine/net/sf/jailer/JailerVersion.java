@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "12.3.0.2";
+	public static final String VERSION = "100.3.0";
 
 	/**
 	 * The Jailer working tables version.
@@ -45,3 +45,10 @@ public class JailerVersion {
 	}
 
 }
+
+//TODO
+//This description is a bit too abstract. I had to read it multiple times and research several terms. 
+//I think I now managed to figure out, what you're trying to say and can think of a few use cases where it 
+//
+//would be handy. But I believe the description could benefit if you'd explain your terms like "database subsetting" 
+//and provide a few concrete use cases, how the tool would be used.
