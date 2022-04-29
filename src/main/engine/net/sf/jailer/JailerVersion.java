@@ -46,7 +46,9 @@ public class JailerVersion {
 
 }
 
-//TODO
+// TODO JSQLParser/H2 upgrade
+
+// TODO
 //This description is a bit too abstract. I had to read it multiple times and research several terms. 
 //I think I now managed to figure out, what you're trying to say and can think of a few use cases where it 
 //
