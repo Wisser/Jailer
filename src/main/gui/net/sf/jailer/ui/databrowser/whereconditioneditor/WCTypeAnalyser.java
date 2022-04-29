@@ -464,7 +464,7 @@ public class WCTypeAnalyser {
 											int b = selectExpressionItem.getASTNode().jjtGetLastToken().absoluteEnd - 1;
 											String sql = sqlSelect.substring(a, b);
 											if (selectExpressionItem.getAlias() != null) {
-												sql = sql.replaceAll("\\s*" + (selectExpressionItem.getAlias().isUseAs()? "as\\s+" : "") + Pattern.quote(selectExpressionItem.getAlias().getName()) + "\\s*$", "");
+												sql = sql.replaceAll("\\s*" + (selectExpressionItem.getAlias().isUseAs()? "(?i:as)\\s+" : "") + Pattern.quote(selectExpressionItem.getAlias().getName()) + "\\s*$", "");
 											}
 											boolean[] noSubexpression = new boolean[] { true };
 											final Column column[] = new Column[1];
