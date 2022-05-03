@@ -1100,7 +1100,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTable = new JTable() {
 			private int x[] = new int[2];
 			private int y[] = new int[2];
-			private Color color = new Color(0, 0, 200);
+			private Color color = new Color(0, 0, 200, 100);
 
 			@Override
 			public void paint(Graphics graphics) {
