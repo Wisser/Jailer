@@ -66,7 +66,7 @@ public class About extends javax.swing.JDialog {
 		jTextField9.setText(props("", "java.library.path"));
 		jTextField10.setText(props("", "java.class.path"));
 
-		Stream.of(forumTextField, forumTextField1, jTextField3, jTextField4, jTextField5, jTextField6, jTextField7, jTextField8, jTextField9, jTextField10).forEach(
+		Stream.of(forumTextField, forumTextField1, jTextField3, jTextField4, jTextField5, jTextField6, jTextField7, jTextField8, jTextField9, jTextField10, memoryTextField).forEach(
 				tf -> {
 					tf.setToolTipText(UIUtil.toHTML(tf.getText().replace(File.pathSeparator, "\n"), 0));
 					tf.setCaretPosition(0);
@@ -80,6 +80,18 @@ public class About extends javax.swing.JDialog {
 						}
 					});
 				});
+		
+		Thread thread = new Thread(() -> {
+			Runtime.getRuntime().gc();
+			long maxMemory = Runtime.getRuntime().maxMemory();
+			long freeMemory = Runtime.getRuntime().freeMemory() + (maxMemory != Long.MAX_VALUE? maxMemory - Runtime.getRuntime().totalMemory() : 0);
+			UIUtil.invokeLater(() -> {
+				memoryTextField.setText(UIUtil.format(freeMemory) + " free" + (maxMemory != Long.MAX_VALUE? " (" + (freeMemory * 100 / maxMemory) + "%), " + UIUtil.format(maxMemory) + " max" : ""));
+				memoryTextField.setToolTipText(memoryTextField.getText());
+			});
+		});
+		thread.setDaemon(true);
+		thread.start();
 		
 		jButton1.setIcon(UIUtil.scaleIcon(jButton1, okIcon));
 		jButton1.grabFocus();
@@ -135,6 +147,8 @@ public class About extends javax.swing.JDialog {
         jTextField9 = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
         jTextField10 = new javax.swing.JTextField();
+        jLabel12 = new javax.swing.JLabel();
+        memoryTextField = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -363,6 +377,24 @@ public class About extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         getContentPane().add(jTextField10, gridBagConstraints);
 
+        jLabel12.setFont(jLabel12.getFont().deriveFont(jLabel12.getFont().getStyle() | java.awt.Font.BOLD));
+        jLabel12.setText("Memory");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 19;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 16, 8, 0);
+        getContentPane().add(jLabel12, gridBagConstraints);
+
+        memoryTextField.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 19;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        getContentPane().add(memoryTextField, gridBagConstraints);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -380,6 +412,7 @@ public class About extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -397,6 +430,7 @@ public class About extends javax.swing.JDialog {
     private javax.swing.JTextField jTextField7;
     private javax.swing.JTextField jTextField8;
     private javax.swing.JTextField jTextField9;
+    private javax.swing.JTextField memoryTextField;
     public javax.swing.JLabel nameLabel;
     // End of variables declaration//GEN-END:variables
 	
@@ -409,4 +443,6 @@ public class About extends javax.swing.JDialog {
         okIcon = UIUtil.readImage("/buttonok.png");
 	}
 
+	// TODO analyze pot. memory leak
+	
 }

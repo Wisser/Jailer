@@ -1211,61 +1211,70 @@ public class UIUtil {
     	return null;
     }
 
-    private static Map<Pair<ImageIcon, Double>, ImageIcon> scaledIconPerFactor = new HashMap<Pair<ImageIcon, Double>, ImageIcon>();
+    private static Map<Pair<String, Pair<Integer, Integer>>, ImageIcon> scaledIconPerWH = new HashMap<Pair<String, Pair<Integer, Integer>>, ImageIcon>();
     
 	public static ImageIcon scaleIcon(ImageIcon icon, double factor) {
 		if (icon != null) {
-			Pair<ImageIcon, Double> key = new Pair<ImageIcon, Double>(icon, factor);
-			ImageIcon result = scaledIconPerFactor.get(key);
-			if (result == null) {
-	        	result = scaleIcon(icon, (int)(icon.getIconWidth() * factor), (int)(icon.getIconHeight() * factor));
-	        	scaledIconPerFactor.put(key, result);
-			}
-			return result;
+			return scaleIcon(icon, (int)(icon.getIconWidth() * factor), (int)(icon.getIconHeight() * factor));
 		}
 		return null;
 	}
 
 	public static synchronized ImageIcon scaleIcon(ImageIcon icon, int w, int h) {
 		if (icon != null) {
-			try {
-				if (w <= 0) {
-					w = 1;
-				}
-				if (h <= 0) {
-					h = 1;
-				}
-				Image scaled = scaledInstance(icon.getImage(), w, h);
-				if (!baseMultiResolutionImageClassExists || (icon.getIconWidth() <= w && icon.getIconHeight() <= h)) {
-					return new ImageIcon(scaled);
-				}
-				
-				List<Image> imageListArr = new ArrayList<Image>();
-				for (int p = 1125; p <= 9000; p += (p > 4000? 500 : (p > 2000? 250 : 125))) {
-					double pSqrt = Math.sqrt(p / 1000.0);
-					int wp = (int) (w * pSqrt + 0.5);
-					int hp = (int) (h * pSqrt + 0.5);
-					Image scaledP = scaledInstance(icon.getImage(), wp, hp);
-					imageListArr.add(scaledP);
-				}
-				imageListArr.add(0, scaled);
-				Image[] imageList = imageListArr.toArray(new Image[0]);
-				try {
-					if (baseMultiResolutionImageClassConstructor == null) {
-						baseMultiResolutionImageClassConstructor = Class.forName("java.awt.image.BaseMultiResolutionImage").getConstructor(imageList.getClass());
-					}
-					Object baseMultiResolutionImage = baseMultiResolutionImageClassConstructor.newInstance((Object) imageList);
-					return new ImageIcon((Image) baseMultiResolutionImage);
-				} catch (Throwable t) {
-					baseMultiResolutionImageClassExists = false;
-					return new ImageIcon(scaled);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				return icon;
+			String name = imageNames.get(icon);
+			Pair<String, Pair<Integer, Integer>> key = name != null? new Pair<String, Pair<Integer, Integer>>(name, new Pair<Integer, Integer>(w, h)) : null;
+			ImageIcon result = scaledIconPerWH.get(key);
+			if (result == null) {
+	        	result = doScaleIcon(icon, w, h);
+	        	if (key != null && result.getIconWidth() * result.getIconHeight() * 3 < 500_000) {
+	        		scaledIconPerWH.put(key, result);
+	        	}
 			}
+			return result;
 		}
 		return null;
+	}
+	
+	private static synchronized ImageIcon doScaleIcon(ImageIcon icon, int w, int h) {
+		try {
+			if (w <= 0) {
+				w = 1;
+			}
+			if (h <= 0) {
+				h = 1;
+			}
+			Image scaled = scaledInstance(icon.getImage(), w, h);
+			if (!baseMultiResolutionImageClassExists || (icon.getIconWidth() <= w && icon.getIconHeight() <= h)) {
+				return new ImageIcon(scaled);
+			}
+
+			List<Image> imageListArr = new ArrayList<Image>();
+			for (int p = 1125; p <= 9000; p += (p > 4000 ? 500 : (p > 2000 ? 250 : 125))) {
+				double pSqrt = Math.sqrt(p / 1000.0);
+				int wp = (int) (w * pSqrt + 0.5);
+				int hp = (int) (h * pSqrt + 0.5);
+				Image scaledP = scaledInstance(icon.getImage(), wp, hp);
+				imageListArr.add(scaledP);
+			}
+			imageListArr.add(0, scaled);
+			Image[] imageList = imageListArr.toArray(new Image[0]);
+			try {
+				if (baseMultiResolutionImageClassConstructor == null) {
+					baseMultiResolutionImageClassConstructor = Class.forName("java.awt.image.BaseMultiResolutionImage")
+							.getConstructor(imageList.getClass());
+				}
+				Object baseMultiResolutionImage = baseMultiResolutionImageClassConstructor
+						.newInstance((Object) imageList);
+				return new ImageIcon((Image) baseMultiResolutionImage);
+			} catch (Throwable t) {
+				baseMultiResolutionImageClassExists = false;
+				return new ImageIcon(scaled);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return icon;
+		}
 	}
 
 	private static Image scaledInstance(Image image, int w, int h) {
@@ -1805,6 +1814,7 @@ public class UIUtil {
 	}
 
 	private static Map<String, ImageIcon> images = new HashMap<String, ImageIcon>();
+	private static Map<ImageIcon, String> imageNames = new HashMap<ImageIcon, String>();
 	private static boolean errorSeen = false;
 
 	public static ImageIcon readImage(String resource) {
@@ -1838,7 +1848,12 @@ public class UIUtil {
 				}
 				result = null;
 			}
-			images.put(resource, result);
+			if (result != null) {
+				if (result.getIconWidth() * result.getIconHeight() * 3 < 500_000) {
+					images.put(resource, result);
+					imageNames.put(result, resource);
+				}
+			}
 		}
 		return result;
 	}

@@ -107,6 +107,7 @@ import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
+import javax.swing.table.DefaultTableModel;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
@@ -2723,6 +2724,7 @@ public abstract class Desktop extends JDesktopPane {
 		desktops.remove(this);
 		for (RowBrowser rb : tableBrowsers) {
 			rb.browserContentPane.cancelLoadJob(false);
+			rb.browserContentPane.destroy();
 		}
 		if (session != null) {
 			Thread thread = new Thread(new Runnable() {
@@ -3083,7 +3085,9 @@ public abstract class Desktop extends JDesktopPane {
 	public void closeAll(Collection<RowBrowser> toClose) {
 		for (RowBrowser rb : toClose) {
 			close(rb, toClose.size() == 1);
-			// getDesktopManager().closeFrame(rb.internalFrame);
+			if (rb.browserContentPane != null) {
+				rb.browserContentPane.destroy();
+			}
 			rb.internalFrame.dispose();
 		}
 		updateMenu();

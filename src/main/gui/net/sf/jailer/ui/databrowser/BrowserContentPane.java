@@ -7716,6 +7716,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private int currentEditState;
+	
+	public void destroy() {
+		if (rows != null) {
+			rows.clear();
+		}
+		rowsTable.setModel(new DefaultTableModel());
+	}
 
 	protected Set<Integer> filteredColumns;
     private static ImageIcon warnIcon;
@@ -7755,8 +7762,5 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
        	sort123Icon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sort123.png"));
        	sortABCIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sortabc.png"));
 	}
-
-	// TODO 2
-	// TODO "full text search" over all items (text rendering) in table (in memory)
 	
 }

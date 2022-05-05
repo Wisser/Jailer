@@ -133,6 +133,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private InfoBar infoBarRecUsedBookmark;
 	private final String tabPropertyName;
 	private final String module; // TODO define module enum
+	
+	private String mainCard =  1==1? "main" : "modulSelection";
 
 	private Font font =  new JLabel("normal").getFont();
 	private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
@@ -146,7 +148,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.tabPropertyName = "DMMDPropTab" + module;
 		this.module = module;
 		initComponents();
-		((CardLayout) cardPanel.getLayout()).show(cardPanel, "main");
+		
+		moduleDataBrowserToggleButton.setText("Data Browser");
+		moduleDataBrowserToggleButton.setIcon(UIUtil.scaleIcon(modulBrowser, 0.5f));
+		moduleDataBrowserToggleButton.setFont(moduleDataBrowserToggleButton.getFont().deriveFont((float) (moduleDataBrowserToggleButton.getFont().getSize() * 1.6)));
+		moduleDataBrowserToggleButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+		moduleDataBrowserToggleButton.setHorizontalTextPosition(SwingConstants.CENTER);
+		moduleSubsetterToggleButton.setText("Subsetter");
+		moduleSubsetterToggleButton.setIcon(UIUtil.scaleIcon(modulSubsetter, 0.5f));
+		moduleSubsetterToggleButton.setFont(moduleSubsetterToggleButton.getFont().deriveFont((float) (moduleSubsetterToggleButton.getFont().getSize() * 1.6)));
+		moduleSubsetterToggleButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+		moduleSubsetterToggleButton.setHorizontalTextPosition(SwingConstants.CENTER);
+		
+		((CardLayout) cardPanel.getLayout()).show(cardPanel, mainCard);
 		
 		histLabel.setIcon(UIUtil.scaleIcon(histLabel, histIcon));
 		
@@ -1262,6 +1276,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel9 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
+        moduleSubsetterToggleButton = new javax.swing.JToggleButton();
+        moduleDataBrowserToggleButton = new javax.swing.JToggleButton();
+        jPanel13 = new javax.swing.JPanel();
+        jPanel14 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jPanel15 = new javax.swing.JPanel();
+        mainPanel = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
@@ -1332,6 +1353,56 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         cardPanel.add(jPanel9, "loading");
 
         jPanel8.setLayout(new java.awt.GridBagLayout());
+
+        moduleSubsetterToggleButton.setText("jToggleButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel8.add(moduleSubsetterToggleButton, gridBagConstraints);
+
+        moduleDataBrowserToggleButton.setText("jToggleButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel8.add(moduleDataBrowserToggleButton, gridBagConstraints);
+
+        jPanel13.setLayout(new java.awt.CardLayout());
+
+        jPanel14.setLayout(new java.awt.GridBagLayout());
+
+        jLabel3.setText("<html>\nSelect the tool you want to work with.\n<ul>\n<li><b>The Subsetter</b> exports consistent, referentially intact row-sets from your database</li>\n<li><b>The Data Browser</b> allows bidirectional navigation through the your database</li>\n</ul>\n</html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        jPanel14.add(jLabel3, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel14.add(jPanel15, gridBagConstraints);
+
+        jPanel13.add(jPanel14, "none");
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel8.add(jPanel13, gridBagConstraints);
+
+        cardPanel.add(jPanel8, "modulSelection");
+
+        mainPanel.setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -1739,7 +1810,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel8.add(jTabbedPane1, gridBagConstraints);
+        mainPanel.add(jTabbedPane1, gridBagConstraints);
 
         jPanel11.setBackground(new java.awt.Color(255, 255, 255));
         jPanel11.setPreferredSize(new java.awt.Dimension(1, 8));
@@ -1794,9 +1865,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        jPanel8.add(jPanel11, gridBagConstraints);
+        mainPanel.add(jPanel11, gridBagConstraints);
 
-        cardPanel.add(jPanel8, "main");
+        cardPanel.add(mainPanel, "main");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -2039,7 +2110,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					try {
 						UIUtil.prepareUI();
 					} finally {
-						((CardLayout) cardPanel.getLayout()).show(cardPanel, "main");
+						((CardLayout) cardPanel.getLayout()).show(cardPanel, mainCard);
 						UIUtil.resetWaitCursor(DataModelManagerDialog.this);
 					}
 				}
@@ -2192,10 +2263,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
+    private javax.swing.JPanel jPanel14;
+    private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -2212,6 +2287,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton jmOkButton;
     private javax.swing.JButton loadExtractionModelButton;
     private javax.swing.JPanel loadJMPanel;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JToggleButton moduleDataBrowserToggleButton;
+    private javax.swing.JToggleButton moduleSubsetterToggleButton;
     private javax.swing.JButton newButton;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel recUsedConnectionDialogPanel;
@@ -2227,12 +2305,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
 	private static ImageIcon histIcon;
+	private static ImageIcon modulBrowser;
+	private static ImageIcon modulSubsetter;
 	
 	static {
 		// load images
 		okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
         histIcon = UIUtil.readImage("/history.png");
+        modulBrowser = UIUtil.readImage("/modul_browser.png");
+        modulSubsetter = UIUtil.readImage("/modul_subsetter.png");
 	}
 
 	// TODO 1

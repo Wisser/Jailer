@@ -78,6 +78,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 	private String url;
 
 	private Font FONT_ITALICS;
+	private Font FONT_BIG;
 	private Font FONT_NORMAL;
 	
 	private static ImageIcon leftIcon;
@@ -91,7 +92,8 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		pTextFieldBGColor = paramField1.getBackground();
-        FONT_NORMAL = defaultAllLabel.getFont().deriveFont(defaultAllLabel.getFont().getStyle() & ~Font.BOLD);
+		FONT_NORMAL = defaultAllLabel.getFont().deriveFont(defaultAllLabel.getFont().getStyle() & ~Font.BOLD);
+		FONT_BIG = defaultAllLabel.getFont().deriveFont((float) (defaultAllLabel.getFont().getSize() * 1.2));
         FONT_ITALICS = FONT_NORMAL.deriveFont(FONT_NORMAL.getStyle() & ~Font.BOLD | Font.ITALIC);
     	pLabel = new JLabel[] { paramLabel1, paramLabel2, paramLabel3, paramLabel4 };
     	pTextField = new JTextField[] { paramField1, paramField2, paramField3, paramField4 };
@@ -201,6 +203,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 							return new Dimension(Math.max(160, s.width), s.height);
 						}
 					};
+					tb.setFont(FONT_BIG);
 					tb.setIcon(UIUtil.scaleIcon(UIUtil.readImage("/dbmslogo/" + line.cells.get(6), false), 0.5));
 					tb.setVerticalTextPosition(SwingConstants.BOTTOM);
 				    tb.setHorizontalTextPosition(SwingConstants.CENTER);

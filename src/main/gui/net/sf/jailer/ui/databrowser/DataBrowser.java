@@ -1057,6 +1057,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void windowClosed(WindowEvent e) {
 				storeLastSession();
 				desktop.stop();
+				DataBrowser.this.removeAll();
 				UIUtil.checkTermination();
 			}
 
