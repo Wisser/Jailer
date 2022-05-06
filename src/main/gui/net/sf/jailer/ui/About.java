@@ -443,6 +443,4 @@ public class About extends javax.swing.JDialog {
         okIcon = UIUtil.readImage("/buttonok.png");
 	}
 
-	// TODO analyze pot. memory leak
-	
 }

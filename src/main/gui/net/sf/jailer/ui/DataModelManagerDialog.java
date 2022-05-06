@@ -150,12 +150,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		initComponents();
 		
 		moduleDataBrowserToggleButton.setText("Data Browser");
-		moduleDataBrowserToggleButton.setIcon(UIUtil.scaleIcon(modulBrowser, 0.5f));
+		moduleDataBrowserToggleButton.setIcon(UIUtil.scaleIcon(UIUtil.readImage("/modul_browser.png"), 0.5f));
 		moduleDataBrowserToggleButton.setFont(moduleDataBrowserToggleButton.getFont().deriveFont((float) (moduleDataBrowserToggleButton.getFont().getSize() * 1.6)));
 		moduleDataBrowserToggleButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 		moduleDataBrowserToggleButton.setHorizontalTextPosition(SwingConstants.CENTER);
 		moduleSubsetterToggleButton.setText("Subsetter");
-		moduleSubsetterToggleButton.setIcon(UIUtil.scaleIcon(modulSubsetter, 0.5f));
+		moduleSubsetterToggleButton.setIcon(UIUtil.scaleIcon(UIUtil.readImage("/modul_subsetter.png"), 0.5f));
 		moduleSubsetterToggleButton.setFont(moduleSubsetterToggleButton.getFont().deriveFont((float) (moduleSubsetterToggleButton.getFont().getSize() * 1.6)));
 		moduleSubsetterToggleButton.setVerticalTextPosition(SwingConstants.BOTTOM);
 		moduleSubsetterToggleButton.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -385,6 +385,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		        UIUtil.invokeLater(new Runnable() {
 					@Override
 					public void run() {
+						moduleSubsetterToggleButton.setIcon(null);
+						moduleDataBrowserToggleButton.setIcon(null);
 						UIUtil.checkTermination();
 					}
 				});
@@ -2305,16 +2307,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
 	private static ImageIcon histIcon;
-	private static ImageIcon modulBrowser;
-	private static ImageIcon modulSubsetter;
 	
 	static {
 		// load images
 		okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
         histIcon = UIUtil.readImage("/history.png");
-        modulBrowser = UIUtil.readImage("/modul_browser.png");
-        modulSubsetter = UIUtil.readImage("/modul_subsetter.png");
 	}
 
 	// TODO 1
