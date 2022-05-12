@@ -5,6 +5,9 @@
  */
 package net.sf.jailer.ui;
 
+import javax.swing.ImageIcon;
+import javax.swing.SwingConstants;
+
 /**
  *
  * @author RalfW
@@ -16,6 +19,10 @@ public class WelcomePanel extends javax.swing.JPanel {
      */
     public WelcomePanel() {
         initComponents();
+        
+        okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+        noButton.setIcon(UIUtil.scaleIcon(noButton, cancelIcon));
+        notYetButton.setIcon(UIUtil.scaleIcon(notYetButton, closeIcon));
     }
 
     /**
@@ -43,27 +50,30 @@ public class WelcomePanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(33, 0, 8, 0);
         add(infoLabel, gridBagConstraints);
 
+        okButton.setFont(okButton.getFont().deriveFont(okButton.getFont().getSize()+4f));
         okButton.setText("Ok, show the demo");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 110, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 110, 8, 0);
         add(okButton, gridBagConstraints);
 
+        notYetButton.setFont(notYetButton.getFont().deriveFont(notYetButton.getFont().getSize()+4f));
         notYetButton.setText("Not yet, ask me later");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 110, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 110, 8, 0);
         add(notYetButton, gridBagConstraints);
 
+        noButton.setFont(noButton.getFont().deriveFont(noButton.getFont().getSize()+4f));
         noButton.setText("No, let me go on");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -80,6 +90,7 @@ public class WelcomePanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = 3;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -91,4 +102,15 @@ public class WelcomePanel extends javax.swing.JPanel {
     public javax.swing.JButton notYetButton;
     public javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
+    
+    private static ImageIcon okIcon;
+	private static ImageIcon cancelIcon;
+	private static ImageIcon closeIcon;
+	
+	static {
+		// load images
+		okIcon = UIUtil.readImage("/buttonok.png");
+        cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        closeIcon = UIUtil.readImage("/right.png");
+	}
 }
