@@ -33,6 +33,8 @@ public abstract class SmallButton extends JLabel {
 	private final Icon icon;
 	private final Icon iconOver;
 	protected boolean entered = false;
+	protected boolean silent = false;
+	protected MouseListener mouseListener;
 	
 	public SmallButton(Icon icon) {
 		this(icon, false);
@@ -48,7 +50,7 @@ public abstract class SmallButton extends JLabel {
 		this.iconOver = iconOver;
 		this.borderStyle = borderStyle;
 		onMouseExited();
-		addMouseListener(new MouseListener() {
+		addMouseListener(mouseListener = new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (entered && SwingUtilities.isLeftMouseButton(e)) {
@@ -90,6 +92,9 @@ public abstract class SmallButton extends JLabel {
 
 	protected void onMouseExited() {
 		entered = false;
+		if (silent) {
+			return;
+		}
 		if (iconOver != null) {
 			setIcon(icon);
 		} else if (borderStyle) {
@@ -101,6 +106,9 @@ public abstract class SmallButton extends JLabel {
 
 	protected void onMouseEntered() {
 		entered = true;
+		if (silent) {
+			return;
+		}
 		if (iconOver != null) {
 			setIcon(iconOver);
 		} else if (borderStyle) {

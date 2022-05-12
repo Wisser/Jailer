@@ -1722,7 +1722,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 								&& currentModelSubfolder != null && currentModelSubfolder.equals(ExtractionModel.loadDatamodelFolder(modelFile, executionContext))) {
 							load(modelFile);
 						} else {
-							createFrame(modelFile, false, executionContext);
+							createFrame(modelFile, false, "S", executionContext);
 						}
 					}
 				} finally {
@@ -1781,10 +1781,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void newModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newModelActionPerformed
 		try {
-			createFrame(null, false, executionContext);
+		    UIUtil.setWaitCursor(this);
+			createFrame(null, false, "S", executionContext);
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
+            UIUtil.resetWaitCursor(this);
 		}
 	}//GEN-LAST:event_newModelActionPerformed
 
@@ -2295,7 +2297,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							file = commandLine.arguments.get(0);
 						}
 					}
-					createFrame(file, true, null);
+					createFrame(file, true, null, new ExecutionContext());
 				} catch (Throwable e) {
 					e.printStackTrace();
 					UIUtil.showException(null, "Error", e);
@@ -2350,7 +2352,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		return extractionModelFrame;
 	}
 
-	public static void createFrame(String file, final boolean withStartupWizzard, ExecutionContext executionContext) {
+	public static void createFrame(String file, final boolean withStartupWizzard, String module, ExecutionContext executionContext) {
 		try {
 			final String finalFile = file;
 			if (file != null) {
@@ -2370,65 +2372,73 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 				createFrame(finalFile, true, true, null, executionContext);
 			} else {
-				DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + " - Database Subsetting Tool", true, "S") {
-					@Override
-					protected void onLoadExtractionmodel(String modelFile, ExecutionContext executionContext) {
-						createFrame(modelFile, false, executionContext);
-					}
-					@Override
-					protected void onSelect(DbConnectionDialog connectionDialog, ExecutionContext executionContext) {
-						ExtractionModelFrame extractionModelFrame = null;
-						try {
-							extractionModelFrame = createFrame(null, true, true, connectionDialog, executionContext);
-							CommandLineInstance.clear();
-							final ExtractionModelFrame finalExtractionModelFrame = extractionModelFrame;
-							UIUtil.invokeLater(new Runnable() {
-								@SuppressWarnings("serial")
-								@Override
-								public void run() {
-									try {
-										askForDataModel(finalExtractionModelFrame);
-									} catch (Exception e) {
-										UIUtil.showException(finalExtractionModelFrame, "Error", e);
-									}
-									if (withStartupWizzard && finalExtractionModelFrame.showWizzard) {
-										Point pos = null;
-										if (finalExtractionModelFrame.extractionModelEditor != null && finalExtractionModelFrame.extractionModelEditor.layeredPane != null) {
-											pos = new Point(14, 40);
-											SwingUtilities.convertPointToScreen(pos, finalExtractionModelFrame.extractionModelEditor.layeredPane);
-										}
-										new StartupWizzardDialog(finalExtractionModelFrame, pos) {
-											@Override
-											protected void onClose() {
-												try {
-													if (loadModel) {
-														finalExtractionModelFrame.loadActionPerformed(null);
-													}
-													if (newModelWithRestrictions) {
-														finalExtractionModelFrame.extractionModelEditor.ignoreAll(null);
-														finalExtractionModelFrame.extractionModelEditor.extractionModelFrame.updateTitle(finalExtractionModelFrame.extractionModelEditor.needsSave);
-													}
-												} catch (Exception e) {
-													UIUtil.showException(finalExtractionModelFrame, "Error", e);
-												}
-											}
-										};
-									}
-								}
-							});
-						} catch (Exception e) {
-							UIUtil.showException(extractionModelFrame, "Error", e);
-							UIUtil.checkTermination();
-						}
-					}
-					private static final long serialVersionUID = 1L;
-				};
-				dataModelManagerDialog.start();
+				DataModelManagerDialog.start(module, withStartupWizzard, executionContext);
 			}
 		} catch (Throwable e) {
 			UIUtil.showException(null, "Error", e);
 			UIUtil.checkTermination();
 		}
+	}
+
+	/**
+	 * @param withStartupWizzard
+	 * @return
+	 */
+	public static DataModelManagerDialog createDMMDialog(boolean withStartupWizzard, ExecutionContext executionContext) {
+		DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + " - Database Subsetting Tool", true, "S", executionContext) {
+			@Override
+			protected void onLoadExtractionmodel(String modelFile, ExecutionContext executionContext) {
+				createFrame(modelFile, false, "S", executionContext);
+			}
+			@Override
+			protected void onSelect(DbConnectionDialog connectionDialog, ExecutionContext executionContext) {
+				ExtractionModelFrame extractionModelFrame = null;
+				try {
+					extractionModelFrame = createFrame(null, true, true, connectionDialog, executionContext);
+					CommandLineInstance.clear();
+					final ExtractionModelFrame finalExtractionModelFrame = extractionModelFrame;
+					UIUtil.invokeLater(new Runnable() {
+						@SuppressWarnings("serial")
+						@Override
+						public void run() {
+							try {
+								askForDataModel(finalExtractionModelFrame);
+							} catch (Exception e) {
+								UIUtil.showException(finalExtractionModelFrame, "Error", e);
+							}
+							if (withStartupWizzard && finalExtractionModelFrame.showWizzard) {
+								Point pos = null;
+								if (finalExtractionModelFrame.extractionModelEditor != null && finalExtractionModelFrame.extractionModelEditor.layeredPane != null) {
+									pos = new Point(14, 40);
+									SwingUtilities.convertPointToScreen(pos, finalExtractionModelFrame.extractionModelEditor.layeredPane);
+								}
+								new StartupWizzardDialog(finalExtractionModelFrame, pos) {
+									@Override
+									protected void onClose() {
+										try {
+											if (loadModel) {
+												finalExtractionModelFrame.loadActionPerformed(null);
+											}
+											if (newModelWithRestrictions) {
+												finalExtractionModelFrame.extractionModelEditor.ignoreAll(null);
+												finalExtractionModelFrame.extractionModelEditor.extractionModelFrame.updateTitle(finalExtractionModelFrame.extractionModelEditor.needsSave);
+											}
+										} catch (Exception e) {
+											UIUtil.showException(finalExtractionModelFrame, "Error", e);
+										}
+									}
+								};
+							}
+						}
+					});
+				} catch (Exception e) {
+					UIUtil.showException(extractionModelFrame, "Error", e);
+					UIUtil.checkTermination();
+				}
+			}
+			private static final long serialVersionUID = 1L;
+		};
+		return dataModelManagerDialog;
 	}
 
 	JDialog pendingDecisionsDialog;

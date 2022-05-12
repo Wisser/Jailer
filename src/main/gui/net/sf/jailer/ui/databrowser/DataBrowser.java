@@ -2759,7 +2759,14 @@ public class DataBrowser extends javax.swing.JFrame {
 	}// GEN-LAST:event_dataImportActionPerformed
 
 	private void newBrowserjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newBrowserjMenuItemActionPerformed
-		createFrame();
+		try {
+		    UIUtil.setWaitCursor(this);
+		    createFrame("B", executionContext);
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+		} finally {
+            UIUtil.resetWaitCursor(this);
+		}
 	}// GEN-LAST:event_newBrowserjMenuItemActionPerformed
 
 	private void openTableButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_openTableButtonActionPerformed
@@ -3123,7 +3130,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void run() {
 				try {
 					UIUtil.initPLAF();
-					createFrame();
+					createFrame(null, new ExecutionContext());
 				} catch (Exception e) {
 					UIUtil.showException(null, "Error", e);
 				}
@@ -3208,9 +3215,16 @@ public class DataBrowser extends javax.swing.JFrame {
 		return dataBrowser;
 	}
 
-	private static void createFrame() {
+	private static void createFrame(String module, ExecutionContext executionContext) {
+		DataModelManagerDialog.start("B", false, executionContext);
+	}
+
+	/**
+	 * @return
+	 */
+	public static DataModelManagerDialog createDMMDialog(ExecutionContext executionContext) {
 		DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(
-				DataBrowserContext.getAppName(true) + " - Relational Data Browser", false, "B") {
+				DataBrowserContext.getAppName(true) + " - Relational Data Browser", false, "B", executionContext) {
 			@Override
 			protected void onSelect(final DbConnectionDialog connectionDialog,
 					final ExecutionContext executionContext) {
@@ -3246,7 +3260,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			private static final long serialVersionUID = 1L;
 		};
-		dataModelManagerDialog.start();
+		return dataModelManagerDialog;
 	}
 
 	/**

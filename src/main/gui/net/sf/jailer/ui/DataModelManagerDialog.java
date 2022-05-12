@@ -53,11 +53,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -68,14 +71,13 @@ import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-
-import org.fife.rsta.ui.EscapableDialog;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
@@ -88,6 +90,8 @@ import net.sf.jailer.ui.commandline.CommandLineInstance;
 import net.sf.jailer.ui.databrowser.BookmarksPanel;
 import net.sf.jailer.ui.databrowser.BookmarksPanel.BookmarkId;
 import net.sf.jailer.ui.databrowser.DataBrowser;
+import net.sf.jailer.ui.util.LightBorderSmallButton;
+import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.Pair;
 
@@ -123,7 +127,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	 */
 	private List<String> baseFolders = new ArrayList<String>();
 
-	private final ExecutionContext executionContext = new ExecutionContext();
+	private final ExecutionContext executionContext;
 
 	private DbConnectionDialog dbConnectionDialog;
 	private DbConnectionDialog recUsedConnectionDialog;
@@ -134,33 +138,28 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private final String tabPropertyName;
 	private final String module; // TODO define module enum
 	
-	private String mainCard =  1==1? "main" : "modulSelection";
-
 	private Font font =  new JLabel("normal").getFont();
 	private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
     private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
 
+    private SmallButton moduleDataBrowserToggleButton;
+    private SmallButton moduleSubsetterToggleButton;
+
+	private DataModelManagerDialog master;
+	
+	private static final String SETTING_LAST_USED_MODULE = "lastUsedModule";
+    
 	/**
 	 * Creates new.
 	 */
-	public DataModelManagerDialog(String applicationName, boolean withLoadJMButton, String module) {
+	public DataModelManagerDialog(String applicationName, boolean withLoadJMButton, String module, ExecutionContext executionContext) {
 		this.applicationName = applicationName;
+		this.executionContext = executionContext;
 		this.tabPropertyName = "DMMDPropTab" + module;
 		this.module = module;
 		initComponents();
-		
-		moduleDataBrowserToggleButton.setText("Data Browser");
-		moduleDataBrowserToggleButton.setIcon(UIUtil.scaleIcon(modulBrowser, 0.5f));
-		moduleDataBrowserToggleButton.setFont(moduleDataBrowserToggleButton.getFont().deriveFont((float) (moduleDataBrowserToggleButton.getFont().getSize() * 1.6)));
-		moduleDataBrowserToggleButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-		moduleDataBrowserToggleButton.setHorizontalTextPosition(SwingConstants.CENTER);
-		moduleSubsetterToggleButton.setText("Subsetter");
-		moduleSubsetterToggleButton.setIcon(UIUtil.scaleIcon(modulSubsetter, 0.5f));
-		moduleSubsetterToggleButton.setFont(moduleSubsetterToggleButton.getFont().deriveFont((float) (moduleSubsetterToggleButton.getFont().getSize() * 1.6)));
-		moduleSubsetterToggleButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-		moduleSubsetterToggleButton.setHorizontalTextPosition(SwingConstants.CENTER);
-		
-		((CardLayout) cardPanel.getLayout()).show(cardPanel, mainCard);
+		welcomeContainerPanel.setVisible(false);
+		JTable bookmarkTable = null;
 		
 		histLabel.setIcon(UIUtil.scaleIcon(histLabel, histIcon));
 		
@@ -218,12 +217,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			jTabbedPane1.remove(recentlyUsedBookmarkPanel);
 		}
 		
-		try {
-			ImageIcon imageIcon = UIUtil.readImage("/jailer.png");
-			setIconImage(imageIcon.getImage());
-		} catch (Throwable t) {
-		}
-		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.gridx = 2;
@@ -252,7 +245,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		initTableModel();
 		initConnectionDialog(true);
 		initConnectionDialog(false);
-		JTable bookmarkTable = initBookmarkTables();
+		bookmarkTable = initBookmarkTables();
 		bookmarkTable.setAutoCreateRowSorter(true);
 		
 		final TableCellRenderer defaultTableCellRenderer = dataModelsTable
@@ -359,47 +352,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				currentModel = null;
 			}
 		}
-
+	
 		setTitle(applicationName);
-
-		addWindowListener(new WindowListener() {
-			@Override
-			public void windowOpened(WindowEvent e) {
-				UIUtil.invokeLater(() -> restoreButton.grabFocus());
-				openWelcomeDilog();
-			}
-			@Override
-			public void windowIconified(WindowEvent e) {
-			}
-			@Override
-			public void windowDeiconified(WindowEvent e) {
-			}
-			@Override
-			public void windowDeactivated(WindowEvent e) {
-			}
-			@Override
-			public void windowClosing(WindowEvent e) {
-			}
-			@Override
-			public void windowClosed(WindowEvent e) {
-		        UIUtil.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						UIUtil.checkTermination();
-					}
-				});
-			}
-			@Override
-			public void windowActivated(WindowEvent e) {
-			}
-		});
-
-		setLocation(70, 80);
-		pack();
-		setSize(Math.max(840, getWidth()), 536);
-		UIUtil.fit(this);
 		refresh();
-
 		initRestoreLastSessionButton();
 
 		if (jTabbedPane1.getSelectedComponent() == recentlyUsedBookmarkPanel) {
@@ -427,80 +382,345 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 	}
 
-	private static boolean wdOpened = false;
+	/**
+	 * Creates new.
+	 */
+	private DataModelManagerDialog(String module, DataModelManagerDialog dmmdBrowser, DataModelManagerDialog dmmdSubsetter, ExecutionContext executionContext) {
+		this.applicationName = JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + " - Database Tools";
+		this.executionContext = executionContext;
+		this.tabPropertyName = null;
+		this.module = module;
+		initComponents();
+		welcomeContainerPanel.setVisible(false);
+
+		try {
+			ImageIcon imageIcon = UIUtil.readImage("/jailer.png");
+			setIconImage(imageIcon.getImage());
+		} catch (Throwable t) {
+		}
 	
-	protected void openWelcomeDilog() {
-		if (wdOpened) {
-			return;
-		}
-		wdOpened = true;
+		dmmdBrowser.titelLabel.setText("Data Browser");
+		dmmdSubsetter.titelLabel.setText("Subsetter");
+		
+		dmmdBrowser.jTabbedPane1.addChangeListener(e -> {
+			int index = dmmdBrowser.jTabbedPane1.getSelectedIndex();
+			if (index >= 0 && index < dmmdSubsetter.jTabbedPane1.getTabCount()) {
+				dmmdSubsetter.jTabbedPane1.setSelectedIndex(index);
+			}
+		});
+		dmmdSubsetter.jTabbedPane1.addChangeListener(e -> {
+			int index = dmmdSubsetter.jTabbedPane1.getSelectedIndex();
+			if (index >= 0 && index < dmmdBrowser.jTabbedPane1.getTabCount()) {
+				dmmdBrowser.jTabbedPane1.setSelectedIndex(index);
+			}
+		});
+		
+		subsetterPanel.add(dmmdSubsetter.mainContentPanel);
+		dataBrowserPanel.add(dmmdBrowser.mainContentPanel);
 
-		if (!"B".equals(module)) {
-			return;
-		}
+		final Color bgBrowser = new Color(246, 246, 255); // TODO 244, 250
+		final Color bgSubsetter = new Color(255, 255, 246);
+		
+		moduleDataBrowserPanel.setBackground(bgBrowser);
+		moduleSubsetterPanel.setBackground(bgSubsetter);
+		
+		Border emtypBorder = BorderFactory.createLineBorder(new Color(222, 222, 222, 0), 1, true);
+		Border dataBrowsepBorder = emtypBorder; // BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true);
+		Border subsetterBorder = dataBrowsepBorder;
+		
+		moduleDataBrowserPanel.setBorder(emtypBorder);
+		moduleSubsetterPanel.setBorder(emtypBorder);
+		
+		AtomicInteger selectedModule = new AtomicInteger(0);
+		
+		Runnable switchToNone = ()-> {
+			selectedModule.set(0);
+			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "none");
+			modulesPanel.setBackground(null);
+			dmmdSubsetter.mainContentPanel.setBackground(null);
+			dmmdSubsetter.jPanel11.setBackground(null);
+			dmmdSubsetter.jPanel12.setBackground(null);
+			moduleSubsetterPanel.setBorder(emtypBorder);
+			moduleDataBrowserPanel.setBorder(emtypBorder);
+			titelDataBrowserLabel.setIcon(null);
+			titelSubsetterLabel.setIcon(null);
+			openWelcomeDialog(null);
+		};
+		Runnable switchToSubsetter = ()-> {
+			selectedModule.set(1);
+			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "subsetter");
+			modulesPanel.setBackground(bgSubsetter);
+			dmmdSubsetter.mainContentPanel.setBackground(bgSubsetter);
+			dmmdSubsetter.jPanel11.setBackground(bgSubsetter);
+			dmmdSubsetter.jPanel12.setBackground(bgSubsetter);
+			moduleSubsetterPanel.setBorder(emtypBorder);
+			moduleDataBrowserPanel.setBorder(dataBrowsepBorder);
+			titelDataBrowserLabel.setIcon(null);
+			titelSubsetterLabel.setIcon(UIUtil.scaleIcon(titelSubsetterLabel, okIcon));
+			openWelcomeDialog(null);
+		};
+		Runnable switchToDataBrowser = ()-> {
+			selectedModule.set(2);
+			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "databrowser");
+			modulesPanel.setBackground(bgBrowser);
+			dmmdBrowser.mainContentPanel.setBackground(bgBrowser);
+			dmmdBrowser.jPanel11.setBackground(bgBrowser);
+			dmmdBrowser.jPanel12.setBackground(bgBrowser);
+			moduleSubsetterPanel.setBorder(subsetterBorder);
+			moduleDataBrowserPanel.setBorder(emtypBorder);
+			titelDataBrowserLabel.setIcon(UIUtil.scaleIcon(titelDataBrowserLabel, okIcon));
+			titelSubsetterLabel.setIcon(null);
+			openWelcomeDialog(dmmdBrowser);
+		};
 
-		final String ASK_LATER = "WelcomeAskLater"; 
-		Object askLater = UISettings.restore(ASK_LATER);
-		if (Boolean.FALSE.equals(askLater)) {
-			return;
-		}
-		if (askLater == null) {
-			if (UISettings.restore("uuid") != null) {
-				if (UISettings.restore("buser") == null) {
-					return;
+		moduleDataBrowserToggleButton = new LightBorderSmallButton(
+				modulBrowserImg) {
+			{
+				silent = true;
+				getFrame().addMouseListener(mouseListener);
+			}
+			@Override
+			protected JComponent getFrame() {
+				return moduleDataBrowserFramePanel1;
+			}
+			@Override
+			protected Color getSelectedBackgroundColor() {
+				if (selectedModule.get() != 2) {
+					return super.getSelectedBackgroundColor();
+				} else {
+					return new Color(245, 245, 245);
 				}
 			}
-		}
-		UISettings.store(ASK_LATER, false);
-		
-		ciOfBookmark.entrySet().stream().filter(e -> "INVENTORY - ACTOR".equals(e.getKey().bookmark)).findAny()
-				.ifPresent(e -> {
-					WelcomePanel welcomePanel = new WelcomePanel();
-					
-					DMMDInfoBar iBar = new DMMDInfoBar("Welcome",
-							"Since you are here for the first time, \nI suggest showing you the demo database.    \n",
-							"");
-					iBar.setIcon(UIUtil.jailerLogo);
-					UIUtil.replace(welcomePanel.infoLabel, iBar);
+			@Override
+			protected void onClick(MouseEvent e) {
+				if (selectedModule.get() != 2) {
+					switchToDataBrowser.run();
+				} else {
+					switchToNone.run();
+				}
+				onMouseExited();
+			}
+		};
+		moduleDataBrowserSubPanel.add(moduleDataBrowserToggleButton);
+		moduleSubsetterToggleButton = new LightBorderSmallButton(
+				modulSubsetterImg) {
+			{
+				silent = true;
+				getFrame().addMouseListener(mouseListener);
+			}
+			@Override
+			protected JComponent getFrame() {
+				return moduleSubsetterFramePanel;
+			}
+			@Override
+			protected Color getSelectedBackgroundColor() {
+				if (selectedModule.get() != 1) {
+					return super.getSelectedBackgroundColor();
+				} else {
+					return new Color(245, 245, 245);
+				}
+			}
+			@Override
+			protected void onClick(MouseEvent e) {
+				if (selectedModule.get() != 1) {
+					switchToSubsetter.run();
+				} else {
+					switchToNone.run();
+				}
+				onMouseExited();
+			}
+		};
+		moduleSubsetterToggleButton.setBorder(null);
+		moduleDataBrowserToggleButton.setBorder(null);
+	
+		moduleSubsetteSubrPanel.add(moduleSubsetterToggleButton);
 
-					EscapableDialog dialog = new EscapableDialog(this) {
-					};
-					
-					dialog.setTitle("Jailer " + JailerVersion.VERSION);
-					
-					welcomePanel.okButton.addActionListener(evt -> {
-						BookmarkId bookmark = e.getKey();
-						ConnectionInfo ci = e.getValue();
-						UIUtil.subModule += 1;
-						UIUtil.setWaitCursor(dialog);
-						openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
-						UIUtil.resetWaitCursor(dialog);
-						dialog.setVisible(false);
-						dialog.dispose();
-						setVisible(false);
-						dispose();
-					});
-					welcomePanel.notYetButton.addActionListener(evt -> {
-						UISettings.store(ASK_LATER, true);
-						dialog.dispose();
-						dialog.setVisible(false);
-					});
-					welcomePanel.noButton.addActionListener(evt -> {
-						dialog.dispose();
-						dialog.setVisible(false);
-					});
-					
-					dialog.getContentPane().add(welcomePanel);
-					dialog.pack();
-					Point ownerLoc;
-					Dimension ownerSize;
-					ownerLoc = getLocation();
-					ownerSize = getSize();
-					int x = (int) (ownerLoc.getX() + ownerSize.getWidth() / 2 - dialog.getWidth() / 2);
-					int y = (int) (ownerLoc.getY() + ownerSize.getHeight() / 2 - dialog.getHeight() / 2);
-					dialog.setLocation(x, y);
-					dialog.setVisible(true);
+		moduleDataBrowserToggleButton.setFont(moduleDataBrowserToggleButton.getFont()
+				.deriveFont((float) (moduleDataBrowserToggleButton.getFont().getSize() * 1.6)));
+		moduleDataBrowserToggleButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+		moduleDataBrowserToggleButton.setHorizontalTextPosition(SwingConstants.CENTER);
+		moduleSubsetterToggleButton.setFont(moduleSubsetterToggleButton.getFont()
+				.deriveFont((float) (moduleSubsetterToggleButton.getFont().getSize() * 1.6)));
+		moduleSubsetterToggleButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+		moduleSubsetterToggleButton.setHorizontalTextPosition(SwingConstants.CENTER);
+
+		((CardLayout) cardPanel.getLayout()).show(cardPanel, "modulSelection");
+
+		Object lastUsed = module;
+		if (lastUsed == null) {
+			lastUsed = UISettings.restore(SETTING_LAST_USED_MODULE);
+		}
+		if ("S".equals(lastUsed)) {
+			switchToSubsetter.run();
+			if (module != null) {
+				modulesPanel.setVisible(false);
+				dmmdSubsetter.titelLabel.setVisible(false);
+				dmmdSubsetter.mainContentPanel.setBackground(null);
+			}
+		}
+		if ("B".equals(lastUsed)) {
+			switchToDataBrowser.run();
+			if (module != null) {
+				modulesPanel.setVisible(false);
+				dmmdBrowser.titelLabel.setVisible(false);
+				dmmdBrowser.mainContentPanel.setBackground(null);
+			}
+		}
+
+		setLocation(70, 30);
+		pack();
+		setSize(Math.max(840, getWidth()), modulesPanel.isVisible()? 900 : 500);
+		UIUtil.fit(this);
+
+		setTitle(applicationName);
+
+		addWindowListener(new WindowListener() {
+			@Override
+			public void windowOpened(WindowEvent e) {
+				UIUtil.invokeLater(() -> {
+					if (dmmdBrowser.restoreButton.isShowing()) {
+						dmmdBrowser.restoreButton.grabFocus();
+					}
+					if (dmmdSubsetter.restoreButton.isShowing()) {
+						dmmdSubsetter.restoreButton.grabFocus();
+					}
 				});
+			}
+			@Override
+			public void windowIconified(WindowEvent e) {
+			}
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+			}
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+			}
+			@Override
+			public void windowClosing(WindowEvent e) {
+			}
+			@Override
+			public void windowClosed(WindowEvent e) {
+		        UIUtil.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if (moduleSubsetterToggleButton != null) {
+							moduleSubsetterToggleButton.setIcon(null);
+						}
+						if (moduleDataBrowserToggleButton != null) {
+							moduleDataBrowserToggleButton.setIcon(null);
+						}
+						UIUtil.checkTermination();
+					}
+				});
+			}
+			@Override
+			public void windowActivated(WindowEvent e) {
+			}
+		});
+	}
+	
+	public static void start(String module, boolean withStartupWizzard, ExecutionContext executionContext) {
+		DataModelManagerDialog dmmdBrowser = DataBrowser.createDMMDialog(executionContext);
+		DataModelManagerDialog dmmdSubsetter = ExtractionModelFrame.createDMMDialog(withStartupWizzard, executionContext);
+		dmmdBrowser.dispose();
+		dmmdSubsetter.dispose();
+		
+		String datamodelFolder = CommandLineInstance.getInstance().datamodelFolder;
+		if (module == null && datamodelFolder != null && CommandLineInstance.getInstance().arguments.isEmpty()) {
+			executionContext.setDatamodelFolder(new File(datamodelFolder).getParent());
+			executionContext.setCurrentModelSubfolder(new File(datamodelFolder).getName());
+			UIUtil.prepareUI();
+			dmmdSubsetter.onSelect(dmmdSubsetter.dbConnectionDialog, executionContext);
+		} else {
+			DataModelManagerDialog dmmd = new DataModelManagerDialog(module, dmmdBrowser, dmmdSubsetter, executionContext) {
+				@Override
+				protected void onSelect(DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext) {
+				}
+				@Override
+				protected void onLoadExtractionmodel(String modelFile, ExecutionContext executionContext2) {
+				}
+			};
+	
+			dmmdBrowser.master = dmmd;
+			dmmdSubsetter.master = dmmd;
+			
+			dmmd.setVisible(true);
+			((CardLayout) dmmd.cardPanel.getLayout()).show(dmmd.cardPanel, "loading");
+			UIUtil.setWaitCursor(dmmd);
+			UIUtil.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						UIUtil.prepareUI();
+					} finally {
+						((CardLayout) dmmd.cardPanel.getLayout()).show(dmmd.cardPanel, "modulSelection");
+						UIUtil.resetWaitCursor(dmmd);
+					}
+				}
+			});
+		}
+	}
+
+	private boolean disabledWelcomeDialog = false;
+	
+	private void openWelcomeDialog(DataModelManagerDialog dmmd) {
+		if (module != null || disabledWelcomeDialog) {
+			return;
+		}
+		
+		if (dmmd != null) {
+			
+			// TODO
+			// TODO test
+			final String ASK_LATER = "WelcomeAskLater";
+			Object askLater = UISettings.restore(ASK_LATER);
+			if (Boolean.FALSE.equals(askLater)) {
+				return;
+			}
+			if (askLater == null) {
+				if (UISettings.restore("uuid") != null) {
+					if (UISettings.restore("buser") == null) {
+						return;
+					}
+				}
+			}
+			UISettings.store(ASK_LATER, false);
+			
+			dmmd.ciOfBookmark.entrySet().stream().filter(e -> "INVENTORY - ACTOR".equals(e.getKey().bookmark)).findAny()
+					.ifPresent(e -> {
+						WelcomePanel welcomePanel = new WelcomePanel();
+						
+						DMMDInfoBar iBar = new DMMDInfoBar("Welcome",
+								"Since you are here for the first time, \nI suggest showing you the demo database.    \n",
+								"");
+						iBar.setIcon(UIUtil.jailerLogo);
+						UIUtil.replace(welcomePanel.infoLabel, iBar);
+						dmmd.welcomeContainerPanel.removeAll();
+						dmmd.welcomeContainerPanel.add(welcomePanel);
+						welcomePanel.okButton.addActionListener(evt -> {
+							BookmarkId bookmark = e.getKey();
+							ConnectionInfo ci = e.getValue();
+							UIUtil.subModule += 1;
+							UIUtil.setWaitCursor(DataModelManagerDialog.this);
+							dmmd.openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
+							UIUtil.resetWaitCursor(DataModelManagerDialog.this);
+							dmmd.closeAndDispose();
+						});
+						welcomePanel.notYetButton.addActionListener(evt -> {
+							UISettings.store(ASK_LATER, true);
+							dmmd.jTabbedPane1.setVisible(true);
+							dmmd.welcomeContainerPanel.setVisible(false);
+							disabledWelcomeDialog = true;
+						});
+						welcomePanel.noButton.addActionListener(evt -> {
+							dmmd.jTabbedPane1.setVisible(true);
+							dmmd.welcomeContainerPanel.setVisible(false);
+						});
+						
+						dmmd.jTabbedPane1.setVisible(false);
+						dmmd.welcomeContainerPanel.setVisible(true);
+					});
+		}
 	}
 
 	private JTable initBookmarkTables() {
@@ -596,8 +816,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					bookmark.setContentInfo(lastSession.getContentInfo());
 					openBookmark(bookmark, finalConnectionInfo);
 					UIUtil.resetWaitCursor(DataModelManagerDialog.this);
-					setVisible(false);
-					dispose();
+					closeAndDispose();
 				}
 			});
 		}
@@ -851,8 +1070,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					BookmarkId bookmark = bookmarksListModel.get(i);
 					ConnectionInfo ci = ciOfBookmark.get(bookmark);
 					openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
-					setVisible(false);
-					dispose();
+					closeAndDispose();
 				}
 			}
 		};
@@ -1016,8 +1234,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					onSelect(dbConnectionDialog, executionContext);
 					UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-					DataModelManagerDialog.this.setVisible(false);
-					DataModelManagerDialog.this.dispose();
+					DataModelManagerDialog.this.closeAndDispose();
 				}
 			}
 		};
@@ -1275,14 +1492,27 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         cardPanel = new javax.swing.JPanel();
         jPanel9 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        selectModulePanel = new javax.swing.JPanel();
+        modulesPanel = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        moduleSubsetterPanel = new javax.swing.JPanel();
+        moduleSubsetterFramePanel = new javax.swing.JPanel();
+        moduleSubsetteSubrPanel = new javax.swing.JPanel();
+        titelSubsetterLabel = new javax.swing.JLabel();
+        moduleDataBrowserPanel = new javax.swing.JPanel();
+        moduleDataBrowserFramePanel1 = new javax.swing.JPanel();
+        moduleDataBrowserSubPanel = new javax.swing.JPanel();
+        titelDataBrowserLabel = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
-        moduleSubsetterToggleButton = new javax.swing.JToggleButton();
-        moduleDataBrowserToggleButton = new javax.swing.JToggleButton();
         jPanel13 = new javax.swing.JPanel();
+        modulsCardPanel = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jPanel15 = new javax.swing.JPanel();
+        subsetterPanel = new javax.swing.JPanel();
+        dataBrowserPanel = new javax.swing.JPanel();
         mainPanel = new javax.swing.JPanel();
+        mainContentPanel = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
@@ -1330,6 +1560,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel10 = new javax.swing.JPanel();
         restoreButton = new javax.swing.JButton();
         dummyLabel = new javax.swing.JLabel();
+        titelLabel = new javax.swing.JLabel();
+        welcomeContainerPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connect with DB");
@@ -1352,25 +1584,125 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         cardPanel.add(jPanel9, "loading");
 
-        jPanel8.setLayout(new java.awt.GridBagLayout());
+        selectModulePanel.setLayout(new java.awt.GridBagLayout());
 
-        moduleSubsetterToggleButton.setText("jToggleButton1");
+        modulesPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel5.setFont(jLabel5.getFont().deriveFont(jLabel5.getFont().getStyle() | java.awt.Font.BOLD, jLabel5.getFont().getSize()+4));
+        jLabel5.setText("Tools");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 4);
+        modulesPanel.add(jLabel5, gridBagConstraints);
+
+        moduleSubsetterPanel.setLayout(new java.awt.GridBagLayout());
+
+        moduleSubsetterFramePanel.setOpaque(false);
+        moduleSubsetterFramePanel.setLayout(new java.awt.GridBagLayout());
+
+        moduleSubsetteSubrPanel.setOpaque(false);
+        moduleSubsetteSubrPanel.setLayout(new javax.swing.BoxLayout(moduleSubsetteSubrPanel, javax.swing.BoxLayout.LINE_AXIS));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        jPanel8.add(moduleSubsetterToggleButton, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
+        moduleSubsetterFramePanel.add(moduleSubsetteSubrPanel, gridBagConstraints);
 
-        moduleDataBrowserToggleButton.setText("jToggleButton1");
+        titelSubsetterLabel.setFont(titelSubsetterLabel.getFont().deriveFont(titelSubsetterLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        titelSubsetterLabel.setText("Subsetter");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 0);
+        moduleSubsetterFramePanel.add(titelSubsetterLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        jPanel8.add(moduleDataBrowserToggleButton, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        moduleSubsetterPanel.add(moduleSubsetterFramePanel, gridBagConstraints);
 
-        jPanel13.setLayout(new java.awt.CardLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
+        modulesPanel.add(moduleSubsetterPanel, gridBagConstraints);
+
+        moduleDataBrowserPanel.setLayout(new java.awt.GridBagLayout());
+
+        moduleDataBrowserFramePanel1.setOpaque(false);
+        moduleDataBrowserFramePanel1.setLayout(new java.awt.GridBagLayout());
+
+        moduleDataBrowserSubPanel.setOpaque(false);
+        moduleDataBrowserSubPanel.setLayout(new javax.swing.BoxLayout(moduleDataBrowserSubPanel, javax.swing.BoxLayout.LINE_AXIS));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 8);
+        moduleDataBrowserFramePanel1.add(moduleDataBrowserSubPanel, gridBagConstraints);
+
+        titelDataBrowserLabel.setFont(titelDataBrowserLabel.getFont().deriveFont(titelDataBrowserLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        titelDataBrowserLabel.setText("Data Browser");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 0);
+        moduleDataBrowserFramePanel1.add(titelDataBrowserLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        moduleDataBrowserPanel.add(moduleDataBrowserFramePanel1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 8);
+        modulesPanel.add(moduleDataBrowserPanel, gridBagConstraints);
+
+        jPanel8.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        modulesPanel.add(jPanel8, gridBagConstraints);
+
+        jPanel13.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        jPanel13.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 24;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 8, 0);
+        modulesPanel.add(jPanel13, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        selectModulePanel.add(modulesPanel, gridBagConstraints);
+
+        modulsCardPanel.setLayout(new java.awt.CardLayout());
 
         jPanel14.setLayout(new java.awt.GridBagLayout());
 
@@ -1380,7 +1712,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 4, 12, 12);
         jPanel14.add(jLabel3, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1389,7 +1721,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         jPanel14.add(jPanel15, gridBagConstraints);
 
-        jPanel13.add(jPanel14, "none");
+        modulsCardPanel.add(jPanel14, "none");
+
+        subsetterPanel.setLayout(new javax.swing.BoxLayout(subsetterPanel, javax.swing.BoxLayout.LINE_AXIS));
+        modulsCardPanel.add(subsetterPanel, "subsetter");
+
+        dataBrowserPanel.setLayout(new javax.swing.BoxLayout(dataBrowserPanel, javax.swing.BoxLayout.LINE_AXIS));
+        modulsCardPanel.add(dataBrowserPanel, "databrowser");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1398,11 +1736,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel8.add(jPanel13, gridBagConstraints);
+        selectModulePanel.add(modulsCardPanel, gridBagConstraints);
 
-        cardPanel.add(jPanel8, "modulSelection");
+        cardPanel.add(selectModulePanel, "modulSelection");
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
+
+        mainContentPanel.setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -1810,10 +2150,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        mainPanel.add(jTabbedPane1, gridBagConstraints);
+        mainContentPanel.add(jTabbedPane1, gridBagConstraints);
 
         jPanel11.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel11.setPreferredSize(new java.awt.Dimension(1, 8));
         jPanel11.setLayout(new java.awt.GridBagLayout());
 
         histLabel.setFont(histLabel.getFont().deriveFont(histLabel.getFont().getStyle() | java.awt.Font.BOLD));
@@ -1865,7 +2204,33 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        mainPanel.add(jPanel11, gridBagConstraints);
+        mainContentPanel.add(jPanel11, gridBagConstraints);
+
+        titelLabel.setFont(titelLabel.getFont().deriveFont(titelLabel.getFont().getStyle() | java.awt.Font.BOLD, titelLabel.getFont().getSize()+4));
+        titelLabel.setText("jLabel4");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 4);
+        mainContentPanel.add(titelLabel, gridBagConstraints);
+
+        welcomeContainerPanel.setLayout(new javax.swing.BoxLayout(welcomeContainerPanel, javax.swing.BoxLayout.LINE_AXIS));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        mainContentPanel.add(welcomeContainerPanel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        mainPanel.add(mainContentPanel, gridBagConstraints);
 
         cardPanel.add(mainPanel, "main");
 
@@ -1929,8 +2294,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	private void close() {
 		hasSelectedModel = false;
-		setVisible(false);
-		dispose();
+		closeAndDispose();
 	}
 
 	private void analyzeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyzeButtonActionPerformed
@@ -2015,8 +2379,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			if (modelFile != null && UIUtil.checkFileExistsAndWarn(modelFile, this)) {
 				UIUtil.setWaitCursor(this);
 				onLoadExtractionmodel(modelFile, executionContext);
-				setVisible(false);
-				dispose();
+				closeAndDispose();
 			}
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
@@ -2036,8 +2399,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 						UIUtil.setWaitCursor(DataModelManagerDialog.this);
 						onLoadExtractionmodel(file.getPath(), executionContext);
 						UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
-						setVisible(false);
-						dispose();
+						closeAndDispose();
 					} catch (Throwable t) {
 						UIUtil.showException(DataModelManagerDialog.this, "Error", t);
 					} finally {
@@ -2093,31 +2455,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 	}
 
-	public void start() {
-		String datamodelFolder = CommandLineInstance.getInstance().datamodelFolder;
-		if (datamodelFolder != null && CommandLineInstance.getInstance().arguments.isEmpty()) {
-			executionContext.setDatamodelFolder(new File(datamodelFolder).getParent());
-			executionContext.setCurrentModelSubfolder(new File(datamodelFolder).getName());
-			UIUtil.prepareUI();
-			onSelect(dbConnectionDialog, executionContext);
-		} else {
-			setVisible(true);
-			((CardLayout) cardPanel.getLayout()).show(cardPanel, "loading");
-			UIUtil.setWaitCursor(this);
-			UIUtil.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						UIUtil.prepareUI();
-					} finally {
-						((CardLayout) cardPanel.getLayout()).show(cardPanel, mainCard);
-						UIUtil.resetWaitCursor(DataModelManagerDialog.this);
-					}
-				}
-			});
-		}
-	}
-
 	private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {
 		if (currentModel == null) {
 			return;
@@ -2136,8 +2473,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		} finally {
 			UIUtil.resetWaitCursor(this);
 		}
-		setVisible(false);
-		dispose();
+		closeAndDispose();
 	}// GEN-LAST:event_okButtonActionPerformed
 
 	protected abstract void onSelect(DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext);
@@ -2201,7 +2537,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 	}
 
-    private static class DMMDInfoBar extends InfoBar {
+	private void closeAndDispose() {
+		setVisible(false);
+		dispose();
+		if (master != null) {
+			master.setVisible(false);
+			master.dispose();
+			if (master.module == null && module != null) {
+				UISettings.store(SETTING_LAST_USED_MODULE, module);
+			}
+		}
+	}
+
+	private static class DMMDInfoBar extends InfoBar {
     	
 		public DMMDInfoBar(String titel, String message, String footer) {
 			super(titel, message, footer);
@@ -2251,6 +2599,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton browseButton;
     private javax.swing.JPanel cardPanel;
     private javax.swing.JPanel connectionDialogPanel;
+    private javax.swing.JPanel dataBrowserPanel;
     private javax.swing.JTable dataModelsTable;
     private javax.swing.JButton deleteButton;
     private javax.swing.JLabel dummyLabel;
@@ -2264,6 +2613,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
@@ -2287,15 +2637,28 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton jmOkButton;
     private javax.swing.JButton loadExtractionModelButton;
     private javax.swing.JPanel loadJMPanel;
+    private javax.swing.JPanel mainContentPanel;
     private javax.swing.JPanel mainPanel;
-    private javax.swing.JToggleButton moduleDataBrowserToggleButton;
-    private javax.swing.JToggleButton moduleSubsetterToggleButton;
+    private javax.swing.JPanel moduleDataBrowserFramePanel1;
+    private javax.swing.JPanel moduleDataBrowserPanel;
+    private javax.swing.JPanel moduleDataBrowserSubPanel;
+    private javax.swing.JPanel moduleSubsetteSubrPanel;
+    private javax.swing.JPanel moduleSubsetterFramePanel;
+    private javax.swing.JPanel moduleSubsetterPanel;
+    private javax.swing.JPanel modulesPanel;
+    private javax.swing.JPanel modulsCardPanel;
     private javax.swing.JButton newButton;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel recUsedConnectionDialogPanel;
     private javax.swing.JPanel recUsedConnectionPanel;
     private javax.swing.JPanel recentlyUsedBookmarkPanel;
     private javax.swing.JButton restoreButton;
+    private javax.swing.JPanel selectModulePanel;
+    private javax.swing.JPanel subsetterPanel;
+    private javax.swing.JLabel titelDataBrowserLabel;
+    private javax.swing.JLabel titelLabel;
+    private javax.swing.JLabel titelSubsetterLabel;
+    private javax.swing.JPanel welcomeContainerPanel;
     // End of variables declaration//GEN-END:variables
     private javax.swing.JComboBox locationComboBox = new JComboBox2();
     private JComboBox2 recentSessionsComboBox = new JComboBox2();
@@ -2305,19 +2668,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
 	private static ImageIcon histIcon;
-	private static ImageIcon modulBrowser;
-	private static ImageIcon modulSubsetter;
+	private static ImageIcon modulBrowserImg;
+	private static ImageIcon modulSubsetterImg;
 	
 	static {
 		// load images
 		okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
         histIcon = UIUtil.readImage("/history.png");
-        modulBrowser = UIUtil.readImage("/modul_browser.png");
-        modulSubsetter = UIUtil.readImage("/modul_subsetter.png");
+		modulBrowserImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_browser.png"), 0.5f);
+		modulSubsetterImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_subsetter.png"), 0.5f);
 	}
-
-	// TODO 1
-	// TODO single app with module selection here?
-	
 }

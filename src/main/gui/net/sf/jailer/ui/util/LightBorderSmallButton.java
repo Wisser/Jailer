@@ -18,6 +18,7 @@ package net.sf.jailer.ui.util;
 import java.awt.Color;
 
 import javax.swing.Icon;
+import javax.swing.JComponent;
 
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
@@ -31,28 +32,36 @@ public abstract class LightBorderSmallButton extends SmallButton {
 		super(icon, true);
 	}
 	
+	protected JComponent getFrame() {
+		return this;
+	}
+	
 	protected void onMouseExited() {
 		if (UIUtil.plaf != PLAF.FLAT) {
 			super.onMouseExited();
-			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED, INVISIBLE, INVISIBLE));
+			getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED, INVISIBLE, INVISIBLE));
 		} else if (!freezed) {
 			entered = false;
-			setOpaque(false);
-			setBackground(null);
-			setBorder(new javax.swing.border.LineBorder(INVISIBLE, 2, true));
+			getFrame().setOpaque(false);
+			getFrame().setBackground(null);
+			getFrame().setBorder(new javax.swing.border.LineBorder(INVISIBLE, 2, true));
 		}
 	}
 
 	protected void onMouseEntered() {
 		if (UIUtil.plaf != PLAF.FLAT) {
 			super.onMouseEntered();
-			setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Color.LIGHT_GRAY, Color.GRAY));
+			getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Color.LIGHT_GRAY, Color.GRAY));
 		} else if (!freezed) {
 			entered = true;
-			setOpaque(true);
-			setBackground(UIUtil.BG_FLATMOUSEOVER);
-			setBorder(new javax.swing.border.LineBorder(UIUtil.BG_FLATMOUSEOVER, 2, true));
+			getFrame().setOpaque(true);
+			getFrame().setBackground(getSelectedBackgroundColor());
+			getFrame().setBorder(new javax.swing.border.LineBorder(getSelectedBackgroundColor(), 2, true));
 		}
+	}
+
+	protected Color getSelectedBackgroundColor() {
+		return UIUtil.BG_FLATMOUSEOVER;
 	}
 	
 };
