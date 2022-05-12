@@ -1459,44 +1459,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									Consumer<Window> openResult = new Consumer<Window>() {
 										@Override
 										public void accept(Window window) {
-											
-											// TODO nicht in JOptionPane anbieten, wenn zu gross?
-//											
-//										 	4z18s./Users/mihailkatkov/Desktop/exportedwithjailer/exporttestproduct.xml (No such
-//										 			file or directory)
-//										 			Jailer 11.2.7
-//										 			java.io.FileNotFoundException: /Users/mihailkatkov/Desktop/exportedwithjailer/exporttestproduct.xml (No such file or directory)
-//										 			at java.io.FileInputStream.open0(Native Method)
-//										 			~31.(FileInputStream.java:195)
-//										 			~27.<init>(FileInputStream.java:138)
-//										 			~15.Reader.<init>(FileReader.java:72)
-//										 			at net.sf.jailer.util.PrintUtil.loadFile(PrintUtil.java:254)
-//										 			~57.40)
-//										 			~18.i.FileView.<init>(FileView.java:97)
-//										 			~20.ExtractionModelFrame$71.accept(ExtractionModelFrame.java:1482)
-//										 			~79.61)
-//										 			~20.JailerConsole.lambda$getOpenResultButton$0(JailerConsole.java:347)
-//										 			at javax.swing.AbstractButton.fireActionPerformed(AbstractButton.java:2022)
-//										 			~29.$Handler.actionPerformed(AbstractButton.java:2348)
-//										 			~15.DefaultButtonModel.fireActionPerformed(DefaultButtonModel.java:402)
-//										 			~34.setPressed(DefaultButtonModel.java:259)
-//										 			~15.plaf.basic.BasicButtonListener.mouseReleased(BasicButtonListener.java:252)
-//										 			~7..awt.Component.processMouseEvent(Component.java:6539)
-//										 			~7.x.swing.JComponent.processMouseEvent(JComponent.java:3324)
-//										 			~7..awt.Component.processEvent(Component.java:6304)
-//										 			~14.ntainer.processEvent(Container.java:2239)
-//										 			~14.mponent.dispatchEventImpl(Component.java:4889)
-//										 			~14.ntainer.dispatchEventImpl(Container.java:2297)
-//										 			~14.mponent.dispatchEvent(Component.java:4711)
-//										 			~12.LightweightDispatcher.retargetMouseEvent(Container.java:4904)
-//										 			~34.processMouseEvent(Container.java:4535)
-//										 			~34.dispatchEvent(Container.java:4476)
-//										 			~12.Container.dispatchEventImpl(Container.java:2283)
-//										 			~12.Window.dispatchEventImpl(Window.java:2746)
-//										 			~12.Component.dispatchEvent(Component.java:4711)
-//										 			~12.EventQueue.dispatchEventImpl(EventQueue.java:760)
-//										 			
-										 			
 											String delFile = exportDialog.getDeleteFileName();
 											if (delFile != null) {
 												try {
@@ -1511,8 +1473,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 												}
 											}
 											String file = exportDialog.getInsertFileName();
-											file = Environment.newFile(file).getPath();
 											if (file != null) {
+												file = Environment.newFile(file).getPath();
 												try {
 													UIUtil.setWaitCursor(window);
 													if (resultFileLoader == null || !resultFileLoader.apply(file)) {
