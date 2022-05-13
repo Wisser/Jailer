@@ -1805,7 +1805,7 @@ public class UIUtil {
 
 	public static String toSingleLineSQL(String text) {
 		return UIUtil.removesuperfluousSpaces(
-				removeSingleLineComments(text).replaceAll("\\s*\\n\\s*", " ").replaceAll(";\s*$", ""));
+				removeSingleLineComments(text).replaceAll("\\s*\\n\\s*", " ").replaceAll(";\\s*$", ""));
 	}
 
 	public static void startDemon(Thread thread) {
