@@ -18,7 +18,6 @@ package net.sf.jailer.ui;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -42,6 +41,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -398,10 +398,53 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			setIconImage(imageIcon.getImage());
 		} catch (Throwable t) {
 		}
-	
+		
+		ImageIcon imageIcon = UIUtil.jailerLogo;
+		logoLabel.setIcon(imageIcon);
+		logoLabel.setText(null);
+		
 		dmmdBrowser.titelLabel.setText("Data Browser");
 		dmmdSubsetter.titelLabel.setText("Subsetter");
 		
+		bluedotLabel1.setIcon(UIUtil.scaleIcon(bluedotLabel1, blueDotImg));
+		yellowdotLabel.setIcon(UIUtil.scaleIcon(yellowdotLabel, yellowDotImg));
+		bluedotLabel1.setText(null);
+		yellowdotLabel.setText(null);
+		
+		LightBorderSmallButton helpButton = new LightBorderSmallButton(UIUtil.scaleIcon(yellowdotLabel, helpImg)) {
+			@Override
+			protected void onClick(MouseEvent me) {
+				try {
+					BrowserLauncher.openURL(new URI("https://wisser.github.io/Jailer/exporting-data.htm"), DataModelManagerDialog.this);
+				} catch (Exception e) {
+					UIUtil.showException(DataModelManagerDialog.this, "Error", e);
+				}
+			}
+		};
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        jPanel17.add(helpButton, gridBagConstraints);
+		
+        helpButton = new LightBorderSmallButton(UIUtil.scaleIcon(yellowdotLabel, helpImg)) {
+			@Override
+			protected void onClick(MouseEvent me) {
+				try {
+					BrowserLauncher.openURL(new URI("https://wisser.github.io/Jailer/data-browsing.html"), DataModelManagerDialog.this);
+				} catch (Exception e) {
+					UIUtil.showException(DataModelManagerDialog.this, "Error", e);
+				}
+			}
+		};
+		gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        jPanel18.add(helpButton, gridBagConstraints);
+
 		dmmdBrowser.jTabbedPane1.addChangeListener(e -> {
 			int index = dmmdBrowser.jTabbedPane1.getSelectedIndex();
 			if (index >= 0 && index < dmmdSubsetter.jTabbedPane1.getTabCount()) {
@@ -701,9 +744,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							BookmarkId bookmark = e.getKey();
 							ConnectionInfo ci = e.getValue();
 							UIUtil.subModule += 1;
-							UIUtil.setWaitCursor(DataModelManagerDialog.this);
+							setWaitCursor();
 							dmmd.openBookmark(new BookmarkId(bookmark.bookmark, bookmark.datamodelFolder, bookmark.connectionAlias, bookmark.rawSchemaMapping), ci);
-							UIUtil.resetWaitCursor(DataModelManagerDialog.this);
+							resetWaitCursor();
 							dmmd.closeAndDispose();
 						});
 						welcomePanel.notYetButton.addActionListener(evt -> {
@@ -721,6 +764,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 						dmmd.welcomeContainerPanel.setVisible(true);
 					});
 		}
+	}
+
+	private void setWaitCursor() {
+		UIUtil.setWaitCursor(master != null? master : this);
+	}
+
+	private void resetWaitCursor() {
+		UIUtil.resetWaitCursor(master != null? master : this);
 	}
 
 	private JTable initBookmarkTables() {
@@ -815,7 +866,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					bookmark.setContent(lastSession.getContent());
 					bookmark.setContentInfo(lastSession.getContentInfo());
 					openBookmark(bookmark, finalConnectionInfo);
-					UIUtil.resetWaitCursor(DataModelManagerDialog.this);
+					resetWaitCursor();
 					closeAndDispose();
 				}
 			});
@@ -1227,13 +1278,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							"Data Model \"" + currentConnection.dataModelFolder + "\" does not exist.\n");
 				} else {
 					DataModelManager.setCurrentModelSubfolder(currentConnection.dataModelFolder, executionContext);
-					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					setWaitCursor();
 					dbConnectionDialog.currentConnection = currentConnection;
 					dbConnectionDialog.isConnected = true;
 					store();
 					onSelect(dbConnectionDialog, executionContext);
 					UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
-					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					resetWaitCursor();
 					DataModelManagerDialog.this.closeAndDispose();
 				}
 			}
@@ -1507,8 +1558,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel13 = new javax.swing.JPanel();
         modulsCardPanel = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
+        logoLabel = new javax.swing.JLabel();
         jPanel15 = new javax.swing.JPanel();
+        jPanel16 = new javax.swing.JPanel();
+        jLabel6 = new javax.swing.JLabel();
+        jPanel17 = new javax.swing.JPanel();
+        yellowdotLabel = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jPanel19 = new javax.swing.JPanel();
+        jPanel18 = new javax.swing.JPanel();
+        bluedotLabel1 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jPanel20 = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
         subsetterPanel = new javax.swing.JPanel();
         dataBrowserPanel = new javax.swing.JPanel();
         mainPanel = new javax.swing.JPanel();
@@ -1706,20 +1768,113 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         jPanel14.setLayout(new java.awt.GridBagLayout());
 
-        jLabel3.setText("<html>\nSelect the tool you want to work with.\n<ul>\n<li><b>The Subsetter</b> exports consistent, referentially intact row-sets from your database</li>\n<li><b>The Data Browser</b> allows bidirectional navigation through the your database</li>\n</ul>\n</html>");
+        logoLabel.setText("logo");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 4, 12, 12);
-        jPanel14.add(jLabel3, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(38, 12, 0, 12);
+        jPanel14.add(logoLabel, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel14.add(jPanel15, gridBagConstraints);
+
+        jPanel16.setLayout(new java.awt.GridBagLayout());
+
+        jLabel6.setFont(jLabel6.getFont().deriveFont(jLabel6.getFont().getStyle() | java.awt.Font.BOLD, jLabel6.getFont().getSize()+4));
+        jLabel6.setText("Select the tool you want to work with in the upper part.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(32, 0, 20, 0);
+        jPanel16.add(jLabel6, gridBagConstraints);
+
+        jPanel17.setLayout(new java.awt.GridBagLayout());
+
+        yellowdotLabel.setText("arrow");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        jPanel17.add(yellowdotLabel, gridBagConstraints);
+
+        jLabel8.setText("<html>The <b>Subsetter</b> creates small slices from your database.</html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        jPanel17.add(jLabel8, gridBagConstraints);
+
+        jPanel19.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 12;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        jPanel17.add(jPanel19, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 32, 12, 0);
+        jPanel16.add(jPanel17, gridBagConstraints);
+
+        jPanel18.setLayout(new java.awt.GridBagLayout());
+
+        bluedotLabel1.setText("arrow");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        jPanel18.add(bluedotLabel1, gridBagConstraints);
+
+        jLabel9.setText("<html>The<b> Data Browser</b> lets you navigate through your database<br>following the relationships between tables.</html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        jPanel18.add(jLabel9, gridBagConstraints);
+
+        jPanel20.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 12;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        jPanel18.add(jPanel20, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 32, 12, 0);
+        jPanel16.add(jPanel18, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel14.add(jPanel16, gridBagConstraints);
+
+        jLabel4.setFont(jLabel4.getFont().deriveFont(jLabel4.getFont().getStyle() | java.awt.Font.BOLD, jLabel4.getFont().getSize()+8));
+        jLabel4.setText("Jailer Database Tools");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 8, 8, 0);
+        jPanel14.add(jLabel4, gridBagConstraints);
 
         modulsCardPanel.add(jPanel14, "none");
 
@@ -2377,14 +2532,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		try {
 			String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".jm", this, false, true, false);
 			if (modelFile != null && UIUtil.checkFileExistsAndWarn(modelFile, this)) {
-				UIUtil.setWaitCursor(this);
+				setWaitCursor();
 				onLoadExtractionmodel(modelFile, executionContext);
 				closeAndDispose();
 			}
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
-			UIUtil.resetWaitCursor(this);
+			resetWaitCursor();
 		}
 		UIUtil.checkTermination();
     }//GEN-LAST:event_loadExtractionModelButtonActionPerformed
@@ -2396,14 +2551,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				@Override
 				public void run() {
 					try {
-						UIUtil.setWaitCursor(DataModelManagerDialog.this);
+						setWaitCursor();
 						onLoadExtractionmodel(file.getPath(), executionContext);
 						UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());
 						closeAndDispose();
 					} catch (Throwable t) {
 						UIUtil.showException(DataModelManagerDialog.this, "Error", t);
 					} finally {
-						UIUtil.resetWaitCursor(DataModelManagerDialog.this);
+						resetWaitCursor();
 					}
 					UIUtil.checkTermination();
 				}
@@ -2463,7 +2618,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		activateCurrentModel();
 
 		hasSelectedModel = true;
-		UIUtil.setWaitCursor(this);
+		setWaitCursor();
 		try {
 			store();
 			onSelect(null, executionContext);
@@ -2471,7 +2626,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
-			UIUtil.resetWaitCursor(this);
+			resetWaitCursor();
 		}
 		closeAndDispose();
 	}// GEN-LAST:event_okButtonActionPerformed
@@ -2481,7 +2636,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	private void openBookmark(BookmarkId bookmark, ConnectionInfo ci) {
 		DataModelManager.setCurrentModelSubfolder(bookmark.datamodelFolder, executionContext);
-		UIUtil.setWaitCursor(DataModelManagerDialog.this);
+		setWaitCursor();
 		String oldBookmark = CommandLineInstance.getInstance().bookmark;
 		String oldRawSchemaMapping = CommandLineInstance.getInstance().rawschemamapping;
 		String driver = CommandLineInstance.getInstance().driver;
@@ -2533,7 +2688,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			CommandLineInstance.getInstance().user = user;
 			UIUtil.showException(DataModelManagerDialog.this, "Error", t);
 		} finally {
-			UIUtil.resetWaitCursor(DataModelManagerDialog.this);
+			resetWaitCursor();
 		}
 	}
 
@@ -2587,6 +2742,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton analyzeButton;
+    private javax.swing.JLabel bluedotLabel1;
     private javax.swing.JButton bmCancelButton;
     private javax.swing.JButton bmOkButton;
     private javax.swing.JButton bmRecUsedCancelButton;
@@ -2612,8 +2768,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
@@ -2621,7 +2780,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
+    private javax.swing.JPanel jPanel16;
+    private javax.swing.JPanel jPanel17;
+    private javax.swing.JPanel jPanel18;
+    private javax.swing.JPanel jPanel19;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel20;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
@@ -2637,6 +2801,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton jmOkButton;
     private javax.swing.JButton loadExtractionModelButton;
     private javax.swing.JPanel loadJMPanel;
+    private javax.swing.JLabel logoLabel;
     private javax.swing.JPanel mainContentPanel;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel moduleDataBrowserFramePanel1;
@@ -2659,6 +2824,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JLabel titelLabel;
     private javax.swing.JLabel titelSubsetterLabel;
     private javax.swing.JPanel welcomeContainerPanel;
+    private javax.swing.JLabel yellowdotLabel;
     // End of variables declaration//GEN-END:variables
     private javax.swing.JComboBox locationComboBox = new JComboBox2();
     private JComboBox2 recentSessionsComboBox = new JComboBox2();
@@ -2670,7 +2836,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private static ImageIcon histIcon;
 	private static ImageIcon modulBrowserImg;
 	private static ImageIcon modulSubsetterImg;
-	
+	private static ImageIcon blueDotImg;
+	private static ImageIcon yellowDotImg;
+	private static ImageIcon helpImg;
+
 	static {
 		// load images
 		okIcon = UIUtil.readImage("/buttonok.png");
@@ -2678,5 +2847,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         histIcon = UIUtil.readImage("/history.png");
 		modulBrowserImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_browser.png"), 0.5f);
 		modulSubsetterImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_subsetter.png"), 0.5f);
+		blueDotImg = UIUtil.readImage("/bluedot.gif");
+		yellowDotImg = UIUtil.readImage("/yellowdot.gif");
+		helpImg = UIUtil.readImage("/explain.png");
 	}
 }

@@ -144,7 +144,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 				if (ok && initialCondition.equals(editorPane.getText())) {
 					ok = false;
 				}
-				consume(ok? removeSingleLineComments(editorPane.getText()).replaceAll("\\n(\\r?) *", " ").replace('\n', ' ').replace('\r', ' ').replaceFirst("(?is)^\\s*where\\b\\s*", "") : null);
+				consume(ok? removeSingleLineComments(editorPane.getText()).replaceAll("\\n(\\r?) *", " ").replace('\n', ' ').replace('\r', ' ').replaceFirst("(?is)^\\s*where\\b\\s*", "").replaceAll(";\s*$", "") : null);
 			}
 		});
 

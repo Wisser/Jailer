@@ -512,7 +512,8 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
 			.replaceAll("\\n(\\r?) *", " ")
 			.replace('\n', ' ')
 			.replace('\r', ' ')
-			.replaceFirst("(?is)^order\\s+by\\s*", "");
+			.replaceFirst("(?is)^order\\s+by\\s*", "")
+			.replaceAll(";\s*$", "");
 		SubjectLimitDefinition def = new SubjectLimitDefinition(limit, limit != null && orderBy.length() > 0? orderBy : null);
 		if (ok && def.equals(subjectLimitDefinition)) {
 			ok = false;

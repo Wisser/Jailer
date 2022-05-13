@@ -433,7 +433,7 @@ public class ConditionEditor extends EscapableDialog {
 		if (ok && condition.equals(editorPane.getText())) {
 			ok = false;
 		}
-		return ok? removeSingleLineComments(editorPane.getText()).replaceFirst("(?is)^\\s*where\\b\\s*", "").replaceAll("\\n(\\r?) *", " ").replace('\n', ' ').replace('\r', ' ') : null;
+		return ok? removeSingleLineComments(editorPane.getText()).replaceFirst("(?is)^\\s*where\\b\\s*", "").replaceAll("\\n(\\r?) *", " ").replaceAll(";\s*$", "").replace('\n', ' ').replace('\r', ' ') : null;
 	}
 
 	/**

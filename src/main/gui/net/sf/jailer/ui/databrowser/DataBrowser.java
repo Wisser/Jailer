@@ -3216,7 +3216,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
 	private static void createFrame(String module, ExecutionContext executionContext) {
-		DataModelManagerDialog.start("B", false, executionContext);
+		DataModelManagerDialog.start(module, false, executionContext);
 	}
 
 	/**
