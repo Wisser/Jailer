@@ -64,6 +64,9 @@ public class UICommandLine {
 	@Option(name="-bookmark", usage="Bookmark to open.")
 	public String bookmark = null;
 
+	@Option(name="-tool", usage="Preselect tool (\"D\" for Data Browser or \"S\" for Subsetter)")
+	public String tool = null;
+
 	@Option(name="-", usage="do not interpret the next word as an option, even if it begins with '-'. For example, if the username is \"-abc\", use \"- -abc\".")
 	public List<String> escapedWords = new ArrayList<String>();
 

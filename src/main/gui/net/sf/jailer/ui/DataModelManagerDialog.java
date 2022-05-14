@@ -411,16 +411,18 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		bluedotLabel1.setText(null);
 		yellowdotLabel.setText(null);
 		
+		String linkS = "https://wisser.github.io/Jailer/exporting-data.htm";
 		LightBorderSmallButton helpButton = new LightBorderSmallButton(UIUtil.scaleIcon(yellowdotLabel, helpImg)) {
 			@Override
 			protected void onClick(MouseEvent me) {
 				try {
-					BrowserLauncher.openURL(new URI("https://wisser.github.io/Jailer/exporting-data.htm"), DataModelManagerDialog.this);
+					BrowserLauncher.openURL(new URI(linkS), DataModelManagerDialog.this);
 				} catch (Exception e) {
 					UIUtil.showException(DataModelManagerDialog.this, "Error", e);
 				}
 			}
 		};
+		helpButton.setToolTipText(linkS);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
@@ -428,16 +430,18 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel17.add(helpButton, gridBagConstraints);
 		
-        helpButton = new LightBorderSmallButton(UIUtil.scaleIcon(yellowdotLabel, helpImg)) {
+        String linkB = "https://wisser.github.io/Jailer/data-browsing.html";
+		helpButton = new LightBorderSmallButton(UIUtil.scaleIcon(yellowdotLabel, helpImg)) {
 			@Override
 			protected void onClick(MouseEvent me) {
 				try {
-					BrowserLauncher.openURL(new URI("https://wisser.github.io/Jailer/data-browsing.html"), DataModelManagerDialog.this);
+					BrowserLauncher.openURL(new URI(linkB), DataModelManagerDialog.this);
 				} catch (Exception e) {
 					UIUtil.showException(DataModelManagerDialog.this, "Error", e);
 				}
 			}
 		};
+		helpButton.setToolTipText(linkB);
 		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
@@ -461,8 +465,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		subsetterPanel.add(dmmdSubsetter.mainContentPanel);
 		dataBrowserPanel.add(dmmdBrowser.mainContentPanel);
 
-		final Color bgBrowser = new Color(246, 246, 255); // TODO 244, 250
-		final Color bgSubsetter = new Color(255, 255, 246);
+		final Color bgBrowser = new Color(240, 244, 255);
+		final Color bgSubsetter = new Color(255, 255, 244);
 		
 		moduleDataBrowserPanel.setBackground(bgBrowser);
 		moduleSubsetterPanel.setBackground(bgSubsetter);
@@ -588,6 +592,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		moduleSubsetterToggleButton.setHorizontalTextPosition(SwingConstants.CENTER);
 
 		((CardLayout) cardPanel.getLayout()).show(cardPanel, "modulSelection");
+		setTitle(applicationName);
 
 		Object lastUsed = module;
 		if (lastUsed == null) {
@@ -599,6 +604,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				modulesPanel.setVisible(false);
 				dmmdSubsetter.titelLabel.setVisible(false);
 				dmmdSubsetter.mainContentPanel.setBackground(null);
+				setTitle(dmmdSubsetter.applicationName);
 			}
 		}
 		if ("B".equals(lastUsed)) {
@@ -607,6 +613,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				modulesPanel.setVisible(false);
 				dmmdBrowser.titelLabel.setVisible(false);
 				dmmdBrowser.mainContentPanel.setBackground(null);
+				setTitle(dmmdBrowser.applicationName);
 			}
 		}
 
@@ -614,8 +621,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		pack();
 		setSize(Math.max(840, getWidth()), modulesPanel.isVisible()? 900 : 500);
 		UIUtil.fit(this);
-
-		setTitle(applicationName);
 
 		addWindowListener(new WindowListener() {
 			@Override
@@ -667,6 +672,22 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		DataModelManagerDialog dmmdSubsetter = ExtractionModelFrame.createDMMDialog(withStartupWizzard, executionContext);
 		dmmdBrowser.dispose();
 		dmmdSubsetter.dispose();
+		
+		if (module == null) {
+			String clModule = CommandLineInstance.getInstance().tool;
+			if (clModule != null) {
+				clModule = clModule.toLowerCase();
+				if (clModule.startsWith("d")) {
+					module = "B";
+				}
+				if (clModule.startsWith("b")) {
+					module = "B";
+				}
+				if (clModule.startsWith("s")) {
+					module = "S";
+				}
+			}
+		}
 		
 		String datamodelFolder = CommandLineInstance.getInstance().datamodelFolder;
 		if (module == null && datamodelFolder != null && CommandLineInstance.getInstance().arguments.isEmpty()) {

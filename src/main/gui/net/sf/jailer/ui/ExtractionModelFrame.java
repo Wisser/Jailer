@@ -2238,8 +2238,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public static void main(String args[]) {
 		try {
+			
+			
+			// TODO
+			// TODO test: jailerGUI.bat -url "jdbc:h2:C:\Users\User\git\Jailer\demo-sakila-1.4" -user sa -password "<password>" -jdbcjar "lib\h2-1.4.199.jar" -driver org.h2.Driver -datamodel "datamodel\Demo-Sakila"
+			
 			List<String> aList = new ArrayList<String>(Arrays.asList(args));
-			if (aList.remove("JailerDataBrowser")) {
+			aList.remove("JailerDataBrowser");
+			if (!aList.stream().anyMatch(p -> p.endsWith(".jm"))) {
 				DataBrowser.main(aList.toArray(new String[0]));
 				return;
 			}

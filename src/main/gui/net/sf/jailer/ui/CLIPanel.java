@@ -222,7 +222,7 @@ public class CLIPanel extends javax.swing.JPanel {
     
 	private void updateCLIArea() {
 		List<String> args = new ArrayList<String>();
-		String cmd = forDataBrowser? "jailerDataBrowser" : "jailerGUI";
+		String cmd = "jailerGUI";
 		String cmdWithExt = "sh " + cmd + ".sh";
 		if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
 			cmdWithExt = cmd + ".bat";

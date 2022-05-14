@@ -106,17 +106,15 @@ public class UICommandLineParser {
 	 */
 	public static void printUsage(PrintStream out) {
 		String cmd = "sh jailerGUI.sh";
-		String cmdDB = "sh jailerDataBrowser.sh";
 		if (System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("windows")) {
 			cmd = "jailerGUI.bat";
-			cmdDB = "jailerDataBrowser.bat";
 		}
 		out.println("usage:");
-		out.println("  " + cmd + " [<extraction model *.jm] [-datamodel <data model>] [-jdbcjar <jdbc-jar>] [-driver driver class name] [-url <jdbc-url>] [-user <db-user>] [-password <db-password>]");
+		out.println("  " + cmd + " <extraction model (*.jm)> [-datamodel <data model>] [-jdbcjar <jdbc-jar>] [-driver driver class name] [-url <jdbc-url>] [-user <db-user>] [-password <db-password>]");
 		out.println("    Starts the Extraction Model Editor with default database connection and/or data model.\n" + 
 						   "    Loads the possibly specified extraction model.");
 		out.println();
-		out.println("  " + cmdDB + " -datamodel <data model> [-jdbcjar <jdbc-jar>] [-driver driver class name] [-url <jdbc-url>] [-user <db-user>] [-password <db-password>] [-schemamapping <mapping>] [-bookmark <name>]");
+		out.println("  " + cmd + " -datamodel <data model> [-jdbcjar <jdbc-jar>] [-driver driver class name] [-url <jdbc-url>] [-user <db-user>] [-password <db-password>] [-schemamapping <mapping>] [-bookmark <name>]");
 		out.println("    Starts the Data Browser with default database connection and/or data model.\n");
 		out.println("    Opens a bookmark (If the -bookmark option is specified).\n");
 		out.println();
