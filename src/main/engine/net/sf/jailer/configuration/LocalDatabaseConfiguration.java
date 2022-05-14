@@ -32,7 +32,7 @@ public class LocalDatabaseConfiguration {
 	private String password = "";
 
 	private String driver = "org.h2.Driver";
-	private String lib = "lib/h2-1.4.199.jar";
+	private String lib = "lib/h2-2.1.212.jar";
 
 	/**
 	 * @return the localPKType

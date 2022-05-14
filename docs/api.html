@@ -131,8 +131,8 @@
                               <br />
                               The example is included in the
                               jailer-engine-<i>version</i>.jar. It extracts some data
-                              from the "demo-scott-1.4" database and imports it into another
-                              database "demo-scott-subset-1.4".<br />
+                              from the "demo-scott" database and imports it into another
+                              database "demo-scott-subset".<br />
 
                               <ul>
                                 <li>Packages<br />
@@ -158,9 +158,9 @@
 	<span style="color:#800000; font-weight:bold; ">private</span> <span style="color:#800000; font-weight:bold; ">static</span> Subsetter subsetter <span style="color:#808030; ">=</span> 
 		<span style="color:#800000; font-weight:bold; ">new</span> Subsetter<span style="color:#808030; ">(</span>
 			<span style="color:#800000; font-weight:bold; ">new</span> BasicDataSource<span style="color:#808030; ">(</span>
-					<span style="color:#0000e6; ">"org.h2.Driver"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"jdbc:h2:"</span> <span style="color:#808030; ">+</span> <span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"demo-scott-1.4"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>getAbsolutePath<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"sa"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">""</span><span style="color:#808030; ">,</span>
+					<span style="color:#0000e6; ">"org.h2.Driver"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"jdbc:h2:"</span> <span style="color:#808030; ">+</span> <span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"demo-scott"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>getAbsolutePath<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"sa"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">""</span><span style="color:#808030; ">,</span>
 					POOL_SIZE<span style="color:#808030; ">,</span>
-					<span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"lib/h2-1.4.199.jar"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span>
+					<span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"lib/h2-2.1.212.jar"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span>
 			<span style="color:#800000; font-weight:bold; ">null</span><span style="color:#808030; ">,</span>
 			APIExample<span style="color:#808030; ">.</span>class<span style="color:#808030; ">.</span>getResource<span style="color:#808030; ">(</span><span style="color:#0000e6; ">"Demo-Scott"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span>
 			APIExample<span style="color:#808030; ">.</span>class<span style="color:#808030; ">.</span>getResource<span style="color:#808030; ">(</span><span style="color:#0000e6; ">"Demo-Scott.jm"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span>
@@ -170,9 +170,9 @@
 	<span style="color:#800000; font-weight:bold; ">private</span> <span style="color:#800000; font-weight:bold; ">static</span> Importer importer <span style="color:#808030; ">=</span>
 		<span style="color:#800000; font-weight:bold; ">new</span> Importer<span style="color:#808030; ">(</span>
 			<span style="color:#800000; font-weight:bold; ">new</span> BasicDataSource<span style="color:#808030; ">(</span>
-				<span style="color:#0000e6; ">"org.h2.Driver"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"jdbc:h2:"</span> <span style="color:#808030; ">+</span> <span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"demo-scott-subset-1.4"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>getAbsolutePath<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"sa"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">""</span><span style="color:#808030; ">,</span>
+				<span style="color:#0000e6; ">"org.h2.Driver"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"jdbc:h2:"</span> <span style="color:#808030; ">+</span> <span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"demo-scott-subset"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">.</span>getAbsolutePath<span style="color:#808030; ">(</span><span style="color:#808030; ">)</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">"sa"</span><span style="color:#808030; ">,</span> <span style="color:#0000e6; ">""</span><span style="color:#808030; ">,</span>
 				<span style="color:#008c00; ">10</span><span style="color:#808030; ">,</span>
-				<span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"lib/h2-1.4.199.jar"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
+				<span style="color:#800000; font-weight:bold; ">new</span> <span style="color:#bb7977; font-weight:bold; ">File</span><span style="color:#808030; ">(</span><span style="color:#0000e6; ">"lib/h2-2.1.212.jar"</span><span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#808030; ">)</span><span style="color:#800080; ">;</span>
 
 	<span style="color:#3f5fbf; ">/**</span>
 <span style="color:#3f5fbf; ">	 </span><span style="color:#7f9fbf; font-weight:bold; ">*</span><span style="color:#3f5fbf; "> Exports data related with employee "SCOTT"</span>

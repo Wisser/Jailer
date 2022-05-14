@@ -52,13 +52,8 @@ Unless you want to use your own Java installation. Then unzip the file "jailer_n
 
 To start the tool from the unpacked zip:
 
- - Database Subsetter
-    - On windows platform execute "Jailer.exe". You can also start "jailerGUI.bat".
-    - On Unix/Linux platform execute the script "jailerGUI.sh" or use "java -jar jailer.jar"
-
- - Data Browser
-    - On windows platform execute "jailerDataBrowser.exe", or "jailerDataBrowser.bat"
-    - On Unix/Linux platform execute the script "jailerDataBrowser.sh"
+  - On windows platform execute "Jailer.exe". You can also start "jailerGUI.bat".
+  - On Unix/Linux platform execute the script "jailerGUI.sh" or use "java -jar jailer.jar"
 
 
 ## Building

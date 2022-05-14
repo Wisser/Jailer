@@ -1643,6 +1643,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel10 = new javax.swing.JPanel();
         restoreButton = new javax.swing.JButton();
         dummyLabel = new javax.swing.JLabel();
+        jPanel21 = new javax.swing.JPanel();
         titelLabel = new javax.swing.JLabel();
         welcomeContainerPanel = new javax.swing.JPanel();
 
@@ -2331,13 +2332,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel11.setBackground(new java.awt.Color(255, 255, 255));
         jPanel11.setLayout(new java.awt.GridBagLayout());
 
-        histLabel.setFont(histLabel.getFont().deriveFont(histLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        histLabel.setFont(histLabel.getFont().deriveFont(histLabel.getFont().getStyle() | java.awt.Font.BOLD, histLabel.getFont().getSize()+4));
         histLabel.setText("History");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 4, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 10, 0);
         jPanel11.add(histLabel, gridBagConstraints);
 
         jPanel12.setLayout(new java.awt.GridBagLayout());
@@ -2375,6 +2376,17 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel11.add(jPanel12, gridBagConstraints);
+
+        jPanel21.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        jPanel21.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 8, 0);
+        jPanel11.add(jPanel21, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2807,6 +2819,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel19;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel20;
+    private javax.swing.JPanel jPanel21;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;

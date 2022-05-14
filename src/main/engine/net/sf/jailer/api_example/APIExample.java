@@ -28,8 +28,8 @@ import net.sf.jailer.subsetting.ScriptFormat;
 /**
  * Jailer API Example. <br>
  * 
- * Extracts some data from the "demo-scott-1.4" database
- * and imports it into another database "demo-scott-subset-1.4".
+ * Extracts some data from the "demo-scott" database
+ * and imports it into another database "demo-scott-subset".
  */
 public class APIExample {
 	
@@ -40,9 +40,9 @@ public class APIExample {
 	private static Subsetter subsetter = 
 		new Subsetter(
 			new BasicDataSource(
-					"org.h2.Driver", "jdbc:h2:" + new File("demo-scott-1.4").getAbsolutePath(), "sa", "",
+					"org.h2.Driver", "jdbc:h2:" + new File("demo-scott").getAbsolutePath(), "sa", "",
 					POOL_SIZE,
-					new File("lib/h2-1.4.199.jar")),
+					new File("lib/h2-2.1.212.jar")),
 			null,
 			APIExample.class.getResource("Demo-Scott"),
 			APIExample.class.getResource("Demo-Scott.jm"),
@@ -52,9 +52,9 @@ public class APIExample {
 	private static Importer importer =
 		new Importer(
 			new BasicDataSource(
-				"org.h2.Driver", "jdbc:h2:" + new File("demo-scott-subset-1.4").getAbsolutePath(), "sa", "",
+				"org.h2.Driver", "jdbc:h2:" + new File("demo-scott-subset").getAbsolutePath(), "sa", "",
 				10,
-				new File("lib/h2-1.4.199.jar")));
+				new File("lib/h2-2.1.212.jar")));
 
 	/**
 	 * Exports data related with employee "SCOTT"

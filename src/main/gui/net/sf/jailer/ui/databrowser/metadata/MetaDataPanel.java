@@ -788,11 +788,11 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                             ++itemCount;
                             Point pos = new Point(evt.getX(), evt.getY());
 							SwingUtilities.convertPointToScreen(pos, evt.getComponent());
-                            menu.add(createScriptMenuItem("Create Table Script", "DDL", "", mdTables, false, pos));
-                            menu.add(createScriptMenuItem("Drop Table Script", "Drop %2$s %1$s;", "", mdTables, false, pos));
+                            menu.add(createScriptMenuItem("\"Create Table\" Script", "DDL", "", mdTables, false, pos));
+                            menu.add(createScriptMenuItem("\"Drop Table\" Script", "Drop %2$s %1$s;", "", mdTables, false, pos));
                             menu.add(new JSeparator());
-                            menu.add(createScriptMenuItem("Delete Script", "Delete from %1$s;", "", mdTables, false, pos));
-                            menu.add(createScriptMenuItem("Count Rows Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true, pos));
+                            menu.add(createScriptMenuItem("\"Delete\" Script", "Delete from %1$s;", "", mdTables, false, pos));
+                            menu.add(createScriptMenuItem("\"Count Rows\" Script", "Select '%1$s' as Tab, count(*) as NumberOfRows From %1$s", " union all", mdTables, true, pos));
                         }
                         popup.show(evt.getComponent(), evt.getX(), evt.getY());
                     }
