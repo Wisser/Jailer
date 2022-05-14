@@ -4,9 +4,9 @@
     <!-- Configuration of the local database -->
     <localDatabase>
         <databaseFolder>local</databaseFolder>
-        <lib>lib/h2-1.4.199.jar</lib>
+        <lib>lib/h2-2.1.212.jar</lib>
         <driver>org.h2.Driver</driver>
-        <urlPattern>jdbc:h2:%s;LOG=0;UNDO_LOG=0</urlPattern>
+        <urlPattern>jdbc:h2:%s</urlPattern>
         <localPKType>VARCHAR</localPKType>
         <localNPKType>NVARCHAR</localNPKType>
         <localPKLength>10000</localPKLength>
