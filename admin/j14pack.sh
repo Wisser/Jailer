@@ -59,9 +59,7 @@ mv ~/tmp/_/jdbc_lib/flatlaf-2.2.jar ~/tmp/_/lib/flatlaf-2.2.jar
 mv ~/tmp/_/jdbc_lib/prefuse.jar ~/tmp/_/lib/prefuse.jar 
 mv ~/tmp/_/jdbc_lib/sdoc-0.5.0-beta.jar ~/tmp/_/lib/sdoc-0.5.0-beta.jar 
 mv ~/tmp/_/jdbc_lib/tablefilter-swing-5.3.1.jar ~/tmp/_/lib/tablefilter-swing-5.3.1.jar 
-mv ~/tmp/_/jdbc_lib/h2-2.1.212.jar ~/tmp/_/lib/h2-2.1.212.jar 
- 
-rm ~/tmp/_/jdbc_lib/h2-2.1.212.jar 
+
 rm ~/tmp/_/jdbc_lib/dbunit-2.4.4.jar 
 rm ~/tmp/_/jdbc_lib/h2-1.3.160.jar 
 rm ~/tmp/_/jdbc_lib/h2-1.3.175.jar 

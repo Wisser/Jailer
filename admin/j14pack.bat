@@ -56,9 +56,7 @@ move c:\tmp\_\jdbc_lib\flatlaf-2.2.jar c:\tmp\_\lib\flatlaf-2.2.jar
 move c:\tmp\_\jdbc_lib\prefuse.jar c:\tmp\_\lib\prefuse.jar
 move c:\tmp\_\jdbc_lib\sdoc-0.5.0-beta.jar c:\tmp\_\lib\sdoc-0.5.0-beta.jar
 move c:\tmp\_\jdbc_lib\tablefilter-swing-5.3.1.jar c:\tmp\_\lib\tablefilter-swing-5.3.1.jar
-move c:\tmp\_\jdbc_lib\h2-2.1.212.jar c:\tmp\_\lib\h2-2.1.212.jar
 
-del c:\tmp\_\jdbc_lib\h2-2.1.212.jar
 del c:\tmp\_\jdbc_lib\dbunit-2.4.4.jar
 del c:\tmp\_\jdbc_lib\h2-1.3.160.jar
 del c:\tmp\_\jdbc_lib\h2-1.3.175.jar
