@@ -142,7 +142,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			pButton[i].addActionListener(new java.awt.event.ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					String fn = UIUtil.choseFile(null, new File(".").getAbsolutePath(), pLabel[finalI].getText(), "", dialog, false, true, false);
+					String fn = UIUtil.choseFile(null, Environment.newFile(".").getAbsolutePath(), pLabel[finalI].getText(), "", dialog, false, true, false);
 					if (fn != null) {
 						pTextField[finalI].setText(new File(fn).getAbsolutePath().replaceAll("\\.mv\\.db$", ""));
 					}

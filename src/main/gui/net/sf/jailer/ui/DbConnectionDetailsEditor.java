@@ -379,7 +379,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton1.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : Environment.newFile(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
 					jar1.setText(fn);
 				}
@@ -388,7 +388,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton2.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : Environment.newFile(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
 					jar2.setText(fn);
 				}
@@ -397,7 +397,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton3.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : Environment.newFile(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
 					jar3.setText(fn);
 				}
@@ -406,7 +406,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton4.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				String fn = UIUtil.choseFile(null, Environment.isJPacked()? Environment.newFile("lib").getAbsolutePath() : Environment.newFile(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
 					jar4.setText(fn);
 				}
@@ -1247,7 +1247,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	private String toRelFileName(final String fileName) {
 		try {
             File f = new File(fileName);
-            String work = new File(".").getCanonicalPath();
+            String work = Environment.newFile(".").getCanonicalPath();
             if (f.getCanonicalPath().startsWith(work)) {
                 String fn = f.getName();
                 f = f.getParentFile();
