@@ -1954,6 +1954,10 @@ union all
                 <key>NVARCHAR</key>
                 <value>VARCHAR</value>
             </entry>
+            <entry>
+                <key>CHARACTER VARYING</key>
+                <value>VARCHAR</value>
+            </entry>
         </typeReplacement>
         <stringLiteralEscapeSequences>
             <entry>
@@ -1987,6 +1991,17 @@ union all
         <explainQuery>explain %1$s</explainQuery>
         <explainCleanup></explainCleanup>
         <constraintsQuery>
+Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
+(
+	Select C.CONSTRAINT_NAME CNAME, TCC.TABLE_NAME TNAME, '' COLNAME, 'Check' CTYPE, C.CHECK_CLAUSE DETAIL, 1 POS, 3 TYPEPOS
+	From
+		INFORMATION_SCHEMA.CHECK_CONSTRAINTS C join INFORMATION_SCHEMA.TABLE_CONSTRAINTS TCC on C.CONSTRAINT_CATALOG = TCC.TABLE_CATALOG and C.CONSTRAINT_SCHEMA = TCC.TABLE_SCHEMA and C.CONSTRAINT_NAME = TCC.CONSTRAINT_NAME
+	where
+		TCC.TABLE_SCHEMA = 'PUBLIC'		
+) pk order by TYPEPOS, CNAME, TNAME, POS, COLNAME
+
+fallback contraint query
+
 Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 (
 	Select C.CONSTRAINT_NAME CNAME, C.TABLE_NAME TNAME, C.COLUMN_LIST COLNAME, 'PK' CTYPE, null DETAIL, 1 POS, 1 TYPEPOS

@@ -334,7 +334,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			if (query != null) {
 				return super.retrieveList(session, query, schema, parentName);
 			}
-			return mdSchema.getConstraints(null);
+			return mdSchema.getConstraints(null, MetaDataPanel.this.dataModel);
 		}
 
 		/**

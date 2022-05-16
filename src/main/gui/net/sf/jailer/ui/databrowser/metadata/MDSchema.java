@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.database.Session.AbstractResultSetReader;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.Quoting;
@@ -337,9 +338,10 @@ public class MDSchema extends MDObject {
 	 * Loads constraint list.
 	 * 
 	 * @param table table or <code>null</code> for loading constraints of all tables
+	 * @param dataModel the data model
 	 * @return constraint list
 	 */
-	public MemorizedResultSet getConstraints(MDTable table) throws SQLException {
+	public MemorizedResultSet getConstraints(MDTable table, DataModel dataModel) throws SQLException {
 		synchronized (getConstraintsLock) {
 			if (constraints == null) {
 				Statement cStmt = null;
@@ -350,37 +352,64 @@ public class MDSchema extends MDObject {
 					if (schema != null) {
 						schema = Quoting.staticUnquote(schema);
 					}
-					String query = getMetaDataSource().getSession().dbms.getConstraintsQuery();
-					ResultSet rs = cStmt.executeQuery(String.format(Locale.ENGLISH, query, schema));
-					MemorizedResultSet result = new MemorizedResultSet(rs, null, getMetaDataSource().getSession(), schema);
-					rs.close();
-					List<Object[]> rows = new ArrayList<Object[]>();
-					Object[] predRow = null;
-					Map<String, String> constrType = new HashMap<String, String>();
-					for (Object[] row: result.getRowList()) {
-						String constr = String.valueOf(row[0]);
-						String tab = String.valueOf(row[1]);
-						String col = row[2] == null? null : String.valueOf(row[2]);
-						String type = String.valueOf(row[3]);
-						String detail = row[4] == null? "" : String.valueOf(row[4]).trim();
-						if (type.equals("Check") && detail.matches("\"?" + col + "\"? IS NOT NULL")) {
-							continue;
+					String[] queries = getMetaDataSource().getSession().dbms.getConstraintsQuery().split("\\s*fallback contraint query\\s*");
+					for (String query: queries) {
+						ResultSet rs = null;
+						try {
+							rs = cStmt.executeQuery(String.format(Locale.ENGLISH, query, schema));
+							MemorizedResultSet result = new MemorizedResultSet(rs, null, getMetaDataSource().getSession(), schema);
+							rs.close();
+							rs = null;
+							List<Object[]> rows = new ArrayList<Object[]>();
+							Object[] predRow = null;
+							Map<String, String> constrType = new HashMap<String, String>();
+							boolean hasPK = false;
+							for (Object[] row: result.getRowList()) {
+								String constr = String.valueOf(row[0]);
+								String tab = String.valueOf(row[1]);
+								String col = row[2] == null? null : String.valueOf(row[2]);
+								String type = String.valueOf(row[3]);
+								String detail = row[4] == null? "" : String.valueOf(row[4]).trim();
+								if (type.equals("PK")) {
+									hasPK = true;
+								}
+								if (type.equals("Check") && detail.matches("\"?" + col + "\"? IS NOT NULL")) {
+									continue;
+								}
+								String pCType = constrType.get(constr);
+								if (pCType != null && !pCType.equals(type)) {
+									continue;
+								}
+								constrType.put(constr, type);
+								if (predRow != null && constr.equals(String.valueOf(predRow[0])) && tab.equals(String.valueOf(predRow[1])) && (col != null && String.valueOf(predRow[2]) != null) && type.equals(String.valueOf(predRow[3]))) {
+									rows.get(rows.size() - 1)[3] += ", " + col;
+								} else {
+									rows.add(new Object[] { getConstraintTypeIcon(type), constr, tab, col, detail });
+								}
+								predRow = row;
+							}
+							result.close();
+							if (!hasPK && dataModel != null) {
+								Map<String, String> tabs = new TreeMap<>();
+								dataModel.getTables().forEach(t -> tabs.put(Quoting.staticUnquote(t.getName()).toUpperCase(), t.primaryKey.columnList("")));
+								tabs.forEach((t, c) -> rows.add(new Object[] { getConstraintTypeIcon("PK"), "Primary Key", t, c, "" }));
+							}
+							constraints = new MemorizedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
+							constraintsLoaded.set(true);
+							break;
+						} catch (Exception e) {
+							if (rs != null) {
+								try {
+									rs.close();
+								} catch (Exception e2) {
+									// ignore
+								}
+							}
+							if (queries.length > 0 && query.equals(queries[queries.length - 1])) {
+								throw e;
+							}
 						}
-						String pCType = constrType.get(constr);
-						if (pCType != null && !pCType.equals(type)) {
-							continue;
-						}
-						constrType.put(constr, type);
-						if (predRow != null && constr.equals(String.valueOf(predRow[0])) && tab.equals(String.valueOf(predRow[1])) && (col != null && String.valueOf(predRow[2]) != null) && type.equals(String.valueOf(predRow[3]))) {
-							rows.get(rows.size() - 1)[3] += ", " + col;
-						} else {
-							rows.add(new Object[] { getConstraintTypeIcon(type), constr, tab, col, detail });
-						}
-						predRow = row;
 					}
-					result.close();
-					constraints = new MemorizedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
-					constraintsLoaded.set(true);
 				} finally {
 					if (cStmt != null) {
 						try {

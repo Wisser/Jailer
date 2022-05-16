@@ -42,6 +42,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
@@ -514,10 +515,11 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     			public void run() {
     				final MemorizedResultSet constraints;
     				try {
-    					constraints = mdTable.getSchema().getConstraints(mdTable);
+    					constraints = mdTable.getSchema().getConstraints(mdTable, dataModel);
     				} catch (SQLException e) {
     					constraintsPanel.removeAll();
-    					constraintsPanel.add(new JLabel(" Error: " + e.getMessage()));
+    					JTextArea ta = new JTextArea(" Error: " + e.getMessage());
+                        constraintsPanel.add(new JScrollPane(ta));
         		    	tabbedPane.repaint();
         		    	return;
     				}
@@ -546,7 +548,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     	    		@Override
     	    		public void run() {
     	    			try {
-							mdTable.getSchema().getConstraints(null);
+							mdTable.getSchema().getConstraints(null, dataModel);
 	    	    			if (mdTable.getSchema().isConstraintsLoaded()) {
 	    	    	        	UIUtil.invokeLater(doRunGetConstraints);
 	    	    			}
@@ -555,7 +557,8 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 								@Override
 								public void run() {
 									constraintsPanel.removeAll();
-			    					constraintsPanel.add(new JLabel(" Error: " + t.getMessage()));
+			    					JTextArea ta = new JTextArea(" Error: " + t.getMessage());
+			    					constraintsPanel.add(new JScrollPane(ta));
 			        		    	tabbedPane.repaint();
 								}
 							});

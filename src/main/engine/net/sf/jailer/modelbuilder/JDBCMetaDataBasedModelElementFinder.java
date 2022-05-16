@@ -375,34 +375,36 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 		Set<Table> tables = new HashSet<Table>();
 		Quoting quoting = Quoting.getQuoting(session);
-		ResultSet resultSet;
 		List<String> types = getTypes(executionContext);
-		resultSet = getTables(session, introspectionSchema, tableNamePattern, types.toArray(new String[0]));
+		ResultSet resultSet;
 		List<String> tableNames = new ArrayList<String>();
-		while (resultSet.next()) {
-			String tableName = resultSet.getString(3);
-			if (resultSet.getString(4) != null && types.contains(resultSet.getString(4).toUpperCase(Locale.ENGLISH))) {
-				if (isValidName(tableName, session)) {
-					tableName = quoting.quote(tableName);
-					if (executionContext.getQualifyNames() || (depth > 0 && introspectionSchema != null && !introspectionSchema.equals(session.getIntrospectionSchema()))) {
-						String schemaName = resultSet.getString(DBMS.MySQL.equals(session.dbms)? 1 : 2);
-						if (schemaName != null) {
-							schemaName = quoting.quote(schemaName.trim());
-							if (schemaName.length() > 0) {
-								tableName = schemaName + "." + tableName;
+		for (String type: types) {
+			resultSet = getTables(session, introspectionSchema, tableNamePattern, new String[] { type });
+			while (resultSet.next()) {
+				String tableName = resultSet.getString(3);
+				if (resultSet.getString(4) != null) {
+					if (isValidName(tableName, session)) {
+						tableName = quoting.quote(tableName);
+						if (executionContext.getQualifyNames() || (depth > 0 && introspectionSchema != null && !introspectionSchema.equals(session.getIntrospectionSchema()))) {
+							String schemaName = resultSet.getString(DBMS.MySQL.equals(session.dbms)? 1 : 2);
+							if (schemaName != null) {
+								schemaName = quoting.quote(schemaName.trim());
+								if (schemaName.length() > 0) {
+									tableName = schemaName + "." + tableName;
+								}
 							}
 						}
+						tableNames.add(tableName);
+						tableTypes.put(tableName, resultSet.getString(4).toUpperCase(Locale.ENGLISH));
+						_log.info("found table " + tableName);
+					} else {
+						_log.info("skip table " + tableName);
 					}
-					tableNames.add(tableName);
-					tableTypes.put(tableName, resultSet.getString(4).toUpperCase(Locale.ENGLISH));
-					_log.info("found table " + tableName);
-				} else {
-					_log.info("skip table " + tableName);
 				}
+				CancellationHandler.checkForCancellation(null);
 			}
-			CancellationHandler.checkForCancellation(null);
+			resultSet.close();
 		}
-		resultSet.close();
 		Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
 		for (String tableName: tableNames) {
 			Table tmp = new Table(tableName, null, false, false);
@@ -1347,6 +1349,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			return null;
 		}
 		sqlType = sqlType.trim();
+		
+		if (sqlType.equalsIgnoreCase("CHARACTER VARYING")) {
+			sqlType = "VARCHAR";
+		}
 
 		if (DBMS.MySQL.equals(dbms)) {
 			if (sqlType.equalsIgnoreCase("SET") || sqlType.equalsIgnoreCase("ENUM")) {
