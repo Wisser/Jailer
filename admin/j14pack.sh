@@ -11,9 +11,9 @@ cp -r template ~/tmp/_
 cp -r build.xml ~/tmp/_ 
 cp -r config ~/tmp/_ 
 cp -r datamodel ~/tmp/_ 
-cp -r demo-sakila-1.4.mv.db ~/tmp/_ 
-cp -r demo-scott-1.4.mv.db ~/tmp/_ 
-cp -r demo-scott-subset-1.4.mv.db ~/tmp/_ 
+cp -r demo-sakila.mv.db ~/tmp/_ 
+cp -r demo-scott.mv.db ~/tmp/_ 
+cp -r demo-scott-subset.mv.db ~/tmp/_ 
 cp -r driverlist.csv ~/tmp/_ 
 cp -r extractionmodel ~/tmp/_ 
 cp -r jailer.bat ~/tmp/_ 
@@ -59,7 +59,7 @@ mv ~/tmp/_/jdbc_lib/flatlaf-2.2.jar ~/tmp/_/lib/flatlaf-2.2.jar
 mv ~/tmp/_/jdbc_lib/prefuse.jar ~/tmp/_/lib/prefuse.jar 
 mv ~/tmp/_/jdbc_lib/sdoc-0.5.0-beta.jar ~/tmp/_/lib/sdoc-0.5.0-beta.jar 
 mv ~/tmp/_/jdbc_lib/tablefilter-swing-5.3.1.jar ~/tmp/_/lib/tablefilter-swing-5.3.1.jar 
-cp ~/tmp/_/jdbc_lib/h2-1.4.199.jar ~/tmp/_/lib/h2-1.4.199.jar 
+cp ~/tmp/_/jdbc_lib/h2-2.1.212.jar ~/tmp/_/lib/h2-2.1.212.jar 
  
 rm ~/tmp/_/jdbc_lib/dbunit-2.4.4.jar 
 rm ~/tmp/_/jdbc_lib/h2-1.3.160.jar 
@@ -77,6 +77,6 @@ cd ~/tmp/_
 echo "" > .singleuser 
 
 /home/ralf/jdk-15.0.1/bin/jlink --add-modules java.se --output ../jre$1  
-/home/ralf/jdk-15.0.1/bin/jpackage --name "Jailer" --linux-package-name jailer-database-tools --arguments "-jpack" --input . --main-jar jailer.jar --type deb --icon jailer.png --vendor Wisser --app-version "$1" --add-launcher "Jailer Data Browser"=databrowserlauncher-linux.properties --runtime-image ../jre$1 
+/home/ralf/jdk-15.0.1/bin/jpackage --name "Jailer Database Tools" --linux-package-name jailer-database-tools --arguments "-jpack" --input . --main-jar jailer.jar --type deb --icon jailer.png --vendor Wisser --app-version "$1" --runtime-image ../jre$1 
 
 cp *.deb /mnt/c/Users/ralfw/tmp/jailer-database-tools_$1-x64.deb

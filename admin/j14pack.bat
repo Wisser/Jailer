@@ -12,9 +12,9 @@ xcopy /S /E bookmark c:\tmp\_\bookmark\
 xcopy /S /E config c:\tmp\_\config\
 xcopy /S /E datamodel c:\tmp\_\datamodel\
 xcopy /S /E template c:\tmp\_\template\
-xcopy demo-sakila-1.4.mv.db c:\tmp\_
-xcopy demo-scott-1.4.mv.db c:\tmp\_
-xcopy demo-scott-subset-1.4.mv.db c:\tmp\_
+xcopy demo-sakila.mv.db c:\tmp\_
+xcopy demo-scott.mv.db c:\tmp\_
+xcopy demo-scott-subset.mv.db c:\tmp\_
 xcopy driverlist.csv c:\tmp\_
 xcopy /S /E extractionmodel c:\tmp\_\extractionmodel\
 xcopy jailer.bat c:\tmp\_
@@ -56,7 +56,7 @@ move c:\tmp\_\jdbc_lib\flatlaf-2.2.jar c:\tmp\_\lib\flatlaf-2.2.jar
 move c:\tmp\_\jdbc_lib\prefuse.jar c:\tmp\_\lib\prefuse.jar
 move c:\tmp\_\jdbc_lib\sdoc-0.5.0-beta.jar c:\tmp\_\lib\sdoc-0.5.0-beta.jar
 move c:\tmp\_\jdbc_lib\tablefilter-swing-5.3.1.jar c:\tmp\_\lib\tablefilter-swing-5.3.1.jar
-copy c:\tmp\_\jdbc_lib\h2-1.4.199.jar c:\tmp\_\lib\h2-1.4.199.jar
+copy c:\tmp\_\jdbc_lib\h2-2.1.212.jar c:\tmp\_\lib\h2-2.1.212.jar
 
 del c:\tmp\_\jdbc_lib\dbunit-2.4.4.jar
 del c:\tmp\_\jdbc_lib\h2-1.3.160.jar
@@ -75,7 +75,7 @@ cd c:\tmp\_
 echo "" > .singleuser
 
 jlink --add-modules java.se --output jre%version% 
-jpackage --name "Jailer" --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group Jailer --vendor Wisser --app-version %version% --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --add-launcher "Jailer Data Browser"=databrowserlauncher.properties --runtime-image jre%version%
+jpackage --name "Jailer Database Tools" --input . --main-jar jailer.jar --type msi --icon jailer.ico --win-menu --win-menu-group Jailer --vendor Wisser --app-version %version% --win-upgrade-uuid d636b4ee-6f10-451e-bf57-c89656780e22 --runtime-image jre%version%
 
 move *.msi C:\Users\ralfw\tmp\"Jailer-database-tools-%version%.msi"
 move *.msi c:\tmp\"Jailer-database-tools-%version%.msi"
