@@ -733,9 +733,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 		
 		if (dmmd != null) {
-			
-			// TODO
-			// TODO test
 			final String ASK_LATER = "WelcomeAskLater";
 			Object askLater = UISettings.restore(ASK_LATER);
 			if (Boolean.FALSE.equals(askLater)) {
