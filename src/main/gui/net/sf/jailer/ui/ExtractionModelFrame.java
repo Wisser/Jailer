@@ -414,7 +414,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         renderHtml = new javax.swing.JMenuItem();
         renderHtml1 = new javax.swing.JMenuItem();
         consistencyCheckMenuItem = new javax.swing.JMenuItem();
-        createCLIItem = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         horizontalLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         jMenu4 = new javax.swing.JMenu();
@@ -880,14 +879,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu3.add(consistencyCheckMenuItem);
-
-        createCLIItem.setText("Show Command Line");
-        createCLIItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createCLIItemActionPerformed(evt);
-            }
-        });
-        jMenu3.add(createCLIItem);
 
         jMenuBar2.add(jMenu3);
 
@@ -2104,10 +2095,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
     }//GEN-LAST:event_checkPKMenuItemActionPerformed
 
-    private void createCLIItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createCLIItemActionPerformed
-		new CLIPanel(dbConnectionDialog, false, extractionModelEditor.extractionModelFile, null, null, null, executionContext).open(this);
-    }//GEN-LAST:event_createCLIItemActionPerformed
-
     @SuppressWarnings("serial")
 	private void consistencyCheckMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consistencyCheckMenuItemActionPerformed
     	try {
@@ -2238,14 +2225,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public static void main(String args[]) {
 		try {
-			
-			
-			// TODO
-			// TODO test: jailerGUI.bat -url "jdbc:h2:C:\Users\User\git\Jailer\demo-sakila-1.4" -user sa -password "<password>" -jdbcjar "lib\h2-1.4.199.jar" -driver org.h2.Driver -datamodel "datamodel\Demo-Sakila"
-			
 			List<String> aList = new ArrayList<String>(Arrays.asList(args));
-			aList.remove("JailerDataBrowser");
-			if (!aList.stream().anyMatch(p -> p.endsWith(".jm"))) {
+			aList.remove("JailerDataBrowser"); // legacy
+			if (aList.size() != 1) {
 				DataBrowser.main(aList.toArray(new String[0]));
 				return;
 			}
@@ -2266,12 +2248,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			e.printStackTrace();
 			UIUtil.showException(null, "Error", e);
 			return;
-		}
-		// turn off logging for prefuse library
-		try {
-//			Logger.getLogger("prefuse").setLevel(Level.OFF);
-		} catch (Exception e1) {
-			e1.printStackTrace();
 		}
 		try {
 			CommandLineInstance.init(args);
@@ -2499,7 +2475,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem connectDb;
     private javax.swing.JMenuItem consistencyCheckMenuItem;
     private javax.swing.JMenuItem consistencyCheckMenuItem1;
-    private javax.swing.JMenuItem createCLIItem;
     private javax.swing.JMenuItem cycleView;
     private javax.swing.JMenuItem dataExport;
     private javax.swing.JMenuItem dataImport;

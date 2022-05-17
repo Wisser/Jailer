@@ -694,7 +694,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			executionContext.setDatamodelFolder(new File(datamodelFolder).getParent());
 			executionContext.setCurrentModelSubfolder(new File(datamodelFolder).getName());
 			UIUtil.prepareUI();
-			dmmdSubsetter.onSelect(dmmdSubsetter.dbConnectionDialog, executionContext);
+			dmmdBrowser.onSelect(dmmdSubsetter.dbConnectionDialog, executionContext);
 		} else {
 			DataModelManagerDialog dmmd = new DataModelManagerDialog(module, dmmdBrowser, dmmdSubsetter, executionContext) {
 				@Override
