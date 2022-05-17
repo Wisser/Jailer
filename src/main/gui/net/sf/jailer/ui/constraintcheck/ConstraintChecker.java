@@ -47,6 +47,8 @@ import javax.swing.table.TableColumn;
 import org.fife.rsta.ui.EscapableDialog;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
+import net.coderazzi.filters.gui.AutoChoices;
+import net.coderazzi.filters.gui.TableFilterHeader;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
@@ -97,6 +99,13 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         conditionLabel.setVisible(false);
         problemLabel.setVisible(false);
 
+        problemsTable.setAutoCreateRowSorter(true);
+        TableFilterHeader filterHeader = new TableFilterHeader();
+		filterHeader.setAutoChoices(AutoChoices.ENABLED);
+		filterHeader.setTable(problemsTable);
+		filterHeader.setMaxVisibleRows(20);
+		filterHeader.setRowHeightDelta(2);
+		
 		problemsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		problemsModel = new DefaultTableModel(new String[] { "Child", "Parent", "Problem" }, 0) {
 			@Override
@@ -127,6 +136,9 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				int i = problemsTable.getSelectedRow();
+				if (i >= 0) {
+					i = problemsTable.getRowSorter().convertRowIndexToModel(i);
+				}
 				if (i >= 0) {
 					final int MAX_LENGTH = 150;
 					
@@ -643,6 +655,9 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 
     private void viewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewButtonActionPerformed
     	int i = problemsTable.getSelectedRow();
+    	if (i >= 0) {
+			i = problemsTable.getRowSorter().convertRowIndexToModel(i);
+		}
 		if (i >= 0) {
 			Problem problem = problems.get(i);
 			openTableBrowser(problem.source, problem.where);
