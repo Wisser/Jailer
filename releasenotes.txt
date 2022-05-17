@@ -1,3 +1,7 @@
+12.4
+  - Update of the local H2 database to version 2.1.212.
+  - Single launch configuration for both tools.
+
 12.3.1
   - FlatLAF has been updated to version 2.2.
   - Minor fixes.
