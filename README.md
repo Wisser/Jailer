@@ -26,6 +26,23 @@ https://user-images.githubusercontent.com/861721/142761281-299bddc4-eea7-4f26-8c
  - SQL Console with code completion, syntax highlighting and database metadata visualization.
  - A demo database is included with which you can get a first impression without any configuration effort.
 
+## Supported Databases
+
+Thanks to the JDBC technology used, any DMBS is in principle supported. For best results, specific additional support features are useful, however. These are available for:
+
+ - PostgreSQL
+ - Oracle
+ - MySQL
+ - MariaDB
+ - Microsoft SQL Server
+ - IBM Db2
+ - SQLite
+ - Sybase
+ - Amazon Redshift
+ - Firebird
+ - Informix Dynamic Server
+ - H2
+ - Exasol
 
 ## News
 
