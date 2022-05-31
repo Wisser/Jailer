@@ -41,13 +41,16 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -57,7 +60,10 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import com.formdev.flatlaf.FlatClientProperties;
+
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
@@ -345,6 +351,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			fields.put("rowidRowid", rowidRowid);
 			fields.put("transactional", transactional);
 			fields.put("delete", delete);
+			fields.put("localTempDir", localTempDirTextField);
 
 			for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
 				fields.put("$" + e.getKey(), e.getValue());
@@ -535,10 +542,31 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 
 			browseInsertButton.setIcon(loadIcon);
 			browseDeleteButton.setIcon(loadIcon);
+			browseLocalTempDirButton.setIcon(loadIcon);
+			
+			Consumer<JTextField> addClearButton = tf -> {
+				JButton clear = new JButton(null, UIUtil.scaleIcon(tf, clearIcon));
+				clear.setToolTipText("Clear");
+				clear.addActionListener(e -> {
+					tf.setText("");
+				});
+				UIUtil.setLeadingComponent(tf, clear);
+			};
+			// 
+			addClearButton.accept(insert);
+			addClearButton.accept(delete);
+			addClearButton.accept(localTempDirTextField);
 			
 			UIUtil.setTrailingComponent(insert, browseInsertButton);
 			UIUtil.setTrailingComponent(delete, browseDeleteButton);
+			UIUtil.setTrailingComponent(localTempDirTextField, browseLocalTempDirButton);
 			
+			String lstToolTip = "<html>The folder where the local database will be stored.<br>Default temp folder is used if this field is empty.</html>";
+			localTempDirLabel.setToolTipText(lstToolTip);
+			localTempDirTextField.setToolTipText(lstToolTip);
+
+			localTempDirTextField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, new File(Configuration.getInstance().getTempFileFolder()).getAbsolutePath());
+
 			DocumentListener dl = new DocumentListener() {
 				@Override
 				public void removeUpdate(DocumentEvent e) {
@@ -556,14 +584,19 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			ActionListener al = new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					workingTableSchemaComboBox.setEnabled(!scopeLocal.isSelected());
+					workingTableSchemaLabel.setVisible(!scopeLocal.isSelected());
+					workingTableSchemaComboBox.setVisible(!scopeLocal.isSelected());
+					localTempDirLabel.setVisible(scopeLocal.isSelected());
+					localTempDirPanel.setVisible(scopeLocal.isSelected());
 					updateCLIArea();
 				}
 			};
+			al.actionPerformed(null);
 			where.getDocument().addDocumentListener(dl);
 			insert.getDocument().addDocumentListener(dl);
 			delete.getDocument().addDocumentListener(dl);
 			threads.getDocument().addDocumentListener(dl);
+			localTempDirTextField.getDocument().addDocumentListener(dl);
 			rowsPerThread.getDocument().addDocumentListener(dl);
 			rowLimit.getDocument().addDocumentListener(dl);
 			upsertCheckbox.addActionListener(al);
@@ -1232,7 +1265,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jLabel26 = new javax.swing.JLabel();
         jLabel27 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
         jLabel21 = new javax.swing.JLabel();
         parameterPanel = new javax.swing.JPanel();
         commandLinePanel = new javax.swing.JPanel();
@@ -1247,7 +1279,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         openWhereEditor = new javax.swing.JLabel();
         additSubsLabel = new javax.swing.JLabel();
         additSubsLabelTitel = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
+        workingTableSchemaLabel = new javax.swing.JLabel();
         workingTableSchemaComboBox = new javax.swing.JComboBox();
         jLabel17 = new javax.swing.JLabel();
         toLabel = new javax.swing.JLabel();
@@ -1282,6 +1314,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         resetTargetButton = new javax.swing.JButton();
         targetDBMSPanel = new javax.swing.JPanel();
         targetDBMSComboBox = new javax.swing.JComboBox();
+        localTempDirLabel = new javax.swing.JLabel();
+        localTempDirPanel = new javax.swing.JPanel();
+        localTempDirTextField = new javax.swing.JTextField();
+        browseLocalTempDirButton = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1676,12 +1712,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(jPanel8, gridBagConstraints);
 
-        jLabel9.setText("           "); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 58;
-        jPanel1.add(jLabel9, gridBagConstraints);
-
         jLabel21.setText(" With"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1800,13 +1830,13 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(additSubsLabelTitel, gridBagConstraints);
 
-        jLabel10.setText(" Working table schema "); // NOI18N
+        workingTableSchemaLabel.setText(" Working table schema "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 57;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel1.add(jLabel10, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 12, 0);
+        jPanel1.add(workingTableSchemaLabel, gridBagConstraints);
 
         workingTableSchemaComboBox.setEditable(true);
         workingTableSchemaComboBox.setMaximumRowCount(20);
@@ -1820,7 +1850,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 57;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 12, 0);
         jPanel1.add(workingTableSchemaComboBox, gridBagConstraints);
 
         jLabel17.setText(" To"); // NOI18N
@@ -2189,6 +2219,43 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(targetDBMSPanel, gridBagConstraints);
 
+        localTempDirLabel.setText(" Local storage"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 58;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 12, 0);
+        jPanel1.add(localTempDirLabel, gridBagConstraints);
+
+        localTempDirPanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        localTempDirPanel.add(localTempDirTextField, gridBagConstraints);
+
+        browseLocalTempDirButton.setText(" Browse..");
+        browseLocalTempDirButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseLocalTempDirButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        localTempDirPanel.add(browseLocalTempDirButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 58;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 12, 0);
+        jPanel1.add(localTempDirPanel, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -2525,6 +2592,16 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private void resetTargetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetTargetButtonActionPerformed
     }//GEN-LAST:event_resetTargetButtonActionPerformed
 
+    private void browseLocalTempDirButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocalTempDirButtonActionPerformed
+    	JFileChooser fc = new JFileChooser();
+		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		fc.setDialogTitle("Local database storage folder");
+		int returnVal = fc.showOpenDialog(this);
+	    if (returnVal == JFileChooser.APPROVE_OPTION) {
+	    	localTempDirTextField.setText(fc.getSelectedFile().getAbsolutePath());
+	    }
+	}//GEN-LAST:event_browseLocalTempDirButtonActionPerformed
+
 	public boolean isOk() {
 		return isOk;
 	}
@@ -2728,6 +2805,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add(schema);
 		}
 
+		if (scopeLocal.isSelected() && !localTempDirTextField.getText().trim().isEmpty()) {
+			args.add("-local-database-storage");
+			args.add(localTempDirTextField.getText().trim());
+		}
+		
 		if (iFMTableSchemaComboBox.isVisible()) {
 			try {
 				JTextField c = (JTextField) iFMTableSchemaComboBox.getEditor().getEditorComponent();
@@ -2845,6 +2927,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel additSubsLabelTitel;
     private javax.swing.JButton browseDeleteButton;
     private javax.swing.JButton browseInsertButton;
+    private javax.swing.JButton browseLocalTempDirButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.JButton cancelButton;
@@ -2865,7 +2948,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JComboBox isolationLevelComboBox;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
@@ -2901,7 +2983,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -2912,6 +2993,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel localTempDirLabel;
+    private javax.swing.JPanel localTempDirPanel;
+    private javax.swing.JTextField localTempDirTextField;
     private javax.swing.JLabel openWhereEditor;
     private javax.swing.JCheckBox orderByPKCheckbox;
     private javax.swing.JPanel parameterPanel;
@@ -2945,10 +3029,12 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox upsertCheckbox;
     private javax.swing.JTextField where;
     private javax.swing.JComboBox workingTableSchemaComboBox;
+    private javax.swing.JLabel workingTableSchemaLabel;
     // End of variables declaration//GEN-END:variables
 
 	private Icon loadIcon;
 	private Icon conditionEditorIcon;
+	private ImageIcon clearIcon;
 	private Icon conditionEditorSelectedIcon;
 	private Icon runIcon;
 	private Icon resetIcon;
@@ -2957,7 +3043,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	{
         // load images
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
-		loadIcon = UIUtil.readImage("/load2.png");
+        clearIcon = UIUtil.readImage("/clear.png");
+        loadIcon = UIUtil.readImage("/load2.png");
 		conditionEditorIcon = UIUtil.readImage("/edit.png");
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
         runIcon = UIUtil.readImage("/run.png");
