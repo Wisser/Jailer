@@ -149,6 +149,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	
 	private static final String SETTING_LAST_USED_MODULE = "lastUsedModule";
     
+	private static final int TOTAL_HEIGHT = 825;
+	private static float MODULE_IMAGE_SCALE_FACTOR = 0.5f;
+	
 	/**
 	 * Creates new.
 	 */
@@ -230,7 +233,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(2, 0, 2, 0);
         jPanel10.add(recentSessionsComboBox, gridBagConstraints);
-        recentSessionsComboBox.setMaximumRowCount(12);
+        recentSessionsComboBox.setMaximumRowCount(10);
 		ImageIcon imageIcon = UIUtil.jailerLogo;
 		infoBar.setIcon(imageIcon);
 		infoBarJM.setIcon(imageIcon);
@@ -617,9 +620,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		}
 
-		setLocation(70, 30);
+		setLocation(70, 20);
 		pack();
-		setSize(Math.max(840, getWidth()), modulesPanel.isVisible()? 900 : 500);
+		setSize(Math.max(840, getWidth()), modulesPanel.isVisible()? TOTAL_HEIGHT : 500);
 		UIUtil.fit(this);
 
 		addWindowListener(new WindowListener() {
@@ -945,7 +948,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
     			if (index == 0) {
-    				return new JPanel(null);
+    				JPanel jPanel = new JPanel(null);
+    				jPanel.setMaximumSize(new Dimension(1, 0));
+    				jPanel.setMinimumSize(new Dimension(1, 0));
+    				jPanel.setPreferredSize(new Dimension(1, 0));
+    				return jPanel;
     			}
     			--index;
                 Component render = renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -1676,7 +1683,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(4, 8, 2, 4);
         modulesPanel.add(jLabel5, gridBagConstraints);
 
         moduleSubsetterPanel.setLayout(new java.awt.GridBagLayout());
@@ -2335,7 +2342,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 10, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 6, 0);
         jPanel11.add(histLabel, gridBagConstraints);
 
         jPanel12.setLayout(new java.awt.GridBagLayout());
@@ -2858,7 +2865,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JLabel yellowdotLabel;
     // End of variables declaration//GEN-END:variables
     private javax.swing.JComboBox locationComboBox = new JComboBox2();
-    private JComboBox2 recentSessionsComboBox = new JComboBox2();
+    private JComboBox2 recentSessionsComboBox = new JComboBox2(1100);
 
 	private static final long serialVersionUID = -3983034803834547687L;
 	
@@ -2876,8 +2883,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
         histIcon = UIUtil.readImage("/history.png");
-		modulBrowserImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_browser.png"), 0.5f);
-		modulSubsetterImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_subsetter.png"), 0.5f);
+		modulBrowserImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_browser.png"), MODULE_IMAGE_SCALE_FACTOR);
+		modulSubsetterImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_subsetter.png"), MODULE_IMAGE_SCALE_FACTOR);
 		blueDotImg = UIUtil.readImage("/bluedotb.gif");
 		yellowDotImg = UIUtil.readImage("/yellowdot.gif");
 		helpImg = UIUtil.readImage("/explain.png");
