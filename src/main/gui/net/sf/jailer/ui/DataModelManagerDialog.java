@@ -475,7 +475,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		moduleSubsetterPanel.setBackground(bgSubsetter);
 		
 		Border emtypBorder = BorderFactory.createLineBorder(new Color(222, 222, 222, 0), 1, true);
-		Border dataBrowsepBorder = emtypBorder; // BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true);
+		Border dataBrowsepBorder = BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true);
 		Border subsetterBorder = dataBrowsepBorder;
 		
 		moduleDataBrowserPanel.setBorder(emtypBorder);
@@ -503,8 +503,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			dmmdSubsetter.mainContentPanel.setBackground(bgSubsetter);
 			dmmdSubsetter.jPanel11.setBackground(bgSubsetter);
 			dmmdSubsetter.jPanel12.setBackground(bgSubsetter);
-			moduleSubsetterPanel.setBorder(emtypBorder);
-			moduleDataBrowserPanel.setBorder(dataBrowsepBorder);
+			moduleSubsetterPanel.setBorder(subsetterBorder);
+			moduleDataBrowserPanel.setBorder(emtypBorder);
 			titelDataBrowserLabel.setIcon(null);
 			titelSubsetterLabel.setIcon(UIUtil.scaleIcon(titelSubsetterLabel, okIcon));
 			openWelcomeDialog(null);
@@ -516,8 +516,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			dmmdBrowser.mainContentPanel.setBackground(bgBrowser);
 			dmmdBrowser.jPanel11.setBackground(bgBrowser);
 			dmmdBrowser.jPanel12.setBackground(bgBrowser);
-			moduleSubsetterPanel.setBorder(subsetterBorder);
-			moduleDataBrowserPanel.setBorder(emtypBorder);
+			moduleSubsetterPanel.setBorder(emtypBorder);
+			moduleDataBrowserPanel.setBorder(dataBrowsepBorder);
 			titelDataBrowserLabel.setIcon(UIUtil.scaleIcon(titelDataBrowserLabel, okIcon));
 			titelSubsetterLabel.setIcon(null);
 			openWelcomeDialog(dmmdBrowser);

@@ -85,6 +85,7 @@ import javax.swing.text.BadLocationException;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -800,7 +801,21 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				value = result.toString();
 			} catch (Throwable t) {
 				if (!(t instanceof CancellationException)) {
-					LogUtil.warn(t);
+					String typeName = null;
+					if (cellEditor.columnTypeNames != null) {
+						if (cellEditor.columnTypeNames.length > columnIndex) {
+							typeName = cellEditor.columnTypeNames[columnIndex];
+						}
+					}
+					LogUtil.warn(new RuntimeException(
+							t.getClass().getSimpleName() + ": " + 
+							getClass().getName() + ": " + 
+							cellEditor.getColumnTypes()[columnIndex] + ", " +
+							typeName + ", " +
+							session.dbUrl + ", " + (session.dbms != null? session.dbms.getId() : null) + ", " +
+							DBMS.MSSQL.equals(session.dbms) + "||" + DBMS.SYBASE.equals(session.dbms) + "||" + DBMS.SQLITE.equals(session.dbms) + ", " +
+							session.getSessionProperty(getClass(), "TFDebugInfo") + 
+							t.getMessage(), t));
 				}
 				value = null;
 			}
@@ -2238,6 +2253,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 	protected void accept(Comparison comparison, String value, Operator operator) {
 		if (value != null) {
 			value = value.trim();
+			if ("true".equals(value) || "false".equals(value)) {
+				session.setSessionProperty(getClass(), "TFDebugInfo", "(" + comparison.column + ", " + comparison.operator + ")");
+			}
 			Pair<Integer, Integer> newHighlight = null;
 			if (!value.equals(comparison.value.trim()) || operator != comparison.operator) {
 				editor.beginAtomicEdit();
