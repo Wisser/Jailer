@@ -20,6 +20,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -36,6 +37,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -474,24 +476,24 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		moduleDataBrowserPanel.setBackground(bgBrowser);
 		moduleSubsetterPanel.setBackground(bgSubsetter);
 		
-		Border emtypBorder = BorderFactory.createLineBorder(new Color(222, 222, 222, 0), 1, true);
-		Border dataBrowsepBorder = BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true);
-		Border subsetterBorder = dataBrowsepBorder;
+		Border emtypBorderD = new ToolSelectionBorder(1, 1, 0, 0, bgBrowser);
+		Border emtypBorderS = new ToolSelectionBorder(1, 0, 0, 1, bgSubsetter);
+		Border dataBrowsepBorder = new ToolSelectionBorder(1, 1, 0, 0, null);
+		Border subsetterBorder = new ToolSelectionBorder(1, 0, 0, 1, null);
 		
-		moduleDataBrowserPanel.setBorder(emtypBorder);
-		moduleSubsetterPanel.setBorder(emtypBorder);
+		moduleDataBrowserPanel.setBorder(emtypBorderD);
+		moduleSubsetterPanel.setBorder(emtypBorderS);
 		
 		AtomicInteger selectedModule = new AtomicInteger(0);
 		
 		Runnable switchToNone = ()-> {
 			selectedModule.set(0);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "none");
-			modulesPanel.setBackground(null);
 			dmmdSubsetter.mainContentPanel.setBackground(null);
 			dmmdSubsetter.jPanel11.setBackground(null);
 			dmmdSubsetter.jPanel12.setBackground(null);
-			moduleSubsetterPanel.setBorder(emtypBorder);
-			moduleDataBrowserPanel.setBorder(emtypBorder);
+			moduleSubsetterPanel.setBorder(emtypBorderS);
+			moduleDataBrowserPanel.setBorder(emtypBorderD);
 			titelDataBrowserLabel.setIcon(null);
 			titelSubsetterLabel.setIcon(null);
 			openWelcomeDialog(null);
@@ -499,12 +501,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		Runnable switchToSubsetter = ()-> {
 			selectedModule.set(1);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "subsetter");
-			modulesPanel.setBackground(bgSubsetter);
 			dmmdSubsetter.mainContentPanel.setBackground(bgSubsetter);
 			dmmdSubsetter.jPanel11.setBackground(bgSubsetter);
 			dmmdSubsetter.jPanel12.setBackground(bgSubsetter);
 			moduleSubsetterPanel.setBorder(subsetterBorder);
-			moduleDataBrowserPanel.setBorder(emtypBorder);
+			moduleDataBrowserPanel.setBorder(emtypBorderD);
 			titelDataBrowserLabel.setIcon(null);
 			titelSubsetterLabel.setIcon(UIUtil.scaleIcon(titelSubsetterLabel, okIcon));
 			openWelcomeDialog(null);
@@ -512,11 +513,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		Runnable switchToDataBrowser = ()-> {
 			selectedModule.set(2);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "databrowser");
-			modulesPanel.setBackground(bgBrowser);
 			dmmdBrowser.mainContentPanel.setBackground(bgBrowser);
 			dmmdBrowser.jPanel11.setBackground(bgBrowser);
 			dmmdBrowser.jPanel12.setBackground(bgBrowser);
-			moduleSubsetterPanel.setBorder(emtypBorder);
+			moduleSubsetterPanel.setBorder(emtypBorderS);
 			moduleDataBrowserPanel.setBorder(dataBrowsepBorder);
 			titelDataBrowserLabel.setIcon(UIUtil.scaleIcon(titelDataBrowserLabel, okIcon));
 			titelSubsetterLabel.setIcon(null);
@@ -1580,7 +1580,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         moduleDataBrowserSubPanel = new javax.swing.JPanel();
         titelDataBrowserLabel = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
-        jPanel13 = new javax.swing.JPanel();
         modulsCardPanel = new javax.swing.JPanel();
         jPanel14 = new javax.swing.JPanel();
         logoLabel = new javax.swing.JLabel();
@@ -1722,7 +1721,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         modulesPanel.add(moduleSubsetterPanel, gridBagConstraints);
 
         moduleDataBrowserPanel.setLayout(new java.awt.GridBagLayout());
@@ -1761,7 +1760,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 8);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         modulesPanel.add(moduleDataBrowserPanel, gridBagConstraints);
 
         jPanel8.setLayout(null);
@@ -1770,17 +1769,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.weightx = 1.0;
         modulesPanel.add(jPanel8, gridBagConstraints);
-
-        jPanel13.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
-        jPanel13.setLayout(null);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 24;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 8, 0);
-        modulesPanel.add(jPanel13, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2814,7 +2802,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
-    private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel16;
@@ -2877,7 +2864,35 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private static ImageIcon blueDotImg;
 	private static ImageIcon yellowDotImg;
 	private static ImageIcon helpImg;
+	
+	private class ToolSelectionBorder implements Border {
+		private Insets margin;
+		private Color color;
 
+		public ToolSelectionBorder(int top, int left, int bottom, int right, Color color) {
+			this.color = color;
+			margin = new Insets(top, left, bottom, right);
+		}
+
+		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			Graphics2D g2d = (Graphics2D) g;
+			g2d.setPaint(new GradientPaint(x, y, color != null? color : Color.BLUE, x + width, y, color != null? color : Color.GREEN.darker()));
+
+			Area border = new Area(new Rectangle(x, y, width, height));
+			border.subtract(new Area(new Rectangle(x + margin.left, y + margin.top, width - margin.left - margin.right,
+					height - margin.top - margin.bottom)));
+			g2d.fill(border);
+		}
+
+		public Insets getBorderInsets(Component c) {
+			return margin;
+		}
+
+		public boolean isBorderOpaque() {
+			return false;
+		}
+	}
+	
 	static {
 		// load images
 		okIcon = UIUtil.readImage("/buttonok.png");
