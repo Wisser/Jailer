@@ -808,6 +808,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 						}
 					}
 					LogUtil.warn(new RuntimeException(
+							"TFWarning: " +
 							t.getClass().getSimpleName() + ": " + 
 							getClass().getName() + ": " + 
 							cellEditor.getColumnTypes()[columnIndex] + ", " +
