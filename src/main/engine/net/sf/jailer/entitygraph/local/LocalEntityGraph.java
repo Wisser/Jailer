@@ -266,7 +266,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	private LocalDatabase createLocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws FileNotFoundException, SQLException {
 		try {
-			return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile);
+			return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, executionContext);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}

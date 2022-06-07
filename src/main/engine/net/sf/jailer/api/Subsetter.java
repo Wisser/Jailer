@@ -714,6 +714,31 @@ public class Subsetter {
 	}
 
 	/**
+	 * @return the folder where the local database will be stored. If <code>null</code>, default temp folder is used.
+	 */
+	public String getLocalDatabaseStorage() {
+		return executionContext.getLocalDatabaseStorage();
+	}
+
+	/**
+	 * Sets the folder where the local database will be stored.
+	 * 
+	 * @param localDatabaseStorage the folder where the local database will be stored. If <code>null</code>, default temp folder is used.
+	 */
+	public void setLocalDatabaseStorage(File localDatabaseStorage) {
+		executionContext.setLocalDatabaseStorage(localDatabaseStorage != null? localDatabaseStorage.getPath() : null);
+	}
+
+	/**
+	 * Sets the folder where the local database will be stored.
+	 * 
+	 * @param localDatabaseStorage the folder where the local database will be stored. If <code>null</code>, default temp folder is used.
+	 */
+	public void setLocalDatabaseStorage(String localDatabaseStorage) {
+		executionContext.setLocalDatabaseStorage(localDatabaseStorage);
+	}
+
+	/**
 	 * Gets the {@link ExecutionContext}. <br>
 	 * Use this to set parameters that are not accessible via this facade.
 	 *

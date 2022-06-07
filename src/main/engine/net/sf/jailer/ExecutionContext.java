@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.kohsuke.args4j.Option;
+
 import net.sf.jailer.api.Subsetter;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.WorkingTableScope;
@@ -923,6 +925,9 @@ public class ExecutionContext {
 
 	// maximum allowed number of exported rows. If this limit is exceeded, the export aborts with an error.
 	private Long limit;
+	
+	// the folder where the local database will be stored. Default temp folder is used if this is not specified.
+	private String localDatabaseStorage = null;
 
 	private WorkingTableScope scope = WorkingTableScope.GLOBAL;
 
@@ -1007,6 +1012,22 @@ public class ExecutionContext {
 		this.currentConnectionAlias = currentConnectionAlias;
 	}
 
+	/**
+	 * @return the folder where the local database will be stored. If <code>null</code>, default temp folder is used.
+	 */
+	public String getLocalDatabaseStorage() {
+		return localDatabaseStorage;
+	}
+
+	/**
+	 * Sets the folder where the local database will be stored.
+	 * 
+	 * @param localDatabaseStorage the folder where the local database will be stored. If <code>null</code>, default temp folder is used.
+	 */
+	public void setLocalDatabaseStorage(String localDatabaseStorage) {
+		this.localDatabaseStorage = localDatabaseStorage;
+	}
+
 	private void copyCommandLineFields(CommandLine commandLine) {
 		uTF8 = commandLine.uTF8;
 		format = commandLine.format;
@@ -1055,6 +1076,7 @@ public class ExecutionContext {
 				limit = Long.parseLong(commandLine.limit);
 			}
 		}
+		localDatabaseStorage = commandLine.localDatabaseStorage;
 	}
 
 	private Map<String, String> copy(Map<String, String> map) {

@@ -78,7 +78,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		if (theLocalSession == null) {
 			LocalDatabaseConfiguration localConfiguration = Configuration.getInstance().localEntityGraphConfiguration;
 			try {
-				this.theLocalDatabase = new LocalDatabase(localConfiguration.getDriver(), localConfiguration.getUrlPattern(), localConfiguration.getUser(), localConfiguration.getPassword(), localConfiguration.getLib());
+				this.theLocalDatabase = new LocalDatabase(localConfiguration.getDriver(), localConfiguration.getUrlPattern(), localConfiguration.getUser(), localConfiguration.getPassword(), localConfiguration.getLib(), executionContext);
 			} catch (ClassNotFoundException e) {
 				throw new RuntimeException(e);
 			} catch (FileNotFoundException e) {

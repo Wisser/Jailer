@@ -159,12 +159,15 @@ public class CommandLine {
 	@Option(name="-row-limit", usage="maximum allowed number of exported rows. If this limit is exceeded, the export aborts with an error.")
 	public String limit = null;
 
+	@Option(name="-local-database-storage", usage="the folder where the local database will be stored. \nDefault temp folder is used if this is not specified.")
+	public String localDatabaseStorage = null;
+
 	@Option(name="-", usage="do not interpret the next word as an option, even if it begins with a '-'. E.g. if the username is: \"-abc\", use: \"- -abc\".")
 	public List<String> escapedWords = new ArrayList<String>();
 
 	@Option(name="-file-lookup", usage="read the next parameter from the (1st line of the) file named VAL. \n(This is especially useful for not making passwords visible by querying the command line parameters)")
 	public List<String> parameterFile = new ArrayList<String>();
-
+	
 	@Argument
 	public List<String> arguments = new ArrayList<String>();
 

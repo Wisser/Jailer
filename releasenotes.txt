@@ -1,3 +1,7 @@
+12.4.1
+  - The location of the local database files is now configurable.
+    This prevents disk space problems when there is not enough space available in the system's tmp directory.
+
 12.4
   - Update of the local H2 database to version 2.1.212.
   - Single launch configuration for both tools.
