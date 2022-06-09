@@ -3547,6 +3547,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void askForDataModel() {
 		try {
+			forceRepaint();
 			if (datamodel.get().getTables().isEmpty()) {
 				switch (JOptionPane.showOptionDialog(this,
 						"Data model \""
@@ -3560,6 +3561,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					break;
 				case 1:
 					openDataModelEditor(false);
+					forceRepaint();
 					break;
 				case 2:
 					workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
@@ -3569,6 +3571,15 @@ public class DataBrowser extends javax.swing.JFrame {
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e, session);
 		}
+	}
+
+	private void forceRepaint() {
+		UIUtil.invokeLater(12, () -> {
+			jSplitPane1.setDividerLocation(jSplitPane1.getDividerLocation() + 1);
+			UIUtil.invokeLater(() -> {
+				jSplitPane1.setDividerLocation(jSplitPane1.getDividerLocation() - 1);
+			});
+		});
 	}
 
 	private void updateIFramesBar() {

@@ -109,15 +109,16 @@ public class RowIdSupport {
 	 * Gets the primary key of a table.
 	 *
 	 * @param table the table
+	 * @param exact 
 	 * @return the primary key of the table
 	 */
-	public PrimaryKey getPrimaryKey(Table table, Session session) {
+	public PrimaryKey getPrimaryKey(Table table, Session session, boolean exact) {
 		if (table.isArtifical()) {
 			return table.primaryKey;
 		}
 		if (table.primaryKey != null) {
 			if (useRowIds && (!useRowIdsOnlyForTablesWithoutPK || table.primaryKey.getColumns().isEmpty())) {
-				if (session == null || isRowIDApplicable(table, session)) {
+				if (session == null || isRowIDApplicable(table, session, exact)) {
 					return tablePK;
 				}
 			}
@@ -131,8 +132,18 @@ public class RowIdSupport {
 	 * @param table the table
 	 * @return the primary key of the table
 	 */
+	public PrimaryKey getPrimaryKey(Table table, Session session) {
+		return getPrimaryKey(table, session, true);
+	}
+	
+	/**
+	 * Gets the primary key of a table.
+	 *
+	 * @param table the table
+	 * @return the primary key of the table
+	 */
 	public PrimaryKey getPrimaryKey(Table table) {
-		return getPrimaryKey(table, null);
+		return getPrimaryKey(table, null, true);
 	}
 
 	/**
@@ -175,13 +186,24 @@ public class RowIdSupport {
 	 * @return the columns of the table
 	 */
 	public List<Column> getColumns(Table table, Session session) {
+		return getColumns(table, session, true);
+	}
+	
+	/**
+	 * Gets the columns with additional rowid-column of a table
+	 *
+	 * @param table the table
+	 * @param exact 
+	 * @return the columns of the table
+	 */
+	public List<Column> getColumns(Table table, Session session, boolean exact) {
 		List<Column> columns = table.getColumns();
 		if (table.isArtifical()) {
 			return columns;
 		}
 		if (table.primaryKey != null) {
 			if (useRowIds && (!useRowIdsOnlyForTablesWithoutPK || table.primaryKey.getColumns().isEmpty())) {
-				if (session == null || isRowIDApplicable(table, session)) {
+				if (session == null || isRowIDApplicable(table, session, exact)) {
 					columns = new ArrayList<Column>(columns);
 					columns.addAll(tablePK.getColumns());
 					return columns;
@@ -195,7 +217,7 @@ public class RowIdSupport {
 		return rowIdColumn != null && rowIdColumn.name.equals(column.name);
 	}
 
-	private boolean isRowIDApplicable(Table table, Session session) {
+	private boolean isRowIDApplicable(Table table, Session session, boolean exact) {
 		if (table == null || table.getName() == null) {
 			return false;
 		}
@@ -215,6 +237,9 @@ public class RowIdSupport {
 				tableName = quoting.requote(schema) + "." + quoting.requote(table.getUnqualifiedName());
 			}
 			if (rowIdColumn != null) {
+				if (!exact) {
+					return true;
+				}
 				if (session.checkQuery("Select 1 from " + tableName + " Where 1=0")) {
 					result = session.checkQuery("Select 1 from " + tableName + " Where 1=0 and " + rowIdColumn.name + "=" + rowIdColumn.name);
 				} else {

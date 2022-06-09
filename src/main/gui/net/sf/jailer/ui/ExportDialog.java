@@ -19,7 +19,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -42,6 +41,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -59,6 +60,9 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
@@ -202,6 +206,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			UIUtil.setWaitCursor(parent);
 
 			initComponents();
+			cliArea.setDocument(new DefaultStyledDocument());
+			
 			jButton1.setIcon(runIcon);
 			cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 			
@@ -655,8 +661,10 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			workingTableSchemaComboBox.setEnabled(!scopeLocal.isSelected());
 			
 			pack();
+			cliArea.setBorder(threads.getBorder());
 			updateCLIArea();
-			setSize(Math.max(Math.min(getSize().width, 900), 700), getSize().height);
+			setSize(700, getSize().height);
+			cliArea.setPreferredSize(new Dimension(16, 16));
 			placeholder.setVisible(false);
 			placeholder1.setVisible(false);
 			UIUtil.fit(this);
@@ -885,9 +893,29 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			cmd = "jailer.bat";
 		}
 		String cli = cmd + UIUtil.createCLIArgumentString(user, password, args, executionContext);
+		cliArea.setSize(8, 8);
 		cliArea.setText(cli);
 		cliArea.setCaretPosition(0);
-		jScrollPane1.getViewport().setViewPosition(new Point(0,0));
+		
+		SimpleAttributeSet set = new SimpleAttributeSet();
+        ((DefaultStyledDocument) cliArea.getDocument()).setCharacterAttributes(0, cliArea.getText().length(), set, true);
+		addStyle("\"\\<password\\>\"", Color.RED);
+		addStyle("jailer\\.[^ ]+ ", Color.BLUE);
+		addStyle("export|delete|import", Color.BLUE);
+	}
+
+	/**
+	 * @param color
+	 */
+	private void addStyle(String reg, Color color) {
+		SimpleAttributeSet set;
+		Pattern pattern = Pattern.compile(reg);
+		Matcher matcher = pattern.matcher(cliArea.getText());
+		if (matcher.find()) {
+			set = new SimpleAttributeSet();
+            StyleConstants.setForeground(set, color);
+            ((DefaultStyledDocument) cliArea.getDocument()).setCharacterAttributes(matcher.start(), matcher.end() - matcher.start(), set, true);
+		}
 	}
 
 	private Thread initScopeButtonThread;
@@ -1269,12 +1297,11 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         parameterPanel = new javax.swing.JPanel();
         commandLinePanel = new javax.swing.JPanel();
         jLabel22 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        cliArea = new javax.swing.JTextArea();
         jLabel23 = new javax.swing.JLabel();
         jLabel24 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
         copyButton = new javax.swing.JButton();
+        cliArea = new javax.swing.JTextPane();
         placeholder1 = new javax.swing.JLabel();
         openWhereEditor = new javax.swing.JLabel();
         additSubsLabel = new javax.swing.JLabel();
@@ -1739,27 +1766,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         commandLinePanel.add(jLabel22, gridBagConstraints);
 
-        jScrollPane1.setBackground(java.awt.Color.gray);
-        jScrollPane1.setBorder(new javax.swing.border.LineBorder(java.awt.Color.lightGray, 1, true));
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        cliArea.setEditable(false);
-        cliArea.setColumns(20);
-        cliArea.setLineWrap(true);
-        cliArea.setWrapStyleWord(true);
-        cliArea.setMaximumSize(new java.awt.Dimension(300, 2147483647));
-        jScrollPane1.setViewportView(cliArea);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-        commandLinePanel.add(jScrollPane1, gridBagConstraints);
-
         jLabel23.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1791,6 +1797,17 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         commandLinePanel.add(copyButton, gridBagConstraints);
+
+        cliArea.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        commandLinePanel.add(cliArea, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -2639,7 +2656,9 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			args.add("-e");
 			args.add(toFileName(insert.getText()));
 		} else {
-			args.add(0, "delete");
+			if (delete.isVisible() && delete.getText().trim().length() > 0) {
+				args.add(0, "delete");
+			}
 		}
 		if (delete.isVisible() && delete.getText().trim().length() > 0) {
 			args.add("-d");
@@ -2931,7 +2950,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JTextArea cliArea;
+    private javax.swing.JTextPane cliArea;
     public javax.swing.JPanel commandLinePanel;
     public javax.swing.JCheckBox confirmInsert;
     private javax.swing.JButton copyButton;
@@ -2991,7 +3010,6 @@ public abstract class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel localTempDirLabel;
     private javax.swing.JPanel localTempDirPanel;
@@ -3051,4 +3069,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
         resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
 	}
 
+	// TODO
+	// TODO occurrence password
+	
 }

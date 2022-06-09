@@ -15,9 +15,9 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -36,6 +38,9 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 import net.sf.jailer.util.CancellationHandler;
 
@@ -65,7 +70,8 @@ public class ImportDialog extends javax.swing.JDialog {
 		this.user = user;
 		this.password = password;
 		initComponents();
-
+		cliArea.setDocument(new DefaultStyledDocument());
+		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 
@@ -137,7 +143,26 @@ public class ImportDialog extends javax.swing.JDialog {
 		}
 		cliArea.setText(cmd + UIUtil.createPlainCLIArguments(user, password, args, true));
 		cliArea.setCaretPosition(0);
-		jScrollPane1.getViewport().setViewPosition(new Point(0, 0));
+		
+		SimpleAttributeSet set = new SimpleAttributeSet();
+        ((DefaultStyledDocument) cliArea.getDocument()).setCharacterAttributes(0, cliArea.getText().length(), set, true);
+		addStyle("\"\\<password\\>\"", Color.RED);
+		addStyle("jailer\\.[^ ]+ ", Color.BLUE);
+		addStyle("export|delete|import", Color.BLUE);
+	}
+
+	/**
+	 * @param color
+	 */
+	private void addStyle(String reg, Color color) {
+		SimpleAttributeSet set;
+		Pattern pattern = Pattern.compile(reg);
+		Matcher matcher = pattern.matcher(cliArea.getText());
+		if (matcher.find()) {
+			set = new SimpleAttributeSet();
+            StyleConstants.setForeground(set, color);
+            ((DefaultStyledDocument) cliArea.getDocument()).setCharacterAttributes(matcher.start(), matcher.end() - matcher.start(), set, true);
+		}
 	}
 
 	@SuppressWarnings({ "unchecked", "serial" })
@@ -180,7 +205,6 @@ public class ImportDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        jScrollPane2 = new javax.swing.JScrollPane();
         jPanel6 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         exportLabel = new javax.swing.JLabel();
@@ -189,11 +213,11 @@ public class ImportDialog extends javax.swing.JDialog {
         jLabel9 = new javax.swing.JLabel();
         commandLinePanel = new javax.swing.JPanel();
         jLabel22 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        cliArea = new javax.swing.JTextArea();
         jLabel23 = new javax.swing.JLabel();
         jLabel24 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        cliArea = new javax.swing.JTextPane();
         placeholder1 = new javax.swing.JLabel();
         transactionalCheckBox = new javax.swing.JCheckBox();
         importFile = new javax.swing.JLabel();
@@ -209,9 +233,6 @@ public class ImportDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Data Import"); // NOI18N
         getContentPane().setLayout(new java.awt.GridBagLayout());
-
-        jScrollPane2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         jPanel6.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jPanel6.setLayout(new java.awt.GridBagLayout());
@@ -255,27 +276,6 @@ public class ImportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         commandLinePanel.add(jLabel22, gridBagConstraints);
 
-        jScrollPane1.setBorder(new javax.swing.border.LineBorder(java.awt.Color.gray, 1, true));
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        cliArea.setEditable(false);
-        cliArea.setColumns(20);
-        cliArea.setLineWrap(true);
-        cliArea.setRows(5);
-        cliArea.setWrapStyleWord(true);
-        cliArea.setMaximumSize(new java.awt.Dimension(300, 2147483647));
-        jScrollPane1.setViewportView(cliArea);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-        commandLinePanel.add(jScrollPane1, gridBagConstraints);
-
         jLabel23.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -294,12 +294,26 @@ public class ImportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 3;
         commandLinePanel.add(jLabel25, gridBagConstraints);
 
+        cliArea.setEditable(false);
+        jScrollPane1.setViewportView(cliArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        commandLinePanel.add(jScrollPane1, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 85;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         jPanel1.add(commandLinePanel, gridBagConstraints);
 
         placeholder1.setText(" "); // NOI18N
@@ -366,15 +380,13 @@ public class ImportDialog extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         jPanel6.add(jPanel1, gridBagConstraints);
 
-        jScrollPane2.setViewportView(jPanel6);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        getContentPane().add(jScrollPane2, gridBagConstraints);
+        getContentPane().add(jPanel6, gridBagConstraints);
 
         jPanel7.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jPanel7.setLayout(new java.awt.GridBagLayout());
@@ -433,8 +445,8 @@ public class ImportDialog extends javax.swing.JDialog {
         jPanel7.add(jPanel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         getContentPane().add(jPanel7, gridBagConstraints);
 
@@ -514,7 +526,7 @@ public class ImportDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JTextArea cliArea;
+    private javax.swing.JTextPane cliArea;
     public javax.swing.JPanel commandLinePanel;
     private javax.swing.JButton copyButton;
     private javax.swing.JLabel exportLabel;

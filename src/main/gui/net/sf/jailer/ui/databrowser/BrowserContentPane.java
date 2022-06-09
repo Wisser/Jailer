@@ -4868,11 +4868,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		lastLimitExceeded = limitExceeded;
 		lastClosureLimitExceeded = closureLimitExceeded;
 		pkColumns.clear();
-		List<Column> columns = rowIdSupport.getColumns(table, session);
+		List<Column> columns = rowIdSupport.getColumns(table, session, !rows.isEmpty());
 		String[] columnNames = new String[columns.size()];
 		final Set<String> pkColumnNames = new HashSet<String>();
-		if (rowIdSupport.getPrimaryKey(table, session) != null) {
-			for (Column pk : rowIdSupport.getPrimaryKey(table, session).getColumns()) {
+		if (rowIdSupport.getPrimaryKey(table, session, !rows.isEmpty()) != null) {
+			for (Column pk : rowIdSupport.getPrimaryKey(table, session, !rows.isEmpty()).getColumns()) {
 				pkColumnNames.add(pk.name);
 			}
 		}
@@ -4896,8 +4896,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		}
-		if (rowIdSupport.getPrimaryKey(table, session) != null) {
-			for (Column pk : rowIdSupport.getPrimaryKey(table, session).getColumns()) {
+		if (rowIdSupport.getPrimaryKey(table, session, !rows.isEmpty()) != null) {
+			for (Column pk : rowIdSupport.getPrimaryKey(table, session, !rows.isEmpty()).getColumns()) {
 				pkColumnNames.add(pk.name);
 			}
 		}
