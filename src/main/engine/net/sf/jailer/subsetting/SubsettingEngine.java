@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -65,7 +66,9 @@ import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.DeletionTransformer;
+import net.sf.jailer.database.LocalDatabase;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.database.SqlException;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -1731,20 +1734,38 @@ public class SubsettingEngine {
 			} catch (Exception e) {
 				try {
 					_log.info("cleaning up...");
-					entityGraph.truncate(executionContext, false);
-					entityGraph.delete();
+					Consumer<RunnableThrowsException> tryAndIgnore = r -> {
+						try {
+							r.run();
+						} catch (Throwable t) {
+							// ignore
+						}
+					};
+					tryAndIgnore.accept(() -> entityGraph.truncate(executionContext, false));
+					tryAndIgnore.accept(() -> entityGraph.delete());
 					if (exportedEntities != null) {
 						if (entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
-							exportedEntities.delete();
+							EntityGraph finalExportedEntities = exportedEntities;
+							tryAndIgnore.accept(() -> finalExportedEntities.delete());
 						} else {
 							_log.info("skipping clean up of temporary tables");
 						}
 					}
-					entityGraph.getSession().rollbackAll();
-					entityGraph.close();
-					shutDown();
+					tryAndIgnore.accept(() -> entityGraph.getSession().rollbackAll());
+					tryAndIgnore.accept(() -> entityGraph.close());
+					tryAndIgnore.accept(() -> shutDown());
 				} catch (Throwable t) {
 					_log.warn(t.getMessage());
+				}
+				if (e instanceof SqlException) {
+					if ("HY000".equals(((SqlException) e).getSQLState())) { // general error
+						if (e.getCause() != null && e.getCause().getClass().getName().startsWith("org.h2.")) {
+							if (entityGraph instanceof LocalEntityGraph) {
+								String hint = "There may not be enough memory in the local database storage folder: \"" + new File(LocalDatabase.determineTempFileFolder(executionContext)).getAbsolutePath() + "\".";
+								throw new SqlException(hint + "\n" + e.getMessage(), ((SqlException) e).sqlStatement, e.getCause());
+							}
+						}
+					}
 				}
 				throw e;
 			}
@@ -1773,6 +1794,11 @@ public class SubsettingEngine {
 		}
 	}
 
+	@FunctionalInterface
+	private interface RunnableThrowsException {
+		void run() throws Exception;
+	}
+	
 	private EntityGraph partCopy(Map<Table, List<Association>> restrictedDependencies, EntityGraph eg) throws SQLException {
 		Set<Table> tables = new HashSet<Table>();
 		restrictedDependencies.forEach((t, al) -> al.forEach(a -> { tables.add(a.source); tables.add(a.destination); }));

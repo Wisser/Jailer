@@ -711,8 +711,8 @@ public class LocalEntityGraph extends EntityGraph {
 
 				String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type) " + select;
 
-				rc[0] += localSession.executeUpdate(insert);
-				totalRowcount += rc[0];
+				for (;;) rc[0] += localSession.executeUpdate(insert);
+//				totalRowcount += rc[0];
 			}
 		};
 

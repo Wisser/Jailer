@@ -48,14 +48,8 @@ public class LocalDatabase {
 	 * Creates a local database.
 	 */
 	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile, ExecutionContext executionContext) throws ClassNotFoundException, FileNotFoundException, SQLException {
-		String tempFileFolder = Configuration.getInstance().getTempFileFolder();
-		if (executionContext.getLocalDatabaseStorage() != null) {
-			String lds = executionContext.getLocalDatabaseStorage().trim();
-			if (new File(lds).isDirectory()) {
-				tempFileFolder = lds;
-			}
-		}
-		this.databaseFolder = new File(tempFileFolder.replace(";", "-") + File.separator + UUID.randomUUID().toString()).getAbsolutePath();
+		String tempFileFolder = determineTempFileFolder(executionContext);
+		this.databaseFolder = new File(tempFileFolder + File.separator + UUID.randomUUID().toString()).getAbsolutePath();
 		new File(databaseFolder).mkdirs();
 		BasicDataSource dataSource;
 		URL[] urlArray;
@@ -76,6 +70,25 @@ public class LocalDatabase {
 			dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", new File(databaseFolder, "local").getAbsolutePath()), user, password, 0, urlArray);
 		}
 		session = new Session(dataSource, dataSource.dbms, Connection.TRANSACTION_READ_UNCOMMITTED, null, false, true);
+	}
+
+	/**
+	 * Determines the folder to be used for local db's temp files.
+	 * 
+	 * @param executionContext the {@link ExecutionContext}
+	 * 
+	 * @return the folder to be used for local db's temp files
+	 */
+	public static String determineTempFileFolder(ExecutionContext executionContext) {
+		String tempFileFolder = Configuration.getInstance().getTempFileFolder();
+		if (executionContext.getLocalDatabaseStorage() != null) {
+			String lds = executionContext.getLocalDatabaseStorage().trim();
+			if (new File(lds).isDirectory()) {
+				tempFileFolder = lds;
+			}
+		}
+		tempFileFolder = tempFileFolder.replace(";", "-");
+		return tempFileFolder;
 	}
 
 	/**
