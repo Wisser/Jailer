@@ -180,6 +180,9 @@ public class MDTable extends MDObject {
 
     private synchronized void readColumns(boolean cached) throws SQLException {
         if (columns == null) {
+        	// TODO
+        	// TODO in case of exception retry next time
+        	
             columns = new ArrayList<String>();
             columnTypes = new ArrayList<Column>();
             primaryKey = new ArrayList<String>();
