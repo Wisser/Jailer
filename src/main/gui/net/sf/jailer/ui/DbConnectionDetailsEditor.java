@@ -355,7 +355,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				updateNameField();
+//				updateNameField();
 			}
 		};
 		dbUrl.getDocument().addDocumentListener(docListener);
@@ -372,7 +372,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				update();
+//				update();
 			}
 			private String getDBMSDriver(String url) {
 				if (!url.matches("jdbc:.+")) {
@@ -417,7 +417,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				update();
+//				update();
 			}
 			private void update() {
 				jtdsWarnLabel.setVisible(driverClass.getText().equals("net.sourceforge.jtds.jdbc.Driver"));
@@ -441,7 +441,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				check();
+//				check();
 			}
 		};
 		dbUrl.getDocument().addDocumentListener(renameListener);
@@ -468,7 +468,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				check();
+//				check();
 			}
 			private void check() {
 				List<String> driverURLs = retrieveDriverURLs(driverlist);
