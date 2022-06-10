@@ -28,6 +28,8 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.ArrayList;
@@ -45,9 +47,11 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -102,8 +106,24 @@ public class DbConnectionSettings extends javax.swing.JPanel {
     	defaultButton = new JToggleButton[] { defaultButton1, defaultButton2, defaultButton3, defaultButton4 };
     	defaultAllButton.setIcon(UIUtil.scaleIcon(this, leftIcon));
     	defaultAllButton.setText(null);
+    	defaultAllLabel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SwingUtilities.isLeftMouseButton(e)) {
+					defaultAllButton.doClick();
+				}
+			}
+		});
     	for (int i = 0; i < pLabel.length; ++i) {
     		final int finalI = i;
+    		defaultLabel[i].addMouseListener(new MouseAdapter() {
+    			@Override
+    			public void mouseClicked(MouseEvent e) {
+    				if (SwingUtilities.isLeftMouseButton(e)) {
+    					defaultButton[finalI].doClick();
+    				}
+    			}
+    		});
     		defaultButton[i].setIcon(UIUtil.scaleIcon(this, leftIcon));
     		defaultButton[i].setText(null);
             pTextField[i].addFocusListener(new FocusListener() {
@@ -216,6 +236,14 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 							tb.setSelected(true);
 						}
 					});
+					tb.addMouseListener(new MouseAdapter() {
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() > 1) {
+								okButton.doClick();
+							}
+						}
+					});
 				    GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			        gridBagConstraints.gridx = i % 6;
 			        gridBagConstraints.gridy = i / 6;
@@ -299,7 +327,28 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 	private int selIndex = -1;
 	private Color pTextFieldBGColor;
 
-	private void updateFields() {
+	public boolean updateFields(String url) {
+		this.url = url;
+		selIndex = -1;
+		return updateFields();
+	}
+	
+	public JPanel getDetailsPanel() {
+		detailsPanel.setVisible(true);
+		jPanel5.setVisible(false);
+		jLabel2.setVisible(false);
+		urlLabel.setVisible(false);
+		return detailsPanel;
+	}
+	
+	protected boolean acceptParameter(String name) {
+		return true;
+	}
+	
+	protected void consumeURL(String url) {
+	}
+
+	private boolean updateFields() {
 		detailsPanel.setVisible(dbmsComboBox.getSelectedIndex() >= 0);
 		initialLabel.setVisible(dbmsComboBox.getSelectedIndex() < 0);
 		if (dbmsComboBox.getSelectedItem() instanceof Line) {
@@ -344,7 +393,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			String param = matcher.group(2);
 			String defValue = matcher.group(3);
 			
-			if (param != null && param.length() > 0) {
+			if (param != null && param.length() > 0 && acceptParameter(param)) {
 				boolean optional = matcher.group(1) != null && matcher.group(4) != null;
 				pLabel[i].setText((param.length() <= 3? param.toUpperCase() : (param.substring(0, 1).toUpperCase() + (param.substring(1).toLowerCase()))) + ":");
 				pLabel[i].setVisible(true);
@@ -400,6 +449,8 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 		}
 		updateDefaultAllButton();
 		updateUrl();
+		
+		return pTextField[0].isVisible();
 	}
 
 	private void updateDefaultAllButton() {
@@ -444,6 +495,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 		}
 		urlLabel.setText(newUrl);
 		urlLabel.setToolTipText(newUrl);
+		consumeURL(newUrl);
 	}
 
     /**
@@ -695,6 +747,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
         detailsPanel.add(defaultLabel1, gridBagConstraints);
@@ -704,6 +757,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
         detailsPanel.add(defaultLabel2, gridBagConstraints);
@@ -713,6 +767,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
         detailsPanel.add(defaultLabel3, gridBagConstraints);
@@ -722,6 +777,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 10);
         detailsPanel.add(defaultLabel4, gridBagConstraints);
@@ -732,6 +788,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 10);
         detailsPanel.add(defaultAllLabel, gridBagConstraints);

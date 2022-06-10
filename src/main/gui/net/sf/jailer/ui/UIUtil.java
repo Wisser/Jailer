@@ -1996,7 +1996,7 @@ public class UIUtil {
 		Optional<Line> result = loadDriverList(null).stream().filter(line -> {
 			String prefix = line.cells.get(1).replaceFirst("[</\\[@].*$", "");
 			return !prefix.isEmpty() && url.startsWith(prefix);
-		}).findAny();
+		}).findFirst();
 		if (result.isPresent()) {
 			String logoUrl = "/dbmslogo/" + result.get().cells.get(6);
 			String smallLogoUrl = logoUrl.replaceFirst("^(.*)(\\.([^\\.]+))$", "$1_small$2");
@@ -2005,6 +2005,24 @@ public class UIUtil {
 				return smallLogoUrl;
 			}
 			return logoUrl;
+		}
+		return null;
+	}
+
+	public static String getDBMSURLPattern(String theUrl) {
+		String url = theUrl.toLowerCase();
+		if (!url.matches("jdbc:.+")) {
+			return null;
+		}
+		Optional<Line> result = loadDriverList(null).stream().filter(line -> {
+			String prefix = line.cells.get(1).replaceFirst("[</\\[@].*$", "");
+			return !prefix.isEmpty() && url.startsWith(prefix);
+		}).findFirst();
+		if (result.isPresent()) {
+			if (result.get().cells.get(0).equals("<other>")) {
+				return null;
+			}
+			return result.get().cells.get(1);
 		}
 		return null;
 	}

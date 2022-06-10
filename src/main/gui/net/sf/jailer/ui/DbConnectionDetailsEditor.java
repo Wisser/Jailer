@@ -16,6 +16,11 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -32,6 +37,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
@@ -51,16 +57,15 @@ import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.DocumentFilter;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -149,26 +154,31 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 			SimpleAttributeSet set = new SimpleAttributeSet();
 			for (int i = 0; i < dbUrl.getDocument().getLength(); ++i) {
-				if (!dbUrl.getDocument().getText(i, 1).equals("[")) {
+				final String c0 = dbUrl.getDocument().getText(i, 1);
+				if (!c0.equals("[") && !c0.equals("]") && !c0.equals("<") && !c0.equals(">")) {
 					((DefaultStyledDocument) dbUrl.getDocument()).setCharacterAttributes(i, 1, set, true);
 				}
 			}
 			Color color = Color.RED;
-			Pattern pattern = Pattern.compile("\\<[^\\>\\<]*\\>");
+			Pattern pattern = Pattern.compile("\\<([^\\>\\<]*)\\>");
 			Matcher matcher = pattern.matcher(dbUrl.getText());
 			while (matcher.find()) {
-				set = new SimpleAttributeSet();
-				StyleConstants.setForeground(set, color);
-				((DefaultStyledDocument) dbUrl.getDocument()).setCharacterAttributes(matcher.start(),
-						matcher.end() - matcher.start(), set, true);
+				if (acceptParameter(matcher.group(1))) {
+					set = new SimpleAttributeSet();
+					StyleConstants.setForeground(set, color);
+					((DefaultStyledDocument) dbUrl.getDocument()).setCharacterAttributes(matcher.start(),
+							matcher.end() - matcher.start(), set, true);
+				}
 			}
-			pattern = Pattern.compile("\\[[^\\[\\]]*\\<[^\\>\\<]*\\>[^\\]\\[]*\\]");
+			pattern = Pattern.compile("\\[[^\\[\\]]*\\<([^\\>\\<]*)\\>[^\\]\\[]*\\]");
 			matcher = pattern.matcher(dbUrl.getText());
 			while (matcher.find()) {
-				set = new SimpleAttributeSet();
-				StyleConstants.setForeground(set, color);
-				((DefaultStyledDocument) dbUrl.getDocument()).setCharacterAttributes(matcher.start(), 1, set, true);
-				((DefaultStyledDocument) dbUrl.getDocument()).setCharacterAttributes(matcher.end() - 1, 1, set, true);
+				if (acceptParameter(matcher.group(1))) {
+					set = new SimpleAttributeSet();
+					StyleConstants.setForeground(set, color);
+					((DefaultStyledDocument) dbUrl.getDocument()).setCharacterAttributes(matcher.start(), 1, set, true);
+					((DefaultStyledDocument) dbUrl.getDocument()).setCharacterAttributes(matcher.end() - 1, 1, set, true);
+				}
 			}
 		} catch (Exception e) {
 			// ignore
@@ -206,6 +216,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		this.parent = parent;
 		this.needsTest = needsTest;
 		initComponents();
+		ImageIcon scaledWarnIcon = UIUtil.scaleIcon(jtdsWarnLabel, warnIcon, 1);
+		jtdsWarnLabel.setIcon(scaledWarnIcon);
+		jtdsWarnLabel.setVisible(false);
+		jSeparator2.setVisible(false);
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		renameButton.setIcon(resetIcon);
@@ -250,12 +264,14 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() > 1) {
 					UIUtil.invokeLater(2, () -> {
-						Pattern pattern = Pattern.compile("\\[?\\<[^\\>\\<]*\\>\\]?");
+						Pattern pattern = Pattern.compile("\\[?\\<([^\\>\\<]*)\\>\\]?");
 						Matcher matcher = pattern.matcher(dbUrl.getText());
 						while (matcher.find()) {
-							if (matcher.start() <= dbUrl.getCaretPosition() && dbUrl.getCaretPosition() <= matcher.end()) {
-								dbUrl.select(matcher.start(), matcher.end());
-								break;
+							if (acceptParameter(matcher.group(1))) {
+								if (matcher.start() <= dbUrl.getCaretPosition() && dbUrl.getCaretPosition() <= matcher.end()) {
+									dbUrl.select(matcher.start(), matcher.end());
+									break;
+								}
 							}
 						}
 					});
@@ -385,6 +401,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		        } else {
 					logoLabel.setIcon(UIUtil.scaleIcon(logoLabel, UIUtil.readImage(dbmsLogoURL, false), 2));
 		        }
+		        DbConnectionSettings settingsDialog = createSettingsDialog(false);
+				editButton.setEnabled(settingsDialog != null);
 			}
 		});
 		
@@ -403,7 +421,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 			private void update() {
 				jtdsWarnLabel.setVisible(driverClass.getText().equals("net.sourceforge.jtds.jdbc.Driver"));
-				jSeparator2.setVisible(!jtdsWarnLabel.isVisible());
+				jSeparator2.setVisible(false);
 			}
 		});
 		DocumentListener renameListener = new DocumentListener() {
@@ -550,9 +568,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		});
 		helpjdbc.setIcon(helpIcon);
 		helpjdbc.setText(null);
-		ImageIcon scaledWarnIcon = UIUtil.scaleIcon(jtdsWarnLabel, warnIcon, 1);
-		jtdsWarnLabel.setIcon(scaledWarnIcon);
-		jtdsWarnLabel.setVisible(false);
 		loadButton1.setText(null);
 		loadButton2.setText(null);
 		loadButton3.setText(null);
@@ -567,6 +582,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		UIUtil.setTrailingComponent(jar3, loadButton3);
 		UIUtil.setTrailingComponent(jar4, loadButton4);
 
+		editButton.setIcon(UIUtil.scaleIcon(editButton, editorIcon));
+		
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowOpened(WindowEvent evt) {
@@ -611,8 +628,16 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			}
 		});
 		
+		if (forNew) {
+			UIUtil.invokeLater(2, () -> {
+				if (editButton.isEnabled()) {
+					editButton.doClick();
+				}
+			});
+		}
+		
 		pack();
-		setSize(Math.max(570, getWidth()), getHeight());
+		setSize(Math.max(570, getWidth()), getHeight() + 32);
 		if (parent != null) {
 			setLocation(parent.getX() + (parent.getWidth() - getWidth()) / 2, Math.max(0, parent.getY() + (parent.getHeight() - getHeight()) / 2));			
 		} else {
@@ -664,6 +689,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
         testConnectionButton = new javax.swing.JButton();
         selectConnectionButton = new javax.swing.JButton();
+        jPanel8 = new javax.swing.JPanel();
         jLabel11 = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
         loadButton1 = new javax.swing.JButton();
@@ -681,17 +707,17 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         exportCBButton = new javax.swing.JButton();
         importCBButton = new javax.swing.JButton();
         feedbackLabel = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         downloadButton = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         alias = new javax.swing.JTextField();
         renameButton = new javax.swing.JButton();
         jtdsWarnLabel = new javax.swing.JLabel();
-        jSeparator3 = new javax.swing.JSeparator();
+        logoLabel = new javax.swing.JLabel();
+        jPanel7 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel6 = new javax.swing.JPanel();
         dbUrl = new javax.swing.JTextPane();
-        logoLabel = new javax.swing.JLabel();
+        editButton = new javax.swing.JToggleButton();
 
         helpjdbc.setText("help");
 
@@ -735,6 +761,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 90;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(16, 0, 0, 0);
         jPanel1.add(jLabel6, gridBagConstraints);
 
         jLabel7.setText(" DB-URL");
@@ -780,6 +807,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(16, 0, 0, 0);
         jPanel1.add(driverClass, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -846,11 +874,19 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 12);
         jPanel2.add(selectConnectionButton, gridBagConstraints);
 
+        jPanel8.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(jPanel8, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 100;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
@@ -1024,15 +1060,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 16, 0);
         jPanel1.add(jPanel4, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 16, 0);
-        jPanel1.add(jSeparator1, gridBagConstraints);
 
         downloadButton.setText("Download Driver");
         downloadButton.setEnabled(false);
@@ -1046,7 +1075,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 44;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 16, 0);
         jPanel1.add(downloadButton, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1081,13 +1110,17 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jtdsWarnLabel, gridBagConstraints);
+
+        logoLabel.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 85;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
-        jPanel1.add(jSeparator3, gridBagConstraints);
+        gridBagConstraints.gridy = 44;
+        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        jPanel1.add(logoLabel, gridBagConstraints);
+
+        jPanel7.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
@@ -1102,19 +1135,28 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 60;
-        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jScrollPane1, gridBagConstraints);
+        jPanel7.add(jScrollPane1, gridBagConstraints);
 
-        logoLabel.setText(" ");
+        editButton.setText("Edit");
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 44;
-        gridBagConstraints.gridheight = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPanel1.add(logoLabel, gridBagConstraints);
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 60;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel7.add(editButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 60;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jPanel7, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1372,6 +1414,82 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		}
     }//GEN-LAST:event_downloadButtonActionPerformed
 
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+    	DbConnectionSettings settingsDialog = createSettingsDialog(true);
+		if (settingsDialog == null) {
+			return;
+		}
+		
+		JDialog dialog = new JDialog(this);
+		dialog.setModal(false);
+		dialog.setUndecorated(true);
+		dialog.addWindowFocusListener(new WindowFocusListener() {
+			@Override
+			public void windowLostFocus(WindowEvent e) {
+				editButton.setSelected(false);
+				dialog.setVisible(false);
+				dialog.dispose();
+			}
+			@Override
+			public void windowGainedFocus(WindowEvent e) {
+			}
+		});
+		
+		JPanel content = new JPanel(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new Insets(4, 4, 4, 4);
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.weightx = 1;
+		content.add(settingsDialog.getDetailsPanel(), gbc);
+		content.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+		
+		dialog.getContentPane().add(content);
+		
+		Component comp = editButton;
+		Point location = new Point(0, comp.getHeight());
+		SwingUtilities.convertPointToScreen(location, comp);
+		
+		dialog.pack();
+		int minWidth = 420;
+		int wid = Math.max(minWidth, dialog.getWidth());
+		dialog.setSize(wid, dialog.getHeight());
+		int x = location.x + editButton.getWidth() - minWidth;
+		int y = location.y;
+		dialog.setLocation(x, y);
+		
+		editButton.setSelected(true);
+		dialog.setVisible(true);
+    }//GEN-LAST:event_editButtonActionPerformed
+
+    private boolean acceptParameter(String name) {
+    	String urlPattern = UIUtil.getDBMSURLPattern(dbUrl.getText().trim());
+		if (urlPattern == null) {
+			return true;
+		}
+		return urlPattern.matches(".*\\<" + Pattern.quote(name) + "(\\([^\\)]+\\))?" + "\\>.*");
+	}
+    
+    private DbConnectionSettings createSettingsDialog(boolean active) {
+		DbConnectionSettings settingsDialog = new DbConnectionSettings(this) {
+			@Override
+			protected boolean acceptParameter(String name) {
+				return DbConnectionDetailsEditor.this.acceptParameter(name);
+			}
+			@Override
+			protected void consumeURL(String url) {
+				if (active) {
+					dbUrl.setText(url);
+					updateDbURLStyle();
+				}
+			}
+		};
+		if (settingsDialog.updateFields(dbUrl.getText())) {
+			return settingsDialog;
+		} else {
+			return null;
+		}
+	}
+
 	private String toRelFileName(final String fileName) {
 		try {
             File f = new File(fileName);
@@ -1401,6 +1519,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JTextPane dbUrl;
     private javax.swing.JButton downloadButton;
     public javax.swing.JTextField driverClass;
+    private javax.swing.JToggleButton editButton;
     private javax.swing.JButton exportCBButton;
     private javax.swing.JLabel feedbackLabel;
     private javax.swing.JLabel helpjdbc;
@@ -1423,10 +1542,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JSeparator jSeparator3;
     private javax.swing.JTextField jar1;
     private javax.swing.JTextField jar2;
     private javax.swing.JTextField jar3;
@@ -1498,12 +1617,14 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	private Icon loadIcon;
     private Icon resetIcon;
     private ImageIcon warnIcon;
+    private ImageIcon editorIcon;
     {
 		// load images
 		helpIcon = UIUtil.readImage("/help.png");
 		loadIcon = UIUtil.readImage("/load2.png");
 		resetIcon = UIUtil.readImage("/reset.png");
 		warnIcon = UIUtil.readImage("/wanr.png");
+		editorIcon = UIUtil.readImage("/edit.png");
     }
 
 	private static ImageIcon okIcon;

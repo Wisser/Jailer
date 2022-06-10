@@ -7462,7 +7462,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
 		Map<String, Consumer<JLabel>> renderConsumer;
 		renderConsumer = new HashMap<String, Consumer<JLabel>>();
-		table.getColumns().forEach(c -> { if (c.name != null) { renderConsumer.put(c.name, label -> label.setIcon(emptyIcon)); }});
+		rowIdSupport.getColumns(table, session, false).forEach(c -> { if (c.name != null) { renderConsumer.put(c.name, label -> label.setIcon(emptyIcon)); }});
     	if (table.primaryKey != null) {
 			table.primaryKey.getColumns().forEach(c -> {
 				if (c.name != null) {
