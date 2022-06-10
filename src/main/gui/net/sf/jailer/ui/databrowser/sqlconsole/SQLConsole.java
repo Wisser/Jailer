@@ -930,6 +930,32 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				List<Table> nfResultTypes = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, true, sqlColumnExpression, metaDataSource);
 				List<Table> nfResultTypesWOCheck = explain || sqlPlusResultSet != null? null : QueryTypeAnalyser.getType(sqlStatement, false, sqlColumnExpression, metaDataSource);
 				Result wcbt = WCTypeAnalyser.getType(sqlStatement, metaDataSource, Quoting.getQuoting(session));
+				
+				// TODO
+				// TODO analyze after closing result set, because:
+//				java.sql.SQLException: Streaming result set com.mysql.cj.protocol.a.result.ResultsetRowsStreaming@1e23095f is still active. No statements may be issued when any streaming result sets are open and in use on a given connection. Ensure that you have called .close() on any active streaming result sets before attempting more queries.
+//				at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:129) ~[?:?]
+//				at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:97) ~[?:?]
+//				at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122) ~[?:?]
+//				at com.mysql.cj.jdbc.ClientPreparedStatement.executeInternal(ClientPreparedStatement.java:953) ~[?:?]
+//				at com.mysql.cj.jdbc.ClientPreparedStatement.executeQuery(ClientPreparedStatement.java:1003) ~[?:?]
+//				at com.mysql.cj.jdbc.DatabaseMetaDataUsingInfoSchema.executeMetadataQuery(DatabaseMetaDataUsingInfoSchema.java:70) ~[?:?]
+//				at com.mysql.cj.jdbc.DatabaseMetaDataUsingInfoSchema.getColumns(DatabaseMetaDataUsingInfoSchema.java:277) ~[?:?]
+//				at net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder.getColumns(JDBCMetaDataBasedModelElementFinder.java:939) ~[bin/:?]
+//				at net.sf.jailer.ui.databrowser.metadata.MDTable.readColumns(MDTable.java:189) ~[bin/:?]
+//				at net.sf.jailer.ui.databrowser.metadata.MDTable.getColumns(MDTable.java:120) ~[bin/:?]
+//				at net.sf.jailer.ui.databrowser.whereconditioneditor.WCTypeAnalyser$1$1$1.visit(WCTypeAnalyser.java:567) ~[bin/:?]
+//				at net.sf.jsqlparser.statement.select.AllColumns.accept(AllColumns.java:18) ~[jsqlparser-3.2.jar:?]
+//				at net.sf.jailer.ui.databrowser.whereconditioneditor.WCTypeAnalyser$1$1.visit(WCTypeAnalyser.java:459) ~[bin/:?]
+//				at net.sf.jsqlparser.statement.select.PlainSelect.accept(PlainSelect.java:139) ~[jsqlparser-3.2.jar:?]
+//				at net.sf.jailer.ui.databrowser.whereconditioneditor.WCTypeAnalyser$1.visit(WCTypeAnalyser.java:352) ~[bin/:?]
+//				at net.sf.jsqlparser.statement.select.Select.accept(Select.java:28) ~[jsqlparser-3.2.jar:?]
+//				at net.sf.jailer.ui.databrowser.whereconditioneditor.WCTypeAnalyser.getType(WCTypeAnalyser.java:323) ~[bin/:?]
+//				at net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole.executeSQL(SQLConsole.java:932) ~[bin/:?]
+//				at net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole.access$44(SQLConsole.java:834) ~[bin/:?]
+//				at net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole$16.run(SQLConsole.java:747) ~[bin/:?]
+//				at net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole$10.run(SQLConsole.java:494) ~[bin/:?]
+				
 				int columnCount = Math.max(0, metaData.getColumnCount());
 				if (wcbt != null && wcbt.table != null && wcbt.table.getColumns().size() != columnCount) {
 					wcbt = null;
