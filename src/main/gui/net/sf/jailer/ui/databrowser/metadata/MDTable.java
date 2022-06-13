@@ -178,11 +178,11 @@ public class MDTable extends MDObject {
         return primaryKey;
     }
 
+    private boolean retryReading = false;
+    
     private synchronized void readColumns(boolean cached) throws SQLException {
-        if (columns == null) {
-        	// TODO
-        	// TODO in case of exception retry next time
-        	
+        if (columns == null || retryReading) {
+        	retryReading = false;
             columns = new ArrayList<String>();
             columnTypes = new ArrayList<Column>();
             primaryKey = new ArrayList<String>();
@@ -259,6 +259,7 @@ public class MDTable extends MDObject {
                     resultSet.close();
                 }
             } catch (Exception e) {
+            	retryReading = true;
             	if (!warned) {
             		LogUtil.warn(e);
             		warned = true;

@@ -51,6 +51,7 @@ import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.JSqlParserUtil;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -931,7 +932,32 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					}
 					ResultSet resultSet = metaDataCache.forTable(tableNamePattern);
 					if (resultSet != null) {
-						return resultSet;
+						if (resultSet instanceof MemorizedResultSet) {
+							if (((MemorizedResultSet) resultSet).getSize() == 0) {
+								if (DBMS.MySQL.equals(session.dbms)) {
+									resultSet = session.getMetaData().getColumns(schemaPattern, null, tableNamePattern, columnNamePattern);
+								} else {
+									resultSet = session.getMetaData().getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
+								}
+								String info = schemaPattern + ", " + tableNamePattern + ", " + columnNamePattern + ", " + withCaching + ", " + onlyIfCached + ", " + tableType + ", " + (session.dbms != null? session.dbms.getId() : null);
+								if (resultSet.next()) {
+									if (!warnedF) {
+										warnedF = true;
+										LogUtil.warn(new RuntimeException("cache miss: " + info));
+									}
+								} else {
+									if (!warnedNF) {
+										warnedNF = true;
+										LogUtil.warn(new RuntimeException("cache hit: " + info));
+									}
+								}
+								resultSet.close();
+								resultSet = null;
+							}
+						}
+						if (resultSet != null) {
+							return resultSet;
+						}
 					}
 				}
 			}
@@ -947,6 +973,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 		}
 	}
+	
+	private static boolean warnedF = false;
+	private static boolean warnedNF = false;
 
 	private static boolean setIncludeSynonyms(boolean includeSynonyms, Session session) {
 		try {
