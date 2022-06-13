@@ -1482,6 +1482,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					updateDbURLStyle();
 				}
 			}
+			@Override
+			protected JDialog getFileDialogParent() {
+				return DbConnectionDetailsEditor.this;
+			}
 		};
 		if (settingsDialog.updateFields(dbUrl.getText())) {
 			return settingsDialog;

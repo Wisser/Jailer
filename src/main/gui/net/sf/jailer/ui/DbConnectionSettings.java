@@ -162,7 +162,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 			pButton[i].addActionListener(new java.awt.event.ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					String fn = UIUtil.choseFile(null, Environment.newFile(".").getAbsolutePath(), pLabel[finalI].getText(), "", dialog, false, true, false);
+					String fn = UIUtil.choseFile(null, Environment.newFile(".").getAbsolutePath(), pLabel[finalI].getText(), "", getFileDialogParent(), false, true, false);
 					if (fn != null) {
 						pTextField[finalI].setText(new File(fn).getAbsolutePath().replaceAll("\\.mv\\.db$", ""));
 					}
@@ -348,6 +348,10 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 	protected void consumeURL(String url) {
 	}
 
+	protected JDialog getFileDialogParent() {
+		return dialog;
+	}
+	
 	private boolean updateFields() {
 		detailsPanel.setVisible(dbmsComboBox.getSelectedIndex() >= 0);
 		initialLabel.setVisible(dbmsComboBox.getSelectedIndex() < 0);
