@@ -1,3 +1,7 @@
+12.4.2
+  - The temporary files for the local database were not always cleared away in case of an error. This has been corrected.
+  - The dialog for database connection parameter entry has been improved.
+
 12.4.1
   - The location of the local database files is now configurable.
     This prevents disk space problems when there is not enough space available in the system's tmp directory.
