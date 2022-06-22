@@ -1,3 +1,7 @@
+12.4.3
+  - Reset" button in the dialog for the connection settings.
+  - When changing the Look&Feel, confirmation dialog appears after restart.
+
 12.4.2
   - The temporary files for the local database were not always cleared away in case of an error. This has been corrected.
   - The dialog for database connection parameter entry has been improved.
