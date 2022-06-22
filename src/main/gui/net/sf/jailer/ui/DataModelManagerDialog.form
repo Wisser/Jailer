@@ -45,7 +45,6 @@
             <Component class="javax.swing.JLabel" name="jLabel1">
               <Properties>
                 <Property name="text" type="java.lang.String" value=" Loading..."/>
-                <Property name="toolTipText" type="java.lang.String" value=""/>
                 <Property name="verticalAlignment" type="int" value="1"/>
               </Properties>
               <Constraints>

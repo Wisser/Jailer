@@ -39,7 +39,8 @@ public abstract class LightBorderSmallButton extends SmallButton {
 	protected void onMouseExited() {
 		if (UIUtil.plaf != PLAF.FLAT) {
 			super.onMouseExited();
-			getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED, INVISIBLE, INVISIBLE));
+			getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED,
+					INVISIBLE, INVISIBLE));
 		} else if (!freezed) {
 			entered = false;
 			getFrame().setOpaque(false);
@@ -49,14 +50,16 @@ public abstract class LightBorderSmallButton extends SmallButton {
 	}
 
 	protected void onMouseEntered() {
-		if (UIUtil.plaf != PLAF.FLAT) {
-			super.onMouseEntered();
-			getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Color.LIGHT_GRAY, Color.GRAY));
-		} else if (!freezed) {
-			entered = true;
-			getFrame().setOpaque(true);
-			getFrame().setBackground(getSelectedBackgroundColor());
-			getFrame().setBorder(new javax.swing.border.LineBorder(getSelectedBackgroundColor(), 2, true));
+		if (isEnabled()) {
+			if (UIUtil.plaf != PLAF.FLAT) {
+				super.onMouseEntered();
+				getFrame().setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED, Color.LIGHT_GRAY, Color.GRAY));
+			} else if (!freezed) {
+				entered = true;
+				getFrame().setOpaque(true);
+				getFrame().setBackground(getSelectedBackgroundColor());
+				getFrame().setBorder(new javax.swing.border.LineBorder(getSelectedBackgroundColor(), 2, true));
+			}
 		}
 	}
 

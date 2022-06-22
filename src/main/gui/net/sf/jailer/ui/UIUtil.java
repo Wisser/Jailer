@@ -1646,7 +1646,7 @@ public class UIUtil {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					UISettings.store(UISettings.USE_NATIVE_PLAF, p.name());
-					JOptionPane.showMessageDialog(parentComponent, "The look and feel has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(parentComponent, "The \"look and feel\" has been changed.\n(Will be effective after restart)", "Look&Feel", JOptionPane.INFORMATION_MESSAGE);
 				}
 			});
 			plafMenu.add(item);
@@ -2097,6 +2097,20 @@ public class UIUtil {
 	
 	public static PLAF plaf = PLAF.NATIVE;
 	
+	public static void checkPLAF(Component parentComponent) {
+		Object oldPlafSetting = UISettings.restore("OLD_PLAF");
+		if (oldPlafSetting != null && !oldPlafSetting.equals(plaf.name())) {
+			if (JOptionPane.showOptionDialog(parentComponent, 
+					"The \"look and feel\" has been changed.\nDo you want to keep the change?", 
+					"Look&Feel", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+					null, new Object[] { "Keep it", "No, back to the old one (forces restart)" }, null) != 0) {
+				UISettings.store(UISettings.USE_NATIVE_PLAF, oldPlafSetting);
+				System.exit(0);
+			}
+		}
+		UISettings.store("OLD_PLAF", plaf.name());
+	}
+	
 	public static void initPLAF() {
 		Object plafSetting = UISettings.restore(UISettings.USE_NATIVE_PLAF);
 		plaf = PLAF.FLAT;
@@ -2290,4 +2304,7 @@ public class UIUtil {
 		cleanupThread.start();
 	}
 
+	// TODO
+	// TODO at restart after PLAF change, ask for keeping, terminate if not (with info dialog)
+	
 }

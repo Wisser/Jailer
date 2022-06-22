@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -66,6 +67,7 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -74,6 +76,8 @@ import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
 import net.sf.jailer.ui.util.HttpDownload;
+import net.sf.jailer.ui.util.LightBorderSmallButton;
+import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 
@@ -278,19 +282,35 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 				}
 			}
 		});
-		if (UIUtil.plaf == PLAF.FLAT) {
-			dbUrl.addFocusListener(new FocusListener() {
-				@Override
-				public void focusLost(FocusEvent e) {
-					jScrollPane1.setBorder(nfBorder);
+		Border errFBorder = BorderFactory.createLineBorder(new Color(255, 200, 200));
+		Border errBorder = BorderFactory.createLineBorder(new Color(255, 150, 150));
+		Runnable updateBorder = () -> {
+			if (UIUtil.plaf == PLAF.FLAT) {
+				boolean ok = true;
+				try {
+					for (int i = 0; i < dbUrl.getStyledDocument().getLength(); ++i) {
+						Element el = dbUrl.getStyledDocument().getCharacterElement(i);
+						if (el.getAttributes().getAttributeCount() > 0) {
+							ok = false;
+						}
+					}
+				} catch (Throwable t) {
+					ok = true;
 				}
-				@Override
-				public void focusGained(FocusEvent e) {
-					jScrollPane1.setBorder(fBorder);
-				}
-			});
-		}
-		
+				jScrollPane1.setBorder(dbUrl.hasFocus() ? ok ? fBorder : errFBorder : ok ? nfBorder : errBorder);
+			}
+		};
+		dbUrl.addFocusListener(new FocusListener() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				updateBorder.run();
+			}
+			@Override
+			public void focusGained(FocusEvent e) {
+				updateBorder.run();
+			}
+		});
+
 		doc.addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
@@ -304,7 +324,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			public void changedUpdate(DocumentEvent e) {
 			}
 			private void update() {
-				UIUtil.invokeLater(() -> updateDbURLStyle());
+				UIUtil.invokeLater(() -> { updateBorder.run(); updateDbURLStyle(); });
 			}
 		});
 		
@@ -584,6 +604,49 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 		editButton.setIcon(UIUtil.scaleIcon(editButton, editorIcon));
 		
+		SmallButton clear = new LightBorderSmallButton(UIUtil.scaleIcon(editButton,clearIcon)) {
+			@Override
+			protected void onClick(MouseEvent e) {
+				if (lastKnownUrlPattern != null) {
+					dbUrl.setText(lastKnownUrlPattern);
+					UIUtil.invokeLater(4, () -> editButton.doClick());
+				}
+			}
+		};
+		clear.setToolTipText("Reset");
+		DocumentListener cDl = new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				update();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				update();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				update();
+			}
+			private void update() {
+				final String text = dbUrl.getText().trim();
+				if (lastKnownUrlPattern == null) {
+					lastKnownUrlPattern = UIUtil.getDBMSURLPattern(text);
+				}
+				clear.setEnabled(lastKnownUrlPattern != null && !lastKnownUrlPattern.equals(text));
+			}
+		};
+		
+		dbUrl.getDocument().addDocumentListener(cDl);
+		cDl.changedUpdate(null);
+		
+		clear.setEnabled(false);
+		
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		jPanel9.add(clear, gridBagConstraints);
+
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowOpened(WindowEvent evt) {
@@ -643,7 +706,9 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		} else {
 			setLocation(120, 170);
 		}
-	 }
+	}
+	
+	private String lastKnownUrlPattern;
 
 	protected List<String> retrieveDriverURLs(List<Line> driverlist) {
 		if (driverlist != null) {
@@ -677,7 +742,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jar1 = new javax.swing.JTextField();
@@ -718,6 +782,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jPanel6 = new javax.swing.JPanel();
         dbUrl = new javax.swing.JTextPane();
         editButton = new javax.swing.JToggleButton();
+        jPanel9 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
 
         helpjdbc.setText("help");
 
@@ -763,14 +829,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(16, 0, 0, 0);
         jPanel1.add(jLabel6, gridBagConstraints);
-
-        jLabel7.setText(" DB-URL");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 60;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        jPanel1.add(jLabel7, gridBagConstraints);
 
         jLabel8.setText(" User");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1125,10 +1183,16 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
-        jPanel6.setLayout(new java.awt.BorderLayout());
+        jPanel6.setLayout(new java.awt.GridBagLayout());
 
         dbUrl.setText(" ");
-        jPanel6.add(dbUrl, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel6.add(dbUrl, gridBagConstraints);
 
         jScrollPane1.setViewportView(jPanel6);
 
@@ -1157,6 +1221,26 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jPanel7, gridBagConstraints);
+
+        jPanel9.setLayout(new java.awt.GridBagLayout());
+
+        jLabel7.setText(" DB-URL");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel9.add(jLabel7, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 60;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel1.add(jPanel9, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1548,6 +1632,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTextField jar1;
@@ -1633,11 +1718,13 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 	private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
+	private static ImageIcon clearIcon;
 	
     static {
         // load images
     	okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        clearIcon = UIUtil.readImage("/reset.png");
 	}
 
 	private static final long serialVersionUID = -492511696901313920L;

@@ -711,6 +711,19 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			dmmdBrowser.master = dmmd;
 			dmmdSubsetter.master = dmmd;
 			
+			if (dmmdBrowser.dbConnectionDialog != null) {
+				dmmdBrowser.dbConnectionDialog.setParent(dmmd);
+			}
+			if (dmmdBrowser.recUsedConnectionDialog != null) {
+				dmmdBrowser.recUsedConnectionDialog.setParent(dmmd);
+			}
+			if (dmmdSubsetter.dbConnectionDialog != null) {
+				dmmdSubsetter.dbConnectionDialog.setParent(dmmd);
+			}
+			if (dmmdSubsetter.recUsedConnectionDialog != null) {
+				dmmdSubsetter.recUsedConnectionDialog.setParent(dmmd);
+			}
+			
 			dmmd.setVisible(true);
 			((CardLayout) dmmd.cardPanel.getLayout()).show(dmmd.cardPanel, "loading");
 			UIUtil.setWaitCursor(dmmd);
@@ -722,6 +735,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					} finally {
 						((CardLayout) dmmd.cardPanel.getLayout()).show(dmmd.cardPanel, "modulSelection");
 						UIUtil.resetWaitCursor(dmmd);
+						UIUtil.checkPLAF(dmmd);
 					}
 				}
 			});
@@ -1659,7 +1673,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel9.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText(" Loading...");
-        jLabel1.setToolTipText("");
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;

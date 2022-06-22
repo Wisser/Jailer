@@ -2100,7 +2100,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(0.5);
-        jSplitPane2.setToolTipText("");
         jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
 

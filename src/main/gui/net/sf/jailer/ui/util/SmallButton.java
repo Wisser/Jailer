@@ -77,7 +77,7 @@ public abstract class SmallButton extends JLabel {
 			
 			boolean sent = false;
 			private void doClick(MouseEvent e) {
-				if (!sent) {
+				if (!sent && isEnabled()) {
 					sent = true;
 					UIUtil.invokeLater(() -> {
 						sent = false;

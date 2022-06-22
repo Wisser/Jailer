@@ -260,7 +260,7 @@ public class MDTable extends MDObject {
                 }
             } catch (Exception e) {
             	retryReading = true;
-            	if (!warned) {
+            	if (!warned && !getSchema().getMetaDataSource().getSession().isDown()) {
             		LogUtil.warn(e);
             		warned = true;
             	}
@@ -357,7 +357,7 @@ public class MDTable extends MDObject {
 	                    cStmt.execute();
 	                    ddl = cStmt.getString(1).trim();
 	                } catch (Exception e) {
-	                	logger.info("error", e);
+	                	// ignore
 	                } finally {
 	                    if (cStmt != null) {
 	                        try {

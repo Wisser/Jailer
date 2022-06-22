@@ -188,7 +188,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	/**
 	 * The parent frame.
 	 */
-	private final Window parent;
+	private Window parent;
 	
 	private final ExecutionContext executionContext;
 	
@@ -1415,6 +1415,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			connectionsTable.getSelectionModel().setSelectionInterval(0, 0);
 			jButton1.grabFocus();
 		}
+	}
+	
+	public void setParent(Window parent) {
+		this.parent = parent;
 	}
 
     private static ImageIcon warnIcon;

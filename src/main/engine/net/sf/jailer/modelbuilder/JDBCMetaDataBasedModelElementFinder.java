@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -786,7 +787,25 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return session.getMetaData().getPrimaryKeys(null, schema, table);
 	}
 
+	private static Supplier<String> tableDebugSupplier = () -> "nothing";
+	
 	public static ResultSet getTables(Session session, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
+		tableDebugSupplier = () -> {
+			Map<String, Integer> schema = new HashMap<String, Integer>();
+			try {
+				int c = 0;
+				ResultSet rs = getTables(session, schemaPattern, tableNamePattern, types);
+				while (rs.next()) {
+					final String key = rs.getString(1) + "." + rs.getString(2) + " " + rs.getString(4);
+					schema.put(key, schema.containsKey(key)? schema.get(key) + 1 : 1);
+					c++;
+				}
+				rs.close();
+				return "TabInfo: " + c + " - " + schema;
+			} catch (Throwable t) {
+				return t.getMessage();
+			}
+		};
 		if (DBMS.MySQL.equals(session.dbms)) {
 			 return session.getMetaData().getTables(schemaPattern, null, tableNamePattern, types);
 		}
@@ -940,15 +959,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 									resultSet = session.getMetaData().getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
 								}
 								String info = schemaPattern + ", " + tableNamePattern + ", " + columnNamePattern + ", " + withCaching + ", " + onlyIfCached + ", " + tableType + ", " + (session.dbms != null? session.dbms.getId() : null);
+								info += " " + metaDataCache.toString();
 								if (resultSet.next()) {
 									if (!warnedF) {
 										warnedF = true;
-										LogUtil.warn(new RuntimeException("cache miss: " + info));
+										LogUtil.warn(new RuntimeException("cache miss: " + info + " " + tableDebugSupplier.get()));
 									}
 								} else {
 									if (!warnedNF) {
 										warnedNF = true;
-										LogUtil.warn(new RuntimeException("cache hit: " + info));
+										LogUtil.warn(new RuntimeException("cache hit: " + info + " " + tableDebugSupplier.get()));
 									}
 								}
 								resultSet.close();

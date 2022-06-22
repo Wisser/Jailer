@@ -26,6 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -267,5 +269,15 @@ public class MetaDataCache {
 			session.setSilent(wasSilent);
 		}
 	}
-
+	
+	@Override
+	public String toString() {
+		try {
+			Set<String> schema = new HashSet<String>();
+			cache.forEach((k, v) -> v.forEach(c-> schema.add(c[0] + "." + c[1])));
+			return "MetaDataCache [cache=" + cache.entrySet().stream().map(e -> e.getValue().size()).collect(Collectors.summarizingInt(n -> n)) + "/" + schema + "]";
+		} catch (Throwable t) {
+			return t.getMessage();
+		}
+	}
 }
