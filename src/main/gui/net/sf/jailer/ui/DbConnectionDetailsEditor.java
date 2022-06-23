@@ -17,7 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -40,12 +39,17 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,12 +59,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
@@ -72,6 +80,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.util.ConcurrentTaskControl;
@@ -80,6 +89,7 @@ import net.sf.jailer.ui.util.LightBorderSmallButton;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
+import net.sf.jailer.util.Pair;
 
 /**
  * "Connect with DB" dialog.
@@ -104,21 +114,89 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	private final boolean needsTest;
 	
 	/**
+	 * The {@link ExecutionContext}.
+	 */
+	private ExecutionContext executionContext;
+	
+	/**
 	 * Opens detail editor for a connection.
 	 * 
 	 * @param ci the connection
 	 * @param connectionList 
+	 * @param executionContext 
 	 * @return <code>true</code> if connection has been edited
 	 */
-	public boolean edit(ConnectionInfo ci, List<ConnectionInfo> connectionList) {
+	public boolean edit(ConnectionInfo ci, List<ConnectionInfo> connectionList, ExecutionContext executionContext) {
 		this.connectionList = connectionList;
+		this.executionContext = executionContext;
 		setDetails(ci);
+		loadModelList(executionContext);
+		dataModelComboBox.setSelectedItem(ci.dataModelFolder == null? "" : ci.dataModelFolder);
+		firePending = false;
 		setVisible(true);
+		if (firePending) {
+			UIUtil.invokeLater(4, () -> {
+				listener.forEach(l -> {
+					Runnable r = l.get();
+					if (r != null) {
+						r.run();
+					}
+				});
+			});
+		}
 		return isOk;
 	}
 	
 	private List<ConnectionInfo> connectionList;
 	
+	/**
+	 * List of available models.
+	 */
+	private List<String> modelList;
+
+	/**
+	 * Model details as pair of folder-name and last-modified timestamp.
+	 */
+	private Map<String, Pair<String, Long>> modelDetails;
+
+	private void loadModelList(ExecutionContext executionContext) {
+		String cmsf = DataModelManager.getCurrentModelSubfolder(executionContext);
+		try {
+			DataModelManager.setCurrentModelSubfolder(null, executionContext);
+	
+			modelList = new ArrayList<String>();
+			modelDetails = new HashMap<String, Pair<String,Long>>();
+			for (String mf: DataModelManager.getModelFolderNames(executionContext)) {
+				String modelFolder = mf == null? "" : mf;
+				modelList.add(modelFolder);
+				modelDetails.put(modelFolder, DataModelManager.getModelDetails(mf, executionContext));
+			}
+			String dm = ci.dataModelFolder == null? "" : ci.dataModelFolder;
+			if (!modelList.contains(dm)) {
+				modelList.add(dm);
+				modelDetails.put(dm, DataModelManager.getModelDetails(dm, executionContext));
+			}
+			Collections.sort(modelList, new Comparator<String>() {
+				@Override
+				public int compare(String o1, String o2) {
+					return modelDetails.get(o1).a.compareToIgnoreCase(modelDetails.get(o2).a);
+				}
+			});
+			dataModelComboBox.setModel(new DefaultComboBoxModel<String>(modelList.toArray(new String[0])));
+			ListCellRenderer<? super String> renderer = dataModelComboBox.getRenderer();
+			dataModelComboBox.setRenderer(new DefaultListCellRenderer() {
+				@Override
+				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+						boolean cellHasFocus) {
+					final Pair<String, Long> pair = modelDetails.get((String) value);
+					return renderer.getListCellRendererComponent((JList<String>) list, pair == null? (String) value : pair.a, index, isSelected, cellHasFocus);
+				}
+			});
+		} finally {
+			DataModelManager.setCurrentModelSubfolder(cmsf, executionContext);
+		}
+	}
+
 	/**
 	 * Sets details.
 	 * 
@@ -710,6 +788,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	
 	private String lastKnownUrlPattern;
 
+	private boolean firePending;
+
 	protected List<String> retrieveDriverURLs(List<Line> driverlist) {
 		if (driverlist != null) {
 			String url = dbUrl.getText().trim().replaceAll("^(\\w+:\\w+:).*", "$1");
@@ -784,6 +864,11 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         editButton = new javax.swing.JToggleButton();
         jPanel9 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jPanel10 = new javax.swing.JPanel();
+        dataModelComboBox = new javax.swing.JComboBox<>();
+        newDataModelButton = new javax.swing.JButton();
+        jPanel11 = new javax.swing.JPanel();
 
         helpjdbc.setText("help");
 
@@ -1242,6 +1327,53 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel1.add(jPanel9, gridBagConstraints);
 
+        jLabel5.setText(" Data Model");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel1.add(jLabel5, gridBagConstraints);
+
+        jPanel10.setLayout(new java.awt.GridBagLayout());
+
+        dataModelComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        dataModelComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                dataModelComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel10.add(dataModelComboBox, gridBagConstraints);
+
+        newDataModelButton.setText("Create New Datamodel");
+        newDataModelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newDataModelButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        jPanel10.add(newDataModelButton, gridBagConstraints);
+
+        jPanel11.setLayout(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        jPanel10.add(jPanel11, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(jPanel10, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1296,6 +1428,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			ci.url = dbUrl.getText().trim();
 			ci.user = user.getText().trim();
 			ci.password = password.getText().trim();
+	       	ci.dataModelFolder = (String) dataModelComboBox.getSelectedItem();
 		}
 		return ok;
 	}
@@ -1545,6 +1678,32 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		dialog.setVisible(true);
     }//GEN-LAST:event_editButtonActionPerformed
 
+    private void dataModelComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_dataModelComboBoxItemStateChanged
+    }//GEN-LAST:event_dataModelComboBoxItemStateChanged
+
+    private void newDataModelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newDataModelButtonActionPerformed
+    	String cmsf = DataModelManager.getCurrentModelSubfolder(executionContext);
+		try {
+			DataModelManager.setCurrentModelSubfolder(null, executionContext);
+
+			NewDataModelDialog newDataModelDialog = new NewDataModelDialog(this, modelList);
+	
+			String newName = newDataModelDialog.getNameEntered();
+			if (newName != null) {
+				DataModelManager.createNewModel(newName, newDataModelDialog.getFolderName(), executionContext);
+				loadModelList(executionContext);
+				UIUtil.invokeLater(() -> {
+					dataModelComboBox.setSelectedItem(newDataModelDialog.getFolderName());
+					firePending = true;
+				});
+			}
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
+		} finally {
+			DataModelManager.setCurrentModelSubfolder(cmsf, executionContext);
+		}
+    }//GEN-LAST:event_newDataModelButtonActionPerformed
+
     private boolean acceptParameter(String name) {
     	String urlPattern = UIUtil.getDBMSURLPattern(dbUrl.getText().trim());
 		if (urlPattern == null) {
@@ -1604,6 +1763,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JTextField alias;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JComboBox<String> dataModelComboBox;
     private javax.swing.JTextPane dbUrl;
     private javax.swing.JButton downloadButton;
     public javax.swing.JTextField driverClass;
@@ -1620,11 +1780,14 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -1645,6 +1808,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JButton loadButton3;
     private javax.swing.JButton loadButton4;
     private javax.swing.JLabel logoLabel;
+    private javax.swing.JButton newDataModelButton;
     private javax.swing.JButton okButton;
     javax.swing.JPasswordField password;
     private javax.swing.JButton renameButton;
@@ -1701,7 +1865,15 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	}
 
 	private JTextComponent[] textFields;
-    
+	
+	private static List<WeakReference<Runnable>> listener = new ArrayList<WeakReference<Runnable>>();
+	private static List<Runnable> listener2 = new ArrayList<Runnable>();
+	
+	public static void addListener(Runnable onChange) {
+		listener.add(new WeakReference<Runnable>(onChange));
+		listener2.add(onChange);
+	}
+
 	private Icon helpIcon;
 	private Icon loadIcon;
     private Icon resetIcon;
@@ -1728,4 +1900,5 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	}
 
 	private static final long serialVersionUID = -492511696901313920L;
+
 }

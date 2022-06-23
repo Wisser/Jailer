@@ -40,8 +40,8 @@ public class NewDataModelDialog extends javax.swing.JDialog {
 	private String nameEntered = null;
 	
 	/** Creates new form NewDataModelDialog */
-	public NewDataModelDialog(java.awt.Frame parent, List<String> existingFolders) {
-		super(parent, true);
+	public NewDataModelDialog(java.awt.Window parent, List<String> existingFolders) {
+		super(parent, ModalityType.APPLICATION_MODAL);
 		this.existingFoldersLC = new HashSet<String>();
 		
 		for (String s: existingFolders) {

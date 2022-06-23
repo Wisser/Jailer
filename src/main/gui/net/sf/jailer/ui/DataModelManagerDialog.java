@@ -154,6 +154,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private static final int TOTAL_HEIGHT = 825;
 	private static float MODULE_IMAGE_SCALE_FACTOR = 0.5f;
 	
+	private static Runnable lstKeepReferenced;
+	
 	/**
 	 * Creates new.
 	 */
@@ -163,6 +165,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.tabPropertyName = "DMMDPropTab" + module;
 		this.module = module;
 		initComponents();
+		DbConnectionDetailsEditor.addListener(lstKeepReferenced = () -> {
+			loadModelList();
+			refresh();
+		});
 		welcomeContainerPanel.setVisible(false);
 		JTable bookmarkTable = null;
 		
@@ -180,8 +186,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		UIUtil.replace(infoBarLabel2, infoBarJM);
 
 		infoBarConnection = new DMMDInfoBar("Database Connection",
-				"Select a database connection. Please note that here only existing connections can be selected.\n" +
-				"To create new connections, first select the data model in the \"Data Model\" tab to which this will belong.\n \n",
+				"Select a database connection. \n \n \n",
 				"Select a database to work with.");
 
 		infoBarRecUsedConnection = new DMMDInfoBar("Recently used Database Connection",
@@ -396,6 +401,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.tabPropertyName = null;
 		this.module = module;
 		initComponents();
+		DbConnectionDetailsEditor.addListener(lstKeepReferenced = () -> {
+			loadModelList();
+			refresh();
+		});
 		welcomeContainerPanel.setVisible(false);
 
 		try {
@@ -669,6 +678,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		});
 	}
+	
+	// TODO
+	
+//	" clone connection "
+//	create new dmodel button weg wenn nicht in DMMD
+//	schmemamappingfdialog, getDefaultSchema nicht in AWT, stattdessen schon bei SessionForUI.init
+//	nach edit,clone,new connection diese auch selektieren
+	// "reconnect" vs "Connect with" (DBrowser vs EMEditor) -> vereinheitlichen
+	
 	
 	public static void start(String module, boolean withStartupWizzard, ExecutionContext executionContext) {
 		DataModelManagerDialog dmmdBrowser = DataBrowser.createDMMDialog(executionContext);

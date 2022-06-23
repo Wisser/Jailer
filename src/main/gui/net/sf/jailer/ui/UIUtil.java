@@ -1080,7 +1080,8 @@ public class UIUtil {
 		    	try {
 					final int MAX_CL = 3900;
 					int maxEIssueLength = MAX_CL + 10;
-					String ipf = ++issueCount + "z" + (lastIssueTS != 0? (System.currentTimeMillis() - lastIssueTS) / 1000 + "s." : "");
+					String ipf = ++issueCount + "z" + (lastIssueTS != 0? (System.currentTimeMillis() - lastIssueTS) / 1000 + "s. " : "");
+					ipf += Thread.currentThread().getName();
 					lastIssueTS = System.currentTimeMillis();
 					String url;
 					int i = 0;

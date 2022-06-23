@@ -149,7 +149,7 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="copy">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value=" Copy "/>
+                    <Property name="text" type="java.lang.String" value="Clone"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="copyActionPerformed"/>
@@ -162,7 +162,7 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="deleteButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value=" Delete "/>
+                    <Property name="text" type="java.lang.String" value="    Delete    "/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteButtonActionPerformed"/>

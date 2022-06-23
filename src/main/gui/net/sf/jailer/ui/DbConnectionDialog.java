@@ -307,9 +307,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		
 		UIUtil.replace(infoBarLabel, infoBar);
 		
-		newButton.setVisible(dataModelAware);
+//		newButton.setVisible(dataModelAware);
 		jLabel1.setVisible(dataModelAware);
-		copy.setVisible(dataModelAware);
+//		copy.setVisible(dataModelAware);
 		
 		if (showOnlyRecentyUsedConnections) {
 			editButton.setVisible(false);
@@ -875,7 +875,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
         jPanel3.add(editButton, gridBagConstraints);
 
-        copy.setText(" Copy ");
+        copy.setText("Clone");
         copy.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 copyActionPerformed(evt);
@@ -888,7 +888,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
         jPanel3.add(copy, gridBagConstraints);
 
-        deleteButton.setText(" Delete ");
+        deleteButton.setText("    Delete    ");
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
@@ -1102,7 +1102,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * @return <code>true</code> if connection has been edited
 	 */
 	private boolean edit(ConnectionInfo ci, boolean forNew) {
-		return new DbConnectionDetailsEditor(parent, jdbcHelpURL, forNew).edit(ci, connectionList);
+		return new DbConnectionDetailsEditor(parent, jdbcHelpURL, forNew).edit(ci, connectionList, executionContext);
 	}
 
 	private void connect() {
