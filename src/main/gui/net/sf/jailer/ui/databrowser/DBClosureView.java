@@ -1251,49 +1251,41 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
         jLabel1.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         tablePanel.add(jLabel1, gridBagConstraints);
 
         jLabel2.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         tablePanel.add(jLabel2, gridBagConstraints);
 
         jLabel3.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         tablePanel.add(jLabel3, gridBagConstraints);
 
         jLabel4.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         tablePanel.add(jLabel4, gridBagConstraints);
 
         jLabel5.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         tablePanel.add(jLabel5, gridBagConstraints);
 
         jLabel6.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         tablePanel.add(jLabel6, gridBagConstraints);
 
         jLabel8.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         tablePanel.add(jLabel8, gridBagConstraints);
 
         jLabel9.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
         tablePanel.add(jLabel9, gridBagConstraints);
 

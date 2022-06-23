@@ -282,8 +282,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 				}
 			}
 		});
-		Border errFBorder = BorderFactory.createLineBorder(new Color(255, 200, 200));
-		Border errBorder = BorderFactory.createLineBorder(new Color(255, 150, 150));
+		Border errFBorder = BorderFactory.createLineBorder(new Color(255, 100, 100));
+		Border errBorder = BorderFactory.createLineBorder(new Color(255, 50, 50));
 		Runnable updateBorder = () -> {
 			if (UIUtil.plaf == PLAF.FLAT) {
 				boolean ok = true;

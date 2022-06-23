@@ -2304,7 +2304,4 @@ public class UIUtil {
 		cleanupThread.start();
 	}
 
-	// TODO
-	// TODO at restart after PLAF change, ask for keeping, terminate if not (with info dialog)
-	
 }
