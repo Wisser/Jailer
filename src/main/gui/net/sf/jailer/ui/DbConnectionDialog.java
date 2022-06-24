@@ -219,22 +219,36 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		ConnectionInfo oldCurrentConnection = currentConnection;
 		ok = false;
 		try {
-//			if (!located) {
-				pack();
-				setSize(Math.max(710, getWidth()), 450);
-				if (parent != null && parent.isVisible()) {
-					int os = parent.getWidth() > 800? 0 : 80;
-					setLocation(os + parent.getX() + (parent.getWidth() - getWidth()) / 2, Math.max((int) UIUtil.getScreenBounds().getY(), os + parent.getY() + (parent.getHeight() - getHeight()) / 2));			
-				} else {
-					setLocation(100, 150);
-				}
-//				located = true;
-//			}
+			pack();
+			setSize(Math.max(710, getWidth()), 450);
+			if (parent != null && parent.isVisible()) {
+				int os = parent.getWidth() > 800 ? 0 : 80;
+				setLocation(os + parent.getX() + (parent.getWidth() - getWidth()) / 2,
+						Math.max((int) UIUtil.getScreenBounds().getY(),
+								os + parent.getY() + (parent.getHeight() - getHeight()) / 2));
+			} else {
+				setLocation(100, 150);
+			}
 			setTitle((reason == null ? "" : (reason + " - ")) + "Connect");
 			sortConnectionList();
 			refresh();
 			if (connectionsTable.getModel().getRowCount() > 0) {
-				connectionsTable.getSelectionModel().setSelectionInterval(0, 0);
+				int cRI = -1;
+				if (oldCurrentConnection != null) {
+					for (int i = 0; i < connectionList.size(); ++i) {
+						if (connectionList.get(i).alias != null && connectionList.get(i).alias.equals(oldCurrentConnection.alias)) {
+							cRI = i;
+							break;
+						}
+					}
+				}
+				if (cRI >= 0) {
+					connectionsTable.getSelectionModel().setSelectionInterval(cRI, cRI);
+					int fCRI = cRI;
+					UIUtil.invokeLater(() -> connectionsTable.scrollRectToVisible(connectionsTable.getCellRect(fCRI, 0, true)));
+				} else {
+					connectionsTable.getSelectionModel().setSelectionInterval(0, 0);
+				}
 			}
 			setVisible(true);
 			if (currentConnection == null) {
