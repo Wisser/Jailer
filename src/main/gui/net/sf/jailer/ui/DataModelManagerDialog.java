@@ -57,7 +57,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
@@ -154,8 +153,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private static final int TOTAL_HEIGHT = 825;
 	private static float MODULE_IMAGE_SCALE_FACTOR = 0.5f;
 	
-	private static Runnable lstKeepReferenced;
-	
 	/**
 	 * Creates new.
 	 */
@@ -165,7 +162,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.tabPropertyName = "DMMDPropTab" + module;
 		this.module = module;
 		initComponents();
-		DbConnectionDetailsEditor.addListener(lstKeepReferenced = () -> {
+		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
 			refresh();
 		});
@@ -401,7 +398,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.tabPropertyName = null;
 		this.module = module;
 		initComponents();
-		DbConnectionDetailsEditor.addListener(lstKeepReferenced = () -> {
+		DbConnectionDetailsEditor.addNewDatamodelListener(() -> {
 			loadModelList();
 			refresh();
 		});

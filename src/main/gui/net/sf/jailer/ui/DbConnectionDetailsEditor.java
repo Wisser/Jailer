@@ -39,7 +39,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -137,9 +136,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		if (firePending) {
 			UIUtil.invokeLater(4, () -> {
 				listener.forEach(l -> {
-					Runnable r = l.get();
-					if (r != null) {
-						r.run();
+					try {
+						l.run();
+					} catch (Throwable t) {
+						// ignore
 					}
 				});
 			});
@@ -1873,12 +1873,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
 	private JTextComponent[] textFields;
 	
-	private static List<WeakReference<Runnable>> listener = new ArrayList<WeakReference<Runnable>>();
-	private static List<Runnable> listener2 = new ArrayList<Runnable>();
+	private static List<Runnable> listener = new ArrayList<Runnable>();
 	
-	public static void addListener(Runnable onChange) {
-		listener.add(new WeakReference<Runnable>(onChange));
-		listener2.add(onChange);
+	public static void addNewDatamodelListener(Runnable onChange) {
+		listener.add(onChange);
 	}
 
 	private Icon helpIcon;
