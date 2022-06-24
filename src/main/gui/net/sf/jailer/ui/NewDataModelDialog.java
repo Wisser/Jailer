@@ -159,7 +159,7 @@ public class NewDataModelDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 4);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         getContentPane().add(jPanel1, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -176,6 +176,7 @@ public class NewDataModelDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel2.add(jLabel2, gridBagConstraints);
 
         nameTextField.setText("jTextField1");
@@ -193,6 +194,7 @@ public class NewDataModelDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel2.add(folderTextField, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
