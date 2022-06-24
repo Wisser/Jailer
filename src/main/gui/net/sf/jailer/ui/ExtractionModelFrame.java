@@ -367,12 +367,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         save = new javax.swing.JMenuItem();
         saveAs = new javax.swing.JMenuItem();
-        exportDisplay = new javax.swing.JMenuItem();
-        exportDisplay1 = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
         connectDb = new javax.swing.JCheckBoxMenuItem();
         disconnectDb = new javax.swing.JMenuItem();
         jSeparator10 = new javax.swing.JSeparator();
+        exportDisplay = new javax.swing.JMenuItem();
+        exportDisplay1 = new javax.swing.JMenuItem();
+        jSeparator11 = new javax.swing.JPopupMenu.Separator();
         exit = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         updateDataModel = new javax.swing.JMenuItem();
@@ -568,6 +569,24 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         fileMenu.add(saveAs);
+        fileMenu.add(jSeparator2);
+
+        connectDb.setText("Connect to Database...");
+        connectDb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                connectDbActionPerformed(evt);
+            }
+        });
+        fileMenu.add(connectDb);
+
+        disconnectDb.setText("Disconnect");
+        disconnectDb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                disconnectDbActionPerformed(evt);
+            }
+        });
+        fileMenu.add(disconnectDb);
+        fileMenu.add(jSeparator10);
 
         exportDisplay.setText("Export graph as image...");
         exportDisplay.addActionListener(new java.awt.event.ActionListener() {
@@ -584,24 +603,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         fileMenu.add(exportDisplay1);
-        fileMenu.add(jSeparator2);
-
-        connectDb.setText("Connect with database");
-        connectDb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                connectDbActionPerformed(evt);
-            }
-        });
-        fileMenu.add(connectDb);
-
-        disconnectDb.setText("Disconnect");
-        disconnectDb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                disconnectDbActionPerformed(evt);
-            }
-        });
-        fileMenu.add(disconnectDb);
-        fileMenu.add(jSeparator10);
+        fileMenu.add(jSeparator11);
 
         exit.setText("Exit");
         exit.addActionListener(new java.awt.event.ActionListener() {
@@ -1580,7 +1582,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		disconnect();
 	}//GEN-LAST:event_disconnectDbActionPerformed
 
-	private void disconnect() {
+	void disconnect() {
 		if (theSession != null) {
 			theSession.shutDown();
 			theSession = null;
@@ -1590,8 +1592,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
 	private void connectDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectDbActionPerformed
-		disconnect();
-		connectToDBIfNeeded(null);
+		reconnectToDB(null);
 	}//GEN-LAST:event_connectDbActionPerformed
 
 	private void renderHtmlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderHtmlActionPerformed
@@ -1676,6 +1677,26 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				return dbConnectionDialog.connect(reason);
 			}
 			return true;
+		} finally {
+			updateMenuItems();
+		}
+	}
+
+	/**
+	 * Opens connection dialog to establish DB-connection.
+	 *
+	 * @return <code>false</code> if connection fails
+	 */
+	public boolean reconnectToDB(String reason) {
+		try {
+			if (dbConnectionDialog.connect(reason, true)) {
+				if (theSession != null) {
+					theSession.shutDown();
+					theSession = null;
+				}
+				return true;
+			}
+			return false;
 		} finally {
 			updateMenuItems();
 		}
@@ -2507,6 +2528,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
+    private javax.swing.JSeparator jSeparator11;
     private javax.swing.JSeparator jSeparator12;
     private javax.swing.JPopupMenu.Separator jSeparator13;
     private javax.swing.JPopupMenu.Separator jSeparator14;

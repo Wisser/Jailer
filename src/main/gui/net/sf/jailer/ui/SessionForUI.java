@@ -31,6 +31,7 @@ import javax.swing.JPanel;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 
 /**
  * Specialized {@link Session} for the UI.
@@ -62,6 +63,10 @@ public class SessionForUI extends Session {
 						if (session.getInlineViewStyle() == null) {
 							session.setSessionProperty(SessionForUI.class, SUPPORT_WC_EDITOR, false);
 						}
+					}
+					if (!session.cancelled.get()) {
+						String defSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+						session.setSessionProperty(SessionForUI.class, "defSchema", defSchema);						
 					}
 					if (session.cancelled.get()) {
 						try {

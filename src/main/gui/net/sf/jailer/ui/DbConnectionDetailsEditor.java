@@ -268,9 +268,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	}
 
 	/** Creates new form DbConnectionDialog 
-	 * @param forNew */
-	public DbConnectionDetailsEditor(Window parent, final String jdbcHelpURL, boolean forNew) {
-		this(parent, jdbcHelpURL, forNew, null, false);
+	 * @param forNew 
+	 * @param dataModelAware */
+	public DbConnectionDetailsEditor(Window parent, final String jdbcHelpURL, boolean forNew, boolean forClone, boolean dataModelAware) {
+		this(parent, jdbcHelpURL, forNew, forClone, null, false, dataModelAware);
 	}
 
 	private final Window parent;
@@ -291,13 +292,15 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	
 	/** Creates new form DbConnectionDialog 
 	 * @param forNew 
+	 * @param dataModelAware 
 	 * @param b */
-	public DbConnectionDetailsEditor(Window parent, final String jdbcHelpURL, boolean forNew, InfoBar infoBar, boolean needsTest) {
+	public DbConnectionDetailsEditor(Window parent, final String jdbcHelpURL, boolean forNew, boolean forClone, InfoBar infoBar, boolean needsTest, boolean dataModelAware) {
 		super(parent);
 		setModal(true);
 		this.parent = parent;
 		this.needsTest = needsTest;
 		initComponents();
+		newDataModelButton.setVisible(!dataModelAware);
 		ImageIcon scaledWarnIcon = UIUtil.scaleIcon(jtdsWarnLabel, warnIcon, 1);
 		jtdsWarnLabel.setIcon(scaledWarnIcon);
 		jtdsWarnLabel.setVisible(false);
@@ -601,6 +604,9 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			UIUtil.replace(infoBarLabel, theInfoBar = new InfoBar("New Connection",
 					"Enter connection credentials for the database.\n" +
 					"Replace placeholders (\"<...>\") with appropriate URL parameters.", null));
+		} else if (forClone) {
+			UIUtil.replace(infoBarLabel, theInfoBar = new InfoBar("Clone Connection",
+					"Edit cloned connection credentials for the database.", null));
 		} else {
 			UIUtil.replace(infoBarLabel, theInfoBar = new InfoBar("Edit Connection",
 					"Edit connection credentials for the database.", null));
@@ -1372,6 +1378,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel1.add(jPanel10, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

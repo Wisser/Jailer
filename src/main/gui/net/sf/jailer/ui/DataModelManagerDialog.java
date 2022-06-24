@@ -678,16 +678,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		});
 	}
-	
-	// TODO
-	
-//	" clone connection "
-//	create new dmodel button weg wenn nicht in DMMD
-//	schmemamappingfdialog, getDefaultSchema nicht in AWT, stattdessen schon bei SessionForUI.init
-//	nach edit,clone,new connection diese auch selektieren
-	// "reconnect" vs "Connect with" (DBrowser vs EMEditor) -> vereinheitlichen
-	
-	
+
 	public static void start(String module, boolean withStartupWizzard, ExecutionContext executionContext) {
 		DataModelManagerDialog dmmdBrowser = DataBrowser.createDMMDialog(executionContext);
 		DataModelManagerDialog dmmdSubsetter = ExtractionModelFrame.createDMMDialog(withStartupWizzard, executionContext);

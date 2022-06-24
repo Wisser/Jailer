@@ -300,7 +300,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		connectionsTable.setAutoCreateRowSorter(true);
 
 		if (infoBar == null) {
-			infoBar = new InfoBar("Connect with Database", 
+			infoBar = new InfoBar("Connect to Database", 
 					"Select a connection to the database, or create a new connection.\n" +
 					"New connections will be assigned to the datamodel \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder(executionContext), executionContext).a + "\".", null);
 		}
@@ -785,7 +785,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         connectionsTable = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Connect with DB");
+        setTitle("Connect to Database");
         getContentPane().setLayout(new java.awt.CardLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -993,12 +993,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						ci.password = currentConnection.password;
 						ci.url = currentConnection.url;
 						ci.user = currentConnection.user;
-						if (edit(ci, false)) {
+						if (edit(ci, false, true)) {
 							connectionList.add(i + 1, ci);
 							refresh();
 							RowSorter<?> rowSorter = connectionsTable.getRowSorter();
 							int selectedRowIndex = rowSorter.convertRowIndexToView(i + 1);
 							connectionsTable.getSelectionModel().setSelectionInterval(selectedRowIndex, selectedRowIndex);
+							connectionsTable.scrollRectToVisible(connectionsTable.getCellRect(selectedRowIndex, 0, true));
 							store();
 						}
 						break;
@@ -1054,7 +1055,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
-		if (edit(ci, true)) {
+		if (edit(ci, true, false)) {
 			for (int nr = 1; ; ++nr) {
 				String newAlias = ci.alias + (nr > 1? " (" + nr + ")" : "");
 				boolean found = false;
@@ -1069,6 +1070,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					connectionList.add(0, ci);
 					int i = 0;
 					connectionsTable.getSelectionModel().setSelectionInterval(i, i);
+					connectionsTable.scrollRectToVisible(connectionsTable.getCellRect(i, 0, true));
 					refresh();
 					store();
 					break;
@@ -1079,7 +1081,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
 		if (currentConnection == null) return;
-		if (edit(currentConnection, false)) {
+		if (edit(currentConnection, false, false)) {
 			refresh();
 			store();
 		}
@@ -1101,8 +1103,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * @param forNew 
 	 * @return <code>true</code> if connection has been edited
 	 */
-	private boolean edit(ConnectionInfo ci, boolean forNew) {
-		return new DbConnectionDetailsEditor(parent, jdbcHelpURL, forNew).edit(ci, connectionList, executionContext);
+	private boolean edit(ConnectionInfo ci, boolean forNew, boolean forClone) {
+		return new DbConnectionDetailsEditor(parent, jdbcHelpURL, forNew, forClone, dataModelAware).edit(ci, connectionList, executionContext);
 	}
 
 	private void connect() {
@@ -1244,50 +1246,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				.getDefaultSchema(session, currentConnection.user);
 		session.shutDown();
 		return schemas;
-	}
-
-	/**
-	 * Selects the DB-schema to analyze.
-	 * 
-	 * @param isDefaultSchema
-	 *            array with a least one field to be set to true if the selected
-	 *            schema is the default schema
-	 * @return the DB-schema to analyze
-	 */
-	public String selectDBSchema(Component parent, boolean[] isDefaultSchema)
-			throws Exception {
-		BasicDataSource dataSource = new BasicDataSource(currentConnection.driverClass,
-				currentConnection.url, currentConnection.user,
-				currentConnection.password, 0, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2, currentConnection.jar3, currentConnection.jar4));
-		Session session = new Session(dataSource, dataSource.dbms, executionContext.getIsolationLevel());
-		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
-				session, currentConnection.user);
-		String defaultSchema = JDBCMetaDataBasedModelElementFinder
-				.getDefaultSchema(session, currentConnection.user);
-		session.shutDown();
-		isDefaultSchema[0] = false;
-		if (schemas.size() == 1) {
-			if (schemas.get(0).equalsIgnoreCase(currentConnection.user)) {
-				isDefaultSchema[0] = true;
-			}
-			return schemas.get(0);
-		}
-		if (schemas.isEmpty()) {
-			isDefaultSchema[0] = true;
-			return null;
-		}
-		String s = (String) JOptionPane.showInputDialog(parent,
-				"Select schema to analyze", "Schema",
-				JOptionPane.QUESTION_MESSAGE, null, schemas.toArray(),
-				defaultSchema);
-		if (s == null) {
-			isDefaultSchema[0] = true;
-			return "";
-		}
-		if (s.equalsIgnoreCase(defaultSchema)) {
-			isDefaultSchema[0] = true;
-		}
-		return s;
 	}
 
 	/**

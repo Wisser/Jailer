@@ -37,6 +37,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
@@ -323,6 +324,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		boolean saveNeedsSave = needsSave;
 		initComponents();
 
+		connectivityState.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				extractionModelFrame.reconnectToDB(null);
+			}
+		});
+		
 		assocStatsLabel.setText("");
 		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1557,7 +1565,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(focusPanel);
-        focusPanel.setBounds(0, 0, 287, 33);
+        focusPanel.setBounds(0, 0, 291, 33);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -2041,7 +2049,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         legende.add(ignored, gridBagConstraints);
 
-        jPanel11.add(legende, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
+        jPanel11.add(legende, gridBagConstraints);
 
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -3956,8 +3966,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JLabel limitLabel;
     private javax.swing.JButton mapColumns;
     private javax.swing.JPanel messagePanel;
-    private javax.swing.JLabel modelName;
-    private javax.swing.JLabel modelPath;
+    javax.swing.JLabel modelName;
+    javax.swing.JLabel modelPath;
     public javax.swing.JPanel neighborHolderPanel;
     private javax.swing.JLabel openSubjectConditionEditor;
     private javax.swing.JButton openXmlSettings;

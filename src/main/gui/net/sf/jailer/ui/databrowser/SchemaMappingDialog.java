@@ -37,6 +37,7 @@ import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox2;
+import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.UIUtil;
 
 /**
@@ -65,7 +66,10 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 			if (windowAncestor != null) {
 				UIUtil.setWaitCursor(windowAncestor);
 			}
-			String defSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+			String defSchema = (String) session.getSessionProperty(SessionForUI.class, "defSchema");						
+			if (defSchema == null) {
+				defSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+			}
 			if (!defSchema.isEmpty()) {
 				defaultSchemaName = defSchema;
 			}

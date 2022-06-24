@@ -1478,6 +1478,7 @@ public class DataBrowser extends javax.swing.JFrame {
         legende1 = new javax.swing.JPanel();
         modelName = new javax.swing.JLabel();
         modelPath = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         jSeparator19 = new javax.swing.JSeparator();
         legende = new javax.swing.JPanel();
         dependsOn = new javax.swing.JLabel();
@@ -1676,6 +1677,11 @@ public class DataBrowser extends javax.swing.JFrame {
 
         modelName.setFont(modelName.getFont().deriveFont(modelName.getFont().getSize()+1f));
         modelName.setText("Data Model \"Demo\"");
+        modelName.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                modelNameMouseClicked(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1686,12 +1692,23 @@ public class DataBrowser extends javax.swing.JFrame {
         modelPath.setFont(modelPath.getFont().deriveFont(modelPath.getFont().getSize()+1f));
         modelPath.setForeground(java.awt.Color.gray);
         modelPath.setText("/home/jailer/datamodel/");
+        modelPath.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                modelPathMouseClicked(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         legende1.add(modelPath, gridBagConstraints);
+
+        jLabel2.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        legende1.add(jLabel2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -1751,6 +1768,11 @@ public class DataBrowser extends javax.swing.JFrame {
 
         schemaName.setFont(schemaName.getFont().deriveFont(schemaName.getFont().getSize()+1f));
         schemaName.setText("Schema");
+        schemaName.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                schemaNameMouseClicked(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1771,6 +1793,11 @@ public class DataBrowser extends javax.swing.JFrame {
 
         connectivityState.setFont(connectivityState.getFont().deriveFont(connectivityState.getFont().getSize()+1f));
         connectivityState.setText("offline");
+        connectivityState.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                connectivityStateMouseClicked(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -2306,7 +2333,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(closeAllMenuItem);
         jMenu1.add(jSeparator7);
 
-        reconnectMenuItem.setText("Reconnect...");
+        reconnectMenuItem.setText("Connect to Database...");
         reconnectMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reconnectMenuItemActionPerformed(evt);
@@ -2703,6 +2730,30 @@ public class DataBrowser extends javax.swing.JFrame {
     	setZoomWithMouseWheel(zoom);
     	UISettings.store(UISettings.ZOOM_WITH_MOUSE_WHEEL, zoomWithMouseWheel = zoomWithMouseWheelMenuItem.isSelected());
     }//GEN-LAST:event_zoomWithMouseWheelMenuItemActionPerformed
+
+    private void connectivityStateMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_connectivityStateMouseClicked
+        if (SwingUtilities.isLeftMouseButton(evt)) {
+            reconnectMenuItemActionPerformed(null);
+        }
+    }//GEN-LAST:event_connectivityStateMouseClicked
+
+    private void schemaNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_schemaNameMouseClicked
+        if (SwingUtilities.isLeftMouseButton(evt)) {
+            reconnectMenuItemActionPerformed(null);
+        }
+    }//GEN-LAST:event_schemaNameMouseClicked
+
+    private void modelNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_modelNameMouseClicked
+       if (SwingUtilities.isLeftMouseButton(evt)) {
+            newBrowserjMenuItemActionPerformed(null);
+        }
+    }//GEN-LAST:event_modelNameMouseClicked
+
+    private void modelPathMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_modelPathMouseClicked
+        if (SwingUtilities.isLeftMouseButton(evt)) {
+            newBrowserjMenuItemActionPerformed(null);
+        }
+    }//GEN-LAST:event_modelPathMouseClicked
 
 	private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_exportDataMenuItemActionPerformed
 		desktop.createExtractionModel(true);
@@ -3401,6 +3452,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel19;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
