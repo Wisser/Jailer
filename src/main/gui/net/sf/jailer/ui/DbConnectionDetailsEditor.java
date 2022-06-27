@@ -203,12 +203,14 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			dataModelComboBox.addItemListener(l = new ItemListener() {
 				@Override
 				public void itemStateChanged(ItemEvent e) {
-					if ("".equals(dataModelComboBox.getSelectedItem())) {
-						dataModelComboBox.setBackground(new Color(255, 200, 200));
-						jLabel5.setForeground(Color.red);
-					} else {
-						jLabel5.setForeground(fg);
-						dataModelComboBox.setBackground(bg);
+					if (!dataModelAware) {
+						if ("".equals(dataModelComboBox.getSelectedItem())) {
+							dataModelComboBox.setBackground(new Color(255, 200, 200));
+							jLabel5.setForeground(Color.red);
+						} else {
+							jLabel5.setForeground(fg);
+							dataModelComboBox.setBackground(bg);
+						}
 					}
 				}
 			});
@@ -1417,7 +1419,13 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-    	if (fillConnectionInfo()) {
+    	boolean ok = fillConnectionInfo();
+		if (!dataModelAware && "".equals(dataModelComboBox.getSelectedItem())) {
+			JOptionPane.showMessageDialog(isVisible()? this : parent, "Please specify the Data Model or create a new one.", "No Data Model", JOptionPane.ERROR_MESSAGE);
+			dataModelComboBox.grabFocus();
+			ok = false;
+		}
+		if (ok) {
     		if (needsTest) {
     			if (!DbConnectionDialog.testConnection(isVisible()? this : parent, ci, createDownloadButton())) {
     				return;
@@ -1459,11 +1467,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			ci.user = user.getText().trim();
 			ci.password = password.getText().trim();
 	       	ci.dataModelFolder = (String) dataModelComboBox.getSelectedItem();
-		}
-		if ("".equals(dataModelComboBox.getSelectedItem())) {
-			JOptionPane.showMessageDialog(isVisible()? this : parent, "Please specify the Data Model or create a new one.", "No Data Model", JOptionPane.ERROR_MESSAGE);
-			dataModelComboBox.grabFocus();
-			ok = false;
 		}
 		return ok;
 	}
