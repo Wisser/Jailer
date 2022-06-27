@@ -1380,7 +1380,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel10.add(dataModelComboBox, gridBagConstraints);
 
-        newDataModelButton.setText("Create New Datamodel");
+        newDataModelButton.setText("Create New Data Model");
         newDataModelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newDataModelButtonActionPerformed(evt);
