@@ -31,6 +31,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -182,6 +184,9 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 					return modelDetails.get(o1).a.compareToIgnoreCase(modelDetails.get(o2).a);
 				}
 			});
+			if (!dataModelAware && !modelList.contains("")) {
+				modelList.add(0, "");
+			}
 			dataModelComboBox.setModel(new DefaultComboBoxModel<String>(modelList.toArray(new String[0])));
 			ListCellRenderer<? super String> renderer = dataModelComboBox.getRenderer();
 			dataModelComboBox.setRenderer(new DefaultListCellRenderer() {
@@ -189,9 +194,25 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 						boolean cellHasFocus) {
 					final Pair<String, Long> pair = modelDetails.get((String) value);
-					return renderer.getListCellRendererComponent((JList<String>) list, pair == null? (String) value : pair.a, index, isSelected, cellHasFocus);
+					return renderer.getListCellRendererComponent((JList<String>) list, "".equals(value)? "" : pair == null? (String) value : pair.a, index, isSelected, cellHasFocus);
 				}
 			});
+			Color fg = jLabel5.getForeground();
+			Color bg = dataModelComboBox.getBackground();
+			ItemListener l;
+			dataModelComboBox.addItemListener(l = new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					if ("".equals(dataModelComboBox.getSelectedItem())) {
+						dataModelComboBox.setBackground(new Color(255, 200, 200));
+						jLabel5.setForeground(Color.red);
+					} else {
+						jLabel5.setForeground(fg);
+						dataModelComboBox.setBackground(bg);
+					}
+				}
+			});
+			l.itemStateChanged(null);
 		} finally {
 			DataModelManager.setCurrentModelSubfolder(cmsf, executionContext);
 		}
@@ -289,6 +310,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	}
 
 	private List<Pattern> pattern = new ArrayList<Pattern>();
+	private final boolean dataModelAware;
 	
 	/** Creates new form DbConnectionDialog 
 	 * @param forNew 
@@ -299,6 +321,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		setModal(true);
 		this.parent = parent;
 		this.needsTest = needsTest;
+		this.dataModelAware = dataModelAware;
 		initComponents();
 		newDataModelButton.setVisible(!dataModelAware);
 		ImageIcon scaledWarnIcon = UIUtil.scaleIcon(jtdsWarnLabel, warnIcon, 1);
@@ -1436,6 +1459,11 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 			ci.user = user.getText().trim();
 			ci.password = password.getText().trim();
 	       	ci.dataModelFolder = (String) dataModelComboBox.getSelectedItem();
+		}
+		if ("".equals(dataModelComboBox.getSelectedItem())) {
+			JOptionPane.showMessageDialog(isVisible()? this : parent, "Please specify the Data Model or create a new one.", "No Data Model", JOptionPane.ERROR_MESSAGE);
+			dataModelComboBox.grabFocus();
+			ok = false;
 		}
 		return ok;
 	}
