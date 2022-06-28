@@ -795,12 +795,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			try {
 				int c = 0;
 				ResultSet rs = getTables(session, schemaPattern, tableNamePattern, types);
+				dsT3 = System.currentTimeMillis();
+				Set<String> ds = new HashSet<String>();
 				while (rs.next()) {
 					final String key = rs.getString(1) + "." + rs.getString(2) + " " + rs.getString(4);
 					schema.put(key, schema.containsKey(key)? schema.get(key) + 1 : 1);
 					c++;
+					ds.add(rs.getString(3));
 				}
 				rs.close();
+				dsTabs3 = ds;
 				return "TabInfo: " + c + " - " + schema;
 			} catch (Throwable t) {
 				return t.getMessage();
@@ -919,6 +923,27 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		}
 		return session.getMetaData().getIndexInfo(null, schemaPattern, tableNamePattern, false, true);
 	}
+	
+	// TODO debug infos, to be removed
+	public static long dsT1, dsT2, dsT3;
+	public static Set<String> dsTabs1, dsTabs2, dsTabs3;
+	private static String ds(String subject) {
+		long t = System.currentTimeMillis();
+		String info = "DS: (" + Math.max(-1, t - dsT1) + ", " + Math.max(-1, t - dsT2) + ", " + Math.max(-1, t - dsT3) + ") ";
+		info += "(" + (dsTabs1 == null? null : dsTabs1.contains(subject)) + ", " + (dsTabs2 == null? null : dsTabs2.contains(subject)) + ", " + (dsTabs3 == null? null : dsTabs3.contains(subject)) + ") ";
+		info += dsDiff("1-2", dsTabs1, dsTabs2);
+		info += dsDiff("1-3", dsTabs1, dsTabs3);
+		info += dsDiff("2-3", dsTabs2, dsTabs3);
+		return info;
+	}
+
+	private static String dsDiff(String t, Set<String> t1, Set<String> t2) {
+		Set<String> d1 = new HashSet<String>(t1);
+		d1.removeAll(t2);
+		Set<String> d2 = new HashSet<String>(t2);
+		d2.removeAll(t1);
+		return t + ":" + (d1.size() > 10? "#" + d1.size() : d1) + "/" + (d2.size() > 10? "#" + d2.size() : d2) + " ";
+	}
 
 	/**
 	 * Calls {@link DatabaseMetaData#getColumns(String, String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
@@ -959,16 +984,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 									resultSet = session.getMetaData().getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
 								}
 								String info = schemaPattern + ", " + tableNamePattern + ", " + columnNamePattern + ", " + withCaching + ", " + onlyIfCached + ", " + tableType + ", " + (session.dbms != null? session.dbms.getId() : null);
-								info += " " + metaDataCache.toString();
+								info += " " + metaDataCache.info(tableNamePattern);
 								if (resultSet.next()) {
 									if (!warnedF) {
 										warnedF = true;
-										LogUtil.warn(new RuntimeException("cache miss: " + info + " " + tableDebugSupplier.get()));
+										LogUtil.warn(new RuntimeException("cache miss: " + info + " " + tableDebugSupplier.get() + ", " + ds(tableNamePattern)));
 									}
 								} else {
 									if (!warnedNF) {
 										warnedNF = true;
-										LogUtil.warn(new RuntimeException("cache hit: " + info + " " + tableDebugSupplier.get()));
+										LogUtil.warn(new RuntimeException("cache hit: " + info + " " + tableDebugSupplier.get() + ", " + ds(tableNamePattern)));
 									}
 								}
 								resultSet.close();

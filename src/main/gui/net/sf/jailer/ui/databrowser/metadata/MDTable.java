@@ -189,7 +189,7 @@ public class MDTable extends MDObject {
             try {
                 MetaDataSource metaDataSource = getMetaDataSource();
                 synchronized (metaDataSource.getSession().getMetaData()) {
-                    ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%",
+                	ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%",
                     		cached, false, isSynonym? "SYNONYM" : null);
                     while (resultSet.next()) {
                         String colName = metaDataSource.getQuoting().quote(resultSet.getString(4));
@@ -258,6 +258,7 @@ public class MDTable extends MDObject {
                     }
                     resultSet.close();
                 }
+                loaded.set(true);
             } catch (Exception e) {
             	retryReading = true;
             	if (!warned && !getSchema().getMetaDataSource().getSession().isDown()) {
@@ -265,8 +266,6 @@ public class MDTable extends MDObject {
             		warned = true;
             	}
             	throw e;
-            } finally {
-                loaded.set(true);
             }
         }
     }
