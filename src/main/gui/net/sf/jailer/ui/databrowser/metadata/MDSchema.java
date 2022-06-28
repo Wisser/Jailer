@@ -24,9 +24,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -39,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.Quoting;
@@ -154,10 +157,14 @@ public class MDSchema extends MDObject {
 					tables = new ArrayList<MDTable>();
 					MetaDataSource metaDataSource = getMetaDataSource();
 					synchronized (metaDataSource.getSession().getMetaData()) {
+						JDBCMetaDataBasedModelElementFinder.dsT1 = System.currentTimeMillis();
 						ResultSet rs = metaDataSource.readTables(getName());
 						Map<String, Runnable> loadJobs = new TreeMap<String, Runnable>();
+						Set<String> ds1 = new HashSet<String>();
 						while (rs.next()) {
-							String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
+							final String name = rs.getString(3);
+							String tableName = metaDataSource.getQuoting().quote(name);
+							ds1.add(name);
 							final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)),
 									"SYNONYM".equalsIgnoreCase(rs.getString(4))
 								 || "ALIAS".equalsIgnoreCase(rs.getString(4)));
@@ -177,6 +184,7 @@ public class MDSchema extends MDObject {
 								});
 							}
 						}
+						JDBCMetaDataBasedModelElementFinder.dsTabs1 = ds1;
 						rs.close();
 						
 						for (Runnable loadJob : loadJobs.values()) {

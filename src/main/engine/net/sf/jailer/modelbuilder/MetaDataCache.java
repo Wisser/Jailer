@@ -154,7 +154,9 @@ public class MetaDataCache {
 	 */
 	public static MetaDataCache readColumns(Session session, String schema) {
 		_log.info("reading columns (may take some time)...");
-
+		JDBCMetaDataBasedModelElementFinder.dsT2 = System.currentTimeMillis();
+		Set<String> ds2 = new HashSet<String>();
+		
 		MetaDataCache metaDataCache = new MetaDataCache();
 		ResultSet rs;
 		try {
@@ -193,6 +195,7 @@ public class MetaDataCache {
 				String table = (String) row[2];
 
 				List<Object[]> rowList = metaDataCache.cache.get(table);
+				ds2.add(table);
 				if (rowList == null) {
 					rowList = new LinkedList<Object[]>();
 					metaDataCache.cache.put(table, rowList);
@@ -201,7 +204,7 @@ public class MetaDataCache {
 			}
 			metaDataCache.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types, typeNames);
 			rs.close();
-
+			JDBCMetaDataBasedModelElementFinder.dsTabs2 = ds2;
 			if (metaDataCache.cache.isEmpty()) {
 				metaDataCache.cache = null;
 			}
@@ -270,12 +273,12 @@ public class MetaDataCache {
 		}
 	}
 	
-	@Override
-	public String toString() {
+	public String info(String subject) {
 		try {
 			Set<String> schema = new HashSet<String>();
 			cache.forEach((k, v) -> v.forEach(c-> schema.add(c[0] + "." + c[1])));
-			return "MetaDataCache [cache=" + cache.entrySet().stream().map(e -> e.getValue().size()).collect(Collectors.summarizingInt(n -> n)) + "/" + schema + "]";
+			return "MetaDataCache [cache=" + cache.entrySet().stream().map(e -> e.getValue().size()).collect(Collectors.summarizingInt(n -> n)) + "/" + schema + "]" +
+				cache.get(subject);
 		} catch (Throwable t) {
 			return t.getMessage();
 		}
