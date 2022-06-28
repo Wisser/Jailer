@@ -1152,25 +1152,39 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					return;
 				}
 
-				double lastPMIndex = -1;
-				for (int i = 0; i < maxI; ++i) {
-					int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
-					if (mi >= rows.size()) {
-						continue;
+				int c = 0;
+				int all = 0;
+				for (boolean count: new boolean[] { true, false }) {
+					double lastPMIndex = -1;
+					for (int i = 0; i < maxI; ++i) {
+						int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
+						if (mi >= rows.size()) {
+							continue;
+						}
+						Row row = rows.get(mi);
+						double parentModelIndex = useInheritedBlockNumbers? row.getInheritedParentModelIndex() : row.getParentModelIndex();
+						++all;
+						if (parentModelIndex != lastPMIndex) {
+							lastPMIndex = parentModelIndex;
+							if (count) {
+								++c;
+							} else {
+								int vi = i;
+								g2d.setColor(color);
+								Rectangle r = rowsTable.getCellRect(vi, 0, false);
+								x[0] = (int) r.getMinX();
+								y[0] = (int) r.getMinY();
+								r = rowsTable.getCellRect(vi, rowsTable.getColumnCount() - 1, false);
+								x[1] = (int) r.getMaxX();
+								y[1] = (int) r.getMinY();
+								g2d.drawPolyline(x, y, 2);
+							}
+						}
 					}
-					Row row = rows.get(mi);
-					double parentModelIndex = useInheritedBlockNumbers? row.getInheritedParentModelIndex() : row.getParentModelIndex();
-					if (parentModelIndex != lastPMIndex) {
-						lastPMIndex = parentModelIndex;
-						int vi = i;
-						g2d.setColor(color);
-						Rectangle r = rowsTable.getCellRect(vi, 0, false);
-						x[0] = (int) r.getMinX();
-						y[0] = (int) r.getMinY();
-						r = rowsTable.getCellRect(vi, rowsTable.getColumnCount() - 1, false);
-						x[1] = (int) r.getMaxX();
-						y[1] = (int) r.getMinY();
-						g2d.drawPolyline(x, y, 2);
+					if (count) {
+						if (c == all) {
+							break;
+						}
 					}
 				}
 			}
