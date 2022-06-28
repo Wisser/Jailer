@@ -243,7 +243,8 @@ public class TableDetailsView extends javax.swing.JPanel {
 					});
 				}
 				columnsPanel.removeAll();
-				java.awt.Color bgDarker = UIUtil.TABLE_BACKGROUND_COLOR_2;
+				java.awt.Color bgDarker = new Color(248, 255, 248);
+				jPanel2.setBackground(UIUtil.TABLE_BACKGROUND_COLOR_2);
 				boolean hasConstraints = false;
 				for (Column column: columns) {
 					hasConstraints = hasConstraints || !column.isNullable  || column.isVirtual ||  column.isIdentityColumn;
@@ -261,7 +262,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 					
 					JPanel panel = new JPanel();
 					rows.put(column.name, panel);
-					if (y % 2 == 0) {
+					if (y % 2 != 0) {
 						panel.setOpaque(false);
 					} else {
 						panel.setBackground(bgDarker);
@@ -343,7 +344,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 					        label = new JLabel();
 					        label.setForeground(Color.gray);
 					        JPanel panelC = new JPanel();
-							if (y % 2 == 0) {
+							if (y % 2 != 0) {
 								panelC.setOpaque(false);
 							} else {
 								panelC.setBackground(bgDarker);

@@ -925,15 +925,17 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 	
 	// TODO debug infos, to be removed
-	public static long dsT1, dsT2, dsT3;
+	public static long dsT0, dsT1, dsT2, dsT3;
 	public static Set<String> dsTabs1, dsTabs2, dsTabs3;
+	public static DataModel dsDataModel;
 	private static String ds(String subject) {
 		long t = System.currentTimeMillis();
-		String info = "DS: (" + Math.max(-1, t - dsT1) + ", " + Math.max(-1, t - dsT2) + ", " + Math.max(-1, t - dsT3) + ") ";
+		String info = "DS: (" + Math.max(-1, t - dsT0) + ", " + Math.max(-1, t - dsT1) + ", " + Math.max(-1, t - dsT2) + ", " + Math.max(-1, t - dsT3) + ") ";
 		info += "(" + (dsTabs1 == null? null : dsTabs1.contains(subject)) + ", " + (dsTabs2 == null? null : dsTabs2.contains(subject)) + ", " + (dsTabs3 == null? null : dsTabs3.contains(subject)) + ") ";
 		info += dsDiff("1-2", dsTabs1, dsTabs2);
 		info += dsDiff("1-3", dsTabs1, dsTabs3);
 		info += dsDiff("2-3", dsTabs2, dsTabs3);
+		info += "DM: " + (dsDataModel == null? null : dsDataModel.getTable(subject) == null? "noTab" : dsDataModel.getTable(subject).getColumns());
 		return info;
 	}
 
