@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "12.4.3.2";
+	public static final String VERSION = "12.4.4";
 
 	/**
 	 * The Jailer working tables version.
@@ -47,3 +47,10 @@ public class JailerVersion {
 }
 
 // TODO JSQLParser update
+
+// TODO
+// TODO nach "driver jar not found" jar-TesxtFields als "required" darstellen (rot)
+// TODO unused "jdbcJar"-Textfields disabled?
+
+
+
