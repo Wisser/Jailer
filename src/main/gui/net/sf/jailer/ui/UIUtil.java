@@ -1074,6 +1074,7 @@ public class UIUtil {
     private static long lastIssueTS = 0;
 
     public static void sendIssue(final String type,  String theIssue) {
+    	String threadName = Thread.currentThread().getName();
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -1081,7 +1082,7 @@ public class UIUtil {
 					final int MAX_CL = 3900;
 					int maxEIssueLength = MAX_CL + 10;
 					String ipf = ++issueCount + "z" + (lastIssueTS != 0? (System.currentTimeMillis() - lastIssueTS) / 1000 + "s. " : "");
-					ipf += Thread.currentThread().getName();
+					ipf += threadName;
 					lastIssueTS = System.currentTimeMillis();
 					String url;
 					int i = 0;
@@ -2267,42 +2268,6 @@ public class UIUtil {
 				component.putClientProperty(propertyName, leadingComponent);
 			}
 		}
-	}
-
-	private static ReferenceQueue<Object> refQueue = new ReferenceQueue<Object>();
-	private static Map<Object, Object> refs = new IdentityHashMap<Object, Object>();
-
-	public static class ReferenceWithCleanup extends WeakReference<Object> {
-		private final Runnable cleanup;
-
-		public ReferenceWithCleanup(Object object, Runnable cleanup) {
-			super(object, refQueue);
-			this.cleanup = cleanup;
-			refs.put(this, this);
-		}
-
-		public void cleanUp() {
-			cleanup.run();
-		}
-	}
-
-	static {
-		Thread cleanupThread = new Thread() {
-			public void run() {
-				while (true) {
-					ReferenceWithCleanup ref;
-					try {
-						ref = (ReferenceWithCleanup) refQueue.remove();
-						refs.remove(this);
-					} catch (InterruptedException e) {
-						return;
-					}
-					ref.cleanUp();
-				}
-			}
-		};
-		cleanupThread.setDaemon(true);
-		cleanupThread.start();
 	}
 
 }
