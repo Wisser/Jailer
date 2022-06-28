@@ -1297,7 +1297,7 @@ public class UIUtil {
 	/**
 	 * Background color of even table rows.
 	 */
-	public static final Color TABLE_BACKGROUND_COLOR_1 = new Color(242, 255, 242);
+	public static final Color TABLE_BACKGROUND_COLOR_1 = new Color(244, 255, 244);
 
 	/**
 	 * Background color of odd table rows.
