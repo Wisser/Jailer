@@ -1,3 +1,13 @@
 **/*.iml
+*.log
+.cdsettings
+.connections
+.exportdata.ui
 .idea/
+.selecteddatamodel
+.uisettings
+!datamodel/Demo-Sakila
+!datamodel/Demo-Scott
+datamodel/*
 out/
+tmp/*.jm
