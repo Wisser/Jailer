@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -787,25 +788,31 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return session.getMetaData().getPrimaryKeys(null, schema, table);
 	}
 
-	private static Supplier<String> tableDebugSupplier = () -> "nothing";
-	
 	public static ResultSet getTables(Session session, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
 		tableDebugSupplier = () -> {
+			if (tsdResult != null) {
+				return tsdResult;
+			}
 			Map<String, Integer> schema = new HashMap<String, Integer>();
 			try {
 				int c = 0;
+				dsDubs.clear();
 				ResultSet rs = getTables(session, schemaPattern, tableNamePattern, types);
 				dsT3 = System.currentTimeMillis();
-				Set<String> ds = new HashSet<String>();
+				Map<String, String> ds = new HashMap<String, String>();
 				while (rs.next()) {
-					final String key = rs.getString(1) + "." + rs.getString(2) + " " + rs.getString(4);
+					final String typ = rs.getString(4);
+					final String key = rs.getString(1) + "." + rs.getString(2) + " " + typ;
 					schema.put(key, schema.containsKey(key)? schema.get(key) + 1 : 1);
 					c++;
-					ds.add(rs.getString(3));
+					if (ds.put(rs.getString(3), typ == null? "?" : typ) != null) {
+						dsDubs.add(rs.getString(3));
+					}
 				}
 				rs.close();
 				dsTabs3 = ds;
-				return "TabInfo: " + c + " - " + schema;
+				tsdResult = "TabInfo: " + c + " - " + schema;
+				return tsdResult;
 			} catch (Throwable t) {
 				return t.getMessage();
 			}
@@ -925,18 +932,40 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 	
 	// TODO debug infos, to be removed
+	private static Supplier<String> tableDebugSupplier = () -> "nothing";
+	private static String tsdResult;
 	public static long dsT0, dsT1, dsT2, dsT3;
-	public static Set<String> dsTabs1, dsTabs2, dsTabs3;
+	public static Set<String> dsTabs1, dsTabs2, dsDubs = new HashSet<String>();
+	public static Map<String, String> dsTabs3;
 	public static DataModel dsDataModel;
+	public static BiFunction<String, String, Boolean> dsSent;
 	private static String ds(String subject) {
-		long t = System.currentTimeMillis();
-		String info = "DS: (" + Math.max(-1, t - dsT0) + ", " + Math.max(-1, t - dsT1) + ", " + Math.max(-1, t - dsT2) + ", " + Math.max(-1, t - dsT3) + ") ";
-		info += "(" + (dsTabs1 == null? null : dsTabs1.contains(subject)) + ", " + (dsTabs2 == null? null : dsTabs2.contains(subject)) + ", " + (dsTabs3 == null? null : dsTabs3.contains(subject)) + ") ";
-		info += dsDiff("1-2", dsTabs1, dsTabs2);
-		info += dsDiff("1-3", dsTabs1, dsTabs3);
-		info += dsDiff("2-3", dsTabs2, dsTabs3);
-		info += "DM: " + (dsDataModel == null? null : dsDataModel.getTable(subject) == null? "noTab" : dsDataModel.getTable(subject).getColumns());
-		return info;
+		try {
+			boolean ok = true;
+			long t = System.currentTimeMillis();
+			String info = "DS: [[[" + Math.max(-1, t - dsT0) + ", " + Math.max(-1, t - dsT1) + ", " + Math.max(-1, t - dsT2) + ", " + Math.max(-1, t - dsT3) + "]]] ";
+			String tft;
+			info += tft = "(" + (dsTabs1 == null? null : dsTabs1.contains(subject)) + ", " + (dsTabs2 == null? null : dsTabs2.contains(subject)) + ", " + (dsTabs3 == null? null : dsTabs3.containsKey(subject)) + ") ";
+			if (!"(true, false, true) ".equals(tft)) {
+				ok = false;
+			}
+			if (dsTabs1 != null && dsTabs2 != null && dsTabs3 != null) {
+				info += dsDiff("1-2", dsTabs1, dsTabs2);
+				String d13;
+				info += d13 = dsDiff("1-3", dsTabs1, dsTabs3.keySet());
+				if (!"1-3:[]/[] ".equals(d13)) {
+					ok = false;
+				}
+				info += dsDiff("2-3", dsTabs2, dsTabs3.keySet());
+				info += "|" + dsTabs1.size() + "|" + dsTabs2.size() + "|" + dsTabs3.size() + "|";
+				info += " SubjectType:" + dsTabs3.get(subject);
+			}
+			info += " Dub:" + dsDubs.size() + dsDubs.contains(subject);
+			info += " DM: " + (dsDataModel == null? null : dsDataModel.getTable(subject) == null? "noTab" : dsDataModel.getTable(subject).getColumns());
+			return info + (ok? "!" : "");
+		} catch (Throwable t) {
+			return t.getMessage();
+		}
 	}
 
 	private static String dsDiff(String t, Set<String> t1, Set<String> t2) {
@@ -987,15 +1016,28 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 								}
 								String info = schemaPattern + ", " + tableNamePattern + ", " + columnNamePattern + ", " + withCaching + ", " + onlyIfCached + ", " + tableType + ", " + (session.dbms != null? session.dbms.getId() : null);
 								info += " " + metaDataCache.info(tableNamePattern);
+								
 								if (resultSet.next()) {
-									if (!warnedF) {
-										warnedF = true;
-										LogUtil.warn(new RuntimeException("cache miss: " + info + " " + tableDebugSupplier.get() + ", " + ds(tableNamePattern)));
+									String message = "cache miss: " + info + " " + tableDebugSupplier.get() + ", "
+											+ ds(tableNamePattern);
+									int i = message.endsWith("!") ? 0 : 1;
+									if (!warnedF[i]) {
+										warnedF[i] = true;
+										if (dsSent == null || !dsSent.apply("miss" + i,
+												message.replaceAll("\\[\\[\\[.*\\]\\]\\]", ""))) {
+											LogUtil.warn(new RuntimeException(message));
+										}
 									}
 								} else {
-									if (!warnedNF) {
-										warnedNF = true;
-										LogUtil.warn(new RuntimeException("cache hit: " + info + " " + tableDebugSupplier.get() + ", " + ds(tableNamePattern)));
+									String message = "cache hit: " + info + " " + tableDebugSupplier.get() + ", "
+											+ ds(tableNamePattern);
+									int i = message.endsWith("!") ? 0 : 1;
+									if (!warnedNF[i]) {
+										warnedNF[i] = true;
+										if (dsSent == null || !dsSent.apply("hit" + i,
+												message.replaceAll("\\[\\[\\[.*\\]\\]\\]", ""))) {
+											LogUtil.warn(new RuntimeException(message));
+										}
 									}
 								}
 								resultSet.close();
@@ -1021,8 +1063,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		}
 	}
 	
-	private static boolean warnedF = false;
-	private static boolean warnedNF = false;
+	private static boolean[] warnedF = new boolean[2];
+	private static boolean[] warnedNF = new boolean[2];
 
 	private static boolean setIncludeSynonyms(boolean includeSynonyms, Session session) {
 		try {

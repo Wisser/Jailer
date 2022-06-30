@@ -47,8 +47,18 @@ public class SessionForUI extends Session {
 	 * @param dbms the DBMS
 	 */
 	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean initInlineViewStyle, final Window w) throws SQLException {
+		return createSession(dataSource, dbms, isolationLevel, shutDownImmediatelly, initInlineViewStyle, false, w);
+	}
+	
+	/**
+	 * Creates a new session.
+	 * 
+	 * @param dataSource the data source
+	 * @param dbms the DBMS
+	 */
+	public static SessionForUI createSession(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean initInlineViewStyle, boolean testOnly, final Window w) throws SQLException {
 		Session.setThreadSharesConnection();
-		final SessionForUI session = new SessionForUI(dataSource, dbms, isolationLevel, shutDownImmediatelly);
+		final SessionForUI session = new SessionForUI(dataSource, dbms, isolationLevel, shutDownImmediatelly, testOnly);
 		final AtomicReference<Connection> con = new AtomicReference<Connection>();
 		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
 		session.connectionDialog = new JDialog(w, "Connecting");
@@ -59,14 +69,18 @@ public class SessionForUI extends Session {
 				Session.setThreadSharesConnection();
 				try {
 					Connection newCon = session.connectionFactory.getConnection();
-					if (initInlineViewStyle && !session.cancelled.get()) {
-						if (session.getInlineViewStyle() == null) {
-							session.setSessionProperty(SessionForUI.class, SUPPORT_WC_EDITOR, false);
+					if (testOnly) {
+						newCon.close();
+					} else {
+						if (initInlineViewStyle && !session.cancelled.get()) {
+							if (session.getInlineViewStyle() == null) {
+								session.setSessionProperty(SessionForUI.class, SUPPORT_WC_EDITOR, false);
+							}
 						}
-					}
-					if (!session.cancelled.get()) {
-						String defSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
-						session.setSessionProperty(SessionForUI.class, "defSchema", defSchema);						
+						if (!session.cancelled.get()) {
+							String defSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+							session.setSessionProperty(SessionForUI.class, "defSchema", defSchema);						
+						}
 					}
 					if (session.cancelled.get()) {
 						try {
@@ -119,6 +133,7 @@ public class SessionForUI extends Session {
 		return null;
 	}
 
+	private boolean testOnly;
 	private JPanel connectingPanel = new JPanel();
 	private JLabel jLabel1 = new JLabel();
 	private JButton cancelConnectingButton = new JButton();
@@ -129,9 +144,10 @@ public class SessionForUI extends Session {
 	 * Constructor.
 	 * @param shutDownImmediatelly 
 	 */
-	private SessionForUI(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly) throws SQLException {
+	private SessionForUI(DataSource dataSource, DBMS dbms, Integer isolationLevel, boolean shutDownImmediatelly, boolean testOnly) throws SQLException {
 		super(dataSource, dbms, isolationLevel);
 		this.shutDownImmediatelly = shutDownImmediatelly;
+		this.testOnly = testOnly;
 		connectingPanel.setBackground(java.awt.Color.white);
 
         jLabel1.setForeground(java.awt.Color.red);
@@ -162,25 +178,27 @@ public class SessionForUI extends Session {
 	@Override
 	public void shutDown() {
 		down.set(true);
-		if (shutDownImmediatelly) {
-			try {
-				super.shutDown();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		} else {
-			Thread thread = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						SessionForUI.super.shutDown();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+		if (!testOnly) {
+			if (shutDownImmediatelly) {
+				try {
+					super.shutDown();
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-			});
-			thread.setDaemon(true);
-			thread.start();
+			} else {
+				Thread thread = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							SessionForUI.super.shutDown();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+				thread.setDaemon(true);
+				thread.start();
+			}
 		}
 	}
 	
