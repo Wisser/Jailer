@@ -1098,8 +1098,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		initialRowHeight = rowsTable.getRowHeight();
 
 		rowsTable = new JTable() {
-			private int x[] = new int[2];
-			private int y[] = new int[2];
 			private Color color = new Color(0, 0, 200, 60);
 
 			@Override
@@ -1111,7 +1109,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				
 				int maxI = Math.min(rowsTable.getRowCount(), rows.size());
 				Rectangle visRect = rowsTable.getVisibleRect();
-
+				
 				RowSorter<? extends TableModel> sorter = getRowSorter();
 				if (sorter != null) {
 					maxI = sorter.getViewRowCount();
@@ -1122,7 +1120,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				g2d.setStroke(new BasicStroke(1));
 
 				int width = (int) (visRect.width * 1.4);
-
+				int x[] = new int[2];
+				int y[] = new int[2];
+				
 				for (int i = 0; i < maxI; ++i) {
 					int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
 					if (mi >= rows.size()) {
@@ -1151,7 +1151,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (!useInheritedBlockNumbers && BrowserContentPane.this.association != null && BrowserContentPane.this.association.isInsertDestinationBeforeSource()) {
 					return;
 				}
-
+				
 				int c = 0;
 				int all = 0;
 				for (boolean count: new boolean[] { true, false }) {
@@ -1184,6 +1184,38 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (count) {
 						if (c == all) {
 							break;
+						}
+					}
+				}
+				
+				if (BrowserContentPane.this.getQueryBuilderDialog() != null) { // SQL Console
+					int[] selectedRows = rowsTable.getSelectedRows();
+					if (selectedRows.length > 0) {
+						x[0] = Integer.MAX_VALUE;
+						y[0] = Integer.MAX_VALUE;
+						x[1] = Integer.MIN_VALUE;
+						y[1] = Integer.MIN_VALUE;
+						for (int i: selectedRows) {
+							int vi = i;
+							Rectangle r = rowsTable.getCellRect(vi, 0, false);
+							x[0] = Math.min((int) r.getMinX(), x[0]);
+							y[0] = Math.min((int) r.getMinY(), y[0]);
+							r = rowsTable.getCellRect(vi, rowsTable.getColumnCount() - 1, false);
+							x[1] = Math.max((int) r.getMaxX(), x[1]);
+							y[1] = Math.max((int) r.getMaxY(), y[1]);
+						}
+						x[0] = (int) Math.max(visRect.getMinX(), x[0]) + 2;
+						y[0] = (int) Math.max(visRect.getMinY(), y[0]);
+						x[1] = (int) Math.min(visRect.getMaxX(), x[1]) - 2;
+						y[1] = (int) Math.min(visRect.getMaxY(), y[1]);
+						if (x[0] < x[1] && y[0] < y[1]) {
+							g2d.setColor(UIUtil.BG_FLATMOUSEOVER);
+							BasicStroke stroke = new BasicStroke();
+							g2d.setStroke(stroke);
+							g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
+							g2d.setColor(new Color(0, 0, 200, 100));
+							g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) (System.currentTimeMillis() / 50.0 % 16)));
+							g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
 						}
 					}
 				}
@@ -1350,8 +1382,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2_EM = new Color(255, 236, 236);
 			final Color BG3 = new Color(192, 236, 255);
 			final Color BG3_2 = new Color(184, 226, 255);
-			final Color BG4 = new Color(122, 210, 255, 200);
-			final Color BG4_2 = new Color(120, 196, 255, 200);
+			final Color BG4 = BG3; // new Color(122, 210, 255, 200);
+			final Color BG4_2 = BG3_2; // = new Color(120, 196, 255, 200);
 			final Color BG4_LIGHT = new Color(80, 200, 255, 200);
 			final Color FG1 = UIUtil.FG_PK;
 			final Color FG2 = UIUtil.FG_FK;
