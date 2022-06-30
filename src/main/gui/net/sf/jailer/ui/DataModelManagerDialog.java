@@ -421,7 +421,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		yellowdotLabel.setIcon(UIUtil.scaleIcon(yellowdotLabel, yellowDotImg));
 		bluedotLabel1.setText(null);
 		yellowdotLabel.setText(null);
-		
+
 		String linkS = "https://wisser.github.io/Jailer/exporting-data.htm";
 		LightBorderSmallButton helpButton = new LightBorderSmallButton(UIUtil.scaleIcon(yellowdotLabel, helpImg)) {
 			@Override
@@ -491,8 +491,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		moduleSubsetterPanel.setBorder(emtypBorderS);
 		
 		AtomicInteger selectedModule = new AtomicInteger(0);
-		
+		JButton deselButton = new JButton("Help", UIUtil.scaleIcon(yellowdotLabel, helpImg));
+
 		Runnable switchToNone = ()-> {
+			deselButton.setVisible(false);
 			selectedModule.set(0);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "none");
 			dmmdSubsetter.mainContentPanel.setBackground(null);
@@ -505,6 +507,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			openWelcomeDialog(null);
 		};
 		Runnable switchToSubsetter = ()-> {
+			deselButton.setVisible(true);
 			selectedModule.set(1);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "subsetter");
 			dmmdSubsetter.mainContentPanel.setBackground(bgSubsetter);
@@ -517,6 +520,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			openWelcomeDialog(null);
 		};
 		Runnable switchToDataBrowser = ()-> {
+			deselButton.setVisible(true);
 			selectedModule.set(2);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "databrowser");
 			dmmdBrowser.mainContentPanel.setBackground(bgBrowser);
@@ -528,6 +532,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			titelSubsetterLabel.setIcon(null);
 			openWelcomeDialog(dmmdBrowser);
 		};
+		deselButton.addActionListener(e -> switchToNone.run());
 
 		moduleDataBrowserToggleButton = new LightBorderSmallButton(
 				modulBrowserImg) {
@@ -541,19 +546,20 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 			@Override
 			protected Color getSelectedBackgroundColor() {
-				if (selectedModule.get() != 2) {
-					return super.getSelectedBackgroundColor();
-				} else {
-					return new Color(245, 245, 245);
-				}
+				return bgBrowser;
+//				if (selectedModule.get() != 2) {
+//					return super.getSelectedBackgroundColor();
+//				} else {
+//					return new Color(245, 245, 245);
+//				}
 			}
 			@Override
 			protected void onClick(MouseEvent e) {
-				if (selectedModule.get() != 2) {
+//				if (selectedModule.get() != 2) {
 					switchToDataBrowser.run();
-				} else {
-					switchToNone.run();
-				}
+//				} else {
+//					switchToNone.run();
+//				}
 				onMouseExited();
 			}
 		};
@@ -570,22 +576,30 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 			@Override
 			protected Color getSelectedBackgroundColor() {
-				if (selectedModule.get() != 1) {
-					return super.getSelectedBackgroundColor();
-				} else {
-					return new Color(245, 245, 245);
-				}
+				return bgSubsetter;
+//				if (selectedModule.get() != 1) {
+//					return super.getSelectedBackgroundColor();
+//				} else {
+//					return new Color(245, 245, 245);
+//				}
 			}
 			@Override
 			protected void onClick(MouseEvent e) {
-				if (selectedModule.get() != 1) {
+//				if (selectedModule.get() != 1) {
 					switchToSubsetter.run();
-				} else {
-					switchToNone.run();
-				}
+//				} else {
+//					switchToNone.run();
+//				}
 				onMouseExited();
 			}
 		};
+		
+		gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        modulesPanel.add(deselButton, gridBagConstraints);
+        
 		moduleSubsetterToggleButton.setBorder(null);
 		moduleDataBrowserToggleButton.setBorder(null);
 	
