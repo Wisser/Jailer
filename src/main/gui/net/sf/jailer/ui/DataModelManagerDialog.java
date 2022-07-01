@@ -476,7 +476,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		subsetterPanel.add(dmmdSubsetter.mainContentPanel);
 		dataBrowserPanel.add(dmmdBrowser.mainContentPanel);
 
-		final Color bgBrowser = new Color(240, 244, 255);
+		final Color bgBrowser = new Color(244, 250, 255);
 		final Color bgSubsetter = new Color(255, 255, 244);
 		
 		moduleDataBrowserPanel.setBackground(bgBrowser);
