@@ -1393,7 +1393,17 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		this.parent = parent;
 	}
 
-    private static ImageIcon warnIcon;
+	public void selectAlias(String alias) {
+		for (int j = 0; j < connectionList.size(); ++j) {
+			if (alias != null && alias.equals(connectionList.get(j).alias)) {
+				connectionsTable.getSelectionModel().setSelectionInterval(j, j);
+				connectionsTable.scrollRectToVisible(connectionsTable.getCellRect(j, 0, true));
+				break;
+			}
+		}
+	}
+
+	private static ImageIcon warnIcon;
     private static ImageIcon scaledWarnIcon;
     private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;

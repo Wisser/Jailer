@@ -1355,11 +1355,23 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		});
 		if (all) {
+			if (dbConnectionDialog != null && dbConnectionDialog.currentConnection != null) {
+				String alias = dbConnectionDialog.currentConnection.alias;
+				UIUtil.invokeLater(8, () -> {
+					dialog.selectAlias(alias);
+				});
+			}
 			dbConnectionDialog = dialog;
 			connectionDialogPanel.removeAll();
 			connectionDialogPanel.add(dialog.mainPanel);
 			dialog.borderPanel.setBorder(null);
 		} else {
+			if (recUsedConnectionDialog != null && recUsedConnectionDialog.currentConnection != null) {
+				String alias = recUsedConnectionDialog.currentConnection.alias;
+				UIUtil.invokeLater(8, () -> {
+					dialog.selectAlias(alias);
+				});
+			}
 			recUsedConnectionDialog = dialog;
 			recUsedConnectionDialogPanel.removeAll();
 			recUsedConnectionDialogPanel.add(dialog.mainPanel);
