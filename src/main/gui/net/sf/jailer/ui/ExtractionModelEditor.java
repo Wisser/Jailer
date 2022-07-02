@@ -2911,6 +2911,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		rootTable.setModel(getTableListModel());
 		rootTable.setSelectedItem(null);
 		rootTable.setSelectedItem(subjectTable.getSelectedItem());
+		rootTable.setPreferredSize(new Dimension(Math.min(rootTable.getPreferredSize().width, 300), rootTable.getPreferredSize().height));
 		updateAssocStats();
 	}
 
