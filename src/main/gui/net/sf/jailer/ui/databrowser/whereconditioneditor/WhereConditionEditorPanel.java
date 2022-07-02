@@ -875,7 +875,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		BiFunction<JComponent, Integer, JComponent> wrap = (c, y) -> {
 			JPanel panel = new JPanel(new GridBagLayout());
 			c.setForeground(Color.black);
-			panel.setBackground(y % 2 != 0? UIUtil.TABLE_BACKGROUND_COLOR_1 : UIUtil.TABLE_BACKGROUND_COLOR_2);
+			panel.setBackground(y % 2 == 0? UIUtil.TABLE_BACKGROUND_COLOR_1 : UIUtil.TABLE_BACKGROUND_COLOR_2);
 			panel.setOpaque(true);
 			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 1;

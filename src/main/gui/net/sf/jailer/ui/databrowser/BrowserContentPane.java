@@ -1145,49 +1145,47 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						g2d.fillRect(x[0], y[0], x[1] - x[0], y[1] - y[0]);
 					}
 				}
-
-				g2d.setPaint(null);
-
-				if (!useInheritedBlockNumbers && BrowserContentPane.this.association != null && BrowserContentPane.this.association.isInsertDestinationBeforeSource()) {
-					return;
-				}
 				
-				int c = 0;
-				int all = 0;
-				for (boolean count: new boolean[] { true, false }) {
-					double lastPMIndex = -1;
-					for (int i = 0; i < maxI; ++i) {
-						int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
-						if (mi >= rows.size()) {
-							continue;
+				if (!(!useInheritedBlockNumbers && BrowserContentPane.this.association != null && BrowserContentPane.this.association.isInsertDestinationBeforeSource())) {
+					g2d.setPaint(null);
+					g2d.setStroke(new BasicStroke(1));
+
+					int c = 0;
+					int all = 0;
+					for (boolean count: new boolean[] { true, false }) {
+						double lastPMIndex = -1;
+						for (int i = 0; i < maxI; ++i) {
+							int mi = sorter == null? i : sorter.convertRowIndexToModel(i);
+							if (mi >= rows.size()) {
+								continue;
+							}
+							Row row = rows.get(mi);
+							double parentModelIndex = useInheritedBlockNumbers? row.getInheritedParentModelIndex() : row.getParentModelIndex();
+							++all;
+							if (parentModelIndex != lastPMIndex) {
+								lastPMIndex = parentModelIndex;
+								if (count) {
+									++c;
+								} else {
+									int vi = i;
+									g2d.setColor(color);
+									Rectangle r = rowsTable.getCellRect(vi, 0, false);
+									x[0] = (int) r.getMinX();
+									y[0] = (int) r.getMinY();
+									r = rowsTable.getCellRect(vi, rowsTable.getColumnCount() - 1, false);
+									x[1] = (int) r.getMaxX();
+									y[1] = (int) r.getMinY();
+									g2d.drawPolyline(x, y, 2);
+								}
+							}
 						}
-						Row row = rows.get(mi);
-						double parentModelIndex = useInheritedBlockNumbers? row.getInheritedParentModelIndex() : row.getParentModelIndex();
-						++all;
-						if (parentModelIndex != lastPMIndex) {
-							lastPMIndex = parentModelIndex;
-							if (count) {
-								++c;
-							} else {
-								int vi = i;
-								g2d.setColor(color);
-								Rectangle r = rowsTable.getCellRect(vi, 0, false);
-								x[0] = (int) r.getMinX();
-								y[0] = (int) r.getMinY();
-								r = rowsTable.getCellRect(vi, rowsTable.getColumnCount() - 1, false);
-								x[1] = (int) r.getMaxX();
-								y[1] = (int) r.getMinY();
-								g2d.drawPolyline(x, y, 2);
+						if (count) {
+							if (c == all) {
+								break;
 							}
 						}
 					}
-					if (count) {
-						if (c == all) {
-							break;
-						}
-					}
 				}
-				
 				if (BrowserContentPane.this.getQueryBuilderDialog() != null) { // SQL Console
 					int[] selectedRows = rowsTable.getSelectedRows();
 					if (selectedRows.length > 0) {
@@ -1207,7 +1205,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						x[0] = (int) Math.max(visRect.getMinX(), x[0]) + 2;
 						y[0] = (int) Math.max(visRect.getMinY(), y[0]);
 						x[1] = (int) Math.min(visRect.getMaxX(), x[1]) - 2;
-						y[1] = (int) Math.min(visRect.getMaxY(), y[1]);
+						y[1] = (int) Math.min(visRect.getMaxY() - 1, y[1]);
 						if (x[0] < x[1] && y[0] < y[1]) {
 							g2d.setColor(UIUtil.BG_FLATMOUSEOVER);
 							BasicStroke stroke = new BasicStroke();
@@ -1380,8 +1378,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 			final Color BG1_EM = new Color(255, 242, 240);
 			final Color BG2_EM = new Color(255, 236, 236);
-			final Color BG3 = new Color(192, 236, 255);
-			final Color BG3_2 = new Color(184, 226, 255);
+			final Color BG3 = new Color(190, 230, 255);
+			final Color BG3_2 = new Color(204, 240, 255);
 			final Color BG4 = BG3; // new Color(122, 210, 255, 200);
 			final Color BG4_2 = BG3_2; // = new Color(120, 196, 255, 200);
 			final Color BG4_LIGHT = new Color(80, 200, 255, 200);
