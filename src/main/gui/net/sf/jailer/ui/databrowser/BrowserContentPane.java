@@ -1202,7 +1202,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							x[1] = Math.max((int) r.getMaxX(), x[1]);
 							y[1] = Math.max((int) r.getMaxY(), y[1]);
 						}
-						x[0] = (int) Math.max(visRect.getMinX(), x[0]) + 2;
+						x[0] = (int) Math.max(visRect.getMinX(), x[0]) + 1;
 						y[0] = (int) Math.max(visRect.getMinY(), y[0]);
 						x[1] = (int) Math.min(visRect.getMaxX(), x[1]) - 2;
 						y[1] = (int) Math.min(visRect.getMaxY() - 1, y[1]);
