@@ -1092,11 +1092,14 @@ public abstract class DBClosureView extends javax.swing.JDialog {
                                          closureTable, dataArray[line][i],
                                      false, false, line, i);
                 width = Math.max(width, comp.getPreferredSize().width + 10);
-				if (dataArray[line][i] != null && !"".equals(dataArray[line][i])) {
+                if (dataArray[line][i] != null && !"".equals(dataArray[line][i])) {
 					isEmpty = false;
 				}
             }
-
+            if (i == 0) {
+            	width += 20;
+            }
+			
             column.setPreferredWidth(width);
             if (isEmpty) {
 				if (lastNonEmptyI >= 0) {

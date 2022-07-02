@@ -1419,10 +1419,13 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-    	boolean ok = fillConnectionInfo();
+    	ConnectionInfo oldCi = new ConnectionInfo();
+		oldCi.assign(ci);
+		boolean ok = fillConnectionInfo();
 		if (!dataModelAware && "".equals(dataModelComboBox.getSelectedItem())) {
 			JOptionPane.showMessageDialog(isVisible()? this : parent, "Please specify the Data Model or create a new one.", "No Data Model", JOptionPane.ERROR_MESSAGE);
 			dataModelComboBox.grabFocus();
+			ci.assign(oldCi);
 			ok = false;
 		}
 		if (ok) {

@@ -141,6 +141,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			jar2 = ci.jar2;
 			jar3 = ci.jar3;
 			jar4 = ci.jar4;
+			dataModelFolder = ci.dataModelFolder;
 		}
 		
 		public boolean encrypt() {

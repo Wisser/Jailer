@@ -1083,6 +1083,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					isEmpty = false;
 				}
 			}
+            if (i == 0) {
+            	width += 40;
+            }
 
 			column.setPreferredWidth(width);
 			if (isEmpty) {

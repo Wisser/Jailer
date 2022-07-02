@@ -37,7 +37,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
@@ -323,6 +322,42 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 		boolean saveNeedsSave = needsSave;
 		initComponents();
+		subjectTable = new JComboBox2<>() {
+			@Override
+			public Dimension getPreferredSize() {
+				Dimension size = super.getPreferredSize();
+				return limitedSize(size);
+			}
+			@Override
+			public Dimension getMinimumSize() {
+				Dimension size = super.getMinimumSize();
+				return limitedSize(size);
+			}
+			private Dimension limitedSize(Dimension size) {
+				return new Dimension(Math.min(size.width, 100), size.height);
+			}
+		};
+        subjectTable.setMaximumRowCount(18);
+        subjectTable.setModel(subjectListModel());
+        subjectTable.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            	Object selectedItem = subjectTable.getSelectedItem();
+        		Table newSubject = null;
+        		if (selectedItem instanceof String) {
+        			if (dataModel.getTableByDisplayName(selectedItem.toString()) != null) {
+        				newSubject = dataModel.getTableByDisplayName(selectedItem
+        						.toString());
+        			}
+        		}
+        		changeSubject(newSubject);
+            }
+        });
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel3.add(subjectTable, gridBagConstraints);
 
 		connectivityState.addMouseListener(new MouseAdapter() {
 			@Override
@@ -333,7 +368,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		assocStatsLabel.setText("");
 		
-		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
@@ -1406,7 +1441,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         condition = new javax.swing.JTextField();
         jPanel8 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
-        subjectTable = new JComboBox2();
         jPanel10 = new javax.swing.JPanel();
         exportFormat = new JComboBox2();
         exportButton = new javax.swing.JButton();
@@ -1565,7 +1599,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
         layeredPane.add(focusPanel);
-        focusPanel.setBounds(0, 0, 291, 33);
+        focusPanel.setBounds(0, 0, 289, 33);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -1694,20 +1728,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(jPanel8, gridBagConstraints);
-
-        subjectTable.setMaximumRowCount(18);
-        subjectTable.setModel(subjectListModel());
-        subjectTable.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                subjectTableItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        jPanel3.add(subjectTable, gridBagConstraints);
 
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
@@ -2866,18 +2886,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		validate();
 	}//GEN-LAST:event_onExportModusChanged
 
-	private void subjectTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_subjectTableItemStateChanged
-		Object selectedItem = subjectTable.getSelectedItem();
-		Table newSubject = null;
-		if (selectedItem instanceof String) {
-			if (dataModel.getTableByDisplayName(selectedItem.toString()) != null) {
-				newSubject = dataModel.getTableByDisplayName(selectedItem
-						.toString());
-			}
-		}
-		changeSubject(newSubject);
-	}//GEN-LAST:event_subjectTableItemStateChanged
-
 	private void changeSubject(Table newSubject) {
 		if (newSubject != null && newSubject != subject) {
 			final Table oldSubject = subject;
@@ -3976,7 +3984,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel rightBorderPanel;
     JComboBox2 rootTable;
     private javax.swing.JTabbedPane sketchTabbedPane;
-    JComboBox2 subjectTable;
     private javax.swing.JTextField tagField;
     javax.swing.JPanel toolBarPanel;
     private javax.swing.JPanel toolPanel;
@@ -3985,6 +3992,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel xmlMappingPanel;
     private javax.swing.JButton xmlTagApply;
     // End of variables declaration//GEN-END:variables
+
+    JComboBox2 subjectTable;
 
     Container restrDepsView;
 
