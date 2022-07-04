@@ -59,8 +59,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -72,7 +70,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -747,7 +744,7 @@ public class UIUtil {
     public static StringBuffer createCLIArgumentString(String user, String password, List<String> args, ExecutionContext executionContext) {
         args.add("-datamodel");
         args.add(executionContext.getQualifiedDatamodelFolder());
-        return createPlainCLIArguments(user, password, args, true);
+        return createPlainCLIArguments(user, password == null? "" : password, args, true);
     }
 
     public static StringBuffer createPlainCLIArguments(String user, String password, List<String> args, boolean escMinus) {
