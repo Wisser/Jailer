@@ -65,8 +65,7 @@ public class MDDatabase extends MDGeneric {
 	@SuppressWarnings("deprecation")
 	@Override
 	public JComponent createRender(Session session, ExecutionContext executionContext) throws Exception {
-        DatabaseMetaData md = getMetaDataSource().getSession().getMetaData();
-        String[] names = new String[] {
+		String[] names = new String[] {
 	        "getURL",
 	        "getUserName",
 	        "isReadOnly",
@@ -200,15 +199,17 @@ public class MDDatabase extends MDGeneric {
         AtomicBoolean ready = new AtomicBoolean(false);
         
         Thread thread = new Thread(() -> {
-			for (String name : names) {
-				try {
-					Method m = md.getClass().getMethod(name);
+			try {
+	        	Session.setThreadSharesConnection();
+	    		DatabaseMetaData md = getMetaDataSource().getSession().getMetaData();
+	            for (String name : names) {
+	            	Method m = md.getClass().getMethod(name);
 					String displayName = name.startsWith("get") ? name.substring(3) : name;
 					displayName = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
 					rowList.add(new Object[] { displayName, m.invoke(md) });
-				} catch (Throwable t) {
-					logger.info("error", t);
 				}
+			} catch (Throwable t) {
+				logger.info("error", t);
 			}
 			ready.set(true);
 		});
@@ -216,7 +217,7 @@ public class MDDatabase extends MDGeneric {
         thread.start();
 
     	Thread.sleep(10);
-        for (int i = 0; i < 20; ++i) {
+        for (int i = 0; i < 25; ++i) {
         	if (ready.get()) {
         		break;
         	}
