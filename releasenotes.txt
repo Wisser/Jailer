@@ -1,3 +1,6 @@
+12.5
+  - Fixed a bug that caused exports to hang when local database was used for the working tables.
+
 12.4.4
   - Reset" button in the dialog for the connection settings.
   - When changing the Look&Feel, confirmation dialog appears after restart.
