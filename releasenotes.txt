@@ -166,12 +166,6 @@
     - An error in the row count query has been corrected.
 
 10.4.1
-  - SQL Console and desktop improvements
-    - Queries are now subjected to intensive analysis,
-      which makes it possible to detect primary and foreign keys and display them accordingly,
-      as well as the origin table of each column.
-    - Number data is now formatted and right-aligned.
-    - Faster metadata acquisition with Oracle DBMS.
   - Fixed "(Minor) Dropdown menu disabling inconsistency #40" https://github.com/Wisser/Jailer/issues/40
   - Fixed "Parameters not working when using complex filters #41" https://github.com/Wisser/Jailer/issues/41
   - New logo.
