@@ -1345,7 +1345,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 4, 6, 0);
         titlePanel.add(tableLabel, gridBagConstraints);
 
         closeButtonContainerPanel.setOpaque(false);
