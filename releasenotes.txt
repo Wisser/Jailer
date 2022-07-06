@@ -1,3 +1,6 @@
+12.5.1
+  - Consideration of encoding and compression when loading SQL scripts into console or file viewer.
+
 12.5
   - SQL Console and desktop improvements
     - Queries are now subjected to intensive analysis,
