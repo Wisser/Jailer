@@ -17,20 +17,25 @@ package net.sf.jailer.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipInputStream;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.datamodel.Table;
@@ -251,7 +256,18 @@ public class PrintUtil {
 	public String loadFile(String file, boolean ignoreComments) throws FileNotFoundException, IOException {
 		StringBuilder sb;
 		sb = new StringBuilder(65536);
-		BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
+		Charset encoding = SqlUtil.retrieveEncoding(file);
+		InputStream inputStream = new FileInputStream(file);
+		BufferedReader reader;
+		if (file.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
+			reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
+		} else if (file.toLowerCase(Locale.ENGLISH).endsWith(".zip")){
+			ZipInputStream zis = new ZipInputStream(inputStream);
+			zis.getNextEntry();
+			reader = new BufferedReader(new InputStreamReader(zis, encoding));
+		} else {
+			reader = new BufferedReader(new InputStreamReader(inputStream, encoding));
+		}
 		String line = null;
 		while ((line = reader.readLine()) != null) {
 			if (!ignoreComments || (line.trim().length() > 0 && !line.startsWith("#"))) {

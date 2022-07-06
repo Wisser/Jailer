@@ -85,7 +85,7 @@ public class FileView extends javax.swing.JFrame {
 		this.isXml = file.toLowerCase().endsWith(".xml");
 		
 		File f = new File(file);
-		if (f.exists() && f.length() > 65L*1024L*1024L) {
+		if (f.exists() && f.length() > 65L*1024L*1024L / (file.toLowerCase().endsWith(".zip") || file.toLowerCase().endsWith(".gz")? 5 : 1)) {
 			int o = JOptionPane.showOptionDialog(window, "File " + f.getAbsolutePath() + "\nis large (" + (f.length() / 1024 / 1024) + " MB). Loading might fail.", "File is large", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new Object[] { "Open", "Cancel" }, "Open");
 			if (o != 0) {
 				dispose();

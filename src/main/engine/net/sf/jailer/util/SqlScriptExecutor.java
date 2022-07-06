@@ -200,37 +200,10 @@ public class SqlScriptExecutor {
 		BufferedReader bufferedReader;
 		long fileSize = 0;
 		final long[] bytesRead = new long[1];
+		Charset encoding = SqlUtil.retrieveEncoding(scriptFileName);
+		
 		File file = new File(scriptFileName);
 		InputStream inputStream = new FileInputStream(file);
-		
-		Charset encoding = Charset.defaultCharset();
-		
-		Charset uTF8 = null;
-		try {
-			uTF8 = Charset.forName("UTF8");
-		} catch (Exception e) {
-			// ignore
-		}
-		
-		if (uTF8 != null) {
-			// retrieve encoding
-			if (scriptFileName.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
-				bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), uTF8), 1);
-			} else if (scriptFileName.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
-				ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName));
-				zis.getNextEntry();
-				bufferedReader = new BufferedReader(new InputStreamReader(zis, uTF8), 1);
-			} else {
-				bufferedReader = new BufferedReader(new InputStreamReader(inputStream, uTF8), 1);
-			}
-			String line = bufferedReader.readLine();
-			if (line != null && line.contains("encoding UTF-8")) {
-				encoding = uTF8;
-			}
-			bufferedReader.close();
-		}
-		
-		inputStream = new FileInputStream(file);
 		inputStream = new FilterInputStream(inputStream) {
 			@Override
 			public int read() throws IOException {

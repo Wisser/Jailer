@@ -42,10 +42,15 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -72,6 +77,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -3480,7 +3490,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	public void loadFromFile(File file) throws IOException {
 		this.file = file;
 		if (file.exists()) {
-			BufferedReader in = new BufferedReader(new FileReader(file));
+			String path = file.getPath();
+			Charset encoding = SqlUtil.retrieveEncoding(path);
+			InputStream inputStream = new FileInputStream(file);
+			BufferedReader in;
+			if (path.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
+				in = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
+			} else if (path.toLowerCase(Locale.ENGLISH).endsWith(".zip")){
+				ZipInputStream zis = new ZipInputStream(inputStream);
+				zis.getNextEntry();
+				in = new BufferedReader(new InputStreamReader(zis, encoding));
+			} else {
+				in = new BufferedReader(new InputStreamReader(inputStream, encoding));
+			}
+			
 			StringBuilder sb = new StringBuilder();
 			int c;
 	        while ((c = in.read()) != -1) {
@@ -3520,7 +3543,34 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (newFile != null) {
 				file = newFile;
 			}
-			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+			
+			Charset encoding = Charset.defaultCharset();
+			Charset uTF8 = null;
+			try {
+				uTF8 = Charset.forName("UTF8");
+			} catch (Exception e) {
+				// ignore
+			}
+			
+			if (uTF8 != null) {
+				// retrieve encoding
+				if (editorPane.getLineCount() > 0 && getLineContent(0).contains("encoding UTF-8")) {
+					encoding = uTF8;
+				}
+			}
+			
+			OutputStream outputStream = new FileOutputStream(file);
+			if (file.getPath().toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
+				outputStream = new ZipOutputStream(outputStream);
+				String zipFileName = file.getName();
+				((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
+			} else {
+				if (file.getPath().toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
+					outputStream = new GZIPOutputStream(outputStream);
+				}
+			}
+			
+			PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, encoding)));
 			int lines = editorPane.getLineCount();
 			for (int line = 0; line < lines; ++line) {
 				out.print(getLineContent(line).replace("\r", "").replace("\n", ""));

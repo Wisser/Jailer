@@ -15,7 +15,15 @@
  */
 package net.sf.jailer.util;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -33,6 +41,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipInputStream;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
@@ -772,4 +782,44 @@ public class SqlUtil {
 		return pattern.toString();
 	}
 
+	/**
+	 * Retrieves SQL script file encoding.
+	 * 
+	 * @param scriptFileName file name of script
+	 * 
+	 * @return encoding or null
+	 */
+	public static Charset retrieveEncoding(String scriptFileName) throws FileNotFoundException, IOException {
+		File file = new File(scriptFileName);
+		BufferedReader bufferedReader;
+		InputStream inputStream = new FileInputStream(file);
+		
+		Charset encoding = Charset.defaultCharset();
+		
+		Charset uTF8 = null;
+		try {
+			uTF8 = Charset.forName("UTF8");
+		} catch (Exception e) {
+			// ignore
+		}
+		
+		if (uTF8 != null) {
+			// retrieve encoding
+			if (scriptFileName.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
+				bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), uTF8), 1);
+			} else if (scriptFileName.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
+				ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName));
+				zis.getNextEntry();
+				bufferedReader = new BufferedReader(new InputStreamReader(zis, uTF8), 1);
+			} else {
+				bufferedReader = new BufferedReader(new InputStreamReader(inputStream, uTF8), 1);
+			}
+			String line = bufferedReader.readLine();
+			if (line != null && line.contains("encoding UTF-8")) {
+				encoding = uTF8;
+			}
+			bufferedReader.close();
+		}
+		return encoding;
+	}
 }
