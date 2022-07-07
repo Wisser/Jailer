@@ -132,24 +132,26 @@ public class MDTable extends MDObject {
         }
         UIUtil.setWaitCursor(waitCursorSubject);
         try {
-            loading.set(true);
-            queue.add(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        getColumns(false);
-                    } catch (SQLException e) {
-                    	logger.info("error", e);
-                    }
-                    loading.set(false);
-                }
-            });
-            while (loading.get() && System.currentTimeMillis() < timeOut) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                }
-            }
+        	if (!loading.get()) {
+                loading.set(true);
+	            queue.add(new Runnable() {
+	                @Override
+	                public void run() {
+	                    try {
+	                        getColumns(false);
+	                    } catch (SQLException e) {
+	                    	logger.info("error", e);
+	                    }
+	                    loading.set(false);
+	                }
+	            });
+	            while (loading.get() && System.currentTimeMillis() < timeOut) {
+	                try {
+	                    Thread.sleep(100);
+	                } catch (InterruptedException e) {
+	                }
+	            }
+        	}
         } finally {
         	UIUtil.resetWaitCursor(waitCursorSubject);
         }
