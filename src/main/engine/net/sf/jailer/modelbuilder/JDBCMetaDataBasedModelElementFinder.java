@@ -931,14 +931,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					}
 					ResultSet resultSet = metaDataCache.forTable(tableNamePattern);
 					if (resultSet != null) {
-						if (resultSet instanceof MemorizedResultSet) {
-							if (((MemorizedResultSet) resultSet).getSize() == 0) {
-								resultSet = null;
-							}
-						}
-						if (resultSet != null) {
-							return resultSet;
-						}
+						return resultSet;
 					}
 				}
 			}
