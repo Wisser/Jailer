@@ -263,6 +263,10 @@ public class MDTable extends MDObject {
                 loaded.set(true);
             } catch (Exception e) {
             	retryReading = true;
+            	if (!cached) {
+	            	// TODO
+	            	// TODO on My/MariaDB retry with new connection (retry at most once)
+            	}
             	if (!warned && !getSchema().getMetaDataSource().getSession().isDown()) {
             		LogUtil.warn(e);
             		warned = true;

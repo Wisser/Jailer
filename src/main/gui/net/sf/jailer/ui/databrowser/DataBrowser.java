@@ -4423,6 +4423,8 @@ public class DataBrowser extends javax.swing.JFrame {
 				searchBarToggleButton.setToolTipText("<html>Open Search Sidebar<br>"
 					+ "<b>Condition editor not supported for DBMS \"" + (newSession.dbms == null? null : newSession.dbms.getId()) + "\"</b></html>");
 			}
+			
+			JDBCMetaDataBasedModelElementFinder.resetCaches(newSession);
 
 			tablesPanel.removeAll();
 			metaDataPanel = (MetaDataPanel) session.getSessionProperty(getClass(), "metaDataPanel");
