@@ -4442,8 +4442,6 @@ public class DataBrowser extends javax.swing.JFrame {
 							final MDSchema defaultSchema = finalMetaDataSource.getDefaultSchema();
 							if (defaultSchema != null) {
 								// trigger reading meta data asynchronously
-								JDBCMetaDataBasedModelElementFinder.dsT0 = System.currentTimeMillis();
-								JDBCMetaDataBasedModelElementFinder.dsDataModel = datamodel.get();
 								defaultSchema.loadTables(true, null, new Runnable() {
 									@Override
 									public void run() {

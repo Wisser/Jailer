@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,7 +153,6 @@ public class MetaDataCache {
 	 */
 	public static MetaDataCache readColumns(Session session, String schema) {
 		_log.info("reading columns (may take some time)...");
-		JDBCMetaDataBasedModelElementFinder.dsT2 = System.currentTimeMillis();
 		Set<String> ds2 = new HashSet<String>();
 		
 		MetaDataCache metaDataCache = new MetaDataCache();
@@ -204,7 +202,6 @@ public class MetaDataCache {
 			}
 			metaDataCache.resultSetMetaData = new MemorizedResultSetMetaData(numCol, names, types, typeNames);
 			rs.close();
-			JDBCMetaDataBasedModelElementFinder.dsTabs2 = ds2;
 			if (metaDataCache.cache.isEmpty()) {
 				metaDataCache.cache = null;
 			}

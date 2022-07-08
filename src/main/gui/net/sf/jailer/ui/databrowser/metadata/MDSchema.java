@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.modelbuilder.MemorizedResultSet;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.Quoting;
@@ -157,7 +156,6 @@ public class MDSchema extends MDObject {
 					tables = new ArrayList<MDTable>();
 					MetaDataSource metaDataSource = getMetaDataSource();
 					synchronized (metaDataSource.getSession().getMetaData()) {
-						JDBCMetaDataBasedModelElementFinder.dsT1 = System.currentTimeMillis();
 						ResultSet rs = metaDataSource.readTables(getName());
 						Map<String, Runnable> loadJobs = new TreeMap<String, Runnable>();
 						Set<String> ds1 = new HashSet<String>();
@@ -184,7 +182,6 @@ public class MDSchema extends MDObject {
 								});
 							}
 						}
-						JDBCMetaDataBasedModelElementFinder.dsTabs1 = ds1;
 						rs.close();
 						
 						for (Runnable loadJob : loadJobs.values()) {

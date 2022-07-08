@@ -42,10 +42,8 @@ import javax.swing.JOptionPane;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.util.AWTWatchdog;
-import net.sf.jailer.ui.util.UISettings;
 import net.sf.jailer.util.LogUtil;
 
 /**
@@ -242,14 +240,6 @@ public class Environment {
 		if (toBeLogged != null) {
 			LogUtil.warn(toBeLogged);
 		}
-		JDBCMetaDataBasedModelElementFinder.dsSent = (suffix, m) -> { // TODO remove
-			String prop = "dsSentMessage4-" + suffix;
-			if (m.equals(UISettings.restore(prop))) {
-				return true;
-			}
-			UISettings.store(prop, m);
-			return false;
-		};
 		return args;
 	}
 
