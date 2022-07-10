@@ -289,13 +289,15 @@ public class MDTable extends MDObject {
 	            			return;
 	            		} catch (Exception e2) {
 	            			if (!warned2 && !session.isDown()) {
-	                    		LogUtil.warn(e2);
+	                    		LogUtil.warn(new RuntimeException("NOkWithFBCon!: " + e.getMessage(), e2));
 	                    		warned2 = true;
 	                    	}
 						} finally {
 							try {
-								con.close();
-							} catch (Exception e3) {
+								if (con != null) {
+									con.close();
+								}
+							} catch (Throwable t) {
 								// ignore
 							}
 						}
