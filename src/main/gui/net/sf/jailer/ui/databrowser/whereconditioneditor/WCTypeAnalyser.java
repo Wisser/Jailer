@@ -807,7 +807,7 @@ public class WCTypeAnalyser {
 		for (Entry<String, MDTable> e: fromClause.entrySet()) {
 			if (e.getValue() != null) {
 				try {
-					for (String column: e.getValue().getColumns()) {
+					for (String column: e.getValue().getColumns(false)) {
 						if (idEquals(column, columnName, false)) {
 							if (alias != null) {
 								return null;
