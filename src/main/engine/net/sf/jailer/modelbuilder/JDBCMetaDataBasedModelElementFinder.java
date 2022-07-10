@@ -15,6 +15,8 @@
  */
 package net.sf.jailer.modelbuilder;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -34,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +53,8 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.JSqlParserUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
@@ -406,6 +411,22 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			resultSet.close();
 		}
 		Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
+		
+		Pattern nonPKPattern = null;
+		if (executionContext.getQualifiedDatamodelFolder() != null) {
+			File nonPKFile = new File(executionContext.getQualifiedDatamodelFolder(), "nonPKColumns.csv");
+			if (nonPKFile.exists()) {
+				try {
+					List<Line> lines = new CsvFile(nonPKFile).getLines();
+					if (!lines.isEmpty() && !lines.get(0).cells.get(0).isEmpty()) {
+						nonPKPattern = Pattern.compile(lines.get(0).cells.get(0));
+					}
+				} catch (Exception e) {
+					// ignore
+				}
+			}
+		}
+		
 		for (String tableName: tableNames) {
 			Table tmp = new Table(tableName, null, false, false);
 			resultSet = null;
@@ -422,13 +443,17 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			boolean hasPK = false;
 			int nextKeySeq = 0;
 			while (resultSet != null && resultSet.next()) {
+				String cName = resultSet.getString(4);
+				if (nonPKPattern != null && nonPKPattern.matcher(cName).matches()) {
+					continue;
+				}
 				hasPK = true;
 				int keySeq = resultSet.getInt(5);
 				if (DBMS.SQLITE.equals(session.dbms)) {
 					// SQlite driver doesn't return the keySeq
 					keySeq = nextKeySeq++;
 				}
-				pk.put(keySeq, new Column(quoting.quote(resultSet.getString(4)), "", 0, -1));
+				pk.put(keySeq, new Column(quoting.quote(cName), "", 0, -1));
 			}
 			if (!hasPK) {
 				_log.info("find unique index of table " + tableName);
