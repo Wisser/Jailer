@@ -107,7 +107,6 @@ import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
-import javax.swing.table.DefaultTableModel;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
@@ -122,7 +121,6 @@ import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RowsClosure;
-import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.UserAction;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
@@ -4069,6 +4067,10 @@ public abstract class Desktop extends JDesktopPane {
 						1.0 });
 			}
 		}
+	}
+
+	public interface RunnableWithPriority extends Runnable {
+		int getPriority();
 	}
 
 	/**

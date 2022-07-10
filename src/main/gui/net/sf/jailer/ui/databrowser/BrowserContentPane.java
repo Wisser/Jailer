@@ -184,6 +184,7 @@ import net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea;
 import net.sf.jailer.ui.databrowser.Desktop.FindClosureContext;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.Desktop.RowToRowLink;
+import net.sf.jailer.ui.databrowser.Desktop.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.RowCounter.RowCount;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.ColumnsTable;
@@ -6838,10 +6839,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 	protected boolean shouldShowLoadErrors() {
 		return true;
-	}
-
-	public interface RunnableWithPriority extends Runnable {
-		int getPriority();
 	}
 
 	protected abstract PriorityBlockingQueue<RunnableWithPriority> getRunnableQueue();

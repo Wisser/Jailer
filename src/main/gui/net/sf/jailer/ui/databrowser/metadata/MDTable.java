@@ -47,6 +47,8 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.Desktop;
+import net.sf.jailer.ui.databrowser.Desktop.RunnableWithPriority;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
@@ -117,7 +119,7 @@ public class MDTable extends MDObject {
      * @return columns of table
      */
     public List<String> getColumns(boolean cached) throws SQLException {
-        readColumns(cached);
+        readColumns(cached, null);
         return columns;
     }
 
@@ -176,24 +178,35 @@ public class MDTable extends MDObject {
      * @return primary key columns of table
      */
     public List<String> getPrimaryKeyColumns(boolean cached) throws SQLException {
-        readColumns(cached);
+        readColumns(cached, null);
         return primaryKey;
     }
 
     private boolean retryReading = false;
     
-    private synchronized void readColumns(boolean cached) throws SQLException {
+    private synchronized void readColumns(boolean cached, Connection fallbackConnection) throws SQLException {
         if (columns == null || retryReading) {
         	retryReading = false;
             columns = new ArrayList<String>();
             columnTypes = new ArrayList<Column>();
             primaryKey = new ArrayList<String>();
-            try {
+            Session session = getSchema().getMetaDataSource().getSession();
+			try {
                 MetaDataSource metaDataSource = getMetaDataSource();
-                synchronized (metaDataSource.getSession().getMetaData()) {
-                	ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%",
+                synchronized (session.getMetaData()) {
+                	ResultSet resultSet;
+                	if (fallbackConnection != null) {
+                		DatabaseMetaData metaData = fallbackConnection.getMetaData();
+                		if (DBMS.MySQL.equals(session.dbms)) {
+                			resultSet = metaData.getColumns(Quoting.staticUnquote(getSchema().getName()), null, Quoting.staticUnquote(getName()), "%");
+            			} else {
+            				resultSet = metaData.getColumns(null, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%");
+            			}
+                	} else {
+                		resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%",
                     		cached, false, isSynonym? "SYNONYM" : null);
-                    while (resultSet.next()) {
+                	}
+                	while (resultSet.next()) {
                         String colName = metaDataSource.getQuoting().quote(resultSet.getString(4));
                         columns.add(colName);
                         int type = resultSet.getInt(5);
@@ -229,13 +242,13 @@ public class MDTable extends MDObject {
                     }
                     resultSet.close();
 
-                    resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(getSchema().getMetaDataSource().getSession(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), false);
+                    resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), false);
                     Map<Integer, String> pk = new TreeMap<Integer, String>();
                     int nextKeySeq = 0;
                     while (resultSet.next()) {
                         int keySeq = resultSet.getInt(5);
                         pkConstraintName = resultSet.getString(6);
-                        if (DBMS.SQLITE.equals(getSchema().getMetaDataSource().getSession().dbms)) {
+                        if (DBMS.SQLITE.equals(session.dbms)) {
                             // SQlite driver doesn't return the keySeq
                             keySeq = nextKeySeq++;
                         }
@@ -263,11 +276,32 @@ public class MDTable extends MDObject {
                 loaded.set(true);
             } catch (Exception e) {
             	retryReading = true;
-            	if (!cached) {
-	            	// TODO
-	            	// TODO on My/MariaDB retry with new connection (retry at most once)
+            	if (!cached && fallbackConnection == null) {
+	            	if (DBMS.MySQL.equals(session.dbms)) {
+	            		Connection con = null;
+	            		try {
+	            			con = session.createNewConnection();
+	            			readColumns(cached, con);
+	                    	if (!warnedFallback) {
+	                    		LogUtil.warn(new RuntimeException("OkWithFBCon: " + e.getMessage(), e));
+	                    		warnedFallback = true;
+	                    	}
+	            			return;
+	            		} catch (Exception e2) {
+	            			if (!warned2 && !session.isDown()) {
+	                    		LogUtil.warn(e2);
+	                    		warned2 = true;
+	                    	}
+						} finally {
+							try {
+								con.close();
+							} catch (Exception e3) {
+								// ignore
+							}
+						}
+	            	}
             	}
-            	if (!warned && !getSchema().getMetaDataSource().getSession().isDown()) {
+            	if (!warned && !session.isDown()) {
             		LogUtil.warn(e);
             		warned = true;
             	}
@@ -275,8 +309,10 @@ public class MDTable extends MDObject {
             }
         }
     }
-    
+
     private static boolean warned = false;
+    private static boolean warned2 = false;
+    private static boolean warnedFallback = false;
 
     /**
      * Compares data model table with this table.
@@ -414,7 +450,7 @@ public class MDTable extends MDObject {
 	            	ddl = new BasicFormatterImpl().format(ddl);
 	            }
 	            try {
-	            	readColumns(true); // load primary key
+	            	readColumns(true, null); // load primary key
 	            	if (ddl == null) {
 	            		ddl = createDDL();
 	            	}

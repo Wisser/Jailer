@@ -191,6 +191,7 @@ public class Session {
 	 */
 	public interface ConnectionFactory {
 		Connection getConnection() throws SQLException;
+		Connection createNewConnection() throws SQLException;
 	}
 
 	/**
@@ -371,6 +372,10 @@ public class Session {
 					}
 				}
 				return con;
+			}
+			@Override
+			public Connection createNewConnection() throws SQLException {
+				return dataSource.getConnection();
 			}
 		};
 		// fail fast
@@ -1411,6 +1416,15 @@ public class Session {
 	 */
 	public Connection getConnection() throws SQLException {
 		return connectionFactory.getConnection();
+	}
+
+	/**
+	 * Create a new connection. Must be closed from caller.
+	 *
+	 * @return a new connection
+	 */
+	public Connection createNewConnection() throws SQLException {
+		return connectionFactory.createNewConnection();
 	}
 
 	private InlineViewStyle inlineViewStyle;
