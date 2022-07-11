@@ -47,8 +47,6 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.databrowser.Desktop;
-import net.sf.jailer.ui.databrowser.Desktop.RunnableWithPriority;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
@@ -193,7 +191,7 @@ public class MDTable extends MDObject {
             Session session = getSchema().getMetaDataSource().getSession();
 			try {
                 MetaDataSource metaDataSource = getMetaDataSource();
-                synchronized (session.getMetaData() or fallbackConnection-.metaDataSource) {
+                synchronized (session.getMetaData()) {
                 	ResultSet resultSet;
                 	if (fallbackConnection != null) {
                 		DatabaseMetaData metaData = fallbackConnection.getMetaData();
@@ -243,7 +241,12 @@ public class MDTable extends MDObject {
                     resultSet.close();
 
                     if (fallbackConnection != null) {
-                    	resultSet = 
+                    	DatabaseMetaData metaData = fallbackConnection.getMetaData();
+                		if (DBMS.MySQL.equals(session.dbms)) {
+                    		resultSet = metaData.getPrimaryKeys(Quoting.staticUnquote(getSchema().getName()), null, Quoting.staticUnquote(getName()));
+                		} else {
+                			resultSet = metaData.getPrimaryKeys(null, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()));
+                		}
                     } else {
                     	resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), false);
                     }
