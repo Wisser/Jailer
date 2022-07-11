@@ -193,7 +193,7 @@ public class MDTable extends MDObject {
             Session session = getSchema().getMetaDataSource().getSession();
 			try {
                 MetaDataSource metaDataSource = getMetaDataSource();
-                synchronized (session.getMetaData()) {
+                synchronized (session.getMetaData() or fallbackConnection-.metaDataSource) {
                 	ResultSet resultSet;
                 	if (fallbackConnection != null) {
                 		DatabaseMetaData metaData = fallbackConnection.getMetaData();
@@ -242,7 +242,11 @@ public class MDTable extends MDObject {
                     }
                     resultSet.close();
 
-                    resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), false);
+                    if (fallbackConnection != null) {
+                    	resultSet = 
+                    } else {
+                    	resultSet = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), false);
+                    }
                     Map<Integer, String> pk = new TreeMap<Integer, String>();
                     int nextKeySeq = 0;
                     while (resultSet.next()) {
