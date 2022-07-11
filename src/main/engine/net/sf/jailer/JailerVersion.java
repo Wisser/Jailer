@@ -25,7 +25,7 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "12.5.1";
+	public static final String VERSION = "12.5.1.1";
 
 	/**
 	 * The Jailer working tables version.
@@ -47,3 +47,6 @@ public class JailerVersion {
 }
 
 // TODO JSQLParser update
+
+// TODO
+// TODO driver updates (MySQL)
