@@ -492,9 +492,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		AtomicInteger selectedModule = new AtomicInteger(0);
 		JButton deselButton = new JButton("Help", UIUtil.scaleIcon(yellowdotLabel, helpImg));
-
+		helpLabel.setText(null);
+		helpLabel.setIcon(UIUtil.scaleIcon(helpImg, 0.4));
+		helpLabel.setVisible(false);
+		
 		Runnable switchToNone = ()-> {
-			deselButton.setVisible(false);
+			deselButton.setEnabled(false);
 			selectedModule.set(0);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "none");
 			dmmdSubsetter.mainContentPanel.setBackground(null);
@@ -507,7 +510,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			openWelcomeDialog(null);
 		};
 		Runnable switchToSubsetter = ()-> {
-			deselButton.setVisible(true);
+			deselButton.setEnabled(true);
 			selectedModule.set(1);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "subsetter");
 			dmmdSubsetter.mainContentPanel.setBackground(bgSubsetter);
@@ -520,7 +523,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			openWelcomeDialog(null);
 		};
 		Runnable switchToDataBrowser = ()-> {
-			deselButton.setVisible(true);
+			deselButton.setEnabled(true);
 			selectedModule.set(2);
 			((CardLayout) modulsCardPanel.getLayout()).show(modulsCardPanel, "databrowser");
 			dmmdBrowser.mainContentPanel.setBackground(bgBrowser);
@@ -532,7 +535,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			titelSubsetterLabel.setIcon(null);
 			openWelcomeDialog(dmmdBrowser);
 		};
-		deselButton.addActionListener(e -> switchToNone.run());
+		deselButton.addActionListener(e -> {
+			helpLabel.setVisible(true);
+			switchToNone.run();
+		});
 
 		moduleDataBrowserToggleButton = new LightBorderSmallButton(
 				modulBrowserImg) {
@@ -1640,6 +1646,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         bluedotLabel1 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jPanel20 = new javax.swing.JPanel();
+        helpLabel = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         subsetterPanel = new javax.swing.JPanel();
         dataBrowserPanel = new javax.swing.JPanel();
@@ -1851,7 +1858,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(32, 0, 20, 0);
+        gridBagConstraints.insets = new java.awt.Insets(38, 0, 20, 0);
         jPanel16.add(jLabel6, gridBagConstraints);
 
         jPanel17.setLayout(new java.awt.GridBagLayout());
@@ -1917,6 +1924,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 32, 12, 0);
         jPanel16.add(jPanel18, gridBagConstraints);
+
+        helpLabel.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridheight = 12;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(42, 0, 0, 16);
+        jPanel16.add(helpLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -2830,6 +2846,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton deleteButton;
     private javax.swing.JLabel dummyLabel;
     private javax.swing.JButton editButton;
+    private javax.swing.JLabel helpLabel;
     private javax.swing.JLabel histLabel;
     private javax.swing.JLabel infoBarLabeRecUsedlBookmark;
     private javax.swing.JLabel infoBarLabel;
