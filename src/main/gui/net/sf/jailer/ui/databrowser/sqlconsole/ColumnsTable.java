@@ -478,5 +478,10 @@ public class ColumnsTable extends JTable {
 			}
 		});
 	}
+	
+	public void clear() {
+		currentRow = -1;
+		repaint();
+	}
 
 }

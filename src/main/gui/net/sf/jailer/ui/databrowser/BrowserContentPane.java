@@ -862,7 +862,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_SQLCONSOLE = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
-	private static final KeyStroke KS_QUERYBUILDER = KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_DESELECT = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+    private static final KeyStroke KS_QUERYBUILDER = KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_FILTER = KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK);
 	public static final KeyStroke KS_FIND = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_EDIT = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
@@ -1318,18 +1319,45 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		
 		registerAccelerator(KS_SQLCONSOLE, new AbstractAction() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				rowsTable.grabFocus();
-				UIUtil.invokeLater(8, new Runnable() {
-					@Override
-					public void run() {
-						openQueryBuilder(true);
-					}
-				});
-			}
-		});
-		registerAccelerator(KS_QUERYBUILDER, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rowsTable.grabFocus();
+                UIUtil.invokeLater(8, new Runnable() {
+                    @Override
+                    public void run() {
+                        openQueryBuilder(true);
+                    }
+                });
+            }
+        });
+		registerAccelerator(KS_DESELECT, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                rowsTable.grabFocus();
+                UIUtil.invokeLater(8, new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            isDeselecting = true;
+                            if (rowsTable.getRowCount() > 0) {
+                                rowsTable.getSelectionModel().setSelectionInterval(0, 0);
+                            }
+                        	rowsTable.clearSelection();
+                        	getTableBrowser().forEach(b -> {
+                        		if (b.browserContentPane.singleRowDetailsView instanceof ColumnsTable) {
+                        			((ColumnsTable) (b.browserContentPane.singleRowDetailsView)).clear();
+                        		}
+                        	});
+                        } catch (Exception e) {
+                            // ignore
+                        } finally {
+                            isDeselecting = false;
+                        }
+                    }
+                });
+            }
+        });
+        registerAccelerator(KS_QUERYBUILDER, new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				rowsTable.grabFocus();
@@ -1581,8 +1609,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				int ri;
 				JComponent source = (JComponent) e.getSource();
+				getTableBrowser().forEach(b -> {
+                    if (b.browserContentPane.singleRowDetailsView instanceof ColumnsTable) {
+                    	if (b.browserContentPane.singleRowDetailsView != source) {
+                    		((ColumnsTable) (b.browserContentPane.singleRowDetailsView)).clear();
+                    	}
+                    }
+                });
+				int ri;
 				if (source == rowsTable) {
 					ri = rowsTable.rowAtPoint(e.getPoint());
 				} else {
@@ -1715,7 +1750,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				boolean pending = false;
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
-					if (isUpdatingTableModel) {
+					if (isUpdatingTableModel || isDeselecting) {
 						selectRows();
 						return;
 					}
@@ -4877,6 +4912,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private boolean lastLimitExceeded;
 	private boolean lastClosureLimitExceeded;
 	private boolean isUpdatingTableModel;
+	private boolean isDeselecting;
 	public Set<Integer> foundColumn = new HashSet<Integer>();
 
 	/**

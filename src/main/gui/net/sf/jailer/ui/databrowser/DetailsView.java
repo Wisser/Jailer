@@ -898,19 +898,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
     	return pinToggleButton.isSelected();
     }
     
-	public void updateInClosureState(boolean inClosure) {
-		if (inClosure) {
-			int r = 0;
-			for (JLabel label: labels) {
-				label.setBackground(r++ % 2 == 0? BG3 : BG3_2);
-			}
-		} else {
-			for (int i = 0; i < labels.size(); ++i) {
-				labels.get(i).setBackground(labelColors.get(i));
-			}
-		}
-	}
-    
     public JPanel getDetailsPanel() {
     	return jPanel1;
     }
