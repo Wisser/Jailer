@@ -15,6 +15,9 @@
  */
 package net.sf.jailer;
 
+// TODO 
+// TODO black list issues, at most 1 bl issue will be sent
+
 /**
  * The Jailer Version.
  *
