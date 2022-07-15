@@ -6,7 +6,6 @@
 package net.sf.jailer.ui;
 
 import javax.swing.ImageIcon;
-import javax.swing.SwingConstants;
 
 /**
  *
