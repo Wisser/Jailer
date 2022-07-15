@@ -1,3 +1,6 @@
+12.5.2
+  - Error "Streaming result set is still active", could occur when table metadata has to be reloaded after a query in the SQL console. (MySQL)
+
 12.5.1
   - Consideration of encoding and compression when loading SQL scripts into console or file viewer.
 
