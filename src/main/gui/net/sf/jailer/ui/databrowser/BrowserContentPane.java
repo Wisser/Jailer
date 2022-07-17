@@ -1610,13 +1610,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				JComponent source = (JComponent) e.getSource();
-				getTableBrowser().forEach(b -> {
-                    if (b.browserContentPane.singleRowDetailsView instanceof ColumnsTable) {
-                    	if (b.browserContentPane.singleRowDetailsView != source) {
-                    		((ColumnsTable) (b.browserContentPane.singleRowDetailsView)).clear();
-                    	}
-                    }
-                });
+				List<RowBrowser> tableBrowser = getTableBrowser();
+				if (getQueryBuilderDialog() != null) { // !SQL Console
+					tableBrowser.forEach(b -> {
+	                    if (b.browserContentPane.singleRowDetailsView instanceof ColumnsTable) {
+	                    	if (b.browserContentPane.singleRowDetailsView != source) {
+	                    		((ColumnsTable) (b.browserContentPane.singleRowDetailsView)).clear();
+	                    	}
+	                    }
+	                });
+				}
 				int ri;
 				if (source == rowsTable) {
 					ri = rowsTable.rowAtPoint(e.getPoint());
@@ -1704,7 +1707,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					} else if (e.getComponent() == singleRowViewScrollContentPanel || e.getSource() == singleRowViewContainterPanel
 							|| e.getComponent() == singleRowDetailsView || e.getSource() == singleRowDetailsView) {
 						if (getQueryBuilderDialog() != null) { // !SQL Console
-							for (RowBrowser tb: getTableBrowser()) {
+							for (RowBrowser tb: tableBrowser) {
 								try {
 									tb.browserContentPane.isUpdatingTableModel = true;
 									tb.browserContentPane.rowsTable.clearSelection();
