@@ -1,0 +1,149 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Jailer - Data Browsing</title>
+	<meta content="text/html; charset=us-ascii" http-equiv="Content-Type" />
+	<meta content="Data Export Tool" name="description" />
+	<link href="favicon.ico" rel="shortcut icon" />
+	<meta content="data export referential integrity java jdbc dbms" name="keywords" />
+	<link href="styles.css" rel="stylesheet" type="text/css" />
+</head>
+<body left-margin="0" top-margin="0">
+<div align="left">
+<table border="0" cellpadding="0" cellspacing="0" height="407" style="left: 0pt; top: 0pt; text-align: left; position: absolute;" width="100%">
+	<tbody>
+		<tr>
+			<td class="bannerbackground" colspan="2" height="33" width="100%">
+			<table border="0" cellpadding="4" cellspacing="0" width="100%">
+				<tbody>
+					<tr>
+						<td><img src="logo.png" hspace="10" /></td> <td class="slogan" width="100%">
+						 
+						<td style="width: 100%; text-align: right;">
+						<table border="0" cellpadding="0" cellspacing="0" width="100%">
+							<tbody>
+								<tr>
+									 <td><a href="https://github.com/Wisser/Jailer"><img src="GitHub-Mark-64px.png" title="GitHub" /></a> </td></tr><tr style="height: 100%;"><td>&nbsp;</td>
+								</tr>
+							</tbody>
+						</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			</td>
+		</tr>
+		<tr>
+			<td class="nav1background" colspan="2"  width="100%">&nbsp; <b><font color="#ffffff"><a class="tlink" href="home.htm" target="_self">&nbsp;Home&nbsp;</a> <a class="tlink" href="quicktour.htm" target="_self">&nbsp;Quick Tour&nbsp;</a> <a class="tlink" href="exporting-data.htm" target="_self">&nbsp;Tutorial&nbsp;</a> <a class="tlinkA" href="data-browsing.html" target="_self">&nbsp;Data Browser&nbsp;</a> <a class="tlink" href="videos.html" target="_self">&nbsp;Videos&nbsp;</a> <a class="tlink" href="faq.html" target="_self">&nbsp;FAQ&nbsp;</a> <a class="tlink" href="api.html" target="_self">&nbsp;API&nbsp;</a> <a class="tlink" href="design.htm" target="_self">&nbsp;Documentation&nbsp;</a> <a class="tlink" href="http://sourceforge.net/forum/?group_id=197260" target="_self">&nbsp;Forum&nbsp;</a> <a class="tlink" href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self">&nbsp;Download&nbsp;</a>  &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</font></b></td>
+		</tr>
+		<tr>
+			<td class="spacer" colspan="2" width="100%"></td> </tr><tr><td class="lmenucontainer">&nbsp;</td>
+		</tr>
+		<tr>
+			<td class="lmenucontainer" height="100%" valign="top" width="14%">
+			<div align="center">
+			<center>
+			<table border="0" cellpadding="0" cellspacing="0" width="100%">
+				<tbody>
+					<tr>
+						<td height="6px" width="100%"> </td>
+					</tr>
+				</tbody>
+			</table>
+			</center>
+			</div>
+
+			<ul>
+				<li><a class="mlinkA" href="data-browsing.html" target="_self">Data Browser</a> </li>
+			</ul>
+
+			<table border="0" cellpadding="0" cellspacing="0" width="100%">
+				<tbody>
+					<tr>
+						<td class="content2background"><img alt="" src="architecture-Dateien/vgradp.gif" style="width: 160px; height: 1px;" /></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p>&nbsp;</p>
+			</td>
+			<td class="contentbackground" height="418" valign="top" width="86%">
+			<div align="right">
+			<table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+				<tbody>
+					<tr>
+						<td class="contentbackground" height="21" width="100%">&nbsp;</td>
+					</tr>
+					<tr>
+						<td class="content" height="520" valign="top" width="100%">
+						<h3>Relational Data Browsing</h3>
+			
+						Navigate bidirectionally through the database by following foreign key based or user defined relationships<br>
+						<a href="#video"><img src="video.png" /></a><br />
+						<br />
+						<a href="screenshot.html"><img src="data-browser-small.png" /></a> <br />
+						<h3>The Data Browser</h3>
+						
+						<p><img alt="" src="db1.png" /></p>
+				<br />
+						<h3>All begins with the first table</h3>
+						Open Table "EMPLOYEE".<br>
+						<p><img alt="" src="db2.png" /></p>
+<br />
+						Our first table with the data of all employees appears.<br>
+						<p><img alt="" src="db3.png" /></p>
+						<br />
+						<h3>Where do they all work?</h3>
+						
+						Under &quot;Related Rows&quot; we find the &quot;DEPARTMENT&quot; table.<br>
+						<p><img alt="" src="db4.png" /></p>
+						<br>
+						The "DEPARTMENT" table appears and shows not only all departments, but also which employee belongs to which department.<br>
+						<p><img alt="" src="db5.png" /></p>
+						<br />
+						<h3>And what are they actually working on?</h3>
+						In the "Closure" view we can see with which tables the selected table is related. Moreover, also the relations of these and so on.
+						<br>
+						<p><img alt="" src="db6.png" /></p>
+						<br>
+						With a double click on "PROJECT" the table "PROJECT_PARTICIPATION" opens and with it connected "PROJECT".<br>
+						<p><img alt="" src="db7.png" /></p>
+						<br>
+						We can minimize the "PROJECT_PARTIPITATION" table...<br>
+						<p><img alt="" src="db8.png" /></p>
+						<br>
+						...to see the relationship between employees and projects directly.<br>
+						<p><img alt="" src="db9.png" /></p>
+						<br>
+						<h3>The way to the SQL console</h3>
+						<p>From the network of interconnected tables on the desktop, we can automatically create an SQL query that will retrieve exactly the same data that can be seen here. 
+						</p>
+						<p>Use the menu item "Query Builder (Ctrl+Q)" to make some adjustments to this query first.<br>
+						Use "SQL Console (Ctrl+Enter)" to go directly to the SQL console.
+						</p>
+						<p><img alt="" src="db11.png" /></p>
+						<br>
+						Using the console, we can then make whatever queries we want, view the results, and do all the things we usually do with such tools.
+						<p><img alt="" src="db10.png" /></p>
+						<br>
+						<h3>Video</h3>
+						<video id="video" src="animated/DataBrowser.mp4" controls></video><br>
+						<h3>Exporting data using the Data Browser</h3>
+						<video id="SubsetByExample" src="animated/SubsetByExample.mp4" controls></video>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			</div>
+
+			<p>&nbsp;</p>
+			</td>
+		</tr>
+		<tr>
+			<td height="12" valign="top" width="14%">&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+	</tbody>
+</table>
+</div>
+</body>
+</html>
