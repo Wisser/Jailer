@@ -43,6 +43,7 @@ import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.AllValue;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
 import net.sf.jsqlparser.expression.ArrayConstructor;
@@ -84,6 +85,7 @@ import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
 import net.sf.jsqlparser.expression.TimezoneExpression;
+import net.sf.jsqlparser.expression.TryCastExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.VariableAssignment;
@@ -109,10 +111,12 @@ import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.FullTextSearch;
+import net.sf.jsqlparser.expression.operators.relational.GeometryDistance;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsBooleanExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsDistinctExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.JsonOperator;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
@@ -374,7 +378,6 @@ public class WCTypeAnalyser {
 							clearInStatement(plainSelect.getKsqlWindow());
 							clearInStatement(plainSelect.getMySqlHintStraightJoin());
 							clearInStatement(plainSelect.getMySqlSqlCalcFoundRows());
-							clearInStatement(plainSelect.getMySqlSqlNoCache());
 							clearInStatement(plainSelect.getOptimizeFor());
 							clearInStatement(plainSelect.getOracleHierarchical());
 							clearInStatement(plainSelect.getOracleHint());
@@ -1245,6 +1248,30 @@ public class WCTypeAnalyser {
 			public void visit(OracleNamedFunctionParameter aThis) {
 				noSubexpression[0] = false;
 			}
+
+			@Override
+			public void visit(TryCastExpression arg0) {
+			}
+
+			@Override
+			public void visit(AllColumns arg0) {
+			}
+
+			@Override
+			public void visit(AllTableColumns arg0) {
+			}
+
+			@Override
+			public void visit(AllValue arg0) {
+			}
+
+			@Override
+			public void visit(IsDistinctExpression arg0) {
+			}
+
+			@Override
+			public void visit(GeometryDistance arg0) {
+			}
 		};
 	}
 	
@@ -1722,6 +1749,30 @@ public class WCTypeAnalyser {
 		@Override
 		public void visit(OracleNamedFunctionParameter aThis) {
 			visitAny(aThis);
+		}
+
+		@Override
+		public void visit(TryCastExpression arg0) {
+		}
+
+		@Override
+		public void visit(AllColumns arg0) {
+		}
+
+		@Override
+		public void visit(AllTableColumns arg0) {
+		}
+
+		@Override
+		public void visit(AllValue arg0) {
+		}
+
+		@Override
+		public void visit(IsDistinctExpression arg0) {
+		}
+
+		@Override
+		public void visit(GeometryDistance arg0) {
 		}
 	};
 

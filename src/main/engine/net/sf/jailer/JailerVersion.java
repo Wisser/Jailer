@@ -45,8 +45,3 @@ public class JailerVersion {
 	}
 
 }
-
-// TODO JSQLParser update
-
-// TODO
-// TODO driver updates (MySQL)

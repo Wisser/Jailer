@@ -3114,7 +3114,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private boolean findAndSetCaretPosition(String statement, TabContentPanel tabContentPanel) {
         statement = statement.replaceFirst("(;\\s*)+$", "").trim();
 
-        if (tabContentPanel != null && tabContentPanel.caretDotMark.a != tabContentPanel.caretDotMark.b) {
+        if (tabContentPanel != null) {
 	    	try {
 	    		try {
 					editorPane.setCaretPosition(0);

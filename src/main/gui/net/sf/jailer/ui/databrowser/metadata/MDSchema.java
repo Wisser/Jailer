@@ -24,11 +24,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -158,11 +156,9 @@ public class MDSchema extends MDObject {
 					synchronized (metaDataSource.getSession().getMetaData()) {
 						ResultSet rs = metaDataSource.readTables(getName());
 						Map<String, Runnable> loadJobs = new TreeMap<String, Runnable>();
-						Set<String> ds1 = new HashSet<String>();
 						while (rs.next()) {
 							final String name = rs.getString(3);
 							String tableName = metaDataSource.getQuoting().quote(name);
-							ds1.add(name);
 							final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)),
 									"SYNONYM".equalsIgnoreCase(rs.getString(4))
 								 || "ALIAS".equalsIgnoreCase(rs.getString(4)));

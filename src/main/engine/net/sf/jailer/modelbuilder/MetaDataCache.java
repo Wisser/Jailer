@@ -153,7 +153,6 @@ public class MetaDataCache {
 	 */
 	public static MetaDataCache readColumns(Session session, String schema) {
 		_log.info("reading columns (may take some time)...");
-		Set<String> ds2 = new HashSet<String>();
 		
 		MetaDataCache metaDataCache = new MetaDataCache();
 		ResultSet rs;
@@ -193,7 +192,6 @@ public class MetaDataCache {
 				String table = (String) row[2];
 
 				List<Object[]> rowList = metaDataCache.cache.get(table);
-				ds2.add(table);
 				if (rowList == null) {
 					rowList = new LinkedList<Object[]>();
 					metaDataCache.cache.put(table, rowList);

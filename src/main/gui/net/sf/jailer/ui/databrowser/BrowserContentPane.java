@@ -3293,14 +3293,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				for (Association association: restrictedDependencies) {
 					parents.add(dataModel.getDisplayName(association.destination));
 				}
-//				String pList = "";
-//				int i = 0;
-//				for (String p: parents) {
-//					pList += p + "\n";
-//					if (++i > 20) {
-//						break;
-//					}
-//				}
 
 				final SbEDialog sbEDialog = new SbEDialog(SwingUtilities.getWindowAncestor(this),
 						(doExport? "Export rows and related rows from \"" : "Create Extraction Model for Subject \"") + dataModel.getDisplayName(stable) + "\".", (parents.isEmpty()? "" : ("\n\n" + parents.size() + " parent tables not included.")));
@@ -3318,14 +3310,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							if (!(((DefaultMutableTreeNode) value).getUserObject() instanceof String)) {
 								if (result instanceof JLabel) {
 									((JLabel) result).setForeground(Color.red);
-								} else {
-									((JLabel) result).setForeground(Color.black);
 								}
 							}
 						}
 						return result;
 					}
-
 				};
 				renderer.setOpenIcon(null);
 				renderer.setLeafIcon(null);
@@ -3356,19 +3345,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						disableDisregardedNonParentsOfDestination(a, restrictedAssociations, restrictionDefinitions);
 					}
 				}
-
-//				int option = JOptionPane.showOptionDialog(parent, "Disregarded parent tables:\n\n" + pList + "\n", "Disregarded parent tables", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "regard parent tables", "Ok" }, "regard parent tables");
-//				switch (option) {
-//				case 0:
-//					restrictionDefinitions.removeAll(restrictedDependencyDefinitions);
-//					for (Association a: restrictedDependencies) {
-//						disableDisregardedNonParentsOfDestination(a, restrictedAssociations, restrictionDefinitions);
-//					}
-//					break;
-//				case 1:
-//					break;
-//				default: return;
-//				}
 //			}
 
 			subjectCondition = root.whereClause;

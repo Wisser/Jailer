@@ -1511,7 +1511,7 @@ public class Session {
 
 	private final static ThreadLocal<Boolean> sharesConnection = new ThreadLocal<Boolean>();
 
-	public final String MD_GETCOLUMNS_LOCK = new String("MD_GETCOLUMNS_LOCK");
+	public final Object MD_GETCOLUMNS_LOCK = new String("MD_GETCOLUMNS_LOCK");
 
 	public static void setThreadSharesConnection() {
 		sharesConnection.set(true);
