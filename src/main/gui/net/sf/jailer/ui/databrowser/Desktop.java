@@ -1639,7 +1639,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 			r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
-			y += 8 * layoutMode.factor;
+			y += (int) (8 * layoutMode.factor);
 			if (ok) {
 				break;
 			}
@@ -2930,7 +2930,7 @@ public abstract class Desktop extends JDesktopPane {
 			JInternalFrame iFrame = root.getUserObject().internalFrame;
 			int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor);
 			int y = (int) (BROWSERTABLE_DEFAULT_MIN_Y * layoutMode.factor);
-			x += (root.getLevel() - 1) * (int) ((BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor) + minX * layoutMode.factor;
+			x += (int) ((root.getLevel() - 1) * (int) ((BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor) + minX * layoutMode.factor);
 			y += (int) (root.getPosition() * (BROWSERTABLE_DEFAULT_HEIGHT + 8) * layoutMode.factor);
 			int h = (int) (BROWSERTABLE_DEFAULT_HEIGHT * layoutMode.factor);
 			Rectangle r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);

@@ -37,7 +37,7 @@ public class HttpUtil {
 			// fall through
 		}
 	    try {
-	        Process p = Runtime.getRuntime().exec("java -classpath " + Environment.newWorkingFolderFile("jailer.jar").getPath() + " -Djava.net.useSystemProxies=true " + HttpUtil.class.getName() + " " + url);
+	        Process p = Runtime.getRuntime().exec("java -classpath " + Environment.newWorkingFolderFile("jailer.jar").getPath() + " -Djava.net.useSystemProxies=true " + HttpUtil.class.getName() + " " + url); // lgtm [java/concatenated-command-line]
         	BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String line;
 

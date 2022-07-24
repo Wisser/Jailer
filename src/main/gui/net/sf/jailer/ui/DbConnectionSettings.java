@@ -383,7 +383,7 @@ public class DbConnectionSettings extends javax.swing.JPanel {
 		defValues= new ArrayList<String>();
 		isOptional = new ArrayList<Boolean>();
 
-		Pattern pattern = Pattern.compile("(\\[(?:[^\\[\\]]*))?<(\\w+)(?:\\(((?:\\w|\\d)+)\\))?>((?:[^\\[\\]]*)\\])?", Pattern.DOTALL);
+		Pattern pattern = Pattern.compile("(\\[(?:[^\\[\\]]*))?<(\\w+)(?:\\(((?:\\w|\\d)+)\\))?>((?:[^\\[\\]]*)\\])?", Pattern.DOTALL); // lgtm [java/redos]
 		Matcher matcher = pattern.matcher(url);
 		for (int i = 0; i < pLabel.length; ++i) {
 			pLabel[i].setVisible(false);

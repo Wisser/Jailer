@@ -1011,7 +1011,7 @@ public class UIUtil {
         long memSize = 0;
         try {
             final int MB = 1024 * 1024;
-            List<byte[]> mem = new ArrayList<byte[]>();
+            List<byte[]> mem = new ArrayList<byte[]>(); // lgtm [java/unused-container]
             while (true) {
                 mem.add(new byte[MB]);
                 memSize += MB;

@@ -144,7 +144,7 @@ public class DesktopIFrameStateChangeRenderer {
 						stateChange.iFrame = iFrame;
 						stateChange.startTime = currentTimeMillis - offset;
 						stateChanges.put(iFrame, stateChange);
-						offset += DURATION / 3;
+						offset += (long) (DURATION / 3);
 					}
 				}
 			});

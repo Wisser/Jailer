@@ -685,7 +685,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			content.add(p, gridBagConstraints);
 			Set<String> un = new HashSet<String>();
 			tableNames.forEach(s -> {
-				if (!s.getText().matches("^((\\s*)|(<[^>]+>)*((&nbsp;)*)(<[^>]+>))*$")) {
+				if (!s.getText().matches("^((\\s*)|(<[^>]+>)*((&nbsp;)*)(<[^>]+>))*$")) { // lgtm [java/redos]
 					un.add(s.getText());
 				}
 			});

@@ -762,15 +762,16 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         
         Set<Integer> myStarts = new HashSet<Integer>();
         Stack<Integer> ordPos = new Stack<Integer>();
-        Map<Integer, Integer> endPerOrdPos = new HashMap<Integer, Integer>();
+//        Map<Integer, Integer> endPerOrdPos = new HashMap<Integer, Integer>();
         for (int i = 0; i < sb.length(); ++i) {
             char c = sb.charAt(i);
             if (c == '(') {
                 ordPos.push(i);
             } else if (c == ')') {
                 if (!ordPos.isEmpty()) {
-                    int start = ordPos.pop();
-                    endPerOrdPos.put(start, i);
+                    /* int start = */
+                	ordPos.pop();
+//                    endPerOrdPos.put(start, i);
                 }
             }
             if (i == caretPos) {

@@ -581,10 +581,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								theSession = null;
 							}
 						} else {
-							Set<String> prevIDs = new TreeSet<String>();
 							long prevHash = 0;
 							for (Row r: BrowserContentPane.this.rows) {
-								prevIDs.add(r.nonEmptyRowId);
 								try {
 									for (Object v: r.values) {
 										if (v != null) {
@@ -599,10 +597,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							BrowserContentPane.this.rows.clear();
 							BrowserContentPane.this.rows.addAll(rows);
 							updateTableModel(l, limitExceeded, closureLimitExceeded);
-							Set<String> currentIDs = new TreeSet<String>();
 							long currentHash = 0;
 							for (Row r: rows) {
-								currentIDs.add(r.nonEmptyRowId);
 								try {
 									for (Object v: r.values) {
 										if (v != null) {

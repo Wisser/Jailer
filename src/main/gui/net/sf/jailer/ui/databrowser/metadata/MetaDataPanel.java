@@ -356,7 +356,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				}
 				for (Entry<String, String> e: typeNames.entrySet()) {
 					List<Object[]> rowsPerType = new ArrayList<Object[]>();
-					ArrayList<MDDescriptionBasedGeneric> descs = new ArrayList<MDDescriptionBasedGeneric>();
+					ArrayList<MDDescriptionBasedGeneric> descs = new ArrayList<MDDescriptionBasedGeneric>(); // lgtm [java/unused-container]
 					for (final Object[] row: theList.getRowList()) {
 						if (String.valueOf(row[0]).equals(e.getKey())) {
 							rowsPerType.add(row);

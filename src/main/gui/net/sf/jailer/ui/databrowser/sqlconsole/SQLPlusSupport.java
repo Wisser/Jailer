@@ -59,7 +59,7 @@ public class SQLPlusSupport {
 	private Map<String, String[]> columnSubstitutions = new TreeMap<String, String[]>();
 	
 	private final Pattern DEFINE_PATTERN = Pattern.compile("\\s*DEFINE\\s+(\\w+)\\s*=\\s*(.*)\\s*", Pattern.CASE_INSENSITIVE);
-	private final Pattern UNDEFINE_PATTERN = Pattern.compile("\\s*UNDEFINE\\s+((?:\\w+\\s*)+)", Pattern.CASE_INSENSITIVE);
+	private final Pattern UNDEFINE_PATTERN = Pattern.compile("\\s*UNDEFINE\\s+((?:\\w+\\s*)+)", Pattern.CASE_INSENSITIVE); // lgtm [java/redos]
 	private final Pattern COLUMN_PATTERN = Pattern.compile("\\s*COLUMN\\s+(\\w+)\\s*((?:(?:new_value|old_value)\\s+\\w+\\s*)+)", Pattern.CASE_INSENSITIVE);
 	private final Pattern COMMENTS_PATTERN = Pattern.compile("(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
 	
