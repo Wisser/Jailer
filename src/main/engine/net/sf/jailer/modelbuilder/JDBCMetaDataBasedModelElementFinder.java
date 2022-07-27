@@ -818,7 +818,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 	/**
 	 * Find a key of a table based on an unique index on non-nullable columns.
-	 * @param string
 	 */
 	private boolean findUniqueIndexBasedKey(Quoting quoting, Session session, Table tmp, Map<Integer, Column> pk, String tableType) {
 		try {
@@ -915,7 +914,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 	/**
 	 * Calls {@link DatabaseMetaData#getIndexInfo(String, String, String, boolean, boolean). Uses schemaPattern as catalogPattern on MySQL.
-	 * @param withCaching
 	 */
 	public static ResultSet getIndexes(Session session, String schemaPattern, String tableNamePattern) throws SQLException {
 		if (DBMS.MySQL.equals(session.dbms)) {
@@ -984,7 +982,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 	/**
 	 * Calls {@link DatabaseMetaData#getProcedures(String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
-	 * @param withCaching
 	 */
 	public static ResultSet getProcedures(Session session, String schemaPattern, String functionPattern) throws SQLException {
 		if (DBMS.MySQL.equals(session.dbms)) {
@@ -1290,7 +1287,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 *
 	 * @param length the length as given from driver
 	 * @param precision the precision as given from driver
-	 * @param the type name
 	 * @param type the sql type
 	 * @param dbms the DBMS
 	 *
@@ -1330,7 +1326,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 *
 	 * @param length the length as given from driver
 	 * @param precision
-	 * @param the type name
 	 * @param type the sql type
 	 * @param dbms the DBMS
 	 *
@@ -1347,7 +1342,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * Filters the type attribute of a column in a DBMS specific way.
 	 *
 	 * @param length the length as given from driver
-	 * @param the type name
 	 * @param type the sql type
 	 * @param dbms the DBMS
 	 *

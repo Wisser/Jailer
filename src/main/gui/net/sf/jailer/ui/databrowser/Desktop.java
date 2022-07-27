@@ -1241,7 +1241,7 @@ public abstract class Desktop extends JDesktopPane {
 						rootBrowser = root.getParentBrowser();
 						root = rootBrowser.browserContentPane;
 					}
-					String undoDescription = "Start Navigation at \"" + (rootBrowser.internalFrame.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "")) + "\" ";
+					String undoDescription = "Start Navigation at \"" + (rootBrowser != null? ((rootBrowser.internalFrame.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "")) + "\" ") : "");
 					String redoDescription = "Start Navigation at \"" + (tableBrowser.internalFrame.getTitle().replaceFirst("\\s*\\(\\d+\\)$", "")) + "\" ";
 					desktopUndoManager.beforeModification(undoDescription, redoDescription);
 				}
@@ -1607,7 +1607,7 @@ public abstract class Desktop extends JDesktopPane {
 
 	private Rectangle layout(RowBrowser parent, Association association, BrowserContentPane browserContentPane,
 			Collection<RowBrowser> ignore, int maxH, int xPosition) {
-		int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor + minX * layoutMode.factor);
+		int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor + minX * layoutMode.factor); // lgtm [java/evaluation-to-constant]
 		int y = (int) (BROWSERTABLE_DEFAULT_MIN_Y * layoutMode.factor);
 
 		while (parent != null && parent.isHidden()) {
@@ -1846,17 +1846,15 @@ public abstract class Desktop extends JDesktopPane {
 							cellRect = new Rectangle();
 							i = 0;
 							ignoreScrolling = false;
-							if (rowToRowLink.childRowIndex >= 0) {
-								i = tableBrowser.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.childRowIndex);
-								if (i < 0) {
-									rowToRowLink.visible = false;
-									continue;
-								}
-								cellRect = tableBrowser.browserContentPane.rowsTable.getCellRect(i, 0, true);
-								if (tableBrowser.browserContentPane.rows != null && tableBrowser.browserContentPane.rows.size() == 1) {
-									cellRect.setBounds(cellRect.x, 0, cellRect.width, Math.min(cellRect.height, 20));
-									ignoreScrolling = true;
-								}
+							i = tableBrowser.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.childRowIndex);
+							if (i < 0) {
+								rowToRowLink.visible = false;
+								continue;
+							}
+							cellRect = tableBrowser.browserContentPane.rowsTable.getCellRect(i, 0, true);
+							if (tableBrowser.browserContentPane.rows != null && tableBrowser.browserContentPane.rows.size() == 1) {
+								cellRect.setBounds(cellRect.x, 0, cellRect.width, Math.min(cellRect.height, 20));
+								ignoreScrolling = true;
 							}
 
 							x1 = internalFrame.getX();
@@ -1894,17 +1892,15 @@ public abstract class Desktop extends JDesktopPane {
 							ignoreScrolling = false;
 							cellRect = new Rectangle();
 							i = 0;
-							if (rowToRowLink.parentRowIndex >= 0) {
-								i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.parentRowIndex);
-								if (i < 0) {
-									rowToRowLink.visible = false;
-									continue;
-								}
-								cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
-								if (tableBrowser.parent.browserContentPane.rows != null && tableBrowser.parent.browserContentPane.rows.size() == 1) {
-									cellRect.setBounds(cellRect.x, 0, cellRect.width, Math.min(cellRect.height, 20));
-									ignoreScrolling = true;
-								}
+							i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.parentRowIndex);
+							if (i < 0) {
+								rowToRowLink.visible = false;
+								continue;
+							}
+							cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
+							if (tableBrowser.parent.browserContentPane.rows != null && tableBrowser.parent.browserContentPane.rows.size() == 1) {
+								cellRect.setBounds(cellRect.x, 0, cellRect.width, Math.min(cellRect.height, 20));
+								ignoreScrolling = true;
 							}
 
 							x2 = visParent.internalFrame.getX();
@@ -1941,7 +1937,7 @@ public abstract class Desktop extends JDesktopPane {
 							}
 						}
 
-						if (tableBrowser.parent != null && tableBrowser.parent.internalFrame.isVisible() && tableBrowser.internalFrame.isVisible()) {
+						if (tableBrowser.parent.internalFrame.isVisible() && tableBrowser.internalFrame.isVisible()) {
 							long shift = 32768;
 							long start = (long) x2 + shift * (long) y2;
 							long end = (long) x1 + shift * (long) y1;
@@ -2286,7 +2282,7 @@ public abstract class Desktop extends JDesktopPane {
 									final int ir = dir > 0? i : linksToRender.size() - 1 - i;
 									final boolean finalLight = light;
 									int linkPrio = 0;
-									if (pathToSelectedRowBrowser != null && pathToSelectedRowBrowser.contains(tableBrowser)) {
+									if (pathToSelectedRowBrowser.contains(tableBrowser)) {
 										linkPrio += 2;
 									}
 									if (link.inClosure) {
@@ -2928,7 +2924,7 @@ public abstract class Desktop extends JDesktopPane {
 	private void arrangeNodes(Node<RowBrowser> root) {
 		if (root.getUserObject() != null) {
 			JInternalFrame iFrame = root.getUserObject().internalFrame;
-			int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor);
+			int x = (int) (BROWSERTABLE_DEFAULT_MIN_X * layoutMode.factor); // lgtm [java/evaluation-to-constant]
 			int y = (int) (BROWSERTABLE_DEFAULT_MIN_Y * layoutMode.factor);
 			x += (int) ((root.getLevel() - 1) * (int) ((BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor) + minX * layoutMode.factor);
 			y += (int) (root.getPosition() * (BROWSERTABLE_DEFAULT_HEIGHT + 8) * layoutMode.factor);
@@ -3346,7 +3342,7 @@ public abstract class Desktop extends JDesktopPane {
 			if (bookmarksPanel == null) {
 				currentSessionFileName = sFile;
 			} else {
-				if (sFile != null && new File(sFile).exists()) {
+				if (new File(sFile).exists()) {
 					new File(sFile).setLastModified(System.currentTimeMillis());
 				}
 				bookmarksPanel.updateBookmarksMenu();

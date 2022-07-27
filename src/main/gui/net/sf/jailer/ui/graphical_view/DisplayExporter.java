@@ -147,7 +147,7 @@ public class DisplayExporter {
 //          Point2D zoomPoint = new Point2D.Double(0, 0);
 
 			// Get and remember the current scaling
-			Double scale = display.getScale();
+			double scale = display.getScale();
 
 			// Change scale to normal (1)
 //            display.zoom(zoomPoint, 1/scale);

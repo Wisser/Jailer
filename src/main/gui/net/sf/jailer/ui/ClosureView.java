@@ -674,7 +674,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
     	for (String tip: tipList) {
     		if (++w > 8) {
     			w = 0;
-    			if (++l >= 1) {
+    			if (++l >= 1) { // lgtm [java/constant-comparison]
     	    		if (size > i) {
     	    			sb.append("<td>&nbsp;<i>" + (size - i) + " more...</i>&nbsp;</td>");
     	    		}

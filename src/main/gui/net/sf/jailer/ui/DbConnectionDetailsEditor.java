@@ -314,10 +314,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	private List<Pattern> pattern = new ArrayList<Pattern>();
 	private final boolean dataModelAware;
 	
-	/** Creates new form DbConnectionDialog 
-	 * @param forNew 
-	 * @param dataModelAware 
-	 * @param b */
+	/** Creates new form DbConnectionDialog
+	 */
 	public DbConnectionDetailsEditor(Window parent, final String jdbcHelpURL, boolean forNew, boolean forClone, InfoBar infoBar, boolean needsTest, boolean dataModelAware) {
 		super(parent);
 		setModal(true);

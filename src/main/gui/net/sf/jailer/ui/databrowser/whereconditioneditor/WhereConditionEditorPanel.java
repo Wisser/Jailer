@@ -194,11 +194,9 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
         
 		if (theProvider != null) {
 			new SQLAutoCompletion(theProvider, editor);
-			if (theProvider != null) {
-				theProvider.removeAliases();
-				if (tableAlias != null && table != null) {
-					theProvider.addAlias("A", table);
-				}
+			theProvider.removeAliases();
+			if (tableAlias != null && table != null) {
+				theProvider.addAlias("A", table);
 			}
 		}
         this.provider = theProvider;

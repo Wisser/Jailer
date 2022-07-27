@@ -399,7 +399,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					}
 					@Override
 					protected boolean renderRowAsPK(Row theRow) {
-						if (tableNameColumnIndex >= 0 && tableNameColumnIndex < theRow.values.length) {
+						if (tableNameColumnIndex >= 0 && tableNameColumnIndex < theRow.values.length) { // lgtm [java/constant-comparison]
 							return pkNames.contains(theRow.values[tableNameColumnIndex]);
 						}
 						return false;
@@ -491,7 +491,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 			}
 		};
     	panel.removeAll();
-    	if (mdTable.isDDLLoaded()) {
+    	if (mdTable.isDDLLoaded()) { // lgtm [java/dereferenced-value-may-be-null]
     		doRun.run();
     	} else {
 	    	panel.add(new JLabel(" loading..."));

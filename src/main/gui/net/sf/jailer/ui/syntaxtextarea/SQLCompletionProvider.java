@@ -470,13 +470,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     SCHEMA schema = getDefaultSchema(metaDataSource);
                     if (schema != null) {
                         result.addAll(schemaCompletions(schema));
-                        if (result != null) {
-                            for (SCHEMA s: getSchemas(metaDataSource)) {
-                                if (!s.equals(schema)) {
-                                    result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(getSchemaName(s)), getQuoting() == null? getSchemaName(s) : getQuoting().quote(getSchemaName(s)), 
-                                        null, SQLCompletion.COLOR_SCHEMA));
-                                }
-                            }
+                        for (SCHEMA s: getSchemas(metaDataSource)) {
+                        	if (!s.equals(schema)) {
+                        		result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(getSchemaName(s)), getQuoting() == null? getSchemaName(s) : getQuoting().quote(getSchemaName(s)), 
+                        				null, SQLCompletion.COLOR_SCHEMA));
+                        	}
                         }
                     }
                 }

@@ -57,11 +57,9 @@ public class HttpDownload {
 			input.close();
 		} catch (Throwable err) {
 			err.printStackTrace();
-			if (t != null) {
-				throw t;
-			}
+			throw t;
 		}
-		if (result.length() == 0 && t != null) {
+		if (result.length() == 0) {
 			throw t;
 		}
 		return result.toString();

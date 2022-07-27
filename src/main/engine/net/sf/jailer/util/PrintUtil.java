@@ -171,12 +171,15 @@ public class PrintUtil {
 				String pre = sb.substring(0, begin);
 				String woPre = sb.substring(begin + 11);
 				int i = woPre.indexOf('}');
-				 String content = woPre.substring(i + 1, end - begin - 11);
-				 String suf = sb.substring(end + 6);
-				 String cContent = "";
-				 int index = 1;
-				for (String var: listArguments.get(woPre.substring(0, i))) {
-					cContent += content.replaceAll("\\$i", "" + (index++)).replaceAll("\\$", Matcher.quoteReplacement(var));
+				String content = woPre.substring(i + 1, end - begin - 11);
+				String suf = sb.substring(end + 6);
+				String cContent = "";
+				int index = 1;
+				if (listArguments != null) {
+					for (String var : listArguments.get(woPre.substring(0, i))) {
+						cContent += content.replaceAll("\\$i", "" + (index++)).replaceAll("\\$",
+								Matcher.quoteReplacement(var));
+					}
 				}
 				sb = pre + cContent + suf;
 			} else {
@@ -262,7 +265,7 @@ public class PrintUtil {
 		if (file.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
 			reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
 		} else if (file.toLowerCase(Locale.ENGLISH).endsWith(".zip")){
-			ZipInputStream zis = new ZipInputStream(inputStream);
+			ZipInputStream zis = new ZipInputStream(inputStream); // lgtm [java/input-resource-leak]
 			zis.getNextEntry();
 			reader = new BufferedReader(new InputStreamReader(zis, encoding));
 		} else {

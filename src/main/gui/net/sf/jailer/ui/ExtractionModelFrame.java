@@ -1327,7 +1327,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				if (!extractionModelEditor.save(tmpF)) {
 					tmpF = null;
 				} else {
-					Table stable = extractionModelEditor.dataModel.getTableByDisplayName((String) extractionModelEditor.subjectTable.getSelectedItem());
+					Table stable = extractionModelEditor.dataModel.getTableByDisplayName((String) extractionModelEditor.subjectTable.getSelectedItem()); // lgtm [java/dereferenced-value-may-be-null]
 					if (stable == null) {
 						throw new IllegalStateException("No \"Export from\" table specified. (" + extractionModelEditor.dataModel.getTables().size() + " tables total)");
 					}
@@ -1367,7 +1367,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 								jmFile = extractionModelEditor.extractionModelFile != null? extractionModelEditor.extractionModelFile : tmpFileName;
 
-								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, defaultExportFileName, executionContext) {
+								exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, jmFile, tmpFileName, defaultExportFileName, executionContext) { // lgtm [java/dereferenced-value-may-be-null]
 									@Override
 									protected boolean checkForPKs(JRadioButton rowidButton, Runnable saveSettings) {
 										try {
@@ -1728,7 +1728,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			if (modelFile != null && UIUtil.checkFileExistsAndWarn(modelFile, this)) {
 				try {
 					UIUtil.setWaitCursor(this);
-					if (modelFile != null && !toFront(modelFile)) {
+					if (!toFront(modelFile)) {
 						String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 						if (extractionModelEditor.extractionModelFile == null && !extractionModelEditor.needsSave
 								&& currentModelSubfolder != null && currentModelSubfolder.equals(ExtractionModel.loadDatamodelFolder(modelFile, executionContext))) {

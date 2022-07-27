@@ -270,7 +270,7 @@ public class QueryTypeAnalyser {
 												fragment = sqlSelect.substring(pos.a, pos.b);
 											} else {
 												Expression o = selectExpressionItem.getExpression();
-												if (o != null && !(o instanceof LikeExpression) && (selectExpressionItem instanceof ASTNodeAccess && ((ASTNodeAccess) selectExpressionItem).getASTNode() != null)) {
+												if (o != null && !(o instanceof LikeExpression) && (selectExpressionItem instanceof ASTNodeAccess && ((ASTNodeAccess) selectExpressionItem).getASTNode() != null)) { // lgtm [java/useless-type-test]
 													SimpleNode node = ((ASTNodeAccess) selectExpressionItem).getASTNode();
 													fragment = sqlSelect.substring(node.jjtGetFirstToken().absoluteBegin - 1, node.jjtGetLastToken().absoluteEnd - 1);
 												}

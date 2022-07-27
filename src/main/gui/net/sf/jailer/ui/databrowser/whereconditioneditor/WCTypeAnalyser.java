@@ -399,7 +399,7 @@ public class WCTypeAnalyser {
 							if (cond != null) {
 								result.hasCondition = true;
 								Pair<Integer, Integer> pos = null;
-								if (!(cond instanceof LikeExpression) && (cond instanceof ASTNodeAccess && ((ASTNodeAccess) cond).getASTNode() != null)) {
+								if (!(cond instanceof LikeExpression) && (cond instanceof ASTNodeAccess && ((ASTNodeAccess) cond).getASTNode() != null)) { // lgtm [java/useless-type-test]
 									SimpleNode node = ((ASTNodeAccess) cond).getASTNode();
 									pos = new Pair<Integer, Integer>(node.jjtGetFirstToken().absoluteBegin - 1, node.jjtGetLastToken().absoluteEnd - 1);
 								} else {

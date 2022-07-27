@@ -204,7 +204,7 @@ public class SqlScriptExecutor {
 		
 		File file = new File(scriptFileName);
 		InputStream inputStream = new FileInputStream(file);
-		inputStream = new FilterInputStream(inputStream) {
+		inputStream = new FilterInputStream(inputStream) { // lgtm [java/input-resource-leak]
 			@Override
 			public int read() throws IOException {
 				int result = in.read();
@@ -498,7 +498,7 @@ public class SqlScriptExecutor {
 		final String where = clobLocator.substring(c2 + 1).trim();
 		String line;
 		final File lobFile = Configuration.getInstance().createTempFile(); // new File("lob." + System.currentTimeMillis());
-		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8");
+		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8"); // lgtm [java/output-resource-leak] 
 		long length = 0;
 		while ((line = lineReader.readLine()) != null) {
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
@@ -552,7 +552,7 @@ public class SqlScriptExecutor {
 		final String where = xmlLocator.substring(c2 + 1).trim();
 		String line;
 		final File lobFile = Configuration.getInstance().createTempFile(); // new File("lob." + System.currentTimeMillis());
-		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8");
+		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8"); // lgtm [java/output-resource-leak] 
 		long length = 0;
 		while ((line = lineReader.readLine()) != null) {
 			// line = line.trim();

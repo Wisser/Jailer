@@ -584,9 +584,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					docked = false;
 					closureView.selectTabIndex(0);
 				} else {
-					if (docked != null) {
-						ExtractionModelEditor.this.extractionModelFrame.pendingDecisionsDialog.setVisible(false);
-					}
+					ExtractionModelEditor.this.extractionModelFrame.pendingDecisionsDialog.setVisible(false);
 					closureView.addTabComponent("Migration pending", pendingDecisionsPanel);
 					closureView.selectTabComponent(pendingDecisionsPanel);
 					dockButton.setText("Undock");
@@ -1197,15 +1195,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					dialog.setLocation(x, y);
 					int minWidth = 660;
 					int wid = Math.max(minWidth, dialog.getWidth());
-					Integer maxX = getX() + getWidth() - wid - 8;;
+					int maxX = getX() + getWidth() - wid - 8;;
 					if (whereConditionEditorPanel != null) {
 						dialog.setSize(wid, Math.min(Math.max(dialog.getHeight(), 260), 600));
 					}
-					if (maxX != null) {
-						dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
-					}
-					Integer maxY = getY() + getHeight() - dialog.getHeight() - 8;
-					if (maxY != null && maxY < dialog.getY()) {
+					dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+					int maxY = getY() + getHeight() - dialog.getHeight() - 8;
+					if (maxY < dialog.getY()) {
 						int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
 						maxY += deltaH;
 						if (whereConditionEditorPanel != null) {
@@ -3220,7 +3216,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			try {
 				captureLayout();
 				DefaultMutableTreeNode toSelect = null;
-				for (int i = 0; i < 3; ++i) {
+				for (int i = 0; i < 3; ++i) { // lgtm [java/constant-comparison]
 					for (DefaultMutableTreeNode node: treeNodes) {
 						if (node.getUserObject() instanceof Association) {
 							Association a = (Association) node.getUserObject();
@@ -3364,7 +3360,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				return false;
 			}
 			extractionModelFile = newFile;
-			extractionModelFrame.reload.setEnabled(extractionModelFile != null && needsSave);
+			extractionModelFrame.reload.setEnabled(needsSave);
 		}
 		String file = extractionModelFile;
 		graphView.storeLayout();

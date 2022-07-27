@@ -380,7 +380,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					final UIUtil.IconWithText label = MDSchema.getConstraintTypeIcon(e.getKey() + "s");
 					result.add(new MDDescriptionBasedGeneric(e.getValue(), getMetaDataSource(), schema, dataModel, desc) {
 						@Override
-						protected MemorizedResultSet retrieveList(Session session) throws SQLException {
+						protected MemorizedResultSet retrieveList(Session session) throws SQLException { // lgtm [java/non-sync-override]
 							listPerType.reset();
 							return listPerType;
 						}
@@ -2067,8 +2067,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private void updateRowCounters() {
 		DefaultTreeModel m = (DefaultTreeModel) metaDataTree.getModel();
 		TreeNode root2 = (TreeNode) m.getRoot();
-		List<TreeNode> path = new ArrayList<TreeNode>();
-		path.add(root2);
 		rowCounters = new TreeMap<Integer, MDTable>();
 		trav(m, root2, new TreePath(root2), rowCounters);
 		rowCounters.size();
@@ -2109,25 +2107,23 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private final AtomicReference<JDialog> waitDialog = new AtomicReference<JDialog>(null);
 
     static ImageIcon getScaledIcon(JComponent component, ImageIcon icon, boolean small) {
-        if (icon != null) {
-            ImageIcon scaledIcon = icon;
-            if (scaledIcon != null) {
-                int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
-                double s = heigth / (double) scaledIcon.getIconHeight();
-                if (icon == viewIcon) {
-                    s *= 0.8;
-                }
-                if (small) {
-                	s *= 0.8;
-                }
-                try {
-                    return UIUtil.scaleIcon(scaledIcon, s);
-                } catch (Exception e) {
-                	logger.info("error", e);
-                    return null;
-                }
-            }
-        }
+		if (icon != null) {
+			ImageIcon scaledIcon = icon;
+			int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
+			double s = heigth / (double) scaledIcon.getIconHeight();
+			if (icon == viewIcon) {
+				s *= 0.8;
+			}
+			if (small) {
+				s *= 0.8;
+			}
+			try {
+				return UIUtil.scaleIcon(scaledIcon, s);
+			} catch (Exception e) {
+				logger.info("error", e);
+				return null;
+			}
+		}
         return null;
     }
 

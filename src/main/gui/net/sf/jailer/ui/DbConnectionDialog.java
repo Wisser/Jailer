@@ -595,7 +595,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 			
 			File file = Environment.newFile(CONNECTIONS_FILE);
-			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file)); // lgtm [java/output-resource-leak]
 			out.writeObject(connectionList);
 			out.writeInt(connectionList.indexOf(currentConnection));
 			List<String> dataModels = new ArrayList<String>();

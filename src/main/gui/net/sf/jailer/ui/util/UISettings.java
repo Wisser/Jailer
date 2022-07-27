@@ -188,9 +188,7 @@ public class UISettings {
 			int numA = 0;
 			for (Table table: dataModel.getTables()) {
 				nc.add(table.getColumns().size());
-				if (table.associations != null) {
-					numA += table.associations.size();
-				}
+				numA += table.associations.size();
 			}
 			if (!nc.isEmpty()) {
 				Collections.sort(nc);

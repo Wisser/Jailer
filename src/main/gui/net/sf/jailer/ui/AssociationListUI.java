@@ -716,7 +716,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 					} else {
 						selection.addAll(node.associations);
 						Node leaf = node;
-						while (leaf.children != null && leaf.children.size() > 0) {
+						while (leaf.children.size() > 0) {
 							leaf = leaf.children.get(0);
 						}
 						if (leaf.associations.size() > 0) {

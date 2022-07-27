@@ -456,7 +456,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 			Integer pos = graphicalDataModelView.tablesOnPath.get(tableName);
 			if (pos != null) {
 				final int PERIOD = 4000;
-				double d = Math.sin((((System.currentTimeMillis() - pos * 300) % PERIOD) / (double) PERIOD) * 2 * Math.PI);
+				double d = Math.sin((((System.currentTimeMillis() - (double) pos * 300.0) % PERIOD) / (double) PERIOD) * 2 * Math.PI);
 				d = Math.pow(d *= d, 2.2);
 				double f = isSelected || graphicalDataModelView.tablesOnPath.size() <= 3? 0.0 : 0.50 * d;
 				fillColor = ColorLib.rgba(

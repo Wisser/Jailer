@@ -1548,7 +1548,7 @@ public class Base64
 			}   // end else: get data
 			
 			// Got data?
-			if( position >= 0 )
+			if( position >= 0 ) // lgtm [java/constant-comparison]
 			{
 				// End of relevant data?
 				if( /*!encode &&*/ position >= numSigBytes )

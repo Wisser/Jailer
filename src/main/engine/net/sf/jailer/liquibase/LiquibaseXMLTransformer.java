@@ -208,14 +208,14 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		int count;
 		AttributesImpl attrcolumn = new AttributesImpl();
 		String columnname = getMetaData(singleRow).getColumnName(columncount);
-		Integer columnType = getMetaData(singleRow).getColumnType(columncount);
-		Integer precision = getMetaData(singleRow).getPrecision(columncount);
+		int columnType = getMetaData(singleRow).getColumnType(columncount);
+		int precision = getMetaData(singleRow).getPrecision(columncount);
 		
 		singleRow.getObject(columncount);
 	
 		// special handling for sql server
 		if (DBMS.MSSQL.equals(session.dbms) || DBMS.SYBASE.equals(session.dbms)) {
-			if (columnType == Types.VARCHAR && precision.equals(Integer.MAX_VALUE)) {
+			if (columnType == Types.VARCHAR && precision == Integer.MAX_VALUE) {
 				columnType = Types.CLOB;
 			}
 		}
@@ -296,17 +296,17 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 				
 			case Types.INTEGER:
 			case Types.SMALLINT:
-				Integer integervalue= singleRow.getInt(columncount);
+				Integer integervalue= singleRow.getInt(columncount); // lgtm [java/non-null-boxed-variable]
 				attrcolumn=createAttribute(columnname,VALUE_NUMERIC,integervalue.toString());
 				break;
 				
 			case Types.FLOAT:
-				Float floatvalue= singleRow.getFloat(columncount);		
+				Float floatvalue= singleRow.getFloat(columncount); // lgtm [java/non-null-boxed-variable]
 				attrcolumn=createAttribute(columnname,VALUE_NUMERIC,floatvalue.toString());
 				break;
 				
 			case Types.DOUBLE:
-				Double doublevalue= singleRow.getDouble(columncount); 			
+				Double doublevalue= singleRow.getDouble(columncount); // lgtm [java/non-null-boxed-variable]
 				attrcolumn=createAttribute(columnname,VALUE_NUMERIC,doublevalue.toString());		
 				break;
 				

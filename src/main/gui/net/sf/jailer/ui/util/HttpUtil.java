@@ -56,7 +56,7 @@ public class HttpUtil {
 		URL theUrl;
 		theUrl = new URL(url);
 		URLConnection con = theUrl.openConnection();
-		InputStreamReader in = new InputStreamReader(con.getInputStream());
+		InputStreamReader in = new InputStreamReader(con.getInputStream()); // lgtm [java/input-resource-leak] 
 		int c;
 		while ((c = in.read()) != -1) {
 			result.append((char) c);

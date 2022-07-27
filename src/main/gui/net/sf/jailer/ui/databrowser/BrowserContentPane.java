@@ -2714,7 +2714,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 
 		if (getQueryBuilderDialog() != null && /* SQL Console */
-			!isPending && !rows.isEmpty() && row == null) {
+			!isPending && rows != null && !rows.isEmpty() && row == null) {
 			popup.add(allNonEmpty);
 			allNonEmpty.setInitialText();
 		}
@@ -2737,7 +2737,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 
 				final List<Row> toSelect = new ArrayList<Row>();
-				if (row != null && !row.nonEmptyRowId.isEmpty()) {
+				if (row != null && !row.nonEmptyRowId.isEmpty() && rows != null) {
 					for (Row r: rows) {
 						if (!r.nonEmptyRowId.isEmpty() && rowsClosure.currentClosureRootID.contains(r.nonEmptyRowId)) {
 							toSelect.add(r);
@@ -2761,7 +2761,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					});
 				} else {
 					JMenuItem sr = new JMenuItem(toSelect.size() <= 1? "Select Row" : ("Select Rows (" + toSelect.size() + ")"));
-					sr.setEnabled(row != null && rows.size() > 1 && !row.rowId.isEmpty());
+					sr.setEnabled(row != null && rows != null && rows.size() > 1 && !row.rowId.isEmpty());
 					popup.insert(sr, 0);
 					sr.addActionListener(new ActionListener() {
 						@Override
@@ -2858,9 +2858,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						if (!hasPK) {
 							delete.setEnabled(false);
 						}
-						inserts.setEnabled(rows.size() > 0);
-						updates.setEnabled(hasPK && rows.size() > 0);
-						deletes.setEnabled(hasPK && rows.size() > 0);
+						inserts.setEnabled(rows != null && rows.size() > 0);
+						updates.setEnabled(rows != null && hasPK && rows.size() > 0);
+						deletes.setEnabled(rows != null && hasPK && rows.size() > 0);
 					}
 				} else {
 					if (!withSingleRow) {
@@ -3210,7 +3210,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		List<Association> tableAssociations = table.associations;
 
-		if (tableAssociations == null || tableAssociations.isEmpty()) {
+		if (tableAssociations.isEmpty()) {
 			// artificial table from SQL Console?
 			Table t = dataModel.getTable(table.getName());
 			if (t == null) {
@@ -3838,7 +3838,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (prefix.equals("4")) {
 			nav.setIcon(UIUtil.scaleIcon(this, greyDotIcon));
 		}
-		JMenu current = nav;
 
 		final List<Row> pRows;
 		if (row == null) {
@@ -3957,24 +3956,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				});
 			}
 
-			if (current != null) {
-				GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-				gridBagConstraints.gridx = 1;
-				gridBagConstraints.gridy = l;
-				gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-				gridBagConstraints.weightx = 1.0;
-				current.getPopupMenu().add(item, gridBagConstraints);
-				gridBagConstraints = new java.awt.GridBagConstraints();
-				gridBagConstraints.gridx = 2;
-				gridBagConstraints.gridy = l;
-				gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-				gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-				gridBagConstraints.weightx = 1.0;
-				current.getPopupMenu().add(countLabel, gridBagConstraints);
-			} else {
-				popup.add(item);
-			}
+			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 1;
+			gridBagConstraints.gridy = l;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			gridBagConstraints.weightx = 1.0;
+			nav.getPopupMenu().add(item, gridBagConstraints);
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 2;
+			gridBagConstraints.gridy = l;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+			gridBagConstraints.weightx = 1.0;
+			nav.getPopupMenu().add(countLabel, gridBagConstraints);
 		}
 		if (l > 0) {
 			popup.add(nav);

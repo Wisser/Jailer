@@ -216,7 +216,7 @@ public class RestrictionModel {
 			} else if (to == null) {
 				for (Association a: from.associations) {
 					if (!a.isInsertDestinationBeforeSource()) {
-						if (excludeTo == null || !excludeTo.contains(a.destination)) {
+						if (!excludeTo.contains(a.destination)) {
 							addRestriction(a, condition, location, parameters);
 						}
 					}

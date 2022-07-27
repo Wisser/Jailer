@@ -808,7 +808,7 @@ public class SqlUtil {
 			if (scriptFileName.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
 				bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), uTF8), 1);
 			} else if (scriptFileName.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
-				ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName));
+				ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName)); // lgtm [java/input-resource-leak]
 				zis.getNextEntry();
 				bufferedReader = new BufferedReader(new InputStreamReader(zis, uTF8), 1);
 			} else {

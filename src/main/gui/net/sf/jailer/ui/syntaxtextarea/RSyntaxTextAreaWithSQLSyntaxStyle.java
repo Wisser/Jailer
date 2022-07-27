@@ -938,7 +938,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 					try {
 						boolean el = false;
 						boolean useIconSet2 = true;
-						if (loc.a != loc.b || !getText(loc.a, loc.b, true).trim().isEmpty()) {
+						if (loc.a.intValue() != loc.b.intValue() || !getText(loc.a, loc.b, true).trim().isEmpty()) {
 							for (int l = loc.a; l <= loc.b; ++l) {
 								if (eosLines.contains(-l - 1)) {
 									// empty line

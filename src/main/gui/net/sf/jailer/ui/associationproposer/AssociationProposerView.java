@@ -423,7 +423,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
 					} catch (Throwable e) {
 						final Throwable fe = e;
 						final String title = "Error in file \"" + file.getName() + "\" at line " + lineNr;
-						final Object exceptionContext = (e instanceof IOException || e instanceof FileNotFoundException)? UIUtil.EXCEPTION_CONTEXT_USER_ERROR : null;
+						final Object exceptionContext = e instanceof IOException? UIUtil.EXCEPTION_CONTEXT_USER_ERROR : null;
 						UIUtil.invokeLater(new Runnable() {
 							@Override
 							public void run() {

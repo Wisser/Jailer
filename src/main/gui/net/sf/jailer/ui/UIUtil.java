@@ -306,7 +306,7 @@ public class UIUtil {
             Map<String, String> cd = new HashMap<String, String>();
             if (cdSettings.exists()) {
                 try {
-                    ObjectInputStream in = new ObjectInputStream(new FileInputStream(cdSettings));
+                    ObjectInputStream in = new ObjectInputStream(new FileInputStream(cdSettings)); // lgtm [java/input-resource-leak]
                     cd = (Map<String, String>) in.readObject();
                     in.close();
                 } catch (Exception e) {
@@ -315,7 +315,7 @@ public class UIUtil {
             }
             cdSettings.delete();
             cd.put(key, currentDir);
-            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(cdSettings));
+            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(cdSettings)); // lgtm [java/input-resource-leak]
             out.writeObject(cd);
             out.close();
         } catch (Exception e) {
@@ -336,7 +336,7 @@ public class UIUtil {
         File cdSettings = Environment.newFile(cdSettingsName);
         if (cdSettings.exists()) {
             try {
-                ObjectInputStream in = new ObjectInputStream(new FileInputStream(cdSettings));
+                ObjectInputStream in = new ObjectInputStream(new FileInputStream(cdSettings)); // lgtm [java/input-resource-leak]
                 Map<String, String> map = ((Map<String, String>) in.readObject());
                 String cd = map.get(key);
                 if (cd == null && ".jm".equals(key)) {

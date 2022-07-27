@@ -578,17 +578,15 @@ public class DataModel {
 					associationB.reversalAssociation = associationA;
 					tableA.associations.add(associationA);
 					tableB.associations.add(associationB);
-					if (name != null) {
-						if (namedAssociations.put(name, associationA) != null) {
-							throw new RuntimeException("duplicate association name: " + name);
-						}
-						associationA.setName(name);
-						name = "inverse-" + name;
-						if (namedAssociations.put(name, associationB) != null) {
-							throw new RuntimeException("duplicate association name: " + name);
-						}
-						associationB.setName(name);
+					if (namedAssociations.put(name, associationA) != null) {
+						throw new RuntimeException("duplicate association name: " + name);
 					}
+					associationA.setName(name);
+					name = "inverse-" + name;
+					if (namedAssociations.put(name, associationB) != null) {
+						throw new RuntimeException("duplicate association name: " + name);
+					}
+					associationB.setName(name);
 				} catch (Exception e) {
 					throw new RuntimeException(location + ": " + e.getMessage(), e);
 				}

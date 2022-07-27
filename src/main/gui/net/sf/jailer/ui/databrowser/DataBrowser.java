@@ -1144,16 +1144,12 @@ public class DataBrowser extends javax.swing.JFrame {
 		UIUtil.fit(this);
 
 		if (root != null) {
-			if (desktopUndoManager != null) {
-				desktopUndoManager.setEnabled(false);
-			}
+			desktopUndoManager.setEnabled(false);
 			RowBrowser rb;
 			try {
 				rb = desktop.addTableBrowser(null, null, root, null, condition, null, null, true);
 			} finally {
-				if (desktopUndoManager != null) {
-					desktopUndoManager.setEnabled(true);
-				}
+				desktopUndoManager.setEnabled(true);
 			}
 			if (rb != null && rb.internalFrame != null) {
 				UIUtil.invokeLater(10, new Runnable() {
@@ -4037,25 +4033,19 @@ public class DataBrowser extends javax.swing.JFrame {
 		searchPanelContainer.setVisible(table != null && searchBarToggleButton.isSelected());
 		searchBarToggleButton.setEnabled(rowBrowser != null && SessionForUI.isWCEditorSupported(session));
 		if (table != null) {
-			BrowserContentCellEditor cellEditor = rowBrowser != null && rowBrowser.browserContentPane != null
-					? rowBrowser.browserContentPane.browserContentCellEditor
-					: null;
+			BrowserContentCellEditor cellEditor = rowBrowser.browserContentPane.browserContentCellEditor;
 			whereConditionEditorPanel = new WhereConditionEditorPanelForDataBrowser(this, datamodel.get(), table,
 					cellEditor,
-					rowBrowser != null && rowBrowser.browserContentPane != null
-							? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
-							: null,
+					rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected(),
 					whereConditionEditorPanel, searchBarEditor, whereConditionEditorCloseButton, false, -1, session,
 					executionContext, rowBrowser);
 			searchPanelContainer.add(whereConditionEditorPanel);
 			searchBarEditor.whereConditionEditorPanel = whereConditionEditorPanel;
-			if (rowBrowser != null && rowBrowser.browserContentPane != null) {
-				whereConditionEditorSubject = rowBrowser.browserContentPane;
-				whereConditionEditorPanel.parseCondition(rowBrowser.browserContentPane.getAndConditionText());
-			}
+			whereConditionEditorSubject = rowBrowser.browserContentPane;
+			whereConditionEditorPanel.parseCondition(rowBrowser.browserContentPane.getAndConditionText());
 		}
 
-		if (rowBrowser != null) {
+		if (rowBrowser != null && rowBrowser.browserContentPane != null) {
 			if (rowBrowser.browserContentPane.table instanceof SqlStatementTable) {
 				updateClosureBrowser(null);
 				return;
@@ -4278,14 +4268,10 @@ public class DataBrowser extends javax.swing.JFrame {
 					? rowBrowser.browserContentPane.table
 					: null;
 			if (table != null) {
-				BrowserContentCellEditor cellEditor = rowBrowser != null && rowBrowser.browserContentPane != null
-						? rowBrowser.browserContentPane.browserContentCellEditor
-						: null;
+				BrowserContentCellEditor cellEditor = rowBrowser.browserContentPane.browserContentCellEditor;
 				popUpWhereConditionEditorPanel = new WhereConditionEditorPanelForDataBrowser(dialog, datamodel.get(),
 						table, cellEditor,
-						rowBrowser != null && rowBrowser.browserContentPane != null
-								? rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected()
-								: null,
+						rowBrowser.browserContentPane.sortColumnsCheckBox.isSelected(),
 						popUpWhereConditionEditorPanel, popUpSearchBarEditor, null, true, column, session,
 						executionContext, rowBrowser) {
 					@Override
@@ -4293,7 +4279,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						close.run();
 					}
 				};
-				if (rowBrowser != null && rowBrowser.browserContentPane != null) {
+				/* if (rowBrowser != null && rowBrowser.browserContentPane != null) */ {
 					popUpSearchBarEditor.whereConditionEditorPanel = popUpWhereConditionEditorPanel;
 					popUpWhereConditionEditorPanel.parseCondition(rowBrowser.browserContentPane.getAndConditionText());
 					List<Row> parentRows = rowBrowser.browserContentPane.parentRows;
@@ -4363,14 +4349,11 @@ public class DataBrowser extends javax.swing.JFrame {
 				dialog.setLocation(x, y);
 				int minWidth = 600;
 				int wid = Math.max(minWidth, dialog.getWidth());
-				Integer maxX = getX() + getWidth() - wid - 8;
-				;
+				int maxX = getX() + getWidth() - wid - 8;
 				dialog.setSize(wid, Math.min(height, 600));
-				if (maxX != null) {
-					dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
-				}
-				Integer maxY = getY() + getHeight() - dialog.getHeight() - 8;
-				if (maxY != null && maxY < dialog.getY()) {
+				dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+				int maxY = getY() + getHeight() - dialog.getHeight() - 8;
+				if (maxY < dialog.getY()) {
 					int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
 					maxY += deltaH;
 					dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);

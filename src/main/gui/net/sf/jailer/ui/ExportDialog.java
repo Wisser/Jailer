@@ -2702,7 +2702,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			Object selectedItem = targetDBMSComboBox.getSelectedItem();
 			if (selectedItem instanceof DBMS) {
 				DBMS targetDBMS = (DBMS) selectedItem;
-				if (targetDBMS != null && targetDBMS != sourceDBMS) {
+				if (targetDBMS != sourceDBMS) {
 					args.add("-target-dbms");
 					args.add(targetDBMS.getId());
 				}

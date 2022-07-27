@@ -420,16 +420,18 @@ public class MDSchema extends MDObject {
 					}
 				}
 			}
-			constraints.reset();
-			if (table != null) {
-				String uCName = Quoting.normalizeIdentifier(table.getName());
-				List<Object[]> rows = new ArrayList<Object[]>();
-				for (Object[] row: constraints.getRowList()) {
-					if (uCName.equals(String.valueOf(row[2]).toUpperCase(Locale.ENGLISH))) {
-						rows.add(row);
+			if (constraints != null) {
+				constraints.reset();
+				if (table != null) {
+					String uCName = Quoting.normalizeIdentifier(table.getName());
+					List<Object[]> rows = new ArrayList<Object[]>();
+					for (Object[] row: constraints.getRowList()) {
+						if (uCName.equals(String.valueOf(row[2]).toUpperCase(Locale.ENGLISH))) {
+							rows.add(row);
+						}
 					}
+					return new MemorizedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
 				}
-				return new MemorizedResultSet(rows, 5, new String[] { "Type", "Constraint", "Table", "Columns", "Details" }, new int[] { Types.OTHER, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR } );
 			}
 			return constraints;
 		}

@@ -943,7 +943,7 @@ public class Session {
 			con = connectionFactory.getConnection();
 			statement = con.prepareStatement(sqlUpdate);
 			begin(statement, null);
-			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8");
+			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8"); // lgtm [java/input-resource-leak]
 			statement.setCharacterStream(1, inputStreamReader, (int) length);
 			statement.execute();
 			inputStreamReader.close();
@@ -977,7 +977,7 @@ public class Session {
 			con = connectionFactory.getConnection();
 			statement = con.prepareStatement(sqlUpdate);
 			begin(statement, null);
-			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8");
+			InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8"); // lgtm [java/input-resource-leak]
 			statement.setCharacterStream(1, inputStreamReader, (int) length);
 			statement.execute();
 			inputStreamReader.close();

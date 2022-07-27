@@ -99,12 +99,12 @@ public class About extends javax.swing.JDialog {
 
 	private String props(String... prop) {
 		StringBuilder sb = new StringBuilder();
-		int i = 0;
+		int i = 1;
 		while (i < prop.length) {
-			Object p = System.getProperties().get(prop[i+1]);
+			Object p = System.getProperties().get(prop[i]);
 			if (p != null) {
 				if (sb.length() > 0) {
-					sb.append(prop[i]);
+					sb.append(prop[i - 1]);
 				}
 				sb.append(p);
 			}

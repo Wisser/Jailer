@@ -277,9 +277,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
             @Override
             protected void runBlock() {
-            	if (hasFocus()) {
+            	if (this.hasFocus()) {
             		jTabbedPane1.grabFocus();
-            		grabFocus();
+            		this.grabFocus();
             	}
                 executeSelectedStatements(false, null, true);
             }
@@ -853,7 +853,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         Connection connection = null;
         try {
 	        connection = session.getConnection();
-	        if (!explain && session.dbms.equals(DBMS.POSTGRESQL)) {
+	        if (!explain && session.dbms != null && session.dbms.equals(DBMS.POSTGRESQL)) {
 	            if (connection.getAutoCommit()) {
 	            	connection.setAutoCommit(false);
 	            	resetAutoCommitConnection = connection;
@@ -883,7 +883,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             boolean hasResultSet;
             boolean hasUpdateCount = true;
             ResultSet sqlPlusResultSet = null;
-            if (explain) {
+            if (explain && session.dbms != null) {
             	if (session.dbms.getExplainCreateExplainTable() != null) {
             		Statement createStatement = connection.createStatement();
             		try {
@@ -1025,7 +1025,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							}
 						}
 						if (step > 0) {
-							columnLabel = columnLabel.replaceAll("\\s+", " ").replaceFirst("^(.{38})...+$", "$1...");
+							if (columnLabel != null) {
+								columnLabel = columnLabel.replaceAll("\\s+", " ").replaceFirst("^(.{38})...+$", "$1...");
+							}
 						}
 						String countKey = (table == null? "" : (table.getName() + ".")) + columnLabel;
 						Integer cnt = labelCount.get(countKey);
@@ -1071,7 +1073,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                		} else {
 	                			titel = UIUtil.toHTMLFragment(titel, 64).replaceFirst("<br>$", "");
 	                		}
-	                		if (columnLabel.length() == 0) {
+	                		if (columnLabel == null || columnLabel.length() == 0) {
 	                			columnLabel = "&nbsp;";
 	                		} else {
 	                			columnLabel = UIUtil.toHTMLFragment(columnLabel, 128).replaceFirst("<br>$", "");
@@ -1086,7 +1088,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	                }
 	            }
                 final List<Table> resultTypes = nfResultTypes;
-                final MemorizedResultSet metaDataDetails = new MemorizedResultSet(resultSet, limit, session, SQLConsole.this) {
+                final MemorizedResultSet metaDataDetails = new MemorizedResultSet(resultSet, limit, session, SQLConsole.this) { // lgtm [java/database-resource-leak]
             		@Override
                 	protected Object convertCellContent(ContentSupplier supplier) throws SQLException {
             			Object object = supplier.get();
@@ -1619,7 +1621,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				}
 			});
         } finally {
-            if (explain && session.dbms.getExplainCleanup() != null && !session.dbms.getExplainCleanup().isEmpty()) {
+            if (explain && session.dbms != null && session.dbms.getExplainCleanup() != null && !session.dbms.getExplainCleanup().isEmpty()) {
             	if (session.dbms.getExplainPrepare() != null) {
                     try {
                     	statement = session.getConnection().createStatement();
@@ -2973,13 +2975,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							int minWidth = 400;
 							int wid = Math.max(minWidth, dialog.getWidth());
 							Window window = parentFrame;
-							Integer maxX = window.getX() + window.getWidth() - wid - 8;;
+							int maxX = window.getX() + window.getWidth() - wid - 8;;
 							dialog.setSize(wid, Math.min(height, 600));
-							if (maxX != null) {
-								dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
-							}
-							Integer maxY = window.getY() + window.getHeight() - dialog.getHeight() - 8;
-							if (maxY != null && maxY < dialog.getY()) {
+							dialog.setLocation(Math.max(0, Math.min(maxX, dialog.getX())), dialog.getY());
+							int maxY = window.getY() + window.getHeight() - dialog.getHeight() - 8;
+							if (maxY < dialog.getY()) {
 								int deltaH = Math.min(dialog.getY() - maxY, (int) (0.30 * dialog.getHeight()));
 								maxY += deltaH;
 								dialog.setSize(dialog.getWidth(), dialog.getHeight() - deltaH);
@@ -3498,7 +3498,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (path.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
 				in = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
 			} else if (path.toLowerCase(Locale.ENGLISH).endsWith(".zip")){
-				ZipInputStream zis = new ZipInputStream(inputStream);
+				ZipInputStream zis = new ZipInputStream(inputStream); // lgtm [java/input-resource-leak]
 				zis.getNextEntry();
 				in = new BufferedReader(new InputStreamReader(zis, encoding));
 			} else {
@@ -3562,12 +3562,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			
 			OutputStream outputStream = new FileOutputStream(file);
 			if (file.getPath().toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
-				outputStream = new ZipOutputStream(outputStream);
+				outputStream = new ZipOutputStream(outputStream); // lgtm [java/input-resource-leak]
 				String zipFileName = file.getName();
 				((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
 			} else {
 				if (file.getPath().toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
-					outputStream = new GZIPOutputStream(outputStream);
+					outputStream = new GZIPOutputStream(outputStream); // lgtm [java/input-resource-leak]
 				}
 			}
 			
@@ -3692,7 +3692,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (file == null) {
 				File contentFile = contentFile();
 				if (contentFile.exists()) {
-					ObjectInputStream in = new ObjectInputStream(new FileInputStream(contentFile));
+					ObjectInputStream in = new ObjectInputStream(new FileInputStream(contentFile)); // lgtm [java/input-resource-leak]
 					String content = in.readObject().toString();
 					editorPane.setText(content);
 					editorPane.discardAllEdits();
@@ -3728,7 +3728,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (contentLoaded && contentModified && file == null && editorPane.getDocument().getLength() < MAX_DOC_LENGTH) {
 				File contentFile = contentFile();
 				contentFile.getParentFile().mkdirs();
-				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(contentFile));
+				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(contentFile)); // lgtm [java/output-resource-leak]
 				out.writeObject(editorPane.getText());
 				out.close();
 			}

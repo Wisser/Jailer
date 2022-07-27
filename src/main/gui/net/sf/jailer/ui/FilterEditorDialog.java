@@ -1182,7 +1182,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			}
 		}
 		label = new javax.swing.JLabel();
-		label.setText(y == 0? " no filter defined" : " ");
+		label.setText(y == 0? " no filter defined" : " "); // lgtm [java/constant-comparison]
 		label.setFont(nonBoldFont);
 
 		gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1272,7 +1272,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 									break;
 								}
 							}
-							m.isFk = filterSource != null && filterSource instanceof PKColumnFilterSource;
+							m.isFk = filterSource instanceof PKColumnFilterSource;
 							derivedFilters.add(m);
 						}
 					}

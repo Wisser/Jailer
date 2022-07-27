@@ -298,7 +298,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 			File file = Environment.newFile(MAPPINGS_FILE);
 			file.delete();
 			mappings.put(connectionDialog.currentConnection.user + "@" + connectionDialog.currentConnection.url, mapping);
-			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file)); // lgtm [java/output-resource-leak]
 			out.writeObject(mappings);
 			out.close();
 		} catch (Exception e) {
