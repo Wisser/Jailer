@@ -101,7 +101,7 @@ public class ExecutionContext {
 	/**
 	 * Creates new context with attributes taken from {@link ExecutionContext}.
 	 *
-	 * @param executionContext the command line
+	 * @param commandLine the command line
 	 */
 	public ExecutionContext(CommandLine commandLine) {
 		copyCommandLineFields(commandLine);

@@ -245,7 +245,6 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * @param session the session
 	 * @param targetDBMSConfiguration configuration of the target DBMS
 	 * @param executionContext
-	 * @param importFilterTransformer2
 	 */
 	protected DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;

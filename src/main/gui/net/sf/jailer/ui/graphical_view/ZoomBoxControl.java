@@ -67,8 +67,6 @@ public class ZoomBoxControl extends AbstractZoomControl {
 	
 	/**
 	 * Constructor.
-	 * 
-	 * @param visualGraph the visual model graph
 	 */
 	public ZoomBoxControl() {
 		zoomBoxRenderer = new ZoomBoxRenderer();

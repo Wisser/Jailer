@@ -627,7 +627,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		try {
 			File file = Environment.newFile(CONNECTIONS_FILE);
 			if (file.exists()) {
-				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file)); // lgtm [java/input-resource-leak]
 				List<ConnectionInfo> cis = (List<ConnectionInfo>) in.readObject();
 				int i = in.readInt();
 				boolean isEncrypted = true;
@@ -678,7 +678,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				File settingsFile = new File(".connect.ui");
 				if (settingsFile.exists()) {
 					ObjectInputStream in = new ObjectInputStream(
-							new FileInputStream(settingsFile));
+							new FileInputStream(settingsFile)); // lgtm [java/input-resource-leak]
 					Map<String, Map<String, String>> settings = (Map<String, Map<String, String>>) in
 							.readObject();
 					in.close();

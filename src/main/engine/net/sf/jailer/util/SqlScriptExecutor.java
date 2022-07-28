@@ -227,7 +227,7 @@ public class SqlScriptExecutor {
 		if (scriptFileName.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
 			bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
 		} else if (scriptFileName.toLowerCase(Locale.ENGLISH).endsWith(".zip")){
-			ZipInputStream zis = new ZipInputStream(inputStream);
+			ZipInputStream zis = new ZipInputStream(inputStream); // lgtm [java/input-resource-leak]
 			zis.getNextEntry();
 			bufferedReader = new BufferedReader(new InputStreamReader(zis, encoding));
 		} else {

@@ -132,9 +132,11 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 			}
 		}
 		
-		for (Association association: source.associations) {
-			if (association.destination.equals(destination) || destination == null) {
-				result.add(association);
+		if (source != null) {
+			for (Association association: source.associations) {
+				if (association.destination.equals(destination) || destination == null) {
+					result.add(association);
+				}
 			}
 		}
 		return result;

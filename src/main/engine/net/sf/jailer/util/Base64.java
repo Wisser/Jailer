@@ -1,5 +1,8 @@
 package net.sf.jailer.util;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
  * <p>Encodes and decodes to and from Base64 notation.</p>
  * <p>Homepage: <a href="http://iharder.net/base64">http://iharder.net/base64</a>.</p>
@@ -595,22 +598,22 @@ public class Base64
 		finally
 		{
 			try {
-				oos.close();
+				close(oos);
 			} catch (Exception e) {
 				// ignore
 			}
 			try {
-				gzos.close();
+				close(gzos);
 			} catch (Exception e) {
 				// ignore
 			}
 			try {
-				b64os.close();
+				close(b64os);
 			} catch (Exception e) {
 				// ignore
 			}
 			try {
-				baos.close();
+				close(baos);
 			} catch (Exception e) {
 				// ignore
 			}
@@ -731,7 +734,7 @@ public class Base64
 				gzos  = new java.util.zip.GZIPOutputStream( b64os ); 
 			
 				gzos.write( source, off, len );
-				gzos.close();
+				close(gzos);
 			}   // end try
 			catch( java.io.IOException e )
 			{
@@ -741,17 +744,17 @@ public class Base64
 			finally
 			{
 				try {
-					gzos.close();
+					close(gzos);
 				} catch (Exception e) {
 					// ignore
 				}
 				try {
-					b64os.close();
+					close(b64os);
 				} catch (Exception e) {
 					// ignore
 				}
 				try {
-					baos.close();
+					close(baos);
 				} catch (Exception e) {
 					// ignore
 				}
@@ -1052,17 +1055,17 @@ public class Base64
 				finally
 				{
 					try {
-						baos.close();
+						close(baos);
 					} catch (Exception e) {
 						// ignore
 					}
 					try {
-						gzis.close();
+						close(gzis);
 					} catch (Exception e) {
 						// ignore
 					}
 					try {
-						bais.close();
+						close(bais);
 					} catch (Exception e) {
 						// ignore
 					}
@@ -1113,8 +1116,8 @@ public class Base64
 		}   // end catch
 		finally
 		{
-			try{ bais.close(); } catch( Exception e ){}
-			try{ ois.close();  } catch( Exception e ){}
+			try{ close(bais); } catch( Exception e ){}
+			try{ close(ois);  } catch( Exception e ){}
 		}   // end finally
 		
 		return obj;
@@ -1149,7 +1152,7 @@ public class Base64
 		}   // end catch: IOException
 		finally
 		{
-			try{ bos.close(); } catch( Exception e ){}
+			try{ close(bos); } catch( Exception e ){}
 		}   // end finally
 		
 		return success;
@@ -1182,7 +1185,7 @@ public class Base64
 		}   // end catch: IOException
 		finally
 		{
-				try{ bos.close(); } catch( Exception e ){}
+				try{ close(bos); } catch( Exception e ){}
 		}   // end finally
 		
 		return success;
@@ -1240,7 +1243,7 @@ public class Base64
 		}   // end catch: IOException
 		finally
 		{
-			try{ bis.close(); } catch( Exception e) {}
+			try{ close(bis); } catch( Exception e) {}
 		}   // end finally
 		
 		return decodedData;
@@ -1288,7 +1291,7 @@ public class Base64
 		}   // end catch: IOException
 		finally
 		{
-			try{ bis.close(); } catch( Exception e) {}
+			try{ close(bis); } catch( Exception e) {}
 		}   // end finally
 		
 		return encodedData;
@@ -1326,12 +1329,12 @@ public class Base64
 			exc.printStackTrace();
 		} finally{
 			try {
-				in.close();
+				close(in);
 			} catch (Exception exc) {
 				// ignore
 			}
 			try {
-				out.close();
+				close(out);
 			} catch (Exception exc) {
 				// ignore
 			}
@@ -1371,12 +1374,12 @@ public class Base64
 			exc.printStackTrace();
 		} finally{
 			try {
-				in.close();
+				close(in);
 			} catch (Exception exc) {
 				// ignore
 			}
 			try {
-				out.close();
+				close(out);
 			} catch (Exception exc) {
 				// ignore
 			}
@@ -1386,6 +1389,13 @@ public class Base64
 	}   // end decodeFileToFile
 	
 	
+	private static void close(Closeable closeable) throws IOException {
+		if (closeable != null) {
+			closeable.close();
+		}
+	}
+
+
 	/* ********  I N N E R   C L A S S   I N P U T S T R E A M  ******** */
 	
 	

@@ -896,8 +896,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            initial condition
 	 * @param session
 	 *            DB session
-	 * @param parentRow
-	 *            parent row
 	 * @param parentRows
 	 *            all parent rows, if there are more than 1
 	 * @param association
@@ -2580,11 +2578,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	/**
 	 * Creates popup menu for navigation.
-	 * @param navigateFromAllRows
-	 * @param withSingleRow 
-	 * @param copyTCB
-	 * @param runnable
-	 * @param runnable
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, boolean withSingleRow, boolean forColumnsTable) {
 		return createPopupMenu(row, rowIndex, x, y, navigateFromAllRows, null, null, withSingleRow, forColumnsTable);
@@ -2592,8 +2585,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	/**
 	 * Creates popup menu for navigation.
-	 * @param navigateFromAllRows
-	 * @param runnable
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, boolean withSingleRow, boolean forColumnsTable) {
 		return createPopupMenu(rowsTable, row, rowIndex, x, y, navigateFromAllRows, altCopyTCB, repaint, true, withSingleRow, forColumnsTable);
@@ -2601,8 +2592,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	/**
 	 * Creates popup menu for navigation.
-	 * @param navigateFromAllRows
-	 * @param runnable
 	 */
 	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow, boolean forColumnsTable) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
@@ -2950,8 +2939,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	/**
 	 * Creates popup menu for SQL.
-	 * @param forNavTree
-	 * @param browserContentPane
 	 */
 	public JPopupMenu createSqlPopupMenu(final int rowIndex, final int x, final int y, boolean forNavTree, final Component parentComponent) {
 		JPopupMenu popup = new JPopupMenu();
@@ -4377,10 +4364,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *
 	 * @param rows
 	 *            to put the rows into
-	 * @param context
-	 *            cancellation context
-	 * @param rowCache
-	 * @param allPRows
 	 */
 	private void reloadRows(ResultSet inputResultSet, InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, LoadJob loadJob, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
@@ -4887,10 +4870,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	/**
 	 * Updates the model of the {@link #rowsTable}.
-	 *
-	 * @param limit
-	 *            row limit
-	 * @param limitExceeded
 	 */
 	private void updateTableModel() {
 		updateTableModel(lastLimit, lastLimitExceeded, lastClosureLimitExceeded);

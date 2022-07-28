@@ -9,6 +9,7 @@ public class LGTMPotentialInputResourceLeakTest {
 	
 	public void test() throws IOException {
 		InputStream in = new ZipInputStream(new FileInputStream("test.zip"));
+		in.read();
 		in.close();
 	}
 }

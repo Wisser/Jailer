@@ -3392,7 +3392,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Saves restrictions only.
 	 *
 	 * @param out to save restrictions into
-	 * @param restrictionDefinitions
 	 */
 	private void saveRestrictions(PrintWriter out) {
 		out.println();

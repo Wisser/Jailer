@@ -56,7 +56,6 @@ public class JailerConsole {
 	 *
 	 * @param owner the enclosing component
 	 * @param showLogfileButton <code>true</code> for offering a button to open the log-file
-	 * @param showExplainLogButton <code>true</code> for offering a button to open the explain-log-file
 	 * @param progressPanel progress panel, optional
 	 */
 	public JailerConsole(Window owner, Window dialog, boolean showLogfileButton, ProgressPanel progressPanel, boolean fullSize) {

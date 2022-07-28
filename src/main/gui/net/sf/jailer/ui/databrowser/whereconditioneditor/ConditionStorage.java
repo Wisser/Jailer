@@ -64,7 +64,7 @@ class ConditionStorage {
 			File file = configFile;
 			if (file.exists()) {
 				try {
-					ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+					ObjectInputStream in = new ObjectInputStream(new FileInputStream(file)); // lgtm [java/input-resource-leak]
 					storage.put(modelSubfolder, (Map<String,List<String>>) in.readObject());
 					in.close();
 				} catch (Exception e) {
@@ -97,7 +97,7 @@ class ConditionStorage {
 			try {
 				String modelSubfolder = modelSubfolder(executionContext);
 				synchronized (ConditionStorage.class) {
-					ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+					ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file)); // lgtm [java/output-resource-leak]
 					out.writeObject(storage.get(modelSubfolder));
 					out.close();
 				}

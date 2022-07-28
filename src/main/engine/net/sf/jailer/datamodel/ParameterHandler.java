@@ -70,7 +70,8 @@ public class ParameterHandler {
 	 * Replaces parameters with parameter values.
 	 * 
 	 * @param s string with parameters
-	 * @param parameters map from parameters to parameter values
+	 * @param parameterValues map from parameters to parameter values
+	 * 
 	 * @return string with parameter values
 	 */
 	public static String assignParameterValues(String s, Map<String, String> parameterValues) {

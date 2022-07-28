@@ -98,7 +98,7 @@ public class UISettings {
 		File file = Environment.newFile(FILENAME);
 		if (file.exists()) {
 			try {
-				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file)); // lgtm [java/input-resource-leak]
 				properties = (Map<String, Object>) in.readObject();
 				in.close();
 			} catch (Exception e) {
@@ -120,7 +120,7 @@ public class UISettings {
 		for (int retry = 0; retry < 4; ++retry) {
 			try {
 				synchronized (UISettings.class) {
-					ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+					ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file)); // lgtm [java/output-resource-leak]
 					out.writeObject(properties);
 					out.close();
 				}

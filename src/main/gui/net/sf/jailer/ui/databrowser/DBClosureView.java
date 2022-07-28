@@ -356,7 +356,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	private TableMouseListener tableMouseListener;
 
     /** Creates new form FindDialog
-     * @param rootTable */
+     */
     public DBClosureView(JFrame parent) {
         super();
         this.parent = parent;

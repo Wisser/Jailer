@@ -654,7 +654,7 @@ public class SqlUtil {
 	/**
 	 * Removes sub-queries from SQL statement.
 	 *
-	 * @param statement
+	 * @param sqlSelect
 	 *            the statement
 	 *
 	 * @return statement the statement without sub-queries

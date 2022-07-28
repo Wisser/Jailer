@@ -116,7 +116,7 @@ public class Column {
 	/**
 	 * Sets filter for server-side column data filtering.
 	 *
-	 * @param filterExpression SQL expression for server-side column data filtering
+	 * @param filter SQL expression for server-side column data filtering
 	 *        or <code>null</code>, if no filter is defined for this column
 	 */
 	public void setFilter(Filter filter) {

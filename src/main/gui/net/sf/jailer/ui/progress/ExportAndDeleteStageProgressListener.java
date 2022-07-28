@@ -40,10 +40,6 @@ public abstract class ExportAndDeleteStageProgressListener implements ProgressLi
 
 	/**
 	 * Constructor.
-	 *
-	 * @param progressTable
-	 *            table showing collected rows
-	 * @param targetSchemaSet
 	 */
 	public ExportAndDeleteStageProgressListener(final ProgressTable exportProgressTable, final ProgressTable deleteProgressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet, boolean checkPK) {
 		this.exportProgressListener = new SingleStageProgressListener(exportProgressTable, progressPanel, dataModel, confirm, targetSchemaSet, true, checkPK) {

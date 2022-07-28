@@ -315,7 +315,7 @@ public class UIUtil {
             }
             cdSettings.delete();
             cd.put(key, currentDir);
-            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(cdSettings)); // lgtm [java/input-resource-leak]
+            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(cdSettings)); // lgtm [java/output-resource-leak]
             out.writeObject(cd);
             out.close();
         } catch (Exception e) {
@@ -362,8 +362,6 @@ public class UIUtil {
      *            console property
      * @param printCommandLine
      *            if true, print CLI command line
-     * @param showExplainLogButton
-     *            console property
      * @param closeOutputWindow
      *            if <code>true</code>, close console immediately after call
      * @param continueOnErrorQuestion
@@ -411,8 +409,6 @@ public class UIUtil {
      *            console property
      * @param printCommandLine
      *            if true, print CLI command line
-     * @param showExplainLogButton
-     *            console property
      * @param closeOutputWindow
      *            if <code>true</code>, close console immediately after call
      * @param continueOnErrorQuestion
@@ -1523,7 +1519,6 @@ public class UIUtil {
 
 	/**
 	 * Calls the {@link PrimaryKeyValidator}.
-	 * @param i
 	 */
 	@SuppressWarnings("serial")
 	public static void validatePrimaryKeys(final Window windowAncestor, final BasicDataSource basicDataSource, final Set<Table> tables) {

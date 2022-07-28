@@ -59,9 +59,6 @@ public class ImportDialog extends javax.swing.JDialog {
 	
 	/**
 	 * Creates new form DbConnectionDialog
-	 * 
-	 * @param showCmd
-	 * @param args
 	 */
 	public ImportDialog(java.awt.Frame parent, String importFile,
 			List<String> initialArgs, String user, String password, boolean showCmd) {

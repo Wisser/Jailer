@@ -78,7 +78,6 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
 	 *
 	 * @param script writer to script
 	 * @param progress the export progress
-	 * @param entityGraph 
 	 */
 	private void addEnhancement(Writer script, Set<Table> progress, File dir, ExecutionContext executionContext) throws IOException {
 		if (ScriptFormat.SQL.equals(executionContext.getScriptFormat())) {

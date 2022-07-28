@@ -99,11 +99,10 @@ public abstract class EntityGraph {
 	/**
 	 * Copies an entity-graph.
 	 *
-	 * @param graph the graph to copy
 	 * @param graphID the unique ID of the graph
 	 * @param session for executing SQL-Statements
+	 * 
 	 * @return the newly created entity-graph
-	 * @throws Exception
 	 */
 	public abstract EntityGraph copy(int graphID, Session session) throws SQLException;
 
@@ -350,7 +349,6 @@ public abstract class EntityGraph {
 	/**
 	 * Marks all entities which depends on given entity as traversed.
 	 *
-	 * @param table the table from which to read entities
 	 * @param association the dependency
 	 * @param resultSet current row is given entity
 	 */

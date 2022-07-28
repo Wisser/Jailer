@@ -57,14 +57,13 @@ public class SQLDMLBuilder {
 	 * Build Update statements.
 	 *
 	 * @param table the table
-	 * @param row row to be updated
+	 * @param theRow row to be updated
 	 * @param session current DB session
 	 * @return update statement for row
 	 */
 	public static String buildUpdate(Table table, Row theRow, boolean withComments, Session session) {
 		return buildUpdate(table, theRow, withComments, -1, session);
 	}
-
 
 	/**
 	 * Build Update statements for a given column.

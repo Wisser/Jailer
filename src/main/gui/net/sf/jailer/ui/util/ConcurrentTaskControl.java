@@ -174,8 +174,6 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 
 	/**
 	 * Reacts on cancellation (called in AWT-Thread).
-	 * 
-	 * @param error the error
 	 */
 	protected abstract void onCancellation();
 

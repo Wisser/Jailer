@@ -78,9 +78,7 @@ public class RestrictionModel {
 	 */
 	public void transpose() {
 		transposed = !transposed;
-		if (dataModel != null) {
-			dataModel.version++;
-		}
+		dataModel.version++;
 	}
 
 	/**
@@ -133,9 +131,8 @@ public class RestrictionModel {
 	 * @param fileName
 	 */
 	public void addRestrictionDefinition(CsvFile csvFile, String fileName, Map<String, String> parameters) throws Exception {
-		if (dataModel != null) {
-			dataModel.version++;
-		}
+		dataModel.version++;
+
 		List<CsvFile.Line> lines = csvFile.getLines();
 		int nr = 0;
 		for (CsvFile.Line line: lines) {
@@ -254,9 +251,8 @@ public class RestrictionModel {
 	 * @param removePreviousRestriction if <code>true</code>, remove any restriction on the association before adding the new one
 	 */
 	public void addRestriction(Association association, String condition, String location, boolean removePreviousRestriction, Map<String, String> parameters) {
-		if (dataModel != null) {
-			dataModel.version++;
-		}
+		dataModel.version++;
+
 		condition = ParameterHandler.assignParameterValues(condition, parameters);
 		if ("ignore".equalsIgnoreCase(condition) || "false".equalsIgnoreCase(condition)) {
 			condition = null;

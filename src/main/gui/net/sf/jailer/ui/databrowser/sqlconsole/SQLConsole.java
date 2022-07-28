@@ -3065,8 +3065,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      *
      * @param sql the statement
      * @param execute execute the statement?
-     * @param useLineContinuation
-     * @param tabContentPanel
      */
     public void appendStatement(String sql, boolean execute) {
     	appendStatement(sql, execute, null, false);
@@ -3456,8 +3454,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	/**
 	 * Gets the row limit.
-	 *
-	 * @param limit the row limit
 	 */
 	public Integer getRowLimit() {
 		Object item = limitComboBox.getSelectedItem();
@@ -3562,12 +3558,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			
 			OutputStream outputStream = new FileOutputStream(file);
 			if (file.getPath().toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
-				outputStream = new ZipOutputStream(outputStream); // lgtm [java/input-resource-leak]
+				outputStream = new ZipOutputStream(outputStream); // lgtm [java/output-resource-leak] 
 				String zipFileName = file.getName();
 				((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
 			} else {
 				if (file.getPath().toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
-					outputStream = new GZIPOutputStream(outputStream); // lgtm [java/input-resource-leak]
+					outputStream = new GZIPOutputStream(outputStream); // lgtm [java/output-resource-leak] 
 				}
 			}
 			

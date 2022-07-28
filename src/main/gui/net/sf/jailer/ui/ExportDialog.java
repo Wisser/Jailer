@@ -178,11 +178,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private static final String NO_SCHEMA_INFO_LABEL = "<html><i>no further schema information</i></html>";
 
 	/** Creates new form DbConnectionDialog
-	 * @param showCmd
-	 * @param jmFile
-	 * @param tmpFileName
-	 * @param defaultExportFileName 
-	 * @param args */
+	 */
 	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, final Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, String jmFile, String tmpFileName, StringBuilder defaultExportFileName, ExecutionContext executionContext) {
 		super(parent, true);
 		this.executionContext = executionContext;

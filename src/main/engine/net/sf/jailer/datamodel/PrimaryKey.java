@@ -46,7 +46,7 @@ public class PrimaryKey {
 	/**
 	 * Constructor.
 	 * 
-	 * @param primaryKeyColumns the primary-key columns
+	 * @param columns the primary-key columns
 	 * @param needsOrderedMatch <code>true</code> if match with UPK must be ordered
 	 */
 	public PrimaryKey(List<Column> columns, boolean needsOrderedMatch) {
@@ -147,7 +147,7 @@ public class PrimaryKey {
 	/**
 	 * Creates a comma-separated list of column names.
 	 * 
-	 * @param columnPrefix an optional prefix for each PK-column
+	 * @param prefix an optional prefix for each PK-column
 	 */
 	public String columnList(String prefix) {
 		return columnList(prefix, null);
@@ -156,7 +156,7 @@ public class PrimaryKey {
 	/**
 	 * Creates a comma-separated list of column names.
 	 * 
-	 * @param columnPrefix an optional prefix for each PK-column
+	 * @param prefix an optional prefix for each PK-column
 	 */
 	public String columnList(String prefix, Quoting quoting) {
 		String list = "";

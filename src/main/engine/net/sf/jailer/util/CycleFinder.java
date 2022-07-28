@@ -55,7 +55,7 @@ public class CycleFinder {
 			this.left = left;
 			this.right = right;
 			this.birthday = birthday;
-			this.length = left == null? 1 : (left.length + right.length);
+			this.length = left == null || right == null? 1 : (left.length + right.length);
 		}
 		
 		@Override

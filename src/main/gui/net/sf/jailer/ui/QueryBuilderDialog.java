@@ -1353,9 +1353,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	 * 
 	 * @param table
 	 *            subject of query
-	 * @param usePath
-	 *            if <code>true</code>, immediately build query based on
-	 *            selected path
 	 * @param root
 	 *            root relation
 	 * @param openSQLConsole 

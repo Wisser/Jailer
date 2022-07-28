@@ -61,7 +61,9 @@ public class TableContentViewFilter {
 			if (filter.engine != null) {
 				try {
 					Compilable compilable = (Compilable) filter.engine;
-					script = compilable.compile(new FileReader(jsFile));
+					FileReader in;
+					script = compilable.compile(in = new FileReader(jsFile));
+					in.close();
 					// script.eval();
 				} catch (Exception e) {
 					e.printStackTrace();

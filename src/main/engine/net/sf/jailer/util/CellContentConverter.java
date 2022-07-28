@@ -63,7 +63,7 @@ public class CellContentConverter {
 	 *
 	 * @param resultSetMetaData meta data of the result set to read from
 	 * @param session database session
-	 * @param targetDBMSConfiguration configuration of the target DBMS
+	 * @param targetConfiguration configuration of the target DBMS
 	 */
 	public CellContentConverter(ResultSetMetaData resultSetMetaData, Session session, DBMS targetConfiguration) {
 		this.resultSetMetaData = resultSetMetaData;
@@ -77,7 +77,8 @@ public class CellContentConverter {
 	/**
 	 * Converts a cell-content to valid SQL-literal.
 	 *
-	 * @param object the content
+	 * @param content the content
+	 * 
 	 * @return the SQL-literal
 	 */
 	public String toSql(Object content) {
@@ -182,7 +183,6 @@ public class CellContentConverter {
 	 * Gets nano string suffix of a timestamp.
 	 *
 	 * @param timestamp the timestamp
-	 * @param nanoSep
 	 */
 	private static String getNanoString(Timestamp timestamp, boolean full) {
 		String zeros = "000000000";
@@ -607,8 +607,8 @@ public class CellContentConverter {
 	/**
 	 * Gets SQL expression for a C/BLOB for small LOBS.
 	 *
-	 * @param resultSet the result set
-	 * @param i index of LOB column
+	 * @param lob the lob
+	 * 
 	 * @return SQL expression for a C/BLOB for small LOBS
 	 */
 	public static String getSmallLob(Object lob, DBMS targetConfiguration, Integer maxBlobLength, Integer maxClobLength) {

@@ -49,7 +49,7 @@ public class UpdateInfoManager {
 					boolean inIntervall = true;
 					File lastTSFile = Environment.newFile(LAST_TS_FILE);
 					if (lastTSFile.exists()) {
-						ObjectInputStream in = new ObjectInputStream(new FileInputStream(lastTSFile));
+						ObjectInputStream in = new ObjectInputStream(new FileInputStream(lastTSFile)); // lgtm [java/input-resource-leak]
 						long lastTS = in.readLong();
 						in.close();
 						if (System.currentTimeMillis() < lastTS + CHECK_INTERVALL) {
@@ -108,7 +108,7 @@ public class UpdateInfoManager {
 							});
 			        		if (inIntervall) {
 				        		Thread.sleep(DELAY);
-								ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(lastTSFile));
+								ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(lastTSFile)); // lgtm [java/output-resource-leak] 
 								out.writeLong(System.currentTimeMillis());
 								out.close();
 								UIUtil.invokeLater(new Runnable() {

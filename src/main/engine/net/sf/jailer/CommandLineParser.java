@@ -37,7 +37,7 @@ public class CommandLineParser {
 	/**
 	 * Parses arguments and initializes the parser.
 	 *
-	 * @param args the arguments
+	 * @param cliArgs the arguments
 	 * @param silent if <code>true</code>, no error messages will be written
 	 */
 	public static CommandLine parse(String[] cliArgs, boolean silent) throws Exception {

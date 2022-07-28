@@ -336,7 +336,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 					connection = getLocalSession().getConnection();
 					final List<Column> columns = filters.getValue();
 					for (Column column: columns) {
-						insertStatement.put(column, connection.prepareStatement(
+						insertStatement.put(column, connection.prepareStatement( // lgtm [java/database-resource-leak]S
 								"Insert into " + columnMapping.get(column).mappingTableName
 								+ "(" + columnMapping.get(column).oldValueColumnName + ")"
 								+ " values (?)"));

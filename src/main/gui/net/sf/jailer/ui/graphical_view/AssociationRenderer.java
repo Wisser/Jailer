@@ -173,7 +173,7 @@ public class AssociationRenderer extends EdgeRenderer {
 			// update the endpoints for the edge shape
 			// need to bias this by arrow head size
 			if (type == Constants.EDGE_TYPE_CURVE) {
-				if (!"XML".equals(association.getDataModel().getExportModus()) || !isAggregation(association)) {
+				if (!"XML".equals(association.getDataModel().getExportModus()) || association == null || !isAggregation(association)) {
 					m_curArrow = null;
 				}
 			}
@@ -192,6 +192,10 @@ public class AssociationRenderer extends EdgeRenderer {
 		double n2y = m_tmpPoints[1].getY();
 		m_line.setLine(n1x, n1y, n2x, n2y);
 		shape = m_line;
+		
+		if (association == null) {
+			return shape;
+		}
 
 		starBounds = null;
 		starPosition = null;

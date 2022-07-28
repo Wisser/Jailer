@@ -585,7 +585,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	/**
 	 * Sorts lists of csv-lines.
 	 * 
-	 * @param lines the list to sort
+	 * @param list the list to sort
 	 */
 	private void sortLineList(List<CsvFile.Line> list, final boolean sortTables) {
 		Set<CsvFile.Line> linesFromModelFinderAsSet = new HashSet<CsvFile.Line>(linesFromModelFinder);

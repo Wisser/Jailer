@@ -1175,7 +1175,6 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
 	 * Marks all entities which depends on given entity as traversed.
 	 *
-	 * @param table the table from which to read entities
 	 * @param association the dependency
 	 * @param resultSet current row is given entity
 	 */

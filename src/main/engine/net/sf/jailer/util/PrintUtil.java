@@ -94,7 +94,7 @@ public class PrintUtil {
 	/**
 	 * Loads a file.
 	 * 
-	 * @param file the file to load
+	 * @param name the file to load
 	 * @return content of file
 	 * @throws FileNotFoundException
 	 * @throws IOException

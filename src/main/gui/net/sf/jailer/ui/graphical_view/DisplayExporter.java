@@ -94,14 +94,14 @@ public class DisplayExporter {
 		File f         = img;
 		String format;
 		if (f == null) {
-			int  returnVal = chooser.showSaveDialog(display);
+			int  returnVal = chooser.showSaveDialog(display); // lgtm [java/dereferenced-value-may-be-null]
 	
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				f = chooser.getSelectedFile();
+				f = chooser.getSelectedFile(); // lgtm [java/dereferenced-value-may-be-null]
 			} else {
 				return;
 			}
-			format = ((SimpleFileFilter) chooser.getFileFilter()).getExtension();
+			format = ((SimpleFileFilter) chooser.getFileFilter()).getExtension(); // lgtm [java/dereferenced-value-may-be-null]
 			String ext    = IOLib.getExtension(f);
 
 			if (!format.equals(ext)) {

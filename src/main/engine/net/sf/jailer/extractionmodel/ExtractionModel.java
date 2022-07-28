@@ -207,7 +207,7 @@ public class ExtractionModel {
 	/**
 	 * Constructor.
 	 *  
-	 * @param the name of the model-file
+	 * @param fileName the name of the model-file
 	 * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
 	 */
 	public ExtractionModel(String fileName, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext) throws IOException {
@@ -217,7 +217,7 @@ public class ExtractionModel {
 	/**
 	 * Constructor.
 	 *  
-	 * @param the name of the model-file
+	 * @param modelURL the URL of the model-file
 	 * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
 	 */
 	public ExtractionModel(URL modelURL, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext, boolean failOnMissingSubject) throws IOException {

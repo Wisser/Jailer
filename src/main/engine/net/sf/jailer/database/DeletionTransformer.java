@@ -94,7 +94,6 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		/**
 		 * Constructor.
 		 * 
-		 * @param table the table to read from
 		 * @param scriptFileWriter the file to write to
 		 * @param maxBodySize maximum length of SQL values list (for generated deletes)
 		 * @param targetDBMSConfiguration configuration of the target DBMS
@@ -199,7 +198,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 					}
 					item += ")";
 					deleteHead += ") in (";
-					if (currentDialect.isNeedsValuesKeywordForDeletes()) {
+					if (currentDialect != null && currentDialect.isNeedsValuesKeywordForDeletes()) {
 						deleteHead += "values ";
 					}
 				}

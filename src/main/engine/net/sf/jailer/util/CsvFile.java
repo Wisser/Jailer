@@ -164,7 +164,7 @@ public class CsvFile {
 						break;
 					}
 					String blockName = line.trim().substring(BLOCK_INDICATOR.length()).trim();
-					inBlock = block.equals(blockName);
+					inBlock = blockName.equals(block);
 					continue;
 				}
 				if (line.trim().startsWith("#")) {
@@ -353,7 +353,8 @@ public class CsvFile {
 	/**
 	 * Checks if a certain line can be found in this file.
 	 * 
-	 * @param the line
+	 * @param line the line
+	 * 
 	 * @return <code>true</code> iff this file contains the line 
 	 */
 	public boolean contains(String[] line) {

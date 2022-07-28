@@ -97,8 +97,6 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		/**
 		 * Constructor.
 		 * 
-		 * @param table
-		 *            the table to read from
 		 * @param transformerHandler
 		 *            to write the XML into
 		 * @param metaData

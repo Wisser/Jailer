@@ -63,7 +63,7 @@ public class ShellScriptBasedStatisticRenovator implements StatisticRenovator {
 		_log.info("executing: " + theScriptInvocation);
 		Process process = Runtime.getRuntime().exec(theScriptInvocation);
 		process.waitFor();
-		BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream())); // lgtm [java/input-resource-leak]
 		String line;
 		while ((line = input.readLine()) != null) {
 			_log.info("+ " + line);

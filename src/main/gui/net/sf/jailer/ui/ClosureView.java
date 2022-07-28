@@ -852,8 +852,6 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
 	/**
 	 * Refreshes the table model.
-	 * @param excludedTables
-	 * @param path
 	 */
 	private void refreshTableModel(Map<Table, Integer> forcedDistance) {
 		cellInfo.clear();

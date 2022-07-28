@@ -140,7 +140,7 @@ public class XmlUtil {
 	 * Generates a XML string from DOM.
 	 * 
 	 * @param xmlDocument the DOM
-	 * @param omitXMLDeclaration 
+	 * 
 	 * @return XML string
 	 */
 	public static synchronized String build(Document xmlDocument) throws TransformerException {

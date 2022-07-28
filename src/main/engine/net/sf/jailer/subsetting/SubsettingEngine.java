@@ -670,12 +670,12 @@ public class SubsettingEngine {
 		}
 		OutputStream outputStream = new FileOutputStream(file);
 		if (sqlScriptFile.toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
-			outputStream = new ZipOutputStream(outputStream);
+			outputStream = new ZipOutputStream(outputStream); // lgtm [java/output-resource-leak]
 			String zipFileName = file.getName();
 			((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
 		} else {
 			if (sqlScriptFile.toLowerCase(Locale.ENGLISH).endsWith(".gz")) {
-				outputStream = new GZIPOutputStream(outputStream);
+				outputStream = new GZIPOutputStream(outputStream); // lgtm [java/output-resource-leak]
 			}
 		}
 		TransformerHandler transformerHandler = null;
@@ -686,11 +686,11 @@ public class SubsettingEngine {
 			charset = Charset.forName("UTF8");
 		}
 		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())) {
-			StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, charset));
+			StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, charset)); // lgtm [java/output-resource-leak]
 			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "dataset", streamResult, charset);
 		} else if(scriptType == ScriptType.INSERT && ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat())){
 			StreamResult streamResult = new StreamResult(
-					new OutputStreamWriter(outputStream,
+					new OutputStreamWriter(outputStream, // lgtm [java/output-resource-leak]
 							charset));
 
 
@@ -1434,7 +1434,6 @@ public class SubsettingEngine {
 	/**
 	 * Exports entities.
 	 *
-	 * @param datamodelBaseURL URL of datamodel folder
 	 * @param modelPoolSize size of extraction-model pool
 	 *
 	 * @return statistic
@@ -1924,7 +1923,7 @@ public class SubsettingEngine {
 	 *            set of tables containing subjects of extraction-tasks
 	 * @param allTables
 	 *            set of tables from which there are entities in E
-	 * @param statementExecutor
+	 * @param session
 	 *            for executing SQL-statements
 	 */
 	private void deleteEntities(Set<Table> subjects, final Set<Table> allTables, Session session) throws SQLException {

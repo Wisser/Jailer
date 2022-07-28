@@ -92,8 +92,6 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 		/**
 		 * Constructor.
 		 * 
-		 * @param table
-		 *            the table to read from
 		 * @param transformerHandler
 		 *            to write the XML into
 		 * @param metaData
@@ -133,7 +131,6 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	 *            to write the XML into
 	 * @param metaData
 	 *            database meta data
-	 * @param commandLine2 
 	 */
 	private FlatXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;

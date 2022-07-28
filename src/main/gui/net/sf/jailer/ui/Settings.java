@@ -77,7 +77,7 @@ public abstract class Settings  {
 		boolean isNew = true;
 		if (new File(FILENAME).exists()) {
 			try {
-				ObjectInputStream in = new ObjectInputStream(new FileInputStream(FILENAME));
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(FILENAME)); // lgtm [java/input-resource-leak]
 				settings = (Map<String, Map<String, String>>) in.readObject();
 				currentSetting = (String) in.readObject();
 				in.close();
@@ -140,7 +140,7 @@ public abstract class Settings  {
 			}
 			try {
 				File file = new File(FILENAME);
-				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file)); // lgtm [java/output-resource-leak]
 				out.writeObject(settings);
 				out.writeObject(currentSetting);
 				out.close();

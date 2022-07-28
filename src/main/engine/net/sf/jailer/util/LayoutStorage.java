@@ -183,8 +183,6 @@ public class LayoutStorage {
 
 	/**
 	 * Removes all position information.
-	 * 
-	 * @param root the root table
 	 */
 	public void removeAll() {
 		if (tempPosistions == null) {

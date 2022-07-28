@@ -429,7 +429,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	/**
 	 * Gets name of the file containing the HTML render of a given table.
 	 * 
-	 * @param table the table
+	 * @param tableName the table
+	 * 
 	 * @return name of the file containing the HTML render of table
 	 */
 	public static String toFileName(String tableName) {

@@ -303,7 +303,6 @@ public class DataModel {
 	/**
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
-	 * @param knownIdentifiers
 	 */
 	public DataModel(ExecutionContext executionContext) throws IOException {
 		this(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(executionContext), executionContext, false, null);
@@ -897,9 +896,10 @@ public class DataModel {
 
 	/**
 	 * Checks whether all tables in the closure of a given subject have primary keys.
-	 * @param hasRowID
 	 *
-	 * @param subject the subject
+	 * @param subjects the subjects
+	 * @param hasRowID
+	 * 
 	 * @throws NoPrimaryKeyException if a table has no primary key
 	 */
 	public Set<Table> checkForPrimaryKey(Set<Table> subjects, boolean hasRowID) throws NoPrimaryKeyException {

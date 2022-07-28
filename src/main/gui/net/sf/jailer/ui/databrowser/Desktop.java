@@ -540,8 +540,7 @@ public abstract class Desktop extends JDesktopPane {
 	 *            to navigate, or <code>null</code>
 	 * @param condition
 	 * @param selectDistinct
-	 * @param title 
-	 * @param limit
+	 * @param title
 	 * @return new row-browser
 	 */
 	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, final RowBrowser origParent, final Table table, final Association association,
@@ -649,10 +648,10 @@ public abstract class Desktop extends JDesktopPane {
 
 		    	if (!updateBuffer) {
 					if (useBuffer) {
-						Graphics2D buf_g2D = (Graphics2D) m_offscreen.getGraphics();
+						Graphics2D buf_g2D = (Graphics2D) m_offscreen.getGraphics(); // lgtm [java/dereferenced-value-may-be-null]
 				        
 				        if (originalTransform != null) {
-				        	g2D.scale(1.0 / at.getScaleX(), 1.0 / at.getScaleY());
+				        	g2D.scale(1.0 / at.getScaleX(), 1.0 / at.getScaleY()); // lgtm [java/dereferenced-value-may-be-null]
 				        }
 				        if (g2D.getTransform().getScaleX() != 1.0 || g2D.getTransform().getScaleY() != 1.0) {
 							g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -681,7 +680,7 @@ public abstract class Desktop extends JDesktopPane {
 		        Graphics2D buf_g2D = (Graphics2D) m_offscreen.getGraphics();
 		        
 		        if (originalTransform != null) {
-		        	g2D.scale(1.0 / at.getScaleX(), 1.0 / at.getScaleY());
+		        	g2D.scale(1.0 / at.getScaleX(), 1.0 / at.getScaleY()); // lgtm [java/dereferenced-value-may-be-null]
 		        }
 		        if (g2D.getTransform().getScaleX() != 1.0 || g2D.getTransform().getScaleY() != 1.0) {
 					g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING,

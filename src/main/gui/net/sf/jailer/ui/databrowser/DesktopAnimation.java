@@ -259,9 +259,9 @@ public class DesktopAnimation {
 	/**
 	 * Sets the bounds of an internal frame (immediately).
 	 * 
-	 * @param iFrame the frame
+	 * @param internalFrame the frame
 	 * @param browserContentPane the content pane
-	 * @param r new bounds
+	 * @param newBounds new bounds
 	 */
 	public void setIFrameBoundsImmediately(JInternalFrame internalFrame, BrowserContentPane browserContentPane, Rectangle newBounds) {
 		internalFrame.setBounds(newBounds);

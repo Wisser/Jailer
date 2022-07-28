@@ -2067,7 +2067,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		   InputStream is = getClass().getResourceAsStream("/net/sf/jailer/ui/resource/filters.html");
 		   if (is != null) {
-			   BufferedReader in = new BufferedReader(new InputStreamReader(is));
+			   BufferedReader in = new BufferedReader(new InputStreamReader(is)); // lgtm [java/input-resource-leak]
 			   StringBuffer sb = new StringBuffer();
 			   int c;
 			   try {

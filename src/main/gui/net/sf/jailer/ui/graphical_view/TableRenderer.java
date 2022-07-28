@@ -475,7 +475,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 		String text = m_text;
 		Image[] img  = getImage(item);
 		
-		if ( text == null && img == null )
+		if (text == null)
 			return;
 						
 		double size = item.getSize();

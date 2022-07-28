@@ -1306,7 +1306,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     private static void persistHistory() {
 		try {
 			File file = Environment.newFile(HISTORY_FILE);
-			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file)); // lgtm [java/output-resource-leak]
 			out.writeObject(history);
 			out.close();
 		} catch (Exception e) {
@@ -1323,7 +1323,7 @@ public abstract class PathFinderView extends javax.swing.JPanel {
     		try {
     			File file = Environment.newFile(HISTORY_FILE);
     			if (file.exists()) {
-    				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+    				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file)); // lgtm [java/input-resource-leak]
     				history = (List<HistoryItem>) in.readObject();
     				in.close();
     			}

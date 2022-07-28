@@ -262,7 +262,6 @@ public class Table extends ModelElement implements Comparable<Table> {
 	/**
 	 * Gets the closure of the table.
 	 * 
-	 * @param directed consider associations as directed?
 	 * @param tablesToIgnore ignore this tables
 	 * 
 	 * @return closure of the table (all tables associated (in-)direct with table)
@@ -621,7 +620,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	/**
 	 * Sets whether this table is artificial (i.e. does not represent a table in a database).
 	 * 
-	 * @param artifical value to set
+	 * @param isArtifical value to set
 	 */
 	public void setIsArtifical(boolean isArtifical) {
 		this.isArtifical = isArtifical;

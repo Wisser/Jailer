@@ -324,7 +324,7 @@ public class Session {
 						con = dataSource.getConnection();
 						defaultConnection = con;
 					} catch (SQLException e) {
-						if (connections != null && connections.size() > 1) {
+						if (connections.size() > 1) {
 							con = connections.get(random.nextInt(connections.size()));
 						} else if (defaultConnection != null) {
 							// fall back to default connection

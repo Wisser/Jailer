@@ -67,8 +67,6 @@ public class BookmarksPanel extends javax.swing.JPanel {
 	
 	/**
 	 * Creates new form BookmarksPanel
-	 * 
-	 * @param dataBrowser
 	 */
 	public BookmarksPanel(Frame owner, JMenu bookmarksMenu, Desktop desktop, ExecutionContext executionContext) {
 		this.owner = owner;

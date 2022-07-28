@@ -233,7 +233,6 @@ public abstract class TableEditor extends javax.swing.JDialog {
 	 * @param tables all tables (as csv-lines)
 	 * @param associations all associations (as csv-line)
 	 * @param excludeFromDeletionList list of tables to be excluded from deletion
-	 * @param initialDataTablesList list of tables to export entirely if in closure of subject
 	 */
 	public TableEditor(java.awt.Dialog parent, Map<String, String> displayNames, Collection<Line> tables, List<Line> associations, List<String> excludeFromDeletionList) {
 		super(parent, true);

@@ -259,10 +259,8 @@ public class LocalEntityGraph extends EntityGraph {
 
 	/**
 	 * Creates a local database and opens a localSession for it.
-	 * @param urlparameter
 	 *
 	 * @return the localSession
-	 * @
 	 */
 	private LocalDatabase createLocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws FileNotFoundException, SQLException {
 		try {
@@ -305,7 +303,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 *
 	 * @param graphID the unique ID of the graph
 	 * @param remoteSession for executing SQL-Statements
-	 * @param universalPrimaryKey the universal primary key
+	 * 
 	 * @return the newly created entity-graph
 	 */
 	public static LocalEntityGraph create(DataModel dataModel, int graphID, Session remoteSession, ExecutionContext executionContext) throws IOException, SQLException {
@@ -655,9 +653,6 @@ public class LocalEntityGraph extends EntityGraph {
 	 *
 	 * @param table the table
 	 * @param condition the condition in SQL that the entities must fulfill with 'E' as alias for the entity-table
-	 * @param joinedTable optional table to join with
-	 * @param source optional, the source-table
-	 * @param joinCondition optional condition to join with <code>joinedTable</code>
 	 * @param joinWithEntity whether to join with entity-table too
 	 * @param today the birthday of the new entities
 	 *
@@ -1415,8 +1410,8 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Marks all entities which depends on given entity as traversed.
 	 *
-	 * @param table the table from which to read entities
 	 * @param association the dependency
+	 * 
 	 * @param resultSet current row is given entity
 	 */
 	@Override
