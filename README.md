@@ -9,6 +9,8 @@ Jailer is a tool for database subsetting and relational data browsing.
    
  - The Data Browser lets you navigate through your database following the relationships (foreign key-based or user-defined) between tables.
 
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/Wisser/Jailer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Wisser/Jailer/alerts/)
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/Wisser/Jailer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Wisser/Jailer/context:java)
 
 <img src="/docs/screenshot.png" width="500" />
 
