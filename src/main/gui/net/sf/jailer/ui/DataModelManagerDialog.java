@@ -72,6 +72,7 @@ import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -355,6 +356,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			int i = modelList.indexOf(currentModel);
 			if (i >= 0) {
 				dataModelsTable.getSelectionModel().setSelectionInterval(i, i);
+				UIUtil.invokeLater(4, () -> {
+					if (dataModelsTable.isShowing()) {
+						dataModelsTable.grabFocus();
+					}
+				});
 			} else {
 				currentModel = null;
 			}
@@ -1572,10 +1578,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		currentModel = null;
 		String currentBaseFolder = null;
 		baseFolders.clear();
+		BufferedReader in = null;
 		try {
 			File file = Environment.newFile(MODEL_SELECTION_FILE);
 			if (file.exists()) {
-				BufferedReader in = new BufferedReader(new FileReader(file));
+				in = new BufferedReader(new FileReader(file));
 				currentModel = in.readLine();
 				if (currentModel != null) {
 					currentBaseFolder = in.readLine();
@@ -1589,10 +1596,15 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 						}
 					}
 				}
-				in.close();
 			}
 		} catch (Exception e) {
-			// ignore
+			if (in != null) {
+				try {
+					in.close();
+				} catch (Exception e2) {
+					// ignore
+				}
+			}
 		}
 		if (currentBaseFolder == null || !new File(currentBaseFolder).exists()) {
 			currentBaseFolder = executionContext.getDatamodelFolder();
@@ -2752,6 +2764,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				CommandLineInstance.getInstance().url = ci.url;
 				CommandLineInstance.getInstance().user = ci.user;
 			}
+			currentModel = "";
 			store();
 			onSelect(null, executionContext);
 			UISettings.store(tabPropertyName, jTabbedPane1.getSelectedIndex());

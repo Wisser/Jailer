@@ -33,7 +33,7 @@ public class Row {
 		this.values = v;
 		this.primaryKey = primaryKey;
 		if (rowId.isEmpty()) {
-			synchronized (this) {
+			synchronized (Row.class) {
 				this.nonEmptyRowId = Long.toString(nextUniqueId++);
 			}
 		} else {

@@ -3627,7 +3627,7 @@ public abstract class Desktop extends JDesktopPane {
 						}
 					}
 					deserializedSortKey(rb.browserContentPane.rowsTable, l.cells.get(13));
-					if (sFile.endsWith("INVENTORY - ACTOR.dbl") && rb.browserContentPane != null
+					if (sFile.endsWith("INVENTORY - ACTOR.dbl")
 							&& rb.browserContentPane.table != null
 							&& "FILM".equals(rb.browserContentPane.table.getName())) { // Demo
 						Timer timer = new Timer(1000, null);

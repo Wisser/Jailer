@@ -2852,12 +2852,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						deletes.setEnabled(rows != null && hasPK && rows.size() > 0);
 					}
 				} else {
-					if (!withSingleRow) {
-						popup.add(sql);
-					} else {
-						popup.add(new JSeparator(), 2);
-						popup.add(sql, 3);
-					}
+					popup.add(new JSeparator(), 2);
+					popup.add(sql, 3);
 				}
 			}
 			if (copyTCB != null) {

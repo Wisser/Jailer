@@ -277,7 +277,7 @@ public class Jailer {
 				String extractionModelFileName = null;
 				if (!commandLine.independentWorkingTables && commandLine.arguments.size() > 5) {
 					extractionModelFileName = commandLine.arguments.get(5);
-				} else if (!commandLine.independentWorkingTables && commandLine.independentWorkingTables && commandLine.arguments.size() != 5 && commandLine.arguments.size() > 1) {
+				} else if (!commandLine.independentWorkingTables && commandLine.arguments.size() != 5 && commandLine.arguments.size() > 1) {
 					extractionModelFileName = commandLine.arguments.get(1);
 				}
 				updateDataModelFolder(commandLine, extractionModelFileName, executionContext);

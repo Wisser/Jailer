@@ -30,7 +30,7 @@ import net.sf.jailer.ui.UIUtil.PLAF;
  * 
  * @author Ralf Wisser
  */
-public class About extends javax.swing.JDialog {
+public final class About extends javax.swing.JDialog {
 	
 	/** 
 	 * Creates new "About" form. 
