@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.kohsuke.args4j.Option;
-
 import net.sf.jailer.api.Subsetter;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.WorkingTableScope;
