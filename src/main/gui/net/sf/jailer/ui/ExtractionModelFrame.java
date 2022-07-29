@@ -1432,7 +1432,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									ddlArgs.add("-working-table-schema");
 									ddlArgs.add(exportDialog.getWorkingTableSchema());
 								}
-								DMLTransformer.numberOfExportedLOBs = 0;
+								DMLTransformer.numberOfExportedLOBs.set(0);
 
 								ExecutionContext cDDLExecutionContext = new ExecutionContext(executionContext);
 								cDDLExecutionContext.setIndependentWorkingTables(exportDialog.isIndependentWorkingTablesSelected());

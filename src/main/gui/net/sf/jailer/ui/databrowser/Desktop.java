@@ -75,6 +75,7 @@ import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -787,7 +788,7 @@ public abstract class Desktop extends JDesktopPane {
 		});
 
 		if (reload) {
-			++UISettings.s5;
+			UISettings.s5.incrementAndGet();
 		}
 
 		final BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null ? null : parent.browserContentPane.rows,
@@ -1276,7 +1277,7 @@ public abstract class Desktop extends JDesktopPane {
 							Desktop.this.onLayoutChanged(false, true);
 						}
 					});
-					UISettings.s7 += 1000;
+					UISettings.s7.addAndGet(1000);
 					closeSubTree(root, true);
 				} catch (Throwable t) {
 					UIUtil.showException(parent, "Error", t);
@@ -1377,7 +1378,7 @@ public abstract class Desktop extends JDesktopPane {
 			tableBrowser.color2 = getAssociationColor2(association);
 		}
 		tableBrowsers.add(tableBrowser);
-		UISettings.s2 = Math.max(tableBrowsers.size(), UISettings.s2);
+		UISettings.s2.set(Math.max(tableBrowsers.size(), UISettings.s2.get()));
 
 		initIFrame(jInternalFrame, browserContentPane);
 		
@@ -1438,8 +1439,8 @@ public abstract class Desktop extends JDesktopPane {
 			boolean sameY = parent != null && sis.size() == 1 && parent.internalFrame != null && sis.get(0).internalFrame != null && parent.internalFrame.getY() == sis.get(0).internalFrame.getY();
 			onLayoutChanged(parent == null || sameY, true);
 		} else {
-			lastInternalFrame = jInternalFrame;
-			lastBrowserContentPane = browserContentPane;
+			lastInternalFrame.set(jInternalFrame);
+			lastBrowserContentPane.set(browserContentPane);
 		}
 
 		if (tableBrowsers.size() > 1) {
@@ -2042,7 +2043,7 @@ public abstract class Desktop extends JDesktopPane {
 				g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 				if (rbSourceToLinks == null) {
 					rbSourceToLinks = new HashMap<RowBrowser, Map<String, List<Link>>>();
-					final String ALL = "-";
+					final Object ALL = new String("-");
 
 					for (RowBrowser tableBrowser : tableBrowsers) {
 						Map<String, List<Link>> links = new TreeMap<String, List<Link>>();
@@ -2086,8 +2087,8 @@ public abstract class Desktop extends JDesktopPane {
 							}
 						}
 						if (tableBrowser.parent != null && !linkAdded) {
-							String sourceRowID = ALL;
-							String destRowID = ALL;
+							String sourceRowID = (String) ALL;
+							String destRowID = (String) ALL;
 							boolean inClosure = false;
 							boolean inTempClosure = false;
 
@@ -4082,18 +4083,18 @@ public abstract class Desktop extends JDesktopPane {
 
 	static boolean noArrangeLayoutOnNewTableBrowser = false;
 	static boolean noArrangeLayoutOnNewTableBrowserWithAnchor = false;
-	private static JInternalFrame lastInternalFrame = null;
-	private static BrowserContentPane lastBrowserContentPane = null;
+	private static final AtomicReference<JInternalFrame> lastInternalFrame = new AtomicReference<JInternalFrame>();
+	private static final AtomicReference<BrowserContentPane> lastBrowserContentPane = new AtomicReference<BrowserContentPane>();
 	public void catchUpLastArrangeLayoutOnNewTableBrowser() {
 		if (lastInternalFrame != null) {
-			this.scrollToCenter(lastInternalFrame);
+			this.scrollToCenter(lastInternalFrame.get());
 			try {
-				lastInternalFrame.setSelected(true);
+				lastInternalFrame.get().setSelected(true);
 			} catch (PropertyVetoException e1) {
 				// ignore
 			}
 			if (lastBrowserContentPane != null) {
-				lastBrowserContentPane.andCondition.grabFocus();
+				lastBrowserContentPane.get().andCondition.grabFocus();
 			}
 			onLayoutChanged(false, true);
 		}
@@ -4101,8 +4102,8 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	public static void resetLastArrangeLayoutOnNewTableBrowser() {
-		lastInternalFrame = null;
-		lastBrowserContentPane = null;
+		lastInternalFrame.set(null);
+		lastBrowserContentPane.set(null);
 	}
 
 	private final int RESCALE_DURATION = 500;

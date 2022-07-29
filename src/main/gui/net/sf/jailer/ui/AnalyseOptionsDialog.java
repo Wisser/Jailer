@@ -269,7 +269,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 				}
 			}
 			if (ok) {
-				++UISettings.s7;
+				UISettings.s7.incrementAndGet();
 			}
 		}
 		return ok;

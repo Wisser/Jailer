@@ -136,7 +136,7 @@ public class DesktopUndoManager {
 				if (layoutMode == dataBrowser.desktop.layoutMode) {
 				 	scrollPane.getViewport().setViewPosition(state.position);
 		        }
-				UISettings.s7 += 100000;
+				UISettings.s7.addAndGet(100000);
 				UIUtil.invokeLater(8, () -> {
 					if (layoutMode != dataBrowser.desktop.layoutMode) {
 						dataBrowser.desktop.rescaleLayout(layoutMode, null);

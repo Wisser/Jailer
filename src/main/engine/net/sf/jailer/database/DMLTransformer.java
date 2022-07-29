@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.sf.jailer.ExecutionContext;
@@ -140,7 +141,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	/**
 	 * Counts the exported LOBs. (GUI support)
 	 */
-	public static long numberOfExportedLOBs;
+	public static final AtomicLong numberOfExportedLOBs = new AtomicLong();
 
 	/**
 	 * For quoting of column names.
@@ -888,7 +889,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					where.append(quoting.requote(pk.name) + "=" + val.get(pk.name));
 				}
 				if (lob instanceof SQLXML) {
-					++numberOfExportedLOBs;
+					numberOfExportedLOBs.incrementAndGet();
 					flush();
 					SQLXML xml = (SQLXML) lob;
 					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "XML " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + PrintUtil.LINE_SEPARATOR, false);
@@ -918,7 +919,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					writeToScriptFile(line.toString() + PrintUtil.LINE_SEPARATOR + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "" + PrintUtil.LINE_SEPARATOR + "", false);
 				}
 				if (lob instanceof Clob) {
-					++numberOfExportedLOBs;
+					numberOfExportedLOBs.getAndIncrement();
 					flush();
 					Clob clob = (Clob) lob;
 					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "" + PrintUtil.LINE_SEPARATOR + "", false);
@@ -948,7 +949,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 					writeToScriptFile(line.toString() + PrintUtil.LINE_SEPARATOR + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "" + PrintUtil.LINE_SEPARATOR + "", false);
 				}
 				if (lob instanceof Blob) {
-					++numberOfExportedLOBs;
+					numberOfExportedLOBs.getAndIncrement();
 					flush();
 					Blob blob = (Blob) lob;
 					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "" + PrintUtil.LINE_SEPARATOR + "", false);

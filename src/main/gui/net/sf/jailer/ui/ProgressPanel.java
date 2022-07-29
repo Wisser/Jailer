@@ -459,8 +459,8 @@ public class ProgressPanel extends javax.swing.JPanel {
 	public void confirm() {
 		String message;
 		message = "Successfully completed.";
-		if (DMLTransformer.numberOfExportedLOBs > 0) {
-			message += "\n" + DMLTransformer.numberOfExportedLOBs + " CLOBs/BLOBs exported.\n\n" +
+		if (DMLTransformer.numberOfExportedLOBs.get() > 0) {
+			message += "\n" + DMLTransformer.numberOfExportedLOBs.get() + " CLOBs/BLOBs exported.\n\n" +
 					   "Note that the CLOBs/BLOBs can only\n" +
 					   "be imported with the 'Import SQL Data' Tool";
 		}

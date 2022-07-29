@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.datamodel.DataModel;
@@ -146,10 +147,13 @@ public class UISettings {
 		return properties.get(name);
 	}
 
-	public static int s1, s2, s3, s4, s5, s6, s7, s8, s9;
-	public static String s10;
-	public static int s11 = 1;
-	public static int s12;
+	public static volatile int s1, s3, s4, s6, s8, s9;
+	public static final AtomicInteger s2 = new AtomicInteger();
+	public static final AtomicInteger s5 = new AtomicInteger();
+	public static final AtomicInteger s7 = new AtomicInteger();
+	public static volatile String s10;
+	public static volatile int s11 = 1;
+	public static volatile int s12;
 
 	public synchronized static void storeStats() {
 		try {
@@ -160,7 +164,7 @@ public class UISettings {
 		}
 		int i = 1;
 		StringBuilder sb = new StringBuilder();
-		for (int s: new int[] { s1, s2, s3, s4, s5, s6, s7, s8, s9, 0, s11, s12 }) {
+		for (int s: new int[] { s1, s2.get(), s3, s4, s5.get(), s6, s7.get(), s8, s9, 0, s11, s12 }) {
 			if (s != 0) {
 				sb.append("&s" + i + "=" + s);
 			}
@@ -194,7 +198,7 @@ public class UISettings {
 				Collections.sort(nc);
 				int mid = Math.min(Math.max(nc.size() / 2, 0), nc.size() - 1);
 				s8 = Math.min(nc.get(mid), 999) + 1000 * nc.get(nc.size() - 1);
-				s5 = (s5 % 1000) + 1000 * (numA / 2);
+				s5.set((s5.get() % 1000) + 1000 * (numA / 2));
 			}
 		}
 	}
