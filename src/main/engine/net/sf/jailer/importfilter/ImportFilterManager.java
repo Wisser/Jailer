@@ -34,6 +34,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -388,7 +389,8 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		}
 
 		final String schema = quotedMappingTablesSchema;
-
+		AtomicReference<Table> identityInsertTable = new AtomicReference<Table>();
+		
 		for (final ColumnToMappingTable mapping: columnToMappingTableSet) {
 			writeOutJobs.add(new Job() {
 				@Override
@@ -397,7 +399,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 					Column newValueColumn = new Column(mapping.newValueColumnName, mapping.type, 0, -1);
 					Column oldValueColumn = new Column(mapping.oldValueColumnName, mapping.type, 0, -1);
 					mappingTable.setColumns(Arrays.asList(oldValueColumn, newValueColumn));
-					ResultSetReader scriptFileWriter = new DMLTransformer(mappingTable, dmlResultWriter, false, 1, targetSession, targetDBMSConfiguration, null, executionContext) {
+					ResultSetReader scriptFileWriter = new DMLTransformer(mappingTable, dmlResultWriter, false, 1, targetSession, targetDBMSConfiguration, null, identityInsertTable, executionContext) {
 						@Override
 						protected String convertToSql(CellContentConverter cellContentConverter,
 								ResultSet resultSet, int i, Object content, int callerId, String suffix) throws SQLException {

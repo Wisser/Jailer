@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
@@ -190,6 +191,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		private final Session session;
 		private final DBMS targetDBMSConfiguration;
 		private ImportFilterTransformer importFilterTransformer;
+		private final AtomicReference<Table> identityInsertTable = new AtomicReference<Table>();
 
 		/**
 		 * The execution context.
@@ -221,7 +223,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, session, targetDBMSConfiguration, importFilterTransformer, executionContext);
+			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, session, targetDBMSConfiguration, importFilterTransformer, identityInsertTable, executionContext);
 		}
 
 		/**
@@ -246,7 +248,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * @param targetDBMSConfiguration configuration of the target DBMS
 	 * @param executionContext
 	 */
-	protected DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
+	protected DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, AtomicReference<Table> identityInsertTable, ExecutionContext executionContext) throws SQLException {
 		this.executionContext = executionContext;
 		this.targetDBMSConfiguration = targetDBMSConfiguration;
 		this.maxBodySize = maxBodySize;
@@ -263,6 +265,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
 			}
 		}
+		this.identityInsertTable = identityInsertTable;
 		this.session = session;
 		this.selectionClause = table.getSelectionClause();
 		tableHasIdentityColumn = false;
@@ -991,13 +994,13 @@ public class DMLTransformer extends AbstractResultSetReader {
 	public void close() {
 		flush();
 		synchronized (scriptFileWriter) {
-			if (identityInsertTable != null) {
+			if (identityInsertTable.get() != null) {
 				try {
-					scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;" + PrintUtil.LINE_SEPARATOR);
+					scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable.get()) + " OFF;" + PrintUtil.LINE_SEPARATOR);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
-				identityInsertTable = null;
+				identityInsertTable.set(null);
 			}
 		}
 	}
@@ -1005,7 +1008,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	/**
 	 * Table which is currently enabled for identity-inserts.
 	 */
-	private static Table identityInsertTable = null;
+	private final AtomicReference<Table> identityInsertTable;
 
 	/**
 	 * Writes into script.
@@ -1013,13 +1016,13 @@ public class DMLTransformer extends AbstractResultSetReader {
 	private void writeToScriptFile(String content, boolean wrap) throws IOException {
 		synchronized (scriptFileWriter) {
 			if (tableHasIdentityColumn) {
-				if (identityInsertTable != table) {
-					if (identityInsertTable != null) {
-						scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;" + PrintUtil.LINE_SEPARATOR);
-						identityInsertTable = null;
+				if (identityInsertTable.get() != table) {
+					if (identityInsertTable.get() != null) {
+						scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable.get()) + " OFF;" + PrintUtil.LINE_SEPARATOR);
+						identityInsertTable.set(null);
 					}
 					scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(table) + " ON;" + PrintUtil.LINE_SEPARATOR);
-					identityInsertTable = table;
+					identityInsertTable.set(table);
 				}
 			}
 			if (wrap && DBMS.ORACLE.equals(targetDBMSConfiguration)) {
