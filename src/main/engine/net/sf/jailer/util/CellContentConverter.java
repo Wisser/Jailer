@@ -544,8 +544,8 @@ public class CellContentConverter {
 	 *
 	 * @param resultSet result-set
 	 * @param columnName column name
-	 * @param typeCache for caching types
-	 * @return object
+	 * 
+	 * @return the object
 	 */
 	public Object getObject(ResultSet resultSet, String columnName) throws SQLException {
 		Integer index = columnIndex.get(columnName);

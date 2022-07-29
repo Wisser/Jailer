@@ -561,7 +561,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 		
 		// render text
 		int textColor = m_color; // item.getTextColor();
-		if ( text != null && ColorLib.alpha(textColor) > 0 ) {
+		if (ColorLib.alpha(textColor) > 0) {
 			g.setPaint(ColorLib.getColor(textColor));
 			if (m_color == NOT_IN_CLOSURE_COLOR) {
 				g.setFont(m_font_nic);
