@@ -4093,7 +4093,7 @@ public abstract class Desktop extends JDesktopPane {
 			} catch (PropertyVetoException e1) {
 				// ignore
 			}
-			if (lastBrowserContentPane != null) {
+			if (lastBrowserContentPane.get() != null) {
 				lastBrowserContentPane.get().andCondition.grabFocus();
 			}
 			onLayoutChanged(false, true);
