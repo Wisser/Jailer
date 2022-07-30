@@ -4086,7 +4086,7 @@ public abstract class Desktop extends JDesktopPane {
 	private static final AtomicReference<JInternalFrame> lastInternalFrame = new AtomicReference<JInternalFrame>();
 	private static final AtomicReference<BrowserContentPane> lastBrowserContentPane = new AtomicReference<BrowserContentPane>();
 	public void catchUpLastArrangeLayoutOnNewTableBrowser() {
-		if (lastInternalFrame != null) {
+		if (lastInternalFrame.get() != null) {
 			this.scrollToCenter(lastInternalFrame.get());
 			try {
 				lastInternalFrame.get().setSelected(true);
