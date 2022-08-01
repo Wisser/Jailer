@@ -1782,7 +1782,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void newModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newModelActionPerformed
 		try {
 		    UIUtil.setWaitCursor(this);
-			createFrame(null, false, "S", executionContext);
+		    ExecutionContext newExecutionContext = new ExecutionContext(executionContext);
+		    newExecutionContext.setCurrentConnectionAlias(null);
+			createFrame(null, false, "S", newExecutionContext);
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
