@@ -28,7 +28,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -418,7 +417,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu5 = new javax.swing.JMenu();
         horizontalLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         jMenu4 = new javax.swing.JMenu();
-        steptime0 = new javax.swing.JRadioButtonMenuItem();
         steptime10 = new javax.swing.JRadioButtonMenuItem();
         steptime20 = new javax.swing.JRadioButtonMenuItem();
         steptime30 = new javax.swing.JRadioButtonMenuItem();
@@ -426,7 +424,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptime75 = new javax.swing.JRadioButtonMenuItem();
         steptime100 = new javax.swing.JRadioButtonMenuItem();
         steptime200 = new javax.swing.JRadioButtonMenuItem();
-        steptime500 = new javax.swing.JRadioButtonMenuItem();
+        steptime300 = new javax.swing.JRadioButtonMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         plafMenu = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -898,18 +896,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu4.setText("Animation step time");
 
-        steptimeGroup.add(steptime0);
-        steptime0.setSelected(true);
-        steptime0.setText("default");
-        steptime0.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                steptime0ActionPerformed(evt);
-            }
-        });
-        jMenu4.add(steptime0);
-
         steptimeGroup.add(steptime10);
-        steptime10.setText("10");
+        steptime10.setText("10 ms (fast, high CPU load)");
         steptime10.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime10ActionPerformed(evt);
@@ -918,7 +906,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu4.add(steptime10);
 
         steptimeGroup.add(steptime20);
-        steptime20.setText("20");
+        steptime20.setText("20 ms");
         steptime20.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime20ActionPerformed(evt);
@@ -927,7 +915,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu4.add(steptime20);
 
         steptimeGroup.add(steptime30);
-        steptime30.setText("30");
+        steptime30.setText("30 ms");
         steptime30.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime30ActionPerformed(evt);
@@ -936,7 +924,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu4.add(steptime30);
 
         steptimeGroup.add(steptime50);
-        steptime50.setText("50");
+        steptime50.setText("50 ms");
         steptime50.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime50ActionPerformed(evt);
@@ -945,7 +933,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu4.add(steptime50);
 
         steptimeGroup.add(steptime75);
-        steptime75.setText("75");
+        steptime75.setText("75 ms");
         steptime75.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime75ActionPerformed(evt);
@@ -954,7 +942,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu4.add(steptime75);
 
         steptimeGroup.add(steptime100);
-        steptime100.setText("100");
+        steptime100.setText("100 ms");
         steptime100.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime100ActionPerformed(evt);
@@ -963,7 +951,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu4.add(steptime100);
 
         steptimeGroup.add(steptime200);
-        steptime200.setText("200");
+        steptime200.setText("200 ms");
         steptime200.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 steptime200ActionPerformed(evt);
@@ -971,14 +959,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu4.add(steptime200);
 
-        steptimeGroup.add(steptime500);
-        steptime500.setText("500");
-        steptime500.addActionListener(new java.awt.event.ActionListener() {
+        steptimeGroup.add(steptime300);
+        steptime300.setText("300 ms (slow, low CPU load)");
+        steptime300.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                steptime500ActionPerformed(evt);
+                steptime300ActionPerformed(evt);
             }
         });
-        jMenu4.add(steptime500);
+        jMenu4.add(steptime300);
 
         jMenu5.add(jMenu4);
         jMenu5.add(jSeparator6);
@@ -1937,17 +1925,23 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	private void initAnimationSteptime() {
 		try {
-			BufferedReader in = new BufferedReader(new FileReader(".steptime"));
-			try {
-				animationStepTime = Integer.parseInt(in.readLine());
-			} catch (Exception e) {
+			Integer st = (Integer) UISettings.restore("ANIMATION_STEP_TIME_S");
+			if (st != null) {
+				animationStepTime = st;
+			} else {
+				// legacy
+				BufferedReader in = new BufferedReader(new FileReader(".steptime"));
+				try {
+					animationStepTime = Integer.parseInt(in.readLine());
+				} catch (Exception e) {
+				}
+				in.close();
 			}
-			in.close();
 		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
 		}
 		switch (animationStepTime) {
-		case 0: steptime0.setSelected(true); break;
+		case 0: steptime10.setSelected(true); break;
 		case 10: steptime10.setSelected(true); break;
 		case 20: steptime20.setSelected(true); break;
 		case 30: steptime30.setSelected(true); break;
@@ -1955,28 +1949,19 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		case 75: steptime75.setSelected(true); break;
 		case 100: steptime100.setSelected(true); break;
 		case 200: steptime200.setSelected(true); break;
-		case 500: steptime500.setSelected(true); break;
+		case 300: steptime300.setSelected(true); break;
+		case 500: steptime300.setSelected(true); break;
 		}
 	}
 
 	private void setAnimationSteptime(int steptime) {
 		animationStepTime = steptime;
-		FileWriter out;
-		try {
-			out = new FileWriter(".steptime");
-			out.write("" + animationStepTime);
-			out.close();
-		} catch (IOException e) {
-		}
+		UISettings.store("ANIMATION_STEP_TIME_S", animationStepTime);
 		extractionModelEditor.refresh(false, true, true, true);
 	}
 
-	private void steptime0ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime0ActionPerformed
-		setAnimationSteptime(0);
-	}//GEN-LAST:event_steptime0ActionPerformed
-
 	private void steptime10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime10ActionPerformed
-		setAnimationSteptime(10);
+		setAnimationSteptime(0);
 	}//GEN-LAST:event_steptime10ActionPerformed
 
 	private void steptime20ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime20ActionPerformed
@@ -2003,9 +1988,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		setAnimationSteptime(200);
 	}//GEN-LAST:event_steptime200ActionPerformed
 
-	private void steptime500ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime500ActionPerformed
-		setAnimationSteptime(500);
-	}//GEN-LAST:event_steptime500ActionPerformed
+	private void steptime300ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime300ActionPerformed
+		setAnimationSteptime(300);
+	}//GEN-LAST:event_steptime300ActionPerformed
 
 	private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
 		openFilterEditor(extractionModelEditor.root);
@@ -2363,6 +2348,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					executionContext = new ExecutionContext();
 				} else {
 					executionContext = new ExecutionContext(executionContext);
+					executionContext.setCurrentConnectionAlias(null);
 				}
 				DataModelManagerDialog.setCurrentBaseFolder(executionContext);
 				DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file, executionContext), executionContext);
@@ -2528,7 +2514,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
-    private javax.swing.JSeparator jSeparator11;
+    private javax.swing.JPopupMenu.Separator jSeparator11;
     private javax.swing.JSeparator jSeparator12;
     private javax.swing.JPopupMenu.Separator jSeparator13;
     private javax.swing.JPopupMenu.Separator jSeparator14;
@@ -2557,14 +2543,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem saveAs;
     private javax.swing.JCheckBoxMenuItem showIgnored;
     private javax.swing.JCheckBoxMenuItem showTableDetails;
-    private javax.swing.JRadioButtonMenuItem steptime0;
     private javax.swing.JRadioButtonMenuItem steptime10;
     private javax.swing.JRadioButtonMenuItem steptime100;
     private javax.swing.JRadioButtonMenuItem steptime20;
     private javax.swing.JRadioButtonMenuItem steptime200;
     private javax.swing.JRadioButtonMenuItem steptime30;
+    private javax.swing.JRadioButtonMenuItem steptime300;
     private javax.swing.JRadioButtonMenuItem steptime50;
-    private javax.swing.JRadioButtonMenuItem steptime500;
     private javax.swing.JRadioButtonMenuItem steptime75;
     private javax.swing.ButtonGroup steptimeGroup;
     private javax.swing.JMenuItem tutorial;

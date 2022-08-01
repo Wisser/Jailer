@@ -74,6 +74,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -195,6 +196,7 @@ public abstract class Desktop extends JDesktopPane {
 	private RowsClosure rowsClosure = new RowsClosure();
 
 	final DesktopAnimation desktopAnimation;
+	AtomicInteger animationStepTime = new AtomicInteger(0);
 	
 	private final QueryBuilderDialog queryBuilderDialog;
 	private final DesktopIFrameStateChangeRenderer iFrameStateChangeRenderer = new DesktopIFrameStateChangeRenderer();
@@ -298,7 +300,7 @@ public abstract class Desktop extends JDesktopPane {
 									avgD *= 2;
 								}
 
-								Thread.sleep(Math.min(Math.max(STEP_DELAY, avgD), 500));
+								Thread.sleep(Math.min(Math.max(STEP_DELAY, avgD), 500) + animationStepTime.get());
 							}
 							if (!inProgress.get()) {
 								inProgress.set(true);
@@ -1344,6 +1346,11 @@ public abstract class Desktop extends JDesktopPane {
 			protected void loadScriptFile(String fileName) {
 				Desktop.this.loadScriptFile(fileName);
 			}
+
+			@Override
+			protected int getAnimationStepTime() {
+				return animationStepTime.get();
+			}
 		};
 		browserContentPane.addUserAction(new UserAction(
 				"Align Horizontally",
@@ -1979,7 +1986,7 @@ public abstract class Desktop extends JDesktopPane {
 			rbSourceToLinks = null;
 		}
 		
-		animationStep = currentTimeMillis / (double) STEP_DELAY;
+		animationStep = (currentTimeMillis / (double) STEP_DELAY) * Math.max(0.3, (1.0 - 0.7 * animationStepTime.get() / 300.0));
 		
 		if (lastAnimationStepTime + STEP_DELAY < currentTimeMillis) {
 			changed = true;

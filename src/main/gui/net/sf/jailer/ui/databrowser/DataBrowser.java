@@ -327,7 +327,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		initComponents();
 		initMenu();
-
+		
 		boolean zoom = Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL));
 		zoomWithMouseWheelMenuItem.setSelected(Boolean.TRUE.equals(UISettings.restore(UISettings.ZOOM_WITH_MOUSE_WHEEL)));
 		setZoomWithMouseWheel(zoom);
@@ -1024,6 +1024,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		outLinePanel.add(desktopOutline, constraints);
 
 		new BookmarksPanel(this, bookmarkMenu, desktop, executionContext).updateBookmarksMenu();
+		initAnimationSteptime();
 
 		jScrollPane1.setViewportView(desktop);
 		addWindowListener(new WindowListener() {
@@ -1468,6 +1469,7 @@ public class DataBrowser extends javax.swing.JFrame {
         titleLabel = new javax.swing.JLabel();
         dataModelPanel = new javax.swing.JPanel();
         jLabel26 = new javax.swing.JLabel();
+        buttonGroupStepTime = new javax.swing.ButtonGroup();
         jLayeredPane2 = new javax.swing.JLayeredPane();
         jPanel1 = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
@@ -1616,6 +1618,16 @@ public class DataBrowser extends javax.swing.JFrame {
         autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         zoomWithMouseWheelMenuItem = new javax.swing.JCheckBoxMenuItem();
         jSeparator16 = new javax.swing.JPopupMenu.Separator();
+        jMenu4 = new javax.swing.JMenu();
+        steptime10 = new javax.swing.JRadioButtonMenuItem();
+        steptime20 = new javax.swing.JRadioButtonMenuItem();
+        steptime30 = new javax.swing.JRadioButtonMenuItem();
+        steptime50 = new javax.swing.JRadioButtonMenuItem();
+        steptime75 = new javax.swing.JRadioButtonMenuItem();
+        steptime100 = new javax.swing.JRadioButtonMenuItem();
+        steptime200 = new javax.swing.JRadioButtonMenuItem();
+        steptime300 = new javax.swing.JRadioButtonMenuItem();
+        jSeparator20 = new javax.swing.JPopupMenu.Separator();
         plafMenu = new javax.swing.JMenu();
         helpMenu = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
@@ -2674,6 +2686,83 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu3.add(zoomWithMouseWheelMenuItem);
         jMenu3.add(jSeparator16);
 
+        jMenu4.setText("Animation step time");
+
+        buttonGroupStepTime.add(steptime10);
+        steptime10.setText("10 ms (fast, high CPU load)");
+        steptime10.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                steptime10ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(steptime10);
+
+        buttonGroupStepTime.add(steptime20);
+        steptime20.setText("20 ms");
+        steptime20.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                steptime20ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(steptime20);
+
+        buttonGroupStepTime.add(steptime30);
+        steptime30.setText("30 ms");
+        steptime30.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                steptime30ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(steptime30);
+
+        buttonGroupStepTime.add(steptime50);
+        steptime50.setText("50 ms");
+        steptime50.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                steptime50ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(steptime50);
+
+        buttonGroupStepTime.add(steptime75);
+        steptime75.setText("75 ms");
+        steptime75.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                steptime75ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(steptime75);
+
+        buttonGroupStepTime.add(steptime100);
+        steptime100.setText("100 ms");
+        steptime100.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                steptime100ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(steptime100);
+
+        buttonGroupStepTime.add(steptime200);
+        steptime200.setText("200 ms");
+        steptime200.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                steptime200ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(steptime200);
+
+        buttonGroupStepTime.add(steptime300);
+        steptime300.setText("300 ms (slow, low CPU load)");
+        steptime300.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                steptime300ActionPerformed(evt);
+            }
+        });
+        jMenu4.add(steptime300);
+
+        jMenu3.add(jMenu4);
+        jMenu3.add(jSeparator20);
+
         plafMenu.setText("Look and Feel");
         jMenu3.add(plafMenu);
 
@@ -2750,6 +2839,64 @@ public class DataBrowser extends javax.swing.JFrame {
             newBrowserjMenuItemActionPerformed(null);
         }
     }//GEN-LAST:event_modelPathMouseClicked
+
+	/**
+	 * Initializes the "step time" menu items.
+	 */
+	private void initAnimationSteptime() {
+		Integer st = (Integer) UISettings.restore("ANIMATION_STEP_TIME_B");
+		if (st != null) {
+			desktop.animationStepTime.set(st);
+		}
+		switch (desktop.animationStepTime.get()) {
+		case 0: steptime10.setSelected(true); break;
+		case 10: steptime10.setSelected(true); break;
+		case 20: steptime20.setSelected(true); break;
+		case 30: steptime30.setSelected(true); break;
+		case 50: steptime50.setSelected(true); break;
+		case 75: steptime75.setSelected(true); break;
+		case 100: steptime100.setSelected(true); break;
+		case 200: steptime200.setSelected(true); break;
+		case 300: steptime300.setSelected(true); break;
+		}
+	}
+
+	private void setAnimationSteptime(int steptime) {
+		desktop.animationStepTime.set(steptime);
+		UISettings.store("ANIMATION_STEP_TIME_B", desktop.animationStepTime.get());
+	}
+
+	private void steptime10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime10ActionPerformed
+		setAnimationSteptime(0);
+	}//GEN-LAST:event_steptime10ActionPerformed
+
+	private void steptime20ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime20ActionPerformed
+		setAnimationSteptime(20);
+	}//GEN-LAST:event_steptime20ActionPerformed
+
+	private void steptime30ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime30ActionPerformed
+		setAnimationSteptime(30);
+	}//GEN-LAST:event_steptime30ActionPerformed
+
+	private void steptime50ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime50ActionPerformed
+		setAnimationSteptime(50);
+	}//GEN-LAST:event_steptime50ActionPerformed
+
+	private void steptime75ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime75ActionPerformed
+		setAnimationSteptime(75);
+	}//GEN-LAST:event_steptime75ActionPerformed
+
+	private void steptime100ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime100ActionPerformed
+		setAnimationSteptime(100);
+	}//GEN-LAST:event_steptime100ActionPerformed
+
+	private void steptime200ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime200ActionPerformed
+		setAnimationSteptime(200);
+	}//GEN-LAST:event_steptime200ActionPerformed
+
+	private void steptime300ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime300ActionPerformed
+		setAnimationSteptime(300);
+	}//GEN-LAST:event_steptime300ActionPerformed
 
 	private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_exportDataMenuItemActionPerformed
 		desktop.createExtractionModel(true);
@@ -3410,6 +3557,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu bookmarkMenu;
     private javax.swing.JPanel borderBrowserPanel;
     private javax.swing.JPanel borderBrowserTabPane;
+    private javax.swing.ButtonGroup buttonGroupStepTime;
     javax.swing.JMenuItem checkPKMenuItem;
     private javax.swing.JMenuItem closeAllMenuItem;
     private javax.swing.JPanel closurePanel;
@@ -3465,6 +3613,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;
@@ -3490,6 +3639,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JToolBar.Separator jSeparator18;
     private javax.swing.JSeparator jSeparator19;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator20;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -3540,6 +3690,14 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel searchPanelContainer;
     private javax.swing.JCheckBoxMenuItem showDataModelMenuItem;
     private javax.swing.JRadioButtonMenuItem smallLayoutRadioButtonMenuItem;
+    private javax.swing.JRadioButtonMenuItem steptime10;
+    private javax.swing.JRadioButtonMenuItem steptime100;
+    private javax.swing.JRadioButtonMenuItem steptime20;
+    private javax.swing.JRadioButtonMenuItem steptime200;
+    private javax.swing.JRadioButtonMenuItem steptime30;
+    private javax.swing.JRadioButtonMenuItem steptime300;
+    private javax.swing.JRadioButtonMenuItem steptime50;
+    private javax.swing.JRadioButtonMenuItem steptime75;
     private javax.swing.JMenuItem storeSessionItem;
     private javax.swing.JTabbedPane tableTreesTabbedPane;
     private javax.swing.JPanel tablesCardPanel;
