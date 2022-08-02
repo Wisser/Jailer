@@ -1208,7 +1208,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							g2d.setStroke(stroke);
 							g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
 							g2d.setColor(new Color(0, 0, 200, 100));
-							g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) ((System.currentTimeMillis() / 50.0 * Math.max(0.3, (1.0 - 0.7 * getAnimationStepTime() / 300.0))) % 16)));
+							g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) ((System.currentTimeMillis() / 50.0 * getAnimationFactor()) % 16)));
 							g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
 						}
 					}
@@ -6791,7 +6791,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void deselectChildrenIfNeededWithoutReload();
 	protected abstract int getReloadLimit();
 	protected abstract void setReloadLimit(int limit);
-	protected int getAnimationStepTime() {
+	protected double getAnimationFactor() {
 		return 0;
 	}
 	

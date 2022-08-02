@@ -371,7 +371,7 @@ public class DesktopOutline extends JPanel {
 			sh = (int)(scale * (double) rectangle.height + 0.5);
 			visibleRectInOutline = new Rectangle(sx, sy, sw, sh);
 			g2d.setColor(new Color(0, 0, 200));
-			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) ((System.currentTimeMillis() / 50.0 * Math.max(0.3, (1.0 - 0.7 * desktop.animationStepTime.get() / 300.0))) % 16)));
+			g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 11f, 5f }, (float) ((System.currentTimeMillis() / 50.0 * desktop.getAnimationFactor()) % 16)));
 			g2d.drawRoundRect(sx, sy, sw, sh, 8, 8);
 		}
 	}

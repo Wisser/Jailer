@@ -776,17 +776,25 @@ public class DataBrowser extends javax.swing.JFrame {
 		desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog,
 				schemaMapping == null ? new HashMap<String, String>() : schemaMapping, anchorManager,
 				executionContext) {
+			
 			@Override
 			public void openSchemaAnalyzer() {
 				updateDataModel();
 			}
 
+			boolean animationStepTimeWasNonZero = false;
+			
+			@Override
 			protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
 				storeSessionItem.setEnabled(hasIFrame);
 				closeAllMenuItem.setEnabled(hasIFrame);
 				addBookmarkMenuItem.setEnabled(hasTableBrowser);
 				exportDataMenuItem.setEnabled(hasTableBrowser);
 				createExtractionModelMenuItem.setEnabled(hasTableBrowser);
+				if (animationStepTime.get() != 0) {
+					animationStepTimeWasNonZero = true;
+				}
+				animationStepTimeMenu.setEnabled(animationStepTimeWasNonZero || getBrowsers().stream().anyMatch(b -> b.parent != null));
 				updateIFramesBar();
 				super.updateMenu(hasTableBrowser, hasIFrame);
 			}
@@ -1618,7 +1626,7 @@ public class DataBrowser extends javax.swing.JFrame {
         autoLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         zoomWithMouseWheelMenuItem = new javax.swing.JCheckBoxMenuItem();
         jSeparator16 = new javax.swing.JPopupMenu.Separator();
-        jMenu4 = new javax.swing.JMenu();
+        animationStepTimeMenu = new javax.swing.JMenu();
         steptime10 = new javax.swing.JRadioButtonMenuItem();
         steptime20 = new javax.swing.JRadioButtonMenuItem();
         steptime30 = new javax.swing.JRadioButtonMenuItem();
@@ -2686,7 +2694,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu3.add(zoomWithMouseWheelMenuItem);
         jMenu3.add(jSeparator16);
 
-        jMenu4.setText("Animation step time");
+        animationStepTimeMenu.setText("Animation step time");
 
         buttonGroupStepTime.add(steptime10);
         steptime10.setText("10 ms (fast, high CPU load)");
@@ -2695,7 +2703,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 steptime10ActionPerformed(evt);
             }
         });
-        jMenu4.add(steptime10);
+        animationStepTimeMenu.add(steptime10);
 
         buttonGroupStepTime.add(steptime20);
         steptime20.setText("20 ms");
@@ -2704,7 +2712,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 steptime20ActionPerformed(evt);
             }
         });
-        jMenu4.add(steptime20);
+        animationStepTimeMenu.add(steptime20);
 
         buttonGroupStepTime.add(steptime30);
         steptime30.setText("30 ms");
@@ -2713,7 +2721,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 steptime30ActionPerformed(evt);
             }
         });
-        jMenu4.add(steptime30);
+        animationStepTimeMenu.add(steptime30);
 
         buttonGroupStepTime.add(steptime50);
         steptime50.setText("50 ms");
@@ -2722,7 +2730,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 steptime50ActionPerformed(evt);
             }
         });
-        jMenu4.add(steptime50);
+        animationStepTimeMenu.add(steptime50);
 
         buttonGroupStepTime.add(steptime75);
         steptime75.setText("75 ms");
@@ -2731,7 +2739,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 steptime75ActionPerformed(evt);
             }
         });
-        jMenu4.add(steptime75);
+        animationStepTimeMenu.add(steptime75);
 
         buttonGroupStepTime.add(steptime100);
         steptime100.setText("100 ms");
@@ -2740,7 +2748,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 steptime100ActionPerformed(evt);
             }
         });
-        jMenu4.add(steptime100);
+        animationStepTimeMenu.add(steptime100);
 
         buttonGroupStepTime.add(steptime200);
         steptime200.setText("200 ms");
@@ -2749,7 +2757,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 steptime200ActionPerformed(evt);
             }
         });
-        jMenu4.add(steptime200);
+        animationStepTimeMenu.add(steptime200);
 
         buttonGroupStepTime.add(steptime300);
         steptime300.setText("300 ms (slow, low CPU load)");
@@ -2758,9 +2766,9 @@ public class DataBrowser extends javax.swing.JFrame {
                 steptime300ActionPerformed(evt);
             }
         });
-        jMenu4.add(steptime300);
+        animationStepTimeMenu.add(steptime300);
 
-        jMenu3.add(jMenu4);
+        jMenu3.add(animationStepTimeMenu);
         jMenu3.add(jSeparator20);
 
         plafMenu.setText("Look and Feel");
@@ -3552,6 +3560,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel addSQLConsoleTab;
     private javax.swing.JMenuItem analyseMenuItem;
     private javax.swing.JMenuItem analyseSQLMenuItem1;
+    private javax.swing.JMenu animationStepTimeMenu;
     private javax.swing.JLabel associatedWith;
     javax.swing.JCheckBoxMenuItem autoLayoutMenuItem;
     private javax.swing.JMenu bookmarkMenu;
@@ -3613,7 +3622,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;

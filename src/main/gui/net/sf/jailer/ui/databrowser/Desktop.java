@@ -198,6 +198,12 @@ public abstract class Desktop extends JDesktopPane {
 	final DesktopAnimation desktopAnimation;
 	AtomicInteger animationStepTime = new AtomicInteger(0);
 	
+	double getAnimationFactor() {
+		double h = 0.7;
+		double l = 0.25;
+		return Math.max(l, (h - (h - l) * animationStepTime.get() / 300.0));
+	}
+	
 	private final QueryBuilderDialog queryBuilderDialog;
 	private final DesktopIFrameStateChangeRenderer iFrameStateChangeRenderer = new DesktopIFrameStateChangeRenderer();
 	private final DesktopAnchorManager anchorManager;
@@ -1348,8 +1354,8 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected int getAnimationStepTime() {
-				return animationStepTime.get();
+			protected double getAnimationFactor() {
+				return Desktop.this.getAnimationFactor();
 			}
 		};
 		browserContentPane.addUserAction(new UserAction(
@@ -1986,7 +1992,7 @@ public abstract class Desktop extends JDesktopPane {
 			rbSourceToLinks = null;
 		}
 		
-		animationStep = (currentTimeMillis / (double) STEP_DELAY) * Math.max(0.3, (1.0 - 0.7 * animationStepTime.get() / 300.0));
+		animationStep = (currentTimeMillis / (double) STEP_DELAY) * getAnimationFactor();
 		
 		if (lastAnimationStepTime + STEP_DELAY < currentTimeMillis) {
 			changed = true;

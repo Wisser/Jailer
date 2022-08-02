@@ -528,7 +528,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator16">
             </MenuItem>
-            <Menu class="javax.swing.JMenu" name="jMenu4">
+            <Menu class="javax.swing.JMenu" name="animationStepTimeMenu">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Animation step time"/>
               </Properties>
