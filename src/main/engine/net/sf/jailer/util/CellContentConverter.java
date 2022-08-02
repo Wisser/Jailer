@@ -231,14 +231,13 @@ public class CellContentConverter {
 		}
 		public String getExpression() {
 			String expression;
-			String val = String.valueOf(value);
 			if (pattern.contains("'$1'")) {
-				expression = pattern.replace("$1", value == null? "null" : targetConfiguration.convertToStringLiteral(val));
+				expression = pattern.replace("$1", value == null? "null" : targetConfiguration.convertToStringLiteral(String.valueOf(value)));
 			} else {
-				expression = pattern.replace("$1", value == null? "null" : val);
+				expression = pattern.replace("$1", value == null? "null" : String.valueOf(value));
 			}
 			expression = expression.replace("$2", type);
-			return targetConfiguration.postProcessStringLiteral(expression, val, null);
+			return expression;
 		}
 		@Override
 		public String toString() {
@@ -654,15 +653,9 @@ public class CellContentConverter {
 					return null;
 				}
 				if (lob instanceof NClob) {
-					String value = line.toString();
-					String literal = toClob.replace("%s", targetConfiguration.convertToStringLiteral(value, targetConfiguration.getNcharPrefix()));
-					literal = targetConfiguration.postProcessStringLiteral(literal, value, targetConfiguration.getNcharPrefix());
-					return literal;
+					return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString(), targetConfiguration.getNcharPrefix()));
 				} else {
-					String value = line.toString();
-					String literal = toClob.replace("%s",targetConfiguration.convertToStringLiteral(value));
-					literal = targetConfiguration.postProcessStringLiteral(literal, value, null);
-					return literal;
+					return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
 				}
 			}
 			if (lob instanceof Blob) {
