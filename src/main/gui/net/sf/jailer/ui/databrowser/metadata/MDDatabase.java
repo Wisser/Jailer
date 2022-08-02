@@ -203,11 +203,15 @@ public class MDDatabase extends MDGeneric {
 	        	Session.setThreadSharesConnection();
 	    		DatabaseMetaData md = getMetaDataSource().getSession().getMetaData();
 	            for (String name : names) {
-	            	Method m = md.getClass().getMethod(name);
-					String displayName = name.startsWith("get") ? name.substring(3) : name;
-					displayName = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
-					rowList.add(new Object[] { displayName, m.invoke(md) });
-				}
+	            	try {
+	        	        Method m = md.getClass().getMethod(name);
+						String displayName = name.startsWith("get") ? name.substring(3) : name;
+						displayName = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
+						rowList.add(new Object[] { displayName, m.invoke(md) });
+	            	} catch (Throwable t) {
+	    				logger.info("error", t);
+	    			}
+	            }
 			} catch (Throwable t) {
 				logger.info("error", t);
 			}
