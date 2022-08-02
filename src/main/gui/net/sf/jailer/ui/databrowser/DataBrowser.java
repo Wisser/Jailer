@@ -4488,8 +4488,8 @@ public class DataBrowser extends javax.swing.JFrame {
 					public void windowLostFocus(WindowEvent e) {
 						if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
 							if (System.currentTimeMillis() < startTime + 200) {
-								dialog.requestFocus();
-								return;
+//								dialog.requestFocus(); TODO
+//								return;
 							}
 							close.run();
 						}

@@ -171,7 +171,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		}
 		
 		setLocation(400, 150);
-		setSize(400, 140);
+		setSize(400, 240); // TODO
 	}
 
 	@Override
@@ -444,6 +444,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 			}
 		});
 		initialCondition = condition;
+		UIUtil.invokeLater(() -> DBConditionEditor.this.requestFocus()); // TODO
 		setVisible(true);
 	}
 
