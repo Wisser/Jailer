@@ -657,6 +657,29 @@ public class DBMS {
 	}
 
 	/**
+	 * Indicates that E'x\ny' syntax is supported.
+	 */
+	private boolean supportsCStyleBackslashEscapes = false;
+	
+	/**
+	 * Indicates that E'x\ny' syntax is supported.
+	 * 
+	 * @return <code>true</code> iff E'x\ny' syntax is supported
+	 */
+	public boolean isSupportsCStyleBackslashEscapes() {
+		return supportsCStyleBackslashEscapes;
+	}
+
+	/**
+	 * Indicates that E'x\ny' syntax is supported.
+	 * 
+	 * @param supportsCStyleBackslashEscapes <code>true</code> iff E'x\ny' syntax is supported
+	 */
+	public void setSupportsCStyleBackslashEscapes(boolean supportsCStyleBackslashEscapes) {
+		this.supportsCStyleBackslashEscapes = supportsCStyleBackslashEscapes;
+	}
+
+	/**
 	 * Sets replacement map for special characters in string literals.
 	 */
 	public void setStringLiteralEscapeSequences(Map<String, String> stringLiteralEscapeSequences) {
@@ -749,7 +772,23 @@ public class DBMS {
 		}
 		return qvalue.toString();
 	}
-
+	
+	/**
+	 * Evt. applies standart escape syntax.
+	 * 
+	 * @param literal the litaral
+	 * @param value original string
+	 * @return literal
+	 */
+	public String postProcessStringLiteral(String literal, String value, String prefix) {
+		if (supportsCStyleBackslashEscapes && prefix == null && literal.startsWith("'") && literal.endsWith("'")) {
+			if (value.contains("\n") || value.contains("\r") || value.contains("\t")) {
+				return "E'" + convertToStringLiteral(value.replace("\\", "\\\\").replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t")) + "'";
+			}
+		}
+		return literal;
+	}
+	
 	public boolean isAvoidLeftJoin() {
 		return avoidLeftJoin;
 	}

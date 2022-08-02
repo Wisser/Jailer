@@ -112,10 +112,13 @@ public class CellContentConverter {
 		}
 		if (content instanceof NCharWrapper) {
 			String ncharPrefix = targetConfiguration.getNcharPrefix();
-			return (ncharPrefix != null? ncharPrefix : "") + "'" + targetConfiguration.convertToStringLiteral(content.toString(), ncharPrefix) + "'";
+			String value = content.toString();
+			String literal = (ncharPrefix != null? ncharPrefix : "") + "'" + targetConfiguration.convertToStringLiteral(value, ncharPrefix) + "'";
+			literal = targetConfiguration.postProcessStringLiteral(literal, value, ncharPrefix);
+			return literal;
 		}
 		if (content instanceof String) {
-			return "'" + targetConfiguration.convertToStringLiteral((String) content) + "'";
+			return targetConfiguration.postProcessStringLiteral("'" + targetConfiguration.convertToStringLiteral((String) content) + "'", (String) content, null);
 		}
 		if (content instanceof PObjectWrapper) {
 			if (((PObjectWrapper) content).getValue() == null) {
@@ -158,7 +161,8 @@ public class CellContentConverter {
 						// PostgreSQL bit values
 						return "B'" + content + "'";
 					}
-					return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'";
+					String val = content.toString();
+					return targetConfiguration.postProcessStringLiteral("'" + targetConfiguration.convertToStringLiteral(val) + "'", val, null);
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
@@ -227,13 +231,14 @@ public class CellContentConverter {
 		}
 		public String getExpression() {
 			String expression;
+			String val = String.valueOf(value);
 			if (pattern.contains("'$1'")) {
-				expression = pattern.replace("$1", value == null? "null" : targetConfiguration.convertToStringLiteral(String.valueOf(value)));
+				expression = pattern.replace("$1", value == null? "null" : targetConfiguration.convertToStringLiteral(val));
 			} else {
-				expression = pattern.replace("$1", value == null? "null" : String.valueOf(value));
+				expression = pattern.replace("$1", value == null? "null" : val);
 			}
 			expression = expression.replace("$2", type);
-			return expression;
+			return targetConfiguration.postProcessStringLiteral(expression, val, null);
 		}
 		@Override
 		public String toString() {
@@ -649,9 +654,15 @@ public class CellContentConverter {
 					return null;
 				}
 				if (lob instanceof NClob) {
-					return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString(), targetConfiguration.getNcharPrefix()));
+					String value = line.toString();
+					String literal = toClob.replace("%s", targetConfiguration.convertToStringLiteral(value, targetConfiguration.getNcharPrefix()));
+					literal = targetConfiguration.postProcessStringLiteral(literal, value, targetConfiguration.getNcharPrefix());
+					return literal;
 				} else {
-					return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
+					String value = line.toString();
+					String literal = toClob.replace("%s",targetConfiguration.convertToStringLiteral(value));
+					literal = targetConfiguration.postProcessStringLiteral(literal, value, null);
+					return literal;
 				}
 			}
 			if (lob instanceof Blob) {
