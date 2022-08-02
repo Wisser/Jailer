@@ -256,10 +256,13 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
 				if (!loadingDialogisVisible.get()) {
-					if (System.currentTimeMillis() < t + 200) {
-						dialog.requestFocus();
-						return;
-					}
+					
+					// see https://github.com/Wisser/Jailer/issues/91
+//					if (System.currentTimeMillis() < t + 200) {
+//						dialog.requestFocus();
+//						return;
+//					}
+					
 					if (owner != null && isCloseOwner() && e.getOppositeWindow() != owner) {
 						if (!(owner instanceof JFrame)) {
 							owner.dispose();
