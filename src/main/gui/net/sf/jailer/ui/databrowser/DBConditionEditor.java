@@ -18,6 +18,7 @@ package net.sf.jailer.ui.databrowser;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
@@ -27,6 +28,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -35,9 +38,11 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -49,6 +54,7 @@ import org.fife.rsta.ui.EscapableDialog;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
@@ -79,6 +85,23 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		
+		scalarSQIconToggleButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JPopupMenu popupMenu = ConditionEditor.createJoinPopupMenu(table1alias, table1, editorPane);
+				UIUtil.fit(popupMenu);
+				popupMenu.show(scalarSQIconToggleButton, 0, scalarSQIconToggleButton.getHeight());
+				popupMenu.addPropertyChangeListener("visible", new PropertyChangeListener() {
+					@Override
+					public void propertyChange(PropertyChangeEvent evt) {
+						if (Boolean.FALSE.equals(evt.getNewValue())) {
+							scalarSQIconToggleButton.setSelected(false);
+						}
+					}
+				});
+			}
+		});
+
 		addWindowFocusListener(new WindowFocusListener() {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
@@ -175,6 +198,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         clearButton = new javax.swing.JButton();
+        scalarSQIconToggleButton = new javax.swing.JToggleButton();
         jPanel3 = new javax.swing.JPanel();
         gripPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -197,7 +221,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -242,6 +266,15 @@ public abstract class DBConditionEditor extends EscapableDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel2.add(clearButton, gridBagConstraints);
+
+        scalarSQIconToggleButton.setText("Scalar Subquery...");
+        scalarSQIconToggleButton.setToolTipText("Inserts a scalar query for a column of a neighboring table.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel2.add(scalarSQIconToggleButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -368,6 +401,15 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		this.table2alias = table2alias;
 		this.addPseudoColumns = addPseudoColumns;
 
+		if (table2 != null || table1 == null) {
+			scalarSQIconToggleButton.setVisible(false);
+		} else {
+			scalarSQIconToggleButton.setVisible(true);
+			scalarSQIconToggleButton.setIcon(dropDownIcon);
+		}
+
+		scalarSQIconToggleButton.setEnabled(table1 != null && !table1.associations.isEmpty());
+
 		createEditorPane(editorPaneScrollPane, dataModel);
 
 		toSubQueryButton.setVisible(addConvertSubqueryButton);
@@ -432,6 +474,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JButton okButton;
+    private javax.swing.JToggleButton scalarSQIconToggleButton;
     private javax.swing.JButton toSubQueryButton;
     // End of variables declaration//GEN-END:variables
 
@@ -601,6 +644,12 @@ public abstract class DBConditionEditor extends EscapableDialog {
 
 	private static final long serialVersionUID = -5169934807182707970L;
 
+	private Icon dropDownIcon;
+	{
+		// load images
+		dropDownIcon = UIUtil.readImage("/dropdown.png");
+	}
+	
 	private static ImageIcon clearIcon;
 	private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
