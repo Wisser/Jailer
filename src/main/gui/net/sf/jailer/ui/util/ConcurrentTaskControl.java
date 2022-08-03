@@ -204,7 +204,6 @@ public abstract class ConcurrentTaskControl extends javax.swing.JPanel {
 		
 		dialog.getContentPane().add(control);
 		dialog.pack();
-		// dialog.setSize(440, 200);
  		dialog.setLocation(windowAncestor.getX() + (windowAncestor.getWidth() - dialog.getWidth()) / 2, Math.max(0, windowAncestor.getY() + (windowAncestor.getHeight() - dialog.getHeight()) / 2));
  		UIUtil.fit(dialog);
  		

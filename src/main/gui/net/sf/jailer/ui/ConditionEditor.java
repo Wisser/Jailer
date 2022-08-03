@@ -27,9 +27,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -93,7 +95,7 @@ public class ConditionEditor extends EscapableDialog {
 		scalarSQIconToggleButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JPopupMenu popupMenu = ConditionEditor.createJoinPopupMenu(table1alias, table1, editorPane);
+				JPopupMenu popupMenu = ConditionEditor.createJoinPopupMenu(table1alias, table1, editorPane, null);
 				UIUtil.fit(popupMenu);
 				popupMenu.show(scalarSQIconToggleButton, 0, scalarSQIconToggleButton.getHeight());
 				popupMenu.addPropertyChangeListener("visible", new PropertyChangeListener() {
@@ -142,7 +144,7 @@ public class ConditionEditor extends EscapableDialog {
 		} else {
 			setLocation(400, 150);
 		}
-		setSize(660, 400);
+		UIUtil.setDialogSize(this, 660, 400);
 		UIUtil.fit(this);
 		
 		if (parametersGetter != null) {
@@ -426,7 +428,7 @@ public class ConditionEditor extends EscapableDialog {
 			Point p = new Point(0, 0);
 			SwingUtilities.convertPointToScreen(p, anchor);
 			setLocation((int) p.getX(), (int) p.getY());
-			setSize(660, 400);
+			setSize(660, 200);
 			UIUtil.fit(this);
 		}
 		setVisible(true);
@@ -491,7 +493,7 @@ public class ConditionEditor extends EscapableDialog {
         }
 	}
 
-	public static JPopupMenu createJoinPopupMenu(final String alias, Table table, final RSyntaxTextAreaWithSQLSyntaxStyle editor) {
+	public static JPopupMenu createJoinPopupMenu(final String alias, Table table, final RSyntaxTextAreaWithSQLSyntaxStyle editor, Set<Association> neighbors) {
 		JPopupMenu popupMenu = new JPopupMenu();
 		ImageIcon redDotIconScaled = UIUtil.scaleIcon(editor, redDotIcon);
 		ImageIcon blueDotIconScaled = UIUtil.scaleIcon(editor, blueDotIcon);
@@ -510,42 +512,77 @@ public class ConditionEditor extends EscapableDialog {
 			Integer cnt = destCount.get(a.destination);
 			namedAssocs.put(a.getDataModel().getDisplayName(a.destination) + (cnt != null && cnt > 1? (" (" + a.getName() + ")") : ""), a);
 		}
-		for (final Entry<String, Association> e: namedAssocs.entrySet()) {
-			ImageIcon icon;
-			if (e.getValue().isInsertDestinationBeforeSource()) {
-				icon = redDotIconScaled;
-			} else if (e.getValue().isInsertSourceBeforeDestination()) {
-				icon = greenDotIconScaled;
-			} else {
-				icon = blueDotIconScaled;
-			}
-			JMenu menu = new JScrollMenu(e.getKey());
-			menu.setIcon(icon);
-			popupMenu.add(menu);
-			List<Column> cols = new ArrayList<Column>(e.getValue().destination.getColumns());
-			Collections.sort(cols, new Comparator<Column>() {
-				@Override
-				public int compare(Column o1, Column o2) {
-					return o1.name.compareToIgnoreCase(o2.name);
+		boolean separatorAdded = false;
+		boolean hasNeighbor = false;
+		for (boolean addNeighbors: new boolean[] { true, false }) {
+			for (final Entry<String, Association> e: namedAssocs.entrySet()) {
+				boolean isNeighbor = neighbors != null && neighbors.contains(e.getValue());
+				if (addNeighbors && !isNeighbor || !addNeighbors && isNeighbor) {
+					continue;
 				}
-			});
-			for (final Column col: cols) {
-				JMenuItem item = new JMenuItem(col.name);
-				menu.add(item);
-				item.addActionListener(new ActionListener() {
+				if (addNeighbors) {
+					hasNeighbor = true;
+				} else if (hasNeighbor && !separatorAdded) {
+					popupMenu.add(new JSeparator());
+					separatorAdded = true;
+				}
+				ImageIcon icon;
+				if (e.getValue().isInsertDestinationBeforeSource()) {
+					icon = redDotIconScaled;
+				} else if (e.getValue().isInsertSourceBeforeDestination()) {
+					icon = greenDotIconScaled;
+				} else {
+					icon = blueDotIconScaled;
+				}
+				JMenu menu = new JScrollMenu(e.getKey());
+				menu.setIcon(icon);
+				popupMenu.add(menu);
+				List<Column> cols = new ArrayList<Column>(e.getValue().destination.getColumns());
+				Collections.sort(cols, new Comparator<Column>() {
 					@Override
-					public void actionPerformed(ActionEvent ev) {
-						String condition;
-						if (!e.getValue().reversed) {
-							condition = SqlUtil.replaceAliases(e.getValue().getUnrestrictedJoinCondition(), alias, e.getValue().destination.getUnqualifiedName());
-						} else {
-							condition = SqlUtil.replaceAliases(e.getValue().getUnrestrictedJoinCondition(), e.getValue().destination.getUnqualifiedName(), alias);
-						}
-						editor.replaceSelection(
-								"(Select " + col.name + " from " + e.getValue().destination.getName() + 
-								" Where " + condition + ")");
+					public int compare(Column o1, Column o2) {
+						return o1.name.compareToIgnoreCase(o2.name);
 					}
 				});
+
+				final Set<Column> fkColumns = new HashSet<Column>();
+				for (Association a: e.getValue().destination.associations) {
+					if (a.isInsertDestinationBeforeSource()) {
+						Map<Column, Column> m = a.createSourceToDestinationKeyMapping();
+						for (Column fkColumn: m.keySet()) {
+							fkColumns.add(fkColumn);
+						}
+					}
+				}
+				for (final Column col: cols) {
+					JMenuItem item = new JMenuItem(col.name);
+					if (e.getValue().destination.primaryKey != null) {
+						if (e.getValue().destination.primaryKey.getColumns().stream().anyMatch(pk -> pk.name.equals(col.name))) {
+							item.setForeground(UIUtil.FG_PK);
+						} else if (fkColumns.stream().anyMatch(fk -> fk.name.equals(col.name))) {
+							item.setForeground(UIUtil.FG_FK);
+						} 
+					}
+					menu.add(item);
+					item.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent ev) {
+							String condition;
+							if (!e.getValue().reversed) {
+								condition = SqlUtil.replaceAliases(e.getValue().getUnrestrictedJoinCondition(), alias, e.getValue().destination.getUnqualifiedName());
+							} else {
+								condition = SqlUtil.replaceAliases(e.getValue().getUnrestrictedJoinCondition(), e.getValue().destination.getUnqualifiedName(), alias);
+							}
+							editor.replaceSelection(
+									(e.getValue().isInsertSourceBeforeDestination()? "exists " : "") +
+									"(Select " + col.name + " from " + e.getValue().destination.getName() + 
+									" Where " + condition + ")" +
+									(e.getValue().isInsertSourceBeforeDestination()? "" : " is not null")
+									);
+							editor.grabFocus();
+						}
+					});
+				}
 			}
 		}
 		return popupMenu;

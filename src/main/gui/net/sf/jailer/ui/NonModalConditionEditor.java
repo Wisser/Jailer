@@ -60,7 +60,6 @@ import org.fife.rsta.ui.EscapableDialog;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
@@ -103,7 +102,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		scalarSQIconToggleButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JPopupMenu popupMenu = ConditionEditor.createJoinPopupMenu(table1alias, table1, editorPane);
+				JPopupMenu popupMenu = ConditionEditor.createJoinPopupMenu(table1alias, table1, editorPane, null);
 				UIUtil.fit(popupMenu);
 				popupMenu.show(scalarSQIconToggleButton, 0, scalarSQIconToggleButton.getHeight());
 				popupMenu.addPropertyChangeListener("visible", new PropertyChangeListener() {

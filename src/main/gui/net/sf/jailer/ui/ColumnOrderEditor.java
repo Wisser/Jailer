@@ -101,7 +101,7 @@ public class ColumnOrderEditor extends javax.swing.JPanel {
         dialog.setModal(true);
 		dialog.getContentPane().add(this);
 		dialog.pack();
-		dialog.setSize(550, 600);
+		UIUtil.setDialogSize(dialog, 550, 600);
 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
 		UIUtil.fit(dialog);
 		okButton.grabFocus();

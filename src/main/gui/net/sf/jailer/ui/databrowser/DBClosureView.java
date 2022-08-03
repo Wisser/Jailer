@@ -625,7 +625,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         });
         closureTable.setRowSelectionAllowed(false);
         setLocation(100, 100);
-        setSize(500, 500);
+        UIUtil.setDialogSize(this, 500, 500);
         setAlwaysOnTop(true);
 
         jLabel8.setVisible(false);

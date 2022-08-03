@@ -32,6 +32,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
@@ -51,6 +52,7 @@ import javax.swing.event.DocumentListener;
 
 import org.fife.rsta.ui.EscapableDialog;
 
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -74,10 +76,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	// TODO
 //	"scalar subquery", nachbarn nach oben, dann separator, dann rest
 //	exists ()
-//	
-//	vlcht ist scalierung (400) problem?
-			
-			
+
 	private boolean ok;
 	private boolean escaped;
 	private DataModelBasedSQLCompletionProvider provider;
@@ -95,7 +94,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		scalarSQIconToggleButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JPopupMenu popupMenu = ConditionEditor.createJoinPopupMenu(table1alias, table1, editorPane);
+				JPopupMenu popupMenu = ConditionEditor.createJoinPopupMenu(table1alias, table1, editorPane, neighbors);
 				UIUtil.fit(popupMenu);
 				popupMenu.show(scalarSQIconToggleButton, 0, scalarSQIconToggleButton.getHeight());
 				popupMenu.addPropertyChangeListener("visible", new PropertyChangeListener() {
@@ -392,14 +391,16 @@ public abstract class DBConditionEditor extends EscapableDialog {
 	private String table1alias, table2alias;
 	private boolean addPseudoColumns;
 	private String initialCondition;
+	private Set<Association> neighbors;
 	
 	/**
 	 * Edits a given condition.
 	 * 
 	 * @param condition the condition
+	 * @param neighbors 
 	 * @return new condition or <code>null</code>, if user canceled the editor
 	 */
-	public void edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton, DataModel dataModel) {
+	public void edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean addConvertSubqueryButton, Set<Association> neighbors, DataModel dataModel) {
 		if (!isVisible() && condition.length() > 60 || Pattern.compile("(\\bselect\\b)|(^\\s*\\()", Pattern.CASE_INSENSITIVE|Pattern.DOTALL).matcher(condition).find()) {
 			condition = new BasicFormatterImpl().format(condition);
 		}
@@ -408,6 +409,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		this.table1alias = table1alias;
 		this.table2alias = table2alias;
 		this.addPseudoColumns = addPseudoColumns;
+		this.neighbors = neighbors;
 
 		if (table2 != null || table1 == null) {
 			scalarSQIconToggleButton.setVisible(false);

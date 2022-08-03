@@ -266,7 +266,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
         dialog.setModal(true);
 		dialog.getContentPane().add(this);
 		dialog.pack();
-		dialog.setSize(800, 600);
+		UIUtil.setDialogSize(dialog, 800, 600);
 		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
 		UIUtil.fit(dialog);
 

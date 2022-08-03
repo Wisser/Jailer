@@ -611,7 +611,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         }
 		initTabbedPane();
 		setLocation(100, 100);
-		setSize(500, 500);
+		UIUtil.setDialogSize(this, 500, 500);
 		setAlwaysOnTop(true);
 	}
 

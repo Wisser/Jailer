@@ -1873,7 +1873,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				SwingUtilities.convertPointToScreen(pos, andCondition.getParent());
 				Window owner = SwingUtilities.getWindowAncestor(BrowserContentPane.this);
 				andConditionEditor.setLocationAndFit(pos, owner != null? owner.getX() + owner.getWidth() - 8: Integer.MAX_VALUE);
-				andConditionEditor.edit(text, "Table", "A", table, null, null, null, false, true, BrowserContentPane.this.dataModel);
+				Set<Association> neighbors = new HashSet<Association>();
+				if (association != null) {
+					neighbors.add(association.reversalAssociation);
+				}
+				List<RowBrowser> children = getChildBrowsers();
+				if (children != null) {
+					children.forEach(child -> {
+						if (child.association != null) {
+							neighbors.add(child.association);
+						}
+					});
+				}
+				andConditionEditor.edit(text, "Table", "A", table, null, null, null, false, true, neighbors, BrowserContentPane.this.dataModel);
 			}
 		});
 

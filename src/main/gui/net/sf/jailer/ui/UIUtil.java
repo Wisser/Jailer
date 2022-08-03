@@ -2262,4 +2262,9 @@ public class UIUtil {
 		}
 	}
 
+	public static void setDialogSize(JDialog dialog, int w, int h) {
+		dialog.pack();
+		dialog.setSize(Math.max(w, dialog.getWidth()), Math.max(h, dialog.getHeight()));
+	}
+
 }

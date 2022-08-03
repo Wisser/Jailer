@@ -246,7 +246,7 @@ public abstract class TableEditor extends javax.swing.JDialog {
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		
 		warnPanel.setVisible(false);
-		setSize(600, 500);
+		UIUtil.setDialogSize(this, 600, 500);
 		setLocation(parent.getLocation().x + parent.getSize().width/2 - getSize().width/2,
 				parent.getLocation().y + parent.getSize().height/2 - getSize().height/2);
 		

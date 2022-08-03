@@ -102,7 +102,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
         dialog.setModal(true);
  		dialog.getContentPane().add(this);
  		dialog.pack();
- 		dialog.setSize(440, 440);
+ 		UIUtil.setDialogSize(dialog, 440, 440);
  		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
  		UIUtil.fit(dialog);
 
@@ -136,7 +136,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
         dialog.setModal(true);
  		dialog.getContentPane().add(this);
  		dialog.pack();
- 		dialog.setSize(440, 440);
+ 		UIUtil.setDialogSize(dialog, 440, 440);
  		dialog.setLocation(owner.getX() + (owner.getWidth() - dialog.getWidth()) / 2, Math.max(0, owner.getY() + (owner.getHeight() - dialog.getHeight()) / 2));
  		UIUtil.fit(dialog);
 

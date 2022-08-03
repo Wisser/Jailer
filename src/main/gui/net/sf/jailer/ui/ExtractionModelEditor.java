@@ -509,7 +509,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		extractionModelFrame.pendingDecisionsDialog.setModal(false);
 		extractionModelFrame.pendingDecisionsDialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		extractionModelFrame.pendingDecisionsDialog.setLocation(30, 130);
-		extractionModelFrame.pendingDecisionsDialog.setSize(860, 600);
+		UIUtil.setDialogSize(extractionModelFrame.pendingDecisionsDialog, 860, 600);
 		extractionModelFrame.addWindowListener(new WindowListener() {
 			@Override
 			public void windowClosed(WindowEvent e) {

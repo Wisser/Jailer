@@ -40,7 +40,7 @@ public abstract class RestrictedDependenciesListDialog extends ClosureBorderDial
 		super(parent, false);
 		setTitle("Restricted Dependencies");
 		setLocation(60, 120);
-		setSize(500, 500);
+		UIUtil.setDialogSize(this,500, 500);
 		setAlwaysOnTop(true);
 		refresh();
 	}

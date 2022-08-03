@@ -257,7 +257,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			public void windowLostFocus(WindowEvent e) {
 				if (!loadingDialogisVisible.get()) {
 					
-					// TODO
 					// see https://github.com/Wisser/Jailer/issues/91
 //					if (System.currentTimeMillis() < t + 200) {
 //						dialog.requestFocus();

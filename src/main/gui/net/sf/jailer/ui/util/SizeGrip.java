@@ -45,9 +45,6 @@ import net.sf.jailer.ui.UIUtil;
  */
 public class SizeGrip extends JPanel {
 
-	// TODO
-	// TODO minimum size (DBConnEdit)
-	
 	/**
 	 * The size grip to use if we're on OS X.
 	 */
@@ -59,6 +56,7 @@ public class SizeGrip extends JPanel {
 		addMouseListener(adapter);
 		addMouseMotionListener(adapter);
 		setPreferredSize(new Dimension(16, 16));
+		setMinimumSize(new Dimension(16, 16));
 		setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
 	}
 
