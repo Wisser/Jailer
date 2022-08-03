@@ -70,7 +70,14 @@ import net.sf.jailer.util.SqlUtil;
  * @author Ralf Wisser
  */
 public abstract class DBConditionEditor extends EscapableDialog {
-
+	
+	// TODO
+//	"scalar subquery", nachbarn nach oben, dann separator, dann rest
+//	exists ()
+//	
+//	vlcht ist scalierung (400) problem?
+			
+			
 	private boolean ok;
 	private boolean escaped;
 	private DataModelBasedSQLCompletionProvider provider;
@@ -171,7 +178,8 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		}
 		
 		setLocation(400, 150);
-		setSize(400, 240); // TODO
+		pack();
+		setSize(Math.max(getWidth() + 32, 400), Math.max(getHeight() + 64, 140)); // TODO
 	}
 
 	@Override
@@ -437,14 +445,14 @@ public abstract class DBConditionEditor extends EscapableDialog {
 				provider.addAlias(table2alias, table2);
 			}
 		}
-		UIUtil.invokeLater(new Runnable() {
+		UIUtil.invokeLater(2, new Runnable() {
 			@Override
 			public void run() {
 				editorPane.grabFocus();
 			}
 		});
 		initialCondition = condition;
-		UIUtil.invokeLater(() -> DBConditionEditor.this.requestFocus()); // TODO
+		UIUtil.invokeLater(() -> DBConditionEditor.this.requestFocus());
 		setVisible(true);
 	}
 

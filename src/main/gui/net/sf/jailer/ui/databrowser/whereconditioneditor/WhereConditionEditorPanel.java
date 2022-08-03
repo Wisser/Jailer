@@ -1787,7 +1787,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		int estDVCount = estimateDistinctExistingValues(comparison, condition);
 		Integer estimatedItemsCount = defaultComboBoxModel.getSize() + estDVCount ;
 		searchPanel.setEstimatedItemsCount(estimatedItemsCount);
-		UIUtil.invokeLater(() -> {
+		UIUtil.invokeLater(2, () -> {
 			if (opacityPending) {
 				if (initialColumn >= 0) {
 					UIUtil.addDW(windowAncestor(), nextOpacity);
@@ -1919,7 +1919,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 					return;
 				}
 				LinkedHashMap<String, Integer> finalDistinctExistingFull = distinctExistingFull;
-				UIUtil.invokeLater(new Runnable() { public void run() {
+				UIUtil.invokeLater(3, new Runnable() { public void run() {
 					if (finalDistinctExistingFull != null) {
 						fullSearchCheckbox.setEnabled(finalDistinctExisting != null);
 						if (finalDistinctExisting != null

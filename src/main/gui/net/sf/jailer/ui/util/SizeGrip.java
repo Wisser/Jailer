@@ -45,6 +45,9 @@ import net.sf.jailer.ui.UIUtil;
  */
 public class SizeGrip extends JPanel {
 
+	// TODO
+	// TODO minimum size (DBConnEdit)
+	
 	/**
 	 * The size grip to use if we're on OS X.
 	 */

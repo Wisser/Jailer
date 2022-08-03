@@ -1209,7 +1209,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						}
 						dialog.setLocation(dialog.getX(), Math.max(0, maxY));
 					}
-					UIUtil.invokeLater(() -> dialog.setVisible(true));
+					UIUtil.invokeLater(() -> {
+						UIUtil.invokeLater(() -> dialog.requestFocus());
+						dialog.setVisible(true);
+					});
 				} catch (Exception e1) {
 					UIUtil.showException(windowAncestor, "Error", e1);
 				} finally {

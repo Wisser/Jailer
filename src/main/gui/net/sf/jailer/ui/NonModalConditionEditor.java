@@ -60,6 +60,7 @@ import org.fife.rsta.ui.EscapableDialog;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.databrowser.DBConditionEditor;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
@@ -216,7 +217,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 		}
 		
 		setLocation(400, 150);
-		setSize(600, 200);
+		setSize(Math.max(getWidth(), 600), Math.max(getHeight(), 200));
 		
 		if (parametersGetter != null) {
 			paramsPanel.add(parameterSelector = new ParameterSelector(this, editorPane, parametersGetter));
@@ -547,7 +548,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
 				provider.addAlias(table2alias, table2);
 			}
 		}
-		UIUtil.invokeLater(new Runnable() {
+		UIUtil.invokeLater(2, new Runnable() {
 			@Override
 			public void run() {
 				editorPane.grabFocus();
@@ -562,6 +563,7 @@ public abstract class NonModalConditionEditor extends EscapableDialog {
         	setLocationAndFit(location);
 		}
 		
+		UIUtil.invokeLater(() -> NonModalConditionEditor.this.requestFocus());
 		setVisible(true);
 	}
 

@@ -1714,6 +1714,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		dialog.setLocation(x, y);
 		
 		editButton.setSelected(true);
+		UIUtil.invokeLater(() -> dialog.requestFocus());
 		dialog.setVisible(true);
     }//GEN-LAST:event_editButtonActionPerformed
 

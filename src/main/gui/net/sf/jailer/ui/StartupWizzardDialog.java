@@ -112,6 +112,7 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 			setLocation(getParent().getX() + (getParent().getWidth() - getWidth()) / 2, getParent().getY() + (getParent().getHeight() - getHeight()) / 2);
 		}
 		UIUtil.fit(this);
+		UIUtil.invokeLater(() -> StartupWizzardDialog.this.requestFocus());
 		setVisible(true);
 	}
 

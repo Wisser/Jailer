@@ -4483,14 +4483,14 @@ public class DataBrowser extends javax.swing.JFrame {
 				dialog.setModal(false);
 				dialog.setUndecorated(true);
 				dialog.addWindowFocusListener(new WindowFocusListener() {
-					long startTime = System.currentTimeMillis();
+//					long startTime = System.currentTimeMillis();
 					@Override
 					public void windowLostFocus(WindowEvent e) {
 						if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
-							if (System.currentTimeMillis() < startTime + 200) {
+//							if (System.currentTimeMillis() < startTime + 200) {
 //								dialog.requestFocus(); TODO
 //								return;
-							}
+//							}
 							close.run();
 						}
 					}
@@ -4529,6 +4529,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				UIUtil.invokeLater(4, () -> {
 					popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn(dialog);
 				});
+				UIUtil.invokeLater(() -> dialog.requestFocus());
 				dialog.setVisible(true);
 			}
 		});

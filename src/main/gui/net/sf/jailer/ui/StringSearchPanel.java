@@ -252,11 +252,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		dialog.setModal(false);
 		dialog.setUndecorated(true);
 		dialog.addWindowFocusListener(new WindowFocusListener() {
-			long t = System.currentTimeMillis();
+//			long t = System.currentTimeMillis();
 			@Override
 			public void windowLostFocus(WindowEvent e) {
 				if (!loadingDialogisVisible.get()) {
 					
+					// TODO
 					// see https://github.com/Wisser/Jailer/issues/91
 //					if (System.currentTimeMillis() < t + 200) {
 //						dialog.requestFocus();
@@ -364,6 +365,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		plainIsValid = false;
 		UIUtil.setPopupActive(true);
 		UIUtil.addDW(dialog);
+		UIUtil.invokeLater(() -> { dialog.requestFocus(); searchTextField.grabFocus(); });
 		dialog.setVisible(true);
 	}
 
@@ -762,7 +764,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
 	public void setInitialValue(String value) {
 		searchTextField.setText(value);
-		searchTextField.selectAll();
+		UIUtil.invokeLater(4, () -> { searchTextField.grabFocus(); searchTextField.selectAll(); });
 		updateList(false, true);
 		acceptAll = true;
 	}
@@ -824,7 +826,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	}
 		
 		if (loadVis) {
-			UIUtil.invokeLater(new Runnable() {
+			UIUtil.invokeLater(2, new Runnable() {
 				@Override
 				public void run() {
 					selectSchemas(vis);

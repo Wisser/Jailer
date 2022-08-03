@@ -2943,7 +2943,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					
 					if (location != null) {
 						popUpWhereConditionEditorPanel.parseCondition(secodaryCond, () -> {
-							long startTime = System.currentTimeMillis();
+//							long startTime = System.currentTimeMillis();
 							
 							dialog.setModal(false);
 							dialog.setUndecorated(true);
@@ -2951,10 +2951,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								@Override
 								public void windowLostFocus(WindowEvent e) {
 									if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
-										if (System.currentTimeMillis() < startTime + 200) {
-											dialog.requestFocus();
-											return;
-										}
+//										if (System.currentTimeMillis() < startTime + 200) {
+//											dialog.requestFocus(); // TODO
+//											return;
+//										}
 										close.run();
 									}
 								}
@@ -2989,6 +2989,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							UIUtil.invokeLater(4, () -> {
 								popUpWhereConditionEditorPanel.openStringSearchPanelOfInitialColumn(dialog);
 							});
+							UIUtil.invokeLater(() -> dialog.requestFocus());
 							dialog.setVisible(true);
 							
 							if (column >= 0) {

@@ -148,7 +148,8 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
 		}
 		
 		setLocation(400, 150);
-		setSize(600, 200);
+		pack();
+		setSize(Math.max(getWidth(), 600), Math.max(getHeight(), 200));
 	}
 	
 	/** This method is called from within the constructor to
@@ -357,7 +358,7 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
 				provider.addAlias("T", table);
 			}
 		}
-		UIUtil.invokeLater(new Runnable() {
+		UIUtil.invokeLater(2, new Runnable() {
 			@Override
 			public void run() {
 				editorPane.grabFocus();
@@ -371,6 +372,7 @@ public abstract class SubjectLimitEditor extends EscapableDialog {
         	setLocationAndFit(location);
 		}
 		
+		UIUtil.invokeLater(() -> requestFocus());
 		setVisible(true);
 	}
 

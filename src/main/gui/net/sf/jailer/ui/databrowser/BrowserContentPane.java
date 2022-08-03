@@ -6938,6 +6938,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				onRedraw();
 			}
 		});
+		UIUtil.invokeLater(() -> d.requestFocus());
 		d.setVisible(true);
 	}
 
