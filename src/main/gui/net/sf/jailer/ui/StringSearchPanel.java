@@ -252,7 +252,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		explictlyClosed = false;
 		dialog = new StringSearchDialog(owner, String.valueOf(titel));
 		dialog.setModal(false);
-		dialog.setUndecorated(true);
+//		dialog.setUndecorated(true);
 		dialog.addWindowFocusListener(new WindowFocusListener() {
 //			long t = System.currentTimeMillis();
 			@Override
@@ -272,9 +272,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						}
 					}
 					onClosing();
+					System.out.println("ID: " + dialog); // TODO
+					System.out.println("setVisible(false)"); // TODO
 					dialog.setVisible(false);
+					System.out.println("dispose"); // TODO
 					dialog.dispose();
+					System.out.println("consume"); // TODO
 					consumeResult();
+					System.out.println("ID: " + dialog); // TODO
+					System.out.println("Ok"); // TODO
 				}
 			}
 			@Override
@@ -367,26 +373,28 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		plainIsValid = false;
 		UIUtil.setPopupActive(true);
 		UIUtil.addDW(dialog);
-		UIUtil.invokeLater(() -> { dialog.requestFocus(); searchTextField.grabFocus(); });
 		
-		// since 12.5.3.9
-		AtomicReference<Timer> timer = new AtomicReference<Timer>();
-		timer.set(new Timer(100, e -> {
-			if (!loadingDialogisVisible.get()) {
-				System.out.println(System.currentTimeMillis());
-				if (!dialog.isVisible()) {
-					timer.get().stop();
-				} else if (!dialog.isFocused()) {
-					onClosing();
-					dialog.dispose();
-					consumeResult();
-				}
-			}
-		}));
-		timer.get().setInitialDelay(300);
-		timer.get().setRepeats(true);
-		timer.get().start();
+//		UIUtil.invokeLater(() -> { dialog.requestFocus(); searchTextField.grabFocus(); });
+//		
+//		// since 12.5.3.9
+//		AtomicReference<Timer> timer = new AtomicReference<Timer>();
+//		timer.set(new Timer(100, e -> {
+//			if (!loadingDialogisVisible.get()) {
+//				System.out.println(System.currentTimeMillis());
+//				if (!dialog.isVisible()) {
+//					timer.get().stop();
+//				} else if (!dialog.isFocused()) {
+//					onClosing();
+//					dialog.dispose();
+//					consumeResult();
+//				}
+//			}
+//		}));
+//		timer.get().setInitialDelay(300);
+//		timer.get().setRepeats(true);
+//		timer.get().start();
 		
+		System.out.println("set visible: " + dialog); // TODO
 		dialog.setVisible(true);
 	}
 
