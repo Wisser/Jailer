@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import javax.swing.DefaultComboBoxModel;
@@ -68,6 +69,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -270,6 +272,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						}
 					}
 					onClosing();
+					dialog.setVisible(false);
 					dialog.dispose();
 					consumeResult();
 				}
@@ -365,10 +368,31 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		UIUtil.setPopupActive(true);
 		UIUtil.addDW(dialog);
 		UIUtil.invokeLater(() -> { dialog.requestFocus(); searchTextField.grabFocus(); });
+		
+		// since 12.5.3.9
+		AtomicReference<Timer> timer = new AtomicReference<Timer>();
+		timer.set(new Timer(100, e -> {
+			if (!loadingDialogisVisible.get()) {
+				System.out.println(System.currentTimeMillis());
+				if (!dialog.isVisible()) {
+					timer.get().stop();
+				} else if (!dialog.isFocused()) {
+					onClosing();
+					dialog.dispose();
+					consumeResult();
+				}
+			}
+		}));
+		timer.get().setInitialDelay(300);
+		timer.get().setRepeats(true);
+		timer.get().start();
+		
 		dialog.setVisible(true);
 	}
 
-	protected void onClosing() {
+	protected void onClosing() { 
+		// TODO
+		// seems this is no longer used?!
 	}
 
 	private int oHeight;
