@@ -61,6 +61,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -1456,7 +1457,18 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         metaDataTree.setModel(treeModel);
 		metaDataTree.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
-        selectSchema(metaDataSource.getDefaultSchema());
+        MDSchema defaultSchema = metaDataSource.getDefaultSchema();
+        final Map<String, String> schemaMapping = getSchemaMapping();
+		if (schemaMapping != null) {
+			String mappedName = schemaMapping.get("");
+			if (mappedName != null) {
+				Optional<MDSchema> mappedSchema = metaDataSource.getSchemas().stream().filter(s -> mappedName.equals(s.getName())).findAny();
+				if (mappedSchema.isPresent()) {
+					defaultSchema = mappedSchema.get();
+				}
+			}
+		}
+		selectSchema(defaultSchema);
         UIUtil.invokeLater(12, () -> {
         	updateRowCounters();
             jScrollPane1.repaint();	
@@ -1994,6 +2006,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     protected abstract void setCaretPosition(int position);
 	protected abstract void appendScript(String script, boolean execute);
 	protected abstract void setOrResetWaitState(boolean set);
+	protected abstract Map<String, String> getSchemaMapping();
+
 
     public void onSelectTable() {
         Object item = tablesComboBox.getSelectedItem();

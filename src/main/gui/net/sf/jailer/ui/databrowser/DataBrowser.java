@@ -4822,6 +4822,11 @@ public class DataBrowser extends javax.swing.JFrame {
 								((CardLayout) tablesCardPanel.getLayout()).show(tablesCardPanel,
 										set ? "loading" : "tables");
 							}
+
+							@Override
+							protected Map<String, String> getSchemaMapping() {
+								return desktop.schemaMapping;
+							}
 						};
 					}
 					session.setSessionProperty(getClass(), "metaDataPanel", metaDataPanel);
