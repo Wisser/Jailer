@@ -1427,7 +1427,8 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
-		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
+		<defaultSchemaQuery>SELECT CURRENT_SCHEMA()</defaultSchemaQuery>
+        <viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
 		<estimatedRowCountQuery>
 SELECT c.relname, c.reltuples::bigint AS estimate
 FROM   pg_class c
@@ -1659,6 +1660,7 @@ union all
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
+		<defaultSchemaQuery>SELECT CURRENT_SCHEMA()</defaultSchemaQuery>
 		<viewTextOrDDLQuery>SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = '%1$s' and TABLE_NAME = '%2$s'</viewTextOrDDLQuery>
 		<estimatedRowCountQuery>
 SELECT c.relname, c.reltuples::bigint AS estimate
