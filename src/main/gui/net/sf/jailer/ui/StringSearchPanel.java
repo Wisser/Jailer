@@ -50,7 +50,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import javax.swing.DefaultComboBoxModel;
@@ -69,7 +68,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -252,19 +250,18 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		explictlyClosed = false;
 		dialog = new StringSearchDialog(owner, String.valueOf(titel));
 		dialog.setModal(false);
-//		dialog.setUndecorated(true);
+		dialog.setUndecorated(true);
 		dialog.addWindowFocusListener(new WindowFocusListener() {
-//			long t = System.currentTimeMillis();
+			long t = System.currentTimeMillis();
 			@Override
 			public void windowLostFocus(WindowEvent e) {
 				if (!loadingDialogisVisible.get()) {
-					
-					// see https://github.com/Wisser/Jailer/issues/91
-//					if (System.currentTimeMillis() < t + 200) {
-//						dialog.requestFocus();
-//						return;
-//					}
-					
+					if (System.currentTimeMillis() < t + 500) {
+						dialog.requestFocus();
+						// TODO
+						// TODO restore content focus
+						return;
+					}
 					if (owner != null && isCloseOwner() && e.getOppositeWindow() != owner) {
 						if (!(owner instanceof JFrame)) {
 							owner.dispose();
@@ -272,15 +269,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						}
 					}
 					onClosing();
-					System.out.println("ID: " + dialog); // TODO
-					System.out.println("setVisible(false)"); // TODO
-					dialog.setVisible(false);
-					System.out.println("dispose"); // TODO
 					dialog.dispose();
-					System.out.println("consume"); // TODO
 					consumeResult();
-					System.out.println("ID: " + dialog); // TODO
-					System.out.println("Ok"); // TODO
 				}
 			}
 			@Override
@@ -373,34 +363,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		plainIsValid = false;
 		UIUtil.setPopupActive(true);
 		UIUtil.addDW(dialog);
-		
-//		UIUtil.invokeLater(() -> { dialog.requestFocus(); searchTextField.grabFocus(); });
-//		
-//		// since 12.5.3.9
-//		AtomicReference<Timer> timer = new AtomicReference<Timer>();
-//		timer.set(new Timer(100, e -> {
-//			if (!loadingDialogisVisible.get()) {
-//				System.out.println(System.currentTimeMillis());
-//				if (!dialog.isVisible()) {
-//					timer.get().stop();
-//				} else if (!dialog.isFocused()) {
-//					onClosing();
-//					dialog.dispose();
-//					consumeResult();
-//				}
-//			}
-//		}));
-//		timer.get().setInitialDelay(300);
-//		timer.get().setRepeats(true);
-//		timer.get().start();
-		
-		System.out.println("set visible: " + dialog); // TODO
 		dialog.setVisible(true);
 	}
 
-	protected void onClosing() { 
-		// TODO
-		// seems this is no longer used?!
+	protected void onClosing() {
 	}
 
 	private int oHeight;
@@ -795,7 +761,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
 	public void setInitialValue(String value) {
 		searchTextField.setText(value);
-		UIUtil.invokeLater(4, () -> { searchTextField.grabFocus(); searchTextField.selectAll(); });
+		searchTextField.selectAll();
 		updateList(false, true);
 		acceptAll = true;
 	}
@@ -857,7 +823,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
     	}
 		
 		if (loadVis) {
-			UIUtil.invokeLater(2, new Runnable() {
+			UIUtil.invokeLater(new Runnable() {
 				@Override
 				public void run() {
 					selectSchemas(vis);
