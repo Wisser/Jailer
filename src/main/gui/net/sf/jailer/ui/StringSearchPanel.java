@@ -68,6 +68,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -89,6 +90,8 @@ import net.sf.jailer.ui.util.SizeGrip;
  */
 public class StringSearchPanel extends javax.swing.JPanel {
 
+	private static final int MINIMUM_POPUP_RETENSION = 1000;
+	
 	private JDialog dialog;
 	private String result;
 
@@ -244,6 +247,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		}
 		
 	};
+	
+	private long openingTime;
 
 	public void find(Window owner, Object titel, int x, int y, boolean locateUnderButton) {
 		isEscaped = false;
@@ -251,17 +256,18 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		dialog = new StringSearchDialog(owner, String.valueOf(titel));
 		dialog.setModal(false);
 		dialog.setUndecorated(true);
+		openingTime = System.currentTimeMillis();
+		UIUtil.invokeLater(6, () -> openingTime = System.currentTimeMillis());
 		dialog.addWindowFocusListener(new WindowFocusListener() {
-			long t = System.currentTimeMillis();
 			@Override
 			public void windowLostFocus(WindowEvent e) {
 				if (!loadingDialogisVisible.get()) {
-					if (System.currentTimeMillis() < t + 500) {
-						dialog.requestFocus();
-						// TODO
-						// TODO restore content focus
-						return;
-					}
+//					if (System.currentTimeMillis() < openingTime + 200) {
+//						dialog.requestFocus();
+//						// TODO
+//						// TODO reactivate this 3 times
+//						return;
+//					}
 					if (owner != null && isCloseOwner() && e.getOppositeWindow() != owner) {
 						if (!(owner instanceof JFrame)) {
 							owner.dispose();
@@ -269,7 +275,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						}
 					}
 					onClosing();
-					dialog.dispose();
+					dialog.setSize(1, 1); // 12.5.3.17
+					delayPopupAction(v -> dialog.dispose());
 					consumeResult();
 				}
 			}
@@ -1225,7 +1232,24 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	public void close(boolean explictlyClosed) {
 		this.explictlyClosed = explictlyClosed;
 		onClose(searchTextField.getText());
-		dialog.setVisible(false);
+		dialog.setSize(1, 1); // 12.5.3.17
+		delayPopupAction(e -> dialog.setVisible(false));
+	}
+
+	/**
+	 * TODO
+	 */
+	public void delayPopupAction(ActionListener action) {
+		if (openingTime > 0) {
+			long rest = openingTime + MINIMUM_POPUP_RETENSION - System.currentTimeMillis();
+			if (rest > 0) {
+				Timer timer = new Timer((int) rest, action);
+				timer.setRepeats(false);
+				timer.start();
+			} else {
+				action.actionPerformed(null);
+			}
+		}
 	}
 
 	protected void onClose(String text) {

@@ -22,10 +22,14 @@ package net.sf.jailer;
  */
 public class JailerVersion {
 	
+	
+	// TODO
+	// TOFO TF Warning
+	
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "12.5.3.10";
+	public static final String VERSION = "12.5.3.20";
 
 	/**
 	 * The Jailer working tables version.
