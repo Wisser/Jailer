@@ -1,5 +1,7 @@
 12.6
   - Extensive internal refactoring. Improvement of code quality.
+  - Issue #91, "Open Table popover stuck on screen". https://github.com/Wisser/Jailer/issues/91
+  - Issue #92, "Database tab - Schema Mapping should alter expanded table list". https://github.com/Wisser/Jailer/issues/92
 
 12.5.3
   - Error "Streaming result set is still active", could occur when table metadata has to be reloaded after a query in the SQL console. (MySQL)
