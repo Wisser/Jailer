@@ -1880,13 +1880,15 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 							distinctExistingModel.add(defaultComboBoxModel.getElementAt(i));
 						}
 						searchPanel.setEstimatedItemsCount(defaultComboBoxModel.getSize());
-						searchPanel.resetHeight();
 						if (fromCache[0]) {
 							clearCacheButton.setVisible(true);
 						}
 						searchPanel.updateList(false, true);
 						UIUtil.stopDW();
 					}
+				});
+				UIUtil.invokeLater(6, () -> {
+					searchPanel.resetHeight();
 				});
 
 				boolean[] incompleteFull = new boolean[1];

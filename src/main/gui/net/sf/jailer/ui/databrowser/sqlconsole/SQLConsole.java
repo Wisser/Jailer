@@ -2606,6 +2606,22 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 		private JDialog conditionEditorDialog = null;
 		
+		private static final int MINIMUM_POPUP_RETENSION = 1000;
+		private long openingTime;
+
+		private void delayPopupAction(ActionListener action) {
+			if (openingTime > 0) {
+				long rest = openingTime + MINIMUM_POPUP_RETENSION - System.currentTimeMillis();
+				if (rest > 0) {
+					Timer timer = new Timer((int) rest, action);
+					timer.setRepeats(false);
+					timer.start();
+				} else {
+					action.actionPerformed(null);
+				}
+			}
+		}
+
 		@Override
 		protected void openConditionEditor(Point location, int column, Runnable onClose) {
 			if (conditionEditorDialog != null) {
@@ -2943,19 +2959,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					
 					if (location != null) {
 						popUpWhereConditionEditorPanel.parseCondition(secodaryCond, () -> {
-//							long startTime = System.currentTimeMillis();
-							
-							dialog.setModal(false);
+//							dialog.setModal(false);
 							dialog.setUndecorated(true);
+							openingTime = System.currentTimeMillis();
+							UIUtil.invokeLater(6, () -> openingTime = System.currentTimeMillis());
 							dialog.addWindowFocusListener(new WindowFocusListener() {
 								@Override
 								public void windowLostFocus(WindowEvent e) {
 									if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
-//										if (System.currentTimeMillis() < startTime + 200) {
-//											dialog.requestFocus(); // TODO
-//											return;
-//										}
-										close.run();
+										if (System.currentTimeMillis() < openingTime + 200) {
+											dialog.requestFocus(); // TODO
+											return;
+										}
+										dialog.setSize(1, 1);
+										delayPopupAction(v -> close.run());
 									}
 								}
 								@Override

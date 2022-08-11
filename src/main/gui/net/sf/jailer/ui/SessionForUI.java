@@ -32,6 +32,7 @@ import javax.swing.JPanel;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Specialized {@link Session} for the UI.
@@ -72,6 +73,7 @@ public class SessionForUI extends Session {
 					if (testOnly) {
 						newCon.close();
 					} else {
+						Quoting.getQuoting(session);
 						if (initInlineViewStyle && !session.cancelled.get()) {
 							if (session.getInlineViewStyle() == null) {
 								session.setSessionProperty(SessionForUI.class, SUPPORT_WC_EDITOR, false);

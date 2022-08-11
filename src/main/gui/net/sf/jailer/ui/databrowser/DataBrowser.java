@@ -1174,31 +1174,6 @@ public class DataBrowser extends javax.swing.JFrame {
 				});
 			}
 		}
-		schemaNamePanel.addMouseListener(new java.awt.event.MouseAdapter() {
-			private boolean in = false;
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				desktop.openSchemaMappingDialog(false);
-			}
-
-			@Override
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				in = true;
-				updateBorder();
-			}
-
-			@Override
-			public void mouseExited(java.awt.event.MouseEvent evt) {
-				in = false;
-				updateBorder();
-			}
-
-			private void updateBorder() {
-				schemaNamePanel.setBorder(new javax.swing.border.SoftBevelBorder(
-						in ? javax.swing.border.BevelBorder.LOWERED : javax.swing.border.BevelBorder.RAISED));
-			}
-		});
 		updateStatusBar();
 		updateClosureBrowser(null);
 
@@ -1434,23 +1409,12 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		modelPath.setText(modelpath);
 
-		String nonDefaultSchema = null;
-		if (desktop.schemaMapping != null) {
-			for (Map.Entry<String, String> e : desktop.schemaMapping.entrySet()) {
-				if (!e.getKey().equalsIgnoreCase(e.getValue())) {
-					nonDefaultSchema = e.getValue();
-					break;
-				}
+		if (session != null) {
+			Object nonDefaultSchema = session.getSessionProperty(SessionForUI.class, "defSchema");
+			schemaNamePanel.setVisible(nonDefaultSchema != null);
+			if (nonDefaultSchema != null) {
+				schemaName.setText(nonDefaultSchema.toString());
 			}
-		}
-		schemaNamePanel.setVisible(nonDefaultSchema != null);
-		if (nonDefaultSchema != null) {
-			if (nonDefaultSchema.equals("")) {
-				schemaName.setText("Default Schema");
-			} else {
-				schemaName.setText("Schema " + nonDefaultSchema + "");
-			}
-			// schemaName.setToolTipText(schemaName.getText());
 		}
 	}
 
@@ -4414,7 +4378,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		JDialog dialog = new JDialog(this, "");
 		conditionEditorDialog = dialog;
 		UIUtil.invokeLater(() -> {
-			Runnable close = () -> {
+			final Runnable close = () -> {
 				dialog.setVisible(false);
 				dialog.dispose();
 			};
@@ -4482,16 +4446,18 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 				dialog.setModal(false);
 				dialog.setUndecorated(true);
+				openingTime = System.currentTimeMillis();
+				UIUtil.invokeLater(6, () -> openingTime = System.currentTimeMillis());
 				dialog.addWindowFocusListener(new WindowFocusListener() {
-//					long startTime = System.currentTimeMillis();
 					@Override
 					public void windowLostFocus(WindowEvent e) {
 						if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
-//							if (System.currentTimeMillis() < startTime + 200) {
-//								dialog.requestFocus(); TODO
-//								return;
-//							}
-							close.run();
+							if (System.currentTimeMillis() < openingTime + 200) {
+								dialog.requestFocus();
+								return;
+							}
+							dialog.setSize(1, 1);
+							delayPopupAction(v -> close.run());
 						}
 					}
 
@@ -4544,6 +4510,22 @@ public class DataBrowser extends javax.swing.JFrame {
 				timer.setRepeats(false);
 				timer.start();
 			});
+		}
+	}
+
+	private static final int MINIMUM_POPUP_RETENSION = 1000;
+	private long openingTime;
+
+	private void delayPopupAction(ActionListener action) {
+		if (openingTime > 0) {
+			long rest = openingTime + MINIMUM_POPUP_RETENSION - System.currentTimeMillis();
+			if (rest > 0) {
+				Timer timer = new Timer((int) rest, action);
+				timer.setRepeats(false);
+				timer.start();
+			} else {
+				action.actionPerformed(null);
+			}
 		}
 	}
 

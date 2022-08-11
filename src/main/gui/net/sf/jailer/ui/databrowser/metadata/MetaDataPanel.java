@@ -1461,8 +1461,19 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         final Map<String, String> schemaMapping = getSchemaMapping();
 		if (schemaMapping != null) {
 			String mappedName = schemaMapping.get("");
+			if (mappedName == null) {
+				mappedName = schemaMapping.get(Quoting.staticUnquote(defaultSchema.getName()));
+			}
+			if (mappedName == null) {
+				try {
+					mappedName = schemaMapping.get(Quoting.getQuoting(metaDataSource.getSession()).requote(defaultSchema.getName()));
+				} catch (SQLException e) {
+					mappedName = null;
+				}
+			}
 			if (mappedName != null) {
-				Optional<MDSchema> mappedSchema = metaDataSource.getSchemas().stream().filter(s -> mappedName.equals(s.getName())).findAny();
+				String fMappedName = mappedName;
+				Optional<MDSchema> mappedSchema = metaDataSource.getSchemas().stream().filter(s -> Quoting.equalsIgnoreQuotingAndCase(fMappedName, s.getName())).findAny();
 				if (mappedSchema.isPresent()) {
 					defaultSchema = mappedSchema.get();
 				}

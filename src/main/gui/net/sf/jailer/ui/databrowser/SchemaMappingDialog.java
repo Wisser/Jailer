@@ -39,6 +39,7 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Schema Mapping Dialog.
@@ -74,8 +75,16 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 				defaultSchemaName = defSchema;
 			}
 			SortedSet<String> modelSchemas = new TreeSet<String>();
+			boolean hasDS = false;
 			for (Table table: new DataModel(executionContext).getTables()) {
-				modelSchemas.add(table.getSchema(defaultSchemaName));
+				final String schema = table.getSchema(defaultSchemaName);
+				modelSchemas.add(schema);
+				if (Quoting.equalsIgnoreQuotingAndCase(schema, defSchema) || schema.equals(defaultSchemaName)) {
+					hasDS = true;
+				}
+			}
+			if (!hasDS) {
+				modelSchemas.add(defaultSchemaName);
 			}
 			SortedSet<String> dbSchemas = new TreeSet<String>(JDBCMetaDataBasedModelElementFinder.getSchemas(
 					session, connectionDialog.currentConnection.user));
@@ -89,12 +98,17 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 				gridBagConstraints.gridx = 2;
 				gridBagConstraints.gridy = y;
 				getContentPane().add(comboBox, gridBagConstraints);
-				String v = mapping.containsKey(schema)? mapping.get(schema) : schema;
+				Quoting q = Quoting.getQuoting(session);
+				String v = mapping.containsKey(q.unquote(schema))? mapping.get(q.unquote(schema)) : mapping.containsKey(q.requote(schema))? mapping.get(q.requote(schema)) : schema;
 				if (schema.equals(defaultSchemaName)) {
-					v = mapping.containsKey("")? mapping.get("") : schema;
+					v = mapping.containsKey("")? mapping.get("") : mapping.containsKey(q.unquote(defSchema))? mapping.get(q.unquote(defSchema)) : mapping.containsKey(q.requote(defSchema))? mapping.get(q.requote(defSchema)) : schema;
 				}
 				if (dbSchemas.contains(v)) {
 					comboBox.setSelectedItem(v);
+				} else if (dbSchemas.contains(q.requote(v))) {
+					comboBox.setSelectedItem(q.requote(v));
+				} else if (dbSchemas.contains(q.unquote(v))) {
+					comboBox.setSelectedItem(q.unquote(v));
 				} else if (dbSchemas.contains(v.toUpperCase(Locale.ENGLISH))) {
 					comboBox.setSelectedItem(v.toUpperCase(Locale.ENGLISH));
 				} else if (dbSchemas.contains(v.toLowerCase(Locale.ENGLISH))) {
@@ -107,7 +121,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 				
 				JLabel label = new JLabel();
 				label.setFont(label.getFont().deriveFont(label.getFont().getSize()+2f));
-		        label.setText(schema);
+		        label.setText(Quoting.getQuoting(session).unquote(schema) + (schema.equals(defaultSchemaName)? " (default)" : ""));
 				gridBagConstraints = new java.awt.GridBagConstraints();
 				gridBagConstraints.gridx = 4;
 				gridBagConstraints.gridy = y;

@@ -262,12 +262,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			@Override
 			public void windowLostFocus(WindowEvent e) {
 				if (!loadingDialogisVisible.get()) {
-//					if (System.currentTimeMillis() < openingTime + 200) {
-//						dialog.requestFocus();
-//						// TODO
-//						// TODO reactivate this 3 times
-//						return;
-//					}
+					if (System.currentTimeMillis() < openingTime + 200) {
+						dialog.requestFocus();
+						return;
+					}
 					if (owner != null && isCloseOwner() && e.getOppositeWindow() != owner) {
 						if (!(owner instanceof JFrame)) {
 							owner.dispose();
@@ -275,7 +273,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 						}
 					}
 					onClosing();
-					dialog.setSize(1, 1); // 12.5.3.17
+					dialog.setSize(1, 1);
 					delayPopupAction(v -> dialog.dispose());
 					consumeResult();
 				}
@@ -1236,10 +1234,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		delayPopupAction(e -> dialog.setVisible(false));
 	}
 
-	/**
-	 * TODO
-	 */
-	public void delayPopupAction(ActionListener action) {
+	private void delayPopupAction(ActionListener action) {
 		if (openingTime > 0) {
 			long rest = openingTime + MINIMUM_POPUP_RETENSION - System.currentTimeMillis();
 			if (rest > 0) {
