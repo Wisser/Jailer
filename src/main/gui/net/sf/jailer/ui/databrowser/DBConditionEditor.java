@@ -72,10 +72,6 @@ import net.sf.jailer.util.SqlUtil;
  * @author Ralf Wisser
  */
 public abstract class DBConditionEditor extends EscapableDialog {
-	
-	// TODO
-//	"scalar subquery", nachbarn nach oben, dann separator, dann rest
-//	exists ()
 
 	private boolean ok;
 	private boolean escaped;

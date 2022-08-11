@@ -85,7 +85,6 @@ import javax.swing.text.BadLocationException;
 import org.fife.ui.rtextarea.SmartHighlightPainter;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -799,22 +798,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 				value = result.toString();
 			} catch (Throwable t) {
 				if (!(t instanceof CancellationException)) {
-					String typeName = null;
-					if (cellEditor.columnTypeNames != null) {
-						if (cellEditor.columnTypeNames.length > columnIndex) {
-							typeName = cellEditor.columnTypeNames[columnIndex];
-						}
-					}
-					LogUtil.warn(new RuntimeException(
-							"TFWarning: " +
-							t.getClass().getSimpleName() + ": " + 
-							getClass().getName() + ": " + 
-							cellEditor.getColumnTypes()[columnIndex] + ", " +
-							typeName + ", " +
-							session.dbUrl + ", " + (session.dbms != null? session.dbms.getId() : null) + ", " +
-							DBMS.MSSQL.equals(session.dbms) + "||" + DBMS.SYBASE.equals(session.dbms) + "||" + DBMS.SQLITE.equals(session.dbms) + ", " +
-							session.getSessionProperty(getClass(), "TFDebugInfo") + 
-							t.getMessage(), t));
+					LogUtil.warn(t);
 				}
 				value = null;
 			}

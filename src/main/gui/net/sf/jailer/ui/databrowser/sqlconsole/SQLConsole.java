@@ -2968,7 +2968,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								public void windowLostFocus(WindowEvent e) {
 									if (!(e.getOppositeWindow() instanceof StringSearchDialog)) {
 										if (System.currentTimeMillis() < openingTime + 200) {
-											dialog.requestFocus(); // TODO
+											dialog.requestFocus();
 											return;
 										}
 										dialog.setSize(1, 1);

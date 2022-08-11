@@ -364,9 +364,6 @@ public class BrowserContentCellEditor {
 		return columnTypes;
 	}
 	
-	// TODO remove
-	public final String[] columnTypeNames;
-	
 	/**
 	 * The session.
 	 */
@@ -381,7 +378,6 @@ public class BrowserContentCellEditor {
 	 */
 	public BrowserContentCellEditor(int[] columnTypes, String[] columnTypeNames, Session session) {
 		this.columnTypes = columnTypes;
-		this.columnTypeNames = columnTypeNames;
 		this.session = session;
 		if (this.session != null) {
 			if (this.session.dbms.getTimestampWithNanoTypeName() != null) {
