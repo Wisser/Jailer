@@ -70,6 +70,7 @@ public class LocalDatabase {
 			dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", new File(databaseFolder, "local").getAbsolutePath()), user, password, 0, urlArray);
 		}
 		session = new Session(dataSource, dataSource.dbms, Connection.TRANSACTION_READ_UNCOMMITTED, null, false, true);
+		session.setLogPrefix("[local-db] ");
 	}
 
 	/**
