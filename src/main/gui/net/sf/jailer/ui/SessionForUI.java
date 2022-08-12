@@ -32,6 +32,7 @@ import javax.swing.JPanel;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -68,6 +69,7 @@ public class SessionForUI extends Session {
 			@Override
 			public void run() {
 				Session.setThreadSharesConnection();
+				CancellationHandler.reset(null);
 				try {
 					Connection newCon = session.connectionFactory.getConnection();
 					if (testOnly) {

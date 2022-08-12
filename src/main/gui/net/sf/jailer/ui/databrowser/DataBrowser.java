@@ -1411,6 +1411,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		if (session != null) {
 			Object nonDefaultSchema = session.getSessionProperty(SessionForUI.class, "defSchema");
+			if (nonDefaultSchema != null && dburl.startsWith(nonDefaultSchema + "@")) {
+				nonDefaultSchema = null;
+			}
 			schemaNamePanel.setVisible(nonDefaultSchema != null);
 			if (nonDefaultSchema != null) {
 				schemaName.setText(nonDefaultSchema.toString());
