@@ -174,7 +174,7 @@ public abstract class DBConditionEditor extends EscapableDialog {
 		
 		setLocation(400, 150);
 		pack();
-		setSize(Math.max(getWidth() + 32, 400), Math.max(getHeight() + 64, 140)); // TODO
+		setSize(Math.max(getWidth() + 32, 400), Math.max(getHeight() + 64, 140));
 	}
 
 	@Override
