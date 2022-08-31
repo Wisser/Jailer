@@ -120,6 +120,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -929,7 +930,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         conditionEditorButton.setIcon(UIUtil.scaleIcon(this, findColumnIconWhere));
 		conditionEditorButton.setText(null);
 		loadButton.setIcon(runIcon);
-		loadButton.setText(null);
+		loadButton.setHorizontalTextPosition(SwingConstants.RIGHT);
 		try {
 			Icon errorIcon = UIManager.getIcon("OptionPane.errorIcon");
 			errorLabel.setIcon(errorIcon);
@@ -6301,7 +6302,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jToolBar2.setFloatable(false);
         jToolBar2.setRollover(true);
 
-        loadButton.setText("Reload");
+        loadButton.setText("Reload ");
         loadButton.setToolTipText("Reload Rows");
         loadButton.setFocusable(false);
         loadButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -6317,6 +6318,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel7.add(jToolBar2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -6432,7 +6434,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         relatedRowsPanel.setLayout(new java.awt.GridBagLayout());
 
         relatedRowsLabel.setBackground(new java.awt.Color(224, 240, 255));
-        relatedRowsLabel.setText(" Related Rows ");
+        relatedRowsLabel.setText("Related Rows  ");
         relatedRowsLabel.setOpaque(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -6458,7 +6460,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sqlPanel.setLayout(new java.awt.GridBagLayout());
 
         sqlLabel1.setForeground(new java.awt.Color(1, 0, 0));
-        sqlLabel1.setText("  Menu  ");
+        sqlLabel1.setText("Menu  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(1, 3, 1, 3);
         sqlPanel.add(sqlLabel1, gridBagConstraints);
