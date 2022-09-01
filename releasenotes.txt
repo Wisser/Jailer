@@ -1,3 +1,6 @@
+12.6.2
+  - Minor improvements to the GUI of the data browser.
+
 12.6.1
   - Extensive internal refactoring. Improvement of code quality.
   - Issue #91, "Open Table popover stuck on screen". https://github.com/Wisser/Jailer/issues/91
