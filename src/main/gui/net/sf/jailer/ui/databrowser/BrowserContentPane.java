@@ -1912,7 +1912,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			});
 		}
 		relatedRowsLabel.setIcon(blueIcon);
-		relatedRowsLabel.setFont(relatedRowsLabel.getFont().deriveFont(relatedRowsLabel.getFont().getSize() * 1.1f));
+		final Font derivedFont = relatedRowsLabel.getFont().deriveFont(relatedRowsLabel.getFont().getSize() * 1.1f);
+		relatedRowsLabel.setFont(derivedFont);
+		sqlLabel1.setFont(derivedFont);
+		loadButton.setFont(derivedFont);
 		relatedRowsPanel.setToolTipText("Navigate to a neighbor table.");
 		Color rRowsBGColor = relatedRowsPanel.getBackground();
 		if (UIUtil.plaf == PLAF.FLAT) {
@@ -6442,7 +6445,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 3, 1, 1);
+        gridBagConstraints.insets = new java.awt.Insets(1, 3, 1, 3);
         relatedRowsPanel.add(relatedRowsLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
