@@ -348,7 +348,6 @@ public class Quoting {
 	}
 
 	public static final HashSet<String> UCSQL2003KEYWORDS = new HashSet<String>(Arrays.asList(new String[] {
-			"ABS",
 			"ABSOLUTE",
 			"ACTION",
 			"ADD",
@@ -394,8 +393,6 @@ public class Quoting {
 			"CASE",
 			"CAST",
 			"CATALOG",
-			"CEIL",
-			"CEILING",
 			"CHAR",
 			"CHARACTER",
 			"CHARACTER_LENGTH",
@@ -489,7 +486,6 @@ public class Quoting {
 			"FILTER",
 			"FIRST",
 			"FLOAT",
-			"FLOOR",
 			"FOR",
 			"FOREIGN",
 			"FOUND",
@@ -610,7 +606,6 @@ public class Quoting {
 			"PERCENTILE_DISC",
 			"PERCENT_RANK",
 			"PLACING",
-			"POSITION",
 			"POSTFIX",
 			"POWER",
 			"PRECISION",
