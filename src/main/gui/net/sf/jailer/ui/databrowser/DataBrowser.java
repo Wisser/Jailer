@@ -96,6 +96,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -355,6 +356,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		tbZoom4Button.setIcon(tbZoom4Icon);
 		tbZoomInButton.setIcon(tbZoomInIcon);
 		tbZoomOutButton.setIcon(tbZoomOutIcon);
+		tbreloadButton.setIcon(runIcon);
+		tbreloadButton.setHorizontalTextPosition(SwingConstants.RIGHT);
 
 		desktopUndoManager = new DesktopUndoManager(tbBackButton, tbForewardButton, goBackItem, goForwardItem, this,
 				jScrollPane1);
@@ -788,6 +791,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
 				storeSessionItem.setEnabled(hasIFrame);
 				closeAllMenuItem.setEnabled(hasIFrame);
+				tbreloadButton.setEnabled(hasIFrame);
 				addBookmarkMenuItem.setEnabled(hasTableBrowser);
 				exportDataMenuItem.setEnabled(hasTableBrowser);
 				createExtractionModelMenuItem.setEnabled(hasTableBrowser);
@@ -1488,6 +1492,8 @@ public class DataBrowser extends javax.swing.JFrame {
         tbZoom2Button = new javax.swing.JToggleButton();
         tbZoom3Button = new javax.swing.JToggleButton();
         tbZoom4Button = new javax.swing.JToggleButton();
+        jSeparator21 = new javax.swing.JToolBar.Separator();
+        tbreloadButton = new javax.swing.JButton();
         closurePanel = new javax.swing.JPanel();
         consoleDummyPanel = new javax.swing.JPanel();
         addSQLConsoleTab = new javax.swing.JPanel();
@@ -1975,6 +1981,18 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jToolBar1.add(tbZoom4Button);
+        jToolBar1.add(jSeparator21);
+
+        tbreloadButton.setText("Reload");
+        tbreloadButton.setFocusable(false);
+        tbreloadButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tbreloadButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        tbreloadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tbreloadButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(tbreloadButton);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2297,7 +2315,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jMenu1.setText("File");
 
-        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         jMenuItem3.setText("Open Table");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2306,7 +2324,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem3);
 
-        closeAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        closeAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_DOWN_MASK | java.awt.event.InputEvent.CTRL_DOWN_MASK));
         closeAllMenuItem.setText("Close all Tables");
         closeAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2333,7 +2351,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(newBrowserjMenuItem);
         jMenu1.add(jSeparator4);
 
-        loadScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        loadScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         loadScriptMenuItem.setText("Load SQL Script...");
         loadScriptMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2342,7 +2360,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(loadScriptMenuItem);
 
-        saveScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        saveScriptMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         saveScriptMenuItem.setText("Save");
         saveScriptMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2360,7 +2378,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(saveScriptAsMenuItem);
         jMenu1.add(jSeparator9);
 
-        storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_MASK));
+        storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         storeSessionItem.setText("Store Layout");
         storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2369,7 +2387,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(storeSessionItem);
 
-        restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         restoreSessionItem.setText("Restore Layout");
         restoreSessionItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2467,11 +2485,11 @@ public class DataBrowser extends javax.swing.JFrame {
         jviewMenu.add(rowLimitMenu);
         jviewMenu.add(jSeparator3);
 
-        goBackItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_LEFT, java.awt.event.InputEvent.ALT_MASK));
+        goBackItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_LEFT, java.awt.event.InputEvent.ALT_DOWN_MASK));
         goBackItem.setText("Go Back");
         jviewMenu.add(goBackItem);
 
-        goForwardItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.InputEvent.ALT_MASK));
+        goForwardItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_RIGHT, java.awt.event.InputEvent.ALT_DOWN_MASK));
         goForwardItem.setText("Go Forward");
         jviewMenu.add(goForwardItem);
 
@@ -2479,7 +2497,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         bookmarkMenu.setText("Bookmark");
 
-        addBookmarkMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
+        addBookmarkMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         addBookmarkMenuItem.setText("Add Bookmark");
         addBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2554,7 +2572,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         menuWindow.setText("Window");
 
-        layoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        layoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         layoutMenuItem.setText("Arrange Layout");
         layoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2564,7 +2582,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(layoutMenuItem);
         menuWindow.add(jSeparator5);
 
-        zoomInMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_PLUS, java.awt.event.InputEvent.CTRL_MASK));
+        zoomInMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_PLUS, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         zoomInMenuItem.setText("Zoom In (%Mouse Wheel Up)");
         zoomInMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2573,7 +2591,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(zoomInMenuItem);
 
-        zoomOutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_MINUS, java.awt.event.InputEvent.CTRL_MASK));
+        zoomOutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_MINUS, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         zoomOutMenuItem.setText("Zoom Out (%Mouse Wheel Down)");
         zoomOutMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2583,7 +2601,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(zoomOutMenuItem);
         menuWindow.add(jSeparator15);
 
-        thumbnailLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_MASK));
+        thumbnailLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         thumbnailLayoutRadioButtonMenuItem.setText("Thumbnail Layout");
         thumbnailLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2592,7 +2610,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(thumbnailLayoutRadioButtonMenuItem);
 
-        tinyLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_MASK));
+        tinyLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         tinyLayoutRadioButtonMenuItem.setText("Tiny Layout");
         tinyLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2601,7 +2619,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(tinyLayoutRadioButtonMenuItem);
 
-        smallLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_MASK));
+        smallLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         smallLayoutRadioButtonMenuItem.setText("Small Layout");
         smallLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2610,7 +2628,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(smallLayoutRadioButtonMenuItem);
 
-        mediumLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_3, java.awt.event.InputEvent.CTRL_MASK));
+        mediumLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_3, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         mediumLayoutRadioButtonMenuItem.setText("Medium Layout");
         mediumLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2619,7 +2637,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuWindow.add(mediumLayoutRadioButtonMenuItem);
 
-        largeLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_4, java.awt.event.InputEvent.CTRL_MASK));
+        largeLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_4, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         largeLayoutRadioButtonMenuItem.setText("Large Layout");
         largeLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2629,7 +2647,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(largeLayoutRadioButtonMenuItem);
         menuWindow.add(jSeparator1);
 
-        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         newWindowMenuItem.setText("New Window");
         newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2872,6 +2890,14 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void steptime300ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime300ActionPerformed
 		setAnimationSteptime(300);
 	}//GEN-LAST:event_steptime300ActionPerformed
+
+    private void tbreloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbreloadButtonActionPerformed
+        desktop.tableBrowsers.forEach(tb -> {
+        	if (tb.parent == null && tb.browserContentPane != null) {
+        		tb.browserContentPane.reloadRows();
+        	}
+        });
+    }//GEN-LAST:event_tbreloadButtonActionPerformed
 
 	private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_exportDataMenuItemActionPerformed
 		desktop.createExtractionModel(true);
@@ -3615,6 +3641,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator19;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator20;
+    private javax.swing.JToolBar.Separator jSeparator21;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
@@ -3686,6 +3713,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JToggleButton tbZoom4Button;
     private javax.swing.JButton tbZoomInButton;
     private javax.swing.JButton tbZoomOutButton;
+    private javax.swing.JButton tbreloadButton;
     private javax.swing.JRadioButtonMenuItem thumbnailLayoutRadioButtonMenuItem;
     private javax.swing.JRadioButtonMenuItem tinyLayoutRadioButtonMenuItem;
     private javax.swing.JLabel titleLabel;
@@ -5490,6 +5518,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private ImageIcon tbZoom3Icon;
 	private ImageIcon tbZoom4Icon;
 	private ImageIcon tbZoomInIcon;
+	private ImageIcon runIcon;
 	private ImageIcon tbZoomOutIcon;
 	{
 		// load images
@@ -5500,7 +5529,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		greenIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/greendot.gif"));
         closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.4);
         closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.4);
-        sqlConsoleIcon = UIUtil.readImage("/runall.png");
+        runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
+    	sqlConsoleIcon = UIUtil.readImage("/runall.png");
 		desktopIcon = UIUtil.readImage("/navigation.png");
 		addSqlConsoleIcon = UIUtil.readImage("/add.png");
 		navigationIcon = UIUtil.readImage("/navigation.png");

@@ -1207,6 +1207,19 @@
                                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tbZoom4ButtonActionPerformed"/>
                                           </Events>
                                         </Component>
+                                        <Component class="javax.swing.JToolBar$Separator" name="jSeparator21">
+                                        </Component>
+                                        <Component class="javax.swing.JButton" name="tbreloadButton">
+                                          <Properties>
+                                            <Property name="text" type="java.lang.String" value="Reload"/>
+                                            <Property name="focusable" type="boolean" value="false"/>
+                                            <Property name="horizontalTextPosition" type="int" value="0"/>
+                                            <Property name="verticalTextPosition" type="int" value="3"/>
+                                          </Properties>
+                                          <Events>
+                                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tbreloadButtonActionPerformed"/>
+                                          </Events>
+                                        </Component>
                                       </SubComponents>
                                     </Container>
                                   </SubComponents>
