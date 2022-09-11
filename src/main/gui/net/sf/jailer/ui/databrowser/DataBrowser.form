@@ -1212,6 +1212,7 @@
                                         <Component class="javax.swing.JButton" name="tbreloadButton">
                                           <Properties>
                                             <Property name="text" type="java.lang.String" value="Reload"/>
+                                            <Property name="toolTipText" type="java.lang.String" value="Reload Rows of all Tables"/>
                                             <Property name="focusable" type="boolean" value="false"/>
                                             <Property name="horizontalTextPosition" type="int" value="0"/>
                                             <Property name="verticalTextPosition" type="int" value="3"/>
