@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -280,12 +281,17 @@ public class MDDescriptionBasedGeneric extends MDGeneric {
             MemorizedResultSet result = new MemorizedResultSet(rs, null, session, schema);
             rs.close();
             return result;
-        } catch (Exception e) {
-        	if (connection != null) {
+		} catch (SQLException e) {
+			if (connection != null) {
+        		session.markConnectionAsPotentiallyInvalid(connection);
+        	}
+			throw e;
+		} catch (Exception e) {
+			if (connection != null) {
         		session.markConnectionAsPotentiallyInvalid(connection);
         	}
         	logger.info("error", e);
-            return null;
+            return new MemorizedResultSet(new ArrayList<Object[]>(), 1, new String[] { "?" }, new int[] { Types.VARCHAR });
         } finally {
             if (cStmt != null) {
                 try {

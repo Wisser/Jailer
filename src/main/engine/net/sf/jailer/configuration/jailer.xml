@@ -2050,7 +2050,19 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 			<itemDescription>
 	        	<iconURL>/net/sf/jailer/ui/resource/trigger.png</iconURL>
 			</itemDescription>
-			<listQuery>select TRIGGER_CATALOG, TRIGGER_SCHEMA, TRIGGER_NAME, TRIGGER_TYPE, TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME, BEFORE, JAVA_CLASS, QUEUE_SIZE, NO_WAIT, REMARKS, SQL, ID FROM information_schema.triggers WHERE TRIGGER_SCHEMA = '%1$s'</listQuery>
+			<listQuery>select TRIGGER_NAME, 
+       TRIGGER_SCHEMA, 
+       EVENT_MANIPULATION, 
+       EVENT_OBJECT_CATALOG, 
+       EVENT_OBJECT_SCHEMA, 
+       EVENT_OBJECT_TABLE, 
+       ACTION_ORIENTATION, 
+       ACTION_TIMING, 
+       IS_ROLLBACK, 
+       JAVA_CLASS, 
+       QUEUE_SIZE, 
+       NO_WAIT, 
+       REMARKS FROM information_schema.triggers WHERE TRIGGER_SCHEMA = '%1$s'</listQuery>
 		</objectRenderers>
   	  	<objectRenderers>
        		<name>Sequences</name>
@@ -2058,7 +2070,23 @@ Select CNAME, TNAME, COLNAME, CTYPE, DETAIL From
 			<itemDescription>
 	        	<iconURL>/net/sf/jailer/ui/resource/sequence.png</iconURL>
 			</itemDescription>
-			<listQuery>select SEQUENCE_NAME, SEQUENCE_CATALOG, SEQUENCE_SCHEMA, CURRENT_VALUE, INCREMENT, IS_GENERATED, REMARKS, CACHE, ID from information_schema.sequences where SEQUENCE_SCHEMA = '%1$s'</listQuery>
+			<listQuery>select SEQUENCE_NAME,
+       SEQUENCE_SCHEMA, 
+       DATA_TYPE, 
+       NUMERIC_PRECISION, 
+       NUMERIC_PRECISION_RADIX, 
+       NUMERIC_SCALE, 
+       START_VALUE, 
+       MINIMUM_VALUE, 
+       MAXIMUM_VALUE, 
+       INCREMENT, 
+       CYCLE_OPTION, 
+       DECLARED_DATA_TYPE, 
+       DECLARED_NUMERIC_PRECISION, 
+       DECLARED_NUMERIC_SCALE, 
+       BASE_VALUE, 
+       CACHE, 
+       REMARKS from information_schema.sequences where SEQUENCE_SCHEMA = '%1$s'</listQuery>
 		</objectRenderers>
       </dbms>
 
