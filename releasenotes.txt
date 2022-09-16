@@ -1,3 +1,6 @@
+12.6.4
+  - Issues related to metadata acquisition in the SQL console have been corrected.
+
 12.6.3
   - Updated SQL keyword catalog for identifier quoting.
 
