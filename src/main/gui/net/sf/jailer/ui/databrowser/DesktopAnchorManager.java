@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,6 +31,8 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
@@ -51,15 +54,25 @@ public abstract class DesktopAnchorManager {
 	private Long showedAt;
 	private RowBrowser currentBrowser;
 	private RowBrowser newestBrowser;
-	private final static int MAX_RETENDION = 2000;
+	private final static int MAX_RETENDION = 1000;
 
 	public DesktopAnchorManager(JPanel anchorPanel) {
 		this.anchorPanel = anchorPanel;
 		this.anchorButton = new JButton(anchorIcon);
 		
 		this.anchorPanel.setVisible(false);
-		
+
 		anchorPanel.add(anchorButton);
+		JComponent comp = new JSeparator(SwingConstants.HORIZONTAL);
+		anchorPanel.add(comp);
+		comp.setLocation(1, 32);
+		comp.setSize(32, 32);
+		anchorPanel.add(comp);
+		comp = new JButton("Test");
+		anchorPanel.add(comp);
+		comp.setLocation(1, 64);
+		comp.setSize(32, 32);
+		
 		anchorButton.setToolTipText("Align horizontally with predecessors");
 		anchorButton.addActionListener(new ActionListener() {
 			@Override
@@ -91,12 +104,45 @@ public abstract class DesktopAnchorManager {
 		});
 	}
 	
+	public void addAdditionalAction() {
+		JButton button = new JButton();
+		// TODOO
+		button.setToolTipText("");
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (currentBrowser != null) {
+					reset(1000);
+					// TODO
+				}
+			}
+		});
+		button.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				showedAt = System.currentTimeMillis();
+			}
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				showedAt = null;
+			}
+			@Override
+			public void mouseClicked(MouseEvent e) {
+			}
+		});
+
+	}
+	
 	public void onTableBrowserNeared(RowBrowser tableBrowser) {
-		if (isApplicable(tableBrowser)) {
-			showButton(tableBrowser);
-		} else {
-			reset();
-		}
+		anchorButton.setEnabled(isApplicable(tableBrowser));
+		reset();
+		showButton(tableBrowser);
 	}
 
 	public void onNewTableBrowser(final RowBrowser tableBrowser) {
@@ -146,11 +192,9 @@ public abstract class DesktopAnchorManager {
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				if (isApplicable(tableBrowser)) {
-					showButton(tableBrowser);
-				} else {
-					reset();
-				}
+				anchorButton.setEnabled(isApplicable(tableBrowser));
+				reset();
+				showButton(tableBrowser);
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -223,7 +267,7 @@ public abstract class DesktopAnchorManager {
 		}
 		currentBrowser = tableBrowser;
 		anchorButton.setSize(anchorButton.getPreferredSize());
-		anchorPanel.setSize(anchorButton.getPreferredSize());
+		anchorPanel.setSize(new Dimension(anchorButton.getPreferredSize().width * 2, anchorButton.getPreferredSize().height * 3));
 		Point loc;
 		loc = tableBrowser.internalFrame.getLocation();
 		loc.translate(-anchorButton.getWidth(), 0);

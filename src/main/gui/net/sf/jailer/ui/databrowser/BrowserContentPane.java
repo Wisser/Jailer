@@ -1547,7 +1547,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									tipCache.put(text, tip);
 								}
 								((JLabel) render).setToolTipText(tip);
-							} else if (text.length() > 20) {
+							} else if (text.length() > 10) {
 								((JLabel) render).setToolTipText(text);
 							}
 						}
