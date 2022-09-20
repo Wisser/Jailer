@@ -1,3 +1,6 @@
+12.7
+  - Vertical toolbar for table browser windows.
+
 12.6.4
   - Issues related to metadata acquisition in the SQL console have been corrected.
 
