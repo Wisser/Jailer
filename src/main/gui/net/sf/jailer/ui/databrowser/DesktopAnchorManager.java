@@ -15,7 +15,10 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.AlphaComposite;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,11 +57,28 @@ public abstract class DesktopAnchorManager {
 	private Long showedAt;
 	private RowBrowser currentBrowser;
 	private RowBrowser newestBrowser;
-	private int height = 0;
-	private final static int MAX_RETENDION = 1000;
+	private int height = 5 * 18;
+	private boolean useBuffer = true;
+	private final static int MAX_RETENDION = 800;
 
-	public DesktopAnchorManager(JPanel anchorPanel, JPanel topLayerPanel) {
-		this.anchorPanel = anchorPanel;
+	@SuppressWarnings("serial")
+	public DesktopAnchorManager(JPanel topLayerPanel) {
+		this.anchorPanel = new JPanel(null) {
+			@Override
+			public void paint(Graphics g) {
+				if (useBuffer) {
+					Graphics2D g2 = (Graphics2D) g.create();
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+					super.paint(g2);
+					g2.dispose();
+				} else {
+					super.paint(g);
+				}
+			}
+		};
+		anchorPanel.setOpaque(false);
+		topLayerPanel.add(anchorPanel);
+
 		this.topLayerPanel = topLayerPanel;
 		this.anchorButton = new JButton(anchorIcon);
 		
@@ -86,7 +106,8 @@ public abstract class DesktopAnchorManager {
 				}
 			}
 		});
-		anchorButton.addMouseListener(new MouseListener() {
+		MouseListener ml;
+		anchorButton.addMouseListener(ml = new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 			}
@@ -100,11 +121,14 @@ public abstract class DesktopAnchorManager {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				showedAt = null;
+				useBuffer = false;
+				anchorPanel.repaint();
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
 			}
 		});
+		anchorPanel.addMouseListener(ml);
 	}
 	
 	protected abstract void addAdditionalActions(RowBrowser tableBrowser);
@@ -142,6 +166,8 @@ public abstract class DesktopAnchorManager {
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				showedAt = null;
+				useBuffer = false;
+				anchorPanel.repaint();
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -214,7 +240,7 @@ public abstract class DesktopAnchorManager {
 			public void mouseClicked(MouseEvent e) {
 			}
 		};
-		tableBrowser.browserContentPane.menuPanel.addMouseListener(showButton);
+//		tableBrowser.browserContentPane.menuPanel.addMouseListener(showButton);
 		
 		Stack<JPanel> panels = new Stack<JPanel>();
 		panels.add(tableBrowser.browserContentPane.menuPanel);
@@ -235,19 +261,19 @@ public abstract class DesktopAnchorManager {
 			}
 		}
 
-		tableBrowser.browserContentPane.addMouseListener(showButton);
-		tableBrowser.browserContentPane.sqlPanel.addMouseListener(showButton);
-		tableBrowser.browserContentPane.relatedRowsPanel.addMouseListener(showButton);
-		tableBrowser.browserContentPane.loadButton.addMouseListener(showButton);
-		tableBrowser.browserContentPane.rowsTable.addMouseListener(showButton);
+//		tableBrowser.browserContentPane.addMouseListener(showButton);
+//		tableBrowser.browserContentPane.sqlPanel.addMouseListener(showButton);
+//		tableBrowser.browserContentPane.relatedRowsPanel.addMouseListener(showButton);
+//		tableBrowser.browserContentPane.loadButton.addMouseListener(showButton);
+//		tableBrowser.browserContentPane.rowsTable.addMouseListener(showButton);
 		if (tableBrowser.browserContentPane.thumbnail != null) {
 			tableBrowser.browserContentPane.thumbnail.addMouseListener(showButton);
 		}
-		if (tableBrowser.browserContentPane.andCondition.getEditor() != null) {
-			if (tableBrowser.browserContentPane.andCondition.getEditor().getEditorComponent() != null) {
-				tableBrowser.browserContentPane.andCondition.getEditor().getEditorComponent().addMouseListener(showButton);
-			}
-		}
+//		if (tableBrowser.browserContentPane.andCondition.getEditor() != null) {
+//			if (tableBrowser.browserContentPane.andCondition.getEditor().getEditorComponent() != null) {
+//				tableBrowser.browserContentPane.andCondition.getEditor().getEditorComponent().addMouseListener(showButton);
+//			}
+//		}
 		Object bi = tableBrowser.internalFrame.getUI();
 		if (bi instanceof BasicInternalFrameUI) {
 			JComponent northPane = ((BasicInternalFrameUI) bi).getNorthPane();
@@ -279,6 +305,7 @@ public abstract class DesktopAnchorManager {
 		if (disabledUntil != null && disabledUntil > System.currentTimeMillis()) {
 			return;
 		}
+		useBuffer = true;
 		anchorPanel.removeAll();
 		anchorPanel.add(anchorButton);
 		currentBrowser = tableBrowser;

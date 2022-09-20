@@ -22,11 +22,15 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
@@ -51,6 +55,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
@@ -576,11 +582,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		});
 
-		JPanel anchorPanel = new JPanel(null);
-		anchorPanel.setOpaque(false);
-		topLayerPanel.add(anchorPanel);
-
-		anchorManager = new DesktopAnchorManager(anchorPanel, topLayerPanel) {
+		anchorManager = new DesktopAnchorManager(topLayerPanel) {
 			@Override
 			protected void layout(RowBrowser anchor) {
 				if (desktopUndoManager != null) {
@@ -1015,27 +1017,28 @@ public class DataBrowser extends javax.swing.JFrame {
 		desktop.addMouseMotionListener(new MouseMotionListener() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				double buttonWidth = anchorManager.getButtonWidth() * 1.4;
-				double minDist = Double.MAX_VALUE;
+				double minDist = 30;
+				minDist *= minDist;
 				RowBrowser nearest = null;
 				for (RowBrowser br : desktop.getBrowsers()) {
 					if (br.internalFrame != null && br.internalFrame.isVisible()) {
-//						if (e.getX() - buttonWidth <= br.internalFrame.getX()) {
-							double dx = e.getX() - br.internalFrame.getX();
-							double dy = e.getY() - br.internalFrame.getY();
-							double dist2 = dx * dx + dy * dy;
-							if (nearest == null || dist2 < minDist) {
-								nearest = br;
-								minDist = dist2;
-							}
-							dx = e.getX() - br.internalFrame.getX();
-							dy = e.getY() - (br.internalFrame.getY() + anchorManager.getHeight());
-							dist2 = dx * dx + dy * dy;
-							if (nearest == null || dist2 < minDist) {
-								nearest = br;
-								minDist = dist2;
-							}
-//						}
+						double dx = e.getX() - (br.internalFrame.getX() - anchorManager.getButtonWidth());
+						if (dx >= 0 && dx < anchorManager.getButtonWidth()) {
+							dx = 0;
+						} else if (dx > anchorManager.getButtonWidth()) {
+							dx -= anchorManager.getButtonWidth();
+						}
+						double dy = e.getY() - br.internalFrame.getY();
+						if (dy >= 0 && dy < anchorManager.getHeight()) {
+							dy = 0;
+						} else if (dy > anchorManager.getHeight()) {
+							dy -= anchorManager.getHeight();
+						}
+						double dist2 = dx * dx + dy * dy;
+						if (dist2 < minDist) {
+							nearest = br;
+							minDist = dist2;
+						}
 					}
 				}
 				if (nearest != null) {
