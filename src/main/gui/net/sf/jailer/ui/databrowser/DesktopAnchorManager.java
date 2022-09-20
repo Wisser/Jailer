@@ -16,7 +16,6 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,19 +48,23 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 public abstract class DesktopAnchorManager {
 
 	private final JPanel anchorPanel;
+	private final JPanel topLayerPanel;
 	private final JButton anchorButton;
 	private Long disabledUntil;
 	private Long showedAt;
 	private RowBrowser currentBrowser;
 	private RowBrowser newestBrowser;
+	private int height = 0;
 	private final static int MAX_RETENDION = 1000;
 
-	public DesktopAnchorManager(JPanel anchorPanel) {
+	public DesktopAnchorManager(JPanel anchorPanel, JPanel topLayerPanel) {
 		this.anchorPanel = anchorPanel;
+		this.topLayerPanel = topLayerPanel;
 		this.anchorButton = new JButton(anchorIcon);
 		
 		this.anchorPanel.setVisible(false);
-
+		this.topLayerPanel.setVisible(false);
+		
 		anchorPanel.add(anchorButton);
 		JComponent comp = new JSeparator(SwingConstants.HORIZONTAL);
 		anchorPanel.add(comp);
@@ -104,16 +107,24 @@ public abstract class DesktopAnchorManager {
 		});
 	}
 	
-	public void addAdditionalAction() {
+	protected abstract void addAdditionalActions(RowBrowser tableBrowser);
+
+	protected void addAdditionalAction(ImageIcon icon, String tooltip, Runnable action, boolean enabled) {
+		if (icon == null) {
+			anchorPanel.setSize(anchorPanel.getWidth(), anchorPanel.getHeight() + 6);
+			return;
+		}
 		JButton button = new JButton();
-		// TODOO
-		button.setToolTipText("");
+		button.setEnabled(enabled);
+		button.setText(null);
+		button.setIcon(UIUtil.scaleIcon(icon, anchorIcon.getIconHeight() / (double) icon.getIconHeight()));
+		button.setToolTipText(tooltip);
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (currentBrowser != null) {
 					reset(1000);
-					// TODO
+					action.run();
 				}
 			}
 		});
@@ -136,7 +147,10 @@ public abstract class DesktopAnchorManager {
 			public void mouseClicked(MouseEvent e) {
 			}
 		});
-
+		anchorPanel.add(button);
+		button.setSize(anchorButton.getSize());
+		button.setLocation(anchorButton.getX(), anchorPanel.getHeight());
+		anchorPanel.setSize(anchorPanel.getWidth(), button.getY() + button.getHeight());
 	}
 	
 	public void onTableBrowserNeared(RowBrowser tableBrowser) {
@@ -265,17 +279,25 @@ public abstract class DesktopAnchorManager {
 		if (disabledUntil != null && disabledUntil > System.currentTimeMillis()) {
 			return;
 		}
+		anchorPanel.removeAll();
+		anchorPanel.add(anchorButton);
 		currentBrowser = tableBrowser;
 		anchorButton.setSize(anchorButton.getPreferredSize());
-		anchorPanel.setSize(new Dimension(anchorButton.getPreferredSize().width * 2, anchorButton.getPreferredSize().height * 3));
+		anchorPanel.setSize(anchorButton.getPreferredSize());
+		addAdditionalActions(tableBrowser);
 		Point loc;
 		loc = tableBrowser.internalFrame.getLocation();
 		loc.translate(-anchorButton.getWidth(), 0);
 		anchorPanel.setLocation(0, 0);
 		loc = SwingUtilities.convertPoint(tableBrowser.internalFrame.getParent(), loc, anchorPanel);
+		Point locO = new Point();
+		locO = SwingUtilities.convertPoint(tableBrowser.internalFrame.getParent().getParent(), locO, anchorPanel);
+		loc = new Point(Math.max(locO.x - anchorPanel.getWidth(), loc.x), Math.max(locO.y, loc.y + 1));
 		anchorPanel.setLocation(loc);
 		anchorButton.setVisible(true);
 		anchorPanel.setVisible(true);
+		topLayerPanel.setVisible(true);
+		height = anchorPanel.getHeight();
 		showedAt = System.currentTimeMillis();
 	}
 
@@ -286,11 +308,16 @@ public abstract class DesktopAnchorManager {
 	void reset(int delay) {
 		anchorButton.setVisible(false);
 		anchorPanel.setVisible(false);
+		topLayerPanel.setVisible(false);
 		if (delay > 0) {
 			disabledUntil = System.currentTimeMillis() + delay;
 		}
 	}
 
+	public int getHeight() {
+		return height;
+	}
+	
 	public RowBrowser getNewestBrowser() {
 		return newestBrowser;
 	}

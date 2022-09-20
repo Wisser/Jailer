@@ -2940,6 +2940,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private JMenuItem createFindColumnMenuItem(final int x, final int y, final JTable contextJTable) {
 		final JMenuItem menuItem = new JMenuItem("Find Column...");
+		menuItem.setIcon(UIUtil.scaleIcon(menuItem, findColumnIcon1));
 		menuItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -2956,6 +2957,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		JPopupMenu popup = new JPopupMenu();
 
 		JMenuItem rebase = new JMenuItem("Start Navigation here");
+		setMenuItemName(rebase, "startnav.png");
 		popup.add(rebase);
 		rebase.setEnabled(getParentBrowser() != null);
 		rebase.addActionListener(new ActionListener() {
@@ -2966,6 +2968,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		userActions.forEach(action -> {
 			JMenuItem uaItem = new JMenuItem(action.description);
+			if ("Align Horizontally".equals(action.description)) {
+				uaItem.setIcon(UIUtil.scaleIcon(uaItem, UIUtil.readImage("/anchor_32.png")));
+			}
 			uaItem.setToolTipText(action.tooltip);
 			popup.add(uaItem);
 			uaItem.setEnabled(action.isApplicable.get());
@@ -2978,6 +2983,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		popup.add(new JSeparator());
 		JMenuItem qb = new JMenuItem("Query Builder");
+		setMenuItemName(qb, "querybuilder.png");
 		qb.setAccelerator(KS_QUERYBUILDER);
 		popup.add(qb);
 		qb.addActionListener(new ActionListener() {
@@ -2987,6 +2993,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		JMenuItem sqlConsole = new JMenuItem("SQL Console");
+		setMenuItemName(sqlConsole, "runall_32.png");
 		sqlConsole.setAccelerator(KS_SQLCONSOLE);
 		popup.add(sqlConsole);
 		sqlConsole.addActionListener(new ActionListener() {
@@ -3053,6 +3060,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		popup.add(new JSeparator());
 		JMenuItem snw = new JMenuItem("Show in new Window");
+		setMenuItemName(snw, "showinnewwindow.png");
 		popup.add(snw);
 		snw.addActionListener(new ActionListener() {
 			@Override
@@ -3070,6 +3078,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		m = new JMenuItem("Close");
+		m.setIcon(UIUtil.scaleIcon(m, UIUtil.readImage("/buttoncancel.png")));
 		popup.add(m);
 		m.addActionListener(new ActionListener() {
 			@Override
@@ -3082,6 +3091,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		popup.add(new JSeparator());
 		if (!forNavTree) {
 			JMenuItem findItem = new JMenuItem("Find...");
+			findItem.setIcon(UIUtil.scaleIcon(findItem, UIUtil.readImage("/findcolumn2.png")));
 			findItem.setToolTipText("Full test search across all columns.");
 			findItem.addActionListener(e -> fullTextSearchPanel.open());
 			findItem.setAccelerator(KS_FIND);
@@ -3089,6 +3099,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			popup.add(findItem);
 			popup.add(new JSeparator());
 			JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
+			tableFilter.setIcon(UIUtil.scaleIcon(tableFilter, UIUtil.readImage("/filter.png")));
 			tableFilter.setAccelerator(KS_FILTER);
 			tableFilter.setSelected(isTableFilterEnabled);
 			if (isLimitExceeded) {
@@ -3115,6 +3126,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			});
 			popup.add(tableFilter);
 			JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
+			setMenuItemName(editMode, "editdetailsitem.png");
 			editMode.setEnabled(isTableEditable(table));
 			editMode.setAccelerator(KS_EDIT);
 			editMode.setSelected(isEditMode);
@@ -3136,6 +3148,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			popup.add(createFindColumnMenuItem(x, y, rowsTable));
 		}
 		return popup;
+	}
+
+	private void setMenuItemName(JMenuItem item, String iconName) {
+		item.setIcon(UIUtil.scaleIcon(item, UIUtil.readImage("/" + iconName)));
+		item.setName("icon:/" + iconName);
 	}
 
 	protected boolean isTableEditable(Table theTable) {

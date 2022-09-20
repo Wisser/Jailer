@@ -30,7 +30,7 @@ public class UpdateInfoManager {
 	private static final String versionURL = "http://jailer.sourceforge.net/currentVersion.php";
 	private static final String downloadURL = "https://sourceforge.net/projects/jailer/files/";
 	private static final long CHECK_INTERVALL = 1000L * 60 * 60 * 46;
-	private static final long DELAY = 1000L * 10;
+	private static final long DELAY = 1000L * 6;
 	private static final String LAST_TS_FILE = ".lastcuats";
 	private static boolean checked = false;
 

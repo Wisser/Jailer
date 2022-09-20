@@ -112,6 +112,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import com.sun.glass.ui.Menu;
+
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.BasicDataSource;
@@ -574,22 +576,15 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		});
 
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1;
-		gridBagConstraints.weighty = 1;
 		JPanel anchorPanel = new JPanel(null);
 		anchorPanel.setOpaque(false);
-		jLayeredPane1.setLayer(anchorPanel, JLayeredPane.POPUP_LAYER);
-		jLayeredPane1.add(anchorPanel/* , gridBagConstraints */);
+		topLayerPanel.add(anchorPanel);
 
-		anchorManager = new DesktopAnchorManager(anchorPanel) {
+		anchorManager = new DesktopAnchorManager(anchorPanel, topLayerPanel) {
 			@Override
 			protected void layout(RowBrowser anchor) {
 				if (desktopUndoManager != null) {
-					String description = "Align Horizonally";
+					String description = "Align Horizontally";
 					desktopUndoManager.beforeModification(description, description);
 				}
 				try {
@@ -617,6 +612,30 @@ public class DataBrowser extends javax.swing.JFrame {
 					ancestor = ancestor.parent;
 				}
 				return false;
+			}
+
+			@Override
+			protected void addAdditionalActions(RowBrowser tableBrowser) {
+				JPopupMenu menu = tableBrowser.browserContentPane.createSqlPopupMenu(0, 0, 0, desktop.layoutMode == LayoutMode.THUMBNAIL, tableBrowser.browserContentPane);
+				addAdditionalAction(null, null, null, false);
+				boolean needsSep = false;
+				int compsASep = 1;
+				for (Component comp: menu.getComponents()) {
+					if (comp instanceof JMenuItem) {
+						JMenuItem item = (JMenuItem) comp;
+						if (item.getName() != null && item.getName().startsWith("icon:")) {
+							addAdditionalAction(UIUtil.readImage(item.getName().substring(5)), item.getToolTipText() != null? item.getToolTipText() : item.getText(), () -> item.doClick(), item.isEnabled());
+							needsSep = true;
+							++compsASep;
+						}
+					} else if (comp instanceof JSeparator) {
+						if (needsSep && compsASep > 1) {
+							addAdditionalAction(null, null, null, false);
+							needsSep = false;
+							compsASep = 0;
+						}
+					}
+				}
 			}
 		};
 
@@ -1001,7 +1020,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				RowBrowser nearest = null;
 				for (RowBrowser br : desktop.getBrowsers()) {
 					if (br.internalFrame != null && br.internalFrame.isVisible()) {
-						if (e.getX() - buttonWidth <= br.internalFrame.getX()) {
+//						if (e.getX() - buttonWidth <= br.internalFrame.getX()) {
 							double dx = e.getX() - br.internalFrame.getX();
 							double dy = e.getY() - br.internalFrame.getY();
 							double dist2 = dx * dx + dy * dy;
@@ -1009,7 +1028,14 @@ public class DataBrowser extends javax.swing.JFrame {
 								nearest = br;
 								minDist = dist2;
 							}
-						}
+							dx = e.getX() - br.internalFrame.getX();
+							dy = e.getY() - (br.internalFrame.getY() + anchorManager.getHeight());
+							dist2 = dx * dx + dy * dy;
+							if (nearest == null || dist2 < minDist) {
+								nearest = br;
+								minDist = dist2;
+							}
+//						}
 					}
 				}
 				if (nearest != null) {
@@ -1535,6 +1561,7 @@ public class DataBrowser extends javax.swing.JFrame {
         updateInfoLabel = new javax.swing.JLabel();
         downloadButton = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        topLayerPanel = new javax.swing.JPanel();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -2311,6 +2338,15 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 72, 24);
         jLayeredPane2.add(updateInfoPanel, gridBagConstraints);
+
+        topLayerPanel.setOpaque(false);
+        topLayerPanel.setLayout(null);
+        jLayeredPane2.setLayer(topLayerPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jLayeredPane2.add(topLayerPanel, gridBagConstraints);
 
         getContentPane().add(jLayeredPane2, java.awt.BorderLayout.CENTER);
 
@@ -3718,6 +3754,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JRadioButtonMenuItem thumbnailLayoutRadioButtonMenuItem;
     private javax.swing.JRadioButtonMenuItem tinyLayoutRadioButtonMenuItem;
     private javax.swing.JLabel titleLabel;
+    private javax.swing.JPanel topLayerPanel;
     private javax.swing.JLabel updateInfoLabel;
     private javax.swing.JPanel updateInfoPanel;
     private javax.swing.JMenu view;
