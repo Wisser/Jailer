@@ -2611,6 +2611,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	public JPopupMenu createPopupMenu(final JTable contextJTable, final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows, JMenuItem altCopyTCB, final Runnable repaint, final boolean withKeyStroke, boolean withSingleRow, boolean forColumnsTable) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
+		tableFilter.setIcon(UIUtil.scaleIcon(tableFilter, UIUtil.readImage("/filter.png")));
 		if (withKeyStroke) {
 			tableFilter.setAccelerator(KS_FILTER);
 		} else {
@@ -2895,6 +2896,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				popup.add(tableFilter);
 				JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
+				setMenuItemName(editMode, "editdetailsitem.png");
 				editMode.setEnabled(isTableEditable(table));
 				if (withKeyStroke) {
 					editMode.setAccelerator(KS_EDIT);

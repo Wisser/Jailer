@@ -51,6 +51,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -441,12 +443,12 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		String text = searchTextField.getText();
 		boolean withPrefix = !text.startsWith(" ");
 		boolean withSuffix = !text.endsWith(" ");
-		String searchText = text.trim().toUpperCase(Locale.ENGLISH);
 		DefaultComboBoxModel<String> model = (DefaultComboBoxModel) combobox.getModel();
 		int size = model.getSize();
 		for (int i = 0; i < size; ++i) {
 			String item = model.getElementAt(i);
 			if (!item.isEmpty()) {
+				String searchText = extendesSearchText(text, item);
 				if (!filter
 						|| searchText.isEmpty() 
 						|| withPrefix && withSuffix && item.toUpperCase(Locale.ENGLISH).contains(searchText)
@@ -655,8 +657,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					fgColor = Color.WHITE;
 					hlColor = "#ff9999";
 				}
-				String search = searchTextField.getText().trim().toUpperCase(Locale.ENGLISH);
 				String item = value.toString().trim();
+				String search = extendesSearchText(searchTextField.getText(), item);
 				int i = searchTextField.getText().endsWith(" ")? item.toUpperCase(Locale.ENGLISH).lastIndexOf(search) : item.toUpperCase(Locale.ENGLISH).indexOf(search);
 				if (i >= 0) {
 					i = Math.min(i, item.length());
@@ -735,7 +737,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				}
 				return render;
 			}
-			
+
 		});
 
 		if (metaDataSource == null) {
@@ -1021,7 +1023,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 
         jLayeredPane1.setLayout(new java.awt.GridBagLayout());
 
-        searchTextField.setToolTipText("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n</html>\n\n");
+        searchTextField.setToolTipText("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n<br>\n(<b>*</b> = any string, <b>?</b> = any character)\n</html>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -1296,6 +1298,36 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		bottomComponentsPanel.add(component, java.awt.BorderLayout.CENTER);
 	}
 
+	private Pattern extSTPattern = null;
+	private String extSTText = null;
+	
+	private String extendesSearchText(String text, String item) {
+		String searchText = text.toUpperCase(Locale.ENGLISH);
+		if (!searchText.contains("*") && !searchText.contains("?")) {
+			return searchText.trim();
+		}
+		
+		if (!text.equals(extSTText)) {
+			boolean withPrefix = !text.startsWith(" ");
+			boolean withSuffix = !text.endsWith(" ");
+			String reg = (withPrefix? ".*?" : "") + "(\\Q" +
+						text.trim().replace("?", "\\E.\\Q").replace("*", "\\E.*\\Q") +
+						"\\E)" +
+						(withSuffix? ".*?" : "");
+			
+			extSTText = reg;
+			extSTPattern = Pattern.compile(reg, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+		}
+		
+		Matcher matcher = extSTPattern.matcher(item);
+		
+		if (matcher.matches()) {
+			return matcher.group(1);
+		} else {
+			return searchText.trim();
+		}
+	}
+	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomComponentsPanel;
     private javax.swing.JPanel bottomPanel;

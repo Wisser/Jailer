@@ -31,7 +31,7 @@
       <SubComponents>
         <Component class="javax.swing.JTextField" name="searchField">
           <Properties>
-            <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Search criteria.&lt;br&gt;&lt;br&gt; Search for items that contain the search criteria as:&lt;br&gt; &lt;table&gt; &lt;tr&gt;&lt;td&gt;&lt;b&gt;Prefix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it starts with a space&lt;/td&gt;&lt;/tr&gt; &lt;tr&gt;&lt;td&gt;&lt;b&gt;Suffix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it ends with a space&lt;/td&gt;&lt;/tr&gt; &lt;tr&gt;&lt;td&gt;&lt;b&gt;Substring&lt;/b&gt;&lt;/td&gt;&lt;td&gt;else&lt;/td&gt;&lt;/tr&gt; &lt;/table&gt; &lt;/html&gt;  "/>
+            <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Search criteria.&lt;br&gt;&lt;br&gt;&#xa;Search for items that contain the search criteria as:&lt;br&gt;&#xa;&lt;table&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Prefix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it starts with a space&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Suffix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it ends with a space&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Substring&lt;/b&gt;&lt;/td&gt;&lt;td&gt;else&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;/table&gt;&#xa;&lt;br&gt;&#xa;(&lt;b&gt;*&lt;/b&gt; = any string, &lt;b&gt;?&lt;/b&gt; = any character)&#xa;&lt;/html&gt;"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
@@ -42,7 +42,7 @@
         <Component class="javax.swing.JButton" name="prevButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Previous"/>
-            <Property name="toolTipText" type="java.lang.String" value="Find the previous occurrence of the phrase."/>
+            <Property name="toolTipText" type="java.lang.String" value="Find  previous occurrence"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="verticalTextPosition" type="int" value="3"/>
@@ -51,7 +51,7 @@
         <Component class="javax.swing.JButton" name="nextButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Next"/>
-            <Property name="toolTipText" type="java.lang.String" value="Find the next occurrence of the phrase."/>
+            <Property name="toolTipText" type="java.lang.String" value="Find next occurrence"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="verticalTextPosition" type="int" value="3"/>

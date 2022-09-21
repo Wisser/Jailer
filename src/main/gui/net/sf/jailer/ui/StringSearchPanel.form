@@ -84,7 +84,7 @@
           <SubComponents>
             <Component class="javax.swing.JTextField" name="searchTextField">
               <Properties>
-                <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Search criteria.&lt;br&gt;&lt;br&gt;&#xa;Search for items that contain the search criteria as:&lt;br&gt;&#xa;&lt;table&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Prefix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it starts with a space&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Suffix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it ends with a space&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Substring&lt;/b&gt;&lt;/td&gt;&lt;td&gt;else&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;/table&gt;&#xa;&lt;/html&gt;&#xa;&#xa;"/>
+                <Property name="toolTipText" type="java.lang.String" value="&lt;html&gt;Search criteria.&lt;br&gt;&lt;br&gt;&#xa;Search for items that contain the search criteria as:&lt;br&gt;&#xa;&lt;table&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Prefix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it starts with a space&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Suffix&lt;/b&gt;&lt;/td&gt;&lt;td&gt;if it ends with a space&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;tr&gt;&lt;td&gt;&lt;b&gt;Substring&lt;/b&gt;&lt;/td&gt;&lt;td&gt;else&lt;/td&gt;&lt;/tr&gt;&#xa;&lt;/table&gt;&#xa;&lt;br&gt;&#xa;(&lt;b&gt;*&lt;/b&gt; = any string, &lt;b&gt;?&lt;/b&gt; = any character)&#xa;&lt;/html&gt;"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

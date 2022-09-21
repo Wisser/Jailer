@@ -30,6 +30,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -258,6 +260,36 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		updateErrorState();
 	}
 
+	private Pattern extSTPattern = null;
+	private String extSTText = null;
+	
+	private String extendesSearchText(String text, String item) {
+		String searchText = text.toUpperCase(Locale.ENGLISH);
+		if (!searchText.contains("*") && !searchText.contains("?")) {
+			return searchText.trim();
+		}
+		
+		if (!text.equals(extSTText)) {
+			boolean withPrefix = !text.startsWith(" ");
+			boolean withSuffix = !text.endsWith(" ");
+			String reg = (withPrefix? ".*?" : "") + "(\\Q" +
+						text.trim().replace("?", "\\E.\\Q").replace("*", "\\E.*\\Q") +
+						"\\E)" +
+						(withSuffix? ".*?" : "");
+			
+			extSTText = reg;
+			extSTPattern = Pattern.compile(reg, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+		}
+		
+		Matcher matcher = extSTPattern.matcher(item);
+		
+		if (matcher.matches()) {
+			return matcher.group(1);
+		} else {
+			return searchText.trim();
+		}
+	}
+	
 	private void update(String searchText, boolean setCurrentPosition) {
 		if (inUpdate) {
 			return;
@@ -297,6 +329,9 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 				for (int y = 0; y < rc; ++y) {
 					for (int x = 0; x < cc; ++x) {
 						Object v = dm.getValueAt(y, x);
+						if (v != null) {
+							searchTextUC = extendesSearchText(searchText, v.toString().trim());
+						}
 						if (v != null && !v.toString().toUpperCase(Locale.ENGLISH).contains(searchTextUC)) {
 							continue;
 						}
@@ -326,8 +361,8 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 								}
 								i += offset;
 								i = Math.min(i, value.length());
-								if (i + searchTextTrim.length() <= value.length()) {
-									markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font color=\"" + HL_COLOR + "\">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextTrim.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextTrim.length()), 0, false);
+								if (i + searchTextUC.length() <= value.length()) {
+									markedValue = UIUtil.toHTMLFragment(value.substring(0, i), 0, false) + "<b><u><font color=\"" + HL_COLOR + "\">" + UIUtil.toHTMLFragment(value.substring(i, i + searchTextUC.length()), 0, false) + "</font></u></b>" + UIUtil.toHTMLFragment(value.substring(i + searchTextUC.length()), 0, false);
 								}
 								if (markedValue == null) {
 									markedValue = "<b><u><font color=\"" + HL_COLOR + "\">" + UIUtil.toHTMLFragment(value, 0, false) + "</font></u></b>";
@@ -548,21 +583,21 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
-        searchField.setToolTipText("<html>Search criteria.<br><br> Search for items that contain the search criteria as:<br> <table> <tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr> <tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr> <tr><td><b>Substring</b></td><td>else</td></tr> </table> </html>  ");
+        searchField.setToolTipText("<html>Search criteria.<br><br>\nSearch for items that contain the search criteria as:<br>\n<table>\n<tr><td><b>Prefix</b></td><td>if it starts with a space</td></tr>\n<tr><td><b>Suffix</b></td><td>if it ends with a space</td></tr>\n<tr><td><b>Substring</b></td><td>else</td></tr>\n</table>\n<br>\n(<b>*</b> = any string, <b>?</b> = any character)\n</html>");
         jToolBar1.add(searchField);
 
         jLabel1.setText(" ");
         jToolBar1.add(jLabel1);
 
         prevButton.setText("Previous");
-        prevButton.setToolTipText("Find previous occurrence.");
+        prevButton.setToolTipText("Find  previous occurrence");
         prevButton.setFocusable(false);
         prevButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         prevButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         jToolBar1.add(prevButton);
 
         nextButton.setText("Next");
-        nextButton.setToolTipText("Find next occurrence.");
+        nextButton.setToolTipText("Find next occurrence");
         nextButton.setFocusable(false);
         nextButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         nextButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -604,7 +639,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 		this.transposedTable = transposedTable;
 	}
 
-	// Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
     private javax.swing.JLabel counterLabel;
     private javax.swing.JLabel jLabel1;

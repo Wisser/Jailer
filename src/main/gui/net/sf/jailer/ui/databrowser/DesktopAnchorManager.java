@@ -36,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.plaf.basic.BasicInternalFrameUI;
@@ -58,17 +59,18 @@ public abstract class DesktopAnchorManager {
 	private RowBrowser currentBrowser;
 	private RowBrowser newestBrowser;
 	private int height = 5 * 18;
-	private boolean useBuffer = true;
-	private final static int MAX_RETENDION = 800;
+	private final static int MAX_RETENDION = 1200;
 
 	@SuppressWarnings("serial")
 	public DesktopAnchorManager(JPanel topLayerPanel) {
 		this.anchorPanel = new JPanel(null) {
 			@Override
 			public void paint(Graphics g) {
-				if (useBuffer) {
+				if (showedAt != null) {
+					double r = 0.75f;
+					double t = System.currentTimeMillis() - showedAt - MAX_RETENDION * r;
 					Graphics2D g2 = (Graphics2D) g.create();
-					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) ((1 - Math.max(0f, Math.min(1f, ((t / (MAX_RETENDION * (1 - r))))))) * 0.5f)));
 					super.paint(g2);
 					g2.dispose();
 				} else {
@@ -116,12 +118,11 @@ public abstract class DesktopAnchorManager {
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
-				showedAt = System.currentTimeMillis();
+				initShowedAt();
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				showedAt = null;
-				useBuffer = false;
 				anchorPanel.repaint();
 			}
 			@Override
@@ -161,12 +162,11 @@ public abstract class DesktopAnchorManager {
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
-				showedAt = System.currentTimeMillis();
+				initShowedAt();
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				showedAt = null;
-				useBuffer = false;
 				anchorPanel.repaint();
 			}
 			@Override
@@ -305,7 +305,6 @@ public abstract class DesktopAnchorManager {
 		if (disabledUntil != null && disabledUntil > System.currentTimeMillis()) {
 			return;
 		}
-		useBuffer = true;
 		anchorPanel.removeAll();
 		anchorPanel.add(anchorButton);
 		currentBrowser = tableBrowser;
@@ -325,7 +324,26 @@ public abstract class DesktopAnchorManager {
 		anchorPanel.setVisible(true);
 		topLayerPanel.setVisible(true);
 		height = anchorPanel.getHeight();
+		initShowedAt();
+	}
+
+	/**
+	 * 
+	 */
+	private void initShowedAt() {
 		showedAt = System.currentTimeMillis();
+		int delay = 100;
+		Timer timer = new Timer(delay, null);
+		timer.addActionListener(e -> {
+			if (showedAt != null && anchorPanel.isVisible()) {
+				anchorPanel.paintImmediately(0, 0, anchorPanel.getWidth(), anchorPanel.getHeight());
+			} else {
+				timer.stop();
+			}
+		});
+		timer.setRepeats(true);
+		timer.setInitialDelay(delay);
+		timer.start();
 	}
 
 	void reset() {
