@@ -66,26 +66,27 @@ public abstract class DesktopAnchorManager {
 	public DesktopAnchorManager(JPanel topLayerPanel) {
 		this.anchorPanel = new JPanel(null) {
 			Long initFadeStartedAt = null;
-			JPanel initFadePanel = null;
+			RowBrowser initFadeBrowser = null;
 			@Override
 			public void paint(Graphics g) {
 				Graphics2D g2 = (Graphics2D) g.create();
 				if (initFadeStartedAt != null) {
 					double r1 = 0.65f;
 					double t1 = System.currentTimeMillis() - initFadeStartedAt - MAX_RETENDION * (1 - r1);
-					if (t1 < 0 && initFadePanel != this) {
+					if (t1 < 0 && initFadeBrowser == currentBrowser) {
 						g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) (t1 / (-MAX_RETENDION * (1 - r1))) / 2f + 0.5f));
 						super.paint(g2);
 						g2.dispose();
 					} else {
 						initFadeStartedAt = null;
-						initFadePanel = null;
+						initFadeBrowser = null;
 						fadeDown = false;
 					}
 				}
 				if (showedAt != null) {
 					if (fadeDown && initFadeStartedAt == null) {
 						initFadeStartedAt = System.currentTimeMillis();
+						initFadeBrowser = currentBrowser;
 					} else {
 						double r = 0.75f;
 						double t = System.currentTimeMillis() - showedAt - MAX_RETENDION * r;
