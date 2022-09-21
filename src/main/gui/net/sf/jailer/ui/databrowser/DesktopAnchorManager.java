@@ -56,21 +56,41 @@ public abstract class DesktopAnchorManager {
 	private final JButton anchorButton;
 	private Long disabledUntil;
 	private Long showedAt;
+	private boolean fadeDown;
 	private RowBrowser currentBrowser;
 	private RowBrowser newestBrowser;
 	private int height = 5 * 18;
-	private final static int MAX_RETENDION = 1200;
+	private final static int MAX_RETENDION = 1400;
 
 	@SuppressWarnings("serial")
 	public DesktopAnchorManager(JPanel topLayerPanel) {
 		this.anchorPanel = new JPanel(null) {
+			Long initFadeStartedAt = null;
+			JPanel initFadePanel = null;
 			@Override
 			public void paint(Graphics g) {
+				Graphics2D g2 = (Graphics2D) g.create();
+				if (initFadeStartedAt != null) {
+					double r1 = 0.65f;
+					double t1 = System.currentTimeMillis() - initFadeStartedAt - MAX_RETENDION * (1 - r1);
+					if (t1 < 0 && initFadePanel != this) {
+						g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) (t1 / (-MAX_RETENDION * (1 - r1))) / 2f + 0.5f));
+						super.paint(g2);
+						g2.dispose();
+					} else {
+						initFadeStartedAt = null;
+						initFadePanel = null;
+						fadeDown = false;
+					}
+				}
 				if (showedAt != null) {
-					double r = 0.75f;
-					double t = System.currentTimeMillis() - showedAt - MAX_RETENDION * r;
-					Graphics2D g2 = (Graphics2D) g.create();
-					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) ((1 - Math.max(0f, Math.min(1f, ((t / (MAX_RETENDION * (1 - r))))))) * 0.5f)));
+					if (fadeDown && initFadeStartedAt == null) {
+						initFadeStartedAt = System.currentTimeMillis();
+					} else {
+						double r = 0.75f;
+						double t = System.currentTimeMillis() - showedAt - MAX_RETENDION * r;
+						g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) ((1 - Math.max(0f, Math.min(1f, ((t / (MAX_RETENDION * (1 - r))))))) * 0.5f)));
+					}
 					super.paint(g2);
 					g2.dispose();
 				} else {
@@ -118,11 +138,12 @@ public abstract class DesktopAnchorManager {
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
-				initShowedAt();
+				initShowedAt(true);
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				showedAt = null;
+				fadeDown = false;
 				anchorPanel.repaint();
 			}
 			@Override
@@ -162,11 +183,12 @@ public abstract class DesktopAnchorManager {
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
-				initShowedAt();
+				initShowedAt(true);
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				showedAt = null;
+				fadeDown = false;
 				anchorPanel.repaint();
 			}
 			@Override
@@ -307,6 +329,7 @@ public abstract class DesktopAnchorManager {
 		}
 		anchorPanel.removeAll();
 		anchorPanel.add(anchorButton);
+		boolean fadeDown = this.fadeDown && currentBrowser == tableBrowser;
 		currentBrowser = tableBrowser;
 		anchorButton.setSize(anchorButton.getPreferredSize());
 		anchorPanel.setSize(anchorButton.getPreferredSize());
@@ -324,13 +347,11 @@ public abstract class DesktopAnchorManager {
 		anchorPanel.setVisible(true);
 		topLayerPanel.setVisible(true);
 		height = anchorPanel.getHeight();
-		initShowedAt();
+		initShowedAt(fadeDown);
 	}
 
-	/**
-	 * 
-	 */
-	private void initShowedAt() {
+	private void initShowedAt(boolean fadeDownP) {
+		this.fadeDown = fadeDownP;
 		showedAt = System.currentTimeMillis();
 		int delay = 100;
 		Timer timer = new Timer(delay, null);
