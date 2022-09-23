@@ -591,6 +591,15 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 			@Override
+			protected boolean isAvailable() {
+				if (desktop.desktopAnimation != null && desktop.desktopAnimation.isActive()) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+			
+			@Override
 			protected boolean isApplicable(RowBrowser tableBrowser) {
 				if (tableBrowser.parent == null) {
 					return false;

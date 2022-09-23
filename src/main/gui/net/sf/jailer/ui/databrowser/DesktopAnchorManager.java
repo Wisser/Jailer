@@ -235,9 +235,11 @@ public abstract class DesktopAnchorManager {
 	}
 
 	public void onTableBrowserNeared(RowBrowser tableBrowser) {
-		anchorButton.setEnabled(isApplicable(tableBrowser));
-		reset();
-		showButton(tableBrowser);
+		if (isAvailable()) {
+			anchorButton.setEnabled(isApplicable(tableBrowser));
+			reset();
+			showButton(tableBrowser);
+		}
 	}
 
 	public void onNewTableBrowser(final RowBrowser tableBrowser) {
@@ -278,7 +280,7 @@ public abstract class DesktopAnchorManager {
 		MouseMotionListener showButton = new MouseAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				if (SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), tableBrowser.internalFrame).getX() < 34) {
+				if (isAvailable() && SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), tableBrowser.internalFrame).getX() < 34) {
 					anchorButton.setEnabled(isApplicable(tableBrowser));
 					reset();
 					showButton(tableBrowser);
@@ -428,6 +430,7 @@ public abstract class DesktopAnchorManager {
 	}
 
 	protected abstract void layout(RowBrowser anchor);
+	protected abstract boolean isAvailable();
 	protected abstract boolean isApplicable(RowBrowser tableBrowser);
 
 	private ImageIcon anchorIcon;
