@@ -619,7 +619,21 @@ public class DataBrowser extends javax.swing.JFrame {
 					if (comp instanceof JMenuItem) {
 						JMenuItem item = (JMenuItem) comp;
 						if (item.getName() != null && item.getName().startsWith("icon:")) {
-							addAdditionalAction(UIUtil.readImage(item.getName().substring(5)), item.getToolTipText() != null? item.getToolTipText() : item.getText(), () -> item.doClick(), item instanceof JCheckBoxMenuItem, (item instanceof JCheckBoxMenuItem)? ((JCheckBoxMenuItem) item).isSelected() : false, item.isEnabled());
+							String tooltip = item.getToolTipText() != null? item.getToolTipText() : item.getText();
+							if (item.getAccelerator() != null) {
+								String ttHtml = item.getAccelerator().toString().replaceAll("\\s*pressed\\s*", "+");
+								StringBuilder sb = new StringBuilder();
+								for (int i = 0; i< ttHtml.length(); ++i) {
+									if (i > 0 && Character.isLetter(ttHtml.charAt(i - 1))) {
+										sb.append(ttHtml.substring(i, i + 1).toLowerCase());
+									} else {
+										sb.append(ttHtml.substring(i, i + 1).toUpperCase());
+									}
+								}
+								ttHtml = sb.toString();
+								tooltip = "<html>" + UIUtil.toHTMLFragment(tooltip, 0) + "&nbsp;&nbsp;&nbsp;&nbsp;<i>" + UIUtil.toHTMLFragment(ttHtml, 0) + "</i></html>";
+							}
+							addAdditionalAction(UIUtil.readImage(item.getName().substring(5)), tooltip, () -> item.doClick(), item instanceof JCheckBoxMenuItem, (item instanceof JCheckBoxMenuItem)? ((JCheckBoxMenuItem) item).isSelected() : false, item.isEnabled());
 							needsSep = true;
 							++compsASep;
 						}
