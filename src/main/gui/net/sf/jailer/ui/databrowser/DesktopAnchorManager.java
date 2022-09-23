@@ -377,7 +377,7 @@ public abstract class DesktopAnchorManager {
 	private void initShowedAt(boolean fadeDownP) {
 		this.fadeDown = fadeDownP;
 		showedAt = System.currentTimeMillis();
-		int delay = 100;
+		int delay = 30;
 		Timer timer = new Timer(delay, null);
 		timer.addActionListener(e -> {
 			if (showedAt != null && anchorPanel.isVisible()) {
