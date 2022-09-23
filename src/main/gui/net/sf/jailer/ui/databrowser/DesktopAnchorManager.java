@@ -24,16 +24,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.Stack;
 
+import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -43,6 +47,7 @@ import javax.swing.plaf.basic.BasicInternalFrameUI;
 
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.util.UISettings;
 
 /**
  * Desktop Anchor Manager.
@@ -60,7 +65,7 @@ public abstract class DesktopAnchorManager {
 	private RowBrowser currentBrowser;
 	private RowBrowser newestBrowser;
 	private int height = 5 * 18;
-	private final static int MAX_RETENDION = 1400;
+	private final static int MAX_RETENDION = 1000;
 
 	@SuppressWarnings("serial")
 	public DesktopAnchorManager(JPanel topLayerPanel) {
@@ -70,32 +75,38 @@ public abstract class DesktopAnchorManager {
 			@Override
 			public void paint(Graphics g) {
 				Graphics2D g2 = (Graphics2D) g.create();
-				if (initFadeStartedAt != null) {
-					double r1 = 0.65f;
-					double t1 = System.currentTimeMillis() - initFadeStartedAt - MAX_RETENDION * (1 - r1);
-					if (t1 < 0 && initFadeBrowser == currentBrowser) {
-						g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) (t1 / (-MAX_RETENDION * (1 - r1))) / 2f + 0.5f));
+				try {
+					if (initFadeStartedAt != null) {
+						double r1 = 0.65f;
+						double t1 = System.currentTimeMillis() - initFadeStartedAt - MAX_RETENDION * (1 - r1);
+						if (t1 < 0 && initFadeBrowser == currentBrowser) {
+							g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) (t1 / (-MAX_RETENDION * (1 - r1))) / 2f + 0.5f));
+							super.paint(g2);
+							return;
+						} else {
+							initFadeStartedAt = null;
+							initFadeBrowser = null;
+							fadeDown = false;
+						}
+					}
+					if (showedAt != null) {
+						if (fadeDown && initFadeStartedAt == null) {
+							initFadeStartedAt = System.currentTimeMillis();
+							initFadeBrowser = currentBrowser;
+							super.paint(g2);
+							return;
+						} else {
+							double r = 0.75f;
+							double t = System.currentTimeMillis() - showedAt - MAX_RETENDION * r;
+							g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) ((1 - Math.max(0f, Math.min(1f, ((t / (MAX_RETENDION * (1 - r))))))) * 0.5f)));
+						}
 						super.paint(g2);
-						g2.dispose();
+						return;
 					} else {
-						initFadeStartedAt = null;
-						initFadeBrowser = null;
-						fadeDown = false;
+						super.paint(g);
 					}
-				}
-				if (showedAt != null) {
-					if (fadeDown && initFadeStartedAt == null) {
-						initFadeStartedAt = System.currentTimeMillis();
-						initFadeBrowser = currentBrowser;
-					} else {
-						double r = 0.75f;
-						double t = System.currentTimeMillis() - showedAt - MAX_RETENDION * r;
-						g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) ((1 - Math.max(0f, Math.min(1f, ((t / (MAX_RETENDION * (1 - r))))))) * 0.5f)));
-					}
-					super.paint(g2);
+				} finally {
 					g2.dispose();
-				} else {
-					super.paint(g);
 				}
 			}
 		};
@@ -156,22 +167,33 @@ public abstract class DesktopAnchorManager {
 	
 	protected abstract void addAdditionalActions(RowBrowser tableBrowser);
 
-	protected void addAdditionalAction(ImageIcon icon, String tooltip, Runnable action, boolean enabled) {
+	protected void addAdditionalAction(ImageIcon icon, String tooltip, Runnable action, boolean isToggleButton, boolean isSelected, boolean enabled) {
 		if (icon == null) {
 			anchorPanel.setSize(anchorPanel.getWidth(), anchorPanel.getHeight() + 6);
 			return;
 		}
-		JButton button = new JButton();
+		AbstractButton button = isToggleButton? new JToggleButton((String) null, isSelected) : new JButton();
 		button.setEnabled(enabled);
 		button.setText(null);
 		button.setIcon(UIUtil.scaleIcon(icon, anchorIcon.getIconHeight() / (double) icon.getIconHeight()));
 		button.setToolTipText(tooltip);
+		int componentCount = anchorPanel.getComponentCount();
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (currentBrowser != null) {
-					reset(1000);
+					if (!isToggleButton) {
+						reset(1000);
+					}
 					action.run();
+					if (UISettings.s13 % 100 != 99) {
+						UISettings.s13++;
+						switch (componentCount) {
+						case 1:	UISettings.s13 += 100; break;
+						case 2:	UISettings.s13 += 10000; break;
+						case 3:	UISettings.s13 += 1000000; break;
+						}
+					}
 				}
 			}
 		});
@@ -201,7 +223,17 @@ public abstract class DesktopAnchorManager {
 		button.setLocation(anchorButton.getX(), anchorPanel.getHeight());
 		anchorPanel.setSize(anchorPanel.getWidth(), button.getY() + button.getHeight());
 	}
-	
+
+	private void reorgPanel() {
+		anchorPanel.setSize((anchorButton.getWidth()) * 2, anchorButton.getHeight());
+		final Component[] components = anchorPanel.getComponents();
+		for (int i = 0; i < components.length; i += 1) {
+			Component comp = components[i <= 1? 1 - i : i];
+			comp.setLocation(new Point((i % 2) == 0? 1 : (1 + anchorButton.getWidth()), (i / 2) * anchorButton.getHeight()));
+			anchorPanel.setSize(anchorPanel.getWidth(), comp.getY() + comp.getHeight() + 1);
+		}
+	}
+
 	public void onTableBrowserNeared(RowBrowser tableBrowser) {
 		anchorButton.setEnabled(isApplicable(tableBrowser));
 		reset();
@@ -243,27 +275,16 @@ public abstract class DesktopAnchorManager {
 			public void internalFrameActivated(InternalFrameEvent e) {
 			}
 		});
-		MouseListener showButton = new MouseListener() {
+		MouseMotionListener showButton = new MouseAdapter() {
 			@Override
-			public void mouseReleased(MouseEvent e) {
-			}
-			@Override
-			public void mousePressed(MouseEvent e) {
-			}
-			@Override
-			public void mouseExited(MouseEvent e) {
-			}
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				anchorButton.setEnabled(isApplicable(tableBrowser));
-				reset();
-				showButton(tableBrowser);
-			}
-			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void mouseMoved(MouseEvent e) {
+				if (SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), tableBrowser.internalFrame).getX() < 34) {
+					anchorButton.setEnabled(isApplicable(tableBrowser));
+					reset();
+					showButton(tableBrowser);
+				}
 			}
 		};
-//		tableBrowser.browserContentPane.menuPanel.addMouseListener(showButton);
 		
 		Stack<JPanel> panels = new Stack<JPanel>();
 		panels.add(tableBrowser.browserContentPane.menuPanel);
@@ -278,7 +299,7 @@ public abstract class DesktopAnchorManager {
 							}
 						}
 					} else if (comp instanceof JLabel) {
-						comp.addMouseListener(showButton);
+						comp.addMouseMotionListener(showButton);
 					}
 				}
 			}
@@ -290,7 +311,7 @@ public abstract class DesktopAnchorManager {
 //		tableBrowser.browserContentPane.loadButton.addMouseListener(showButton);
 //		tableBrowser.browserContentPane.rowsTable.addMouseListener(showButton);
 		if (tableBrowser.browserContentPane.thumbnail != null) {
-			tableBrowser.browserContentPane.thumbnail.addMouseListener(showButton);
+			tableBrowser.browserContentPane.thumbnail.addMouseMotionListener(showButton);
 		}
 //		if (tableBrowser.browserContentPane.andCondition.getEditor() != null) {
 //			if (tableBrowser.browserContentPane.andCondition.getEditor().getEditorComponent() != null) {
@@ -301,7 +322,7 @@ public abstract class DesktopAnchorManager {
 		if (bi instanceof BasicInternalFrameUI) {
 			JComponent northPane = ((BasicInternalFrameUI) bi).getNorthPane();
 			if (northPane != null) {
-				northPane.addMouseListener(showButton);
+				northPane.addMouseMotionListener(showButton);
 			}
 		}
 		tableBrowser.internalFrame.addComponentListener(new ComponentListener() {
@@ -330,19 +351,21 @@ public abstract class DesktopAnchorManager {
 		}
 		anchorPanel.removeAll();
 		anchorPanel.add(anchorButton);
+		
 		boolean fadeDown = this.fadeDown && currentBrowser == tableBrowser;
 		currentBrowser = tableBrowser;
 		anchorButton.setSize(anchorButton.getPreferredSize());
 		anchorPanel.setSize(anchorButton.getPreferredSize());
 		addAdditionalActions(tableBrowser);
+		reorgPanel();
 		Point loc;
 		loc = tableBrowser.internalFrame.getLocation();
-		loc.translate(-anchorButton.getWidth(), 0);
+		loc.translate(-anchorPanel.getWidth(), 0);
 		anchorPanel.setLocation(0, 0);
 		loc = SwingUtilities.convertPoint(tableBrowser.internalFrame.getParent(), loc, anchorPanel);
 		Point locO = new Point();
 		locO = SwingUtilities.convertPoint(tableBrowser.internalFrame.getParent().getParent(), locO, anchorPanel);
-		loc = new Point(Math.max(locO.x - anchorPanel.getWidth(), loc.x), Math.max(locO.y, loc.y + 1));
+		loc = new Point(Math.max(locO.x - anchorPanel.getWidth(), loc.x) - 1, Math.max(locO.y, loc.y + 1));
 		anchorPanel.setLocation(loc);
 		anchorButton.setVisible(true);
 		anchorPanel.setVisible(true);

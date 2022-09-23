@@ -154,6 +154,7 @@ public class UISettings {
 	public static volatile String s10;
 	public static volatile int s11 = 1;
 	public static volatile int s12;
+	public static volatile int s13;
 
 	public synchronized static void storeStats() {
 		try {
@@ -164,7 +165,7 @@ public class UISettings {
 		}
 		int i = 1;
 		StringBuilder sb = new StringBuilder();
-		for (int s: new int[] { s1, s2.get(), s3, s4, s5.get(), s6, s7.get(), s8, s9, 0, s11, s12 }) {
+		for (int s: new int[] { s1, s2.get(), s3, s4, s5.get(), s6, s7.get(), s8, s9, 0, s11, s12, s13 }) {
 			if (s != 0) {
 				sb.append("&s" + i + "=" + s);
 			}

@@ -2093,7 +2093,7 @@ public class UIUtil {
 	
 	public static void checkPLAF(Component parentComponent) {
 		Object oldPlafSetting = UISettings.restore("OLD_PLAF");
-		if (oldPlafSetting != null && !oldPlafSetting.equals(plaf.name())) {
+		if (plaf != PLAF.FLAT && oldPlafSetting != null && !oldPlafSetting.equals(plaf.name())) {
 			if (JOptionPane.showOptionDialog(parentComponent, 
 					"The \"look and feel\" has been changed.\nDo you want to keep the change?", 
 					"Look&Feel", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,

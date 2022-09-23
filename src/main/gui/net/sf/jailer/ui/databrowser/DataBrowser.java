@@ -22,15 +22,11 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
@@ -55,8 +51,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
@@ -84,6 +78,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -117,8 +112,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-
-import com.sun.glass.ui.Menu;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
@@ -619,20 +612,20 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected void addAdditionalActions(RowBrowser tableBrowser) {
 				JPopupMenu menu = tableBrowser.browserContentPane.createSqlPopupMenu(0, 0, 0, desktop.layoutMode == LayoutMode.THUMBNAIL, tableBrowser.browserContentPane);
-				addAdditionalAction(null, null, null, false);
+				addAdditionalAction(null, null, null, false, false, false);
 				boolean needsSep = false;
 				int compsASep = 1;
 				for (Component comp: menu.getComponents()) {
 					if (comp instanceof JMenuItem) {
 						JMenuItem item = (JMenuItem) comp;
 						if (item.getName() != null && item.getName().startsWith("icon:")) {
-							addAdditionalAction(UIUtil.readImage(item.getName().substring(5)), item.getToolTipText() != null? item.getToolTipText() : item.getText(), () -> item.doClick(), item.isEnabled());
+							addAdditionalAction(UIUtil.readImage(item.getName().substring(5)), item.getToolTipText() != null? item.getToolTipText() : item.getText(), () -> item.doClick(), item instanceof JCheckBoxMenuItem, (item instanceof JCheckBoxMenuItem)? ((JCheckBoxMenuItem) item).isSelected() : false, item.isEnabled());
 							needsSep = true;
 							++compsASep;
 						}
 					} else if (comp instanceof JSeparator) {
 						if (needsSep && compsASep > 1) {
-							addAdditionalAction(null, null, null, false);
+							addAdditionalAction(null, null, null, false, false, false);
 							needsSep = false;
 							compsASep = 0;
 						}
