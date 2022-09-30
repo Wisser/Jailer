@@ -3996,11 +3996,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private long lastReloadTS = 0;
+	private Rectangle tablePosition;
 
 	/**
 	 * Reloads rows.
 	 */
 	public void reloadRows() {
+		if (singleRowDetailsView != null) {
+			tablePosition = singleRowDetailsView.getVisibleRect();
+		} else {
+			tablePosition = null;
+		}
 		reloadRows(null);
 	}
 
@@ -5497,6 +5503,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		isLimitExceeded = limitExceeded;
 		isClosureLimitExceeded = closureLimitExceeded;
 		appendClosure();
+		if (tablePosition != null) {
+			if (singleRowDetailsView != null) {
+				singleRowDetailsView.scrollRectToVisible(tablePosition);
+			}
+			tablePosition = null;
+		}
 	}
 
 	public void updateRowsCountLabel(Set<BrowserContentPane> browserInClosure) {

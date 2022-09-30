@@ -27,7 +27,11 @@ import net.sf.jailer.ui.UIUtil;
 
 public class UpdateInfoManager {
 
-	private static final String versionURL = "http://jailer.sourceforge.net/currentVersion.php";
+	private static final String[] versionURL = new String[] {
+			"http://jailer.sourceforge.net/currentVersion.php",
+			"https://jailer.sourceforge.net/currentVersion.php",
+			"https://jailer.sourceforge.io/currentVersion.php",
+	};
 	private static final String downloadURL = "https://sourceforge.net/projects/jailer/files/";
 	private static final long CHECK_INTERVALL = 1000L * 60 * 60 * 46;
 	private static final long DELAY = 1000L * 6;
@@ -75,19 +79,29 @@ public class UpdateInfoManager {
 					}
 					UISettings.store("UIM-Cnt", uimCnt);
 					startShutdownHook();
-					String content = HttpUtil.get(versionURL
-							+ "?jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")"
+					String param = "?jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")"
 							+ "&modul=" + URLEncoder.encode((DataModelManagerDialog.lastSessionRestored? modul.toLowerCase() : modul) + (UIUtil.subModule != 0? UIUtil.subModule : ""), "UTF-8")
 							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
 							+ "&uuid=" + URLEncoder.encode(uuid.toString(), "UTF-8")
 							+ "&version=" + URLEncoder.encode(JailerVersion.VERSION, "UTF-8")
 							+ (stat0 != null? "&s=" + stat0 : "")
 							+ ("&c=" + uimCnt)
-							+ UISettings.restoreStats());
-					BufferedReader in = new BufferedReader(new StringReader(content));
-			        String inputLine = in.readLine();
-			        in.close();
-			        
+							+ UISettings.restoreStats();
+					String inputLine = null;
+					for (int i = 0; i < versionURL.length; ++i) {
+						try {
+							String content = HttpUtil.get(versionURL[i] + param);
+							BufferedReader in = new BufferedReader(new StringReader(content));
+					        inputLine = in.readLine();
+					        in.close();
+					        if (inputLine != null && !inputLine.trim().isEmpty()) {
+					        	break;
+					        }
+						} catch (Throwable t) {
+							// ignore
+						}
+					}
+					
 			        if (inputLine != null && !inputLine.trim().isEmpty()) {
 			        	final String[] versions = inputLine.trim().split(",");
 			        	String currentVersion = JailerVersion.VERSION.replaceFirst("(\\d+\\.\\d+\\.\\d+)(\\.\\d+$)", "$1").replaceFirst("\\.0$", "");

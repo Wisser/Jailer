@@ -1127,14 +1127,23 @@ public class UIUtil {
 			            if (eIssue.length() > maxEIssueLength) {
 			            	eIssue = eIssue.substring(0, maxEIssueLength);
 			            }
-						url = "http://jailer.sourceforge.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + eIssue
+						url = "?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + eIssue
 							+ "&uuid=" + URLEncoder.encode(String.valueOf(UISettings.restore("uuid")), "UTF-8")
 							+ "&ts=" + URLEncoder.encode(new Date().toString(), "UTF-8")
 							+ "&jversion=" + URLEncoder.encode(System.getProperty("java.version") + "/" + System.getProperty("java.vm.vendor") + "/" + System.getProperty("java.vm.name") + "/" + System.getProperty("os.name"), "UTF-8") + "/(" + Environment.state + ")";
 						maxEIssueLength -= 10;
 						++i;
 					} while (url.length() > MAX_CL && maxEIssueLength > 100);
-					HttpUtil.get(url);
+					for (String res: new String[] {
+							"http://jailer.sourceforge.net/issueReport.php",
+							"https://jailer.sourceforge.net/issueReport.php",
+							"https://jailer.sourceforge.io/issueReport.php"
+					}) {
+						String result = HttpUtil.get(res + url);
+						if (result != null && !result.trim().isEmpty()) {
+							break;
+						}
+					}
 				} catch (UnsupportedEncodingException e) {
 					// ignore
 				}

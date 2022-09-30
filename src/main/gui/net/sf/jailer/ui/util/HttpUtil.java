@@ -56,6 +56,16 @@ public class HttpUtil {
 		URL theUrl;
 		theUrl = new URL(url);
 		URLConnection con = theUrl.openConnection();
+		String redirect = con.getHeaderField("Location");
+		int MAX_REDIRECTS = 8;
+		for (int i = 0; i < MAX_REDIRECTS  ; i++) {
+            if (redirect != null) {
+            	con = new URL(redirect).openConnection();
+                redirect = con.getHeaderField("Location");
+            } else {
+                break;
+            }
+        }
 		InputStreamReader in = new InputStreamReader(con.getInputStream()); // lgtm [java/input-resource-leak] 
 		int c;
 		while ((c = in.read()) != -1) {
