@@ -3996,17 +3996,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private long lastReloadTS = 0;
-	private Rectangle tablePosition;
 
 	/**
 	 * Reloads rows.
 	 */
 	public void reloadRows() {
-		if (singleRowDetailsView != null) {
-			tablePosition = singleRowDetailsView.getVisibleRect();
-		} else {
-			tablePosition = null;
-		}
 		reloadRows(null);
 	}
 
@@ -4935,6 +4929,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		lastLimitExceeded = limitExceeded;
 		lastClosureLimitExceeded = closureLimitExceeded;
 		pkColumns.clear();
+
+		Rectangle tablePosition;
+		if (singleRowDetailsView != null) {
+			tablePosition = singleRowDetailsView.getVisibleRect();
+		} else {
+			tablePosition = null;
+		}
+
 		List<Column> columns = rowIdSupport.getColumns(table, session, !rows.isEmpty());
 		String[] columnNames = new String[columns.size()];
 		final Set<String> pkColumnNames = new HashSet<String>();
