@@ -157,7 +157,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     
     private long timeOut;
     private JComponent waitCursorSubject;
-    private final int COLUMN_LOADING_TIMEOUT = 5000;
+    private final int COLUMN_LOADING_TIMEOUT = 500;
 
     private Quoting getQuoting() {
     	if (llQuoting == null) {
