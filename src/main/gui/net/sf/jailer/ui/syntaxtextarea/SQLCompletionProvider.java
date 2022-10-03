@@ -67,6 +67,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     private Map<String, TABLE> userDefinedAliases = new HashMap<String, TABLE>();
     private Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
     private Map<String, TABLE> aliasesTopLevel = new LinkedHashMap<String, TABLE>();
+    private Set<String> cteAliases = new HashSet<String>();
     
     /**
      * @param session
@@ -159,6 +160,14 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     private JComponent waitCursorSubject;
     private final int COLUMN_LOADING_TIMEOUT = 500;
 
+    private static final String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
+    private static final String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
+    private static final String reClauseKW = "\\b(?:select|from|update|where|(?:group\\s+by)|having|with|in|exists|into|delete|insert|(?:order\\s+by)|union|intersect|except|values|merge)\\b";
+    private static final String reIdentWSWordPattern = ".*?(" + reIdentifier + ")\\s+\\w*$";
+    
+    private static final Pattern identDotOnlyPattern = Pattern.compile(reIdentDotOnly, Pattern.DOTALL);
+    private static final Pattern identWSWordPattern = Pattern.compile(reIdentWSWordPattern, Pattern.DOTALL);
+
     private Quoting getQuoting() {
     	if (llQuoting == null) {
     		try {
@@ -228,7 +237,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         }
         aliases.clear();
         aliasesTopLevel.clear();
-        aliases.putAll(findAliases(afterCaret != null? beforeCaret + "=" + afterCaret : line, origStatement, aliasesTopLevel, null));
+        cteAliases.clear();
+        aliases.putAll(findAliases(afterCaret != null? beforeCaret + "=" + afterCaret : line, origStatement, aliasesTopLevel, cteAliases, null));
         aliases.putAll(userDefinedAliases);
         aliasesTopLevel.putAll(userDefinedAliases);
         Clause clause = currentClause(beforeCaret);
@@ -479,7 +489,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                         }
                         aliases.forEach((alias, table) -> {
                         	result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(alias), alias,
-                                    getSchemaName(schema), SQLCompletion.COLOR_TABLE));
+                        			cteAliases.contains(alias)? "" : getSchemaName(schema), SQLCompletion.COLOR_TABLE));
                         });
                     }
                 }
@@ -839,7 +849,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         return sb.toString();
     }
 
-    public Map<String, TABLE> findAliases(String statement, String origStatement, Map<String, TABLE> aliasesOnTopLevel, List<OutlineInfo> outlineInfos) {
+    public Map<String, TABLE> findAliases(String statement, String origStatement, Map<String, TABLE> aliasesOnTopLevel, Set<String> cteAliases, List<OutlineInfo> outlineInfos) {
         final int MAX_OUTLINE_INFOS = 500;
         Map<String, String> scopeDescriptionPerLastKeyword = new HashMap<String, String>();
         
@@ -987,6 +997,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 	} else {
                 		if (cteExpected && identifier != null) {
                 			ctes.add(Quoting.normalizeIdentifier(identifier));
+                			if (cteAliases != null) {
+                				cteAliases.add(identifier);
+                			}
                             if (outlineInfos != null) {
 	                			int pos = matcher.start();
 	                            nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
@@ -1125,13 +1138,15 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	                                        tokenStack.clear();
                                         }
                                     }
-                                    isStarRelevantPerAlias.put(alias, isStarRelevant);
-                                    if (mdTable != null) {
-	                                    Integer prevLevel = levelPerAlias.get(alias);
-	                                    if (prevLevel == null || prevLevel < level) {
-	                                        aliases.put(alias, mdTable);
-	                                        levelPerAlias.put(alias, level);
-	                                        tokenStack.clear();
+                                    if (!"=".equals(keyword)) {
+	                                    isStarRelevantPerAlias.put(alias, isStarRelevant);
+	                                    if (mdTable != null) {
+		                                    Integer prevLevel = levelPerAlias.get(alias);
+		                                    if (prevLevel == null || prevLevel < level) {
+		                                        aliases.put(alias, mdTable);
+		                                        levelPerAlias.put(alias, level);
+		                                        tokenStack.clear();
+		                                    }
 	                                    }
                                     }
                                 }
@@ -1238,23 +1253,27 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         }
         return aliases;
     }
-
+    
+    private static Pattern CTE_PATTERN = Pattern.compile("(?:\\s*)(?:(\\bas\\b\\s*\\(\\s*\\bSELECT\\b)|(" + reIdentifier + ")|(,|\\(|\\)|))", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+    
     private List<String> parseCTEColumns(String rest) {
-    	Pattern pattern = Pattern.compile("(?:\\s*)(?:(\\bas\\b)|(" + reIdentifier + ")|(,|\\(|\\)|))", Pattern.DOTALL|Pattern.CASE_INSENSITIVE); // TODO
-        List<String> columns = new ArrayList<>();
-        Matcher matcher = pattern.matcher(rest);
+    	List<String> columns = new ArrayList<>();
+        Matcher matcher = CTE_PATTERN.matcher(rest);
         boolean result = matcher.find();
         if (result) {
-        	String group3 = matcher.group(3);
         	int lastEnd = matcher.end();
-			if ("(".equals(group3)) {
+			if ("(".equals(matcher.group(3))) {
+				// cte (col1, ...)
         		String ident = null;
-        		while (result) {
+        		for (;;) {
         			result = matcher.find();
+        			if (!result) {
+        				break;
+        			}
         			if (result && matcher.start() != lastEnd) {
         				break;
   	                }
-        			group3 = matcher.group(3);
+        			String group3 = matcher.group(3);
   	            	if (group3 != null) {
 	            		if (ident != null) {
 	            			columns.add(ident);
@@ -1265,6 +1284,47 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	            	}
 	            	ident = matcher.group(2);
 	            	lastEnd = matcher.end();
+	            }
+        	} else if (matcher.group(1) != null) {
+				// cte as (select ...)
+        		rest = reduceStatement(rest.substring(matcher.end() + 1), -1);
+        		matcher = CTE_PATTERN.matcher(rest);
+        		int level = 0;
+                String ident = null;
+        		for (;;) {
+        			result = matcher.find();
+        			if (!result) {
+        				break;
+        			}
+        			String group3 = matcher.group(3);
+  	            	if (group3 != null) {
+	            		if (",".equals(group3)) {
+		            		if (level == 0 && ident != null) {
+		            			columns.add(ident);
+		            		}
+	            		} else if ("(".equals(group3)) {
+			            	++level;
+	            		} else if (")".equals(group3)) {
+			            	--level;
+			            	if (level < 0) {
+			            		if (ident != null) {
+			            			columns.add(ident);
+			            		}
+			            		break;
+			            	}
+	            		}
+	            	}
+	            	String nextIdent = matcher.group(2);
+	            	if (nextIdent != null) {
+	            		String identToUpper = nextIdent .toUpperCase();
+		            	if ("from".equals(identToUpper) || "where".equals(identToUpper)) {
+		            		if (ident != null) {
+		            			columns.add(ident);
+		            		}
+		            		break;
+		            	}
+	            	}
+	            	ident = nextIdent;
 	            }
         	}
         }
@@ -1444,14 +1504,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         }
         return defaultClause;
     }
-
-    private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
-    private static String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
-    private static String reClauseKW = "\\b(?:select|from|update|where|(?:group\\s+by)|having|with|in|exists|into|delete|insert|(?:order\\s+by)|union|intersect|except|values|merge)\\b";
-    private static String reIdentWSWordPattern = ".*?(" + reIdentifier + ")\\s+\\w*$";
-    
-    private static Pattern identDotOnlyPattern = Pattern.compile(reIdentDotOnly, Pattern.DOTALL);
-    private static Pattern identWSWordPattern = Pattern.compile(reIdentWSWordPattern, Pattern.DOTALL);
 
     private TABLE findAlias(String aliasName) {
         TABLE context;
