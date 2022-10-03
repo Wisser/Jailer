@@ -429,7 +429,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     if (matcher.matches() && !"from".equalsIgnoreCase(matcher.group(1)) && !"table".equalsIgnoreCase(matcher.group(1)) && !"update".equalsIgnoreCase(matcher.group(1))) {
                         if (!matchesJoinPattern) {
                             notDotWord = true;
-                            result.addAll(keywordCompletion("Join", "Left Join"));
+                            result.addAll(keywordCompletion("", "Join", "Left Join"));
                         }
                     }
                 }
@@ -649,23 +649,24 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
             @Override
             public List<SQLCompletion> retrieveCompletion(String line, String origStatement, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
                 if (clause == null) {
-                    return keywordCompletion("Select", "Insert", "Delete");
-                } else {
+                    return keywordCompletion("", "Update", "Select", "Insert", "Delete");
+                } else if (!beforeCaret.matches("(?is).*,\\s*\\w*")) {
+                	String afterCaret = origStatement.length() > beforeCaret.length()? origStatement.substring(beforeCaret.length()).trim().toUpperCase() : "";
                     switch (clause) {
-                    case FROM: return keywordCompletion("Where");
-                    case UPDATE: return keywordCompletion("set");
-                    case SET: return keywordCompletion("Where");
-                    case GROUP: return keywordCompletion("Having");
+                    case FROM: return keywordCompletion(afterCaret, "Where", "Order by", "Group by");
+                    case UPDATE: return keywordCompletion(afterCaret, "set");
+                    case SET: return keywordCompletion(afterCaret, "Where");
+                    case GROUP: return keywordCompletion(afterCaret, "Having");
                     case HAVING: return null;
-                    case INTO: return keywordCompletion("Values", "Select");
+                    case INTO: return keywordCompletion(afterCaret, "Values", "Select");
                     case JOIN: 
                         break;
-                    case ON: return keywordCompletion("Where", "Group by");
+                    case ON: return keywordCompletion(afterCaret, "Where", "Group by");
                     case ORDER: return null;
-                    case SELECT: return keywordCompletion("from");
+                    case SELECT: return keywordCompletion(afterCaret, "from");
                     case WHERE: 
                         if (defaultClause != Clause.WHERE) {
-                            return keywordCompletion("Group by", "Order by");
+                            return keywordCompletion(afterCaret, "Group by", "Order by");
                         }
                     default:
                         break;
@@ -758,10 +759,12 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         return newCompletions;
     }
 
-    private List<SQLCompletion> keywordCompletion(String... keywords) {
+    private List<SQLCompletion> keywordCompletion(String afterCaretUC, String... keywords) {
         List<SQLCompletion> newCompletions = new ArrayList<SQLCompletion>();
         for (String keyword: keywords) {
-            newCompletions.add(new SQLCompletion(this, keyword, keyword + " ", null, SQLCompletion.COLOR_KEYWORD));
+        	if (!afterCaretUC.startsWith(keyword.toUpperCase())) {
+        		newCompletions.add(new SQLCompletion(this, keyword, keyword + " ", null, SQLCompletion.COLOR_KEYWORD));
+        	}
         }
         return newCompletions;
     }
