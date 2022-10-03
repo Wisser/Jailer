@@ -112,6 +112,17 @@ public class MDTable extends MDObject {
     }
 
     /**
+     * Sets columns of table. If columns are not explicitly set, they will be lazy-loaded.
+     *
+     * @param columns columns of table
+     */
+    public void setColumns(List<String> columns) {
+        this.columns = columns;
+        loaded.set(true);
+        loading.set(false);
+    }
+
+    /**
      * Gets columns of table
      *
      * @return columns of table

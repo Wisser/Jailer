@@ -600,11 +600,6 @@ public class AssociationEditor extends javax.swing.JDialog {
 				}
 			}
 		}
-
-		@Override
-		protected boolean isInitialized() {
-			return true;
-		}
 	}
 	
 	private static ImageIcon okIcon;

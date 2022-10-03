@@ -18,7 +18,6 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -32,7 +31,6 @@ import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
-import net.sf.jailer.util.Pair;
 
 /**
  * A {@link SQLCompletionProvider} based on {@link SQLCompletionProvider}.
@@ -145,21 +143,9 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 	}
 
 	@Override
-	protected boolean isInitialized() {
-		return metaDataSource.isInitialized() && (metaDataSource.getDefaultSchema() == null || metaDataSource.getDefaultSchema().isLoaded());
+	protected MDTable createDummyTable(MDSchema schema, String name, List<String> columns) {
+		MDTable dummy = new MDTable(name, schema, false, false);
+		dummy.setColumns(columns);
+		return dummy;
 	}
-
-	@Override
-	protected MDTable createDummyTable(MDSchema schema, String name) {
-		Pair<MDSchema, String> key = new Pair<MDSchema, String>(schema, name);
-		MDTable dummyTable = dummyTables.get(key);
-		if (dummyTable == null) {
-			dummyTable = new MDTable(name, schema, false, false);
-			dummyTables.put(key, dummyTable);
-		}
-		return dummyTable;
-	}
-	
-	private Map<Pair<MDSchema, String>, MDTable> dummyTables = new HashMap<>();
-
 }

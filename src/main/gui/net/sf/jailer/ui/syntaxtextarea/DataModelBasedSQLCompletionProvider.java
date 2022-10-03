@@ -94,10 +94,4 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 		}
 		return result;
 	}
-
-	@Override
-	protected boolean isInitialized() {
-		return true;
-	}
-
 }

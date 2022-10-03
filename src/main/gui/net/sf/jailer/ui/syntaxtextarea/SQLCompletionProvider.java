@@ -218,8 +218,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     private List<SQLCompletion> retrieveCompletions(String line, String beforeCaret, String indent, boolean isCaretAtEOL) {
         int pos = beforeCaret.length();
         String afterCaret = null;
+        String origStatement = removeCommentsAndLiterals(line);
         if (pos > 0) {
-            line = reduceStatement(line, pos - 1);
+			line = reduceStatement(origStatement, pos - 1);
             if (pos < line.length()) {
                 beforeCaret = line.substring(0, pos);
                 afterCaret = line.substring(pos, line.length());
@@ -227,13 +228,13 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         }
         aliases.clear();
         aliasesTopLevel.clear();
-        aliases.putAll(findAliases(afterCaret != null? beforeCaret + "=" + afterCaret : line, aliasesTopLevel, null));
+        aliases.putAll(findAliases(afterCaret != null? beforeCaret + "=" + afterCaret : line, origStatement, aliasesTopLevel, null));
         aliases.putAll(userDefinedAliases);
         aliasesTopLevel.putAll(userDefinedAliases);
         Clause clause = currentClause(beforeCaret);
         List<SQLCompletion> result = new ArrayList<SQLCompletion>();
         for (CompletionRetriever<TABLE, SOURCE> completionRetriever: completionRetrievers) {
-            List<SQLCompletion> compl = completionRetriever.retrieveCompletion(line, beforeCaret, clause, metaDataSource, indent, isCaretAtEOL);
+            List<SQLCompletion> compl = completionRetriever.retrieveCompletion(line, origStatement, beforeCaret, clause, metaDataSource, indent, isCaretAtEOL);
             if (compl != null) {
                 result.addAll(compl);
             }
@@ -295,7 +296,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     }
 
     private interface CompletionRetriever<TABLE, SOURCE> {
-        List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clausem, SOURCE metaDataSource, String indent, boolean isCaretAtEOL);
+        List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, String origStatement, Clause clausem, SOURCE metaDataSource, String indent, boolean isCaretAtEOL);
     }
 
     private List<CompletionRetriever<TABLE, SOURCE>> completionRetrievers = new ArrayList<CompletionRetriever<TABLE, SOURCE>>();
@@ -303,7 +304,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     {
         completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
             @Override
-            public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
+            public List<SQLCompletion> retrieveCompletion(String line, String origStatement, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
                 if (!(clause == Clause.FROM || clause == Clause.TABLE || clause == Clause.ON || clause == Clause.UPDATE || clause == Clause.JOIN || clause == Clause.INTO)) {
                     return null;
                 }
@@ -476,6 +477,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                         				null, SQLCompletion.COLOR_SCHEMA));
                         	}
                         }
+                        aliases.forEach((alias, table) -> {
+                        	result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(alias), alias,
+                                    getSchemaName(schema), SQLCompletion.COLOR_TABLE));
+                        });
                     }
                 }
                 
@@ -484,7 +489,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         });
         completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
             @Override
-            public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
+            public List<SQLCompletion> retrieveCompletion(String line, String origStatement, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
                 if (!(clause != Clause.FROM && clause != Clause.TABLE && clause != Clause.UPDATE && clause != Clause.JOIN)) {
                     return null;
                 }
@@ -516,7 +521,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         });
         completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
             @Override
-            public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
+            public List<SQLCompletion> retrieveCompletion(String line, String origStatement, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
                 if (!(clause != Clause.FROM && clause != Clause.TABLE && clause != Clause.UPDATE && clause != Clause.JOIN)) {
                     return null;
                 }
@@ -560,8 +565,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                 List<String> tableColumns = getAndWaitForColumns(table);
                                 if (tableColumns.isEmpty()) {
                                     // time out, no completion
-                                    timedOut = true;
-                                    break;
+//                                    timedOut = true;
+//                                    break;
                                 }
                                 for (String column: tableColumns) {
                                     String unquotedColumn = Quoting.normalizeIdentifier(column);
@@ -596,8 +601,13 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     SCHEMA schema = getDefaultSchema(metaDataSource);
                     if (schema != null) {
                         Map<String, Integer> colCount = new HashMap<String, Integer>();
+                        List<SQLCompletion> result2 = new ArrayList<SQLCompletion>();
                         for (Entry<String, TABLE> entry: aliases.entrySet()) {
-                            result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(entry.getKey()), entry.getKey(), null, SQLCompletion.COLOR_TABLE));
+                            if (clause != Clause.SELECT) {
+                            	result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(entry.getKey()), entry.getKey(), null, SQLCompletion.COLOR_TABLE));
+                            } else if (aliasesTopLevel.containsKey(entry.getKey())) {
+                            	result2.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(entry.getKey()) + ".*", entry.getKey() + ".*", null, SQLCompletion.COLOR_TABLE));
+                            }
                             for (String c: getAndWaitForColumns(entry.getValue())) {
                                 if (!colCount.containsKey(c)) {
                                     colCount.put(c, 1);
@@ -606,13 +616,18 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                 }
                             }
                         }
-                        for (Entry<String, TABLE> entry: aliases.entrySet()) {
-                            for (String c: getAndWaitForColumns(entry.getValue())) {
-                                if (colCount.get(c) > 1 || defaultClause != null) {
-                                    result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(c), entry.getKey() + "." + c, entry.getKey(), SQLCompletion.COLOR_COLUMN));
-                                } else {
-                                    result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(c), c, entry.getKey(), SQLCompletion.COLOR_COLUMN));
-                                }	
+                        if (result2.size() > 1) {
+                        	result.addAll(result2);
+                        }
+                        for (Entry<String, TABLE> entry: aliasesTopLevel.entrySet()) {
+//                        	if (!userDefinedAliases.containsKey(entry.getKey())) {
+	                            for (String c: getAndWaitForColumns(entry.getValue())) {
+	                                if (colCount.get(c) > 1 || defaultClause != null) {
+	                                    result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(c), entry.getKey() + "." + c, entry.getKey(), SQLCompletion.COLOR_COLUMN));
+	                                } else {
+	                                    result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(c), c, entry.getKey(), SQLCompletion.COLOR_COLUMN));
+	                                }
+//	                            }
                             }
                         }
                     }
@@ -622,7 +637,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         });
         completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
             @Override
-            public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
+            public List<SQLCompletion> retrieveCompletion(String line, String origStatement, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
                 if (clause == null) {
                     return keywordCompletion("Select", "Insert", "Delete");
                 } else {
@@ -756,7 +771,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     }
 
     private static String reduceStatement(String statement, int caretPos) {
-        StringBuilder sb = new StringBuilder(removeCommentsAndLiterals(statement));
+        StringBuilder sb = new StringBuilder(statement);
         
         Set<Integer> myStarts = new HashSet<Integer>();
         Stack<Integer> ordPos = new Stack<Integer>();
@@ -824,7 +839,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         return sb.toString();
     }
 
-    public Map<String, TABLE> findAliases(String statement, Map<String, TABLE> aliasesOnTopLevel, List<OutlineInfo> outlineInfos) {
+    public Map<String, TABLE> findAliases(String statement, String origStatement, Map<String, TABLE> aliasesOnTopLevel, List<OutlineInfo> outlineInfos) {
         final int MAX_OUTLINE_INFOS = 500;
         Map<String, String> scopeDescriptionPerLastKeyword = new HashMap<String, String>();
         
@@ -856,8 +871,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         scopesWithContext.add("values");
         
         Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
+        dummyTables.clear();
         Pattern pattern = Pattern.compile("(?:\\bas\\b)|(?:[&][\\w]+\\s*\\.\\.)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\.|\\b(?:on|where|left|right|full|inner|outer|cross|join|and|or|not|set)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(statement + ")");
+        String input = statement + ")";
+		Matcher matcher = pattern.matcher(input);
         boolean inFrom = false;
         boolean inWith = false;
         boolean cteExpected = false;
@@ -963,19 +980,31 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 	}
                 }
 
-                if (inWith && outlineInfos != null) {
+                if (inWith) {
                 	if (",".equals(keyword)) {
                 		cteExpected = true;
                 		firstCTE = false;
                 	} else {
                 		if (cteExpected && identifier != null) {
                 			ctes.add(Quoting.normalizeIdentifier(identifier));
-                            int pos = matcher.start();
-                            nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
-                            OutlineInfo info = new OutlineInfo(null, "", level, pos, identifier);
-                            info.isCTE = true;
-                            info.withSeparator = !firstCTE;
-                            outlineInfos.add(info);
+                            if (outlineInfos != null) {
+	                			int pos = matcher.start();
+	                            nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
+	                            OutlineInfo info = new OutlineInfo(null, "", level, pos, identifier);
+	                            info.isCTE = true;
+	                            info.withSeparator = !firstCTE;
+	                            outlineInfos.add(info);
+                			} else {
+	                			String rest = origStatement.substring(matcher.end());
+	                			TABLE mdTable = createAndMemorizeDummyTable(getDefaultSchema(metaDataSource), identifier, parseCTEColumns(rest));
+	                			Integer prevLevel = levelPerAlias.get(identifier);
+//	                			isStarRelevantPerAlias.put(identifier, isStarRelevant);
+	                			if (prevLevel == null || prevLevel < level) {
+	                				aliases.put(identifier, mdTable);
+	                				levelPerAlias.put(identifier, level);
+	                				tokenStack.clear();
+	                            }
+                			}
                 		}
                 		cteExpected = false;
                 	}
@@ -1029,8 +1058,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             }
                             if (mdSchema != null) {
                                 TABLE mdTable = findTable(mdSchema, table);
-                                if (mdTable == null && inferedTables.contains(Quoting.normalizeIdentifier(table))) {
-                                	mdTable = createDummyTable(mdSchema, table);
+                                if (mdTable == null && inferedTables.contains(Quoting.normalizeIdentifier(table)) || ctes.contains(Quoting.normalizeIdentifier(table))) {
+                                	mdTable = createAndMemorizeDummyTable(mdSchema, table, null);
                                 }
                                 if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.normalizeIdentifier(table))) {
                                     if (outlineInfos != null && (mdTable == null || mdTable instanceof MDTable)) {
@@ -1040,9 +1069,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                         mergeOutlineInfos(outlineInfos, (nextInsertPos >= 0? nextInsertPos : (outlineInfos.size() - 1)) + 1);
                                         tokenStack.clear();
                                     }
+                                    isStarRelevantPerAlias.put(alias, isStarRelevant);
                                     if (mdTable != null) {
 	                                    Integer prevLevel = levelPerAlias.get(alias);
-	                                    isStarRelevantPerAlias.put(alias, isStarRelevant);
 	                                    if (prevLevel == null || prevLevel < level) {
 	                                        aliases.put(alias, mdTable);
 	                                        levelPerAlias.put(alias, level);
@@ -1083,8 +1112,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             }
                             if (mdSchema != null) {
                                 TABLE mdTable = findTable(mdSchema, table);
-                                if (mdTable == null && inferedTables.contains(Quoting.normalizeIdentifier(table))) {
-                                	mdTable = createDummyTable(mdSchema, table);
+                                if (mdTable == null && inferedTables.contains(Quoting.normalizeIdentifier(table)) || ctes.contains(Quoting.normalizeIdentifier(table))) {
+                                	mdTable = createAndMemorizeDummyTable(mdSchema, table, null);
                                 }
                                 if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.normalizeIdentifier(table))) {
                                     if (outlineInfos != null) {
@@ -1096,12 +1125,12 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	                                        tokenStack.clear();
                                         }
                                     }
+                                    isStarRelevantPerAlias.put(alias, isStarRelevant);
                                     if (mdTable != null) {
 	                                    Integer prevLevel = levelPerAlias.get(alias);
 	                                    if (prevLevel == null || prevLevel < level) {
 	                                        aliases.put(alias, mdTable);
-	                                        isStarRelevantPerAlias.put(alias, isStarRelevant);
-		                                    levelPerAlias.put(alias, level);
+	                                        levelPerAlias.put(alias, level);
 	                                        tokenStack.clear();
 	                                    }
                                     }
@@ -1210,7 +1239,39 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         return aliases;
     }
 
-    protected String prepareStatementForAliasAnalysis(String statement) {
+    private List<String> parseCTEColumns(String rest) {
+    	Pattern pattern = Pattern.compile("(?:\\s*)(?:(\\bas\\b)|(" + reIdentifier + ")|(,|\\(|\\)|))", Pattern.DOTALL|Pattern.CASE_INSENSITIVE); // TODO
+        List<String> columns = new ArrayList<>();
+        Matcher matcher = pattern.matcher(rest);
+        boolean result = matcher.find();
+        if (result) {
+        	String group3 = matcher.group(3);
+        	int lastEnd = matcher.end();
+			if ("(".equals(group3)) {
+        		String ident = null;
+        		while (result) {
+        			result = matcher.find();
+        			if (result && matcher.start() != lastEnd) {
+        				break;
+  	                }
+        			group3 = matcher.group(3);
+  	            	if (group3 != null) {
+	            		if (ident != null) {
+	            			columns.add(ident);
+	            		}
+	            		if (!",".equals(group3)) {
+	            			break;
+	            		}
+	            	}
+	            	ident = matcher.group(2);
+	            	lastEnd = matcher.end();
+	            }
+        	}
+        }
+		return columns;
+	}
+
+	protected String prepareStatementForAliasAnalysis(String statement) {
 		return statement;
 	}
 
@@ -1434,11 +1495,23 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return text.matches("(?is).*(\\w|((,|join|on|select|where|from|into)\\s?)|\\*|\\.)");
 	}
 
+	private Map<Pair<SCHEMA, String>, TABLE> dummyTables = new HashMap<>();
+	
+    private TABLE createAndMemorizeDummyTable(SCHEMA schema, String name, List<String> columns) {
+		Pair<SCHEMA, String> key = new Pair<SCHEMA, String>(schema, name);
+		TABLE dummyTable = dummyTables.get(key);
+		if (dummyTable == null) {
+			dummyTable = createDummyTable(schema, name, columns);
+			dummyTables.put(key, dummyTable);
+		}
+		return dummyTable;
+    }
+
     protected abstract List<String> getColumns(TABLE table, long timeOut, JComponent waitCursorSubject);
     protected abstract SCHEMA getDefaultSchema(SOURCE metaDataSource);
     protected abstract SCHEMA findSchema(SOURCE metaDataSource, String name);
     protected abstract TABLE findTable(SCHEMA schema, String name);
-    protected TABLE createDummyTable(SCHEMA schema, String name) {
+    protected TABLE createDummyTable(SCHEMA schema, String name, List<String> columns) {
     	return null;
     }
     protected abstract String getTableName(TABLE table);
@@ -1446,6 +1519,5 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
     protected abstract String getSchemaName(SCHEMA schema);
     protected abstract List<SCHEMA> getSchemas(SOURCE metaDataSource);
     protected abstract List<Association> getAssociations(TABLE source, TABLE destination);
-	protected abstract boolean isInitialized();
 
 }
