@@ -217,12 +217,14 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 			}
 		}
 		// special handling for Oracle "[LONG] RAW" data type
-		if ("LONG RAW".equals(typeName) || "RAW".equals(typeName)) {
-			String valueAsString = singleRow.getString(columncount);
-			if (valueAsString != null) {
-				return createAttribute(columnname,VALUE,valueAsString);
-			} else {
-				return createAttribute(columnname,null,null);
+		if (DBMS.ORACLE.equals(session.dbms)) {
+			if ("LONG RAW".equals(typeName) || "RAW".equals(typeName)) {
+				String valueAsString = singleRow.getString(columncount);
+				if (valueAsString != null) {
+					return createAttribute(columnname,VALUE,valueAsString);
+				} else {
+					return createAttribute(columnname,null,null);
+				}
 			}
 		}
 		
