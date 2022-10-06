@@ -72,7 +72,7 @@
 
                     <ul>
                       <li><a href="design.htm" target="_self" class=
-                      "mlinkA">Design</a> </li>
+                      "mlinkA">Algorithm</a> </li>
 
                       <li><a href="file-formats.htm" target="_self" class="mlink">File
                       Formats</a> </li>
@@ -103,62 +103,26 @@
 
                           <tr>
                             <td class="content" height="520" valign="top" width="100%">
-                              <h4>Data flow</h4>
-
-                              <h3><a name="modell_des_entitaetsgraphen"></a> <img alt=
-                              "architecture" src="architecture-Dateien/arch.png" /><br />
-                              <br /></h3>
-
-                              <ul>
-                                <li class="level1">
-                                  <div class="li">
-                                    <strong>Datamodel.</strong> Describes tables and
-                                    associations.
-                                  </div>
-                                </li>
-
-                                <li class="level1">
-                                  <div class="li">
-                                    <strong>Restrictionmodel.</strong> Restricts
-                                    associations and controls the exportation.<br />
-                                  </div>
-                                </li>
-
-                                <li class="level1"><strong>Extractionmodel.</strong>
-                                Defines the subject and determines the restriction
-                                models.</li>
-
-                                <li class="level1"><span style=
-                                "font-weight: bold;">Freedom.</span> The database from
-                                which data is exported or deleted.</li>
-
-                                <li class="level1"><span style=
-                                "font-weight: bold;">Jail.</span> The database to import
-                                data into.</li>
-                              </ul><br />
-
                               <h4><a name="modell_des_entitaetsgraphen">The Entity
-                              Graph</a> &nbsp;</h4>During exportation a graph of entities
-                              will be constructed inside the database. For this three
-                              tables are required:
+                              Graph</a> &nbsp;</h4>During the export, a graph of the entities is created in the database. Three tables are created for this purpose:
 
                               <div class="level3">
                                 <ul>
                                   <li class="level1">
                                     <div class="li">
-                                      <strong>EntityGraph</strong> the graph<br />
+                                      <strong>JAILER_ENTITYGRAPH</strong> the graph<br />
                                     </div>
                                   </li>
 
                                   <li class="level1">
                                     <div class="li">
-                                      <strong>Entity</strong> entity in the graph<br />
+                                      <strong>JAILER_ENTITY</strong> entity in the graph<br />
                                     </div>
                                   </li>
 
                                   <li class="level1">
                                     <div class="li">
-                                      <strong>Dependency</strong> dependencies between
+                                      <strong>JAILER_DEPENDENCY</strong> dependencies between
                                       entities
                                     </div>
                                   </li>
@@ -369,7 +333,7 @@
 
                               <p>Line 1, insert subject<br />
                               <span style="font-family: monospace;"><br />
-                              INSERT INTO Entity(PK, birthday, type)</span><br style=
+                              INSERT INTO JAILER_ENTITY(PK, birthday, type)</span><br style=
                               "font-family: monospace;" />
                               <span style="font-family: monospace;">&nbsp; SELECT
                               &lt;subject&gt;.PK, 1, '&lt;subject&gt;'</span><br style=
@@ -382,7 +346,7 @@
                               "font-family: monospace;" />
                               <span style=
                               "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                              NOT EXISTS (SELECT * FROM Entity WHERE
+                              NOT EXISTS (SELECT * FROM JAILER_ENTITY WHERE
                               &lt;subject&gt;.PK=Entity.PK)</span><br style=
                               "font-family: monospace;" />
                               <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
@@ -393,13 +357,13 @@
                               Line 3.2.1, adding dependencies<br />
                               <br />
                               <span style="font-family: monospace;">INSERT INTO
-                              Dependency(from_PK, to_PK)</span><br style=
+                              JAILER_DEPENDENCY(from_PK, to_PK)</span><br style=
                               "font-family: monospace;" />
                               <span style="font-family: monospace;">&nbsp; SELECT
                               &lt;T2&gt;.PK, &lt;T1&gt;.PK</span><br style=
                               "font-family: monospace;" />
-                              <span style="font-family: monospace;">&nbsp; FROM Entity
-                              E1, Entity E2,</span><br style="font-family: monospace;" />
+                              <span style="font-family: monospace;">&nbsp; FROM JAILER_ENTITY
+                              E1, JAILER_ENTITY E2,</span><br style="font-family: monospace;" />
                               <span style=
                               "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                               &lt;T2&gt; JOIN &lt;T1&gt; ON
@@ -420,7 +384,7 @@
                               <br /></span> Line 3.2.2, adding referenced entities<br />
                               <br />
                               <span style="font-family: monospace;">INSERT INTO
-                              Entity(PK, birthday, type)</span><br style=
+                              JAILER_ENTITY(PK, birthday, type)</span><br style=
                               "font-family: monospace;" />
                               <span style="font-family: monospace;">&nbsp; SELECT
                               DISTINCT &lt;T2&gt;.PK, &lt;today&gt;,
@@ -433,7 +397,7 @@
                               "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                               Entity</span><br style="font-family: monospace;" />
                               <span style="font-family: monospace;">&nbsp; WHERE
-                              &lt;T1&gt;.PK=Entity.PK AND Entity.birthday =
+                              &lt;T1&gt;.PK=JAILER_ENTITY.PK AND JAILER_ENTITY.birthday =
                               &lt;yesterday&gt;</span><br style=
                               "font-family: monospace;" />
                               <span style=
@@ -441,8 +405,8 @@
                               AND NOT EXISTS</span><br style="font-family: monospace;" />
                               <span style=
                               "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                              (SELECT * FROM Entity WHERE
-                              &lt;T2&gt;.PK=Entity.PK)</span><br style=
+                              (SELECT * FROM JAILER_ENTITY WHERE
+                              &lt;T2&gt;.PK=JAILER_ENTITY.PK)</span><br style=
                               "font-family: monospace;" />
                               <br /></p>
                             </td>

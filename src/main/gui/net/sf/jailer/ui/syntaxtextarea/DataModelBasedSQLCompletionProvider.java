@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.swing.JComponent;
 
@@ -11,6 +12,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Quoting;
 
@@ -93,5 +95,17 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 			}
 		}
 		return result;
+	}
+
+	@Override
+	protected Table createDummyTable(String schema, String name, List<String> columns) {
+		Table table = new Table(name, new PrimaryKey(new ArrayList<Column>(), false), false, false);
+		table.setColumns(columns.stream().map(c -> new Column(c, "?", 0, -1)).collect(Collectors.toList()));
+		return table;
+	}
+
+	@Override
+	protected void setColumns(Table table, List<String> columns) {
+		table.setColumns(columns.stream().map(c -> new Column(c, "?", 0, -1)).collect(Collectors.toList()));
 	}
 }

@@ -600,6 +600,21 @@ public class AssociationEditor extends javax.swing.JDialog {
 				}
 			}
 		}
+
+		@Override
+		protected TableModel createDummyTable(String schema, String name, List<String> columns) {
+			TableModel tableModel = new TableModel();
+			tableModel.name = name;
+			tableModel.schema = schema;
+			tableModel.origName = name;
+			tableModel.columns = columns;
+			return tableModel;
+		}
+		
+		@Override
+		protected void setColumns(TableModel table, List<String> columns) {
+			table.columns = columns;
+		}
 	}
 	
 	private static ImageIcon okIcon;

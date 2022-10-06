@@ -148,4 +148,9 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 		dummy.setColumns(columns);
 		return dummy;
 	}
+
+	@Override
+	protected void setColumns(MDTable table, List<String> columns) {
+		table.setColumns(columns);
+	}
 }

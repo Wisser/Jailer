@@ -82,28 +82,36 @@ public class SQLDMLBuilder {
 			throw new RuntimeException(e);
 		}
 		String sql = "Update " + table.getName() + " " + LF + "Set ";
-		boolean f = true;
-		int i = 0;
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session, session.dbms);
 		Set<String> usedColumns = new HashSet<String>();
-		for (Column column : table.getColumns()) {
-			String value = getSQLLiteral(row.values[i++], cellContentConverter);
-			if (columnToUpdate != i - 1 && columnToUpdate >= 0) {
-				continue;
+		int anz = 0;
+		for (boolean cnt: new boolean[] { true, false }) {
+			int i = 0;
+			int j = 0;
+			for (Column column : table.getColumns()) {
+				String value = getSQLLiteral(row.values[i++], cellContentConverter);
+				if (columnToUpdate != i - 1 && columnToUpdate >= 0) {
+					continue;
+				}
+				if (value == null) {
+					continue;
+				}
+				if (column.name == null || column.isVirtual()) {
+					continue;
+				}
+				if (usedColumns.contains(column.name)) {
+					continue;
+				}
+				j++;
+				if (cnt) {
+					anz++;
+				} else {
+					boolean l = j == anz;
+					usedColumns.add(column.name);
+					String name = quoting.requote(column.name);
+					sql += (LF + "    ") + name + "=" + value + (l? "" : ", ") + comment(withComments, column, false);
+				}
 			}
-			if (value == null) {
-				continue;
-			}
-			if (column.name == null || column.isVirtual()) {
-				continue;
-			}
-			if (usedColumns.contains(column.name)) {
-				continue;
-			}
-			usedColumns.add(column.name);
-			String name = quoting.requote(column.name);
-			sql += (f? "" : ", " + LF + "    ") + name + "=" + value + comment(withComments, column, false);
-			f = false;
 		}
 		sql += " " + LF + "Where " + SqlUtil.replaceAliases(row.rowId, null, null);
 		return sql;
@@ -165,30 +173,39 @@ public class SQLDMLBuilder {
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
-		String sql = "Insert into " + table.getName() + " (" + LF + "    ";
+		String sql = "Insert into " + table.getName() + " (";
 		String values = "";
-		boolean f = true;
-		int i = 0;
 		Set<String> usedColumns = new HashSet<String>();
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session, session.dbms);
-		for (Column column : table.getColumns()) {
-			String value = getSQLLiteral(row.values[i++], cellContentConverter);
-			if (value == null) {
-				continue;
+		final List<Column> columns = table.getColumns();
+		int anz = 0;
+		for (boolean cnt: new boolean[] { true, false }) {
+			int i = 0;
+			int j = 0;
+			for (Column column : columns) {
+				String value = getSQLLiteral(row.values[i++], cellContentConverter);
+				if (value == null) {
+					continue;
+				}
+				if (column.name == null || column.isVirtual()) {
+					continue;
+				}
+				if (usedColumns.contains(column.name)) {
+					continue;
+				}
+				++j;
+				if (cnt) {
+					anz++;
+				} else {
+					boolean l = j == anz;
+					usedColumns.add(column.name);
+					String name = quoting.requote(column.name);
+					sql += (LF + "    ") + name + (l? "" : ", ") + comment(withComments, column, false);
+					values += (LF + "    ") + value + (l? "" : ", ") + comment(withComments, column, true);
+				}
 			}
-			if (column.name == null || column.isVirtual()) {
-				continue;
-			}
-			if (usedColumns.contains(column.name)) {
-				continue;
-			}
-			usedColumns.add(column.name);
-			String name = quoting.requote(column.name);
-			sql += (f? "" : ", " + LF + "    ") + name + comment(withComments, column, false);
-			values += (f? "" : ", " + LF + "    ") + value + comment(withComments, column, true);
-			f = false;
 		}
-		sql += ") " + LF + "Values (" + LF + "    " + values + ")";
+		sql += LF + ") " + LF + "Values (" + values + LF + ")";
 		return sql;
 	}
 
