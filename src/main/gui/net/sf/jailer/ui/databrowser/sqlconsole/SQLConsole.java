@@ -1677,7 +1677,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         TreeMap<Integer,Integer> offsets = new TreeMap<Integer,Integer>();
         sql = sqlPlusSupport.replaceVariables(sql, offsets);
 		String statement = SQLCompletionProvider.removeCommentsAndLiterals(sql);
-		provider.findAliases(statement, statement, null, null, outlineInfos);
+		provider.findAliases(statement, statement.length(), statement, null, null, outlineInfos);
         adjustLevels(outlineInfos);
         List<OutlineInfo> relocatedOutlineInfos = new ArrayList<OutlineInfo>();
         int indexOfInfoAtCaret = -1;

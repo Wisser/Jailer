@@ -26,6 +26,7 @@ import javax.swing.JComponent;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
@@ -152,5 +153,25 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 	@Override
 	protected void setColumns(MDTable table, List<String> columns) {
 		table.setColumns(columns);
+	}
+
+	@Override
+	protected String getColumnInfo(MDTable table, String column) {
+		if (table.isLoaded()) {
+			try {
+				List<String> cols = table.getColumns();
+				List<Column> types = table.getColumnTypes();
+				if (cols != null && types != null) {
+					for (int i = 0; i < cols.size(); ++i) {
+						if (cols.get(i).equals(column)) {
+							return types.get(i).toSQL("").substring(types.get(i).name.length()).trim();
+						}
+					}
+				}
+			} catch (SQLException e) {
+				return null;
+			}
+		}
+		return null;
 	}
 }

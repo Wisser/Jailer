@@ -109,7 +109,8 @@ public class SQLDMLBuilder {
 					boolean l = j == anz;
 					usedColumns.add(column.name);
 					String name = quoting.requote(column.name);
-					sql += (LF + "    ") + name + "=" + value + (l? "" : ", ") + comment(withComments, column, false);
+					String line = "    " + name + "=" + value + (l? "" : ", ");
+					sql += LF + line + comment(withComments, column, false, line.length());
 				}
 			}
 		}
@@ -117,7 +118,7 @@ public class SQLDMLBuilder {
 		return sql;
 	}
 
-	private static String comment(boolean withComments, Column column, boolean withName) {
+	private static String comment(boolean withComments, Column column, boolean withName, int colNum) {
 		if (withComments) {
 			String content;
 
@@ -134,8 +135,12 @@ public class SQLDMLBuilder {
 					content = column.toSQL(null).substring(column.name.length()).trim();
 				}
 			}
+			String indent = " ";
+			while (((colNum - 4 + indent.length()) % 8) != 0) {
+				indent += " ";
+			}
 			if (!content.isEmpty()) {
-				return "   /* " + content + " */";
+				return indent + "/* " + content + " */";
 			}
 		}
 		return "";
@@ -200,8 +205,10 @@ public class SQLDMLBuilder {
 					boolean l = j == anz;
 					usedColumns.add(column.name);
 					String name = quoting.requote(column.name);
-					sql += (LF + "    ") + name + (l? "" : ", ") + comment(withComments, column, false);
-					values += (LF + "    ") + value + (l? "" : ", ") + comment(withComments, column, true);
+					String line = "    " + name + (l? "" : ", ");
+					sql += LF + line + comment(withComments, column, false, line.length());
+					line = "    " + value + (l? "" : ", ");
+					values += LF + line + comment(withComments, column, true, line.length());
 				}
 			}
 		}

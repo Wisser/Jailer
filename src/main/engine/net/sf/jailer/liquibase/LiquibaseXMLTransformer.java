@@ -350,14 +350,11 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 				break;
 							
 			default:
-				attrcolumn=createAttribute(columnname,VALUE_NUMERIC,singleRow.getString(columncount));
+				attrcolumn=createAttribute(columnname,VALUE,singleRow.getString(columncount));
 				break;
-				
-//				throw new RuntimeException("Falscher Datentyp: "+singleRow.getMetaData().getColumnTypeName(columncount));
-				
 			}
 			
-		}else{
+		} else{
 			
 			attrcolumn=createAttribute(columnname,null,null);
 		}

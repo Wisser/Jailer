@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.swing.JComponent;
@@ -108,4 +109,11 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 	protected void setColumns(Table table, List<String> columns) {
 		table.setColumns(columns.stream().map(c -> new Column(c, "?", 0, -1)).collect(Collectors.toList()));
 	}
+	
+	@Override
+	protected String getColumnInfo(Table table, String column) {
+		Optional<Column> col = table.getColumns().stream().filter(c -> c.name.equals(column)).findAny();
+		return col.isPresent()? col.get().toSQL("").substring(col.get().name.length()).trim() : null;
+	}
+
 }

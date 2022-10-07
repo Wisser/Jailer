@@ -615,6 +615,11 @@ public class AssociationEditor extends javax.swing.JDialog {
 		protected void setColumns(TableModel table, List<String> columns) {
 			table.columns = columns;
 		}
+
+		@Override
+		protected String getColumnInfo(TableModel table, String column) {
+			return null;
+		}
 	}
 	
 	private static ImageIcon okIcon;
