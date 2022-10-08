@@ -50,6 +50,7 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
+import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -1669,6 +1670,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				}
 			}
 		} catch (/*BadLocation*/Exception ble) { // Never happens
+			LogUtil.warn(ble);
 			ble.printStackTrace();
 		}
 		return text.matches("(?is).*(\\w|((,|join|on|select|where|from|into)\\s?)|\\*|\\.)");

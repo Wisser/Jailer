@@ -4845,7 +4845,7 @@ public class DataBrowser extends javax.swing.JFrame {
 								try {
 									workbenchTabbedPane.setSelectedComponent(getCurrentSQLConsole());
 									getCurrentSQLConsole().grabFocus();
-									UIUtil.invokeLater(2, () -> getCurrentSQLConsole().appendStatement(script, execute));
+									UIUtil.invokeLater(8, () -> getCurrentSQLConsole().appendStatement(script, execute));
 								} catch (Throwable e) {
 									UIUtil.showException(this, "Error", e);
 								}

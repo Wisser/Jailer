@@ -61,6 +61,7 @@ import net.sf.jailer.ui.ExtractionModelEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.DataBrowser;
+import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.undo.CompensationAction;
@@ -2167,8 +2168,11 @@ public class GraphicalDataModelView extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				final DataBrowser dataBrowser = modelEditor.extractionModelFrame.openDataBrowser(root, "");
+				SQLConsole sqlConsole = dataBrowser.getSqlConsole(true);
 				if (dataBrowser != null) {
-					dataBrowser.getSqlConsole(true).appendStatement(queryBuilderDialog.getSQL() + UIUtil.LINE_SEPARATOR + ";", true);
+					UIUtil.invokeLater(28, () -> {
+						sqlConsole.appendStatement(queryBuilderDialog.getSQL() + UIUtil.LINE_SEPARATOR + ";", true);
+					});
 					queryBuilderDialog.setVisible(false);
 					queryBuilderDialog.dispose();
 					UIUtil.invokeLater(new Runnable() {
