@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -536,17 +537,20 @@ public class QueryTypeAnalyser {
 		List<net.sf.jailer.datamodel.Column> columns = new ArrayList<net.sf.jailer.datamodel.Column>();
 		for (String pk: columnNames) {
 			net.sf.jailer.datamodel.Column col = new net.sf.jailer.datamodel.Column(pk, "", 0, -1);
-			columns.add(col);
 			if (origTable != null) {
-				origTable.getColumns()
+				Optional<net.sf.jailer.datamodel.Column> oc = origTable.getColumns()
 					.stream()
-					.filter(column -> Quoting.equalsIgnoreQuotingAndCase(col.name, column.name))
-					.findFirst().ifPresent(column -> {
+					.filter(column -> Quoting.equalsIgnoreQuotingAndCase(pk, column.name))
+					.findFirst();
+				if (oc.isPresent()) {
+					net.sf.jailer.datamodel.Column column = oc.get();
+					col = new net.sf.jailer.datamodel.Column(pk, column.type, column.length, column.precision);
 						col.isVirtual = column.isVirtual;
 						col.isNullable = column.isNullable;
 						col.isIdentityColumn = column.isIdentityColumn;
-					});
+					}
 			}
+			columns.add(col);
 		}
 		table.setColumns(columns);
 		table.setIsArtifical(true);

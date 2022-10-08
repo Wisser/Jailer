@@ -126,7 +126,7 @@ public class SQLDMLBuilder {
 		index = Math.min(maxLength.size() - 1, index);
 		int bestIndex = -1;
 		double best = 0.0;
-		final double K = 8.0;
+		final double K = 10.0 * 14.0 / maxLength.size();
 		for (int i = index; i < maxLength.size(); ++i) {
 			double v = i - maxLength.get(i) / K;
 			if (v > best || bestIndex < 0) {
@@ -154,7 +154,7 @@ public class SQLDMLBuilder {
 					content = column.toSQL(null).substring(column.name.length()).trim();
 				}
 			}
-			maxLength = Math.min(maxLength, 136); // TODO
+			maxLength = Math.min(maxLength, 64);
 			String indent = " ";
 			while (indent.length() + colNum <= maxLength) {
 				indent += " ";
