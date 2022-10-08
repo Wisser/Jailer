@@ -483,7 +483,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     
                     // all tables in default schema
                     SCHEMA schema = getDefaultSchema(metaDataSource);
-                    if (schema != null) {
+                    if (schema != null && (clause != Clause.INTO || beforeCaret.matches("(?is)\\s*insert\\s+into\\s*"))) {
                         result.addAll(schemaCompletions(schema));
                         for (SCHEMA s: getSchemas(metaDataSource)) {
                         	if (!s.equals(schema)) {
@@ -617,18 +617,20 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     if (schema != null) {
                         Map<String, Integer> colCount = new HashMap<String, Integer>();
                         List<SQLCompletion> result2 = new ArrayList<SQLCompletion>();
-                        for (Entry<String, TABLE> entry: aliases.entrySet()) {
-                            if (clause != Clause.SELECT) {
-                            	result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(entry.getKey()), entry.getKey(), null, SQLCompletion.COLOR_TABLE));
-                            } else if (aliasesTopLevel.containsKey(entry.getKey())) {
-                            	result2.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(entry.getKey()) + ".*", entry.getKey() + ".*", null, SQLCompletion.COLOR_TABLE));
-                                for (String c: getAndWaitForColumns(entry.getValue())) {
-                                    if (!colCount.containsKey(c)) {
-                                        colCount.put(c, 1);
-                                    } else {
-                                        colCount.put(c, colCount.get(c) + 1);
-                                    }
-                                }
+                        if (clause != Clause.INTO) {
+                            for (Entry<String, TABLE> entry: aliases.entrySet()) {
+	                            if (clause != Clause.SELECT) {
+	                            	result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(entry.getKey()), entry.getKey(), null, SQLCompletion.COLOR_TABLE));
+	                            } else if (aliasesTopLevel.containsKey(entry.getKey())) {
+	                            	result2.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(entry.getKey()) + ".*", entry.getKey() + ".*", null, SQLCompletion.COLOR_TABLE));
+	                                for (String c: getAndWaitForColumns(entry.getValue())) {
+	                                    if (!colCount.containsKey(c)) {
+	                                        colCount.put(c, 1);
+	                                    } else {
+	                                        colCount.put(c, colCount.get(c) + 1);
+	                                    }
+	                                }
+	                            }
                             }
                         }
                         if (result2.size() > 1) {
@@ -659,7 +661,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
             @Override
             public List<SQLCompletion> retrieveCompletion(String line, String origStatement, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
                 if (clause == null) {
-                    return keywordCompletion("", "Update", "Select", "Insert", "Delete");
+                    return keywordCompletion("", "Update", "Select", "Insert into", "Delete from");
                 } else if (!beforeCaret.matches("(?is).*,\\s*\\w*")) {
                 	String afterCaret = origStatement.length() > beforeCaret.length()? origStatement.substring(beforeCaret.length()).trim().toUpperCase() : "";
                     switch (clause) {
@@ -668,7 +670,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     case SET: return keywordCompletion(afterCaret, "Where");
                     case GROUP: return keywordCompletion(afterCaret, "Having");
                     case HAVING: return null;
-                    case INTO: return keywordCompletion(afterCaret, "Values", "Select");
+                    case INTO: 
+                    	if (beforeCaret.indexOf('(') <= beforeCaret.indexOf(')')) {
+                    		return keywordCompletion(afterCaret, "Values", "Select");
+                    	}
+                    	break;
                     case JOIN: 
                         break;
                     case ON: return keywordCompletion(afterCaret, "Where", "Group by");
@@ -1655,7 +1661,14 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 			int o = Math.min(caretPosition, 8);
 			doc.getText(caretPosition - o, 1 + o, s);
 			text = s.toString();
-		} catch (BadLocationException ble) { // Never happens
+			if (tc instanceof RSyntaxTextAreaWithSQLSyntaxStyle) {
+				int lso = ((RSyntaxTextAreaWithSQLSyntaxStyle) tc).getLineStartOffsetOfCurrentLine();
+				String line = doc.getText(lso , caretPosition - lso + 1);
+				if (line.matches("(?is)\\s*insert\\s+into [^\\(]+\\(")) {
+					return true;
+				}
+			}
+		} catch (/*BadLocation*/Exception ble) { // Never happens
 			ble.printStackTrace();
 		}
 		return text.matches("(?is).*(\\w|((,|join|on|select|where|from|into)\\s?)|\\*|\\.)");

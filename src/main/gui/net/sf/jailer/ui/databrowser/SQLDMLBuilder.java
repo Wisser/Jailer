@@ -85,9 +85,11 @@ public class SQLDMLBuilder {
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session, session.dbms);
 		Set<String> usedColumns = new HashSet<String>();
 		int anz = 0;
+		List<Integer> maxLength = new ArrayList<>();
 		for (boolean cnt: new boolean[] { true, false }) {
 			int i = 0;
 			int j = 0;
+		 	maxLength.sort((a, b) -> a - b);
 			for (Column column : table.getColumns()) {
 				String value = getSQLLiteral(row.values[i++], cellContentConverter);
 				if (columnToUpdate != i - 1 && columnToUpdate >= 0) {
@@ -103,14 +105,15 @@ public class SQLDMLBuilder {
 					continue;
 				}
 				j++;
+				boolean l = j == anz;
+				String name = quoting.requote(column.name);
+				String line = "    " + name + "=" + value + (l? "" : ", ");
 				if (cnt) {
 					anz++;
+					maxLength.add(line.length());
 				} else {
-					boolean l = j == anz;
 					usedColumns.add(column.name);
-					String name = quoting.requote(column.name);
-					String line = "    " + name + "=" + value + (l? "" : ", ");
-					sql += LF + line + comment(withComments, column, false, line.length());
+					sql += LF + line + comment(withComments, column, false, line.length(), lengthQuantile(maxLength));
 				}
 			}
 		}
@@ -118,7 +121,23 @@ public class SQLDMLBuilder {
 		return sql;
 	}
 
-	private static String comment(boolean withComments, Column column, boolean withName, int colNum) {
+	private static Integer lengthQuantile(List<Integer> maxLength) {
+		int index = (int) (maxLength.size() * 0.5);
+		index = Math.min(maxLength.size() - 1, index);
+		int bestIndex = -1;
+		double best = 0.0;
+		final double K = 8.0;
+		for (int i = index; i < maxLength.size(); ++i) {
+			double v = i - maxLength.get(i) / K;
+			if (v > best || bestIndex < 0) {
+				bestIndex = i;
+				best = v;
+			}
+		}
+		return maxLength.get(bestIndex);
+	}
+
+	private static String comment(boolean withComments, Column column, boolean withName, int colNum, int maxLength) {
 		if (withComments) {
 			String content;
 
@@ -135,8 +154,9 @@ public class SQLDMLBuilder {
 					content = column.toSQL(null).substring(column.name.length()).trim();
 				}
 			}
+			maxLength = Math.min(maxLength, 136); // TODO
 			String indent = " ";
-			while (((colNum - 4 + indent.length()) % 8) != 0) {
+			while (indent.length() + colNum <= maxLength) {
 				indent += " ";
 			}
 			if (!content.isEmpty()) {
@@ -184,9 +204,13 @@ public class SQLDMLBuilder {
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session, session.dbms);
 		final List<Column> columns = table.getColumns();
 		int anz = 0;
+		List<Integer> maxLength = new ArrayList<>();
+		List<Integer> maxValueLength = new ArrayList<>();
 		for (boolean cnt: new boolean[] { true, false }) {
 			int i = 0;
 			int j = 0;
+			maxLength.sort((a, b) -> a - b);
+			maxValueLength.sort((a, b) -> a - b);
 			for (Column column : columns) {
 				String value = getSQLLiteral(row.values[i++], cellContentConverter);
 				if (value == null) {
@@ -199,16 +223,18 @@ public class SQLDMLBuilder {
 					continue;
 				}
 				++j;
+				boolean l = j == anz;
+				String name = quoting.requote(column.name);
+				String line = "    " + name + (l? "" : ",");
+				String valueLine = "    " + value + (l? "" : ",");
 				if (cnt) {
 					anz++;
+					maxLength.add(line.length());
+					maxValueLength.add(valueLine.length());
 				} else {
-					boolean l = j == anz;
 					usedColumns.add(column.name);
-					String name = quoting.requote(column.name);
-					String line = "    " + name + (l? "" : ", ");
-					sql += LF + line + comment(withComments, column, false, line.length());
-					line = "    " + value + (l? "" : ", ");
-					values += LF + line + comment(withComments, column, true, line.length());
+					sql += LF + line + comment(withComments, column, false, line.length(), lengthQuantile(maxLength));
+					values += LF + valueLine + comment(withComments, column, true, valueLine.length(), lengthQuantile(maxValueLength));
 				}
 			}
 		}
