@@ -461,3 +461,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
     private final RSyntaxTextArea sqlTextArea;
 }
+
+// TODO
+// TODO rework "multiline cont." button 
+
