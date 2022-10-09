@@ -1,3 +1,8 @@
+12.7.2
+  - Issue "Laggy SQL Console". https://github.com/Wisser/Jailer/issues/95
+  - Issue "Liquibase export of Oracle RAW-columns fails", https://github.com/Wisser/Jailer/issues/96
+  - SQL Autocompletion has been significantly improved.
+
 12.7.1
   - FlatLAF has been updated to version 2.5.
   - Minor improvements to the GUI.
