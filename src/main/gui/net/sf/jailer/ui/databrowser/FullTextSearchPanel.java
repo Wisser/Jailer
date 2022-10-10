@@ -263,7 +263,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 	private Pattern extSTPattern = null;
 	private String extSTText = null;
 	
-	private String extendesSearchText(String text, String item) {
+	private String extendedSearchText(String text, String item) {
 		String searchText = text.toUpperCase(Locale.ENGLISH);
 		if (!searchText.contains("*") && !searchText.contains("?")) {
 			return searchText.trim();
@@ -330,7 +330,7 @@ public class FullTextSearchPanel extends javax.swing.JPanel {
 					for (int x = 0; x < cc; ++x) {
 						Object v = dm.getValueAt(y, x);
 						if (v != null) {
-							searchTextUC = extendesSearchText(searchText, v.toString().trim());
+							searchTextUC = extendedSearchText(searchText, v.toString().trim());
 						}
 						if (v != null && !v.toString().toUpperCase(Locale.ENGLISH).contains(searchTextUC)) {
 							continue;

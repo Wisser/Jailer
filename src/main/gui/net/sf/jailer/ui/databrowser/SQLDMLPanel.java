@@ -27,8 +27,6 @@ import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -112,21 +110,6 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		sqlTextArea.setText(sql);
 		sqlTextArea.select(0, 0);
 
-		mlmTextField.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				appendMLM(mlmTextField.getText());
-			}
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				appendMLM(mlmTextField.getText());
-			}
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				appendMLM(mlmTextField.getText());
-			}
-		});
-
 		UIUtil.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -151,11 +134,9 @@ public class SQLDMLPanel extends javax.swing.JPanel {
         saveButton = new javax.swing.JButton();
         clipboardButton = new javax.swing.JButton();
         executeButton = new javax.swing.JButton();
+        singleLineCheckBox = new javax.swing.JCheckBox();
         statusLabel = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        mlmTextField = new javax.swing.JTextField();
-        singleLineCheckBox = new javax.swing.JCheckBox();
         sqlConsoleButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
@@ -164,8 +145,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
         clipboardSingleLineButton.setText(" Copy as Single Line ");
         clipboardSingleLineButton.setToolTipText(" Copy the SQL statement as a single line to the clipboard");
         clipboardSingleLineButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clipboardSingleLineButtonActionPerformed(evt);
             }
         });
@@ -176,8 +156,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         saveButton.setText(" Save ");
         saveButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveButtonActionPerformed(evt);
             }
         });
@@ -190,8 +169,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         clipboardButton.setText(" Copy to Clipboard ");
         clipboardButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clipboardButtonActionPerformed(evt);
             }
         });
@@ -203,17 +181,28 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         executeButton.setText(" Execute ");
         executeButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 executeButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(executeButton, gridBagConstraints);
+
+        singleLineCheckBox.setText("single line  ");
+        singleLineCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                singleLineCheckBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        jPanel2.add(singleLineCheckBox, gridBagConstraints);
 
         statusLabel.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -225,34 +214,6 @@ public class SQLDMLPanel extends javax.swing.JPanel {
         jPanel2.add(statusLabel, gridBagConstraints);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
-
-        jLabel1.setText("multi-line continuation  ");
-        jLabel1.setToolTipText("multi-line continuation character");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel4.add(jLabel1, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 16;
-        jPanel4.add(mlmTextField, gridBagConstraints);
-
-        singleLineCheckBox.setText("single line  ");
-        singleLineCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            @Override
-			public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                singleLineCheckBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 0);
-        jPanel4.add(singleLineCheckBox, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -262,13 +223,12 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         sqlConsoleButton.setText("SQL Console");
         sqlConsoleButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sqlConsoleButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
@@ -277,13 +237,12 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         closeButton.setText("Close");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
@@ -349,44 +308,15 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		String mlm = this.mlm;
 		if (singleLineCheckBox.isSelected()) {
 			String lf = System.getProperty("line.separator", "\n");
-			appendMLM("");
 			lastMultiLineSQL = sqlTextArea.getText();
 			String EOL = "EOL498503458430EOL";
 			sqlTextArea.setText(lastMultiLineSQL.replaceAll(";(\n|\r)", EOL).replaceAll(" *(\n|\r)+ *", " ").replaceAll(EOL + " *", ";" + lf));
-			appendMLM(mlm);
 		} else {
 			sqlTextArea.setText(lastMultiLineSQL);
 			this.mlm = "";
-			appendMLM(mlm);
 		}
 		sqlTextArea.setCaretPosition(0);
 	}//GEN-LAST:event_singleLineCheckBoxItemStateChanged
-
-	private void appendMLM(String mlm) {
-		mlm = mlm.trim();
-		if (mlm.length() > 1) {
-			mlm = mlm.substring(0, 1);
-		}
-		if (this.mlm.equals(mlm)) {
-			return;
-		}
-		if (this.mlm.length() > 0) {
-			String omlm = this.mlm;
-			if ("\\|[]()^-$".indexOf(omlm) >= 0) {
-				omlm = "\\" + omlm;
-			}
-			sqlTextArea.setText(sqlTextArea.getText().replaceAll(" " + omlm + "([\n\r])", "$1"));
-			sqlTextArea.select(0, 0);
-		}
-		this.mlm = mlm;
-		if (mlm.length() > 0) {
-			if ("\\".equals(mlm) || "$".equals(mlm)) {
-				mlm = "\\" + mlm;
-			}
-			sqlTextArea.setText(sqlTextArea.getText().replaceAll("([^\n\r;])([\n\r])", "$1 " + mlm + "$2"));
-			sqlTextArea.select(0, 0);
-		}
-	}
 
 	private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
 		if (!UIUtil.canRunJailer()) {
@@ -447,12 +377,10 @@ public class SQLDMLPanel extends javax.swing.JPanel {
     private javax.swing.JButton clipboardSingleLineButton;
     private javax.swing.JButton closeButton;
     private javax.swing.JButton executeButton;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JTextField mlmTextField;
     private javax.swing.JButton saveButton;
     private javax.swing.JCheckBox singleLineCheckBox;
     private javax.swing.JButton sqlConsoleButton;
@@ -461,7 +389,3 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
     private final RSyntaxTextArea sqlTextArea;
 }
-
-// TODO
-// TODO rework "multiline cont." button 
-

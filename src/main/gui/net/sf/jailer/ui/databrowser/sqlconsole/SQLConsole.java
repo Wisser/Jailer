@@ -3753,18 +3753,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
-	// TODO
-	// TODO "Create SQL" not available, "Create SQL all rows": "...Where 1;"
-//	Select distinct FILM_ACTOR.ACTOR_ID, FILM_ACTOR.FILM_ID, FILM_ACTOR.LAST_UPDATE
-//	From 
-//	     FILM_ACTOR
-//	       Join FILM on FILM.FILM_ID=FILM_ACTOR.FILM_ID
-//	         Left Join INVENTORY on INVENTORY.FILM_ID=FILM.FILM_ID
-//	           Left Join RENTAL on RENTAL.INVENTORY_ID=INVENTORY.INVENTORY_ID
-//	             Left Join STAFF on STAFF.STAFF_ID=RENTAL.STAFF_ID
-//	       Left Join ACTOR on ACTOR.ACTOR_ID=FILM_ACTOR.ACTOR_ID
-//	;
-	
     // TODO StringSearch component for historie (and than inc hist size a lot)
     
     // TODO automatically generated SQL statements from Desktop like:

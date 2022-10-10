@@ -448,13 +448,14 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		for (int i = 0; i < size; ++i) {
 			String item = model.getElementAt(i);
 			if (!item.isEmpty()) {
-				String searchText = extendesSearchText(text, item);
+				String searchText = extendedSearchText(text, item).toUpperCase(Locale.ENGLISH);
+				final String itemUpperCase = item.toUpperCase(Locale.ENGLISH);
 				if (!filter
 						|| searchText.isEmpty() 
-						|| withPrefix && withSuffix && item.toUpperCase(Locale.ENGLISH).contains(searchText)
-						|| !withPrefix && withSuffix && item.toUpperCase(Locale.ENGLISH).startsWith(searchText)
-						|| withPrefix && !withSuffix && item.toUpperCase(Locale.ENGLISH).endsWith(searchText)
-						|| !withPrefix && !withSuffix && item.toUpperCase(Locale.ENGLISH).equals(searchText)
+						|| withPrefix && withSuffix && itemUpperCase.contains(searchText)
+						|| !withPrefix && withSuffix && itemUpperCase.startsWith(searchText)
+						|| withPrefix && !withSuffix && itemUpperCase.endsWith(searchText)
+						|| !withPrefix && !withSuffix && itemUpperCase.equals(searchText)
 						) {
 					if (!searchText.isEmpty() && !allowDuplicates) {
 						if (seen.contains(item)) {
@@ -658,7 +659,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					hlColor = "#ff9999";
 				}
 				String item = value.toString().trim();
-				String search = extendesSearchText(searchTextField.getText(), item);
+				String search = extendedSearchText(searchTextField.getText(), item).toUpperCase(Locale.ENGLISH);
 				int i = searchTextField.getText().endsWith(" ")? item.toUpperCase(Locale.ENGLISH).lastIndexOf(search) : item.toUpperCase(Locale.ENGLISH).indexOf(search);
 				if (i >= 0) {
 					i = Math.min(i, item.length());
@@ -1301,7 +1302,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private Pattern extSTPattern = null;
 	private String extSTText = null;
 	
-	private String extendesSearchText(String text, String item) {
+	private String extendedSearchText(String text, String item) {
 		String searchText = text.toUpperCase(Locale.ENGLISH);
 		if (!searchText.contains("*") && !searchText.contains("?")) {
 			return searchText.trim();

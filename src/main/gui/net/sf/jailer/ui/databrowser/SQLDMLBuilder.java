@@ -154,9 +154,7 @@ public class SQLDMLBuilder {
 					content = column.toSQL(null).substring(column.name.length()).trim();
 				}
 			}
-			maxLength = Math.min(maxLength, 74); 
-			// TODO
-			// TODO test with large DModel + 50% comments should always be visible in SQLDMLPanel
+			maxLength = Math.min(maxLength, 64);
 			String indent = " ";
 			while (indent.length() + colNum <= maxLength) {
 				indent += " ";
