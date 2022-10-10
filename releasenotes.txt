@@ -1,3 +1,7 @@
+12.7.3
+  - Fixed an issue with the full text search.
+  - Fixed an issue with the DML generator in the SQL console.
+
 12.7.2
   - Issue "Laggy SQL Console". https://github.com/Wisser/Jailer/issues/95
   - Issue "Liquibase export of Oracle RAW-columns fails", https://github.com/Wisser/Jailer/issues/96
