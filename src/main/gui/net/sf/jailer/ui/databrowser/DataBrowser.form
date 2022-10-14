@@ -300,7 +300,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="bookmarkMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Bookmark"/>
+            <Property name="text" type="java.lang.String" value="Arrangement"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="addBookmarkMenuItem">
@@ -308,7 +308,7 @@
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
                   <KeyStroke key="Ctrl+B"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Add Bookmark"/>
+                <Property name="text" type="java.lang.String" value="Add Desktop Arrangement"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addBookmarkMenuItemActionPerformed"/>
@@ -316,7 +316,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="editBookmarkMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Edit Bookmarks"/>
+                <Property name="text" type="java.lang.String" value="Edit Desktop Arrangements"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editBookmarkMenuItemActionPerformed"/>

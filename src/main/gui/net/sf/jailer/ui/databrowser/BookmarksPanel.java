@@ -55,9 +55,7 @@ import net.sf.jailer.ui.util.UISettings;
  * @author Ralf Wisser
  */
 @SuppressWarnings("serial")
-public class BookmarksPanel extends javax.swing.JPanel {
-
-	public static final String BOOKMARKFILE_EXTENSION = ".dbl";
+public class BookmarksPanel extends javax.swing.JPanel {public static final String BOOKMARKFILE_EXTENSION = ".dbl";
 	private final Frame owner;
 	private final Desktop desktop;
 	private EscapableDialog dialog;
@@ -90,7 +88,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 	}
 
 	public String newBookmark(String defaultName) {
-    	dialog = new EscapableDialog(owner, "New Bookmark") {
+    	dialog = new EscapableDialog(owner, "New Desktop Arrangement") {
         };
         dialog.addWindowListener(new WindowAdapter() {
 			@Override
@@ -114,7 +112,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 		nameTextField.setText(defaultName);
  		okButton.grabFocus();
  		isOk = false;
- 		closeButton.setVisible(false);
+ 		okButton.setText("Add");
  		dialog.setVisible(true);
  		
  		String name = UIUtil.toValidFileName(nameTextField.getText());
@@ -131,7 +129,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
     }
 
 	public void editBookmarks() {
-		dialog = new EscapableDialog(owner, "Edit Bookmarks") {
+		dialog = new EscapableDialog(owner, "Edit Desktop Arrangements") {
         };
         dialog.setModal(true);
  		dialog.getContentPane().add(this);
@@ -143,7 +141,6 @@ public class BookmarksPanel extends javax.swing.JPanel {
  		nameTextField.setVisible(false);
  		jLabel1.setVisible(false);
  		okButton.setVisible(false);
- 		closeButton.setText(" Close ");
  		
  		ListEditor<StringBuilder> tableEditor = createListEditor(true);
 		tableEditor.forUpdateAndDeleteOnly();
@@ -167,7 +164,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 	}
 
 	private ListEditor<StringBuilder> createListEditor(final boolean forRenaming) {
-		return new ListEditor<StringBuilder>(new String[] { "Name" }, "Bookmark", false, false, true) {
+		return new ListEditor<StringBuilder>(new String[] { "Arrangement" }, "", false, false, true) {
 
 			@Override
 			protected String getDisplayName(StringBuilder element) {
@@ -220,6 +217,7 @@ public class BookmarksPanel extends javax.swing.JPanel {
 
 			protected void onElementClicked(StringBuilder element) {
 				nameTextField.setText(getDisplayName(element));
+				okButton.setText("Update");
 			}
 			
 			protected void onDoubleClick(StringBuilder element) {
@@ -300,7 +298,6 @@ public class BookmarksPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(8, 2, 8, 2);
         add(nameTextField, gridBagConstraints);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Bookmarks"));
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

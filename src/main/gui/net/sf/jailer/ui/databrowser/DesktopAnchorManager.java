@@ -280,10 +280,13 @@ public abstract class DesktopAnchorManager {
 		MouseMotionListener showButton = new MouseAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				if (isAvailable() && SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), tableBrowser.internalFrame).getX() < 34) {
-					anchorButton.setEnabled(isApplicable(tableBrowser));
-					reset();
-					showButton(tableBrowser);
+				if (isAvailable()) {
+					double dx = SwingUtilities.convertPoint(e.getComponent(), e.getX(), e.getY(), tableBrowser.internalFrame).getX();
+					if (dx <= 180) {
+						anchorButton.setEnabled(isApplicable(tableBrowser));
+						reset();
+						showButton(tableBrowser);
+					}
 				}
 			}
 		};

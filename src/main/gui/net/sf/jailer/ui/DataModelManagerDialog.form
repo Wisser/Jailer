@@ -775,8 +775,8 @@
                     <Container class="javax.swing.JPanel" name="bookmarkPanel">
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                          <JTabbedPaneConstraints tabName="Bookmark">
-                            <Property name="tabTitle" type="java.lang.String" value="Bookmark"/>
+                          <JTabbedPaneConstraints tabName="Desktop Arrangement">
+                            <Property name="tabTitle" type="java.lang.String" value="Desktop Arrangement"/>
                           </JTabbedPaneConstraints>
                         </Constraint>
                       </Constraints>
@@ -845,8 +845,8 @@
                     <Container class="javax.swing.JPanel" name="recentlyUsedBookmarkPanel">
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-                          <JTabbedPaneConstraints tabName="Recently used Bookmark">
-                            <Property name="tabTitle" type="java.lang.String" value="Recently used Bookmark"/>
+                          <JTabbedPaneConstraints tabName="Recently used Desktop Arrangement">
+                            <Property name="tabTitle" type="java.lang.String" value="Recently used Desktop Arrangement"/>
                           </JTabbedPaneConstraints>
                         </Constraint>
                       </Constraints>
@@ -854,13 +854,6 @@
                       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
                       <SubComponents>
                         <Container class="javax.swing.JPanel" name="borderPanel1">
-                          <Properties>
-                            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                              <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                                <TitledBorder title="Bookmarks"/>
-                              </Border>
-                            </Property>
-                          </Properties>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
                               <GridBagConstraints gridX="0" gridY="10" gridWidth="3" gridHeight="1" fill="1" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="1.0" weightY="1.0"/>

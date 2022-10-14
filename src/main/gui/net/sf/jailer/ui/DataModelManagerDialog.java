@@ -191,16 +191,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"\n \n \n",
 				"Select a database to work with.");
 
-		infoBarBookmark = new DMMDInfoBar("Bookmark",
-				"Select a bookmark to open.\n" +
+		infoBarBookmark = new DMMDInfoBar("Desktop Arrangement",
+				"Select an arrangement to open.\n" +
 				"\n \n \n",
-				"Select a bookmark.");
+				"Select an arrangement.");
 		UIUtil.replace(infoBarLabelBookmark, infoBarBookmark);
 
-		infoBarRecUsedBookmark = new DMMDInfoBar("Recently used Bookmark",
-				"Select a recently used bookmark to open.\n" +
+		infoBarRecUsedBookmark = new DMMDInfoBar("Recently used Desktop Arrangement",
+				"Select a recently used arrangement to open.\n" +
 				"\n \n \n",
-				"Select a bookmark.");
+				"Select an arrangement.");
 		UIUtil.replace(infoBarLabeRecUsedlBookmark, infoBarRecUsedBookmark);
 
 		restoreButton.setIcon(UIUtil.scaleIcon(restoreButton, histIcon));
@@ -1133,8 +1133,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 		DefaultTableModel tableModel = new DefaultTableModel(data,
 				onlyRecentlyUsed?
-						new String[] {"Bookmark", "Data Model", "Connection", "User", "URL", "Time"}
-							: new String[] { "Bookmark", "Data Model", "Connection", "User", "URL" }) {
+						new String[] {"Desktop Arrangement", "Data Model", "Connection", "User", "URL", "Time"}
+							: new String[] { "Desktop Arrangement", "Data Model", "Connection", "User", "URL" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
@@ -2322,11 +2322,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 2);
         bookmarkPanel.add(bmOkButton, gridBagConstraints);
 
-        jTabbedPane1.addTab("Bookmark", bookmarkPanel);
+        jTabbedPane1.addTab("Desktop Arrangement", bookmarkPanel);
 
         recentlyUsedBookmarkPanel.setLayout(new java.awt.GridBagLayout());
 
-        borderPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Bookmarks"));
         borderPanel1.setLayout(new java.awt.GridBagLayout());
 
         bookmarkRecUsedDialogPanel.setLayout(new java.awt.BorderLayout());
@@ -2383,7 +2382,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 2);
         recentlyUsedBookmarkPanel.add(bmRecUsedOkButton, gridBagConstraints);
 
-        jTabbedPane1.addTab("Recently used Bookmark", recentlyUsedBookmarkPanel);
+        jTabbedPane1.addTab("Recently used Desktop Arrangement", recentlyUsedBookmarkPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

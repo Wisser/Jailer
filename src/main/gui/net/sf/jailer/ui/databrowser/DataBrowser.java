@@ -1033,7 +1033,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		desktop.addMouseMotionListener(new MouseMotionListener() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				double minDist = 30;
+				double minDist = 40;
 				minDist *= minDist;
 				RowBrowser nearest = null;
 				for (RowBrowser br : desktop.getBrowsers()) {
@@ -2551,10 +2551,10 @@ public class DataBrowser extends javax.swing.JFrame {
 
         menuBar.add(jviewMenu);
 
-        bookmarkMenu.setText("Bookmark");
+        bookmarkMenu.setText("Arrangement");
 
         addBookmarkMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_B, java.awt.event.InputEvent.CTRL_MASK));
-        addBookmarkMenuItem.setText("Add Bookmark");
+        addBookmarkMenuItem.setText("Add Desktop Arrangement");
         addBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addBookmarkMenuItemActionPerformed(evt);
@@ -2562,7 +2562,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         bookmarkMenu.add(addBookmarkMenuItem);
 
-        editBookmarkMenuItem.setText("Edit Bookmarks");
+        editBookmarkMenuItem.setText("Edit Desktop Arrangements");
         editBookmarkMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editBookmarkMenuItemActionPerformed(evt);
