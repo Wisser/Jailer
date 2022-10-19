@@ -1309,7 +1309,7 @@ public class UIUtil {
 	/**
 	 * Background color of even table rows in closure.
 	 */
-	public static final Color TABLE_BACKGROUND_COLOR_1_INCLOSURE = new Color(195, 235, 255);
+	public static final Color TABLE_BACKGROUND_COLOR_1_INCLOSURE = new Color(196, 236, 255);
 
 	/**
 	 * Background color of odd table rows in closure.
