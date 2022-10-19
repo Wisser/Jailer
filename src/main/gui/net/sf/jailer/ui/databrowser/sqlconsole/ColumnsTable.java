@@ -57,7 +57,6 @@ import javax.swing.table.TableModel;
 
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
-import net.sf.jailer.ui.databrowser.DetailsView;
 import net.sf.jailer.ui.databrowser.Row;
 
 /**
@@ -263,10 +262,10 @@ public class ColumnsTable extends JTable {
 					if (column == 0) {
 						((JLabel) render).setBackground(BGCOLUMNS);
 						if (ColumnsTable.this.inClosure && !inTempClosure()) {
-							((JLabel) render).setBackground(row % 2 == 0? DetailsView.BG3 : DetailsView.BG3_2);
+							((JLabel) render).setBackground(row % 2 == 0? UIUtil.TABLE_BACKGROUND_COLOR_1_INCLOSURE : UIUtil.TABLE_BACKGROUND_COLOR_2_INCLOSURE);
 						}
 					} else if (ColumnsTable.this.inDesktop && !"final".equals(render.getName())) {
-						((JLabel) render).setBackground(row % 2 == 0? DetailsView.BG1 : DetailsView.BG2);
+						((JLabel) render).setBackground(row % 2 == 0? UIUtil.TABLE_BACKGROUND_COLOR_1 : UIUtil.TABLE_BACKGROUND_COLOR_2);
 					} else if (column - 1 == currentColumn && !"final".equals(render.getName())) {
 						((JLabel) render).setBackground(BGSELECTED);
 					}

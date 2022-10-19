@@ -1307,6 +1307,16 @@ public class UIUtil {
 	public static final Color TABLE_BACKGROUND_COLOR_2 = new Color(255, 255, 255);
 
 	/**
+	 * Background color of even table rows in closure.
+	 */
+	public static final Color TABLE_BACKGROUND_COLOR_1_INCLOSURE = new Color(195, 235, 255);
+
+	/**
+	 * Background color of odd table rows in closure.
+	 */
+	public static final Color TABLE_BACKGROUND_COLOR_2_INCLOSURE = new Color(208, 245, 255);
+
+	/**
 	 * Color of FLAT borders.
 	 */
 	public static final Color FLAT_BORDER_COLOR =  new Color(220, 220, 220);
