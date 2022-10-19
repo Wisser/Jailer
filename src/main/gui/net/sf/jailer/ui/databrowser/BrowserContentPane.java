@@ -1402,8 +1402,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 			final Color BG1_EM = new Color(255, 242, 240);
 			final Color BG2_EM = new Color(255, 236, 236);
-			final Color BG3 = new Color(190, 230, 255);
-			final Color BG3_2 = new Color(204, 240, 255);
+			final Color BG3 = new Color(195, 235, 255);
+			final Color BG3_2 = new Color(208, 245, 255);
 			final Color BG4 = BG3; // new Color(122, 210, 255, 200);
 			final Color BG4_2 = BG3_2; // = new Color(120, 196, 255, 200);
 			final Color BG4_LIGHT = new Color(80, 200, 255, 200);
