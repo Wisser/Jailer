@@ -262,12 +262,11 @@ public class ColumnsTable extends JTable {
 				if (render instanceof JLabel) {
 					if (column == 0) {
 						((JLabel) render).setBackground(BGCOLUMNS);
-					} else if (ColumnsTable.this.inDesktop && !"final".equals(render.getName())) {
 						if (ColumnsTable.this.inClosure && !inTempClosure()) {
 							((JLabel) render).setBackground(row % 2 == 0? DetailsView.BG3 : DetailsView.BG3_2);
-						} else {
-							((JLabel) render).setBackground(row % 2 == 0? DetailsView.BG1 : DetailsView.BG2);
 						}
+					} else if (ColumnsTable.this.inDesktop && !"final".equals(render.getName())) {
+						((JLabel) render).setBackground(row % 2 == 0? DetailsView.BG1 : DetailsView.BG2);
 					} else if (column - 1 == currentColumn && !"final".equals(render.getName())) {
 						((JLabel) render).setBackground(BGSELECTED);
 					}
