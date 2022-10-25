@@ -553,10 +553,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         final TableCellRenderer defaultTableCellRenderer = closureTable.getDefaultRenderer(String.class);
         closureTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
             private Font font = new JLabel("normal").getFont();
-            private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-            private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-            private Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
-            private Font italicBold = new Font(font.getName(), font.getStyle() | Font.ITALIC | Font.BOLD, font.getSize());
+            private Font normal = font.deriveFont(font.getStyle() & ~Font.BOLD);
+            private Font bold = font.deriveFont(font.getStyle() | Font.BOLD);
+            private Font italic = font.deriveFont(font.getStyle() | Font.ITALIC);
 
             @Override
 			public Component getTableCellRendererComponent(JTable table,

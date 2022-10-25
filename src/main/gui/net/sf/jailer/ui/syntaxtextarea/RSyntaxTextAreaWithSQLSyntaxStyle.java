@@ -289,7 +289,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			currentFontSize = Math.max(currentFontSize, 4);
 			currentFontSize = Math.min(currentFontSize, 4 * initialFontSize);
 		}
-		setFont(new Font(getFont().getName(), getFont().getStyle(), currentFontSize.intValue()));
+		setFont(getFont().deriveFont(getFont().getStyle(), currentFontSize.intValue()));
 	}
 
 	private ImageIcon scaleToLineHeight(ImageIcon imageIcon) {

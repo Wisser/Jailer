@@ -1149,7 +1149,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
         Font font = outlineLabel.getFont();
         if (font != null) {
-            Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+            Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
             outlineLabel.setFont(bold);
         }
     }

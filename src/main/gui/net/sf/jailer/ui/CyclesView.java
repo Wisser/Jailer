@@ -225,8 +225,8 @@ public class CyclesView extends javax.swing.JDialog {
 		final TableCellRenderer defaultTableCellRenderer = cyclesTable.getDefaultRenderer(String.class);
 		cyclesTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 			private Font font = new JLabel("normal").getFont();
-			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-			private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+			private Font normal = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
+			private Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
 			
 			@Override
 			public Component getTableCellRendererComponent(JTable table,

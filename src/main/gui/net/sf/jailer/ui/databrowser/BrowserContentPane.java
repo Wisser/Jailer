@@ -1410,8 +1410,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color FG1 = UIUtil.FG_PK;
 			final Color FG2 = UIUtil.FG_FK;
 			final Font font = new JLabel().getFont();
-			final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-			final Font italic = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC, nonbold.getSize());
+			final Font nonbold = font.deriveFont(font.getStyle() & ~Font.BOLD);
+			final Font italic = font.deriveFont(nonbold.getStyle() | Font.ITALIC);
 
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, final int row, final int column) {
@@ -1450,7 +1450,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						return render;
 					}
 				}
-
 				boolean renderRowAsPK = false;
 				if (render instanceof JLabel) {
 					render.setName("");
@@ -3891,7 +3890,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (association == child.association &&
 						(child.browserContentPane.getAndConditionText().trim().length() == 0
 						|| child.browserContentPane.getAndConditionText().trim().equals(countCondition))) {
-					item.setFont(new Font(item.getFont().getName(), item.getFont().getStyle() | Font.ITALIC, item.getFont().getSize()));
+					item.setFont(item.getFont().deriveFont(item.getFont().getStyle() | Font.ITALIC));
 					excludeFromANEmpty = true;
 					break;
 				}
@@ -7851,3 +7850,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 	
 }
+
+
+// TODO 
+// TODO bg-alternation: (i / 2) % 2 == 0 instead of i % 2 == 0?

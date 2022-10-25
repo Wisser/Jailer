@@ -768,7 +768,7 @@ public class GraphicalDataModelView extends JPanel {
 				if (!visualizable.contains(a)) {
 					if (italic == null) {
 						Font font = new JLabel().getFont();
-						italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
+						italic = font.deriveFont(font.getStyle() | Font.ITALIC, font.getSize());
 					}
 					mi.setFont(italic);
 				}

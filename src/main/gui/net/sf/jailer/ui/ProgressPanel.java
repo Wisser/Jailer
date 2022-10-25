@@ -45,8 +45,8 @@ import net.sf.jailer.database.DMLTransformer;
  */
 public class ProgressPanel extends javax.swing.JPanel {
 	private Font font = new JLabel("normal").getFont();
-	private Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-	private Font nonboldbig = new Font(font.getName(), font.getStyle() & ~Font.BOLD, (font.getSize() * 14) / 10);
+	private Font nonbold = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
+	private Font nonboldbig = font.deriveFont(font.getStyle() & ~Font.BOLD, (font.getSize() * 14) / 10);
 	private final ProgressTable progressTable;
 	private final ProgressTable deleteProgressTable;
 

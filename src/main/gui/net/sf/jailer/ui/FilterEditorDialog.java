@@ -697,12 +697,12 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	/**
 	 * Bold font.
 	 */
-	private Font boldFont = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+	private Font boldFont = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
 
 	/**
 	 * Non-bold font.
 	 */
-	private Font nonBoldFont = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
+	private Font nonBoldFont = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
 
 	/**
 	 * Maps columns to the text-field with which to edit the filter expression.

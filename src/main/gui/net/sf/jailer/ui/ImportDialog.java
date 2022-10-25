@@ -76,7 +76,7 @@ public class ImportDialog extends javax.swing.JDialog {
 		this.importFile.setToolTipText(new File(importFile).getAbsolutePath());
 
 		final Font font = this.importFile.getFont();
-		final Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+		final Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
 		this.importFile.setFont(bold);
 
 		initIsolationLevel();

@@ -1887,7 +1887,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         try {
                             synchronized (Status.this) {
                                 Font font = new JLabel("X").getFont();
-                                statusLabel.setFont(new Font(font.getName(), font.getStyle(), (font.getSize() * 14) / 10));
+                                statusLabel.setFont(font.deriveFont(font.getStyle(), (font.getSize() * 14) / 10));
                                 statusLabel.setVisible(false);
                                 cancelButton.setEnabled(false);
                                 if (!failed) {

@@ -106,8 +106,8 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
 
         JLabel jLabel = new JLabel("normal");
 		Font font = jLabel.getFont();
-        Font boldFont = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-        italicFont = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
+        Font boldFont = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
+        italicFont = font.deriveFont(font.getStyle() | Font.ITALIC, font.getSize());
 		tableLabel.setFont(boldFont);
 
 		length = graphView.getHeight() / (getFontMetrics(font).getHeight() + 2) - 12;

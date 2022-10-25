@@ -600,8 +600,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 	private final Color BGCOLOR_OF_SELECTED_ROW = Color.CYAN;
 	private Font font = new JLabel("normal").getFont();
-	private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-	private Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
+	private Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
+	private Font nonbold = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
 
 	private JComponent createLabel(final Node node, final int y, String text, String tooltip, boolean shorten, final boolean firstOfGroup, Color bgColor, Color fgColor, boolean selected, boolean addListener) {
 		final JPanel panel = new JPanel() {

@@ -502,9 +502,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		final TableCellRenderer defaultTableCellRenderer = closureTable.getDefaultRenderer(String.class);
 		closureTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 			private Font font = new JLabel("normal").getFont();
-			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-			private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-			// private Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
+			private Font normal = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
+			private Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
 
 			@Override
 			public Component getTableCellRendererComponent(JTable table,
@@ -2037,7 +2036,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
 	private static final long serialVersionUID = 5485949274233292142L;
 	private Font normalfont = new JLabel("normal").getFont();
-	private Font nonbold = new Font(normalfont.getName(), normalfont.getStyle() & ~Font.BOLD, normalfont.getSize());
+	private Font nonbold = normalfont.deriveFont(normalfont.getStyle() & ~Font.BOLD, normalfont.getSize());
 
     public void adjustTableColumnsWidth(JTable table) {
 		DefaultTableModel dtm = (DefaultTableModel) table.getModel();

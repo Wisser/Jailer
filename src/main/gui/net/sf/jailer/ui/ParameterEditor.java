@@ -41,12 +41,12 @@ public class ParameterEditor extends javax.swing.JDialog {
 	/**
 	 * Non-bold font.
 	 */
-	private Font nonBoldFont = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
+	private Font nonBoldFont = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
 	
 	/**
 	 * Non-bold font + italic.
 	 */
-	private Font nonBoldItalicFont = new Font(font.getName(), font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize());
+	private Font nonBoldItalicFont = font.deriveFont(font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize());
 	
 	/**
 	 * Maps parameters to the text-field.

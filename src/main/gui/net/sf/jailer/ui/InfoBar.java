@@ -33,8 +33,8 @@ public class InfoBar extends JPanel {
 
 	private static final long serialVersionUID = -6737420167295938488L;
 	private final Font font = new JLabel().getFont();
-	private final Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-	private final Font big = new Font(font.getName(), font.getStyle() | Font.BOLD, (int) (font.getSize() * 1.3));
+	private final Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
+	private final Font big = font.deriveFont(font.getStyle() | Font.BOLD, (int) (font.getSize() * 1.3));
 	private final String titel;
 	private final String message;
 	private final String footer;

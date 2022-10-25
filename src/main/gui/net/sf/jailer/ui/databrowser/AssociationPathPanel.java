@@ -55,7 +55,7 @@ public class AssociationPathPanel extends javax.swing.JPanel {
     public AssociationPathPanel(DataModel dataModel, List<Table> path, Color depOnColor, Color hasDepColor, Color assocColor, Color ignoredColor) {
         initComponents();
         Font font = new JLabel("normal").getFont();
-		Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+		Font bold = font.deriveFont(font.getStyle() | Font.BOLD);
 		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));

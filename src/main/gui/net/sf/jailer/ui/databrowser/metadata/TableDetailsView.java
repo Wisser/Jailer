@@ -159,8 +159,8 @@ public class TableDetailsView extends javax.swing.JPanel {
 		});
 		updateColumnsTable = new Runnable() {
         	final Font font = new JLabel().getFont();
-			final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-			final Font italic = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC, nonbold.getSize());
+			final Font nonbold = font.deriveFont(font.getStyle() & ~Font.BOLD);
+			final Font italic = font.deriveFont(nonbold.getStyle() | Font.ITALIC);
 			
 			@Override
 			public void run() {
@@ -174,7 +174,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 		        }
 				tableNameLabel.setText(typeLabel + dataModel.getDisplayName(table));
 		        Font font = new JLabel("L").getFont();
-				tableNameLabel.setFont(new Font(font.getName(), font.getStyle(), (int)(font.getSize() * 1.2)));
+				tableNameLabel.setFont(font.deriveFont((int)(font.getSize() * 1.2)));
 		
 				boolean mdTableIsUpTodate = true;
 				if (mdTable != null) {

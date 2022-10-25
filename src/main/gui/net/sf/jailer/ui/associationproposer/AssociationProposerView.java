@@ -119,7 +119,7 @@ public class AssociationProposerView extends javax.swing.JPanel {
 		};
 		
 		Font infoFont = jinfoLabe.getFont();
-		infoFont = new Font(infoFont.getName(), infoFont.getStyle(), (int) (infoFont.getSize() * 1.2));
+		infoFont = infoFont.deriveFont(infoFont.getStyle(), (int) (infoFont.getSize() * 1.2));
 		jinfoLabe.setFont(infoFont);
 	
 		try {

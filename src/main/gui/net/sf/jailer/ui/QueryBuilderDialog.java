@@ -444,8 +444,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	/**
 	 * Non-bold font.
 	 */
-	private Font nonBoldFont = new Font(font.getName(), font.getStyle()
-			& ~Font.BOLD, font.getSize());
+	private Font nonBoldFont = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
 
 	/**
 	 * Subject of query.

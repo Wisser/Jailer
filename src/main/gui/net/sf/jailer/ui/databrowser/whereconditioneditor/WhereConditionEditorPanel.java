@@ -240,7 +240,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 		jPanel6.add(clearButton, gridBagConstraints);
 
         font = tableLabel.getFont();
-		tableLabel.setFont(new Font(font.getName(), font.getStyle() | Font.BOLD, (int)(font.getSize() /* * 1.2 */)));
+		tableLabel.setFont(font.deriveFont(font.getStyle() | Font.BOLD, (int)(font.getSize() /* * 1.2 */)));
 		tableLabel.setIcon(tableIcon);
 		if (closeButton != null) {
 			gridBagConstraints = new java.awt.GridBagConstraints();
@@ -893,7 +893,7 @@ public abstract class WhereConditionEditorPanel extends javax.swing.JPanel {
 			JPanel namePanel = new JPanel(new GridBagLayout());
 			namePanel.setOpaque(false);
 			JLabel nameLabel = new JLabel();
-	        nameLabel.setFont(new Font(font.getName(), font.getStyle() & ~Font.BOLD, (int)(font.getSize() /* * 1.2 */)));
+	        nameLabel.setFont(font.deriveFont(font.getStyle() & ~Font.BOLD, (int)(font.getSize() /* * 1.2 */)));
 			nameLabel.setText(columnLabel(comparison.column));
 			nameLabel.setToolTipText(columnToolTip(comparison.column));
 	        

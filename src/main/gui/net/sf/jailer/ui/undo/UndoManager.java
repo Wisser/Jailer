@@ -178,9 +178,9 @@ public class UndoManager {
 		if (!protocol.isEmpty()) {
 			Font font = new JLabel("normal").getFont();
 			font = font.deriveFont(font.getSize() * 1.1f);
-		    Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-		    Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
-		    Font italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
+		    Font normal = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
+		    Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
+		    Font italic = font.deriveFont(font.getStyle() | Font.ITALIC, font.getSize());
 
 			int y = 1;
 

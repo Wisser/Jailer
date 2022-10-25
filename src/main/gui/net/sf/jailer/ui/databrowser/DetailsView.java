@@ -215,8 +215,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	}
 
 	private static final Font font = new JLabel().getFont();
-	private static final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize()); 
-	private static final Font italic = new Font(font.getName(), font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize()); 
+	private static final Font nonbold = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize()); 
+	private static final Font italic = font.deriveFont(font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize()); 
 	private static final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
 	private static final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
 	public static final Color FG1 = new Color(155, 0, 0);

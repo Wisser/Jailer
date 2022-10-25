@@ -205,8 +205,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private boolean located = false;
 	
 	private Font font =  new JLabel("normal").getFont();
-	private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-    private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+	private Font normal = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
+    private Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
 	private Map<String, Date> aliasTimestamp = new HashMap<String, Date>();
 	private boolean ok;
 	

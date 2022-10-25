@@ -196,9 +196,9 @@ public class ProgressTable extends JTable {
 
 		setDefaultRenderer(Object.class, new TableCellRenderer() {
 			private Font font = new JLabel("normal").getFont();
-			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-			private Font kursiv = new Font(font.getName(), (font.getStyle() & ~Font.BOLD) | Font.ITALIC, font.getSize());
-			private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+			private Font normal = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
+			private Font kursiv = font.deriveFont((font.getStyle() & ~Font.BOLD) | Font.ITALIC, font.getSize());
+			private Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
 
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

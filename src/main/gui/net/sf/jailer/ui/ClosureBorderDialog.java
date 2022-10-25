@@ -66,7 +66,7 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
 		};
 		
 		rootNameLabel.setFont(
-				new Font(rootNameLabel.getFont().getName(),
+				rootNameLabel.getFont().deriveFont(
 						rootNameLabel.getFont().getStyle() | Font.BOLD,
 						rootNameLabel.getFont().getSize()));
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();

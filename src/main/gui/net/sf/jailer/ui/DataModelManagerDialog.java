@@ -140,8 +140,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private final String module; // TODO define module enum
 	
 	private Font font =  new JLabel("normal").getFont();
-	private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-    private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+	private Font normal = font.deriveFont(font.getStyle() & ~Font.BOLD, font.getSize());
+    private Font bold = font.deriveFont(font.getStyle() | Font.BOLD, font.getSize());
 
     private SmallButton moduleDataBrowserToggleButton;
     private SmallButton moduleSubsetterToggleButton;
