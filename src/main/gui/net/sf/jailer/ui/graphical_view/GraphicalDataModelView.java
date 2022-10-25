@@ -2167,9 +2167,9 @@ public class GraphicalDataModelView extends JPanel {
 		queryBuilderDialog.sqlEditButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final DataBrowser dataBrowser = modelEditor.extractionModelFrame.openDataBrowser(root, "");
-				SQLConsole sqlConsole = dataBrowser.getSqlConsole(true);
+				DataBrowser dataBrowser = modelEditor.extractionModelFrame.openDataBrowser(root, "");
 				if (dataBrowser != null) {
+					SQLConsole sqlConsole = dataBrowser.getSqlConsole(true);
 					UIUtil.invokeLater(28, () -> {
 						sqlConsole.appendStatement(queryBuilderDialog.getSQL() + UIUtil.LINE_SEPARATOR + ";", true);
 					});
