@@ -3422,7 +3422,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			dataModel.save(file, stable, new SubjectLimitDefinition(null, null), subjectCondition, ScriptFormat.SQL, restrictionDefinitions, positions, new ArrayList<ExtractionModel.AdditionalSubject>(), currentModelSubfolder);
 
 			final ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false, !doExport, null, executionContext);
-			extractionModelFrame.setDefaultExportFileName("by-example" + File.separator + UIUtil.toValidFileName(stable.getName() + ".sql"));
+			extractionModelFrame.setDefaultExportFileName("by-example" + File.separator + (dataModel.getDisplayName(stable).replaceAll("['`\"/\\\\\\~]+", "") + ".sql"));
 			Window w = SwingUtilities.getWindowAncestor(this);
 			extractionModelFrame.setResultFileLoader(fileName -> {
 				if (w == null || !w.isVisible()) {
