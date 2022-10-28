@@ -380,10 +380,17 @@ public class CsvFile {
 		return false;
 	}
 
-	private static final CharsetEncoder DEFAULT_CHARSET_ENCODER = Charset.defaultCharset().newEncoder();
+	private static CharsetEncoder DEFAULT_CHARSET_ENCODER = null;
+	private static boolean DEFAULT_CHARSET_ENCODER_INITIALIZED = false;
 
 	private static synchronized String encodeUnencodableChars(String content) {
 		try {
+			if (!DEFAULT_CHARSET_ENCODER_INITIALIZED) {
+				DEFAULT_CHARSET_ENCODER_INITIALIZED = true;
+				DEFAULT_CHARSET_ENCODER = Charset.defaultCharset().newEncoder();
+			} else if (DEFAULT_CHARSET_ENCODER == null) {
+				return content;
+			}
 			StringBuilder sb = null;
 			int l = content.length();
 			for (int i = 0; i < l; ++i) {

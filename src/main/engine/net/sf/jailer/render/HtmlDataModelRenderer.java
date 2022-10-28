@@ -488,16 +488,15 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         result=result.replaceAll(">", "&gt;");
         return result;
     }
-
-	private static final CharsetEncoder DEFAULT_CHARSET_ENCODER = Charset.defaultCharset().newEncoder();
-
+    
 	private static synchronized String encodeUnencodableChars(String content) {
 		try {
+			CharsetEncoder encoder = Charset.defaultCharset().newEncoder();
 			StringBuilder sb = null;
 			int l = content.length();
 			for (int i = 0; i < l; ++i) {
 				char c = content.charAt(i);
-				if (!DEFAULT_CHARSET_ENCODER.canEncode(c)) {
+				if (!encoder.canEncode(c)) {
 					if (sb == null) {
 						sb = new StringBuilder(content.substring(0, i));
 					}
