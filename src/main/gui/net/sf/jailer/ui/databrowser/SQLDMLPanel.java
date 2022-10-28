@@ -118,8 +118,6 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		});
 	}
 
-	private String mlm = "";
-
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
@@ -305,7 +303,6 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	private String lastMultiLineSQL = "";
 
 	private void singleLineCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_singleLineCheckBoxItemStateChanged
-		String mlm = this.mlm;
 		if (singleLineCheckBox.isSelected()) {
 			String lf = System.getProperty("line.separator", "\n");
 			lastMultiLineSQL = sqlTextArea.getText();
@@ -313,7 +310,6 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			sqlTextArea.setText(lastMultiLineSQL.replaceAll(";(\n|\r)", EOL).replaceAll(" *(\n|\r)+ *", " ").replaceAll(EOL + " *", ";" + lf));
 		} else {
 			sqlTextArea.setText(lastMultiLineSQL);
-			this.mlm = "";
 		}
 		sqlTextArea.setCaretPosition(0);
 	}//GEN-LAST:event_singleLineCheckBoxItemStateChanged

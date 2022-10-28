@@ -21,10 +21,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Parser for CSV-files.
@@ -266,12 +270,13 @@ public class CsvFile {
 	 * @return decoded and splitted line
 	 */
 	public static String[] decodeLine(String line) {
+		String content = decodeUnencodableChars(line);
 		List<String> cells = new ArrayList<String>(1000);
 		StringBuilder sb = new StringBuilder(1000);
 		boolean esc = false;
-		int length = line.length();
+		int length = content.length();
 		for (int i = 0; i < length; ++i) {
-			char c = line.charAt(i);
+			char c = content.charAt(i);
 			if (c == '\\') {
 				if (esc) {
 					esc = false;
@@ -319,7 +324,7 @@ public class CsvFile {
 				sb.append(c);
 			}
 		}
-		return sb.toString();
+		return encodeUnencodableChars(sb.toString());
 	}
 
 	/**
@@ -374,5 +379,53 @@ public class CsvFile {
 		}
 		return false;
 	}
+
+	private static final CharsetEncoder DEFAULT_CHARSET_ENCODER = Charset.defaultCharset().newEncoder();
+
+	private static synchronized String encodeUnencodableChars(String content) {
+		try {
+			StringBuilder sb = null;
+			int l = content.length();
+			for (int i = 0; i < l; ++i) {
+				char c = content.charAt(i);
+				if (!DEFAULT_CHARSET_ENCODER.canEncode(c)) {
+					if (sb == null) {
+						sb = new StringBuilder(content.substring(0, i));
+					}
+					sb.append("{\\u" + Integer.toHexString((int) c) + "}");
+				} else if (sb != null) {
+					sb.append(c);
+				}
+			}
+			if (sb != null) {
+				return sb.toString();
+			}
+		} catch (Exception e) {
+			// ignore
+		}
+		return content;
+	}
 	
+	private static final Pattern UNCODABLE_PATTERN = Pattern.compile(Pattern.quote("{\\u") + "([0123456789abcdef]+)" + Pattern.quote("}"));
+
+	private static String decodeUnencodableChars(String content) {
+		if (content.indexOf('{') >= 0) {
+			Matcher matcher = UNCODABLE_PATTERN.matcher(content);
+			boolean result = matcher.find();
+			if (result) {
+				try {
+					StringBuffer sb = new StringBuffer();
+					do {
+						matcher.appendReplacement(sb, String.valueOf((char) Integer.parseInt(matcher.group(1), 16)));
+						result = matcher.find();
+					} while (result);
+					matcher.appendTail(sb);
+					return sb.toString();
+				} catch (Exception e) {
+					// ignore
+				}
+			}
+		}
+		return content;
+	}
 }

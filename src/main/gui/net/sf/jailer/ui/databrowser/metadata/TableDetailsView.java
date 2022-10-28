@@ -428,11 +428,11 @@ public class TableDetailsView extends javax.swing.JPanel {
 					foundColumn = null;
 					for (String name: rows.keySet()) {
 						if (name != null && name.equals(selected)) {
-							Rectangle visibleRect = jPanel1.getVisibleRect();
+							Rectangle visibleRect = jPanel2.getVisibleRect();
 							Rectangle cellRect = rows.get(name).getBounds();
 							foundColumn = name;
 							updateColumnsTable.run();
-							jPanel1.scrollRectToVisible(
+							jPanel2.scrollRectToVisible(
 									new Rectangle(
 											visibleRect.x + visibleRect.width / 2, 
 											cellRect.y + columnsPanel.getBounds().y - 32, 

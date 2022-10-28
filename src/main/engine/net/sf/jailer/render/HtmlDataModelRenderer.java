@@ -20,6 +20,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -463,14 +465,14 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @param content the content
 	 * @param file the file
 	 */
-	public static void writeFile(File file, String content) throws IOException {
+	private static void writeFile(File file, String content) throws IOException {
 		try {
 			file.getParentFile().mkdir();
 		} catch (Throwable t) {
 			// ignore
 		}
 		PrintWriter out = new PrintWriter(new FileOutputStream(file));
-		out.print(content);
+		out.print(encodeUnencodableChars(content));
 		out.close();
 		_log.info("file '" + file + "' written");
 	}
@@ -487,4 +489,30 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         return result;
     }
 
+	private static final CharsetEncoder DEFAULT_CHARSET_ENCODER = Charset.defaultCharset().newEncoder();
+
+	private static synchronized String encodeUnencodableChars(String content) {
+		try {
+			StringBuilder sb = null;
+			int l = content.length();
+			for (int i = 0; i < l; ++i) {
+				char c = content.charAt(i);
+				if (!DEFAULT_CHARSET_ENCODER.canEncode(c)) {
+					if (sb == null) {
+						sb = new StringBuilder(content.substring(0, i));
+					}
+					sb.append("&#" + Integer.toString((int) c) + ";");
+				} else if (sb != null) {
+					sb.append(c);
+				}
+			}
+			if (sb != null) {
+				return sb.toString();
+			}
+		} catch (Exception e) {
+			// ignore
+		}
+		return content;
+	}
+	
 }
