@@ -489,7 +489,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         return result;
     }
     
-	private static synchronized String encodeUnencodableChars(String content) {
+	private static String encodeUnencodableChars(String content) {
 		try {
 			CharsetEncoder encoder = Charset.defaultCharset().newEncoder();
 			StringBuilder sb = null;
