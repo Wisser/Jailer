@@ -3381,7 +3381,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void run() {
 				try {
 					UIUtil.initPLAF();
-					createFrame(null, new ExecutionContext());
+					DataModelManagerDialog.start(null, true, new ExecutionContext());
 				} catch (Exception e) {
 					UIUtil.showException(null, "Error", e);
 				}

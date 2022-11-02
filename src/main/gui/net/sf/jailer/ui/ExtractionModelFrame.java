@@ -1784,7 +1784,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		    UIUtil.setWaitCursor(this);
 		    ExecutionContext newExecutionContext = new ExecutionContext(executionContext);
 		    newExecutionContext.setCurrentConnectionAlias(null);
-			createFrame(null, false, "S", newExecutionContext);
+			createFrame(null, true, "S", newExecutionContext);
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
 		} finally {
@@ -2400,10 +2400,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							if (withStartupWizzard && finalExtractionModelFrame.showWizzard) {
 								Point pos = null;
 								if (finalExtractionModelFrame.extractionModelEditor != null && finalExtractionModelFrame.extractionModelEditor.layeredPane != null) {
-									pos = new Point(14, 40);
-									SwingUtilities.convertPointToScreen(pos, finalExtractionModelFrame.extractionModelEditor.layeredPane);
+									pos = new Point(finalExtractionModelFrame.extractionModelEditor.getX() + finalExtractionModelFrame.extractionModelEditor.getWidth() / 2, finalExtractionModelFrame.extractionModelEditor.getY() + finalExtractionModelFrame.extractionModelEditor.getHeight() / 2);
+									SwingUtilities.convertPointToScreen(pos, finalExtractionModelFrame.extractionModelEditor);
 								}
-								new StartupWizzardDialog(finalExtractionModelFrame, pos) {
+								new StartupWizzardDialog(finalExtractionModelFrame, withLoad, pos) {
 									@Override
 									protected void onClose() {
 										try {
@@ -2419,6 +2419,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 										}
 									}
 								};
+								withLoad = false;
 							}
 						}
 					});
@@ -2433,7 +2434,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
 	JDialog pendingDecisionsDialog;
-
+	private static boolean withLoad = true;
+	
 	/**
 	 * Marks the model as dirty (needs save)
 	 */
@@ -2543,7 +2545,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem renderHtml1;
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;
-    private javax.swing.JCheckBoxMenuItem showIgnored;
+    javax.swing.JCheckBoxMenuItem showIgnored;
     private javax.swing.JCheckBoxMenuItem showTableDetails;
     private javax.swing.JRadioButtonMenuItem steptime10;
     private javax.swing.JRadioButtonMenuItem steptime100;

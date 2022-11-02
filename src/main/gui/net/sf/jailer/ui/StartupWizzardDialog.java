@@ -36,14 +36,15 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 
 	private static final long serialVersionUID = -6737420167295938488L;
 	
-	/** Creates new form SqlErrorDialog */
-	public StartupWizzardDialog(Window parent, Point pos) {
+	/** Creates new form SqlErrorDialog 
+	*/
+	public StartupWizzardDialog(Window parent, boolean withLoad, Point pos) {
 		super(parent, ModalityType.MODELESS);
 		setUndecorated(true);
 		initComponents();
 		try {
 			iconLabel.setText(null);
-			   Icon errorIcon = UIManager.getIcon("OptionPane.questionIcon");
+			Icon errorIcon = UIManager.getIcon("OptionPane.questionIcon");
 			iconLabel.setIcon(errorIcon);
 		} catch (Throwable t) {
 			// ignore
@@ -102,10 +103,11 @@ public abstract class StartupWizzardDialog extends javax.swing.JDialog {
 		newModelButton.addKeyListener(keyListener);
 		newModelWRjButton.addKeyListener(keyListener);
 		loadButton.addKeyListener(keyListener);
+		loadButton.setVisible(withLoad);
 		
 		pack();
 		if (pos != null) {
-			setLocation(pos);
+			setLocation(new Point(pos.x - getWidth() / 2, pos.y - getHeight() / 2));
 		} else if (parent == null) {
 			setLocation(200, 100);
 		} else {

@@ -3042,6 +3042,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		popup.add(new JSeparator());
 		JMenuItem exportData = new JMenuItem("Export Data from here");
+		exportData.setToolTipText("Export (or Delete) Data from here");
 		popup.add(exportData);
 		exportData.addActionListener(new ActionListener() {
 			@Override

@@ -356,6 +356,9 @@
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showIgnoredActionPerformed"/>
               </Events>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
+              </AuxValues>
             </MenuItem>
             <MenuItem class="javax.swing.JCheckBoxMenuItem" name="showTableDetails">
               <Properties>

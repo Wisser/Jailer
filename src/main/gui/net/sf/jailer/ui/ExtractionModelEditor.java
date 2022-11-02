@@ -1090,6 +1090,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 		updateLeftButton();
 		updateAdditionalSubjectsButton();
+		checkShowIgnored(null);
 	}
 
 	private WhereConditionEditorPanel whereConditionEditorPanel;
@@ -3474,6 +3475,30 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		expandPathsToVisibleTables();
 	}
 
+	private void checkShowIgnored(Boolean show) {
+		if (show == null) {
+			int ig = 0;
+			int nig = 0;
+			for (Table table: dataModel.getTables()) {
+				for (Association association: table.associations) {
+					if (!association.isInsertDestinationBeforeSource()) {
+						if (association.getName() != null && !"".equals(association.getName().trim())) {
+							if (association.isIgnored()) {
+								++ig;
+							} else {
+								++nig;
+							}
+						}
+					}
+				}
+			}
+			show = ig > nig;
+		}
+		if (show && !extractionModelFrame.showIgnored.isSelected() || !show && extractionModelFrame.showIgnored.isSelected()) {
+			extractionModelFrame.showIgnored.doClick();
+		}
+	}
+	
 	/**
 	 * Expands all associations with visible tables in associations tree.
 	 */
@@ -3503,6 +3528,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 //				}
 			}
 		}
+		checkShowIgnored(false);
 		afterAddRestriction();
 	}
 
@@ -3539,6 +3565,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 		}
+		checkShowIgnored(true);
 		afterAddRestriction();
 	}
 
