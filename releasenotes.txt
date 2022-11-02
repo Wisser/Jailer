@@ -1,3 +1,6 @@
+12.8.1
+  - The new Extraction Model Wizzard simplifies the creation of new models.
+
 12.8
   - Support for non-encodable characters (in the default charset) that occur in database metadata.
   - Fixed "Some panels cannot display non ASCII characters correctly". https://github.com/Wisser/Jailer/issues/98
