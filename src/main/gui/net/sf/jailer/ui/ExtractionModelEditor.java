@@ -1090,7 +1090,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 		updateLeftButton();
 		updateAdditionalSubjectsButton();
-		checkShowIgnored(null);
+		UIUtil.invokeLater(() -> checkShowIgnored(null));
 	}
 
 	private WhereConditionEditorPanel whereConditionEditorPanel;

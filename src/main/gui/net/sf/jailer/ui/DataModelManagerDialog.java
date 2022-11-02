@@ -204,10 +204,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		UIUtil.replace(infoBarLabeRecUsedlBookmark, infoBarRecUsedBookmark);
 
 		restoreButton.setIcon(UIUtil.scaleIcon(restoreButton, histIcon));
-		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
+		okButton.setIcon(UIUtil.scaleIcon(jmOkButton, okIcon));
+		jmOkButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
 		jButton2.setIcon(UIUtil.scaleIcon(jButton2, cancelIcon));
 		bmOkButton.setIcon(UIUtil.scaleIcon(bmOkButton, okIcon));
 		bmCancelButton.setIcon(UIUtil.scaleIcon(bmCancelButton, cancelIcon));
+		browseButton.setIcon(UIUtil.scaleIcon(browseButton, loadIcon));
+		loadExtractionModelButton.setIcon(UIUtil.scaleIcon(loadExtractionModelButton, loadIcon));
 		
 		if (!withLoadJMButton) {
 			jTabbedPane1.remove(loadJMPanel);
@@ -218,7 +221,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 		if (module.equals("S")) {
 			jTabbedPane1.remove(recUsedConnectionPanel);
-			jTabbedPane1.remove(loadJMPanel);
 		} else {
 			jTabbedPane1.remove(recUsedConnectionPanel);
 			jTabbedPane1.remove(recentlyUsedBookmarkPanel);
@@ -1680,18 +1682,17 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         jPanel6 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         dataModelsTable = new javax.swing.JTable();
-        loadJMPanel = new javax.swing.JPanel();
-        infoBarLabel2 = new javax.swing.JLabel();
-        loadExtractionModelButton = new javax.swing.JButton();
-        jmOkButton = new javax.swing.JButton();
-        jmCancelButton = new javax.swing.JButton();
-        jPanel7 = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        jmFilesTable = new javax.swing.JTable();
         jPanel5 = new javax.swing.JPanel();
         connectionDialogPanel = new javax.swing.JPanel();
         recUsedConnectionPanel = new javax.swing.JPanel();
         recUsedConnectionDialogPanel = new javax.swing.JPanel();
+        loadJMPanel = new javax.swing.JPanel();
+        infoBarLabel2 = new javax.swing.JLabel();
+        loadExtractionModelButton = new javax.swing.JButton();
+        jmOkButton = new javax.swing.JButton();
+        jPanel7 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jmFilesTable = new javax.swing.JTable();
         bookmarkPanel = new javax.swing.JPanel();
         borderPanel = new javax.swing.JPanel();
         bookmarkDialogPanel = new javax.swing.JPanel();
@@ -2152,6 +2153,32 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Data Model", jPanel1);
 
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        connectionDialogPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel5.add(connectionDialogPanel, gridBagConstraints);
+
+        jTabbedPane1.addTab("Connection", jPanel5);
+
+        recUsedConnectionPanel.setLayout(new java.awt.GridBagLayout());
+
+        recUsedConnectionDialogPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        recUsedConnectionPanel.add(recUsedConnectionDialogPanel, gridBagConstraints);
+
+        jTabbedPane1.addTab("Recently used Connection", recUsedConnectionPanel);
+
         loadJMPanel.setLayout(new java.awt.GridBagLayout());
 
         infoBarLabel2.setText("info bar");
@@ -2189,19 +2216,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 2);
         loadJMPanel.add(jmOkButton, gridBagConstraints);
 
-        jmCancelButton.setText(" Cancel ");
-        jmCancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmCancelButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
-        loadJMPanel.add(jmCancelButton, gridBagConstraints);
-
         jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder("Recent Files"));
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
@@ -2237,32 +2251,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         loadJMPanel.add(jPanel7, gridBagConstraints);
 
         jTabbedPane1.addTab("Extraction Model", loadJMPanel);
-
-        jPanel5.setLayout(new java.awt.GridBagLayout());
-
-        connectionDialogPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel5.add(connectionDialogPanel, gridBagConstraints);
-
-        jTabbedPane1.addTab("Connection", jPanel5);
-
-        recUsedConnectionPanel.setLayout(new java.awt.GridBagLayout());
-
-        recUsedConnectionDialogPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        recUsedConnectionPanel.add(recUsedConnectionDialogPanel, gridBagConstraints);
-
-        jTabbedPane1.addTab("Recently used Connection", recUsedConnectionPanel);
 
         bookmarkPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -2662,10 +2650,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		}
 	}//GEN-LAST:event_jmOkButtonActionPerformed
 
-    private void jmCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmCancelButtonActionPerformed
-		close();
-    }//GEN-LAST:event_jmCancelButtonActionPerformed
-
     private void bmCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bmCancelButtonActionPerformed
 		close();
     }//GEN-LAST:event_bmCancelButtonActionPerformed
@@ -2894,7 +2878,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JButton jmCancelButton;
     private javax.swing.JTable jmFilesTable;
     private javax.swing.JButton jmOkButton;
     private javax.swing.JButton loadExtractionModelButton;
@@ -2937,6 +2920,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private static ImageIcon blueDotImg;
 	private static ImageIcon yellowDotImg;
 	private static ImageIcon helpImg;
+	private static ImageIcon loadIcon;
 	
 	private class ToolSelectionBorder implements Border {
 		private Insets margin;
@@ -2975,6 +2959,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		modulSubsetterImg = UIUtil.scaleIcon(UIUtil.readImage("/modul_subsetter.png"), MODULE_IMAGE_SCALE_FACTOR);
 		blueDotImg = UIUtil.readImage("/bluedotb.gif");
 		yellowDotImg = UIUtil.readImage("/yellowdot.gif");
+		loadIcon = UIUtil.readImage("/load2.png");
 		helpImg = UIUtil.readImage("/explain.png");
 	}
 }
