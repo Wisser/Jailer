@@ -76,6 +76,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
+import net.sf.jailer.ui.databrowser.sqlconsole.TabContentPanel;
 import net.sf.jailer.ui.util.MovePanel;
 import net.sf.jailer.ui.util.SizeGrip;
 import net.sf.jailer.ui.util.SmallButton;
@@ -822,6 +823,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         contentTabbedPane = new javax.swing.JTabbedPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
         textPanel = new javax.swing.JPanel();
         insertPanel = new javax.swing.JPanel();
         updatePanel = new javax.swing.JPanel();
@@ -856,8 +858,19 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
         contentTabbedPane.addTab("Columns", jScrollPane1);
 
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
         textPanel.setLayout(new java.awt.BorderLayout());
-        contentTabbedPane.addTab("Text", textPanel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        jPanel2.add(textPanel, gridBagConstraints);
+
+        contentTabbedPane.addTab("Text", jPanel2);
 
         insertPanel.setLayout(new java.awt.BorderLayout());
         contentTabbedPane.addTab("Insert", insertPanel);
@@ -997,6 +1010,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
     private javax.swing.JPanel insertPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToggleButton pinToggleButton;
@@ -1059,6 +1073,16 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			contentTabbedPane.remove(sqlDmlInsertPanel);
 		}
 		
+		TabContentPanel tabContentPanel = new TabContentPanel(new JLabel(""), new JLabel(""), table.getName(), 
+				false,
+				null,
+				null,
+				null);
+		
+		tabContentPanel.textSortedStateLabel.setVisible(false);
+		initScrollPane.accept(tabContentPanel.textViewScrollPane);
+		textPanel.add(tabContentPanel.textTabPanel, BorderLayout.CENTER);
+		
         JPanel movePanel = new MovePanel();
         
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1110,15 +1134,15 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			Component tab = oldDv.contentTabbedPane.getSelectedComponent();
 			if (tab == oldDv.insertPanel && sqlDmlInsertPanel != null && oldDv.sqlDmlInsertPanel != null) {
 				contentTabbedPane.setSelectedComponent(insertPanel);
-				UIUtil.invokeLater(14, () -> sqlDmlInsertPanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlInsertPanel.scrollPane.getViewport().getViewPosition()));
+				UIUtil.invokeLater(4, () -> sqlDmlInsertPanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlInsertPanel.scrollPane.getViewport().getViewPosition()));
 			}
 			if (tab == oldDv.updatePanel && sqlDmlUpdatePanel != null && oldDv.sqlDmlUpdatePanel != null) {
 				contentTabbedPane.setSelectedComponent(updatePanel);
-				UIUtil.invokeLater(14, () -> sqlDmlUpdatePanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlUpdatePanel.scrollPane.getViewport().getViewPosition()));
+				UIUtil.invokeLater(4, () -> sqlDmlUpdatePanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlUpdatePanel.scrollPane.getViewport().getViewPosition()));
 			}
 			if (tab == oldDv.deletePanel && sqlDmlDeletePanel != null && oldDv.sqlDmlDeletePanel != null) {
 				contentTabbedPane.setSelectedComponent(deletePanel);
-				UIUtil.invokeLater(14, () -> sqlDmlDeletePanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlDeletePanel.scrollPane.getViewport().getViewPosition()));
+				UIUtil.invokeLater(4, () -> sqlDmlDeletePanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlDeletePanel.scrollPane.getViewport().getViewPosition()));
 			}
 		}
 	}

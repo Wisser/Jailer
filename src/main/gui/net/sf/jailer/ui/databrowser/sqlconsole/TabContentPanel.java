@@ -105,6 +105,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         textViewScrollPane.setViewportView(textArea);
         
         cancelLoadButton.setIcon(UIUtil.scaleIcon(cancelLoadButton, cancelIcon));
+        copyCBButton.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png")));
 		
         statementLabel = new JLabel();
         statementLabel.setForeground(new Color(100, 110, 210));
@@ -657,6 +658,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         textTabPanel.add(textViewScrollPane, gridBagConstraints);
 
         columnSeparatorComboBox.setEditable(true);
@@ -677,9 +679,10 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         textTabPanel.add(copyCBButton, gridBagConstraints);
 
-        jLabel1.setText("Column Separator ");
+        jLabel1.setText(" Column Separator ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
