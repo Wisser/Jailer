@@ -1134,14 +1134,20 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			Component tab = oldDv.contentTabbedPane.getSelectedComponent();
 			if (tab == oldDv.insertPanel && sqlDmlInsertPanel != null && oldDv.sqlDmlInsertPanel != null) {
 				contentTabbedPane.setSelectedComponent(insertPanel);
+				sqlDmlInsertPanel.statusLabel.setText(oldDv.sqlDmlInsertPanel.statusLabel.getText());
+				sqlDmlInsertPanel.statusLabel.setForeground(oldDv.sqlDmlInsertPanel.statusLabel.getForeground());
 				UIUtil.invokeLater(4, () -> sqlDmlInsertPanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlInsertPanel.scrollPane.getViewport().getViewPosition()));
 			}
 			if (tab == oldDv.updatePanel && sqlDmlUpdatePanel != null && oldDv.sqlDmlUpdatePanel != null) {
 				contentTabbedPane.setSelectedComponent(updatePanel);
+				sqlDmlUpdatePanel.statusLabel.setText(oldDv.sqlDmlUpdatePanel.statusLabel.getText());
+				sqlDmlUpdatePanel.statusLabel.setForeground(oldDv.sqlDmlUpdatePanel.statusLabel.getForeground());
 				UIUtil.invokeLater(4, () -> sqlDmlUpdatePanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlUpdatePanel.scrollPane.getViewport().getViewPosition()));
 			}
 			if (tab == oldDv.deletePanel && sqlDmlDeletePanel != null && oldDv.sqlDmlDeletePanel != null) {
 				contentTabbedPane.setSelectedComponent(deletePanel);
+				sqlDmlDeletePanel.statusLabel.setText(oldDv.sqlDmlDeletePanel.statusLabel.getText());
+				sqlDmlDeletePanel.statusLabel.setForeground(oldDv.sqlDmlDeletePanel.statusLabel.getForeground());
 				UIUtil.invokeLater(4, () -> sqlDmlDeletePanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlDeletePanel.scrollPane.getViewport().getViewPosition()));
 			}
 		}

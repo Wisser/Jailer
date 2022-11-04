@@ -402,7 +402,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
     protected javax.swing.JButton saveButton;
     protected javax.swing.JCheckBox singleLineCheckBox;
     private javax.swing.JButton sqlConsoleButton;
-    private javax.swing.JLabel statusLabel;
+    public javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 
     private final RSyntaxTextArea sqlTextArea;
