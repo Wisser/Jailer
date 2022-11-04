@@ -1820,8 +1820,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
 	private void showIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showIgnoredActionPerformed
-//      extractionModelEditor.refresh(true, false);
-		extractionModelEditor.resetGraphEditor(false, true, true, true);
+		if (extractionModelEditor != null) {
+			extractionModelEditor.resetGraphEditor(false, true, true, true);
+		}
 	}//GEN-LAST:event_showIgnoredActionPerformed
 
 	private void collapseAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collapseAllActionPerformed

@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
@@ -67,6 +68,8 @@ public class ImportDialog extends javax.swing.JDialog {
 		this.user = user;
 		this.password = password;
 		initComponents();
+		copyButton.setIcon(copyIcon);
+		
 		cliArea.setDocument(new DefaultStyledDocument());
 		
 		okButton.setIcon(UIUtil.scaleIcon(okButton, okIcon));
@@ -551,11 +554,13 @@ public class ImportDialog extends javax.swing.JDialog {
 
 	private static ImageIcon okIcon;
 	private static ImageIcon cancelIcon;
+	private static ImageIcon copyIcon;
 	
 	static {
         // load images
         okIcon = UIUtil.readImage("/buttonok.png");
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
 	}
 
 	private static final long serialVersionUID = 952553009821662964L;

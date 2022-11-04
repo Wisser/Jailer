@@ -459,6 +459,9 @@ public class ColumnsTable extends JTable {
 	
 	@Override
 	public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+		if (!inDesktop) {
+			super.changeSelection(rowIndex, columnIndex, toggle, extend);
+		}
 	}
 
 	private JTable fixed;

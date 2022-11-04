@@ -137,6 +137,7 @@ public class FileView extends javax.swing.JFrame {
 		gridBagConstraints.gridy = 2;
 		gridBagConstraints.insets = new Insets(4, 2, 4, 8);
 		JButton copy = new JButton("Copy to Clipboard");
+		copy.setIcon(copyIcon);
 		copy.addActionListener(e -> {
 			StringSelection selection = new StringSelection(getJTextPane().getText());
 			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -236,10 +237,12 @@ public class FileView extends javax.swing.JFrame {
 	}
 
 	private static ImageIcon cancelIcon;
+	private static ImageIcon copyIcon;
 	
 	static {
         // load images
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
+        copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
 	}
 	
 	private static final long serialVersionUID = -8991473715127153931L;

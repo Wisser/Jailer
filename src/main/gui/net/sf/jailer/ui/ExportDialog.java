@@ -202,6 +202,8 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 			UIUtil.setWaitCursor(parent);
 
 			initComponents();
+			copyButton.setIcon(copyIcon);
+			
 			cliArea.setDocument(new DefaultStyledDocument());
 			
 			jButton1.setIcon(runIcon);
@@ -3053,6 +3055,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 	private Icon runIcon;
 	private Icon resetIcon;
 	private ImageIcon cancelIcon;
+	private ImageIcon copyIcon;
 	
 	{
         // load images
@@ -3063,6 +3066,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 		conditionEditorSelectedIcon = UIUtil.readImage("/edit_s.png");
         runIcon = UIUtil.readImage("/run.png");
         resetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/reset.png"));
+        copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
 	}
 
 }

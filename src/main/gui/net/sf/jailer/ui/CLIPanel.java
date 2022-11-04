@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
 
 import org.fife.rsta.ui.EscapableDialog;
 
@@ -57,6 +58,8 @@ public class CLIPanel extends javax.swing.JPanel {
 		this.bookmark = bookmark;
 		this.executionContext = executionContext;
 		initComponents();
+		copyButton.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png")));
+		closeButton.setIcon(UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/buttoncancel.png")));
 	}
 
     public void open(Frame owner) {

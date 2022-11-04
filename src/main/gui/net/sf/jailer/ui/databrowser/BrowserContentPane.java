@@ -113,6 +113,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
@@ -6896,6 +6897,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				&& currentSelectedRowCondition.equals(getAndConditionText())
 				&& rows.size() == 1;
 		List<Function<DetailsView, DetailsView>> createDetailsViewF = new ArrayList<Function<DetailsView,DetailsView>>();
+		DetailsView currentDView[] = new DetailsView[1];
 		Function<DetailsView, DetailsView> createDetailsView = oldDv -> {
 			DetailsView dv = new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, getQueryBuilderDialog() != null, rowIdSupport, deselect, alternativeColumnLabels, alternativeColumnLabelsFull, session, browserContentCellEditor, rowsTable.getModel()) {
 				@Override
@@ -6949,12 +6951,53 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					});
 					timer.start();
 				}
+				@Override
+				protected SQLDMLPanel createSQLDMLPanel(JToggleButton pinButton) {
+					if (table == null || table.getName() == null) {
+						return null;
+					}
+					return new SQLDMLPanel("", getSqlConsole(false), session, getMetaDataSource(),
+							new Runnable() {
+								@Override
+								public void run() {
+									reloadRows();
+									waitLoading();
+								}
+							},
+							new Runnable() {
+								@Override
+								public void run() {
+									getSqlConsole(true);
+								}
+							},
+							d, executionContext) {
+						{
+							saveButton.setVisible(false);
+							closeButton.setVisible(false);
+							singleLineCheckBox.setVisible(false);
+						}
+						protected void doExecute() {
+							if (pinButton.isSelected()) {
+								super.doExecute();
+							} else {
+								try {
+									pinButton.setSelected(true);
+									super.doExecute();
+								} finally {
+									UIUtil.invokeLater(2, () -> pinButton.setSelected(false));
+								}
+							}
+							waitLoading();
+						}
+					};
+				}
 			};
 			dv.prepareForNonModalUsage();
+			currentDView[0] = dv;
 			d.addWindowFocusListener(new WindowFocusListener() {
 				@Override
 				public void windowLostFocus(WindowEvent e) {
-					if (!dv.isPinned()) {
+					if (!dv.isPinned() && dv == currentDView[0]) {
 						d.setVisible(false);
 						d.dispose();
 					}
@@ -6972,7 +7015,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 		d.pack();
 		d.setLocation(x - 16, y + 2);
-		d.setSize(600, d.getHeight());
+		d.setSize(600, Math.max(148, d.getHeight()));
 		UIUtil.fit(d);
 		Window p = SwingUtilities.getWindowAncestor(rowsTable);
 		if (p != null) {
@@ -7851,7 +7894,3 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 	
 }
-
-
-// TODO 
-// TODO bg-alternation: (i / 2) % 2 == 0 instead of i % 2 == 0?

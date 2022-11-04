@@ -86,6 +86,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		
 		cancelButton.setIcon(UIUtil.scaleIcon(cancelButton, cancelIcon));
 		sqlEditButton.setIcon(UIUtil.scaleIcon(sqlEditButton, sqlConsoleIcon));
+		clipboardButton.setIcon(copyIcon);
 		
 		if (jScrollPane1.getHorizontalScrollBar() != null) {
         	jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
@@ -1497,6 +1498,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	private ImageIcon joinImage = null;
 	private ImageIcon minusImage = null;
 	private ImageIcon sqlConsoleIcon = null;
+	private ImageIcon copyIcon = null;
 	{
 		// load image
 		joinImage = UIUtil.scaleIcon(UIUtil.readImage("/collapsed.png"), 20, 16);
@@ -1508,6 +1510,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		// load images
         cancelIcon = UIUtil.readImage("/buttoncancel.png");
         sqlConsoleIcon = UIUtil.readImage("/runall.png");
+        copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
     }
 	private static final long serialVersionUID = -2801831496446636545L;
 }

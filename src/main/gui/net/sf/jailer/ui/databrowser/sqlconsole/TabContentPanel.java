@@ -55,6 +55,8 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.formdev.flatlaf.FlatClientProperties;
+
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
@@ -86,6 +88,9 @@ public class TabContentPanel extends javax.swing.JPanel {
     	this.caretDotMark = caretDotMark;
         this.rowColumnTypes = rowColumnTypes;
         initComponents();
+        if (UIUtil.plaf == PLAF.FLAT) {
+			tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_HEIGHT, 16);
+		}
         loadingPanel.setVisible(false);
         
         textArea = new RSyntaxTextAreaWithSQLSyntaxStyle(

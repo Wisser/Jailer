@@ -17,6 +17,7 @@ package net.sf.jailer.ui.databrowser;
 
 import java.awt.Color;
 import java.awt.GridBagConstraints;
+import java.awt.Point;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -24,7 +25,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -79,6 +82,11 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		this.afterExecution = afterExecution;
 		this.dialog = dialog;
 		initComponents();
+		
+		closeButton.setIcon(closeIcon);
+		executeButton.setIcon(runIcon);
+		sqlConsoleButton.setIcon(runAllIcon);
+		clipboardButton.setIcon(copyIcon);
 
 		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			@Override
@@ -93,8 +101,8 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		} catch (SQLException e) {
 		}
 
-		RTextScrollPane jScrollPane1 = new RTextScrollPane();
-		jScrollPane1.setViewportView(sqlTextArea);
+		scrollPane = new RTextScrollPane();
+		scrollPane.setViewportView(sqlTextArea);
 
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 1;
@@ -102,9 +110,9 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 		gridBagConstraints.weightx = 1.0;
 		gridBagConstraints.weighty = 1.0;
-		jPanel1.add(jScrollPane1, gridBagConstraints);
+		jPanel1.add(scrollPane, gridBagConstraints);
 
-		jScrollPane1.setLineNumbersEnabled(true);
+		scrollPane.setLineNumbersEnabled(true);
 
 		statusLabel.setText("");
 		sqlTextArea.setText(sql);
@@ -315,6 +323,20 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	}//GEN-LAST:event_singleLineCheckBoxItemStateChanged
 
 	private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
+		doExecute();
+	}//GEN-LAST:event_executeButtonActionPerformed
+	
+	public void setContent(String sql) {
+		Point pos = scrollPane.getViewport().getViewPosition();
+		UIUtil.invokeLater(() -> {
+			sqlTextArea.setText(sql);
+			UIUtil.invokeLater(() -> {
+				scrollPane.getViewport().setViewPosition(pos);
+			});
+		});
+	}
+
+	protected void doExecute() {
 		if (!UIUtil.canRunJailer()) {
 			return;
 		}
@@ -355,7 +377,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			}
 			new File(sqlFile).delete();
 		}
-	}//GEN-LAST:event_executeButtonActionPerformed
+	}
 
     private void sqlConsoleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sqlConsoleButtonActionPerformed
         switchToConsole.run();
@@ -371,17 +393,31 @@ public class SQLDMLPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton clipboardButton;
     private javax.swing.JButton clipboardSingleLineButton;
-    private javax.swing.JButton closeButton;
+    protected javax.swing.JButton closeButton;
     private javax.swing.JButton executeButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JButton saveButton;
-    private javax.swing.JCheckBox singleLineCheckBox;
+    protected javax.swing.JButton saveButton;
+    protected javax.swing.JCheckBox singleLineCheckBox;
     private javax.swing.JButton sqlConsoleButton;
     private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 
     private final RSyntaxTextArea sqlTextArea;
+    public RTextScrollPane scrollPane;
+
+	private static ImageIcon closeIcon;
+	private static ImageIcon runIcon;
+	private static ImageIcon runAllIcon;
+	private static ImageIcon copyIcon;
+	static {
+		// load images
+		closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/buttoncancel.png"));
+		runIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/run.png"));
+		runAllIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/runall.png"));
+        copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
+	}
+
 }

@@ -1333,7 +1333,7 @@ public class UIUtil {
 		StringBuilder sb = new StringBuilder();
 		boolean prepNL = table.getSelectedRows().length > 1;
 		int[] selectedColumns = table.getSelectedColumns();
-		if (table.getSelectedColumnCount() == 1 && table.getSelectedRowCount() == 1 && lineOnSingeCell) {
+		if (lineOnSingeCell) {
 			prepNL = true;
 			selectedColumns = new int[table.getColumnCount()];
 			for (int i = 0; i < selectedColumns.length; ++i) {

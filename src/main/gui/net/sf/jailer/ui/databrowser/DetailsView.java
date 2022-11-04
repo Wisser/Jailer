@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -35,6 +36,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -51,6 +53,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.RowSorter;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
@@ -63,12 +66,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 
+import com.formdev.flatlaf.FlatClientProperties;
+
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.UIUtil.PLAF;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 import net.sf.jailer.ui.util.MovePanel;
 import net.sf.jailer.ui.util.SizeGrip;
@@ -115,6 +121,34 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		this.browserContentCellEditor = browserContentCellEditor;
 		this.tableModel = tableModel;
 		initComponents();
+		if (UIUtil.plaf == PLAF.FLAT) {
+			contentTabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_HEIGHT, 16);
+		}
+		editModeToggleButton.setFocusable(true);
+		contentTabbedPane.addChangeListener(new ChangeListener() {
+			// TODO
+			// TODO text wohl auch
+			Set<Component> seen = new HashSet<Component>();
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				Component comp = contentTabbedPane.getSelectedComponent();
+				if (comp instanceof JPanel) {
+					if (!(comp instanceof SQLDMLPanel)) {
+						JPanel p = (JPanel) comp;
+						if (p.getComponents().length > 0) {
+							comp = p.getComponents()[0];
+						}
+					}
+				}
+				if (comp instanceof SQLDMLPanel) {
+					Component c = comp;
+					if (seen.add(c)) {
+						UIUtil.invokeLater(2, () -> ((SQLDMLPanel) c).scrollPane.getViewport().setViewPosition(new Point(1, 1)));
+						UIUtil.invokeLater(3, () -> ((SQLDMLPanel) c).scrollPane.getViewport().setViewPosition(new Point(0, 0)));
+					}
+				}
+			}
+		});
 		browserContentCellEditor.setLoading(false);
 		editModeToggleButton.setBackground(new Color(255, 206, 206));
 		editModeToggleButton.setForeground(Color.black);
@@ -712,8 +746,48 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			if (changed && initialized) {
 				onRowChanged(row);
 			}
+			
+			int rowIndex = rowSorter != null? rowSorter.convertRowIndexToModel(row) : row;
+			Row r = rows.get(rowIndex);
+			r = new Row(r.rowId, r.primaryKey, r.values.clone());
+			Table theTable = tableWithSortedColumns(r);
+			if (sqlDmlUpdatePanel != null) {
+				sqlDmlUpdatePanel.setContent(SQLDMLBuilder.buildUpdate(theTable, Collections.singletonList(r), true, session));
+			}
+			if (sqlDmlInsertPanel != null) {
+				sqlDmlInsertPanel.setContent(SQLDMLBuilder.buildInsert(theTable, Collections.singletonList(r), true, session));
+			}
+			if (sqlDmlDeletePanel != null) {
+				sqlDmlDeletePanel.setContent(SQLDMLBuilder.buildDelete(theTable, Collections.singletonList(r), true, session));
+			}
 		} finally {
 			browserContentCellEditor.setInDetailsView(false);
+		}
+	}
+
+	private Table tableWithSortedColumns(Row row) {
+		if (sortColumns) {
+			Table theTable;
+			theTable = new Table(table.getName(), table.primaryKey, false, false);
+			List<Column> cols = new ArrayList<Column>(table.getColumns());
+			Integer[] pos = new Integer[cols.size()];
+			for (int i = 0; i < pos.length; ++i) {
+				pos[i] = i;
+			}
+			Arrays.sort(pos, (a, b) -> cols.get(a).name.compareToIgnoreCase(cols.get(b).name));
+			cols.clear();
+			int j = 0;
+			Object[] vals = row.values.clone();
+			for (Integer i: pos) {
+				cols.add(table.getColumns().get(i));
+				if (row.values.length > j) {
+					row.values[j++] = vals[i];
+				}
+			}
+			theTable.setColumns(cols);
+			return theTable;
+		} else {
+			return table;
 		}
 	}
 
@@ -730,6 +804,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	protected abstract void onRowChanged(int row);
 	protected abstract void onClose();
 	protected abstract void onSelectRow(Row row);
+	protected SQLDMLPanel createSQLDMLPanel(JToggleButton pinButton) {
+		return null;
+	}
 
 	/** This method is called from within the constructor to
 	 * initialize the form.
@@ -742,8 +819,13 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         rowSpinner = new javax.swing.JSpinner();
+        contentTabbedPane = new javax.swing.JTabbedPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
+        textPanel = new javax.swing.JPanel();
+        insertPanel = new javax.swing.JPanel();
+        updatePanel = new javax.swing.JPanel();
+        deletePanel = new javax.swing.JPanel();
         closeButton = new javax.swing.JButton();
         selectButton = new javax.swing.JButton();
         jToolBar1 = new javax.swing.JToolBar();
@@ -767,18 +849,33 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         add(rowSpinner, gridBagConstraints);
 
+        contentTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+
         jPanel1.setLayout(new java.awt.GridBagLayout());
         jScrollPane1.setViewportView(jPanel1);
+
+        contentTabbedPane.addTab("Columns", jScrollPane1);
+
+        textPanel.setLayout(new java.awt.BorderLayout());
+        contentTabbedPane.addTab("Text", textPanel);
+
+        insertPanel.setLayout(new java.awt.BorderLayout());
+        contentTabbedPane.addTab("Insert", insertPanel);
+
+        updatePanel.setLayout(new java.awt.BorderLayout());
+        contentTabbedPane.addTab("Update", updatePanel);
+
+        deletePanel.setLayout(new java.awt.BorderLayout());
+        contentTabbedPane.addTab("Delete", deletePanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jScrollPane1, gridBagConstraints);
+        add(contentTabbedPane, gridBagConstraints);
 
         closeButton.setText("CLose");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -894,7 +991,10 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
+    private javax.swing.JTabbedPane contentTabbedPane;
+    private javax.swing.JPanel deletePanel;
     public javax.swing.JToggleButton editModeToggleButton;
+    private javax.swing.JPanel insertPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
@@ -903,6 +1003,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
     protected javax.swing.JSpinner rowSpinner;
     private javax.swing.JButton selectButton;
     private javax.swing.JCheckBox sortCheckBox;
+    private javax.swing.JPanel textPanel;
+    private javax.swing.JPanel updatePanel;
     // End of variables declaration//GEN-END:variables
 
 	public void setSortColumns(boolean selected) {
@@ -916,17 +1018,47 @@ public abstract class DetailsView extends javax.swing.JPanel {
     	}
 	}
 
+	private SQLDMLPanel sqlDmlInsertPanel = null;
+	private SQLDMLPanel sqlDmlUpdatePanel = null;
+	private SQLDMLPanel sqlDmlDeletePanel = null;
+	
 	public void prepareForNonModalUsage() {
 		closeButton.setVisible(false);
 		setBorder(BorderFactory.createLineBorder(Color.black));
-		SizeGrip corner = new SizeGrip();
-		boolean isLeftToRight = getComponentOrientation().isLeftToRight();
-        String str = isLeftToRight ? JScrollPane.LOWER_RIGHT_CORNER :
-                                        JScrollPane.LOWER_LEFT_CORNER;
-        jScrollPane1.setCorner(str, corner);
-        jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        jScrollPane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        
+		
+		Consumer<JScrollPane> initScrollPane = pane -> {
+			SizeGrip corner = new SizeGrip();
+			boolean isLeftToRight = getComponentOrientation().isLeftToRight();
+	        String str = isLeftToRight ? JScrollPane.LOWER_RIGHT_CORNER :
+	                                        JScrollPane.LOWER_LEFT_CORNER;
+	        pane.setCorner(str, corner);
+	        pane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+	        pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		};
+		initScrollPane.accept(jScrollPane1);
+		
+		sqlDmlDeletePanel = createSQLDMLPanel(pinToggleButton);
+		if (sqlDmlDeletePanel != null) {
+			initScrollPane.accept(sqlDmlDeletePanel.scrollPane);
+			deletePanel.add(sqlDmlDeletePanel, BorderLayout.CENTER);
+		} else {
+			contentTabbedPane.remove(sqlDmlDeletePanel);
+		}
+		sqlDmlUpdatePanel = createSQLDMLPanel(pinToggleButton);
+		if (sqlDmlUpdatePanel != null) {
+			initScrollPane.accept(sqlDmlUpdatePanel.scrollPane);
+			updatePanel.add(sqlDmlUpdatePanel, BorderLayout.CENTER);
+		} else {
+			contentTabbedPane.remove(updatePanel);
+		}
+		sqlDmlInsertPanel = createSQLDMLPanel(pinToggleButton);
+		if (sqlDmlInsertPanel != null) {
+			initScrollPane.accept(sqlDmlInsertPanel.scrollPane);
+			insertPanel.add(sqlDmlInsertPanel, BorderLayout.CENTER);
+		} else {
+			contentTabbedPane.remove(sqlDmlInsertPanel);
+		}
+		
         JPanel movePanel = new MovePanel();
         
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -973,7 +1105,21 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	public void restoreFromOld(DetailsView oldDv) {
 		if (oldDv != null) {
 			setSortColumns(oldDv.sortColumns);
+			pinToggleButton.setSelected(oldDv.pinToggleButton.isSelected());
 			UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(oldDv.jScrollPane1.getViewport().getViewPosition()));
+			Component tab = oldDv.contentTabbedPane.getSelectedComponent();
+			if (tab == oldDv.insertPanel && sqlDmlInsertPanel != null && oldDv.sqlDmlInsertPanel != null) {
+				contentTabbedPane.setSelectedComponent(insertPanel);
+				UIUtil.invokeLater(14, () -> sqlDmlInsertPanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlInsertPanel.scrollPane.getViewport().getViewPosition()));
+			}
+			if (tab == oldDv.updatePanel && sqlDmlUpdatePanel != null && oldDv.sqlDmlUpdatePanel != null) {
+				contentTabbedPane.setSelectedComponent(updatePanel);
+				UIUtil.invokeLater(14, () -> sqlDmlUpdatePanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlUpdatePanel.scrollPane.getViewport().getViewPosition()));
+			}
+			if (tab == oldDv.deletePanel && sqlDmlDeletePanel != null && oldDv.sqlDmlDeletePanel != null) {
+				contentTabbedPane.setSelectedComponent(deletePanel);
+				UIUtil.invokeLater(14, () -> sqlDmlDeletePanel.scrollPane.getViewport().setViewPosition(oldDv.sqlDmlDeletePanel.scrollPane.getViewport().getViewPosition()));
+			}
 		}
 	}
 
@@ -988,4 +1134,8 @@ public abstract class DetailsView extends javax.swing.JPanel {
         closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.55);
         closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.55);
 	}
+
+	// TODO
+	// TODO text view: settings speichern, pro "context" (console, hier)
+	
 }
