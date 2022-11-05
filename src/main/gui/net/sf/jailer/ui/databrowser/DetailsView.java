@@ -34,6 +34,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Types;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +52,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
@@ -63,6 +65,7 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 
@@ -330,6 +333,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			List<Runnable> removeTableNames = new ArrayList<Runnable>();
 			List<JLabel> tableNames = new ArrayList<JLabel>();
 			Component nextFocusComponentForLastField = editModeToggleButton;
+			List<Object[]> textRows = new ArrayList<>();
 			int i = 0;
 			while (i < columns.size()) {
 				Integer columnIndexAtI = columnIndex.get(i);
@@ -339,14 +343,20 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				JComponent lCont = l;
 				JLabel tab = null;
 				JPanel panel2 = null;
+				String textTable = null;
+				String textColumn = null;
 				if (alternativeColumnLabels != null && alternativeColumnLabels.length > columnIndexAtI) {
 					String altName = alternativeColumnLabels[columnIndexAtI];
 					String text = altName;
+					textColumn = text;
 					String[] ntPair = altName.replaceAll("<.?html>", "").replaceAll("<br>", "\t").split("\t");
 					if (ntPair.length == 2) {
 						text = ntPair[0];
+						textColumn = text;
 					} else if (ntPair.length == 3) {
 						text = "<html>" + ntPair[1] + "</html>\t<html>" + ntPair[0] + "</html>";
+						textColumn = ntPair[1];
+						textTable = ntPair[0];
 					}
 					l.setText(text);
 					if (alternativeColumnLabelsFull != null && alternativeColumnLabelsFull.length > columnIndexAtI) {
@@ -415,7 +425,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 						}
 					}
 				} else {
-					l.setText(shortText(c.name != null? c.name : ""));
+					l.setText(textColumn = shortText(c.name != null? c.name : ""));
 				}
 				l.setFont(nonbold);
 				gridBagConstraints = new java.awt.GridBagConstraints();
@@ -582,8 +592,10 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					});
 					if (v instanceof UIUtil.IconWithText) {
 						f.setText(((UIUtil.IconWithText) v).text);
+						textRows.add(new Object[] { textTable, textColumn, ((UIUtil.IconWithText) v).text });
 					} else {
 						f.setText(v == null? "null" : v.toString());
+						textRows.add(new Object[] { textTable, textColumn, v == null? "" : v.toString() });
 					}
 	//				f.setEnabled(v != null);
 					if (v == null) {
@@ -760,6 +772,25 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			}
 			if (sqlDmlDeletePanel != null) {
 				sqlDmlDeletePanel.setContent(SQLDMLBuilder.buildDelete(theTable, Collections.singletonList(r), true, session));
+			}
+			
+			boolean withTable = textRows.stream().anyMatch(rw -> rw[0] != null);
+			DefaultTableModel textTModel = 
+					withTable?
+							new DefaultTableModel(new String[] { "Table", "Column",  "Value" }, 0)
+							:
+							new DefaultTableModel(new String[] { "Column",  "Value" }, 0);
+			textRows.forEach(rw -> {
+				if (withTable) {
+					textTModel.addRow(rw);
+				} else {
+					textTModel.addRow(new Object[] { rw[1], rw[2] });
+				}
+			});
+			if (tabContentPanel != null) {
+				JTable rowsTable = new JTable(textTModel);
+				rowsTable.setAutoCreateRowSorter(true);
+				tabContentPanel.updateTextView(rowsTable);
 			}
 		} finally {
 			browserContentCellEditor.setInDetailsView(false);
@@ -1035,6 +1066,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private SQLDMLPanel sqlDmlInsertPanel = null;
 	private SQLDMLPanel sqlDmlUpdatePanel = null;
 	private SQLDMLPanel sqlDmlDeletePanel = null;
+	private TabContentPanel tabContentPanel = null;
 	
 	public void prepareForNonModalUsage() {
 		closeButton.setVisible(false);
@@ -1056,7 +1088,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			initScrollPane.accept(sqlDmlDeletePanel.scrollPane);
 			deletePanel.add(sqlDmlDeletePanel, BorderLayout.CENTER);
 		} else {
-			contentTabbedPane.remove(sqlDmlDeletePanel);
+			contentTabbedPane.remove(deletePanel);
 		}
 		sqlDmlUpdatePanel = createSQLDMLPanel(pinToggleButton);
 		if (sqlDmlUpdatePanel != null) {
@@ -1070,14 +1102,18 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			initScrollPane.accept(sqlDmlInsertPanel.scrollPane);
 			insertPanel.add(sqlDmlInsertPanel, BorderLayout.CENTER);
 		} else {
-			contentTabbedPane.remove(sqlDmlInsertPanel);
+			contentTabbedPane.remove(insertPanel);
 		}
 		
-		TabContentPanel tabContentPanel = new TabContentPanel(new JLabel(""), new JLabel(""), table.getName(), 
+		List<Integer> cTypes = new ArrayList<>();
+		cTypes.add(Types.VARCHAR);
+		cTypes.add(Types.VARCHAR);
+		cTypes.add(Types.VARCHAR);
+		tabContentPanel = new TabContentPanel(new JLabel(""), new JLabel(""), table.getName(), 
 				false,
 				null,
 				null,
-				null);
+				cTypes);
 		
 		tabContentPanel.textSortedStateLabel.setVisible(false);
 		initScrollPane.accept(tabContentPanel.textViewScrollPane);
