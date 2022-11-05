@@ -329,7 +329,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	public void setContent(String sql) {
 		Point pos = scrollPane.getViewport().getViewPosition();
 		UIUtil.invokeLater(() -> {
-			sqlTextArea.setText(sql);
+			sqlTextArea.setText(sql.trim());
 			UIUtil.invokeLater(() -> {
 				scrollPane.getViewport().setViewPosition(pos);
 			});

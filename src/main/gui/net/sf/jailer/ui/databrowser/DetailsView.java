@@ -788,7 +788,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			if (tabContentPanel != null) {
 				JTable rowsTable = new JTable(textTModel);
 				rowsTable.setAutoCreateRowSorter(true);
-				tabContentPanel.updateTextView(rowsTable);
+				UIUtil.invokeLater(() -> tabContentPanel.updateTextView(rowsTable));
 			}
 		} finally {
 			browserContentCellEditor.setInDetailsView(false);

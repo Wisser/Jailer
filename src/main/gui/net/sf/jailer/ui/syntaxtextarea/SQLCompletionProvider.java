@@ -484,7 +484,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     
                     // all tables in default schema
                     SCHEMA schema = getDefaultSchema(metaDataSource);
-                    if (schema != null && (clause != Clause.INTO || beforeCaret.matches("(?is)\\s*insert\\s+into\\s*"))) {
+                    if (schema != null && (clause != Clause.INTO || beforeCaret.matches("(?is)\\s*insert\\s+into\\s*" + "(?:[\"`']?\\w*)"))) {
                         result.addAll(schemaCompletions(schema));
                         for (SCHEMA s: getSchemas(metaDataSource)) {
                         	if (!s.equals(schema)) {

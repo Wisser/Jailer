@@ -473,7 +473,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 					}
 				}
 			}
-			sb.append(UIUtil.LINE_SEPARATOR);
+			if (y < cell.length - 1) {
+				sb.append(UIUtil.LINE_SEPARATOR);
+			}
 			if (y == 0 && sep == null && incHeader) {
 				for (int x = 0; x < cell[y].length; ++x) {
 					for (int i = 2 + maxLength[x]; i > 0; --i) {
