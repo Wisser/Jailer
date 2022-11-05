@@ -165,7 +165,10 @@ public class TabContentPanel extends javax.swing.JPanel {
         				SEPARATOR_SPACE
         		});
 		columnSeparatorComboBox.setModel(sepModel);
-		Component ec = columnSeparatorComboBox.getEditor().getEditorComponent();
+		if (!explain && lastColumnSeparator != null && !"".equals(lastColumnSeparator)) {
+			columnSeparatorComboBox.setSelectedItem(lastColumnSeparator);
+		}
+	    Component ec = columnSeparatorComboBox.getEditor().getEditorComponent();
 		if (ec instanceof JTextField) {
 			((JTextField) ec).getDocument().addDocumentListener(new DocumentListener() {
 				@Override
@@ -186,6 +189,10 @@ public class TabContentPanel extends javax.swing.JPanel {
 					}
 				}
 			});
+		}
+		
+		if (!explain && lastHeaderCheckBoxIsSelected != null) {
+			headerCheckBox.setSelected(lastHeaderCheckBoxIsSelected);
 		}
 		
 		JScrollPane scrollPane = new JScrollPane();
@@ -344,10 +351,17 @@ public class TabContentPanel extends javax.swing.JPanel {
     }
 
     private JTable theRowsTable = null;
+    protected boolean forDetailsView = false;
+    
+    private static Boolean lastHeaderCheckBoxIsSelected;
+    private static Object lastColumnSeparator;
     
     public void updateTextView(JTable rowsTable) {
     	theRowsTable = rowsTable;
 		Object sep = columnSeparatorComboBox.getEditor().getItem();
+		if (columnSeparatorComboBox.isVisible()) {
+			lastColumnSeparator = sep;
+		}
 		if ("".equals(sep)) {
 			sep = null;
 		} else if (SEPARATOR_SPACE.equals(sep)) {
@@ -358,11 +372,21 @@ public class TabContentPanel extends javax.swing.JPanel {
     	TableColumnModel cm = rowsTable.getColumnModel();
     	TableModel rDm = rowsTable.getModel();
     	RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
+		int startI = 0;
+		boolean incHeader = headerCheckBox.isSelected();
+		if (headerCheckBox.isVisible()) {
+			lastHeaderCheckBoxIsSelected = incHeader;
+		}
+		if (forDetailsView) {
+			if (!incHeader) {
+				startI = cm.getColumnCount() - 1;
+			}
+		}
     	String[][] cell = new String[sorter.getViewRowCount() + 1][];
     	int[] maxLength = new int[rDm.getColumnCount()];
 		for (int y = -1; y < sorter.getViewRowCount(); ++y) {
 			cell[y + 1] = new String[rDm.getColumnCount()];
-			for (int x = 0; x < rDm.getColumnCount(); ++x) {
+			for (int x = startI; x < rDm.getColumnCount(); ++x) {
 				int mx = cm.getColumn(x).getModelIndex();
 				Object value;
 				if (y < 0) {
@@ -384,7 +408,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 					if (sep != null || (v == UIUtil.NULL || v == null)) {
 						value = v;
 					} else {
-						value = value.toString().trim();
+						value = value.toString().replace((char) 182, '\n').trim();
 					}
 				}
 				String cellContent = value == UIUtil.NULL || value == null? "" : value.toString();
@@ -397,13 +421,12 @@ public class TabContentPanel extends javax.swing.JPanel {
 				maxLength[x] = Math.max(maxLineLength(cellContent), maxLength[x]);
 			}
 		}
-		boolean incHeader = headerCheckBox.isSelected();
 		StringBuilder sb = new StringBuilder();
 		for (int y = 0; y < cell.length; ++y) {
 			if (y == 0 && !incHeader) {
 				continue;
 			}
-			for (int x = 0; x < cell[y].length; ++x) {
+			for (int x = startI; x < cell[y].length; ++x) {
 				if (sep != null) {
 					sb.append(cell[y][x]);
 					if (x < cell[y].length - 1)
@@ -690,7 +713,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         textTabPanel.add(jLabel1, gridBagConstraints);
 
         headerCheckBox.setSelected(true);
-        headerCheckBox.setText("Include Header");
+        headerCheckBox.setText("Include Column Names");
         headerCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 headerCheckBoxActionPerformed(evt);

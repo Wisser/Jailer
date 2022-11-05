@@ -1124,7 +1124,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						};
 						UIUtil.runJailer(this, args, false, true,
 						false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false,
-						true, false, false, false, consumer, null, executionContext);
+						true, false, false, false, consumer, null, false, executionContext);
 					}
 				}
 			}
@@ -1506,7 +1506,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 											}										};
 										UIUtil.runJailer(this, args, true, true,
 											false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), progressListener, progressPanel, true,
-											true, false, false, false, consumer, openResult, executionContext);
+											true, false, false, false, consumer, openResult, false, executionContext);
 										isRunning = true;
 									}
 								}

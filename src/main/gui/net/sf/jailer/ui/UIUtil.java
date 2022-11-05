@@ -378,7 +378,7 @@ public class UIUtil {
             boolean returnFalseOnError, Consumer<Window> openResult, ExecutionContext executionContext) {
         return runJailer(ownerOfConsole, cliArgs, showLogfileButton, printCommandLine,
                 closeOutputWindow, continueOnErrorQuestion, user, password, progressListener, progressPanel, showExeptions,
-                fullSize, false, returnFalseOnError, false, null, openResult, executionContext);
+                fullSize, false, returnFalseOnError, false, null, openResult, false, executionContext);
     }
 
 	public static boolean canRunJailer() {
@@ -422,7 +422,7 @@ public class UIUtil {
             final boolean printCommandLine, final boolean closeOutputWindow,
             final String continueOnErrorQuestion, String user, String password, final ProgressListener progressListener,
             final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
-            final boolean closeOutputWindowOnError, final boolean returnFalseOnError, boolean throwException, final ResultConsumer resultConsumer, Consumer<Window> openResult, ExecutionContext executionContext) {
+            final boolean closeOutputWindowOnError, final boolean returnFalseOnError, boolean throwException, final ResultConsumer resultConsumer, Consumer<Window> openResult, boolean closeAfterExceptionShown, ExecutionContext executionContext) {
 		if (!UIUtil.canRunJailer()) {
 			return false;
 		}
@@ -659,6 +659,9 @@ public class UIUtil {
                                             && !(exp[0] instanceof CancellationException)) {
                                         UIUtil.showException(outputView.dialog, "Error", exp[0], arglist);
                                         exceptionShown[0] = true;
+                                        if (closeAfterExceptionShown) {
+                                            closeDialog();
+                                        }
                                     }
                                     if (result[0] && progressPanel != null) {
                                         progressPanel.confirm();

@@ -2481,7 +2481,7 @@ public abstract class ExportDialog extends javax.swing.JDialog {
 						boolean result = UIUtil.runJailer(this, ddlArgs, false,
 							false, true,
 							null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null,
-							null, false, false, true, false, true, null, null, executionContext);
+							null, false, false, true, false, true, null, null, false, executionContext);
 						if (DDLCreator.uPKWasTooLong) {
 							JOptionPane.showMessageDialog(
 									this,

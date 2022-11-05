@@ -281,7 +281,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 return input.equals("*") || input.isEmpty();
             }
             String inputTextUC = stripQuote(getInputText()).toUpperCase(Locale.ENGLISH);
-            if ("FROM".equals(inputTextUC) && inputText.trim().equals("*")) {
+            if ("* FROM".equals(inputTextUC) && inputText.trim().equals("*")) {
             	return true;
             }
 			return inputTextUC.startsWith(stripQuote(inputText).toUpperCase(Locale.ENGLISH));
@@ -680,7 +680,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                         break;
                     case ON: return keywordCompletion(afterCaret, "Where", "Group by");
                     case ORDER: return null;
-                    case SELECT: return keywordCompletion(afterCaret, "From");
+                    case SELECT: return keywordCompletion(afterCaret, "From", "* From");
                     case WHERE: 
                         if (defaultClause != Clause.WHERE) {
                             return keywordCompletion(afterCaret, "Group by", "Order by");

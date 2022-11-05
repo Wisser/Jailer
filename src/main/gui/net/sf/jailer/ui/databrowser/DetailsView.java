@@ -130,8 +130,6 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		}
 		editModeToggleButton.setFocusable(true);
 		contentTabbedPane.addChangeListener(new ChangeListener() {
-			// TODO
-			// TODO text wohl auch
 			Set<Component> seen = new HashSet<Component>();
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -352,11 +350,11 @@ public abstract class DetailsView extends javax.swing.JPanel {
 					String[] ntPair = altName.replaceAll("<.?html>", "").replaceAll("<br>", "\t").split("\t");
 					if (ntPair.length == 2) {
 						text = ntPair[0];
-						textColumn = text;
+						textColumn = UIUtil.fromHTMLFragment(ntPair[0].replaceAll("<[^>]+>", "")).trim();
 					} else if (ntPair.length == 3) {
 						text = "<html>" + ntPair[1] + "</html>\t<html>" + ntPair[0] + "</html>";
-						textColumn = ntPair[1];
-						textTable = ntPair[0];
+						textColumn = UIUtil.fromHTMLFragment(ntPair[1].replaceAll("<[^>]+>", "")).trim();
+						textTable = UIUtil.fromHTMLFragment(ntPair[0].replaceAll("<[^>]+>", "")).trim();
 					}
 					l.setText(text);
 					if (alternativeColumnLabelsFull != null && alternativeColumnLabelsFull.length > columnIndexAtI) {
@@ -849,8 +847,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
-        rowSpinner = new javax.swing.JSpinner();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
         contentTabbedPane = new javax.swing.JTabbedPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
@@ -860,6 +857,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
         updatePanel = new javax.swing.JPanel();
         deletePanel = new javax.swing.JPanel();
         closeButton = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        rowSpinner = new javax.swing.JSpinner();
         selectButton = new javax.swing.JButton();
         jToolBar1 = new javax.swing.JToolBar();
         sortCheckBox = new javax.swing.JCheckBox();
@@ -868,19 +868,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(" Row ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        add(jLabel1, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        add(rowSpinner, gridBagConstraints);
+        jLayeredPane1.setLayout(new java.awt.GridBagLayout());
 
         contentTabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
 
@@ -919,7 +907,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(contentTabbedPane, gridBagConstraints);
+        jLayeredPane1.add(contentTabbedPane, gridBagConstraints);
 
         closeButton.setText("CLose");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -932,7 +920,23 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        add(closeButton, gridBagConstraints);
+        jLayeredPane1.add(closeButton, gridBagConstraints);
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jLabel1.setText(" Row ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        jPanel3.add(jLabel1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel3.add(rowSpinner, gridBagConstraints);
 
         selectButton.setText("Select Row");
         selectButton.addActionListener(new java.awt.event.ActionListener() {
@@ -945,7 +949,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        add(selectButton, gridBagConstraints);
+        jPanel3.add(selectButton, gridBagConstraints);
 
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
@@ -986,7 +990,23 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
-        add(jToolBar1, gridBagConstraints);
+        jPanel3.add(jToolBar1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 12;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jLayeredPane1.add(jPanel3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jLayeredPane1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private boolean programChangedSortCheckBox = false;
@@ -1040,8 +1060,10 @@ public abstract class DetailsView extends javax.swing.JPanel {
     public javax.swing.JToggleButton editModeToggleButton;
     private javax.swing.JPanel insertPanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToggleButton pinToggleButton;
@@ -1070,36 +1092,34 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	
 	public void prepareForNonModalUsage() {
 		closeButton.setVisible(false);
+
 		setBorder(BorderFactory.createLineBorder(Color.black));
+		SizeGrip corner = new SizeGrip();
+		boolean isLeftToRight = getComponentOrientation().isLeftToRight();
 		
-		Consumer<JScrollPane> initScrollPane = pane -> {
-			SizeGrip corner = new SizeGrip();
-			boolean isLeftToRight = getComponentOrientation().isLeftToRight();
-	        String str = isLeftToRight ? JScrollPane.LOWER_RIGHT_CORNER :
-	                                        JScrollPane.LOWER_LEFT_CORNER;
-	        pane.setCorner(str, corner);
-	        pane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-	        pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		};
-		initScrollPane.accept(jScrollPane1);
+		jLayeredPane1.setLayer(corner, javax.swing.JLayeredPane.DRAG_LAYER);
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 12;
+        gridBagConstraints.anchor = isLeftToRight? java.awt.GridBagConstraints.SOUTHEAST : java.awt.GridBagConstraints.SOUTHWEST;
+        jLayeredPane1.add(corner, gridBagConstraints);
+
 		
 		sqlDmlDeletePanel = createSQLDMLPanel(pinToggleButton);
 		if (sqlDmlDeletePanel != null) {
-			initScrollPane.accept(sqlDmlDeletePanel.scrollPane);
 			deletePanel.add(sqlDmlDeletePanel, BorderLayout.CENTER);
 		} else {
 			contentTabbedPane.remove(deletePanel);
 		}
 		sqlDmlUpdatePanel = createSQLDMLPanel(pinToggleButton);
 		if (sqlDmlUpdatePanel != null) {
-			initScrollPane.accept(sqlDmlUpdatePanel.scrollPane);
 			updatePanel.add(sqlDmlUpdatePanel, BorderLayout.CENTER);
 		} else {
 			contentTabbedPane.remove(updatePanel);
 		}
 		sqlDmlInsertPanel = createSQLDMLPanel(pinToggleButton);
 		if (sqlDmlInsertPanel != null) {
-			initScrollPane.accept(sqlDmlInsertPanel.scrollPane);
 			insertPanel.add(sqlDmlInsertPanel, BorderLayout.CENTER);
 		} else {
 			contentTabbedPane.remove(insertPanel);
@@ -1113,21 +1133,22 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				false,
 				null,
 				null,
-				cTypes);
+				cTypes) {
+			{ forDetailsView = true; }
+		};
 		
 		tabContentPanel.textSortedStateLabel.setVisible(false);
-		initScrollPane.accept(tabContentPanel.textViewScrollPane);
 		textPanel.add(tabContentPanel.textTabPanel, BorderLayout.CENTER);
 		
         JPanel movePanel = new MovePanel();
         
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.weightx = 1.0;
-        add(movePanel, gridBagConstraints);
+        jPanel3.add(movePanel, gridBagConstraints);
         
         SmallButton closeButton = new SmallButton(closeIcon, closeOverIcon, false) {
 			@Override
@@ -1143,7 +1164,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        add(closeButton, gridBagConstraints);
+        jPanel3.add(closeButton, gridBagConstraints);
  	}
  
 	private void resetScrollPane() {
@@ -1201,7 +1222,4 @@ public abstract class DetailsView extends javax.swing.JPanel {
         closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.55);
 	}
 
-	// TODO
-	// TODO text view: settings speichern, pro "context" (console, hier)
-	
 }

@@ -3000,7 +3000,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							}
 						};
 						UIUtil.runJailer(this, args, false, true, false, null, dcd.getUser(), dcd.getPassword(), null,
-								null, false, true, false, false, false, consumer, null, executionContext);
+								null, false, true, false, false, false, consumer, null, false, executionContext);
 					}
 				}
 			}
