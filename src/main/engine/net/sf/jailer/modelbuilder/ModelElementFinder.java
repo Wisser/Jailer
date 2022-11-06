@@ -25,6 +25,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.Pair;
 
 /**
  * Finds model-elements (tables and associations).
@@ -64,5 +65,12 @@ public interface ModelElementFinder {
 	 * @throws Exception on each error
 	 */
 	Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestions, Session session, ExecutionContext executionContext) throws Exception;
+
+	/**
+	 * Finds comments for all model elements.
+	 * 
+	 * @return map from element (table, column) to the comment
+	 */
+	Map<Pair<Table, Column>, String> getComments();
 	
 }

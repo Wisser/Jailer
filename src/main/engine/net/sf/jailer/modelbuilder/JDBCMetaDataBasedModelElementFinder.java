@@ -114,6 +114,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * Set of the names of user defined types.
 	 */
 	private Set<String> userDefinedTypes = null;
+	
+	/**
+	 * Map from element (table, column) to the comment.
+	 */
+	private Map<Pair<Table, Column>, String> comments = new HashMap<>();
 
 	/**
 	 * Get of the names of user defined types.
@@ -382,6 +387,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		List<String> types = getTypes(executionContext);
 		ResultSet resultSet;
 		List<String> tableNames = new ArrayList<String>();
+		Map<String, String> commentPerTableName = new HashMap<>();
 		for (String type: types) {
 			resultSet = getTables(session, introspectionSchema, tableNamePattern, new String[] { type });
 			while (resultSet.next()) {
@@ -400,6 +406,13 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 						}
 						tableNames.add(tableName);
 						tableTypes.put(tableName, resultSet.getString(4).toUpperCase(Locale.ENGLISH));
+						String comment = resultSet.getString(5);
+						if (comment != null) {
+							comment = comment.trim();
+							if (!comment.isEmpty()) {
+								commentPerTableName.put(tableName, comment);
+							}
+						}
 						_log.info("found table " + tableName);
 					} else {
 						_log.info("skip table " + tableName);
@@ -526,6 +539,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			Table table = new Table(tableName, primaryKey, false, false);
 			table.setAuthor(session.getMetaData().getDriverName());
 			tables.add(table);
+			String comment = commentPerTableName.get(tableName);
+			if (comment != null) {
+				comments.put(new Pair<Table, Column>(table, null), comment);
+				// TODO
+				// TODO "no changes"-criterium
+			}
 			CancellationHandler.checkForCancellation(null);
 		}
 
@@ -814,6 +833,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			 return session.getMetaData().getTables(schemaPattern, null, tableNamePattern, types);
 		}
 		return session.getMetaData().getTables(null, schemaPattern, tableNamePattern, types);
+	}
+
+	/**
+	 * Finds comments for all model elements.
+	 * 
+	 * @return map from element (table, column) to the comment
+	 */
+	@Override
+	public Map<Pair<Table, Column>, String> getComments() {
+		return comments;
 	}
 
 	/**
@@ -1227,6 +1256,13 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			_log.debug("column info: '" + colName + "' '" + sqlType + "' " + type + " '" + resultSet.getString(6) + "'");
 			Column column = new Column(colName, filterType(sqlType, length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterLength(length, precision, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), filterPrecision(length, precision, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)));
 			column.isNullable = resultSet.getInt(11) == DatabaseMetaData.columnNullable;
+			String comment = resultSet.getString(12);
+			if (comment != null) {
+				comment = comment.trim();
+				if (!comment.isEmpty()) {
+					comments.put(new Pair<Table, Column>(table, column), comment);
+				}
+			}
 			Boolean isVirtual = null;
 			if (session.dbms.getExportBlocks().contains(sqlType)) {
 				isVirtual = true;

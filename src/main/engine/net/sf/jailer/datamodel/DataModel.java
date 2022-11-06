@@ -184,6 +184,13 @@ public class DataModel {
 	}
 
 	/**
+	 * Gets name of file containing the comments.
+	 */
+	public static String getCommentsFile(ExecutionContext executionContext) {
+		return getDatamodelFolder(executionContext) + File.separator + "comment.csv";
+	}
+
+	/**
 	 * List of tables to be excluded from deletion.
 	 */
 	public static String getExcludeFromDeletionFile(ExecutionContext executionContext) {

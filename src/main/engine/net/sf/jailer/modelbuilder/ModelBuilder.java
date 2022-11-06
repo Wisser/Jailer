@@ -98,6 +98,12 @@ public class ModelBuilder {
 	public static String getModelBuilderAssociationsFilename(ExecutionContext executionContext) {
 		return DataModel.getDatamodelFolder(executionContext) + File.separator + "model-builder-association.csv";
 	}
+	/**
+	 * Name of CSV file for generated comments.
+	 */
+	public static String getModelBuilderCommentsFilename(ExecutionContext executionContext) {
+		return DataModel.getDatamodelFolder(executionContext) + File.separator + "model-builder-comment.csv";
+	}
 
 	/**
 	 * The exclude-tables file.
@@ -139,27 +145,32 @@ public class ModelBuilder {
 		merge(getModelBuilderTablesFilename(executionContext), DataModel.getTablesFile(executionContext), 0, TABLE_HEADER);
 		merge(getModelBuilderAssociationsFilename(executionContext), DataModel.getAssociationsFile(executionContext), 5, ASSOC_HEADER);
 		merge(getModelBuilderColumnsFilename(executionContext), DataModel.getColumnsFile(executionContext), 0, COLUMN_HEADER);
+		merge(getModelBuilderCommentsFilename(executionContext), DataModel.getCommentsFile(executionContext), -1, COMMENT_HEADER);
 		cleanUp(executionContext);
 	}
 
 	private static void merge(String sourceFile, String destFile, int keyColumn, String header) throws Exception {
 		CsvFile source = new CsvFile(new File(sourceFile));
+		// TODO
+		// TODO test, no merge
+		// TODO is only called via cli
 		CsvFile dest = new CsvFile(new File(destFile));
+		StringBuilder result = new StringBuilder();
 
 		Map<String, Line> destLines = new TreeMap<String, CsvFile.Line>();
 
-		for (Line line: dest.getLines()) {
-			destLines.put(line.cells.get(keyColumn), line);
+		if (keyColumn >= 0) {
+			for (Line line: dest.getLines()) {
+				destLines.put(line.cells.get(keyColumn), line);
+			}
+	
+			for (Line line: source.getLines()) {
+				String key = line.cells.get(keyColumn);
+				destLines.remove(key);
+				result.append(line.toString() + PrintUtil.LINE_SEPARATOR);
+			}
 		}
-
-		StringBuilder result = new StringBuilder();
-
-		for (Line line: source.getLines()) {
-			String key = line.cells.get(keyColumn);
-			destLines.remove(key);
-			result.append(line.toString() + PrintUtil.LINE_SEPARATOR);
-		}
-
+		
 		for (Line line: destLines.values()) {
 			result.append(line.toString() + PrintUtil.LINE_SEPARATOR);
 		}
@@ -383,6 +394,14 @@ public class ModelBuilder {
 		}
 
 		resetAssociationFile(associationDefinition.toString(), executionContext);
+		
+		StringBuilder commentsDefinitions = new StringBuilder();
+		finder.getComments().forEach((element, comment) -> {
+			String line = CsvFile.encodeCell(element.a.getName() + (element.b != null? "." + element.b.name : "")) + "; "
+						+ CsvFile.encodeCell(comment);
+			commentsDefinitions.append(line + PrintUtil.LINE_SEPARATOR);
+		});
+		resetCommentsFile(commentsDefinitions.toString(), executionContext);
 	}
 
 	private static String ASSOC_HEADER = "# Table A; Table B; First-insert; Cardinality (opt); Join-condition; Name; Author" + PrintUtil.LINE_SEPARATOR;
@@ -409,6 +428,13 @@ public class ModelBuilder {
 				columnsDefinitions);
 	}
 
+	private static String COMMENT_HEADER = "# Table[.Column]; Comment" + PrintUtil.LINE_SEPARATOR;
+
+	private static void resetCommentsFile(String commentsDefinitions, ExecutionContext executionContext) throws IOException {
+		writeFile(getModelBuilderCommentsFilename(executionContext),
+				COMMENT_HEADER +
+				commentsDefinitions);
+	}
 	/**
 	 * Inserts an association into a model.
 	 *
