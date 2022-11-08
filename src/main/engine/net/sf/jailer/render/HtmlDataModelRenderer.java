@@ -118,11 +118,11 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			List<String> tablesColumn = new ArrayList<String>();
 			
 			for (Table table: tableList) {
-				tablesColumn.add(linkTo(table, table.getName(), CONTENT_FOLDER_NAME + "/"));
+				tablesColumn.add(linkTo(table, table.getName(), CONTENT_FOLDER_NAME + "/", dataModel));
 				StringBuffer legend = new StringBuffer();
-				String closure = renderClosure(table, legend);
+				String closure = renderClosure(table, legend, dataModel);
 				closure = new PrintUtil().applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure", "", closure });
-				String columns = generateColumnsTable(table);
+				String columns = generateColumnsTable(table, dataModel);
 				if (columns == null) {
 					columns = "";
 				} else {
@@ -131,7 +131,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 				String components = "";
 				String domainSuffix = "";
 				String title = "Table " + escapeHtmlEntities(table.getName());
-				writeFile(new File(outputFolderContent, toFileName(table)), new PrintUtil().applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix, escapeHtmlEntities(dataModel.getName()) }));
+				writeFile(new File(outputFolderContent, toFileName(table)), new PrintUtil().applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>(), dataModel), closure + legend, components + columns, domainSuffix, escapeHtmlEntities(dataModel.getName()), escapeHtmlEntities(dataModel.getComment(table, null)).replace("\n", "<br>") }));
 				CancellationHandler.checkForCancellation(null);
 			}
 			
@@ -162,10 +162,11 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * Renders the closure of a table.
 	 * 
 	 * @param table the table
+	 * @param dataModel 
 	 * 
 	 * @return render of closure
 	 */
-	private String renderClosure(Table table, StringBuffer legend) throws FileNotFoundException, IOException {
+	private String renderClosure(Table table, StringBuffer legend, DataModel dataModel) throws FileNotFoundException, IOException {
 		StringBuffer lines = new StringBuffer();
 		int distance = 0;
 		Set<Table> closure = new HashSet<Table>();
@@ -201,11 +202,11 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 				if (!firstTime) {
 					ts.append(", ");
 				}
-				ts.append(dt.equals(table)? escapeHtmlEntities(dt.getName()) : linkTo(dt));
+				ts.append(dt.equals(table)? escapeHtmlEntities(dt.getName()) : linkTo(dt, dataModel));
 				firstTime = false;
 			}
 			if (!cl.isEmpty()) {
-				lines.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { "", "&nbsp;&nbsp;distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), COLOR_KEYWORDS, distance % 2 != 0? "class=\"highlightedrow\"" : "" }));
+				lines.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { "", "&nbsp;&nbsp;distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), COLOR_KEYWORDS, distance % 2 != 0? "class=\"highlightedrow\"" : "", "" }));
 			}
 			++distance;
 			closure.addAll(associatedTables);
@@ -222,7 +223,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @param table the table
 	 * @return render of table
 	 */
-	private String renderTableBody(Table table, Table current, int depth, int indent, Set<Table> alreadyRendered) throws FileNotFoundException, IOException {
+	private String renderTableBody(Table table, Table current, int depth, int indent, Set<Table> alreadyRendered, DataModel dataModel) throws FileNotFoundException, IOException {
 		if (alreadyRendered.contains(table)) {
 			return "";
 		}
@@ -262,7 +263,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			for (Association association: dep) {
 				if (!"".equals(association.toString())) {
 					prefix = gap;
-					lines.append(tableRow(indent, association, current, ++lineNr % 2 == 0));
+					lines.append(tableRow(indent, association, current, ++lineNr % 2 == 0, dataModel));
 				}
 			}
 		}
@@ -272,7 +273,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			for (Association association: hasDep) {
 				if (!"".equals(association.toString())) {
 					prefix = gap;
-					lines.append(tableRow(indent, association, current, ++lineNr % 2 == 0));
+					lines.append(tableRow(indent, association, current, ++lineNr % 2 == 0, dataModel));
 				}
 			}
 		}
@@ -282,7 +283,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			for (Association association: assoc) {
 				if (!"".equals(assoc.toString())) {
 					prefix = gap;
-					lines.append(tableRow(indent, association, current, ++lineNr % 2 == 0));
+					lines.append(tableRow(indent, association, current, ++lineNr % 2 == 0, dataModel));
 				}
 			}
 		}
@@ -292,12 +293,12 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			for (Association association: ignored) {
 				if (!"".equals(association.toString())) {
 					prefix = gap;
-					lines.append(tableRow(indent, association, current, ++lineNr % 2 == 0));
+					lines.append(tableRow(indent, association, current, ++lineNr % 2 == 0, dataModel));
 				}
 			}
 		}
 
-		StringBuffer result = new StringBuffer(new PrintUtil().applyTemplate("template" + File.separator + "table.html", new Object[] { table.equals(current)? "Associations" : linkTo(table), indentSpaces(indent), lines.toString() }));
+		StringBuffer result = new StringBuffer(new PrintUtil().applyTemplate("template" + File.separator + "table.html", new Object[] { table.equals(current)? "Associations" : linkTo(table, dataModel), indentSpaces(indent), lines.toString() }));
 		
 		if (depth < maxDepth) {
 			if (depth == 0) {
@@ -309,7 +310,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			boolean firstTime = true;
 			for (Association association: all) {
 				if (!rendered.contains(association.destination)) {
-					String tableBody = renderTableBody(association.destination, current, depth + 1, indent + 1, alreadyRendered);
+					String tableBody = renderTableBody(association.destination, current, depth + 1, indent + 1, alreadyRendered, dataModel);
 					if (tableBody.length() > 0) {
 						if (!firstTime) {
 							result.append("<br>");
@@ -342,17 +343,17 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @param highlighted 
 	 * @return a row in the table render
 	 */
-	private String tableRow(int indent, Association association, Table current, boolean highlighted) throws FileNotFoundException, IOException {
+	private String tableRow(int indent, Association association, Table current, boolean highlighted, DataModel dataModel) throws FileNotFoundException, IOException {
 		String jc = association.renderJoinCondition("<span style=\"" + COLOR_KEYWORDS + "\">restricted by</span>");
 		String aliasA = "A", aliasB = "B";
 		if (!association.source.equals(association.destination)) {
 			aliasA = association.source.getName();
 			aliasB = association.destination.getName();
 		}
-		aliasA = linkTo(association.source, aliasA, "");
-		aliasB = linkTo(association.destination, aliasB, "");
+		aliasA = linkTo(association.source, aliasA, "", dataModel);
+		aliasB = linkTo(association.destination, aliasB, "", dataModel);
 		jc = SqlUtil.replaceAliases(jc, aliasA, aliasB);
-		return new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(indent), "&nbsp;&nbsp;" + (association.destination.equals(current)? escapeHtmlEntities(association.destination.getName()) : linkTo(association.destination)), "&nbsp;&nbsp;" + (association.getCardinality() != null? association.getCardinality() : ""), "&nbsp;on&nbsp;", jc, "", highlighted? "class=\"highlightedrow\"" : "" });
+		return new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(indent), "&nbsp;&nbsp;" + (association.destination.equals(current)? escapeHtmlEntities(association.destination.getName()) : linkTo(association.destination, dataModel)), "&nbsp;&nbsp;" + (association.getCardinality() != null? association.getCardinality() : ""), "&nbsp;on&nbsp;", jc, "", highlighted? "class=\"highlightedrow\"" : "", "" });
 	}
 	
 	/**
@@ -361,7 +362,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @param table the table
 	 * @return HTML render of table schema
 	 */
-	private String generateColumnsTable(Table table) throws SQLException, FileNotFoundException, IOException {
+	private String generateColumnsTable(Table table, DataModel dataModel) throws SQLException, FileNotFoundException, IOException {
 		StringBuffer result = new StringBuffer();
 		
 		int count = 0;
@@ -375,7 +376,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 			for (Column c: table.primaryKey.getColumns()) {
 				isPK = isPK || c.name.equalsIgnoreCase(COLUMN_NAME);
 			}
-			result.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(1), "&nbsp;&nbsp;" + escapeHtmlEntities(COLUMN_NAME), type, "", constraint, isPK? COLOR_KEYWORDS : "", count % 2 == 0? "class=\"highlightedrow\"" : "" }));
+			result.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(1), "&nbsp;&nbsp;" + escapeHtmlEntities(COLUMN_NAME), type, "", constraint, isPK? COLOR_KEYWORDS : "", count % 2 == 0? "class=\"highlightedrow\"" : "", "&nbsp;&nbsp;" + escapeHtmlEntities(dataModel.getComment(table, column)).replace("\n", "<br>&nbsp;&nbsp;") }));
 		}
 		
 		return count == 0? null : (new PrintUtil().applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Columns", "", result.toString() }));
@@ -387,7 +388,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	private String generateHTMLTable(String title, List<Integer> indents, List<String> column1) throws FileNotFoundException, IOException {
 		StringBuffer result = new StringBuffer();
 		for (int i = 0; i < column1.size(); ++i) {
-			result.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { "", indentSpaces(indents == null? 1 : indents.get(i)) + column1.get(i), "", "", "", "", i % 2 != 0? "class=\"highlightedrow\"" : "" }));
+			result.append(new PrintUtil().applyTemplate("template" + File.separator + "table_line.html", new Object[] { "", indentSpaces(indents == null? 1 : indents.get(i)) + column1.get(i), "", "", "", "", i % 2 != 0? "class=\"highlightedrow\"" : "", "" }));
 		}
 		return column1.isEmpty()? null : (new PrintUtil().applyTemplate("template" + File.separatorChar + "table.html", new Object[] { title, "", result.toString() }));
 	}
@@ -413,8 +414,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @param table the table
 	 * @return HTML-hyper link to the render of table
 	 */
-	private String linkTo(Table table) {
-		return linkTo(table, table.getName(), "");
+	private String linkTo(Table table, DataModel dataModel) {
+		return linkTo(table, table.getName(), "", dataModel);
 	}
 
 	/**
@@ -424,8 +425,14 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * @param name the name of the link
 	 * @return HTML-hyper link to the render of table
 	 */
-	private String linkTo(Table table, String name, String parent) {
-		return "<a href=\"" + parent + toFileName(table) + "\">" + escapeHtmlEntities(name) + "</a>";
+	private String linkTo(Table table, String name, String parent, DataModel dataModel) {
+		String title = dataModel.getComment(table, null);
+		if (title == null) {
+			title = "";
+		} else {
+			title = " title=\"" + (escapeHtmlEntities(title).replace("\n", "&#10;")) + "\"";
+		}
+		return "<a href=\"" + parent + toFileName(table) + "\"" + title +">" + escapeHtmlEntities(name) + "</a>";
 	}
 
 	/**
@@ -482,6 +489,9 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	}
 
     public static String escapeHtmlEntities(String input){
+    	if (input == null) {
+    		return "";
+    	}
         String result=input.replaceAll("&", "&amp;");
         result=result.replaceAll("\"", "&quot;");
         result=result.replaceAll("<", "&lt;");

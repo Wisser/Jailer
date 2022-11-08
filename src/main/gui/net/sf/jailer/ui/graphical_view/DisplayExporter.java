@@ -216,7 +216,13 @@ public class DisplayExporter {
 							
 							out.println("  <area shape=\"rect\" coords=\"" + x + "," + y + "," + (x + w) + "," + (y + h) + "\"");
 							out.println("    href=\"" + HtmlDataModelRenderer.CONTENT_FOLDER_NAME + "/" + HtmlDataModelRenderer.toFileName(table) + "\""); 
-							out.println("    title=\"" + HtmlDataModelRenderer.escapeHtmlEntities(tableName) + "\" />");
+							String comment = model.getComment(table, null);
+							if (comment == null) {
+							    comment = "";
+							} else {
+							    comment = "&#10;&#10;" + (HtmlDataModelRenderer.escapeHtmlEntities(comment).replace("\n", "&#10;"));
+							}
+							out.println("    title=\"" + HtmlDataModelRenderer.escapeHtmlEntities(tableName) + comment +"\" />");
 						}
 					}
 				}

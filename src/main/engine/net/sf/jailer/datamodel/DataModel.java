@@ -621,6 +621,16 @@ public class DataModel {
 			_log.error("failed to load data-model " + getDatamodelFolder(executionContext) + File.separator, e);
 			throw e;
 		}
+		try {
+			// comments
+			File commentFile = new File(getCommentsFile(executionContext));
+			InputStream is = openModelFile(commentFile, executionContext);
+			if (is != null) {
+				new CsvFile(is, null, commentFile.getPath(), null).getLines().forEach(l -> comments.put(l.cells.get(0), l.cells.get(1)));
+			}
+		} catch (Exception e) {
+			// ignore
+		}
 	}
 
 	private final List<Table> tableList = new ArrayList<Table>();
@@ -1309,6 +1319,12 @@ public class DataModel {
 			}
 		}));
 		tables.addAll(toAdd);
+	}
+
+	private Map<String, String> comments = new HashMap<String, String>();
+	
+	public String getComment(Table table, Column column) {
+		return comments.get(table.getName() + (column != null? "." + column.name : ""));
 	}
 
 	// TODO datamodel-file-monitoring. On file change, ask user if currently open extraction models/data browser desktop should be reloaded/refreshed.
