@@ -139,6 +139,7 @@ public class CommandLineParser {
 		System.out.println();
 		System.out.println("  " + cmd + " build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password>");
 		System.out.println("    determines table and relationship information through database analysis");
+		System.out.println("    -datamodel <folder>: folder holding the data model. Defaults to './datamodel'");
 		System.out.println("    -schema <schema>: limits analysis to the schema <schema>");
 		System.out.println();
 		System.out.println("  " + cmd + " render-datamodel [-datamodel VAL] [<extraction-model>] ");

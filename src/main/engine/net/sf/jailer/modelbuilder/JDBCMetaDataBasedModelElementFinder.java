@@ -541,9 +541,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			tables.add(table);
 			String comment = commentPerTableName.get(tableName);
 			if (comment != null) {
-				comments.put(new Pair<Table, Column>(table, null), comment);
-				// TODO
-				// TODO "no changes"-criterium
+				comments.put(new Pair<Table, Column>(table, null), comment.trim());
 			}
 			CancellationHandler.checkForCancellation(null);
 		}

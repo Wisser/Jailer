@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -76,6 +77,7 @@ import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.CsvFile.LineFilter;
 import net.sf.jailer.util.PrintUtil;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * Data Model Editor.
@@ -107,14 +109,19 @@ public class DataModelEditor extends javax.swing.JDialog {
 	private List<CsvFile.Line> linesFromModelFinder = new ArrayList<CsvFile.Line>();
 
 	/**
-	 * Set of tables with modified columns.
-	 */
-	private Set<String> modifiedColumnTables = new HashSet<String>();
-	
-	/**
 	 * Columns for each table.
 	 */
 	private Map<String, CsvFile.Line> columns = new TreeMap<String, Line>();
+	
+	/**
+	 * Comment definitions from model-finder result files.
+	 */
+	private List<CsvFile.Line> commentLines = null;
+
+	/**
+	 * Set of tables with modified columns.
+	 */
+	private Set<String> modifiedColumnTables = new HashSet<String>();
 	
 	/**
 	 * List of tables to be excluded from deletion.
@@ -154,7 +161,12 @@ public class DataModelEditor extends javax.swing.JDialog {
 		super(parent, true);
 		this.dbConnectionDialog = dbConnectionDialog;
 		this.executionContext = executionContext;
-		
+
+		final Color BG_COLOR = new Color(0.8f, 1.0f, 0.7f);
+		final Color BG_SELCOLOR = new Color(0.45f, 0.85f, 1.0f);
+		final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
+		final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
+
 		KnownIdentifierMap knownIdentifierMap = createKnownIdentifierMap();
 		
 		int newTables = 0;
@@ -205,10 +217,12 @@ public class DataModelEditor extends javax.swing.JDialog {
 				columns.put(l.cells.get(0), l);
 			}
 		}
-		
+
+		Set<String> tableNamesFromModelFinder = null;
 		File modelFinderTablesFile = new File(ModelBuilder.getModelBuilderTablesFilename(executionContext));
 		if (merge && modelFinderTablesFile.exists()) {
 			List<CsvFile.Line> tablesFromModelFinder = new CsvFile(modelFinderTablesFile).getLines();
+			tableNamesFromModelFinder = tablesFromModelFinder.stream().map(l -> l.cells.get(0)).collect(Collectors.toSet());
 			for (Iterator<CsvFile.Line> i = tablesFromModelFinder.iterator(); i.hasNext(); ) {
 				CsvFile.Line t = i.next();
 				for (CsvFile.Line l: tables) {
@@ -246,6 +260,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		}
 		sortLineList(tables, true);
 		File modelFinderAssociationsFile = new File(ModelBuilder.getModelBuilderAssociationsFilename(executionContext));
+		int diffCount = 0;
 		if (merge && modelFinderAssociationsFile.exists()) {
 			Set<String> allNames = new HashSet<String>();
 			for (Line as: associations) {
@@ -260,11 +275,56 @@ public class DataModelEditor extends javax.swing.JDialog {
 			associations.addAll(associationsFromModelFinder);
 			linesFromModelFinder.addAll(associationsFromModelFinder);
 			newAssociations += associationsFromModelFinder.size();
+			
+			Map<String, CsvFile.Line> commentLinesFromModelFinder = new TreeMap<String, CsvFile.Line>();
+			File commentFileModelBuilder = new File(ModelBuilder.getModelBuilderCommentsFilename(executionContext));
+			if (file.exists()) {
+				for (CsvFile.Line l: new CsvFile(commentFileModelBuilder).getLines()) {
+					commentLinesFromModelFinder.put(l.cells.get(0), l);
+				}
+			}
+			
+			commentLines = new ArrayList<CsvFile.Line>();
+			File commentFile = new File(DataModel.getCommentsFile(executionContext));
+			if (file.exists()) {
+				for (CsvFile.Line l: new CsvFile(commentFile).getLines()) {
+					String elementName = l.cells.get(0);
+					String tableName = elementName;
+					int i = SqlUtil.indexOfDot(elementName);
+					if (i >= 0) {
+						tableName = tableName.substring(0, i);
+					}
+					Line newComment = commentLinesFromModelFinder.get(elementName);
+					if (newComment == null && tableNamesFromModelFinder != null && tableNamesFromModelFinder.contains(tableName)) {
+						++diffCount;
+						continue;
+					}
+					if (newComment == null || newComment.cells.get(1).equals(l.cells.get(1))) {
+						if (newComment != null) {
+							commentLinesFromModelFinder.remove(l.cells.get(0));
+						}
+						commentLines.add(l);
+					} else {
+						commentLines.add(newComment);
+						commentLinesFromModelFinder.remove(l.cells.get(0));
+						++diffCount;
+					}
+				}
+			}
+			commentLines.addAll(commentLinesFromModelFinder.values());
+			diffCount += commentLinesFromModelFinder.size();
 		}
 		
 		sortLineList(associations, false);
 		initComponents();
-
+		if (diffCount > 0) {
+			markDirty();
+			commentsDiffLabel.setBackground(BG_COLOR);
+			commentsDiffLabel.setText(" " + diffCount + " new/modified comment" + (diffCount > 1? "s" : "") + " ");
+		} else {
+			commentsDiffLabel.setVisible(false);
+		}
+		
 		TableFilterHeader filterHeader = new TableFilterHeader();
 		filterHeader.setAutoChoices(AutoChoices.ENABLED);
 		filterHeader.setTable(tablesTable);
@@ -353,11 +413,6 @@ public class DataModelEditor extends javax.swing.JDialog {
 		info.setVisible(merge);
 		updateButtons();
 		
-		final Color BG_COLOR = new Color(0.8f, 1.0f, 0.7f);
-		final Color BG_SELCOLOR = new Color(0.45f, 0.85f, 1.0f);
-		final Color BG1 = UIUtil.TABLE_BACKGROUND_COLOR_1;
-		final Color BG2 = UIUtil.TABLE_BACKGROUND_COLOR_2;
-
 		TableCellRenderer tablesListItemRenderer = new DefaultTableCellRenderer() {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value,
@@ -646,6 +701,7 @@ public class DataModelEditor extends javax.swing.JDialog {
         jPanel6 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        commentsDiffLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Data Model Editor");
@@ -851,6 +907,16 @@ public class DataModelEditor extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         getContentPane().add(jSplitPane1, gridBagConstraints);
+
+        commentsDiffLabel.setFont(commentsDiffLabel.getFont().deriveFont(commentsDiffLabel.getFont().getSize()+2f));
+        commentsDiffLabel.setText("comments");
+        commentsDiffLabel.setOpaque(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        getContentPane().add(commentsDiffLabel, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1105,6 +1171,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 				saveTableList(Arrays.asList(JailerVersion.VERSION), DataModel.getVersionFile(executionContext));
 				saveDisplayNames();
 				saveName();
+				if (commentLines != null) {
+					save(sort(new ArrayList<Line>(commentLines), 0), DataModel.getCommentsFile(executionContext), "# Table[.Column]; Comment");
+				}
 				saved = true;
 			}
 		} catch (Throwable t) {
@@ -1199,6 +1268,10 @@ public class DataModelEditor extends javax.swing.JDialog {
 			save(new ArrayList<Line>(columns.values()), tmpFile, "#");
 			result = !cvsFilesEquals(tmpFile, DataModel.getColumnsFile(executionContext));
 		}
+		if (!result && commentLines != null) {
+			save(new ArrayList<Line>(commentLines), tmpFile, "#");
+			result = !cvsFilesEquals(tmpFile, DataModel.getCommentsFile(executionContext));
+		}
 		if (!result) {
 			JOptionPane.showMessageDialog(this, "No changes found.", "Analyze Database", JOptionPane.INFORMATION_MESSAGE);
 		}
@@ -1258,6 +1331,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable associationsTable;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JLabel commentsDiffLabel;
     private javax.swing.JButton deleteAssociations;
     private javax.swing.JButton deleteTables;
     private javax.swing.JButton editAssociation;

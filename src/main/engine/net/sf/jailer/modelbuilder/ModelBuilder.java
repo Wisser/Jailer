@@ -145,15 +145,12 @@ public class ModelBuilder {
 		merge(getModelBuilderTablesFilename(executionContext), DataModel.getTablesFile(executionContext), 0, TABLE_HEADER);
 		merge(getModelBuilderAssociationsFilename(executionContext), DataModel.getAssociationsFile(executionContext), 5, ASSOC_HEADER);
 		merge(getModelBuilderColumnsFilename(executionContext), DataModel.getColumnsFile(executionContext), 0, COLUMN_HEADER);
-		merge(getModelBuilderCommentsFilename(executionContext), DataModel.getCommentsFile(executionContext), -1, COMMENT_HEADER);
+		merge(getModelBuilderCommentsFilename(executionContext), DataModel.getCommentsFile(executionContext), 0, COMMENT_HEADER);
 		cleanUp(executionContext);
 	}
 
 	private static void merge(String sourceFile, String destFile, int keyColumn, String header) throws Exception {
 		CsvFile source = new CsvFile(new File(sourceFile));
-		// TODO
-		// TODO test, no merge
-		// TODO is only called via cli
 		CsvFile dest = new CsvFile(new File(destFile));
 		StringBuilder result = new StringBuilder();
 
@@ -435,6 +432,7 @@ public class ModelBuilder {
 				COMMENT_HEADER +
 				commentsDefinitions);
 	}
+	
 	/**
 	 * Inserts an association into a model.
 	 *

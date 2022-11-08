@@ -471,7 +471,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * @return schema name
 	 */
 	public String getOriginalSchema(String defaultSchema) {
-		int i = indexOfDot(getOriginalName());
+		int i = SqlUtil.indexOfDot(getOriginalName());
 		if (i >= 0) {
 			return getOriginalName().substring(0, i);
 		}
@@ -485,7 +485,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * @return schema name
 	 */
 	public String getSchema(String defaultSchema) {
-		int i = indexOfDot(name);
+		int i = SqlUtil.indexOfDot(name);
 		if (i >= 0) {
 			return name.substring(0, i);
 		}
@@ -498,33 +498,11 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * @return unqualified name of table
 	 */
 	public String getUnqualifiedName() {
-		int i = indexOfDot(name);
+		int i = SqlUtil.indexOfDot(name);
 		if (i >= 0) {
 			return name.substring(i + 1);
 		}
 		return name;
-	}
-
-	/**
-	 * Gets index of schema-table separator.
-	 */
-	private int indexOfDot(String fullName) {
-		if (fullName.length() > 0) {
-			char c = fullName.charAt(0);
-			if (!SqlUtil.isLetterOrDigit(c)) {
-				// quoting
-				int end = fullName.substring(1).indexOf(c);
-				if (end >= 0) {
-					end += 1;
-					int i = fullName.substring(end).indexOf('.');
-					if (i >= 0) {
-						return i + end;
-					}
-					return -1;
-				}
-			}
-		}
-		return fullName.indexOf('.');
 	}
 
 	/**

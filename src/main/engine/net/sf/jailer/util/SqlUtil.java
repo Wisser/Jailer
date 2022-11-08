@@ -784,6 +784,28 @@ public class SqlUtil {
 	}
 
 	/**
+	 * Gets index of schema-table separator.
+	 */
+	public static int indexOfDot(String fullName) {
+		if (fullName.length() > 0) {
+			char c = fullName.charAt(0);
+			if (!SqlUtil.isLetterOrDigit(c)) {
+				// quoting
+				int end = fullName.substring(1).indexOf(c);
+				if (end >= 0) {
+					end += 1;
+					int i = fullName.substring(end).indexOf('.');
+					if (i >= 0) {
+						return i + end;
+					}
+					return -1;
+				}
+			}
+		}
+		return fullName.indexOf('.');
+	}
+
+	/**
 	 * Retrieves SQL script file encoding.
 	 * 
 	 * @param scriptFileName file name of script
