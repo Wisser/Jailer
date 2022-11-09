@@ -1057,10 +1057,7 @@ public abstract class TableRenderer extends AbstractShapeRenderer {
 	 * @return tool tip text
 	 */
 	public String getToolTip(Table table) {
-		String comment = model.getComment(table, null);
-		return "<html>" +UIUtil.toHTMLFragment(table.getName() + " (" + table.primaryKey.toSQL(null, false) + ")", 250, true) +
-				(comment != null? "<br><hr><i>" + UIUtil.toHTMLFragment(comment, 250, true) + "</i>": "") +
-				"</html>";
+		return UIUtil.getToolTip(table, model);
 	}
 	
 	/**

@@ -68,6 +68,8 @@ public class MDTable extends MDObject {
 	private final MDSchema schema;
     private List<String> primaryKey;
     private List<String> columns;
+    private List<String> columnComments = new ArrayList<String>();
+    private String comment;
     private List<Column> columnTypes;
     private String pkConstraintName;
     private AtomicBoolean loading = new AtomicBoolean(false);
@@ -218,6 +220,13 @@ public class MDTable extends MDObject {
                 	while (resultSet.next()) {
                         String colName = metaDataSource.getQuoting().quote(resultSet.getString(4));
                         columns.add(colName);
+                        String comment = null;
+                        try {
+                        	comment = resultSet.getString(12);
+                        } catch (Exception e) {
+                        	// ignore
+                        }
+                        columnComments.add(comment);
                         int type = resultSet.getInt(5);
                         int length = 0;
                         int precision = -1;
@@ -583,9 +592,14 @@ public class MDTable extends MDObject {
      * @return DDL for this table
      */
     private String createDDL() {
-        StringBuilder sb = new StringBuilder("CREATE TABLE " + (getSchema().isDefaultSchema? "" : (getSchema().getName() + ".")) + getName() + " (\n");
+        StringBuilder sb = new StringBuilder();
+        if (comment != null) {
+        	sb.append("/*\n" + (comment.replace("*/", "* /")) + "\n*/\n");
+        }
+        sb.append("CREATE TABLE " + (getSchema().isDefaultSchema? "" : (getSchema().getName() + ".")) + getName() + " (\n");
     	String nullableContraint = getMetaDataSource().getSession().dbms.getNullableContraint();
     	boolean prepComma = false;
+    	int i = 0;
         for (Column column: columnTypes)  {
         	if (prepComma) {
         		sb.append(",\n");
@@ -598,6 +612,14 @@ public class MDTable extends MDObject {
         		constraint = column.isNullable? "" : " NOT NULL";
         	}
 			sb.append("    " + column + constraint);
+			String cc = null;
+			if (columnComments.size() > i) {
+				cc = columnComments.get(i);
+			}
+			if (cc != null) {
+	        	sb.append(" /* " + (comment.replace("*/", "* /").replaceAll("\n|\r", " ")) + " */");
+	        }
+			++i;
         }
         if (!primaryKey.isEmpty()) {
         	if (prepComma) {
@@ -648,6 +670,10 @@ public class MDTable extends MDObject {
     public void setEstimatedRowCount(Long erc) {
 		estimatedRowCount = erc;
 	}
+    
+    public void setComment(String comment) {
+    	this.comment = comment;
+    }
 
     private AtomicBoolean ddlLoaded = new AtomicBoolean(false);
 

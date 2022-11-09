@@ -162,6 +162,7 @@ public class MDSchema extends MDObject {
 							final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)),
 									"SYNONYM".equalsIgnoreCase(rs.getString(4))
 								 || "ALIAS".equalsIgnoreCase(rs.getString(4)));
+							table.setComment(rs.getString(5));
 							tables.add(table);
 							if (loadTableColumns) {
 								loadJobs.put(tableName, new Runnable() {

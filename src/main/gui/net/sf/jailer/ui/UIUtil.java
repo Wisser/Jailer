@@ -150,6 +150,7 @@ import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.LogUtil;
 import net.sf.jailer.util.Pair;
+import net.sf.jailer.util.PrintUtil;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 
 /**
@@ -2287,6 +2288,26 @@ public class UIUtil {
 	public static void setDialogSize(JDialog dialog, int w, int h) {
 		dialog.pack();
 		dialog.setSize(Math.max(w, dialog.getWidth()), Math.max(h, dialog.getHeight()));
+	}
+
+	public static String getToolTip(Table table, DataModel model) {
+		String comment = model.getComment(table, null);
+		StringBuilder colComments = new StringBuilder();
+		table.getColumns().forEach(c -> {
+			String cc = model.getComment(table, c);
+			if (cc != null) {
+				if (colComments.length() == 0) {
+					colComments.append("<hr><table>");
+				}
+				colComments.append("<tr><td>" + toHTMLFragment(c.name, 200) + "</td><td><i>" + toHTMLFragment(cc, 200) + "</i></td></tr>");
+			}
+		});
+		if (colComments.length() == 0) {
+			colComments.append("</table>");
+		}
+		return "<html>" +UIUtil.toHTMLFragment(table.getName() + " (" + table.primaryKey.toSQL(null, false) + ")", 250, true) +
+				(comment != null? "<br><hr><i>" + UIUtil.toHTMLFragment(comment, 250, true) + "</i>": "") + colComments +
+				"</html>";
 	}
 
 }

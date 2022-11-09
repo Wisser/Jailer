@@ -78,6 +78,17 @@ public class TableDetailsView extends javax.swing.JPanel {
      */
     public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, final Row row, final DataModel dataModel, TableDetailsView currentView) {
         initComponents();
+        
+        String ttt = UIUtil.getToolTip(table, dataModel);
+        tableNameLabel.setToolTipText(ttt);
+        jPanel1.setToolTipText(ttt);
+        if (dataModel.getComment(table, null) != null) {
+        	commentLabel.setText(dataModel.getComment(table, null).replace("\n", " "));
+        	commentLabel.setToolTipText(ttt);
+        } else {
+        	commentLabel.setVisible(false);
+        }
+        
 		renderConsumer = new HashMap<String, Consumer<JLabel>>();
 		table.getColumns().forEach(c -> { if (c.name != null) { renderConsumer.put(c.name, label -> label.setIcon(emptyIcon)); }});
     	if (table.primaryKey != null) {
@@ -261,6 +272,10 @@ public class TableDetailsView extends javax.swing.JPanel {
 					}
 					
 					JPanel panel = new JPanel();
+					String cc = dataModel.getComment(table, column);
+					if (cc != null) {
+						panel.setToolTipText(cc);
+					}
 					rows.put(column.name, panel);
 					if (y % 2 != 0) {
 						panel.setOpaque(false);
@@ -493,6 +508,7 @@ public class TableDetailsView extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         columnsPanel = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
+        commentLabel = new javax.swing.JLabel();
         sortColumnsCheckBox = new javax.swing.JCheckBox();
         findColumnsPanel = new javax.swing.JPanel();
         findColumnsLabel = new javax.swing.JLabel();
@@ -571,13 +587,23 @@ public class TableDetailsView extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         jPanel1.add(jScrollPane2, gridBagConstraints);
+
+        commentLabel.setFont(commentLabel.getFont().deriveFont((commentLabel.getFont().getStyle() | java.awt.Font.ITALIC)));
+        commentLabel.setText("jLabel1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        jPanel1.add(commentLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -627,6 +653,7 @@ public class TableDetailsView extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton analyseButton;
     private javax.swing.JPanel columnsPanel;
+    private javax.swing.JLabel commentLabel;
     private javax.swing.JLabel findColumnsLabel;
     public javax.swing.JPanel findColumnsPanel;
     private javax.swing.JPanel jPanel1;
