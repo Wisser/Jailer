@@ -7893,4 +7893,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
        	sortABCIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sortabc.png"));
 	}
 	
+	// TODO
+	// TODO copy ctrl-C
+	// TODO extended copy shift-ctrl-C
+
 }
