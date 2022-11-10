@@ -137,15 +137,15 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Run"/>
                             <Property name="focusable" type="boolean" value="false"/>
-                            <Property name="horizontalTextPosition" type="int" value="0"/>
+                            <Property name="horizontalTextPosition" type="int" value="4"/>
                             <Property name="verticalTextPosition" type="int" value="3"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JButton" name="runnAllButton">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Run all"/>
+                            <Property name="text" type="java.lang.String" value="Run Script"/>
                             <Property name="focusable" type="boolean" value="false"/>
-                            <Property name="horizontalTextPosition" type="int" value="0"/>
+                            <Property name="horizontalTextPosition" type="int" value="4"/>
                             <Property name="verticalTextPosition" type="int" value="3"/>
                           </Properties>
                         </Component>
@@ -154,7 +154,7 @@
                             <Property name="text" type="java.lang.String" value="Explain"/>
                             <Property name="toolTipText" type="java.lang.String" value="Show Query Execution Plan "/>
                             <Property name="focusable" type="boolean" value="false"/>
-                            <Property name="horizontalTextPosition" type="int" value="0"/>
+                            <Property name="horizontalTextPosition" type="int" value="4"/>
                             <Property name="verticalTextPosition" type="int" value="3"/>
                           </Properties>
                         </Component>
@@ -165,7 +165,7 @@
                             <Property name="text" type="java.lang.String" value="Cancel"/>
                             <Property name="toolTipText" type="java.lang.String" value="Cancel"/>
                             <Property name="focusable" type="boolean" value="false"/>
-                            <Property name="horizontalTextPosition" type="int" value="0"/>
+                            <Property name="horizontalTextPosition" type="int" value="4"/>
                             <Property name="verticalTextPosition" type="int" value="3"/>
                           </Properties>
                           <Events>

@@ -104,6 +104,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 import javax.swing.ListCellRenderer;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
@@ -448,16 +449,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         runnAllButton.setAction(editorPane.runAll);
         explainButton.setAction(editorPane.explain);
 
-        runSQLButton.setText(null);
-        runnAllButton.setText(null);
-        explainButton.setText(null);
-        cancelButton.setText(null);
         explainButton.setToolTipText("Show Query Execution Plan ");
         
         runSQLButton.setIcon(UIUtil.scaleIcon(this, runIcon));
         runnAllButton.setIcon(UIUtil.scaleIcon(this, runAllIcon));
-        runSQLButton.setToolTipText("Run SQL Statement - Ctrl-Enter");
-        runnAllButton.setToolTipText("Run SQL Script - Alt-Enter");
+        runSQLButton.setToolTipText("Run - Ctrl-Enter ");
+        runnAllButton.setToolTipText("Run Script - Alt-Enter ");
 
         scaledCancelIcon = UIUtil.scaleIcon(this, cancelIcon);
         cancelButton.setIcon(scaledCancelIcon);
@@ -1151,6 +1148,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
                 UIUtil.invokeLater(new Runnable() {
                 	TabContentPanel tabContentPanel;
+                	String toExplain = sql;
                 	@Override
                     public void run() {
                         final ResultContentPane rb = new ResultContentPane(datamodel.get(), wcBaseTable, finalResultType, "", session, null,
@@ -1181,6 +1179,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         	}
                         	@Override
 							protected void updateStatementLabel(String sql) {
+                        		toExplain = sql;
 								tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sql, 100));
 		                        String stmt = sql;
 		                        stmt = stmt.replaceAll("\\s+", " ");
@@ -1366,6 +1365,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								updateColumnsAndTextView(rb, tabContentPanel);
 							}
 						});
+                        if (canExplain() && !explain) {
+	                        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+	                        gridBagConstraints.gridx = 24;
+	                        gridBagConstraints.gridy = 1;
+	                        JToolBar toolBar = new JToolBar();
+	                        JButton explButton = new JButton("Explain");
+	                        explButton.setToolTipText("Show Query Execution Plan ");
+	                        explButton.setIcon(UIUtil.scaleIcon(explButton, explainIcon));
+	                        toolBar.add(explButton);
+	                        explButton.addActionListener(e -> {
+	            	            executeSQLBlock(toExplain, null, true, null, true, null);
+	                        });
+	                        tabContentPanel.panel.add(toolBar, gridBagConstraints);
+                        }
+
                         String sqlE = sql.trim();
                         if (explain) {
                         	sqlE = "Explain Plan for " + sqlE;
@@ -2171,20 +2185,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         runSQLButton.setText("Run");
         runSQLButton.setFocusable(false);
-        runSQLButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        runSQLButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         runSQLButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         jToolBar1.add(runSQLButton);
 
-        runnAllButton.setText("Run all");
+        runnAllButton.setText("Run Script");
         runnAllButton.setFocusable(false);
-        runnAllButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        runnAllButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         runnAllButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         jToolBar1.add(runnAllButton);
 
         explainButton.setText("Explain");
         explainButton.setToolTipText("Show Query Execution Plan ");
         explainButton.setFocusable(false);
-        explainButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        explainButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         explainButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         jToolBar1.add(explainButton);
         jToolBar1.add(jSeparator1);
@@ -2192,7 +2206,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         cancelButton.setText("Cancel");
         cancelButton.setToolTipText("Cancel");
         cancelButton.setFocusable(false);
-        cancelButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        cancelButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         cancelButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

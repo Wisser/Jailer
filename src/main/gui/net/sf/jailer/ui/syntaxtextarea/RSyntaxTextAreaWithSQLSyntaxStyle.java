@@ -173,7 +173,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			}
 		};
 
-		runBlock = new AbstractAction("Run selected SQL") {
+		runBlock = new AbstractAction("Run") {
 			{
 				putValue(ACCELERATOR_KEY, KS_RUN_BLOCK);
 				InputMap im = getInputMap();
@@ -188,14 +188,14 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			}
 		};
 		
-		explain = new AbstractAction("Explain Plan") {
+		explain = new AbstractAction("Explain") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				RSyntaxTextAreaWithSQLSyntaxStyle.this.explainBlock();
 			}
 		};
 
-		runAll = new AbstractAction("Run all SQL") {
+		runAll = new AbstractAction("Run Script") {
 			{
 				putValue(ACCELERATOR_KEY, KS_RUN_ALL);
 				InputMap im = getInputMap();

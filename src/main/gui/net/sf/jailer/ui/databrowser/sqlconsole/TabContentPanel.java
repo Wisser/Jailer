@@ -117,24 +117,20 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1;
         gridBagConstraints.anchor = explain? java.awt.GridBagConstraints.WEST : java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new Insets(0, explain? 8 : 16, 0, 0);
+        gridBagConstraints.insets = new Insets(0, explain? 8 : 16, 0, 2);
 		//        panel.add(statementLabel, gridBagConstraints);
         panel.add(new JPanel() {
 	        	{
 	        		setLayout(null);
 	        		setOpaque(false);
+	        		statementLabel.addPropertyChangeListener("text", e -> resize());
 	        		addComponentListener(new ComponentListener() {
 						@Override
 						public void componentShown(ComponentEvent e) {
 						}
 						@Override
 						public void componentResized(ComponentEvent e) {
-							Rectangle visibleRect = getBounds();
-							String value = statementLabel.getText();
-							FontMetrics fontMetrics = getFontMetrics(getFont());
-							int x = Math.max(32, visibleRect.width - fontMetrics.stringWidth(value));
-							int y = (visibleRect.height - fontMetrics.getHeight() / 2) + fontMetrics.getAscent();
-							statementLabel.setBounds(x, 0, visibleRect.width - x, visibleRect.height);
+							resize();
 						}
 						@Override
 						public void componentMoved(ComponentEvent e) {
@@ -145,6 +141,15 @@ public class TabContentPanel extends javax.swing.JPanel {
 					});
 		        	add(statementLabel);
 	        	}
+	        	
+				private void resize() {
+					Rectangle visibleRect = getBounds();
+					String value = statementLabel.getText();
+					FontMetrics fontMetrics = getFontMetrics(getFont());
+					int x = Math.max(32, visibleRect.width - fontMetrics.stringWidth(value));
+					int y = (visibleRect.height - fontMetrics.getHeight() / 2) + fontMetrics.getAscent();
+					statementLabel.setBounds(x, 0, visibleRect.width - x, visibleRect.height);
+				}
         	}
         	, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
