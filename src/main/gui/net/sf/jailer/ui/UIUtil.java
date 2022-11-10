@@ -1162,10 +1162,14 @@ public class UIUtil {
     }
     
     public static String toHTMLFragment(String plainText, int maxLineLength) {
-    	return toHTMLFragment(plainText, maxLineLength, true);
+    	return toHTMLFragment(plainText, maxLineLength, true, true);
     }
     
     public static String toHTMLFragment(String plainText, int maxLineLength, boolean trim) {
+    	return toHTMLFragment(plainText, maxLineLength, trim, true);
+    }
+    
+    public static String toHTMLFragment(String plainText, int maxLineLength, boolean trim, boolean withSpaces) {
     	if (trim) {
     		plainText = plainText.trim();
     	}
@@ -1190,13 +1194,16 @@ public class UIUtil {
             }
             plainText = sb.toString();
         }
-        return plainText
+        plainText = plainText
                 .replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
-                .replace("\n", "<br>")
-                .replace(" ", "&nbsp;")
+                .replace("\n", "<br>");
+        if (withSpaces) {
+        	plainText = plainText.replace(" ", "&nbsp;")
                 .replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+        }
+        return plainText;
     }
 
     public static String fromHTMLFragment(String htmlText) {
@@ -1382,7 +1389,7 @@ public class UIUtil {
 						}
 						f = false;
 						sb.append(v == NULL || v == null? "" : v);
-						htmlText.append("<td>" + (v == NULL || v == null? "" : toHTMLFragment(v.toString(), -1)) + "</td>");	
+						htmlText.append("<td>" + (v == NULL || v == null? "" : toHTMLFragment(v.toString(), -1, true, false)) + "</td>");	
 					}
 				} else {
 					if (value instanceof TableModelItem) {
@@ -1393,7 +1400,7 @@ public class UIUtil {
 					}
 					f = false;
 					sb.append(value == NULL || value == null? "" : value);
-					htmlText.append("<td>" + (value == NULL || value == null? "" : toHTMLFragment(value.toString(), -1)) + "</td>");	
+					htmlText.append("<td>" + (value == NULL || value == null? "" : toHTMLFragment(value.toString(), -1, true, false)) + "</td>");	
 				}
 			}
 			htmlText.append("</tr>");
@@ -2371,8 +2378,8 @@ public class UIUtil {
 		if (colComments.length() == 0) {
 			colComments.append("</table>");
 		}
-		return "<html>" +UIUtil.toHTMLFragment(table.getName() + " (" + table.primaryKey.toSQL(null, false) + ")", 250, true) +
-				(comment != null? "<br><hr><i>" + UIUtil.toHTMLFragment(comment, 250, true) + "</i>": "") + colComments +
+		return "<html>" +UIUtil.toHTMLFragment(table.getName() + " (" + table.primaryKey.toSQL(null, false) + ")", 250, true, true) +
+				(comment != null? "<br><hr><i>" + UIUtil.toHTMLFragment(comment, 250, true, true) + "</i>": "") + colComments +
 				"</html>";
 	}
 
