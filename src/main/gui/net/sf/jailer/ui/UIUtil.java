@@ -1347,10 +1347,7 @@ public class UIUtil {
 		StringBuilder htmlText = new StringBuilder("<!DOCTYPE html>\n"
 				+ "<html>\n"
 				+ "<head>\n"
-				+ "<meta charset=\"UTF-8\"/><style>\n"
-				+ "table {border: medium solid #6495ed;border-collapse: collapse;width: 100%;} th{font-family: monospace;border: thin solid #6495ed;padding: 5px;background-color: #D0E3FA;}td{font-family: sans-serif;border: thin solid #6495ed;padding: 5px;text-align: center;}"
-				+ ".odd{background:#eeffee" // UIUtil.TABLE_BACKGROUND_COLOR_1
-				+ ";}</style>\n"
+				+ "<meta charset=\"UTF-8\"/>\n"
 				+ "</head>\n"
 				+ "<body>\n"
 				+ "<table>");
@@ -1371,7 +1368,7 @@ public class UIUtil {
 			if (!firstLine) {
 				sb.append(nl);
 			}
-			htmlText.append(rowNum % 2 == 0? "<tr>" : "<tr class=\"odd\">");
+			htmlText.append(rowNum % 2 == 0? "<tr>" : "<tr bgcolor=\"#eeffee\"");
 			++rowNum;
 			boolean f = true;
 			for (int col: selectedColumns) {

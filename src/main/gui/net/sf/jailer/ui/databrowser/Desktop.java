@@ -827,6 +827,11 @@ public abstract class Desktop extends JDesktopPane {
 				rowsTable.addMouseListener(ml);
 				rowsTable.addMouseMotionListener((MouseMotionListener) ml);
 			}
+			
+			@Override
+			protected boolean copyAllColumns() {
+				return true;
+			}
 
 			@Override
 			protected List<net.sf.jailer.ui.databrowser.DBConditionEditor.RSyntaxTextArea> getEditorPanesCache() {

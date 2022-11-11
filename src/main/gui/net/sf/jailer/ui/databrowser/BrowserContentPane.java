@@ -1302,7 +1302,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Action a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UIUtil.copyToClipboard(rowsTable, true);
+				UIUtil.copyToClipboard(rowsTable, copyAllColumns());
 			}
 		};
 		am.put(key, a);
@@ -2224,6 +2224,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (reload) {
 			reloadRows();
 		}
+	}
+
+	protected boolean copyAllColumns() {
+		if (rowsTable.getSelectedColumnCount() ==1 && rowsTable.getSelectedRowCount() == 1) {
+			return true;
+		}
+		return false;
 	}
 
 	private int currentSearchButtonColumnIndex = -1;
