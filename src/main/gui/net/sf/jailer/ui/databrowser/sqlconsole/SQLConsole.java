@@ -257,7 +257,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         initMenuItems();
         historyComboBox.setMaximumRowCount(25);
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 18;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -384,7 +384,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         };
 
-        clearButton.setText(null);
         clearButton.setToolTipText("Clear Console");
         clearButton.setIcon(UIUtil.scaleIcon(clearButton, clearIcon));
         clearButton.setEnabled(editorPane.getDocument().getLength() > 0);
@@ -2106,8 +2105,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         consoleContainerPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
-        jToolBar2 = new javax.swing.JToolBar();
-        clearButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         limitComboBox = new javax.swing.JComboBox();
         jToolBar1 = new javax.swing.JToolBar();
@@ -2117,6 +2114,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JToolBar.Separator();
         cancelButton = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JToolBar.Separator();
+        clearButton = new javax.swing.JButton();
+        jSeparator3 = new javax.swing.JToolBar.Separator();
+        jLabel3 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         statusLabel = new javax.swing.JLabel();
         dummyLabel = new javax.swing.JLabel();
@@ -2146,26 +2146,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel2.add(consoleContainerPanel, gridBagConstraints);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
-
-        jToolBar2.setFloatable(false);
-        jToolBar2.setRollover(true);
-
-        clearButton.setText("clear");
-        clearButton.setFocusable(false);
-        clearButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        clearButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        clearButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clearButtonActionPerformed(evt);
-            }
-        });
-        jToolBar2.add(clearButton);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 6);
-        jPanel5.add(jToolBar2, gridBagConstraints);
 
         jLabel1.setText("Row limit ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2216,10 +2196,29 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jToolBar1.add(cancelButton);
         jToolBar1.add(jSeparator2);
 
+        clearButton.setText("Clear");
+        clearButton.setFocusable(false);
+        clearButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        clearButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        clearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(clearButton);
+        jToolBar1.add(jSeparator3);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         jPanel5.add(jToolBar1, gridBagConstraints);
+
+        jLabel3.setText("   History ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 16;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        jPanel5.add(jLabel3, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -2322,6 +2321,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JButton explainButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -2329,10 +2329,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToolBar.Separator jSeparator2;
+    private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JToolBar jToolBar1;
-    private javax.swing.JToolBar jToolBar2;
     private javax.swing.JComboBox limitComboBox;
     private javax.swing.JButton runSQLButton;
     private javax.swing.JButton runnAllButton;
