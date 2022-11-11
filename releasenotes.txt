@@ -1,5 +1,9 @@
 12.8.1
   - The new Extraction Model Wizzard simplifies the creation of new models.
+  - Feature "HTML Renderer - Fetch Database Comments #97".
+    https://github.com/Wisser/Jailer/issues/97
+  - Feature "Copying column name, column value, whole row to clipboard".
+    https://sourceforge.net/p/jailer/feature-requests/71/
 
 12.8
   - Support for non-encodable characters (in the default charset) that occur in database metadata.
