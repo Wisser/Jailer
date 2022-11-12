@@ -174,6 +174,7 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
+import net.sf.jailer.ui.ExtendetCopyPanel;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.JComboBox2;
 import net.sf.jailer.ui.QueryBuilderDialog;
@@ -1303,6 +1304,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				UIUtil.copyToClipboard(rowsTable, copyAllColumns());
+				// TODO
+				// TODO ExtendetCopyPanel.openDialog(rowsTable);
 			}
 		};
 		am.put(key, a);
