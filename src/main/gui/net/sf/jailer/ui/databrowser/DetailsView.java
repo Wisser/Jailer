@@ -50,7 +50,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -588,6 +587,12 @@ public abstract class DetailsView extends javax.swing.JPanel {
 							UIUtil.invokeLater(() -> jScrollPane1.getViewport().setViewPosition(vPos));
 						}
 					});
+					if (textTable != null) {
+						textTable = Quoting.staticUnquote(textTable);
+					}
+					if (textColumn != null) {
+						textColumn = Quoting.staticUnquote(textColumn);
+					}
 					if (v instanceof UIUtil.IconWithText) {
 						f.setText(((UIUtil.IconWithText) v).text);
 						textRows.add(new Object[] { textTable, textColumn, ((UIUtil.IconWithText) v).text });

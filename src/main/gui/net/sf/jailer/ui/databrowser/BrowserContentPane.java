@@ -1305,7 +1305,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public void actionPerformed(ActionEvent e) {
 				UIUtil.copyToClipboard(rowsTable, copyAllColumns());
 				// TODO
-				// TODO ExtendetCopyPanel.openDialog(rowsTable);
+				// ExtendetCopyPanel.openDialog(rowsTable);
 			}
 		};
 		am.put(key, a);
@@ -7596,7 +7596,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		combobox.setModel(new DefaultComboBoxModel(columNames.toArray()));
 		Map<String, Consumer<JLabel>> renderConsumer;
 		renderConsumer = new HashMap<String, Consumer<JLabel>>();
-		rowIdSupport.getColumns(table, session, false).forEach(c -> { if (c.name != null) { renderConsumer.put(c.name, label -> label.setIcon(emptyIcon)); }});
+		rowIdSupport.getColumns(table, session, false).forEach(c -> { if (c.name != null) { renderConsumer.put(Quoting.staticUnquote(c.name), label -> label.setIcon(emptyIcon)); }});
     	if (table.primaryKey != null) {
 			table.primaryKey.getColumns().forEach(c -> {
 				if (c.name != null) {

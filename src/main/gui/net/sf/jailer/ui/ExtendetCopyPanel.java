@@ -15,17 +15,15 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.Dialog;
-import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-
-import org.fife.rsta.ui.EscapableDialog;
+import javax.swing.WindowConstants;
 
 /**
  * Extendet Copy Panel.
@@ -37,40 +35,30 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 
 	public static void openDialog(JTable jTable) {
 		Window owner = SwingUtilities.getWindowAncestor(jTable);
-		EscapableDialog dialog;
-		if (owner instanceof Dialog) {
-			dialog = new EscapableDialog((Dialog) owner) {
-			};
-		} else if (owner instanceof Frame) {
-			dialog = new EscapableDialog((Frame) owner) {
-			};
-		} else {
-			return;
-		}
-		dialog.setModal(false);
-		
-		ExtendetCopyPanel copyPanel = new ExtendetCopyPanel();
-		dialog.getContentPane().add(copyPanel);
-		
-		dialog.pack();
-		
-		Point mid = new Point(jTable.getParent().getWidth() / 2 - dialog.getWidth() / 2, jTable.getParent().getHeight() / 2 - dialog.getHeight() / 2);
-		SwingUtilities.convertPointToScreen(mid, jTable);
-
-		mid.x = Math.min(mid.x, owner.getX() + owner.getWidth() - dialog.getWidth() - 4);
-		mid.y = Math.min(mid.y, owner.getY() + owner.getHeight() - dialog.getHeight() - 4);
-		mid.x = Math.max(mid.x, owner.getX() + 4);
-		mid.y = Math.max(mid.y, owner.getY() + 4);
-		dialog.setLocation(mid);
-		
-		dialog.addWindowListener(new WindowAdapter() {
+		JFrame frame;
+		frame = new JFrame("Extended Copy");
+		frame.setAlwaysOnTop(true);
+		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		frame.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosed(WindowEvent e) {
-				UIUtil.setPopupActive(false);
+				UIUtil.checkTermination();
 			}
 		});
-		UIUtil.setPopupActive(true);
-		dialog.setVisible(true);
+		ExtendetCopyPanel copyPanel = new ExtendetCopyPanel();
+		frame.getContentPane().add(copyPanel);
+		
+		frame.pack();
+		
+		Point mid = new Point(jTable.getParent().getWidth() / 2 - frame.getWidth() / 2, jTable.getParent().getHeight() / 2 - frame.getHeight() / 2);
+		SwingUtilities.convertPointToScreen(mid, jTable.getParent());
+
+		mid.x = Math.min(mid.x, owner.getX() + owner.getWidth() - frame.getWidth() - 4);
+		mid.y = Math.min(mid.y, owner.getY() + owner.getHeight() - frame.getHeight() - 4);
+		mid.x = Math.max(mid.x, owner.getX() + 4);
+		mid.y = Math.max(mid.y, owner.getY() + 4);
+		frame.setLocation(mid);
+		frame.setVisible(true);
 	}
 
     private ExtendetCopyPanel() {

@@ -90,7 +90,7 @@ public class TableDetailsView extends javax.swing.JPanel {
         }
         
 		renderConsumer = new HashMap<String, Consumer<JLabel>>();
-		table.getColumns().forEach(c -> { if (c.name != null) { renderConsumer.put(c.name, label -> label.setIcon(emptyIcon)); }});
+		table.getColumns().forEach(c -> { if (c.name != null) { renderConsumer.put(Quoting.staticUnquote(c.name), label -> label.setIcon(emptyIcon)); }});
     	if (table.primaryKey != null) {
 			table.primaryKey.getColumns().forEach(c -> {
 				if (c.name != null) {
@@ -415,7 +415,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 		Map<String, Integer> columNamesCount = new HashMap<String, Integer>();
 		for (String nameObj: rows.keySet()) {
 			if (nameObj != null) {
-				String name = nameObj.toString();
+				String name = Quoting.staticUnquote(nameObj.toString());
 				if (columNamesCount.containsKey(name)) {
 					columNamesCount.put(name, columNamesCount.get(name) + 1);
 				} else {
@@ -442,7 +442,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 				if (selected != null) {
 					foundColumn = null;
 					for (String name: rows.keySet()) {
-						if (name != null && name.equals(selected)) {
+						if (name != null && Quoting.staticUnquote(name).equals(selected)) {
 							Rectangle visibleRect = jPanel2.getVisibleRect();
 							Rectangle cellRect = rows.get(name).getBounds();
 							foundColumn = name;
