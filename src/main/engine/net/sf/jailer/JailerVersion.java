@@ -44,4 +44,7 @@ public class JailerVersion {
 		System.out.print(VERSION);
 	}
 
+	// TODO
+	// TODO jpack JDK instead of JRE
+	
 }

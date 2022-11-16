@@ -89,7 +89,7 @@ public class MDTable extends MDObject {
      * @param schema the tables schema
      */
     public MDTable(String name, MDSchema schema, boolean isView, boolean isSynonym) {
-        super(name, schema.getMetaDataSource());
+        super(name, schema != null? schema.getMetaDataSource() : null);
         this.isView = isView;
         this.isSynonym = isSynonym;
         this.schema = schema;

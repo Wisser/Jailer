@@ -23,6 +23,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.FocusEvent;
@@ -712,7 +713,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			Dimension preferredSize = new Dimension(1, 1);
 			p.setPreferredSize(preferredSize);
 			p.setOpaque(true);
-			p.setBackground(i % 2 == 0? BG1 : BG2);
+			p.setBackground(BG2);
 			gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.weightx = 1;
 			gridBagConstraints.weighty = 1;
@@ -870,6 +871,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         sortCheckBox = new javax.swing.JCheckBox();
         editModeToggleButton = new javax.swing.JToggleButton();
         pinToggleButton = new javax.swing.JToggleButton();
+        maximizeButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -992,6 +994,18 @@ public abstract class DetailsView extends javax.swing.JPanel {
         });
         jToolBar1.add(pinToggleButton);
 
+        maximizeButton.setText("jButton1");
+        maximizeButton.setToolTipText("Maximize");
+        maximizeButton.setFocusable(false);
+        maximizeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        maximizeButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        maximizeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                maximizeButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(maximizeButton);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
@@ -1050,6 +1064,40 @@ public abstract class DetailsView extends javax.swing.JPanel {
         selectButton.setEnabled(false);
     }//GEN-LAST:event_pinToggleButtonActionPerformed
 
+    private Point oldLoc;
+    private Dimension oldSize;
+    private boolean oldIsPinned;
+    
+    private void maximizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maximizeButtonActionPerformed
+        Window dialog = SwingUtilities.getWindowAncestor(this);
+        if (dialog != null) {
+        	Window owner = dialog.getOwner();
+        	if (owner != null) {
+        		if (oldLoc != null) {
+        			dialog.setLocation(oldLoc);
+        			dialog.setSize(oldSize);
+        			oldLoc = null;
+        			oldSize = null;
+        	        maximizeButton.setIcon(maximizeIcon);
+        	        if (oldIsPinned ^ pinToggleButton.isSelected()) {
+        	        	pinToggleButton.doClick();
+        	        }
+        		} else {
+        			oldLoc = dialog.getLocation();
+        			oldSize = dialog.getSize();
+        			oldIsPinned = pinToggleButton.isSelected();
+        			if (!pinToggleButton.isSelected()) {
+        				pinToggleButton.doClick();
+        			}
+	        		final Insets insets = owner.getInsets();
+					dialog.setLocation(owner.getLocation().x + insets.left, owner.getLocation().y + insets.top - 1);
+	        		dialog.setSize(owner.getSize().width - insets.left - insets.right + 1, owner.getSize().height - insets.top - insets.bottom);
+	                maximizeButton.setIcon(unmaximizeIcon);
+        		}
+        	}
+        }
+    }//GEN-LAST:event_maximizeButtonActionPerformed
+
     public boolean isPinned() {
     	return pinToggleButton.isSelected();
     }
@@ -1071,6 +1119,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JButton maximizeButton;
     private javax.swing.JToggleButton pinToggleButton;
     protected javax.swing.JSpinner rowSpinner;
     private javax.swing.JButton selectButton;
@@ -1146,6 +1195,14 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		textPanel.add(tabContentPanel.textTabPanel, BorderLayout.CENTER);
 		
         JPanel movePanel = new MovePanel();
+        movePanel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() > 1) {
+					maximizeButton.doClick();
+				}
+			}
+		});
         
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -1154,6 +1211,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.weightx = 1.0;
         jPanel3.add(movePanel, gridBagConstraints);
+        
+        maximizeButton.setText(null);
+        maximizeButton.setIcon(maximizeIcon);
         
         SmallButton closeButton = new SmallButton(closeIcon, closeOverIcon, false) {
 			@Override
@@ -1219,10 +1279,14 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private static ImageIcon pinIcon;
 	private static ImageIcon closeIcon;
 	private static ImageIcon closeOverIcon;
+	private static ImageIcon maximizeIcon;
+	private static ImageIcon unmaximizeIcon;
 	static {
 		// load images
 		editdetails = UIUtil.readImage("/editdetails.png");
 		pinIcon = UIUtil.readImage("/pin.png");
+		maximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/maximize.png"));
+		unmaximizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/unmaximize.png"));
         closeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close.png"), 1.55);
         closeOverIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/close_over.png"), 1.55);
 	}

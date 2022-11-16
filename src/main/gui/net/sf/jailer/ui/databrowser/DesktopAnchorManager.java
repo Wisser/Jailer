@@ -371,6 +371,15 @@ public abstract class DesktopAnchorManager {
 		Point locO = new Point();
 		locO = SwingUtilities.convertPoint(tableBrowser.internalFrame.getParent().getParent(), locO, anchorPanel);
 		loc = new Point(Math.max(locO.x - anchorPanel.getWidth(), loc.x) - 1, Math.max(locO.y, loc.y + 1));
+		if (anchorPanel.getComponentCount() > 1 && !anchorPanel.getComponents()[0].isEnabled() && !anchorPanel.getComponents()[1].isEnabled()) {
+			loc = new Point(loc.x, loc.y + anchorPanel.getComponents()[0].getHeight());
+			anchorPanel.setSize(anchorPanel.getWidth(), anchorPanel.getHeight() - anchorPanel.getComponents()[0].getHeight());
+			for (Component c: anchorPanel.getComponents()) {
+				c.setLocation(c.getX(), c.getY() - anchorPanel.getComponents()[0].getHeight());
+			}
+			anchorPanel.getComponents()[0].setVisible(false);
+			anchorPanel.getComponents()[1].setVisible(false);
+		}
 		anchorPanel.setLocation(loc);
 		anchorButton.setVisible(true);
 		anchorPanel.setVisible(true);

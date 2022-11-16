@@ -1305,7 +1305,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public void actionPerformed(ActionEvent e) {
 				UIUtil.copyToClipboard(rowsTable, copyAllColumns());
 				// TODO
-				// ExtendetCopyPanel.openDialog(rowsTable);
+				ExtendetCopyPanel.openDialog(rowsTable);
 			}
 		};
 		am.put(key, a);
@@ -1420,6 +1420,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, final int row, final int column) {
 				boolean cellSelected = isSelected;
+			   	boolean isContentTable = "contentTable".equals(table.getName());
 
 				if (BrowserContentPane.this.getQueryBuilderDialog() != null || // SQL Console
 					table.getSelectedColumnCount() <= 1 && table.getSelectedRowCount() <= 1) {
@@ -1432,9 +1433,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				TableColumnModel columnModel = rowsTable.getColumnModel();
 				
 				boolean found = !foundColumn.isEmpty() && column < columnModel.getColumnCount() && foundColumn.contains(columnModel.getColumn(column).getModelIndex());
-				isSelected = !found && (currentRowSelection == row || currentRowSelection == -2);
+				isSelected = !isContentTable && !found && (currentRowSelection == row || currentRowSelection == -2);
 				int bgRow = row;
-				if (table != rowsTable) {
+				if (table != rowsTable && !isContentTable) {
 					isSelected = false;
 					++bgRow;
 					if (table.getSelectedRows().length <= 1 && table.getSelectedColumns().length <= 1) {
@@ -1477,9 +1478,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					((JLabel) render).setBorder(cellSelected? BorderFactory.createEtchedBorder() : null);
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 					Table type = getResultSetTypeForColumn(convertedColumnIndex);
-					if (!isSelected && (table == rowsTable || !cellSelected)) {
+					if (isContentTable || (!isSelected && (table == rowsTable || !cellSelected))) {
 						if (BrowserContentPane.this.getQueryBuilderDialog() != null && // SQL Console
-							!found &&
+							!isContentTable && !found &&
 							BrowserContentPane.this.rowsClosure.currentClosureRowIDs != null &&
 							row < rows.size() &&
 							row < rowSorter.getViewRowCount() &&
@@ -1495,7 +1496,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							}
 						} else {
-							if (isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, convertedColumnIndex, r.values[convertedColumnIndex])
+							if (!isContentTable && isEditMode && r != null && (r.rowId != null && !r.rowId.isEmpty()) && browserContentCellEditor.isEditable(type, convertedColumnIndex, r.values[convertedColumnIndex])
 									&& isPKComplete(type, r) && !rowIdSupport.getPrimaryKey(type, BrowserContentPane.this.session).getColumns().isEmpty()) {
 								((JLabel) render).setBackground((bgRow % 2 == 0) ? BG1_EM : BG2_EM);
 								render.setName("final");
@@ -1555,7 +1556,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						}
 						boolean isNumber = false;
-						if (table == rowsTable) {
+						if (table == rowsTable || isContentTable) {
 							synchronized (rowColumnTypes) {
 								int ci = columnModel.getColumn(column).getModelIndex();
 								if (rowColumnTypes.size() > ci) {
@@ -7025,7 +7026,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		detailsView.setSortColumns(currentRowsSortedReference == null? sortColumnsCheckBox.isSelected() : currentRowsSortedReference.get());
 		d.pack();
 		d.setLocation(x - 16, y + 2);
-		d.setSize(600, Math.max(152 + 16, d.getHeight()));
+		d.setSize(600, Math.max(152 + 16, d.getHeight()) + 16);
 		UIUtil.fit(d);
 		Window p = SwingUtilities.getWindowAncestor(rowsTable);
 		if (p != null) {
