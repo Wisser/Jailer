@@ -1305,7 +1305,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public void actionPerformed(ActionEvent e) {
 				UIUtil.copyToClipboard(rowsTable, copyAllColumns());
 				// TODO
-				ExtendetCopyPanel.openDialog(rowsTable);
+//				ExtendetCopyPanel.openDialog(rowsTable);
 			}
 		};
 		am.put(key, a);
