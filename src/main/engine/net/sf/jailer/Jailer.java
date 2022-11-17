@@ -416,3 +416,10 @@ public class Jailer {
 	}
 
 }
+
+
+// TODO
+// TODO jpack JDK instead of JRE
+
+// TODO
+// TODO rowcount in SQLConsole treeview (left): also in treeview in Desktop?

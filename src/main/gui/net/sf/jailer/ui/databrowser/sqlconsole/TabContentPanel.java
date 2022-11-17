@@ -21,6 +21,7 @@ import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -477,8 +478,9 @@ public class TabContentPanel extends javax.swing.JPanel {
 					} else {
 						boolean rightAlign = false;
 						if (!rotate) {
-							if (rowColumnTypes.size() > x) {
-								switch (rowColumnTypes.get(x)) {
+							int mx = cm.getColumn(x).getModelIndex();
+							if (rowColumnTypes.size() > mx) {
+								switch (rowColumnTypes.get(mx)) {
 								case Types.BIGINT:
 								case Types.DECIMAL:
 								case Types.DOUBLE:
@@ -530,6 +532,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 			}
 		}
 
+		Point vPos = textViewScrollPane.getViewport().getViewPosition();
 		textArea.setText(sb.toString());
 		textArea.setCaretPosition(0);
 		textArea.setEditable(false);
@@ -537,6 +540,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 		if (UIUtil.plaf == PLAF.FLAT) {
 			textArea.setBackground(Color.white);
 		}
+		UIUtil.invokeLater(() -> textViewScrollPane.getViewport().setViewPosition(vPos));
 	}
 
     private int lastLineLength(String cellContent) {

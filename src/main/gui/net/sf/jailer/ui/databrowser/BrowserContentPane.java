@@ -1562,7 +1562,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						boolean isNumber = false;
 						if (table == rowsTable || isContentTable) {
 							synchronized (rowColumnTypes) {
-								int ci = columnModel.getColumn(column).getModelIndex();
+								int ci = table.getColumnModel().getColumn(column).getModelIndex();
 								if (rowColumnTypes.size() > ci) {
 									switch (rowColumnTypes.get(ci)) {
 									case Types.BIGINT:
