@@ -1309,7 +1309,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					types.add(t);
 				}
 				// TODO
-				ExtendetCopyPanel.openDialog(rowsTable, copyAllColumns(), "?no-name?", types);
+//				ExtendetCopyPanel.openDialog(rowsTable, copyAllColumns(), "?no-name?", types);
 			}
 		};
 		am.put(key, a);
