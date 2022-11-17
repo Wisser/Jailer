@@ -15,12 +15,14 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Window;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -35,6 +37,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.sf.jailer.ui.databrowser.sqlconsole.TabContentPanel;
 import net.sf.jailer.util.LogUtil;
 
 /**
@@ -45,27 +48,40 @@ import net.sf.jailer.util.LogUtil;
 @SuppressWarnings("serial")
 public class ExtendetCopyPanel extends javax.swing.JPanel {
 
-	public static void openDialog(JTable jTable) {
+	public static void openDialog(JTable jTable, boolean allColumnsSelected, String tableName, List<Integer> rowColumnTypes) {
 		Window owner = SwingUtilities.getWindowAncestor(jTable);
 		JDialog window = new JDialog(owner, "Extended Copy");
 		window.setModal(false);
 		
 		window.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		ExtendetCopyPanel copyPanel = new ExtendetCopyPanel();
-		copyPanel.initContentTable(jTable);
+		copyPanel.initContentTable(jTable, allColumnsSelected);
 		
 		window.getContentPane().add(copyPanel);
 		
 		window.pack();
 		window.setSize(Math.max(window.getWidth(), jTable.getParent().getWidth()), window.getHeight());
-		copyPanel.jPanel3.setMinimumSize(new Dimension(1, 160));
-		copyPanel.jPanel3.setPreferredSize(copyPanel.jPanel3.getMinimumSize());
+		copyPanel.previewPanel.setMinimumSize(new Dimension(1, 160));
+		copyPanel.previewPanel.setPreferredSize(copyPanel.previewPanel.getMinimumSize());
+		copyPanel.tabContentPanel = new TabContentPanel(new JLabel(""), new JLabel(""), tableName, 
+				false,
+				null,
+				null,
+				rowColumnTypes,
+				allColumnsSelected);
+		copyPanel.plainPanel.add(copyPanel.tabContentPanel.textTabPanel, java.awt.BorderLayout.CENTER);
+		copyPanel.tabContentPanel.copyCBButton.setVisible(false);
+		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.headerCheckBox);
+		copyPanel.controlsPanel.add(copyPanel.tabContentPanel.rotateCheckBox);
+		copyPanel.tabContentPanel.textSortedStateLabel.setVisible(false);
 		
 		Point off = new Point();
 		off = SwingUtilities.convertPoint(copyPanel, off, copyPanel.contentTable.getParent());
 
 		Point mid = new Point(off.x + -window.getContentPane().getLocation().x - window.getInsets().left, off.y + -window.getContentPane().getLocation().y - window.getInsets().top); // jTable.getParent().getWidth() / 2 - frame.getWidth() / 2, jTable.getParent().getHeight() / 2 - frame.getHeight() / 2);
 		SwingUtilities.convertPointToScreen(mid, jTable.getParent());
+
+		shrink(window, copyPanel);
 
 		int maxX = owner.getX() + owner.getWidth() - window.getWidth() - 4;
 		mid.x = Math.min(mid.x, maxX);
@@ -77,20 +93,28 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 		window.setLocation(mid);
 		window.setSize(window.getWidth() + Math.max(0, Math.min(300, maxX - window.getX())), window.getHeight() + Math.max(0, Math.min(500, maxY - window.getY())));
 
+		shrink(window, copyPanel);
+		
+		copyPanel.updatePreview();
+		window.setVisible(true);
+	}
+
+	private static void shrink(JDialog window, ExtendetCopyPanel copyPanel) {
 		window.revalidate();
 		int h = copyPanel.jScrollPane1.getHeight() - copyPanel.contentTable.getHeight() - 48;
 		if (h > 0) {
 			h = window.getHeight() - h;
-			window.setSize(window.getWidth(), h);
+			window.setSize(window.getWidth(), Math.max(h, 364));
 			window.revalidate();
 		}
-		window.setVisible(true);
 	}
 
-    private void initContentTable(JTable jTable) {
+    private void initContentTable(JTable jTable, boolean allColumnsSelected) {
     	// TODO
     	// TODO resp. column order: resp. order in Copy2CB too
     	// TODO resp. row order
+    	// TODO test performance
+    	// TODO max rows/cols in preview
     	Object[] colNames = new Object[jTable.getColumnCount()];
     	for (int i = 0; i < colNames.length; ++i) {
     		colNames[i] = jTable.getColumnName(i);
@@ -127,10 +151,6 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     	contentTable.setCellSelectionEnabled(true);
     	contentTable.setName("contentTable");
 		contentTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
-			final Color BG = new Color(220, 230, 255);
-			// TODO
-			// TODO check
-//			final Color BGSELECTED  = new Color(255, 230, 220);
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
@@ -138,15 +158,14 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 //				if (dmColumn  > 0) {
 //					--dmColumn;
 //				}
-				Component render = jTable.getCellRenderer(row, dmColumn).getTableCellRendererComponent(contentTable, value, isSelected, hasFocus, row, dmColumn);
+				Component render = jTable.getCellRenderer(row, dmColumn).getTableCellRendererComponent(contentTable, value, false, hasFocus, row, dmColumn);
 				if (render instanceof JLabel) {
-					if (UIUtil.TABLE_BACKGROUND_COLOR_1.equals(render.getBackground())) {
-//						render.setBackground(BG);
-						// TODO ? idea was: slight diff visually to indicate other dialog. But whot about wysiwyg?
-						// TODO vorlaeufig: lass das so
-						
-						// TODO
-						// TODO render selected cells w/o changing text position ("ruhiger machen")
+					if (isSelected) {
+						if (UIUtil.TABLE_BACKGROUND_COLOR_1.equals(render.getBackground())) {
+							render.setBackground(UIUtil.TABLE_BG1SELECTED);
+						} else {
+							render.setBackground(UIUtil.TABLE_BG2SELECTED);
+						}
 					}
 					
 //					if (column == 0) {
@@ -206,19 +225,38 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
 			for (int r: jTable.getSelectedRows()) {
 				contentTable.addRowSelectionInterval(r, r);
 			}
-			contentTable.setColumnSelectionInterval(0, contentTable.getColumnCount() - 1);
+			if (allColumnsSelected) {
+				contentTable.setColumnSelectionInterval(0, contentTable.getColumnCount() - 1);
+			} else {
+				for (int ci: jTable.getSelectedColumns()) {
+					contentTable.addColumnSelectionInterval(ci, ci);
+				}
+			}
 		} catch (Exception e) {
 			LogUtil.warn(e);
 		}
-		
-		// TODO select.change.listener: events zusammenfassen (invokeLater)
-		
 	}
 
+	private void updatePreview() {
+		if (!updatePending) {
+			UIUtil.invokeLater(() -> {
+				updatePending = false;
+				if (!formattedCheckBox.isSelected()) {
+					tabContentPanel.updateTextView(contentTable);
+				}
+				((CardLayout) previewPanel.getLayout()).show(previewPanel, formattedCheckBox.isSelected()? "formatted" : "plain");
+			});
+		}
+	}
+
+	private boolean updatePending = false;
+	
+    private TabContentPanel tabContentPanel;
+    
 	private ExtendetCopyPanel() {
         initComponents();
         maximizeButton.setIcon(maximizeIcon);
-    }
+	}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -235,10 +273,13 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jToolBar1 = new javax.swing.JToolBar();
         maximizeButton = new javax.swing.JToggleButton();
-        jPanel3 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        previewPanel = new javax.swing.JPanel();
+        plainPanel = new javax.swing.JPanel();
+        formattedScrollPane = new javax.swing.JScrollPane();
         jEditorPane1 = new javax.swing.JEditorPane();
-        jPanel2 = new javax.swing.JPanel();
+        panel = new javax.swing.JPanel();
+        controlsPanel = new javax.swing.JPanel();
+        formattedCheckBox = new javax.swing.JCheckBox();
         copyCloseButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
@@ -306,39 +347,55 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Preview"));
-        jPanel3.setLayout(new java.awt.GridBagLayout());
+        previewPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Preview"));
+        previewPanel.setLayout(new java.awt.CardLayout());
 
-        jScrollPane2.setViewportView(jEditorPane1);
+        plainPanel.setLayout(new java.awt.BorderLayout());
+        previewPanel.add(plainPanel, "plain");
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel3.add(jScrollPane2, gridBagConstraints);
+        formattedScrollPane.setViewportView(jEditorPane1);
+
+        previewPanel.add(formattedScrollPane, "formatted");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        add(jPanel3, gridBagConstraints);
+        add(previewPanel, gridBagConstraints);
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
+        panel.setLayout(new java.awt.GridBagLayout());
+
+        formattedCheckBox.setSelected(true);
+        formattedCheckBox.setText("Formatted");
+        formattedCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                formattedCheckBoxActionPerformed(evt);
+            }
+        });
+        controlsPanel.add(formattedCheckBox);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        panel.add(controlsPanel, gridBagConstraints);
 
         copyCloseButton.setText("Copy and CLose");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        jPanel2.add(copyCloseButton, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
+        panel.add(copyCloseButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        add(jPanel2, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        add(panel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private Point oldLoc;
@@ -372,19 +429,26 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_maximizeButtonActionPerformed
 
+    private void formattedCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattedCheckBoxActionPerformed
+        updatePreview();
+    }//GEN-LAST:event_formattedCheckBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable contentTable;
+    private javax.swing.JPanel controlsPanel;
     private javax.swing.JButton copyCloseButton;
+    private javax.swing.JCheckBox formattedCheckBox;
+    private javax.swing.JScrollPane formattedScrollPane;
     private javax.swing.JEditorPane jEditorPane1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToggleButton maximizeButton;
+    private javax.swing.JPanel panel;
+    private javax.swing.JPanel plainPanel;
+    private javax.swing.JPanel previewPanel;
     // End of variables declaration//GEN-END:variables
     
 	private static ImageIcon maximizeIcon;

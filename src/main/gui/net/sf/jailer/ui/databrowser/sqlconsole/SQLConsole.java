@@ -1215,7 +1215,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         				explain,
                         				origTabContentPanel == null? null : origTabContentPanel.shimPanel,
                         				caretDotMark,
-                        				rb.rowColumnTypes);
+                        				rb.rowColumnTypes,
+                        				false);
                         tabContentPanel.contentPanel.add(rTabContainer);
 
                         rb.setCurrentRowsTable(new Reference<JTable>() {

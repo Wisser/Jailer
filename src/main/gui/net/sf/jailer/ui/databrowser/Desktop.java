@@ -1360,6 +1360,9 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected double getAnimationFactor() {
+				if (tableBrowser.internalFrame.isMaximum()) {
+					return 0;
+				}
 				return Desktop.this.getAnimationFactor();
 			}
 		};

@@ -1319,6 +1319,18 @@ public class UIUtil {
 	 */
 	public static final Color TABLE_BACKGROUND_COLOR_2 = new Color(255, 255, 255);
 
+	// TODO
+	// TODO check
+	/**
+	 * Background color of selected even table rows.
+	 */
+	public static final Color TABLE_BG1SELECTED = new Color(255, 230, 200);
+	
+	/**
+	 * Background color of selected odd table rows.
+	 */
+	public static final Color TABLE_BG2SELECTED  = new Color(255, 240, 215);
+				
 	/**
 	 * Background color of even table rows in closure.
 	 */

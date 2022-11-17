@@ -71,7 +71,7 @@ import net.sf.jailer.util.Pair;
 
 public class TabContentPanel extends javax.swing.JPanel {
 
-	private final String SEPARATOR_TAB = "Tab Character";
+	private final String SEPARATOR_TAB = "Tabulator";
 	private final String SEPARATOR_SPACE = "Space";
 
 	/**
@@ -83,10 +83,11 @@ public class TabContentPanel extends javax.swing.JPanel {
      * Creates new form TabContentPanel
      * @param caretDotMark 
      */
-    public TabContentPanel(JLabel rowsCount, JComponent metaDataDetails, String type, boolean explain, javax.swing.JPanel shimPanel, Pair<Integer, Integer> caretDotMark, List<Integer> rowColumnTypes) {
+    public TabContentPanel(JLabel rowsCount, JComponent metaDataDetails, String type, boolean explain, javax.swing.JPanel shimPanel, Pair<Integer, Integer> caretDotMark, List<Integer> rowColumnTypes, boolean onlySelectedCells) {
     	this.shimPanel = shimPanel == null? new javax.swing.JPanel(new GridBagLayout()) : shimPanel;
     	this.caretDotMark = caretDotMark;
         this.rowColumnTypes = rowColumnTypes;
+        this.onlySelectedCells = onlySelectedCells;
         initComponents();
         if (UIUtil.plaf == PLAF.FLAT) {
 			tabbedPane.putClientProperty(FlatClientProperties.TABBED_PANE_TAB_HEIGHT, 16);
@@ -360,6 +361,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     
     private static Boolean lastHeaderCheckBoxIsSelected;
     private static Object lastColumnSeparator;
+    private final boolean onlySelectedCells;
     
     public void updateTextView(JTable rowsTable) {
     	theRowsTable = rowsTable;
@@ -379,23 +381,51 @@ public class TabContentPanel extends javax.swing.JPanel {
     	RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
 		int startI = 0;
 		boolean incHeader = headerCheckBox.isSelected();
-		if (headerCheckBox.isVisible()) {
+		boolean rotate = rotateCheckBox.isSelected();
+    	if (headerCheckBox.isVisible()) {
 			lastHeaderCheckBoxIsSelected = incHeader;
 		}
 		if (forDetailsView) {
 			if (!incHeader) {
 				startI = cm.getColumnCount() - 1;
+			} else if (rotate) {
+				incHeader = false;
 			}
 		}
-    	String[][] cell = new String[sorter.getViewRowCount() + 1][];
-    	int[] maxLength = new int[rDm.getColumnCount()];
-		for (int y = -1; y < sorter.getViewRowCount(); ++y) {
-			cell[y + 1] = new String[rDm.getColumnCount()];
-			for (int x = startI; x < rDm.getColumnCount(); ++x) {
-				int mx = cm.getColumn(x).getModelIndex();
+		String[][] cell = rotate? new String[rDm.getColumnCount()][] : new String[sorter.getViewRowCount() + 1][];
+    	int[] maxLength = rotate? new int[sorter.getViewRowCount() + 1] : new int[rDm.getColumnCount()];
+    	for (int y = 0; y < cell.length; ++y) {
+			cell[y] = rotate? new String[sorter.getViewRowCount() + 1] : new String[rDm.getColumnCount()];
+    	}
+    	for (int y = 0; y < cell.length; ++y) {
+			for (int x = 0; x < cell[y].length; ++x) {
+				int mx;
+				int my;
+				int vx;
+				int vy;
+				String colName;
+				boolean isColName;
+				if (rotate) {
+					isColName = x == 0;
+					vx = y;
+					vy = x - 1;
+					mx = cm.getColumn(y).getModelIndex();
+					my = x == 0? 0 : sorter.convertRowIndexToModel(x - 1);
+					colName = rDm.getColumnName(mx);
+				} else {
+					isColName = y == 0;
+					vx = x;
+					vy = y - 1;
+					mx = cm.getColumn(x).getModelIndex();
+					my = y == 0? 0 : sorter.convertRowIndexToModel(y - 1);
+					colName = rDm.getColumnName(mx);
+				}
 				Object value;
-				if (y < 0) {
-					value = rDm.getColumnName(mx);
+				if (isColName) {
+					if (onlySelectedCells && !rowsTable.isColumnSelected(vx)) {
+						continue;
+					}
+					value = colName;
 					if (value != null && value.toString().startsWith("<html>")) {
 						String[] ntPair = value.toString().replaceAll("<br>", "\t").replaceAll("<[^>]*>", "").split("\t");
 						if (ntPair.length == 2) {
@@ -406,7 +436,10 @@ public class TabContentPanel extends javax.swing.JPanel {
 						}
 					}
 				} else {
-					value = rDm.getValueAt(sorter.convertRowIndexToModel(y), mx);
+					if (onlySelectedCells && !rowsTable.isCellSelected(vy, vx)) {
+						continue;
+					}
+					value = rDm.getValueAt(my, mx);
 				}
 				if (value instanceof TableModelItem) {
 					Object v = ((TableModelItem) value).value;
@@ -422,72 +455,78 @@ public class TabContentPanel extends javax.swing.JPanel {
 						cellContent = "\"" + (cellContent.replaceAll("\"", "\"\"")) + "\"";
 					}
 				}
-				cell[y + 1][x] = cellContent;
+				cell[y][x] = cellContent;
 				maxLength[x] = Math.max(maxLineLength(cellContent), maxLength[x]);
 			}
 		}
 		StringBuilder sb = new StringBuilder();
-		for (int y = 0; y < cell.length; ++y) {
-			if (y == 0 && !incHeader) {
-				continue;
-			}
-			for (int x = startI; x < cell[y].length; ++x) {
-				if (sep != null) {
-					sb.append(cell[y][x]);
-					if (x < cell[y].length - 1)
-					sb.append(sep);
-				} else {
-					boolean rightAlign = false;
-					synchronized (rowColumnTypes) {
-						if (rowColumnTypes.size() > x) {
-							switch (rowColumnTypes.get(x)) {
-							case Types.BIGINT:
-							case Types.DECIMAL:
-							case Types.DOUBLE:
-							case Types.FLOAT:
-							case Types.INTEGER:
-							case Types.NUMERIC:
-							case Types.REAL:
-							case Types.SMALLINT:
-								rightAlign = true;
-							}
-						}
+		synchronized (rowColumnTypes) {
+			for (int y = !rotate? 0 : startI; y < cell.length; ++y) {
+				int sbLength = sb.length();
+				for (int x = !rotate? startI : 0; x < cell[y].length; ++x) {
+					if ((rotate && x == 0 || !rotate && y == 0) && !incHeader) {
+						continue;
 					}
-					if (x < cell[y].length - 1) {
-						sb.append(" ");
-						if (rightAlign) {
-							for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
-								sb.append(" ");
-							}
-							sb.append(cell[y][x]);
-						} else {
-							sb.append(cell[y][x]);
-							for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
-								sb.append(" ");
-							}
-						}
-						sb.append(" ");
-					} else {
-						sb.append(" ");
-						if (rightAlign) {
-							for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
-								sb.append(" ");
-							}
-						}
+					if (cell[y][x] == null) {
+						continue;
+					}
+					if (sep != null) {
 						sb.append(cell[y][x]);
+						if (x < cell[y].length - 1)
+						sb.append(sep);
+					} else {
+						boolean rightAlign = false;
+						if (!rotate) {
+							if (rowColumnTypes.size() > x) {
+								switch (rowColumnTypes.get(x)) {
+								case Types.BIGINT:
+								case Types.DECIMAL:
+								case Types.DOUBLE:
+								case Types.FLOAT:
+								case Types.INTEGER:
+								case Types.NUMERIC:
+								case Types.REAL:
+								case Types.SMALLINT:
+									rightAlign = true;
+								}
+							}
+						}
+						if (x < cell[y].length - 1) {
+							sb.append(" ");
+							if (rightAlign) {
+								for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
+									sb.append(" ");
+								}
+								sb.append(cell[y][x]);
+							} else {
+								sb.append(cell[y][x]);
+								for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
+									sb.append(" ");
+								}
+							}
+							sb.append(" ");
+						} else {
+							sb.append(" ");
+							if (rightAlign) {
+								for (int i = maxLength[x] - lastLineLength(cell[y][x]); i > 0; --i) {
+									sb.append(" ");
+								}
+							}
+							sb.append(cell[y][x]);
+						}
 					}
 				}
-			}
-			if (y < cell.length - 1) {
-				sb.append(UIUtil.LINE_SEPARATOR);
-			}
-			if (y == 0 && sep == null && incHeader) {
-				for (int x = 0; x < cell[y].length; ++x) {
-					for (int i = 2 + maxLength[x]; i > 0; --i) {
-						sb.append("-");
-					}
+				if (y < cell.length - 1 && sb.length() > sbLength) {
+					sb.append(UIUtil.LINE_SEPARATOR);
 				}
-				sb.append(UIUtil.LINE_SEPARATOR);
+				if (y == 0 && sep == null && incHeader && !rotate) {
+					for (int x = 0; x < cell[y].length; ++x) {
+						for (int i = 2 + maxLength[x]; i > 0; --i) {
+							sb.append("-");
+						}
+					}
+					sb.append(UIUtil.LINE_SEPARATOR);
+				}
 			}
 		}
 
@@ -561,6 +600,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         headerCheckBox = new javax.swing.JCheckBox();
         textSortedStateLabel = new javax.swing.JLabel();
+        rotateCheckBox = new javax.swing.JCheckBox();
         metaTabPanel = new javax.swing.JPanel();
         metaPanel = new javax.swing.JPanel();
         typePanel = new javax.swing.JPanel();
@@ -684,7 +724,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -707,7 +747,7 @@ public class TabContentPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         textTabPanel.add(copyCBButton, gridBagConstraints);
@@ -730,7 +770,6 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         textTabPanel.add(headerCheckBox, gridBagConstraints);
 
         textSortedStateLabel.setForeground(java.awt.Color.blue);
@@ -740,6 +779,19 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         textTabPanel.add(textSortedStateLabel, gridBagConstraints);
+
+        rotateCheckBox.setText("Rotate");
+        rotateCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rotateCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        textTabPanel.add(rotateCheckBox, gridBagConstraints);
 
         tabbedPane.addTab("Text", textTabPanel);
 
@@ -806,6 +858,12 @@ public class TabContentPanel extends javax.swing.JPanel {
     private void cancelLoadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelLoadButtonActionPerformed
     }//GEN-LAST:event_cancelLoadButtonActionPerformed
 
+    private void rotateCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rotateCheckBoxActionPerformed
+    	if (theRowsTable != null) {
+			updateTextView(theRowsTable);
+		}
+    }//GEN-LAST:event_rotateCheckBoxActionPerformed
+
     public void destroy() {
     	if (theRowsTable != null) {
     		theRowsTable.setModel(new DefaultTableModel());
@@ -827,9 +885,9 @@ public class TabContentPanel extends javax.swing.JPanel {
     public javax.swing.JLabel columnsSortedStateLabel;
     public javax.swing.JPanel contentPanel;
     javax.swing.JToolBar controlsContainer;
-    private javax.swing.JButton copyCBButton;
+    public javax.swing.JButton copyCBButton;
     public javax.swing.JPanel fullTSearchPanel;
-    private javax.swing.JCheckBox headerCheckBox;
+    public javax.swing.JCheckBox headerCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLayeredPane jLayeredPane1;
@@ -842,6 +900,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     private javax.swing.JPanel metaPanel;
     private javax.swing.JPanel metaTabPanel;
     public javax.swing.JPanel panel;
+    public javax.swing.JCheckBox rotateCheckBox;
     public javax.swing.JTabbedPane tabbedPane;
     public javax.swing.JLabel textSortedStateLabel;
     public javax.swing.JPanel textTabPanel;

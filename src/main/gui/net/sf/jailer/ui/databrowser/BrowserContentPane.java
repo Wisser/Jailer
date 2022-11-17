@@ -1304,8 +1304,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				UIUtil.copyToClipboard(rowsTable, copyAllColumns());
+				List<Integer> types = new ArrayList<Integer>();
+				for (int t: browserContentCellEditor.getColumnTypes()) {
+					types.add(t);
+				}
 				// TODO
-//				ExtendetCopyPanel.openDialog(rowsTable);
+				ExtendetCopyPanel.openDialog(rowsTable, copyAllColumns(), "?no-name?", types);
 			}
 		};
 		am.put(key, a);
@@ -1475,7 +1479,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						}
 					}
-					((JLabel) render).setBorder(cellSelected? BorderFactory.createEtchedBorder() : null);
+//					((JLabel) render).setBorder(cellSelected? BorderFactory.createEtchedBorder() : null);
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 					Table type = getResultSetTypeForColumn(convertedColumnIndex);
 					if (isContentTable || (!isSelected && (table == rowsTable || !cellSelected))) {
@@ -1585,6 +1589,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				if (render instanceof JLabel) {
 					fullTextSearchPanel.markOccurrence((JLabel) render, column, row);
+					if (cellSelected) {
+						if (bgRow % 2 == 0) {
+							render.setBackground(UIUtil.TABLE_BG1SELECTED);
+						} else {
+							render.setBackground(UIUtil.TABLE_BG2SELECTED);
+						}
+					}
 				}
 				return render;
 			}

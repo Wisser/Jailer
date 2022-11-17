@@ -256,7 +256,7 @@ public class ColumnsTable extends JTable {
 				if (dmColumn  > 0) {
 					--dmColumn;
 				}
-				Component render = rowsTable.getCellRenderer(dmColumn, row).getTableCellRendererComponent(ColumnsTable.this, value, isSelected, hasFocus, dmColumn, row);
+				Component render = rowsTable.getCellRenderer(dmColumn, row).getTableCellRendererComponent(ColumnsTable.this, value, false, hasFocus, dmColumn, row);
 				int currentColumn = rb.getCurrentRowSelection();
 				if (render instanceof JLabel) {
 					if (column == 0) {
