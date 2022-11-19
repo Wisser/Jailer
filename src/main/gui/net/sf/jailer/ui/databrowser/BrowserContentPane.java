@@ -1307,14 +1307,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Action a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JTable tab = rowsTable.isShowing() || columnsTable == null? rowsTable : columnsTable;
+				JTable tab = rowsTable;
 				UIUtil.copyToClipboard(tab, copyAllColumns());
 				List<Integer> types = new ArrayList<Integer>();
 				for (int t: browserContentCellEditor.getColumnTypes()) {
 					types.add(t);
 				}
 				// TODO
-//				ExtendetCopyPanel.openDialog(tab, tab == rowsTable? copyAllColumns() : false, "?no-name?", types);
+//				ExtendetCopyPanel.openDialog(tab, copyAllColumns(), "?no-name?", types);
 			}
 		};
 		am.put(key, a);
@@ -1325,7 +1325,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JTable tab = rowsTable.isShowing() || columnsTable == null? rowsTable : columnsTable;
+				JTable tab = rowsTable;
 				// TODO
 				List<Integer> types = new ArrayList<Integer>();
 				if (tab == rowsTable) {
@@ -1333,7 +1333,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						types.add(t);
 					}
 				}
-				ExtendetCopyPanel.openDialog(tab, tab == rowsTable? copyAllColumns() : false, "?no-name?", types);
+				ExtendetCopyPanel.openDialog(tab, copyAllColumns(), "?no-name?", types);
 			}
 		};
 		am.put(key, a);
@@ -7935,7 +7935,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	protected Set<Integer> filteredColumns;
-	public JTable columnsTable;
     private static ImageIcon warnIcon;
     private static ImageIcon blueIcon;
     private static ImageIcon scaledWarnIcon;

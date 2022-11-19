@@ -85,7 +85,6 @@ public class ColumnsTable extends JTable {
 		this.rb = rb;
 		this.inDesktop = inDesktop;
 		final JTable rowsTable = rb.rowsTable;
-		rb.columnsTable = this;
 		
 		final RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
 		Vector cNames = new Vector();
