@@ -829,7 +829,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 			
 			@Override
-			protected boolean copyAllColumns() {
+			public boolean copyAllColumns() {
 				return true;
 			}
 

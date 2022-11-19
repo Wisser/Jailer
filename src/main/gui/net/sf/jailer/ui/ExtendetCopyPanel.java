@@ -30,6 +30,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
@@ -41,6 +42,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import net.sf.jailer.ui.databrowser.sqlconsole.TabContentPanel;
 import net.sf.jailer.util.LogUtil;
@@ -131,10 +133,11 @@ public class ExtendetCopyPanel extends javax.swing.JPanel {
     	for (int i = 0; i < colNames.length; ++i) {
     		colNames[i] = jTable.getColumnName(i);
     	}
+    	RowSorter<? extends TableModel> rowSorter = jTable.getRowSorter();
     	Object[][] data = new Object[jTable.getRowCount()][];
     	for (int row = 0; row < data.length; ++row) {
     		data[row] = new Object[colNames.length];
-    		int ri = jTable.getRowSorter().convertRowIndexToModel(row);
+    		int ri = rowSorter == null? row : rowSorter.convertRowIndexToModel(row);
     		for (int col = 0; col < colNames.length; ++col) {
     			data[row][col] = jTable.getModel().getValueAt(ri, col);
     		}

@@ -860,6 +860,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public static final int MAXCLOBLENGTH = 4000 - 16;
 
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_ECOPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
 	private static final KeyStroke KS_SQLCONSOLE = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_DESELECT = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
     private static final KeyStroke KS_QUERYBUILDER = KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK);
@@ -867,6 +868,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public static final KeyStroke KS_FIND = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK);
 	private static final KeyStroke KS_EDIT = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
 
+	private Action copyAction;
+	private Action ecopyAction;
+	
 	protected boolean useWhereClauseEditor() {
 		return true;
 	}
@@ -1303,16 +1307,37 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Action a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UIUtil.copyToClipboard(rowsTable, copyAllColumns());
+				JTable tab = rowsTable.isShowing() || columnsTable == null? rowsTable : columnsTable;
+				UIUtil.copyToClipboard(tab, copyAllColumns());
 				List<Integer> types = new ArrayList<Integer>();
 				for (int t: browserContentCellEditor.getColumnTypes()) {
 					types.add(t);
 				}
 				// TODO
-//				ExtendetCopyPanel.openDialog(rowsTable, copyAllColumns(), "?no-name?", types);
+//				ExtendetCopyPanel.openDialog(tab, tab == rowsTable? copyAllColumns() : false, "?no-name?", types);
 			}
 		};
 		am.put(key, a);
+		copyAction = a;
+		key = "ecopyClipboard";
+		im.put(KS_ECOPY_TO_CLIPBOARD, key);
+		am = rowsTable.getActionMap();
+		a = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JTable tab = rowsTable.isShowing() || columnsTable == null? rowsTable : columnsTable;
+				// TODO
+				List<Integer> types = new ArrayList<Integer>();
+				if (tab == rowsTable) {
+					for (int t: browserContentCellEditor.getColumnTypes()) {
+						types.add(t);
+					}
+				}
+				ExtendetCopyPanel.openDialog(tab, tab == rowsTable? copyAllColumns() : false, "?no-name?", types);
+			}
+		};
+		am.put(key, a);
+		ecopyAction = a;
 
 		rowsTableScrollPane.addMouseListener(new MouseAdapter() {
 			@Override
@@ -2241,7 +2266,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 
-	protected boolean copyAllColumns() {
+	public boolean copyAllColumns() {
 		if (rowsTable.getSelectedColumnCount() ==1 && rowsTable.getSelectedRowCount() == 1) {
 			return true;
 		}
@@ -2749,6 +2774,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		if (withSingleRow) {
 			JMenuItem det = new JMenuItem("Details");
+			if (getQueryBuilderDialog() == null) { /* SQL Console */
+				det.setIcon(detailsIcon);
+			}
 			det.setEnabled(row != null);
 			popup.insert(det, 0);
 			popup.insert(new JSeparator(), 1);
@@ -2800,6 +2828,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 
 				JMenu sql = new JMenu("Create SQL");
+//				sql.setIcon(genSQLIcon);
 				final String rowName = row != null? (!(table instanceof SqlStatementTable)? dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")" : "") : "";
 				JMenuItem update = new JMenuItem("Update");
 				sql.add(update);
@@ -2837,6 +2866,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						popup.add(det);
 						popup.add(new JSeparator());
 						script = new JMenu("Create SQL");
+						script.setIcon(genSQLIcon);
 						popup.add(script);
 					} else {
 						script = sql;
@@ -2895,10 +2925,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					popup.add(sql, 3);
 				}
 			}
-			if (copyTCB != null) {
-				popup.add(new JSeparator());
-				popup.add(copyTCB);
-				popup.add(new JSeparator());
+//			if (copyTCB != null) {
+//				popup.add(new JSeparator());
+//				popup.add(copyTCB);
+//				popup.add(new JSeparator());
+//			}
+			if (BrowserContentPane.this.getQueryBuilderDialog() == null) { // SQL Console
+				JMenuItem copyItem = new JMenuItem("Copy");
+				copyItem.setAccelerator(KS_COPY_TO_CLIPBOARD);
+				copyItem.setIcon(copyIcon);
+				copyItem.addActionListener(e -> copyAction.actionPerformed(e));
+				popup.add(copyItem);
+				JMenuItem ecopyItem = new JMenuItem("Extended Copy...");
+				ecopyItem.setAccelerator(KS_ECOPY_TO_CLIPBOARD);
+				ecopyItem.setIcon(ecopyIcon);
+				ecopyItem.addActionListener(e -> ecopyAction.actionPerformed(e));
+				popup.add(ecopyItem);
 			}
 			if (!withSingleRow || 
 					BrowserContentPane.this.getQueryBuilderDialog() == null // SQL Console
@@ -2910,7 +2952,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				if (BrowserContentPane.this.getQueryBuilderDialog() != null) {
 					JMenuItem findItem = new JMenuItem("Find...");
-					findItem.setToolTipText("Full test search across all columns.");
+					findItem.setToolTipText("Full text search across all columns.");
 					findItem.addActionListener(e -> fullTextSearchPanel.open());
 					findItem.setAccelerator(KS_FIND);
 					popup.add(findItem);
@@ -3027,6 +3069,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		JMenu sqlDml = new JMenu("Create SQL");
+		sqlDml.setIcon(genSQLIcon);
 		popup.add(sqlDml);
 		final String tableName = dataModel.getDisplayName(table);
 		JMenuItem update = new JMenuItem("Updates");
@@ -3066,6 +3109,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		popup.add(new JSeparator());
 		JMenuItem exportData = new JMenuItem("Export Data from here");
 		exportData.setToolTipText("Export (or Delete) Data from here");
+		exportData.setIcon(exportIcon);
 		popup.add(exportData);
 		exportData.addActionListener(new ActionListener() {
 			@Override
@@ -3075,6 +3119,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 
 		JMenuItem extractionModel = new JMenuItem("Create Extraction Model");
+		extractionModel.setIcon(subsetIcon);
 		popup.add(extractionModel);
 		extractionModel.addActionListener(new ActionListener() {
 			@Override
@@ -3095,6 +3140,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 
 		JMenuItem m = new JMenuItem("Hide (Minimize)");
+		m.setIcon(minimizeIcon);
 		popup.add(m);
 		m.addActionListener(new ActionListener() {
 			@Override
@@ -3117,11 +3163,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (!forNavTree) {
 			JMenuItem findItem = new JMenuItem("Find...");
 			findItem.setIcon(UIUtil.scaleIcon(findItem, UIUtil.readImage("/findcolumn2.png")));
-			findItem.setToolTipText("Full test search across all columns.");
+			findItem.setToolTipText("Full text search across all columns.");
 			findItem.addActionListener(e -> fullTextSearchPanel.open());
 			findItem.setAccelerator(KS_FIND);
 			findItem.setEnabled(singleRowDetailsView == null);
 			popup.add(findItem);
+			
+			JMenuItem copyItem = new JMenuItem("Copy");
+			copyItem.setAccelerator(KS_COPY_TO_CLIPBOARD);
+			copyItem.setIcon(copyIcon);
+			copyItem.addActionListener(e -> copyAction.actionPerformed(e));
+			popup.add(copyItem);
+			JMenuItem ecopyItem = new JMenuItem("Extended Copy...");
+			ecopyItem.setAccelerator(KS_ECOPY_TO_CLIPBOARD);
+			ecopyItem.setIcon(ecopyIcon);
+			ecopyItem.addActionListener(e -> ecopyAction.actionPerformed(e));
+			popup.add(ecopyItem);
+			
 			popup.add(new JSeparator());
 			JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
 			tableFilter.setIcon(UIUtil.scaleIcon(tableFilter, UIUtil.readImage("/filter.png")));
@@ -7877,6 +7935,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	protected Set<Integer> filteredColumns;
+	public JTable columnsTable;
     private static ImageIcon warnIcon;
     private static ImageIcon blueIcon;
     private static ImageIcon scaledWarnIcon;
@@ -7894,6 +7953,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static ImageIcon cancelIcon;
 	private static ImageIcon sort123Icon;
 	private static ImageIcon sortABCIcon;
+	private static ImageIcon minimizeIcon;
+	private static ImageIcon exportIcon;
+	private static ImageIcon subsetIcon;
+	private static ImageIcon genSQLIcon;
+	private static ImageIcon copyIcon;
+	private static ImageIcon ecopyIcon;
+	private static ImageIcon detailsIcon;
 	
 	static {
         // load images
@@ -7913,6 +7979,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
        	emptyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/empty.png"));
        	sort123Icon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sort123.png"));
        	sortABCIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/sortabc.png"));
+       	minimizeIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/minimize.png"));
+       	exportIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/export.png"));
+       	subsetIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/subset.png"));
+      	genSQLIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/procedure_32.png"));
+      	copyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/copy.png"));
+      	ecopyIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ecopy.png"));
+      	detailsIcon = UIUtil.scaleIcon(new JLabel(""), UIUtil.readImage("/ieditdetails_64.png"));
 	}
 	
 	// TODO

@@ -29,8 +29,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -55,6 +57,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import net.sf.jailer.ui.ExtendetCopyPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.Row;
@@ -69,6 +72,7 @@ public class ColumnsTable extends JTable {
 
 	private final int MAX_ROWS = 498;
 	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_ECOPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK|KeyEvent.SHIFT_DOWN_MASK);
 	final BrowserContentPane rb;
 	private Map<Integer, String> tableName = new HashMap<Integer, String>();
 	private boolean useTableName = true;
@@ -81,7 +85,8 @@ public class ColumnsTable extends JTable {
 		this.rb = rb;
 		this.inDesktop = inDesktop;
 		final JTable rowsTable = rb.rowsTable;
-
+		rb.columnsTable = this;
+		
 		final RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
 		Vector cNames = new Vector();
 		cNames.add("Column");
@@ -186,7 +191,22 @@ public class ColumnsTable extends JTable {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				UIUtil.copyToClipboard(ColumnsTable.this, false);
+				JTable tab = rowsTable.isShowing()? rowsTable : ColumnsTable.this;
+				// TODO
+				UIUtil.copyToClipboard(tab, true);
+			}
+		};
+		am.put(key, a);
+		key = "ecopyClipboard";
+		im.put(KS_ECOPY_TO_CLIPBOARD, key);
+		am = getActionMap();
+		a = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JTable tab = rowsTable.isShowing()? rowsTable : ColumnsTable.this;
+				// TODO
+				List<Integer> types = new ArrayList<Integer>();
+				ExtendetCopyPanel.openDialog(tab, tab == rowsTable? rb.copyAllColumns() : true, "?no-name?", types);
 			}
 		};
 		am.put(key, a);
