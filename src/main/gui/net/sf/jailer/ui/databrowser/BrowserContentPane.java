@@ -1212,8 +1212,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					
 					int top = -1;
 					last = -1;
+					List<Pair<Integer, Integer>> rowIntervall = new ArrayList<Pair<Integer,Integer>>();
+					for (int si: rowsTable.getSelectedRows()) {
+						if (top < 0) {
+							top = si;
+						} else if (last < si - 1) {
+							rowIntervall.add(new Pair<Integer, Integer>(top, last));
+							top = si;
+						}
+						last = si;
+					}
+					if (left >= 0) {
+						rowIntervall.add(new Pair<Integer, Integer>(left, last));
+					}
 					for (Pair<Integer, Integer> iv: intervall) {
-						int[] selectedRows = rowsTable.getSelectedRows();
+						for (Pair<Integer, Integer> iv: intervall) {
+							int[] selectedRows = rowsTable.getSelectedRows();
 						if (selectedRows.length > 0) {
 							x[0] = Integer.MAX_VALUE;
 							y[0] = Integer.MAX_VALUE;
@@ -1242,6 +1256,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								g2d.drawRoundRect(x[0], y[0], x[1] - x[0], y[1] - y[0], 8, 8);
 							}
 						}
+						
 //					}
 				}
 			}
